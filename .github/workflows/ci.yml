@@ -33,6 +33,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macOS-latest ]
         java: [ 8, 11 ]
+        language: ['java', 'go']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -47,6 +48,13 @@ jobs:
           # Prefix the list here with "+" to use these queries and those in the config file.
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
           languages: ['java', 'go', 'c', 'rust']
+
+      - if: matrix.language == 'cpp' || matrix.language == 'csharp'
+        name: Build C
+        run: |
+          git submodule init
+          git submodule update
+          make -C ./eventmesh-sdks/eventmesh-sdk-c  
 
       - name: Cache Gradle packages
         uses: actions/cache@v3

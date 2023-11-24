@@ -33,6 +33,8 @@ dependencies {
 
     implementation "commons-io:commons-io"
 
+    implementation "commons-validator:commons-validator"
+
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-filter")
     implementation project(":eventmesh-spi")
@@ -73,6 +75,8 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
+
+    implementation project(":eventmesh-retry:eventmesh-retry-api")
 
     testImplementation "org.mockito:mockito-inline"
     testImplementation "org.mockito:mockito-junit-jupiter"

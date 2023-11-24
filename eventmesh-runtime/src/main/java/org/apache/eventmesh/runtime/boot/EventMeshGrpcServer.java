@@ -22,6 +22,7 @@ import static org.apache.eventmesh.common.Constants.GRPC;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
@@ -30,7 +31,6 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
@@ -60,7 +60,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshGrpcServer {
+public class EventMeshGrpcServer extends AbstractRemotingServer {
 
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
@@ -69,8 +69,6 @@ public class EventMeshGrpcServer {
     private static final int MAX_LIMIT = 10;
 
     private Server server;
-
-    private ProducerManager producerManager;
 
     private ConsumerManager consumerManager;
 
@@ -112,9 +110,7 @@ public class EventMeshGrpcServer {
 
         msgRateLimiter = RateLimiter.create(eventMeshGrpcConfiguration.getEventMeshMsgReqNumPerSecond());
 
-        producerManager = new ProducerManager(this);
-        producerManager.init();
-
+        initProducerManager();
         consumerManager = new ConsumerManager(this);
         consumerManager.init();
 
@@ -132,6 +128,11 @@ public class EventMeshGrpcServer {
 
         log.info("GRPCServer[port={}] started", serverPort);
         log.info("-----------------EventMeshGRPCServer initialized");
+    }
+
+    @Override
+    public CommonConfiguration getConfiguration() {
+        return eventMeshGrpcConfiguration;
     }
 
     public void start() throws Exception {
@@ -205,10 +206,6 @@ public class EventMeshGrpcServer {
 
     public EventMeshGrpcConfiguration getEventMeshGrpcConfiguration() {
         return this.eventMeshGrpcConfiguration;
-    }
-
-    public ProducerManager getProducerManager() {
-        return producerManager;
     }
 
     public ConsumerManager getConsumerManager() {

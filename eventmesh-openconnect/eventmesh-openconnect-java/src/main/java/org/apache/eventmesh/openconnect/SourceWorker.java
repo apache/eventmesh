@@ -41,6 +41,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetMana
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReaderImpl;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
+import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -233,16 +234,23 @@ public class SourceWorker implements ConnectorWorker {
     }
 
     private CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
+        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1();
 
-        return CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSubject(config.getPubSubConfig().getSubject())
-            .withSource(URI.create("/"))
-            .withDataContentType("application/cloudevents+json")
-            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
-            .withExtension("ttl", 10000)
-            .build();
+        cloudEventBuilder.withId(UUID.randomUUID().toString())
+                .withSubject(config.getPubSubConfig().getSubject())
+                .withSource(URI.create("/"))
+                .withDataContentType("application/cloudevents+json")
+                .withType(CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(Objects.requireNonNull(JsonUtils.toJSONString(connectRecord.getData())).getBytes(StandardCharsets.UTF_8))
+                .withExtension("ttl", 10000);
+
+        for (String key : connectRecord.getExtensions().keySet()) {
+            if (CloudEventUtil.validateExtensionType(connectRecord.getExtensionObj(key))) {
+                cloudEventBuilder.withExtension(key, connectRecord.getExtension(key));
+            }
+        }
+
+        return cloudEventBuilder.build();
     }
 
     private SendResult convertToSendResult(CloudEvent event) {

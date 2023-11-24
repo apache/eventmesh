@@ -19,6 +19,7 @@ package org.apache.eventmesh.common.config;
 
 import static org.apache.eventmesh.common.Constants.HTTP;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -110,6 +111,9 @@ public class CommonConfiguration {
 
     @ConfigFiled(reload = true)
     private String meshGroup;
+
+    @ConfigFiled(field = "server.retry.plugin.type")
+    private String eventMeshRetryPluginType = Constants.DEFAULT;
 
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;

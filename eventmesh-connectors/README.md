@@ -17,28 +17,53 @@ Add a new connector by implementing the source/sink interface using :
 
 ## Connector Status
 
-| Connector Name                        | Type   | Support Version |
-|---------------------------------------|--------|-----------------|
-| [RocketMQ](sink-connector-rocketmq)   | Sink   | N/A             |
-| [RocketMQ](source-connector-rocketmq) | Source | N/A             |
-| ChatGPT                               | Source | N/A             |
-| ClickHouse                            | Sink   | N/A             |
-| ClickHouse                            | Source | N/A             |
-| DingTalk                              | Sink   | N/A             |
-| Email                                 | Sink   | N/A             |
-| FeiShu                                | Sink   | N/A             |
-| Github                                | Source | N/A             |
-| Http                                  | Sink   | N/A             |
-| Http                                  | Source | N/A             |
-| Jdbc                                  | Sink   | N/A             |
-| Jdbc                                  | Source | N/A             |
-| MySqlCDC                              | Source | N/A             |
-| MongoDB                               | Sink   | N/A             |
-| MongoDB                               | Source | N/A             |
-| S3File                                | Sink   | N/A             |
-| S3File                                | Source | N/A             |
-| Knative                               | Sink   | N/A             |
-| Knative                               | Source | N/A             |
-| Pravega                               | Sink   | N/A             |
-| Pravega                               | Source | N/A             |
-| More connectors will be added...      | Source/Sink   | N/A             |       
+
+|                  Connector Name                  |    Type     | Status  |
+|:------------------------------------------------:|:-----------:|:-------:|
+|     [RocketMQ](eventmesh-connector-rocketmq)     |   Source    |    ✅    |
+|     [RocketMQ](eventmesh-connector-rocketmq)     |    Sink     |    ✅    |
+|                     ChatGPT                      |   Source    |    ⬜    |
+|                     ChatGPT                      |    Sink     |    ⬜    |
+|                    ClickHouse                    |   Source    |    ⬜    |
+|                    ClickHouse                    |    Sink     |    ⬜    |
+|                     DingDing                     |   Source    |    ⬜    |
+|     [Dingtalk](eventmesh-connector-dingtalk)     |    Sink     |    ✅    |
+|                      Email                       |   Source    |    ⬜    |
+|                      Email                       |    Sink     |    ⬜    |
+|                      FeiShu                      |   Source    |    ⬜    |
+|       [FeiShu](eventmesh-connector-feishu)       |    Sink     |    ✅    |
+|         [File](eventmesh-connector-file)         |   Source    |    ✅    |
+|         [File](eventmesh-connector-file)         |    Sink     |    ✅    |
+|                      Github                      |   Source    |    ⬜    |
+|                      Github                      |    Sink     |    ⬜    |
+|                       Http                       |   Source    |    ⬜    |
+|                       Http                       |    Sink     |    ⬜    |
+|                       Jdbc                       |   Source    |    ⬜    |
+|         [Jdbc](eventmesh-connector-jdbc)         |    Sink     |    ✅    |
+|        [Kafka](eventmesh-connector-kafka)        |   Source    |    ✅    |
+|        [Kafka](eventmesh-connector-kafka)        |    Sink     |    ✅    |
+|      [Knative](eventmesh-connector-knative)      |   Source    |    ✅    |
+|      [Knative](eventmesh-connector-knative)      |    Sink     |    ✅    |
+|      [MongoDB](eventmesh-connector-mongodb)      |   Source    |    ✅    |
+|      [MongoDB](eventmesh-connector-mongodb)      |    Sink     |    ✅    |
+| [OpenFunction](eventmesh-connector-openfunction) |   Source    |    ✅    |
+| [OpenFunction](eventmesh-connector-openfunction) |    Sink     |    ✅    |
+|      [Pravega](eventmesh-connector-pravega)      |   Source    |    ✅    |
+|      [Pravega](eventmesh-connector-pravega)      |    Sink     |    ✅    |
+|   [Promethues](eventmesh-connector-prometheus)   |   Source    |    ✅    |
+|   [Promethues](eventmesh-connector-prometheus)   |    Sink     |    ⬜    |
+|       [Pulsar](eventmesh-connector-pulsar)       |   Source    |    ✅    |
+|       [Pulsar](eventmesh-connector-pulsar)       |    Sink     |    ✅    |
+|     [Rabbitmq](eventmesh-connector-rabbitmq)     |   Source    |    ✅    |
+|     [Rabbitmq](eventmesh-connector-rabbitmq)     |    Sink     |    ✅    |
+|        [Redis](eventmesh-connector-redis)        |   Source    |    ✅    |
+|        [Redis](eventmesh-connector-redis)        |    Sink     |    ✅    |
+|                      S3File                      |   Source    |    ⬜    |
+|         [S3File](eventmesh-connector-s3)         |    Sink     |    ✅    |
+|        [Slack](eventmesh-connector-slack)        |   Source    |    ⬜    |
+|        [Slack](eventmesh-connector-slack)        |    Sink     |    ✅    |
+|       [Spring](eventmesh-connector-spring)       |   Source    |    ✅    |
+|       [Spring](eventmesh-connector-spring)       |    Sink     |    ✅    |
+|                      WeCom                       |   Source    |    ⬜    |
+|        [WeCom](eventmesh-connector-wecom)        |    Sink     |    ✅    |
+|         More connectors will be added...         | Source/Sink |   N/A   |

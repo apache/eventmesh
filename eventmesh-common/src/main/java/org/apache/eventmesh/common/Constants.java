@@ -204,4 +204,16 @@ public class Constants {
 
     public static final String OS_WIN_PREFIX = "win";
 
+    public static final String DEFAULT = "default";
+
+    public static final String FEISHU_SEND_MESSAGE_API = "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=";
+
+    public static final String FEISHU_RECEIVE_ID = "receive_id";
+
+    public static final String FEISHU_MSG_TYPE = "msg_type";
+
+    public static final String FEISHU_CONTENT = "content";
+
+    public static final String FEISHU_UUID = "uuid";
+
 }

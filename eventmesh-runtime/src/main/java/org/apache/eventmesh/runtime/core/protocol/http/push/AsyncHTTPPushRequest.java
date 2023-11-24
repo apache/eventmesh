@@ -138,6 +138,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             }
         }
         handleMsgContext.setEvent(event);
+        super.setEvent(event);
 
         String content = "";
         try {
@@ -327,6 +328,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         return false;
     }
 
+    @Override
+    protected HandleMsgContext getHandleMessageContext() {
+        return handleMsgContext;
+    }
+
     ClientRetCode processResponseContent(String content) {
         if (StringUtils.isBlank(content)) {
             return ClientRetCode.FAIL;
@@ -370,7 +376,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     }
 
     @Override
-    public void doRetry() {
+    public void doRun() {
         tryHTTPRequest();
     }
 }
