@@ -134,7 +134,7 @@ public class MetaStorage {
         return metaService.getMetaData(key, fuzzyEnabled);
     }
 
-    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) throws Exception{
+    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) throws Exception {
         metaService.getMetaDataWithListener(metaServiceListener, key);
     }
 

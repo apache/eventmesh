@@ -128,7 +128,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .withExtension(EventMeshConstants.RSP_GROUP, handleMsgContext.getConsumerGroup())
             .build();
 
-        Pattern filterPattern = eventMeshHTTPServer.getFilterEngine().getFilterPattern(handleMsgContext.getConsumerGroup() + "-" + handleMsgContext.getTopic());
+        Pattern filterPattern = eventMeshHTTPServer.getFilterEngine()
+            .getFilterPattern(handleMsgContext.getConsumerGroup() + "-" + handleMsgContext.getTopic());
         if (filterPattern != null) {
             if (!filterPattern.filter(JsonUtils.toJSONString(event))) {
                 LOGGER.error("apply filter failed, group:{}, topic:{}, bizSeqNo={}, uniqueId={}",

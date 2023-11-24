@@ -284,7 +284,8 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
                 LogUtils.error(log, "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}|apply filter failed",
                     System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
                 handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
-                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_FILTER_MSG_ERR, responseHeaderMap, responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
+                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_FILTER_MSG_ERR, responseHeaderMap, responseBodyMap,
+                    EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
             }
 
         } catch (Exception ex) {
