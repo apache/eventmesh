@@ -50,7 +50,7 @@ public class FilterEngine {
      **/
     private final Map<String, Pattern> filterPatternMap = new HashMap<>();
 
-    private final String FILTER_PREIX = "filter-" ;
+    private final String filterPrefix = "filter-";
 
     private final MetaStorage metaStorage;
 
@@ -69,7 +69,7 @@ public class FilterEngine {
     }
 
     public void start() {
-        Map<String, String> filterMetaData = metaStorage.getMetaData(FILTER_PREIX, true);
+        Map<String, String> filterMetaData = metaStorage.getMetaData(filterPrefix, true);
         for (Entry<String, String> filterDataEntry : filterMetaData.entrySet()) {
             // filter-group
             String key = filterDataEntry.getKey();
@@ -82,7 +82,7 @@ public class FilterEngine {
         // addListeners for producerManager & consumerManager
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             ConcurrentHashMap<String, EventMeshProducer> producerMap = producerManager.getProducerTable();
-            for(String producerGroup : producerMap.keySet()) {
+            for (String producerGroup : producerMap.keySet()) {
                 for (String filterKey : filterPatternMap.keySet()) {
                     if (!StringUtils.contains(filterKey, producerGroup)) {
                         addFilterListener(producerGroup);
@@ -91,7 +91,7 @@ public class FilterEngine {
                 }
             }
             ConcurrentHashMap<String, ConsumerGroupManager> consumerMap = consumerManager.getClientTable();
-            for(String consumerGroup : consumerMap.keySet()) {
+            for (String consumerGroup : consumerMap.keySet()) {
                 for (String filterKey : filterPatternMap.keySet()) {
                     if (!StringUtils.contains(filterKey, consumerGroup)) {
                         addFilterListener(consumerGroup);
@@ -99,11 +99,11 @@ public class FilterEngine {
                     }
                 }
             }
-        },10_000, 5_000, TimeUnit.MILLISECONDS);
+        }, 10_000, 5_000, TimeUnit.MILLISECONDS);
     }
 
     private void updateFilterPatternMap(String key, String value) {
-        String group = StringUtils.substringAfter(key, FILTER_PREIX);
+        String group = StringUtils.substringAfter(key, filterPrefix);
 
         JsonNode filterJsonNodeArray = JsonUtils.getJsonNode(value);
         if (filterJsonNodeArray != null) {
@@ -118,7 +118,7 @@ public class FilterEngine {
     }
 
     public void addFilterListener(String group) {
-        String filterKey = FILTER_PREIX + group;
+        String filterKey = filterPrefix + group;
         try {
             metaStorage.getMetaDataWithListener(metaServiceListener, filterKey);
         } catch (Exception e) {
