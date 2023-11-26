@@ -75,20 +75,6 @@ public class PatternBuilder {
 
             // iter all requiredField
             parseRequiredField(key, "$." + key, value, pattern);
-            if (value.isEmpty()) {
-                // Empty array
-                throw new JsonException("INVALID_PATTERN_VALUE ");
-            }
-            PatternEntry patternEntry = new PatternEntry(key, "$." + key);
-            for (final JsonNode objNode : value) {
-                // {
-                // "suffix":".jpg"
-                // }
-                Condition condition = parseCondition(objNode);
-                patternEntry.addCondition(condition);
-            }
-
-            pattern.addRequiredFieldList(patternEntry);
         }
 
         return pattern;
