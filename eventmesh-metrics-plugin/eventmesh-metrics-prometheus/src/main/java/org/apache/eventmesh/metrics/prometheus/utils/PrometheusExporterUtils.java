@@ -70,7 +70,7 @@ public class PrometheusExporterUtils {
      * @return
      */
     public static String[] join(String metricName, String desc) {
-        return new String[] {metricName, desc};
+        return new String[]{metricName, desc};
     }
 
 }

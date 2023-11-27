@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.spring.source.connector;
 
+import static org.mockito.Mockito.doReturn;
+
 import org.apache.eventmesh.connector.spring.source.config.SpringSourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -25,10 +27,17 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MutablePropertySources;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SpringSourceConnectorTest {
 
     @Spy
@@ -36,6 +45,11 @@ public class SpringSourceConnectorTest {
 
     @Test
     public void testSpringSourceConnector() throws Exception {
+        ConfigurableApplicationContext context = Mockito.mock(ConfigurableApplicationContext.class);
+        ConfigurableEnvironment environment = Mockito.mock(ConfigurableEnvironment.class);
+        doReturn(new MutablePropertySources()).when(environment).getPropertySources();
+        doReturn(environment).when(context).getEnvironment();
+        connector.setApplicationContext(context);
         SpringSourceConfig sourceConfig = new SpringSourceConfig();
         connector.init(sourceConfig);
         connector.start();
