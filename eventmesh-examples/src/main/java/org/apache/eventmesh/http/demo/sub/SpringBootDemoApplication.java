@@ -17,11 +17,13 @@
 
 package org.apache.eventmesh.http.demo.sub;
 
+import org.apache.eventmesh.connector.spring.config.EventMeshAutoConfiguration;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, EventMeshAutoConfiguration.class})
 public class SpringBootDemoApplication {
 
     public static void main(String[] args) {
