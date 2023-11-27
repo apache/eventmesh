@@ -30,19 +30,19 @@ type ConnectorsSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// Foo is an example field of Connectors. Edit connectors_types.go to remove/update
 
+	// Size of connector
 	Size int `json:"size"`
-
-	// BaseImage is the controller image to use for the Pods
-	ConnectorImage string `json:"connectorImage"`
-
+	// ConnectorContainers define some configuration
+	ConnectorContainers []corev1.Container `json:"connectorContainers"`
+	// Volumes define the connector config
+	Volumes []corev1.Volume `json:"volumes"`
 	// ImagePullPolicy defines how the image is pulled
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
-
-	// Pod Security Context
+	// PodSecurityContext Pod Security Context
 	PodSecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
-	// Container Security Context
+	// ContainerSecurityContext Container Security Context
 	ContainerSecurityContext *corev1.SecurityContext `json:"containerSecurityContext,omitempty"`
-	// The secrets used to pull image from private registry
+	// ImagePullSecrets The secrets used to pull image from private registry
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 	// Affinity the pod's scheduling constraints
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
@@ -61,8 +61,9 @@ type ConnectorsStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	Size int `json:"size"`
+
 	Nodes []string `json:"nodes"`
-	Size  int      `json:"size"`
 }
 
 //+kubebuilder:object:root=true

@@ -133,23 +133,25 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 
 	for groupIndex := 0; groupIndex < GroupNum; groupIndex++ {
 		r.Logger.Info("Check eventMeshRuntime cluster " + strconv.Itoa(groupIndex+1) + "/" + strconv.Itoa(GroupNum))
-		deployment := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
+		runtimeDep := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
+		//r.Logger.Info(fmt.Sprintf("%s", runtimeDep))
 		// Check if the statefulSet already exists, if not create a new one
 		found := &appsv1.StatefulSet{}
 		err = r.Client.Get(context.TODO(), types.NamespacedName{
-			Name:      deployment.Name,
-			Namespace: deployment.Namespace,
+			Name:      runtimeDep.Name,
+			Namespace: runtimeDep.Namespace,
 		}, found)
 		if err != nil && errors.IsNotFound(err) {
 			r.Logger.Info("Creating a new eventMeshRuntime StatefulSet.",
-				"StatefulSet.Namespace", deployment.Namespace,
-				"StatefulSet.Name", deployment.Name)
-			err = r.Client.Create(context.TODO(), deployment)
+				"StatefulSet.Namespace", runtimeDep.Namespace,
+				"StatefulSet.Name", runtimeDep.Name)
+			err = r.Client.Create(context.TODO(), runtimeDep)
 			if err != nil {
 				r.Logger.Error(err, "Failed to create new StatefulSet",
-					"StatefulSet.Namespace", deployment.Namespace,
-					"StatefulSet.Name", deployment.Name)
+					"StatefulSet.Namespace", runtimeDep.Namespace,
+					"StatefulSet.Name", runtimeDep.Name)
 			}
+			time.Sleep(time.Duration(3) * time.Second)
 		} else if err != nil {
 			r.Logger.Error(err, "Failed to get eventMeshRuntime StatefulSet.")
 		}
@@ -173,7 +175,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 					r.Logger.Error(err, "Failed to update eventMeshRuntime "+runtimeName,
 						"StatefulSet.Namespace", found.Namespace, "StatefulSet.Name", found.Name)
 				} else {
-					r.Logger.Info("Successfully update"+runtimeName,
+					r.Logger.Info("Successfully update "+runtimeName,
 						"StatefulSet.Namespace", found.Namespace, "StatefulSet.Name", found.Name)
 				}
 				time.Sleep(time.Duration(1) * time.Second)
@@ -194,8 +196,8 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	}
 
 	podNames := getRuntimePodNames(podList.Items)
-	r.Logger.Info("broker.Status.Nodes length = " + strconv.Itoa(len(eventMeshRuntime.Status.Nodes)))
-	r.Logger.Info("podNames length = " + strconv.Itoa(len(podNames)))
+	r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", eventMeshRuntime.Status.Nodes))
+	r.Logger.Info(fmt.Sprintf("podNames = %s", podNames))
 	// Ensure every pod is in running phase
 	for _, pod := range podList.Items {
 		if !reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
@@ -203,29 +205,31 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 		}
 	}
 
-	r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
-	r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
-	// Update status.Size if needed
-	if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
-		r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
-		r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
+	if podNames != nil {
 		eventMeshRuntime.Status.Nodes = podNames
-		r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", eventMeshRuntime.Status.Nodes))
-		eventMeshRuntime.Status.Size = eventMeshRuntime.Spec.Size
-		err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
-		if err != nil {
-			r.Logger.Error(err, "Failed to update eventMeshRuntime Size status.")
+		r.Logger.Info(fmt.Sprintf("eventMeshRuntime.Stutas.Nodes = %s", eventMeshRuntime.Status.Nodes))
+		// Update status.Size if needed
+		if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
+			r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
+			r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
+			eventMeshRuntime.Status.Size = eventMeshRuntime.Spec.Size
+			err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
+			if err != nil {
+				r.Logger.Error(err, "Failed to update eventMeshRuntime Size status.")
+			}
 		}
+
+		// Update status.Nodes if needed
+		if !reflect.DeepEqual(podNames, eventMeshRuntime.Status.Nodes) {
+			err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
+			if err != nil {
+				r.Logger.Error(err, "Failed to update eventMeshRuntime Nodes status.")
+			}
+		}
+	} else {
+		r.Logger.Error(err, "Not found eventmesh runtime pods")
 	}
 
-	// Update status.Nodes if needed
-	if !reflect.DeepEqual(podNames, eventMeshRuntime.Status.Nodes) {
-		eventMeshRuntime.Status.Nodes = podNames
-		err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
-		if err != nil {
-			r.Logger.Error(err, "Failed to update eventMeshRuntime Nodes status.")
-		}
-	}
 	r.Logger.Info("Successful reconciliation!")
 	return reconcile.Result{}, nil
 }
@@ -239,14 +243,6 @@ func getRuntimePodNames(pods []corev1.Pod) []string {
 }
 
 var GroupNum = 0
-
-//
-//// SetupWithManager sets up the controller with the Manager.
-//func (r *RuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
-//	return ctrl.NewControllerManagedBy(mgr).
-//		For(&eventmeshoperatorv1.Runtime{}).
-//		Complete(r)
-//}
 
 func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshoperatorv1.Runtime, groupIndex int, replicaIndex int) *appsv1.StatefulSet {
 	var statefulSetName string
@@ -277,16 +273,20 @@ func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshope
 				},
 				Spec: corev1.PodSpec{
 					DNSPolicy:         corev1.DNSClusterFirstWithHostNet,
-					Affinity:          runtime.Spec.Affinity,
-					Tolerations:       runtime.Spec.Tolerations,
-					NodeSelector:      runtime.Spec.NodeSelector,
-					PriorityClassName: runtime.Spec.PriorityClassName,
+					Affinity:          runtime.Spec.RuntimePodTemplate.Template.Spec.Affinity,
+					Tolerations:       runtime.Spec.RuntimePodTemplate.Template.Spec.Tolerations,
+					NodeSelector:      runtime.Spec.RuntimePodTemplate.Template.Spec.NodeSelector,
+					PriorityClassName: runtime.Spec.RuntimePodTemplate.Template.Spec.PriorityClassName,
+					HostNetwork:       runtime.Spec.RuntimePodTemplate.Template.Spec.HostNetwork,
 					Containers: []corev1.Container{{
-						Image:           runtime.Spec.Image,
-						Name:            runtime.Name,
+						Image:           runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Image,
+						Name:            runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Name,
 						SecurityContext: getContainerSecurityContext(runtime),
-						ImagePullPolicy: runtime.Spec.ImagePullPolicy,
+						ImagePullPolicy: runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].ImagePullPolicy,
+						Ports:           runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Ports,
+						VolumeMounts:    runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].VolumeMounts,
 					}},
+					Volumes:         runtime.Spec.RuntimePodTemplate.Template.Spec.Volumes,
 					SecurityContext: getRuntimePodSecurityContext(runtime),
 				},
 			},

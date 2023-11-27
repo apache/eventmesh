@@ -28,36 +28,27 @@ import (
 type RuntimeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
 	// Foo is an example field of Runtime. Edit runtime_types.go to remove/update
+
+	// Size of runtime
 	Size int `json:"size"`
-	// Image
-	Image string `json:"image"`
-	// Define the mirror pulling policy
-	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy"`
 	// AllowRestart defines whether allow pod restart
 	AllowRestart bool `json:"allowRestart"`
-
+	// ReplicaPerGroup each runtime's replica number
 	ReplicaPerGroup int `json:"replicaPerGroup"`
-
-	// Pod Security Context
+	// RuntimePodTemplate define some configuration
+	RuntimePodTemplate corev1.PodTemplate `json:"runtimePodTemplate"`
+	// PodSecurityContext Pod Security Context
 	PodSecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
-	// Container Security Context
+	// ContainerSecurityContext Container Security Context
 	ContainerSecurityContext *corev1.SecurityContext `json:"containerSecurityContext,omitempty"`
-	// Affinity the pod's scheduling constraints
-	Affinity *corev1.Affinity `json:"affinity,omitempty"`
-	// Tolerations the pod's tolerations.
-	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
-	// NodeSelector is a selector which must be true for the pod to fit on a node
-	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
-	// PriorityClassName indicates the pod's priority
-	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 // RuntimeStatus defines the observed state of Runtime
 type RuntimeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
 	Size int `json:"size"`
 
 	Nodes []string `json:"nodes"`

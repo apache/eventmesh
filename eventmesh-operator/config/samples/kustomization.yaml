@@ -1,4 +1,5 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- eventmesh-operator_v1_eventmeshoperator.yaml
+- eventmesh_v1_runtime.yaml
+- eventmesh_v1_connectors_rocketmq.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

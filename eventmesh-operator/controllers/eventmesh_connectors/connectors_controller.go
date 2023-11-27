@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
 	_ "strings"
+	"time"
 )
 
 // ConnectorsReconciler reconciles a Connectors object
@@ -124,10 +125,9 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 	connectorStatefulSet := r.getConnectorStatefulSet(connector)
 	// Check if the statefulSet already exists, if not create a new one
 	found := &appsv1.StatefulSet{}
-	err = r.Client.Get(context.TODO(),
-		types.NamespacedName{
-			Name:      connectorStatefulSet.Name,
-			Namespace: connectorStatefulSet.Namespace}, found)
+	err = r.Client.Get(context.TODO(), types.NamespacedName{
+		Name:      connectorStatefulSet.Name,
+		Namespace: connectorStatefulSet.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		r.Logger.Info("Creating a new Connector StatefulSet.",
 			"StatefulSet.Namespace", connectorStatefulSet.Namespace,
@@ -138,6 +138,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 				"StatefulSet.Namespace", connectorStatefulSet.Namespace,
 				"StatefulSet.Name", connectorStatefulSet.Name)
 		}
+		time.Sleep(time.Duration(3) * time.Second)
 	} else if err != nil {
 		r.Logger.Error(err, "Failed to list Connector StatefulSet.")
 	}
@@ -155,8 +156,8 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 		return reconcile.Result{}, err
 	}
 	podNames := getConnectorPodNames(podList.Items)
-	r.Logger.Info("Connector.Status.Nodes length = " + strconv.Itoa(len(connector.Status.Nodes)))
-	r.Logger.Info("podNames length = " + strconv.Itoa(len(podNames)))
+	r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", connector.Status.Nodes))
+	r.Logger.Info(fmt.Sprintf("podNames = %s", podNames))
 	// Ensure every pod is in running phase
 	for _, pod := range podList.Items {
 		if !reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
@@ -164,40 +165,34 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 		}
 	}
 
-	r.Logger.Info("Status.Size = " + strconv.Itoa(connector.Status.Size))
-	r.Logger.Info("Spec.Size = " + strconv.Itoa(connector.Spec.Size))
-	// Update status.Size if needed
-	if connector.Spec.Size != connector.Status.Size {
-		r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
-		r.Logger.Info("Connector.Spec.Size = " + strconv.Itoa(connector.Spec.Size))
+	if podNames != nil {
 		connector.Status.Nodes = podNames
-		r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", connector.Status.Nodes))
-		connector.Status.Size = connector.Spec.Size
-		err = r.Client.Status().Update(context.TODO(), connector)
-		if err != nil {
-			r.Logger.Error(err, "Failed to update Connector Size status.")
+		r.Logger.Info(fmt.Sprintf("eventMeshRuntime.Stutas.Nodes = %s", connector.Status.Nodes))
+		// Update status.Size if needed
+		if connector.Spec.Size != connector.Status.Size {
+			r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
+			r.Logger.Info("Connector.Spec.Size = " + strconv.Itoa(connector.Spec.Size))
+			connector.Status.Size = connector.Spec.Size
+			err = r.Client.Status().Update(context.TODO(), connector)
+			if err != nil {
+				r.Logger.Error(err, "Failed to update Connector Size status.")
+			}
 		}
-	}
 
-	// Update status.Nodes if needed
-	if !reflect.DeepEqual(podNames, connector.Status.Nodes) {
-		connector.Status.Nodes = podNames
-		err = r.Client.Status().Update(context.TODO(), connector)
-		if err != nil {
-			r.Logger.Error(err, "Failed to update Connector Nodes status.")
+		// Update status.Nodes if needed
+		if !reflect.DeepEqual(podNames, connector.Status.Nodes) {
+			err = r.Client.Status().Update(context.TODO(), connector)
+			if err != nil {
+				r.Logger.Error(err, "Failed to update Connector Nodes status.")
+			}
 		}
+	} else {
+		r.Logger.Error(err, "Not found connector Pods name")
 	}
 
 	r.Logger.Info("Successful reconciliation!")
 	return reconcile.Result{}, nil
 }
-
-//// SetupWithManager sets up the controller with the Manager.
-//func (r ConnectorsReconciler) SetupWithManager(mgr ctrl.Manager) error {
-//	return ctrl.NewControllerManagedBy(mgr).
-//		For(&eventmeshoperatorv1.Connectors{}).
-//		Complete(r)
-//}
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
 	ls := labelsForController(connector.Name)
@@ -229,11 +224,13 @@ func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperat
 					PriorityClassName:  connector.Spec.PriorityClassName,
 					ImagePullSecrets:   connector.Spec.ImagePullSecrets,
 					Containers: []corev1.Container{{
-						Image:           connector.Spec.ConnectorImage,
-						Name:            "eventmesh-connector",
+						Image:           connector.Spec.ConnectorContainers[0].Image,
+						Name:            connector.Spec.ConnectorContainers[0].Name,
 						SecurityContext: getConnectorContainerSecurityContext(connector),
 						ImagePullPolicy: connector.Spec.ImagePullPolicy,
+						VolumeMounts:    connector.Spec.ConnectorContainers[0].VolumeMounts,
 					}},
+					Volumes:         connector.Spec.Volumes,
 					SecurityContext: getConnectorPodSecurityContext(connector),
 				},
 			},
