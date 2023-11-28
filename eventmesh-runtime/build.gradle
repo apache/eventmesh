@@ -36,6 +36,7 @@ dependencies {
     implementation "commons-validator:commons-validator"
 
     implementation project(":eventmesh-common")
+    implementation project(":eventmesh-filter")
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-standalone")
@@ -44,6 +45,7 @@ dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-token")
+    implementation project(":eventmesh-transformer")
     implementation project(":eventmesh-meta:eventmesh-meta-api")
     implementation project(":eventmesh-meta:eventmesh-meta-nacos")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")

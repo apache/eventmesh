@@ -19,6 +19,7 @@ package org.apache.eventmesh.meta.zookeeper.service;
 
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
+import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
@@ -288,8 +289,14 @@ public class ZookeeperMetaService implements MetaService {
     }
 
     @Override
-    public String getMetaData(String key) {
+    public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
         return null;
+    }
+
+    // todo: to be implemented
+    @Override
+    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
+
     }
 
     @Override
