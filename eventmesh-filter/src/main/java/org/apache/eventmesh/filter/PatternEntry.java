@@ -26,26 +26,31 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class PatternEntry {
 
-    private final String patternPath;
+    private String patternName;
+
+    private String patternPath;
 
     private final List<Condition> conditionList = new ArrayList<>();
 
-    public PatternEntry(final String patternPath) {
+    public PatternEntry(final String patternName, final String patternPath) {
+        this.patternName = patternName;
         this.patternPath = patternPath;
     }
 
-    public void addRuleCondition(Condition patternCondition) {
+    public void addCondition(Condition patternCondition) {
         this.conditionList.add(patternCondition);
     }
 
     public String getPatternName() {
-        return "123";
+        return patternName;
     }
 
     public String getPatternPath() {
         return patternPath;
     }
 
+    // default filter type is OR
+    // todo: extend the filter type with AND
     public boolean match(JsonNode jsonElement) {
         for (final Condition patternCondition : conditionList) {
             if (patternCondition.match(jsonElement)) {

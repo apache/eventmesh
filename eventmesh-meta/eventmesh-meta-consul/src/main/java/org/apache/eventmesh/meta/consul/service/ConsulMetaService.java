@@ -19,6 +19,7 @@ package org.apache.eventmesh.meta.consul.service;
 
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaService;
+import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
@@ -162,6 +163,12 @@ public class ConsulMetaService implements MetaService {
         return true;
     }
 
+    // todo: to be implemented
+    @Override
+    public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
+
+    }
+
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
         HealthServicesRequest request = HealthServicesRequest.newBuilder().setPassing(true).setToken(token).build();
@@ -192,7 +199,7 @@ public class ConsulMetaService implements MetaService {
     }
 
     @Override
-    public String getMetaData(String key) {
+    public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
         return null;
     }
 
