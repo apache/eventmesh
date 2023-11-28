@@ -28,19 +28,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class SpringSourceConnectorTest {
 
-    @Spy
     private SpringSourceConnector connector;
 
     @Test
@@ -49,6 +44,7 @@ public class SpringSourceConnectorTest {
         ConfigurableEnvironment environment = Mockito.mock(ConfigurableEnvironment.class);
         doReturn(new MutablePropertySources()).when(environment).getPropertySources();
         doReturn(environment).when(context).getEnvironment();
+        connector = new SpringSourceConnector();
         connector.setApplicationContext(context);
         SpringSourceConfig sourceConfig = new SpringSourceConfig();
         connector.init(sourceConfig);
@@ -65,7 +61,7 @@ public class SpringSourceConnectorTest {
         }
     }
 
-    private void writeMockedRecords(int count, String message) throws Exception {
+    private void writeMockedRecords(int count, String message) {
         for (int i = 0; i < count; i++) {
             connector.send(message + i);
         }

@@ -172,7 +172,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
                     value = originTrackedMapPropertySource.getProperty(key);
                     if (value != null) {
                         connectRecord.addExtension(key.replaceAll(CONNECTOR_PROPERTY_PREFIX, "").toLowerCase(),
-                            value.toString());
+                            String.valueOf(value));
                     }
                 } catch (Throwable e) {
                     log.error("Put spring environment property to extension failed, key=[{}], value=[{}]", key, value);
