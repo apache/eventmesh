@@ -82,12 +82,15 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private final MetaStorage metaStorage;
+
     private final Acl acl;
     private final EventBus eventBus = new EventBus();
 
     private ConsumerManager consumerManager;
     private ProducerManager producerManager;
     private SubscriptionManager subscriptionManager;
+
+    private FilterEngine filterEngine;
 
     private HttpRetryer httpRetryer;
 
@@ -132,6 +135,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager = new ProducerManager(this);
         producerManager.init();
 
+        filterEngine = new FilterEngine(metaStorage, producerManager, consumerManager);
+
         super.setHandlerService(new HandlerService());
         super.getHandlerService().setMetrics(this.getMetrics());
 
@@ -155,6 +160,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         consumerManager.start();
         producerManager.start();
         httpRetryer.start();
+        // filterEngine depend on metaStorage
+        if (metaStorage.getStarted().get()) {
+            filterEngine.start();
+        }
 
         if (eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable()) {
             this.register();
@@ -168,6 +177,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         super.shutdown();
 
         this.getMetrics().shutdown();
+
+        filterEngine.shutdown();
 
         consumerManager.shutdown();
 
@@ -337,6 +348,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public RateLimiter getBatchRateLimiter() {
         return batchRateLimiter;
+    }
+
+    public FilterEngine getFilterEngine() {
+        return filterEngine;
     }
 
     public MetaStorage getMetaStorage() {
