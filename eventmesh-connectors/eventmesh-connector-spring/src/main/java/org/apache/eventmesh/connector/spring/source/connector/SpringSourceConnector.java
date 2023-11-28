@@ -35,12 +35,24 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.BeansException;
+import org.springframework.boot.env.OriginTrackedMapPropertySource;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SpringSourceConnector implements Source, MessageSendingOperations {
+public class SpringSourceConnector implements Source, MessageSendingOperations, ApplicationContextAware {
+
+    private static final String CONNECTOR_PROPERTY_PREFIX = "eventmesh.connector.";
 
     private static final int DEFAULT_BATCH_SIZE = 10;
+
+    private ApplicationContext applicationContext;
 
     private SpringSourceConfig sourceConfig;
 
@@ -116,6 +128,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations {
         RecordPartition partition = new RecordPartition();
         RecordOffset offset = new RecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
+        addSpringEnvironmentPropertyExtensions(record);
         queue.offer(record);
     }
 
@@ -131,6 +144,40 @@ public class SpringSourceConnector implements Source, MessageSendingOperations {
         RecordOffset offset = new RecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
         record.addExtension(SourceWorker.CALLBACK_EXTENSION, workerCallback);
+        addSpringEnvironmentPropertyExtensions(record);
         queue.offer(record);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    private void addSpringEnvironmentPropertyExtensions(ConnectRecord connectRecord) {
+        ConfigurableApplicationContext context = (ConfigurableApplicationContext) applicationContext;
+        MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
+        for (PropertySource<?> propertySource : propertySources) {
+            if (!(propertySource instanceof OriginTrackedMapPropertySource)) {
+                continue;
+            }
+            OriginTrackedMapPropertySource originTrackedMapPropertySource =
+                (OriginTrackedMapPropertySource) propertySource;
+            String[] keys = originTrackedMapPropertySource.getPropertyNames();
+            for (String key : keys) {
+                if (!key.startsWith(CONNECTOR_PROPERTY_PREFIX)) {
+                    continue;
+                }
+                Object value = null;
+                try {
+                    value = originTrackedMapPropertySource.getProperty(key);
+                    if (value != null) {
+                        connectRecord.addExtension(key.replaceAll(CONNECTOR_PROPERTY_PREFIX, "").toLowerCase(),
+                            String.valueOf(value));
+                    }
+                } catch (Throwable e) {
+                    log.error("Put spring environment property to extension failed, key=[{}], value=[{}]", key, value);
+                }
+            }
+        }
     }
 }
