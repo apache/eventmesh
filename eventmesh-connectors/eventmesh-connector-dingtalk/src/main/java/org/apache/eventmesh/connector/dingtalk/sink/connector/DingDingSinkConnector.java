@@ -126,7 +126,7 @@ public class DingDingSinkConnector implements Sink {
                     new OrgGroupSendHeaders();
                 orgGroupSendHeaders.xAcsDingtalkAccessToken = accessToken;
 
-                String templateTypeKey = record.getExtension(ConnectRecordExtensionKeys.DINGDING_TEMPLATE_TYPE_KEY);
+                String templateTypeKey = record.getExtension(ConnectRecordExtensionKeys.DINGTALK_TEMPLATE_TYPE_KEY);
                 if (null == templateTypeKey || "null".equals(templateTypeKey)) {
                     templateTypeKey = DingDingMessageTemplateType.PLAIN_TEXT.getTemplateKey();
                 }
@@ -136,10 +136,10 @@ public class DingDingSinkConnector implements Sink {
                 if (DingDingMessageTemplateType.PLAIN_TEXT == templateType) {
                     contentMap.put("content", new String((byte[]) record.getData()));
                 } else if (DingDingMessageTemplateType.MARKDOWN == templateType) {
-                    String title = Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.DINGDING_MARKDOWN_MESSAGE_TITLE))
+                    String title = Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.DINGTALK_MARKDOWN_MESSAGE_TITLE))
                         .orElse("EventMesh-Message");
                     contentMap.put("title", title);
-                    contentMap.put("text", String.valueOf(record.getData()));
+                    contentMap.put("text", new String((byte[]) record.getData()));
                 }
 
                 OrgGroupSendRequest orgGroupSendRequest =

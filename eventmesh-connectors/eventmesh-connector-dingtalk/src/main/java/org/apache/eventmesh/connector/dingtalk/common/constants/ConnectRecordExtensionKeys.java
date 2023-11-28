@@ -22,7 +22,7 @@ package org.apache.eventmesh.connector.dingtalk.common.constants;
  */
 public interface ConnectRecordExtensionKeys {
 
-    String DINGDING_TEMPLATE_TYPE_KEY = "dingDingTemplateTypeKey";
+    String DINGTALK_TEMPLATE_TYPE_KEY = "dingtalktemplatetype";
 
-    String DINGDING_MARKDOWN_MESSAGE_TITLE = "dingDingMarkdownMessageTitle";
+    String DINGTALK_MARKDOWN_MESSAGE_TITLE = "dingtalkmarkdownmessagetitle";
 }
