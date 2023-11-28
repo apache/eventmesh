@@ -17,13 +17,13 @@
 
 pubSubConfig:
     meshAddress: 127.0.0.1:10000
-    subject: TEST-TOPIC-WECOM
+    subject: TEST-TOPIC-WECHAT
     idc: FT
     env: PRD
-    group: weComSink
+    group: weChatSink
     appId: 5034
-    userName: weComSinkUser
-    passWord: weComPassWord
+    userName: weChatSinkUser
+    passWord: weChatPassWord
 sinkConnectorConfig:
     connectorName: weChatSink
     appId: wx4f024195d7ca9be4
