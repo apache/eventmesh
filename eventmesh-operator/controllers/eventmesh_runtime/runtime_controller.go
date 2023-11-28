@@ -183,7 +183,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 		}
 	}
 	podList := &corev1.PodList{}
-	labelSelector := labels.SelectorFromSet(getLabels(eventMeshRuntime.Name))
+	labelSelector := labels.SelectorFromSet(getLabels())
 	listOps := &client.ListOptions{
 		Namespace:     eventMeshRuntime.Namespace,
 		LabelSelector: labelSelector,
@@ -253,7 +253,7 @@ func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshope
 	} else {
 		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-r-" + strconv.Itoa(replicaIndex)
 	}
-	label := getLabels(runtime.Name)
+	label := getLabels()
 	deployment := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      statefulSetName,
@@ -312,6 +312,6 @@ func getContainerSecurityContext(runtime *eventmeshoperatorv1.Runtime) *corev1.S
 	return &securityContext
 }
 
-func getLabels(name string) map[string]string {
-	return map[string]string{"app": "eventmesh-runtime", "runtime": name}
+func getLabels() map[string]string {
+	return map[string]string{"app": "eventmesh-runtime"}
 }

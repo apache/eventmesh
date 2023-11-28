@@ -144,7 +144,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 	}
 
 	podList := &corev1.PodList{}
-	labelSelector := labels.SelectorFromSet(labelsForController(connector.Name))
+	labelSelector := labels.SelectorFromSet(getLabels())
 	listOps := &client.ListOptions{
 		Namespace:     connector.Namespace,
 		LabelSelector: labelSelector,
@@ -195,7 +195,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 }
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
-	ls := labelsForController(connector.Name)
+	//ls := labelsForController(connector.Name)
 
 	var replica = int32(connector.Spec.Size)
 	connectorDep := &appsv1.StatefulSet{
@@ -207,14 +207,14 @@ func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperat
 			ServiceName: fmt.Sprintf("%s-service", connector.Name),
 			Replicas:    &replica,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: ls,
+				MatchLabels: getLabels(),
 			},
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: appsv1.RollingUpdateStatefulSetStrategyType,
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: ls,
+					Labels: getLabels(),
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: connector.Spec.ServiceAccountName,
@@ -249,8 +249,8 @@ func getConnectorContainerSecurityContext(connector *eventmeshoperatorv1.Connect
 	return &securityContext
 }
 
-func labelsForController(name string) map[string]string {
-	return map[string]string{"app": "connector", "eventmesh_connectors": name}
+func getLabels() map[string]string {
+	return map[string]string{"app": "eventmesh-connector"}
 }
 
 func getConnectorPodSecurityContext(connector *eventmeshoperatorv1.Connectors) *corev1.PodSecurityContext {

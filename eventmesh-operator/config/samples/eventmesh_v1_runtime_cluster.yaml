@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: runtime-cluster-service
+spec:
+  type: ClusterIP
+  clusterIP: 10.109.209.72
+  selector:
+    app: eventmesh-runtime
+  ports:
+    - name: tcp
+      port: 10000
+      targetPort: 10000
+      protocol: TCP
+---

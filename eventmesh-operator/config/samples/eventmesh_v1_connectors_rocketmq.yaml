@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: connector-rocketmq-config
+data:
+  server-config.yml: |
+    sourceEnable: true
+    sinkEnable: true
+  sink-config.yml: |
+    pubSubConfig:
+        meshAddress: 10.109.209.72:10000
+        subject: TopicTest
+        idc: FT
+        env: PRD
+        group: rocketmqSink
+        appId: 5031
+        userName: rocketmqSinkUser
+        passWord: rocketmqPassWord
+    connectorConfig:
+        connectorName: rocketmqSink
+        nameServer: 127.0.0.1:9876
+        topic: TopicTest
+  source-config.yml: |
+    pubSubConfig:
+        meshAddress: 10.109.209.72:10000
+        subject: TopicTest
+        idc: FT
+        env: PRD
+        group: rocketmqSource
+        appId: 5032
+        userName: rocketmqSourceUser
+        passWord: rocketmqPassWord
+    connectorConfig:
+        connectorName: rocketmqSource
+        nameserver: 127.0.0.1:9876
+        topic: TopicTest
+        commitOffsetIntervalMs: 5000
+    offsetStorageConfig:
+        offsetStorageType: nacos
+        offsetStorageAddr: 127.0.0.1:8848
+        extensions: {
+                        #same with topic
+                        dataId: TopicTest,
+                        #same with group
+                        group: rocketmqSource
+        }
+---
+
+apiVersion: eventmesh-operator.eventmesh/v1
+kind: Connectors
+metadata:
+  name: connector-rocketmq
+spec:
+  # size of connector-rocketmq
+  size: 1
+  # imagePullPolicy is the image pull policy
+  imagePullPolicy: Always
+  # define the connector-rocketmq container.
+  connectorContainers:
+    - name: connector-rocketmq
+      # connectorImage is the customized docker image repo of the EventMesh Connectors
+      image: alonexc/eventmesh-connectors:connector-rocketmq-1.9.0
+      # mount the configuration file to the container.
+      volumeMounts:
+        - mountPath: "/data/app/eventmesh-connector-rocketmq/conf"
+          name: connector-rocketmq-config
+  # configuration file settings to be mounted.
+  volumes:
+    - name: connector-rocketmq-config
+      configMap:
+        name: connector-rocketmq-config
+        items:
+          - key: server-config.yml
+            path: server-config.yml
+          - key: sink-config.yml
+            path: sink-config.yml
+          - key: source-config.yml
+            path: source-config.yml
