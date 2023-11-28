@@ -228,9 +228,9 @@ metadata:
   name: eventmesh-runtime
 spec:
   # size is the number of the runtime cluster
-  size: 2
+  size: 1
   # replicaPerGroup is the number of each runtime cluster
-  replicaPerGroup: 2
+  replicaPerGroup: 1
   # allowRestart defines whether allow pod restart
   allowRestart: true
 
