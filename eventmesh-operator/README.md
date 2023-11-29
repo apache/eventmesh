@@ -18,7 +18,19 @@ cd eventmesh-operator
 2. Install CRD into the specified k8s cluster.
 ```shell
 make install
+```
 
+If you get error eventmesh-operator/bin/controller-gen: No such file or directory  
+Run the following command:
+```shell
+# download controller-gen locally if necessary.
+make controller-gen
+# download kustomize locally if necessary.
+make kustomize
+```
+
+Success  
+```shell
 # run the following command to view crds information:
 kubectl get crds
 
