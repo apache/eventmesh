@@ -23,6 +23,8 @@ header:
     copyright-owner: Apache Software Foundation
 
   paths-ignore:
+    - 'eventmesh-operator/config/crd/bases'
+    - 'eventmesh-operator/config/rbac'
     - '.github/PULL_REQUEST_TEMPLATE'
     - '.gitmodules'
     - '**/.gitkeep'

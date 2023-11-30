@@ -97,9 +97,6 @@ jobs:
         uses: apache/skywalking-eyes@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        paths-ignore:
-          - 'eventmesh-operator/config/crd/bases'
-          - 'eventmesh-operator/config/rbac'
 
       - name: Check third party dependencies
         run: |
