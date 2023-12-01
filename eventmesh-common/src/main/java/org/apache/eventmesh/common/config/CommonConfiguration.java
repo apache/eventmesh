@@ -59,7 +59,7 @@ public class CommonConfiguration {
     private String metaStorageAddr = "";
 
     @ConfigFiled(field = "metaStorage.plugin.type", notEmpty = true)
-    private String eventMeshMetaStoragePluginType = "namesrv";
+    private String eventMeshMetaStoragePluginType = "nacos";
 
     @ConfigFiled(field = "metaStorage.plugin.username")
     private String eventMeshMetaStoragePluginUsername = "";
