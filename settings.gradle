@@ -48,6 +48,7 @@ include 'eventmesh-connectors:eventmesh-connector-dingtalk'
 include 'eventmesh-connectors:eventmesh-connector-feishu'
 include 'eventmesh-connectors:eventmesh-connector-wecom'
 include 'eventmesh-connectors:eventmesh-connector-slack'
+include 'eventmesh-connectors:eventmesh-connector-wechat'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
