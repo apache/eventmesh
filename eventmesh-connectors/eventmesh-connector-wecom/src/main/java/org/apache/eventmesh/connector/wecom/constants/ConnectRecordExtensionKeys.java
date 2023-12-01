@@ -22,6 +22,6 @@ package org.apache.eventmesh.connector.wecom.constants;
  */
 public interface ConnectRecordExtensionKeys {
 
-    String WECOM_MESSAGE_TEMPLATE_TYPE_KEY = "weCom:MessageTemplateTypeKey";
+    String WECOM_MESSAGE_TEMPLATE_TYPE = "wecomtemplatetype";
 
 }
