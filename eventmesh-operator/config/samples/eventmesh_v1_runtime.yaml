@@ -250,7 +250,7 @@ spec:
   replicaPerGroup: 1
   # allowRestart defines whether allow pod restart
   allowRestart: true
-
+  # define runtime pod template
   runtimePodTemplate:
     template:
       spec:

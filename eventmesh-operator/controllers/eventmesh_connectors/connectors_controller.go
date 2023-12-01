@@ -196,7 +196,6 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 }
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
-	//ls := labelsForController(connector.Name)
 
 	var replica = int32(connector.Spec.Size)
 	connectorDep := &appsv1.StatefulSet{

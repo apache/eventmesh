@@ -135,7 +135,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	for groupIndex := 0; groupIndex < GroupNum; groupIndex++ {
 		r.Logger.Info("Check eventMeshRuntime cluster " + strconv.Itoa(groupIndex+1) + "/" + strconv.Itoa(GroupNum))
 		runtimeDep := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
-		//r.Logger.Info(fmt.Sprintf("%s", runtimeDep))
+
 		// Check if the statefulSet already exists, if not create a new one
 		found := &appsv1.StatefulSet{}
 		err = r.Client.Get(context.TODO(), types.NamespacedName{
