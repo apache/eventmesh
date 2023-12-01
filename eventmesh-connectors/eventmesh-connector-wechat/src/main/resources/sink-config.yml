@@ -26,5 +26,5 @@ pubSubConfig:
     passWord: weChatPassWord
 sinkConnectorConfig:
     connectorName: weChatSink
-    appId: wx4f024195d7ca9be4
-    appSecret: 5ef866b34071fe1efc50b37feb44fba4
+    appId: weChatAppId
+    appSecret: weChatAppSecret
