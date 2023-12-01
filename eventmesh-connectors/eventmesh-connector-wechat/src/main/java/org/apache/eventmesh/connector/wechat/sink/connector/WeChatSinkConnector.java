@@ -25,6 +25,8 @@ import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -142,13 +144,14 @@ public class WeChatSinkConnector implements Sink {
         // get access token
         String accessToken = getAccessToken();
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create((String) record.getData(), mediaType);
+        RequestBody body = RequestBody.create(new String((byte[]) record.getData()), mediaType);
         Request request = new Request.Builder()
             .url(String.format(MESSAGE_SEND_URL, accessToken))
-            .method("POST", body)
+            .post(body)
             .build();
         try (Response response = okHttpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
+                log.error("server response: {}", ToStringBuilder.reflectionToString(response));
                 throw new IOException("Unexpected code " + response);
             }
 
@@ -157,9 +160,10 @@ public class WeChatSinkConnector implements Sink {
                 throw new IOException("Response body is null.");
             }
 
-            TemplateMessageResponse messageResponse = JsonUtils.parseObject(responseBody.string(), TemplateMessageResponse.class);
+            String jsonStr = responseBody.string();
+            TemplateMessageResponse messageResponse = JsonUtils.parseObject(jsonStr, TemplateMessageResponse.class);
             if (messageResponse == null) {
-                throw new IOException("Response body is null.");
+                throw new IOException("message response is null.");
             }
 
             if (messageResponse.getErrocode() != 0) {
@@ -177,16 +181,18 @@ public class WeChatSinkConnector implements Sink {
                 Request tokenRequest = new Request.Builder()
                     .url(String.format(ACCESS_TOKEN_URL, sinkConfig.getSinkConnectorConfig().getAppId(),
                         sinkConfig.getSinkConnectorConfig().getAppSecret()))
+                    .get()
                     .build();
                 String accessToken;
                 try (Response response = okHttpClient.newCall(tokenRequest).execute()) {
                     if (!response.isSuccessful()) {
+                        log.error("server response: {}", ToStringBuilder.reflectionToString(response));
                         throw new IOException("Unexpected code " + response);
                     }
 
                     String json = Objects.requireNonNull(response.body()).string();
                     JSONObject jsonObject = JSON.parseObject(json);
-                    accessToken = Objects.requireNonNull(jsonObject).getString("access_token");
+                    accessToken = Objects.requireNonNull(jsonObject).getString(ACCESS_TOKEN_CACHE_KEY);
                     ACCESS_TOKEN_CACHE.put(ACCESS_TOKEN_CACHE_KEY, accessToken);
                 }
 
