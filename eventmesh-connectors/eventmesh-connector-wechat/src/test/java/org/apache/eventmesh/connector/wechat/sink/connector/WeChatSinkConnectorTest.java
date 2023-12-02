@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import org.apache.eventmesh.connector.wechat.sink.config.WeChatSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
@@ -32,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -118,6 +120,11 @@ public class WeChatSinkConnectorTest {
 
         weChatSinkConnector.put(records);
         verify(okHttpClient, times(times + 1)).newCall(any(Request.class));
+    }
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        weChatSinkConnector.stop();
     }
 
 }
