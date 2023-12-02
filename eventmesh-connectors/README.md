@@ -30,8 +30,8 @@ Add a new connector by implementing the source/sink interface using :
 |     [Dingtalk](eventmesh-connector-dingtalk)     |    Sink     |    ✅    |
 |                      Email                       |   Source    |    ⬜    |
 |                      Email                       |    Sink     |    ⬜    |
-|                      FeiShu                      |   Source    |    ⬜    |
-|       [FeiShu](eventmesh-connector-feishu)       |    Sink     |    ✅    |
+|                      Lark                        |   Source    |    ⬜    |
+|         [Lark](eventmesh-connector-lark)         |    Sink     |    ✅    |
 |         [File](eventmesh-connector-file)         |   Source    |    ✅    |
 |         [File](eventmesh-connector-file)         |    Sink     |    ✅    |
 |                      Github                      |   Source    |    ⬜    |
