@@ -144,7 +144,7 @@ public class WeChatSinkConnector implements Sink {
         // get access token
         String accessToken = getAccessToken();
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(new String((byte[]) record.getData()), mediaType);
+        RequestBody body = RequestBody.create(mediaType, new String((byte[]) record.getData()));
         Request request = new Request.Builder()
             .url(String.format(MESSAGE_SEND_URL, accessToken))
             .post(body)

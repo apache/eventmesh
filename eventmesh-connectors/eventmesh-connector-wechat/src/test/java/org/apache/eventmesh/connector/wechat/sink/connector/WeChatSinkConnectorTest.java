@@ -21,17 +21,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import okhttp3.Call;
-import okhttp3.MediaType;
-import okhttp3.Protocol;
 import org.apache.eventmesh.connector.wechat.sink.config.WeChatSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,12 +42,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import okhttp3.Call;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import java.lang.reflect.Field;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -60,12 +62,9 @@ public class WeChatSinkConnectorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        weChatSinkConnector = new WeChatSinkConnector();
-        WeChatSinkConfig weChatSinkConfig = (WeChatSinkConfig) ConfigUtil.parse(weChatSinkConnector.configClass());
-
         Request tokenRequest = new Request.Builder().url("https://api.weixin.qq.com/cgi-bin/token").build();
         String tokenResponseJson = "{\"access_token\":\"ACCESS_TOKEN\",\"expires_in\":7200}";
-        ResponseBody responseBody = ResponseBody.create(tokenResponseJson, MediaType.parse("application/json; charset=utf-8"));
+        ResponseBody responseBody = ResponseBody.create(MediaType.parse("application/json; charset=utf-8"), tokenResponseJson);
         Response tokenResponse = new Response.Builder()
             .request(tokenRequest)
             .protocol(Protocol.HTTP_1_0)
@@ -80,7 +79,7 @@ public class WeChatSinkConnectorTest {
 
         Request sendMessageRequest = new Request.Builder().url("https://api.weixin.qq.com/cgi-bin/message/template/send").build();
         String sendMessageResponseJson = "{\"errcode\":0,\"errmsg\":\"ok\",\"msgid\":200228332}";
-        ResponseBody sendMessageBody = ResponseBody.create(sendMessageResponseJson, MediaType.parse("application/json; charset=utf-8"));
+        ResponseBody sendMessageBody = ResponseBody.create(MediaType.parse("application/json; charset=utf-8"), sendMessageResponseJson);
         Response sendMessageResponse = new Response.Builder()
             .code(200)
             .protocol(Protocol.HTTP_1_0)
@@ -88,11 +87,14 @@ public class WeChatSinkConnectorTest {
             .body(sendMessageBody)
             .message("ok")
             .build();
-        ArgumentMatcher<Request> sendMessageMatcher = (anyRequest) -> sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
+        ArgumentMatcher<Request> sendMessageMatcher = (anyRequest) ->
+            sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
         Call sendMessageRequestCall = Mockito.mock(Call.class);
         Mockito.doReturn(sendMessageRequestCall).when(okHttpClient).newCall(Mockito.argThat(sendMessageMatcher));
         Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();
 
+        weChatSinkConnector = new WeChatSinkConnector();
+        WeChatSinkConfig weChatSinkConfig = (WeChatSinkConfig) ConfigUtil.parse(weChatSinkConnector.configClass());
         weChatSinkConnector.init(weChatSinkConfig);
         Field clientField = ReflectionSupport.findFields(weChatSinkConnector.getClass(),
             (f) -> f.getName().equals("okHttpClient"),
