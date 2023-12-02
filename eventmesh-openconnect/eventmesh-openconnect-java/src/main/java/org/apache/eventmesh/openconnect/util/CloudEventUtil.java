@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -33,32 +34,31 @@ import lombok.extern.slf4j.Slf4j;
 public class CloudEventUtil {
 
     public static CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
-        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-            .withData((byte[]) connectRecord.getData());
-        connectRecord.getExtensions().keySet().forEach(s -> {
-            switch (s) {
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withData((byte[]) connectRecord.getData());
+        Optional.ofNullable(connectRecord.getExtensions()).ifPresent((extensions) -> extensions.keySet().forEach(key -> {
+            switch (key) {
                 case "id":
-                    cloudEventBuilder.withId(connectRecord.getExtension(s));
+                    cloudEventBuilder.withId(connectRecord.getExtension(key));
                     break;
                 case "topic":
-                    cloudEventBuilder.withSubject(connectRecord.getExtension(s));
+                    cloudEventBuilder.withSubject(connectRecord.getExtension(key));
                     break;
                 case "source":
                     try {
-                        cloudEventBuilder.withSource(new URI(connectRecord.getExtension(s)));
+                        cloudEventBuilder.withSource(new URI(connectRecord.getExtension(key)));
                     } catch (URISyntaxException e) {
                         throw new RuntimeException(e);
                     }
                     break;
                 case "type":
-                    cloudEventBuilder.withType(connectRecord.getExtension(s));
+                    cloudEventBuilder.withType(connectRecord.getExtension(key));
                     break;
                 default:
-                    if (validateExtensionType(connectRecord.getExtensionObj(s))) {
-                        cloudEventBuilder.withExtension(s, connectRecord.getExtension(s));
+                    if (validateExtensionType(connectRecord.getExtensionObj(key))) {
+                        cloudEventBuilder.withExtension(key, connectRecord.getExtension(key));
                     }
             }
-        });
+        }));
         return cloudEventBuilder.build();
     }
 
