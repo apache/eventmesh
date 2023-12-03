@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.lark.sink.config;
 
+import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
+
 import lombok.Data;
 
 @Data
@@ -28,19 +30,30 @@ public class SinkConnectorConfig {
 
     private String appSecret;
 
-    private String tenantAccessToken;
-
     /**
-     * open_id or user_id or union_id or email or chat_id.
-     * recommend to use open_id
+     * The value is {@code open_id/user_id/union_id/email/chat_id} <br>
+     * Recommend to use open_id
      */
     private String receiveIdType = "open_id";
 
     private String receiveId;
 
+    private String atUsers;
+
+    private String atAll = "false";
+
     private String maxRetryTimes = "3";
 
-    private String retryDelayInMills = "500";
+    private String retryDelayInMills = "1000";
 
-
+    public void validateReceiveIdType() {
+        if (ReceiveIdTypeEnum.CHAT_ID.getValue().equals(receiveIdType)
+                || ReceiveIdTypeEnum.EMAIL.getValue().equals(receiveIdType)
+                || ReceiveIdTypeEnum.OPEN_ID.getValue().equals(receiveIdType)
+                || ReceiveIdTypeEnum.USER_ID.getValue().equals(receiveIdType)
+                || ReceiveIdTypeEnum.UNION_ID.getValue().equals(receiveIdType)) {
+            return;
+        }
+        throw new IllegalArgumentException(String.format("sinkConnectorConfig.receiveIdType=[%s] Invalid", receiveIdType));
+    }
 }

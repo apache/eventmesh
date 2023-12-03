@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.lark.sink.connector;
 
+import org.apache.eventmesh.connector.lark.sink.ImServiceWrapper;
 import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
 import org.apache.eventmesh.connector.lark.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
@@ -25,44 +26,42 @@ import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.github.rholder.retry.Attempt;
 import com.github.rholder.retry.RetryException;
-import com.github.rholder.retry.RetryListener;
-import com.github.rholder.retry.Retryer;
-import com.github.rholder.retry.RetryerBuilder;
-import com.github.rholder.retry.StopStrategies;
-import com.github.rholder.retry.WaitStrategies;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.lark.oapi.Client;
-import com.lark.oapi.core.request.RequestOptions;
-import com.lark.oapi.core.utils.Jsons;
-import com.lark.oapi.core.utils.Lists;
-import com.lark.oapi.service.im.v1.ImService;
-import com.lark.oapi.service.im.v1.enums.MsgTypeEnum;
-import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
-import com.lark.oapi.service.im.v1.model.CreateMessageReq;
-import com.lark.oapi.service.im.v1.model.CreateMessageReqBody;
-import com.lark.oapi.service.im.v1.model.CreateMessageResp;
-import com.lark.oapi.service.im.v1.model.ext.MessageText;
+import com.lark.oapi.core.enums.AppType;
+import com.lark.oapi.core.request.SelfBuiltTenantAccessTokenReq;
+import com.lark.oapi.core.response.TenantAccessTokenResp;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LarkSinkConnector implements Sink {
 
+    public static final String TENANT_ACCESS_TOKEN = "tenant_access_token";
+
+    /**
+     * replace lark build-in tokenCache
+     */
+    public static final Cache<String, String> AUTH_CACHE = CacheBuilder.newBuilder()
+            .initialCapacity(12)
+            .maximumSize(10)
+            .concurrencyLevel(5)
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .build();
+
     private LarkSinkConfig sinkConfig;
 
-    private ImService imService;
+    private ImServiceWrapper imServiceWrapper;
 
-    // todo maybe can set whether retry
-    private Retryer<Boolean> retryer;
+
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -73,7 +72,7 @@ public class LarkSinkConnector implements Sink {
 
     @Override
     public void init(Config config) {
-        // todo Will be removed in the next version.see(https://github.com/apache/eventmesh/issues/4565#issuecomment-1817901972)
+        // Deprecated
     }
 
     @Override
@@ -83,23 +82,10 @@ public class LarkSinkConnector implements Sink {
         this.sinkConfig = (LarkSinkConfig) sinkConnectorContext.getSinkConfig();
 
         SinkConnectorConfig sinkConnectorConfig = sinkConfig.getSinkConnectorConfig();
-        this.imService = Client.newBuilder(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret())
-                .requestTimeout(3, TimeUnit.SECONDS).build().im();
+        sinkConnectorConfig.validateReceiveIdType();
 
-        long fixedWait = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
-        int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes());
-        retryer = RetryerBuilder.<Boolean>newBuilder()
-                .retryIfException()
-                .retryIfResult(Boolean.FALSE::equals)
-                .withWaitStrategy(WaitStrategies.fixedWait(fixedWait, TimeUnit.MILLISECONDS))
-                .withStopStrategy(StopStrategies.stopAfterAttempt(maxRetryTimes))
-                .withRetryListener(new RetryListener() {
-                    @Override
-                    public <V> void onRetry(Attempt<V> attempt) {
-                        log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber());
-                    }
-                })
-                .build();
+        imServiceWrapper = new ImServiceWrapper(sinkConnectorConfig);
+
     }
 
     @Override
@@ -111,7 +97,7 @@ public class LarkSinkConnector implements Sink {
 
     @Override
     public void commit(ConnectRecord record) {
-
+        // Sink does not need to implement
     }
 
     @Override
@@ -126,57 +112,32 @@ public class LarkSinkConnector implements Sink {
         }
     }
 
-    /**
-     * require the ConnectRecord#data actually type is byte array, and use UTF-8
-     * @param sinkRecords
-     */
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
-        Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", Lists.newArrayList("application/json; charset=utf-8"));
-        RequestOptions requestOptions = RequestOptions.newBuilder()
-                .tenantAccessToken(sinkConfig.getSinkConnectorConfig().getTenantAccessToken())
-                .headers(headers)
-                .build();
-
         for (ConnectRecord connectRecord : sinkRecords) {
             try {
-                retryer.call(() -> {
-
-                    CreateMessageResp resp = imService.message().create(convert(connectRecord), requestOptions);
-                    if (resp.getCode() != 0) {
-                        log.warn("Sinking event to lark failure | code:[{}] | msg:[{}] | err:[{}]", resp.getCode(), resp.getMsg(), resp.getError());
-                        return false;
-                    }
-
-                    log.info("{}", Jsons.DEFAULT.toJson(resp.getData()));
-
-                    log.info("{}", Jsons.DEFAULT.toJson(resp.getRawResponse()));
-
-                    log.info("{}", resp.getRequestId());
-
-                    return true;
-                });
+                imServiceWrapper.sink(connectRecord);
             } catch (ExecutionException | RetryException e) {
                 log.error("Failed to sink event to lark", e);
             }
         }
     }
 
-    private CreateMessageReq convert(ConnectRecord connectRecord) {
-        return CreateMessageReq.newBuilder()
-                // todo whether could support more receive type
-                .receiveIdType(ReceiveIdTypeEnum.OPEN_ID.getValue())
-                .createMessageReqBody(
-                        CreateMessageReqBody.newBuilder()
-                                .receiveId(sinkConfig.getSinkConnectorConfig().getReceiveId())
-                                // todo whether could support more msg type
-                                .msgType(MsgTypeEnum.MSG_TYPE_TEXT.getValue())
-                                .content(MessageText.newBuilder().text(new String((byte[]) connectRecord.getData())).build())
-                                // todo watch out retry message with uuid related
-                                .uuid(UUID.randomUUID().toString())
-                                .build()
-                )
-                .build();
+    @SneakyThrows
+    public static String getTenantAccessToken(String appId, String appSecret) {
+        return AUTH_CACHE.get(TENANT_ACCESS_TOKEN, () -> {
+
+            Client client = Client.newBuilder(appId, appSecret)
+                    .appType(AppType.SELF_BUILT)
+                    .logReqAtDebug(true)
+                    .build();
+
+            TenantAccessTokenResp resp = client.ext().getTenantAccessTokenBySelfBuiltApp(
+                    SelfBuiltTenantAccessTokenReq.newBuilder()
+                            .appSecret(appSecret)
+                            .appId(appId)
+                            .build());
+            return resp.getTenantAccessToken();
+        });
     }
 }
