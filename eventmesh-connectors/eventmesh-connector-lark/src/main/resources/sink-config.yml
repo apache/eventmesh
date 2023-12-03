@@ -31,3 +31,4 @@ sinkConnectorConfig:
   receiveIdType: open_id
   receiveId: receiveId
   maxRetryTimes: 3
+  retryDelayInMills: 1000

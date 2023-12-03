@@ -15,71 +15,64 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.lark;
+package org.apache.eventmesh.connector.lark.sink;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.lark.oapi.Client;
-import com.lark.oapi.service.im.v1.ImService;
-import com.lark.oapi.service.im.v1.model.CreateMessageReq;
-import com.lark.oapi.service.im.v1.model.CreateMessageResp;
 import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
 import org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class LarkSinkConnectorTest {
 
-    @InjectMocks
     private LarkSinkConnector larkSinkConnector;
 
-    @InjectMocks
-    private ImService imService;
-
+    /**
+     * more test see {@link ImServiceWrapperTest}
+     */
     @Mock
-    private ImService.Message message;
+    private ImServiceWrapper imServiceWrapper;
 
+    private MockedStatic<ImServiceWrapper> imServiceWrapperMockedStatic;
 
     @BeforeEach
     public void setup() throws Exception {
-        // todo imService and retryer mock
-        Mockito.when(message.create(any(CreateMessageReq.class))).thenReturn(new CreateMessageResp());
-        LarkSinkConfig larkConnectServerConfig = (LarkSinkConfig) ConfigUtil.parse(larkSinkConnector.configClass());
+        imServiceWrapperMockedStatic = mockStatic(ImServiceWrapper.class);
+        when(ImServiceWrapper.createImServiceWrapper(any())).thenReturn(imServiceWrapper);
+        doNothing().when(imServiceWrapper).sink(any(ConnectRecord.class));
 
-        /*message = Client.newBuilder(larkConnectServerConfig.getSinkConnectorConfig().getAppId(),
-                        larkConnectServerConfig.getSinkConnectorConfig().getAppSecret())
-                .requestTimeout(3, TimeUnit.SECONDS).build().im();*/
-
+        larkSinkConnector = new LarkSinkConnector();
+        LarkSinkConfig sinkConfig = (LarkSinkConfig) ConfigUtil.parse(larkSinkConnector.configClass());
         SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
-        sinkConnectorContext.setSinkConfig(larkConnectServerConfig);
+        sinkConnectorContext.setSinkConfig(sinkConfig);
         larkSinkConnector.init(sinkConnectorContext);
-
         larkSinkConnector.start();
     }
 
     @Test
-    public void testRegularSink() throws Exception {
+    public void testPut() throws Exception {
         final int times = 3;
         List<ConnectRecord> connectRecords = new ArrayList<>();
         for (int i = 0; i < times; i++) {
@@ -91,30 +84,13 @@ public class LarkSinkConnectorTest {
         }
         larkSinkConnector.put(connectRecords);
 
-        verify(message, times(times)).create(any(CreateMessageReq.class));
-
-    }
-
-    @Test
-    public void testRetrySink() throws Exception {
-        final int times = 3;
-        List<ConnectRecord> connectRecords = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                    System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
-            connectRecords.add(connectRecord);
-        }
-        larkSinkConnector.put(connectRecords);
-
-        verify(message, times(times)).create(any(CreateMessageReq.class));
-
+        verify(imServiceWrapper, times(times)).sink(any(ConnectRecord.class));
     }
 
     @AfterEach
     public void tearDown() {
+        LarkSinkConnector.AUTH_CACHE.invalidate(LarkSinkConnector.TENANT_ACCESS_TOKEN);
         larkSinkConnector.stop();
+        imServiceWrapperMockedStatic.close();
     }
-
 }

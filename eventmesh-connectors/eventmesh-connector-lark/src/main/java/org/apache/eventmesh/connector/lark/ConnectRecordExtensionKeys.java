@@ -28,9 +28,9 @@ public interface ConnectRecordExtensionKeys {
     String LARK_TEMPLATE_TYPE = "larktemplatetype";
 
     /**
-     * The value format is {@code id,name;id,name;}. <br>
-     * Recommend to use {@code open_id} as {@code id}. <br>
-     * Make sure the {@code id} is a valid value, otherwise display {@code name} and without"@"result.
+     * The value format is {@code id,name;id,name;}. <br/>
+     * Recommend to use {@code open_id} as {@code id}. <br/>
+     * To prevent bad situations, you should ensure that the {@code id} is valid
      */
     String LARK_AT_USERS = "larkatusers";
 

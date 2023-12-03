@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.lark.sink.connector;
 
+import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.createImServiceWrapper;
+
 import org.apache.eventmesh.connector.lark.sink.ImServiceWrapper;
 import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
 import org.apache.eventmesh.connector.lark.sink.config.SinkConnectorConfig;
@@ -42,6 +44,7 @@ import com.lark.oapi.core.response.TenantAccessTokenResp;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 public class LarkSinkConnector implements Sink {
 
@@ -60,8 +63,6 @@ public class LarkSinkConnector implements Sink {
     private LarkSinkConfig sinkConfig;
 
     private ImServiceWrapper imServiceWrapper;
-
-
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -82,10 +83,9 @@ public class LarkSinkConnector implements Sink {
         this.sinkConfig = (LarkSinkConfig) sinkConnectorContext.getSinkConfig();
 
         SinkConnectorConfig sinkConnectorConfig = sinkConfig.getSinkConnectorConfig();
-        sinkConnectorConfig.validateReceiveIdType();
+        sinkConnectorConfig.validateSinkConfiguration();
 
-        imServiceWrapper = new ImServiceWrapper(sinkConnectorConfig);
-
+        imServiceWrapper = createImServiceWrapper(sinkConnectorConfig);
     }
 
     @Override

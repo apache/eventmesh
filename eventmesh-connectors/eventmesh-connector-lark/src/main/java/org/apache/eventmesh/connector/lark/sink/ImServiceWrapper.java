@@ -51,8 +51,10 @@ import com.lark.oapi.card.model.MessageCardElement;
 import com.lark.oapi.card.model.MessageCardHeader;
 import com.lark.oapi.card.model.MessageCardMarkdown;
 import com.lark.oapi.card.model.MessageCardPlainText;
+import com.lark.oapi.core.httpclient.OkHttpTransport;
 import com.lark.oapi.core.request.RequestOptions;
 import com.lark.oapi.core.utils.Lists;
+import com.lark.oapi.okhttp.OkHttpClient;
 import com.lark.oapi.service.im.v1.ImService;
 import com.lark.oapi.service.im.v1.enums.MsgTypeEnum;
 import com.lark.oapi.service.im.v1.model.CreateMessageReq;
@@ -60,62 +62,67 @@ import com.lark.oapi.service.im.v1.model.CreateMessageReqBody;
 import com.lark.oapi.service.im.v1.model.CreateMessageResp;
 import com.lark.oapi.service.im.v1.model.ext.MessageText;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ImServiceWrapper {
 
-    private final SinkConnectorConfig sinkConnectorConfig;
-
-    private final ImService imService;
-
-    private final RequestOptions requestOptions;
-
     private static final ConcurrentHashMap<ConnectRecord, CreateMessageReq> UN_ACK_REQ = new ConcurrentHashMap<>();
 
-    /**
-     * todo Currently only single thread, maybe need to enhance.
-     */
-    private final Retryer<ConnectRecord> retryer;
+    private SinkConnectorConfig sinkConnectorConfig;
 
-    public ImServiceWrapper(SinkConnectorConfig sinkConnectorConfig) {
-        this.sinkConnectorConfig = sinkConnectorConfig;
-        this.imService = Client.newBuilder(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret())
+    private ImService imService;
+
+    private RequestOptions requestOptions;
+
+    private Retryer<ConnectRecord> retryer;
+
+    public ImServiceWrapper() {}
+
+    public static ImServiceWrapper createImServiceWrapper(SinkConnectorConfig sinkConnectorConfig) {
+        ImServiceWrapper imServiceWrapper = new ImServiceWrapper();
+        imServiceWrapper.sinkConnectorConfig = sinkConnectorConfig;
+        imServiceWrapper.imService = Client.newBuilder(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret())
+                .httpTransport(new OkHttpTransport(new OkHttpClient().newBuilder()
+                        .callTimeout(3L, TimeUnit.SECONDS)
+                        .build())
+                )
                 .disableTokenCache()
-                .requestTimeout(3, TimeUnit.SECONDS).build().im();
+                .requestTimeout(3, TimeUnit.SECONDS)
+                .build()
+                .im();
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Content-Type", Lists.newArrayList("application/json; charset=utf-8"));
 
-        requestOptions = RequestOptions.newBuilder()
+        imServiceWrapper.requestOptions = RequestOptions.newBuilder()
                 .tenantAccessToken(getTenantAccessToken(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret()))
                 .headers(headers)
                 .build();
 
         long fixedWait = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
         int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes()) + 1;
-        retryer = RetryerBuilder.<ConnectRecord>newBuilder()
+        imServiceWrapper.retryer = RetryerBuilder.<ConnectRecord>newBuilder()
                 .retryIfException()
                 .retryIfResult(Objects::nonNull)
                 .withWaitStrategy(WaitStrategies.fixedWait(fixedWait, TimeUnit.MILLISECONDS))
                 .withStopStrategy(StopStrategies.stopAfterAttempt(maxRetryTimes))
                 .withRetryListener(new RetryListener() {
+                    @SneakyThrows
                     @Override
                     public <V> void onRetry(Attempt<V> attempt) {
-                        try {
-                            long times = attempt.getAttemptNumber();
-                            if (times > 1) {
-                                log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber() - 1);
-                            }
-                            if (times == maxRetryTimes) {
-                                UN_ACK_REQ.remove(attempt.get());
-                            }
-                        } catch (ExecutionException e) {
-                            throw new RuntimeException(e);
+                        long times = attempt.getAttemptNumber();
+                        if (times > 1) {
+                            log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber() - 1);
+                        }
+                        if (times == maxRetryTimes) {
+                            UN_ACK_REQ.remove(attempt.get());
                         }
                     }
                 })
                 .build();
+        return imServiceWrapper;
     }
 
     public void sink(ConnectRecord connectRecord) throws ExecutionException, RetryException {
@@ -187,7 +194,7 @@ public class ImServiceWrapper {
 
             for (String user : users) {
                 String[] kv = user.split(",");
-                atUser(sb, kv[0], kv[1]);
+                atUser(sb, kv[0]);
             }
         }
         sb.append(new String((byte[]) connectRecord.getData()));
@@ -237,6 +244,7 @@ public class ImServiceWrapper {
 
     /**
      * For markdown template type.
+     *
      * @param sb StringBuilder
      */
     private void atAll(StringBuilder sb) {
@@ -246,11 +254,11 @@ public class ImServiceWrapper {
 
     /**
      * For markdown template type
-     * @param sb StringBuilder
+     *
+     * @param sb     StringBuilder
      * @param userId open_id/union_id/user_id, recommend to use open_id. Custom robots can only be used open_id,
-     * @param name If userId invalid, display name
      */
-    private void atUser(StringBuilder sb, String userId, String name) {
+    private void atUser(StringBuilder sb, String userId) {
         sb.append("<at id=")
                 .append(userId)
                 .append(">")

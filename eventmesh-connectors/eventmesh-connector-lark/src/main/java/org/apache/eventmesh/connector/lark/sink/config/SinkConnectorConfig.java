@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.lark.sink.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
 
 import lombok.Data;
@@ -26,8 +28,14 @@ public class SinkConnectorConfig {
 
     private String connectorName = "larkSink";
 
+    /**
+     * Can not be blank
+     */
     private String appId;
 
+    /**
+     * Can not be blank
+     */
     private String appSecret;
 
     /**
@@ -36,24 +44,29 @@ public class SinkConnectorConfig {
      */
     private String receiveIdType = "open_id";
 
+    /**
+     * Can not be blank.And it needs to correspond to {@code receiveIdType}
+     */
     private String receiveId;
-
-    private String atUsers;
-
-    private String atAll = "false";
 
     private String maxRetryTimes = "3";
 
     private String retryDelayInMills = "1000";
 
-    public void validateReceiveIdType() {
-        if (ReceiveIdTypeEnum.CHAT_ID.getValue().equals(receiveIdType)
-                || ReceiveIdTypeEnum.EMAIL.getValue().equals(receiveIdType)
-                || ReceiveIdTypeEnum.OPEN_ID.getValue().equals(receiveIdType)
-                || ReceiveIdTypeEnum.USER_ID.getValue().equals(receiveIdType)
-                || ReceiveIdTypeEnum.UNION_ID.getValue().equals(receiveIdType)) {
-            return;
+    public void validateSinkConfiguration() {
+        // validate blank
+        if (StringUtils.isAnyBlank(appId, appSecret, receiveId)) {
+            throw new IllegalArgumentException("appId or appSecret or receiveId is blank,please check it.");
         }
-        throw new IllegalArgumentException(String.format("sinkConnectorConfig.receiveIdType=[%s] Invalid", receiveIdType));
+
+        // validate receiveIdType
+        if (!StringUtils.containsAny(receiveIdType, ReceiveIdTypeEnum.CHAT_ID.getValue(),
+                ReceiveIdTypeEnum.EMAIL.getValue(),
+                ReceiveIdTypeEnum.OPEN_ID.getValue(),
+                ReceiveIdTypeEnum.USER_ID.getValue(),
+                ReceiveIdTypeEnum.UNION_ID.getValue())) {
+            throw new IllegalArgumentException(
+                    String.format("sinkConnectorConfig.receiveIdType=[%s], Invalid.", receiveIdType));
+        }
     }
 }

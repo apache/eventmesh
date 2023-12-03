@@ -26,10 +26,9 @@ pubSubConfig:
   passWord: larkPassWord
 sinkConnectorConfig:
   connectorName: larkSink
-  appId: larkAppId
-  appSecret: larkSecret
-  tenantAccessToken: t-xxxxxxxxxxxxx
+  appId: appId
+  appSecret: appSecret
   receiveIdType: open_id
-  receiveId: ou_7d8a6e6df7621556ce0d21922b676706ccs
+  receiveId: receiveId
   maxRetryTimes: 3
-  retryDelayInMills: 500
+  retryDelayInMills: 1000
