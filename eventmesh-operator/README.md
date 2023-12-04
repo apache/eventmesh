@@ -18,6 +18,9 @@ cd eventmesh-operator
 2. Install CRD into the specified k8s cluster.
 ```shell
 make install
+
+# Uninstall CRDs from the K8s cluster
+make uninstall
 ```
 
 If you get error eventmesh-operator/bin/controller-gen: No such file or directory  
@@ -44,7 +47,7 @@ runtimes.eventmesh-operator.eventmesh     2023-11-28T01:35:21Z
    When deleting CR, simply replace create with delete.  
 ```shell
 # Create CR for eventmesh-runtime、eventmesh-connector-rocketmq,Creating a clusterIP lets eventmesh-runtime communicate with other components.
-make deploy
+make create
 
 #success:
 configmap/runtime-config created
@@ -59,7 +62,7 @@ NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     
 runtime-cluster-service   ClusterIP   10.109.209.72   <none>        10000/TCP   17s
 
 # Delete CR
-make uninstall
+make delete
 ```
 
 4. Run eventmesh-operator create pods
