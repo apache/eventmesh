@@ -43,26 +43,23 @@ runtimes.eventmesh-operator.eventmesh     2023-11-28T01:35:21Z
    Custom resource objects are located at: /config/samples    
    When deleting CR, simply replace create with delete.  
 ```shell
-# Create CR for eventmesh-runtime.
-kubectl create -f config/samples/eventmesh_v1_runtime.yaml
-# successful:
+# Create CR for eventmesh-runtime、eventmesh-connector-rocketmq,Creating a clusterIP lets eventmesh-runtime communicate with other components.
+make deploy
+
+#success:
 configmap/runtime-config created
 runtime.eventmesh-operator.eventmesh/eventmesh-runtime created
-
-# Create CR for eventmesh-connector-rocketmq
-kubectl create -f config/samples/eventmesh_v1_connectors_rocketmq.yaml
-# successful:
+service/runtime-cluster-service created
 configmap/connector-rocketmq-config created
 connectors.eventmesh-operator.eventmesh/connector-rocketmq created
 
-# Creating a clusterIP lets eventmesh-runtime communicate with other components.
-kubectl create -f config/samples/eventmesh_v1_runtime_cluster.yaml
-# successful: 
-service/runtime-cluster-service created
 # View the created Service.
 kubectl get service
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 runtime-cluster-service   ClusterIP   10.109.209.72   <none>        10000/TCP   17s
+
+# Delete CR
+make uninstall
 ```
 
 4. Run eventmesh-operator create pods

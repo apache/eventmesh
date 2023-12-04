@@ -25,7 +25,7 @@ data:
     sinkEnable: true
   sink-config.yml: |
     pubSubConfig:
-        meshAddress: 10.109.209.72:10000
+        meshAddress: runtime-cluster-service:10000
         subject: TopicTest
         idc: FT
         env: PRD
@@ -39,7 +39,7 @@ data:
         topic: TopicTest
   source-config.yml: |
     pubSubConfig:
-        meshAddress: 10.109.209.72:10000
+        meshAddress: runtime-cluster-service:10000
         subject: TopicTest
         idc: FT
         env: PRD

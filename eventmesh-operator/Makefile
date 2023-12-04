@@ -172,8 +172,8 @@ endif
 
 .PHONY: install
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	kubectl apply -f config/crd/bases/eventmesh-operator.eventmesh_runtimes.yaml
-	kubectl apply -f config/crd/bases/eventmesh-operator.eventmesh_connectors.yaml
+	kubectl create -f config/crd/bases/eventmesh-operator.eventmesh_runtimes.yaml
+	kubectl create -f config/crd/bases/eventmesh-operator.eventmesh_connectors.yaml
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
@@ -182,12 +182,18 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	kubectl create -f config/samples/eventmesh_v1_runtime.yaml
+	kubectl create -f config/samples/eventmesh_v1_runtime_cluster.yaml
+	kubectl create -f config/samples/eventmesh_v1_connectors_rocketmq.yaml
+#	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+#	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f config/samples/eventmesh_v1_runtime.yaml
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f config/samples/eventmesh_v1_runtime_cluster.yaml
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f config/samples/eventmesh_v1_connectors_rocketmq.yaml
+#	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Build Dependencies
 
