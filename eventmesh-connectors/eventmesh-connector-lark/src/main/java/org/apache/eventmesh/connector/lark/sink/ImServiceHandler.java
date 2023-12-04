@@ -205,14 +205,6 @@ public class ImServiceHandler {
                 .updateMulti(true)
                 .build();
 
-        // cardUrl, Only in need of PC, mobile side jump different links to use
-        /*MessageCardURL cardURL = MessageCardURL.newBuilder()
-                .pcUrl("http://www.baidu.com")
-                .iosUrl("http://www.google.com")
-                .url("http://open.feishu.com")
-                .androidUrl("http://www.jianshu.com")
-                .build();*/
-
         // header
         MessageCardHeader header = MessageCardHeader.newBuilder()
                 .template(MessageCardHeaderTemplateEnum.BLUE)

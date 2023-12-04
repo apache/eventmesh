@@ -72,9 +72,7 @@ public class LarkSinkConnector implements Sink {
     }
 
     @Override
-    public void init(Config config) {
-        // Deprecated
-    }
+    public void init(Config config) {}
 
     @Override
     public void init(ConnectorContext connectorContext) {
