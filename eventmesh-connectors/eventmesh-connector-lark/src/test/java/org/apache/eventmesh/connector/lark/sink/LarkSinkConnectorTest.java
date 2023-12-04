@@ -43,11 +43,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class LarkSinkConnectorTest {
 
     private LarkSinkConnector larkSinkConnector;
+
+    private LarkSinkConfig sinkConfig;
 
     /**
      * more test see {@link ImServiceHandlerTest}
@@ -62,9 +67,10 @@ public class LarkSinkConnectorTest {
         imServiceWrapperMockedStatic = mockStatic(ImServiceHandler.class);
         when(ImServiceHandler.create(any())).thenReturn(imServiceHandler);
         doNothing().when(imServiceHandler).sink(any(ConnectRecord.class));
+        doNothing().when(imServiceHandler).sinkAsync(any(ConnectRecord.class));
 
         larkSinkConnector = new LarkSinkConnector();
-        LarkSinkConfig sinkConfig = (LarkSinkConfig) ConfigUtil.parse(larkSinkConnector.configClass());
+        sinkConfig = (LarkSinkConfig) ConfigUtil.parse(larkSinkConnector.configClass());
         SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
         sinkConnectorContext.setSinkConfig(sinkConfig);
         larkSinkConnector.init(sinkConnectorContext);
@@ -83,8 +89,11 @@ public class LarkSinkConnectorTest {
             connectRecords.add(connectRecord);
         }
         larkSinkConnector.put(connectRecords);
-
-        verify(imServiceHandler, times(times)).sink(any(ConnectRecord.class));
+        if (Boolean.parseBoolean(sinkConfig.getSinkConnectorConfig().getSinkAsync())) {
+            verify(imServiceHandler, times(times)).sinkAsync(any(ConnectRecord.class));
+        } else {
+            verify(imServiceHandler, times(times)).sink(any(ConnectRecord.class));
+        }
     }
 
     @AfterEach

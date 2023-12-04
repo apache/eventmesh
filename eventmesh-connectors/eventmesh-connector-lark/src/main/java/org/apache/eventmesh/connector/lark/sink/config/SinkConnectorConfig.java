@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.lark.sink.config;
 
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
@@ -48,6 +50,13 @@ public class SinkConnectorConfig {
      * Can not be blank.And it needs to correspond to {@code receiveIdType}
      */
     private String receiveId;
+
+    /**
+     * When sinking CouldEvent to lark, choose to call
+     * {@link org.apache.eventmesh.connector.lark.sink.ImServiceHandler#sink(ConnectRecord)}
+     * or {@link org.apache.eventmesh.connector.lark.sink.ImServiceHandler#sinkAsync(ConnectRecord)}
+     */
+    private String sinkAsync = "true";
 
     private String maxRetryTimes = "3";
 

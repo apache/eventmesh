@@ -32,9 +32,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.github.rholder.retry.Attempt;
 import com.github.rholder.retry.RetryException;
@@ -68,15 +75,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImServiceHandler {
 
-    private static final ConcurrentHashMap<ConnectRecord, CreateMessageReq> UN_ACK_REQ = new ConcurrentHashMap<>();
-
     private SinkConnectorConfig sinkConnectorConfig;
 
     private ImService imService;
 
     private Retryer<ConnectRecord> retryer;
 
-    public ImServiceHandler() {}
+    private ExecutorService sinkAsyncWorker;
+    private ExecutorService cleanerWorker;
+    private ScheduledExecutorService retryWorker;
+
+    private static final LongAdder redoSinkNum = new LongAdder();
+
+    public ImServiceHandler() {
+    }
 
     public static ImServiceHandler create(SinkConnectorConfig sinkConnectorConfig) {
         ImServiceHandler imServiceHandler = new ImServiceHandler();
@@ -93,25 +105,50 @@ public class ImServiceHandler {
 
         long fixedWait = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
         int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes()) + 1;
-        imServiceHandler.retryer = RetryerBuilder.<ConnectRecord>newBuilder()
-                .retryIfException()
-                .retryIfResult(Objects::nonNull)
-                .withWaitStrategy(WaitStrategies.fixedWait(fixedWait, TimeUnit.MILLISECONDS))
-                .withStopStrategy(StopStrategies.stopAfterAttempt(maxRetryTimes))
-                .withRetryListener(new RetryListener() {
-                    @SneakyThrows
-                    @Override
-                    public <V> void onRetry(Attempt<V> attempt) {
-                        long times = attempt.getAttemptNumber();
-                        if (times > 1) {
-                            log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber() - 1);
+        if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
+            int availableProcessors = Runtime.getRuntime().availableProcessors();
+            imServiceHandler.sinkAsyncWorker = Executors.newFixedThreadPool(availableProcessors, r -> {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                thread.setName("eventmesh-connector-lark-sinkAsyncWorker");
+                return thread;
+            });
+
+            imServiceHandler.cleanerWorker = Executors.newFixedThreadPool(availableProcessors, r -> {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                thread.setName("eventmesh-connector-lark-cleanerWorker");
+                return thread;
+            });
+
+            imServiceHandler.retryWorker = Executors.newScheduledThreadPool(availableProcessors, r -> {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                thread.setName("eventmesh-connector-lark-retryWorker");
+                return thread;
+            });
+        } else {
+            imServiceHandler.retryer = RetryerBuilder.<ConnectRecord>newBuilder()
+                    .retryIfException()
+                    .retryIfResult(Objects::nonNull)
+                    .withWaitStrategy(WaitStrategies.fixedWait(fixedWait, TimeUnit.MILLISECONDS))
+                    .withStopStrategy(StopStrategies.stopAfterAttempt(maxRetryTimes))
+                    .withRetryListener(new RetryListener() {
+                        @SneakyThrows
+                        @Override
+                        public <V> void onRetry(Attempt<V> attempt) {
+
+                            long times = attempt.getAttemptNumber();
+                            if (times > 1) {
+                                log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber() - 1);
+                                redoSinkNum.increment();
+                                log.info("Total redo sink task num : [{}]", redoSinkNum.sum());
+                            }
                         }
-                        if (times == maxRetryTimes) {
-                            UN_ACK_REQ.remove(attempt.get());
-                        }
-                    }
-                })
-                .build();
+                    })
+                    .build();
+        }
+
         return imServiceHandler;
     }
 
@@ -125,40 +162,97 @@ public class ImServiceHandler {
                 .build();
 
         retryer.call(() -> {
-            CreateMessageReq createMessageReq = UN_ACK_REQ.computeIfAbsent(connectRecord, (k) -> {
-                CreateMessageReqBody.Builder bodyBuilder = CreateMessageReqBody.newBuilder()
-                        .receiveId(sinkConnectorConfig.getReceiveId())
-                        .uuid(UUID.randomUUID().toString());
-
-                String templateTypeKey = connectRecord.getExtension(ConnectRecordExtensionKeys.TEMPLATE_TYPE_4_LARK);
-                if (null == templateTypeKey || "null".equals(templateTypeKey)) {
-                    templateTypeKey = LarkMessageTemplateType.PLAIN_TEXT.getTemplateKey();
-                }
-                LarkMessageTemplateType templateType = LarkMessageTemplateType.of(templateTypeKey);
-                if (LarkMessageTemplateType.PLAIN_TEXT == templateType) {
-                    bodyBuilder.content(createTextContent(connectRecord))
-                            .msgType(MsgTypeEnum.MSG_TYPE_TEXT.getValue());
-                } else if (LarkMessageTemplateType.MARKDOWN == templateType) {
-                    String title = Optional.ofNullable(connectRecord.getExtension(ConnectRecordExtensionKeys.MARKDOWN_MESSAGE_TITLE_4_LARK))
-                            .orElse("EventMesh-Message");
-                    bodyBuilder.content(createInteractiveContent(connectRecord, title))
-                            .msgType(MsgTypeEnum.MSG_TYPE_INTERACTIVE.getValue());
-                }
-
-                return CreateMessageReq.newBuilder()
-                        .receiveIdType(sinkConnectorConfig.getReceiveIdType())
-                        .createMessageReqBody(bodyBuilder.build())
-                        .build();
-            });
+            CreateMessageReq createMessageReq = convertCreateMessageReq(connectRecord);
             CreateMessageResp resp = imService.message().create(createMessageReq, requestOptions);
             if (resp.getCode() != 0) {
                 log.warn("Sinking event to lark failure | code:[{}] | msg:[{}] | err:[{}]", resp.getCode(), resp.getMsg(), resp.getError());
                 return connectRecord;
             }
-
-            UN_ACK_REQ.remove(connectRecord);
             return null;
         });
+    }
+
+    public void sinkAsync(ConnectRecord connectRecord) {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Lists.newArrayList("application/json; charset=utf-8"));
+
+        RequestOptions requestOptions = RequestOptions.newBuilder()
+                .tenantAccessToken(getTenantAccessToken(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret()))
+                .headers(headers)
+                .build();
+
+        CreateMessageReq createMessageReq = convertCreateMessageReq(connectRecord);
+
+        long fixedWait = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
+        int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes()) + 1;
+        LongAdder cnt = new LongAdder();
+        AtomicBoolean isAck = new AtomicBoolean(false);
+        Runnable task = () -> CompletableFuture
+                .supplyAsync(() -> {
+                    try {
+                        cnt.increment();
+                        if (cnt.sum() > 1) {
+                            log.warn("Retry sink event to lark | times=[{}]", cnt.sum() - 1);
+                        }
+                        return imService.message().create(createMessageReq, requestOptions);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }, sinkAsyncWorker)
+                .whenCompleteAsync((resp, e) -> {
+                    if (Objects.nonNull(e)) {
+                        log.error("eventmesh-connector-lark internal exception.", e);
+                        return;
+                    }
+                    if (resp.getCode() != 0) {
+                        log.warn("Sinking event to lark failure | code:[{}] | msg:[{}] | err:[{}]", resp.getCode(), resp.getMsg(), resp.getError());
+                        return;
+                    }
+                    isAck.set(true);
+                });
+
+        ScheduledFuture<?> future = retryWorker.schedule(task, fixedWait, TimeUnit.MILLISECONDS);
+        AtomicReference<ScheduledFuture<?>> key = new AtomicReference<>(future);
+        cleanerWorker.submit(() -> {
+            while (true) {
+                // complete task
+                if (isAck.get() || cnt.sum() >= maxRetryTimes) {
+                    key.get().cancel(true);
+                    return;
+                }
+                // redo task
+                if (key.get().isDone()) {
+                    log.info("Total redo sink task num : [{}]", redoSinkNum.sum());
+                    key.set(retryWorker.schedule(task, fixedWait, TimeUnit.MILLISECONDS));
+                }
+            }
+        });
+    }
+
+    private CreateMessageReq convertCreateMessageReq(ConnectRecord connectRecord) {
+        CreateMessageReqBody.Builder bodyBuilder = CreateMessageReqBody.newBuilder()
+                .receiveId(sinkConnectorConfig.getReceiveId())
+                .uuid(UUID.randomUUID().toString());
+
+        String templateTypeKey = connectRecord.getExtension(ConnectRecordExtensionKeys.TEMPLATE_TYPE_4_LARK);
+        if (null == templateTypeKey || "null".equals(templateTypeKey)) {
+            templateTypeKey = LarkMessageTemplateType.PLAIN_TEXT.getTemplateKey();
+        }
+        LarkMessageTemplateType templateType = LarkMessageTemplateType.of(templateTypeKey);
+        if (LarkMessageTemplateType.PLAIN_TEXT == templateType) {
+            bodyBuilder.content(createTextContent(connectRecord))
+                    .msgType(MsgTypeEnum.MSG_TYPE_TEXT.getValue());
+        } else if (LarkMessageTemplateType.MARKDOWN == templateType) {
+            String title = Optional.ofNullable(connectRecord.getExtension(ConnectRecordExtensionKeys.MARKDOWN_MESSAGE_TITLE_4_LARK))
+                    .orElse("EventMesh-Message");
+            bodyBuilder.content(createInteractiveContent(connectRecord, title))
+                    .msgType(MsgTypeEnum.MSG_TYPE_INTERACTIVE.getValue());
+        }
+
+        return CreateMessageReq.newBuilder()
+                .receiveIdType(sinkConnectorConfig.getReceiveIdType())
+                .createMessageReqBody(bodyBuilder.build())
+                .build();
     }
 
     private String createTextContent(ConnectRecord connectRecord) {

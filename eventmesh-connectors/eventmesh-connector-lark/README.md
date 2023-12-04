@@ -10,6 +10,7 @@ Before using eventmesh-connector-lark to sink events, you need to configure the 
     - (required) `appSecret`, the appSecret obtained from lark
     - `receiveIdType`, the type of receiving Id, the default and recommended use is `open_id`. Optional open_id/user_id/union_id/email/chat_id.
     - (Required) `receiveId`, receive Id, needs to correspond to `receiveIdType`.
+    - `sinkAsync`, whether to asynchronously sink events
     - `maxRetryTimes`, the maximum number of retransmissions when the sink event fails. The default is 3 times.
     - `retryDelayInMills`, when the sink event fails, the time interval for retransmitting the event. Default is 1s, unit is milliseconds.
 

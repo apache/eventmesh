@@ -10,6 +10,7 @@
     - (必需)`appSecret`, lark中获取的appSecret
     - `receiveIdType`， 接收Id的类型，默认且推荐使用`open_id`。可选open_id/user_id/union_id/email/chat_id。
     - (必需)`receiveId`, 接收Id，需要和`receiveIdType`对应。
+    - `sinkAsync`, 是否异步下沉事件
     - `maxRetryTimes`, sink事件失败时，最大重传的次数。默认3次。
     - `retryDelayInMills`, sink事件失败时，重传事件的时间间隔。默认1s，单位为毫秒。
 

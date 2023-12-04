@@ -30,5 +30,6 @@ sinkConnectorConfig:
   appSecret: appSecret
   receiveIdType: open_id
   receiveId: receiveId
+  sinkAsync: true
   maxRetryTimes: 3
   retryDelayInMills: 1000

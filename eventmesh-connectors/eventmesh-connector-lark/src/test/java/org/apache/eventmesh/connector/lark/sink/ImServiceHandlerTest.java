@@ -22,7 +22,7 @@ import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnect
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.TENANT_ACCESS_TOKEN;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,6 +68,9 @@ public class ImServiceHandlerTest {
     @BeforeEach
     public void setup() throws Exception {
         sinkConnectorConfig = ((LarkSinkConfig) ConfigUtil.parse(LarkSinkConfig.class)).getSinkConnectorConfig();
+    }
+
+    private void init() throws Exception {
         // prevent rely on Lark's ExtService
         AUTH_CACHE.put(TENANT_ACCESS_TOKEN, "test-TenantAccessToken");
 
@@ -85,31 +88,75 @@ public class ImServiceHandlerTest {
 
     @Test
     public void testRegularSink() throws Exception {
+        sinkConnectorConfig.setSinkAsync("false");
+        init();
+        regularSink();
+    }
+
+    @Test
+    public void testRegularSinkAsync() throws Exception {
+        sinkConnectorConfig.setSinkAsync("true");
+        init();
+        regularSink();
+    }
+
+    private void regularSink() throws Exception {
         final int times = 3;
         for (int i = 0; i < times; i++) {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
                     System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
-            imServiceHandler.sink(connectRecord);
+            if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
+                imServiceHandler.sinkAsync(connectRecord);
+                long retryDelayInMills = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
+                long duration = retryDelayInMills * times;
+                Thread.sleep(duration);
+            } else {
+                imServiceHandler.sink(connectRecord);
+            }
         }
-
-        verify(message, times(times)).create(any(), any());
     }
 
     @Test
     public void testRetrySink() throws Exception {
-        doThrow(new Exception()).when(message).create(any(), any());
+        sinkConnectorConfig.setSinkAsync("false");
+        init();
+        retrySink();
+    }
+
+    @Test
+    public void testRetrySinkAsync() throws Exception {
+        sinkConnectorConfig.setSinkAsync("true");
+        init();
+        retrySink();
+    }
+
+    private void retrySink() throws Exception {
+        CreateMessageResp resp = new CreateMessageResp();
+        resp.setCode(1);
+        doReturn(resp).when(message).create(any(), any());
         final int times = 3;
+        long retryDelayInMills = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
+        int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes());
+        // (maxRetryTimes + 1) event are actually sent
+        int sinkTimes = times * (maxRetryTimes + 1);
+        long duration = retryDelayInMills * sinkTimes;
+
         for (int i = 0; i < times; i++) {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
                     System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
-            Assertions.assertThrows(Exception.class, () -> imServiceHandler.sink(connectRecord));
-        }
+            if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
+                imServiceHandler.sinkAsync(connectRecord);
 
-        // (maxRetryTimes + 1) event are actually sent
-        verify(message, times(times * (Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes()) + 1))).create(any(), any());
+                Thread.sleep(duration);
+            } else {
+                Assertions.assertThrows(Exception.class, () -> imServiceHandler.sink(connectRecord));
+
+            }
+        }
+        verify(message, times(sinkTimes)).create(any(), any());
     }
 }

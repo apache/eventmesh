@@ -120,7 +120,11 @@ public class LarkSinkConnector implements Sink {
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
             try {
-                imServiceHandler.sink(connectRecord);
+                if (Boolean.parseBoolean(sinkConfig.getSinkConnectorConfig().getSinkAsync())) {
+                    imServiceHandler.sinkAsync(connectRecord);
+                } else {
+                    imServiceHandler.sink(connectRecord);
+                }
             } catch (ExecutionException | RetryException e) {
                 log.error("Failed to sink event to lark", e);
             }
