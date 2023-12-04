@@ -28,8 +28,8 @@ public interface ConnectRecordExtensionKeys {
     String TEMPLATE_TYPE_4_LARK = "templatetype4lark";
 
     /**
-     * The value format is {@code id,name;id,name;}. <br/>
-     * Recommend to use {@code open_id} as {@code id}. <br/>
+     * The value format is {@code id,name;id,name;}.Recommend to use {@code open_id} as {@code id}.
+     * <p>
      * To prevent bad situations, you should ensure that the {@code id} is valid
      */
     String AT_USERS_4_LARK = "atusers4lark";

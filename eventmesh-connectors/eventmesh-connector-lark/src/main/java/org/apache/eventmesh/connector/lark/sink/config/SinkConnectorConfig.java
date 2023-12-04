@@ -39,8 +39,8 @@ public class SinkConnectorConfig {
     private String appSecret;
 
     /**
-     * The value is {@code open_id/user_id/union_id/email/chat_id} <br>
-     * Recommend to use open_id
+     * The value is {@code open_id/user_id/union_id/email/chat_id}.
+     * Recommend to use open_id.
      */
     private String receiveIdType = "open_id";
 

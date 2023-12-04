@@ -35,7 +35,7 @@ public interface Connector {
     /**
      * This init method is obsolete. For detailed discussion,
      * please see <a href="https://github.com/apache/eventmesh/issues/4565">here</a>
-     * <p/>
+     * <p>
      * Initializes the Connector with the provided configuration.
      *
      * @param config Configuration object
