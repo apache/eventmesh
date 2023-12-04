@@ -74,8 +74,6 @@ public class ImServiceHandler {
 
     private ImService imService;
 
-    private RequestOptions requestOptions;
-
     private Retryer<ConnectRecord> retryer;
 
     public ImServiceHandler() {}
@@ -92,14 +90,6 @@ public class ImServiceHandler {
                 .requestTimeout(3, TimeUnit.SECONDS)
                 .build()
                 .im();
-
-        Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", Lists.newArrayList("application/json; charset=utf-8"));
-
-        imServiceHandler.requestOptions = RequestOptions.newBuilder()
-                .tenantAccessToken(getTenantAccessToken(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret()))
-                .headers(headers)
-                .build();
 
         long fixedWait = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
         int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes()) + 1;
@@ -126,6 +116,14 @@ public class ImServiceHandler {
     }
 
     public void sink(ConnectRecord connectRecord) throws ExecutionException, RetryException {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Lists.newArrayList("application/json; charset=utf-8"));
+
+        RequestOptions requestOptions = RequestOptions.newBuilder()
+                .tenantAccessToken(getTenantAccessToken(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret()))
+                .headers(headers)
+                .build();
+
         retryer.call(() -> {
             CreateMessageReq createMessageReq = UN_ACK_REQ.computeIfAbsent(connectRecord, (k) -> {
                 CreateMessageReqBody.Builder bodyBuilder = CreateMessageReqBody.newBuilder()

@@ -51,7 +51,13 @@ public class LarkSinkConnector implements Sink {
     public static final String TENANT_ACCESS_TOKEN = "tenant_access_token";
 
     /**
-     * replace lark build-in tokenCache
+     * Global Access Credential Manager to replace lark build-in tokenCache.
+     * <p>
+     * If you plan to extend the method of obtaining other credentials,
+     * you can refer to the implementation of {@link #getTenantAccessToken(String, String)}
+     * <p>
+     * If the expiration mechanism provided by lark conflicts with the expiration time set in AUTH_CACHE,
+     * you can try to modify it.
      */
     public static final Cache<String, String> AUTH_CACHE = CacheBuilder.newBuilder()
             .initialCapacity(12)
