@@ -66,7 +66,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ImServiceWrapper {
+public class ImServiceHandler {
 
     private static final ConcurrentHashMap<ConnectRecord, CreateMessageReq> UN_ACK_REQ = new ConcurrentHashMap<>();
 
@@ -78,12 +78,12 @@ public class ImServiceWrapper {
 
     private Retryer<ConnectRecord> retryer;
 
-    public ImServiceWrapper() {}
+    public ImServiceHandler() {}
 
-    public static ImServiceWrapper create(SinkConnectorConfig sinkConnectorConfig) {
-        ImServiceWrapper imServiceWrapper = new ImServiceWrapper();
-        imServiceWrapper.sinkConnectorConfig = sinkConnectorConfig;
-        imServiceWrapper.imService = Client.newBuilder(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret())
+    public static ImServiceHandler create(SinkConnectorConfig sinkConnectorConfig) {
+        ImServiceHandler imServiceHandler = new ImServiceHandler();
+        imServiceHandler.sinkConnectorConfig = sinkConnectorConfig;
+        imServiceHandler.imService = Client.newBuilder(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret())
                 .httpTransport(new OkHttpTransport(new OkHttpClient().newBuilder()
                         .callTimeout(3L, TimeUnit.SECONDS)
                         .build())
@@ -96,14 +96,14 @@ public class ImServiceWrapper {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Content-Type", Lists.newArrayList("application/json; charset=utf-8"));
 
-        imServiceWrapper.requestOptions = RequestOptions.newBuilder()
+        imServiceHandler.requestOptions = RequestOptions.newBuilder()
                 .tenantAccessToken(getTenantAccessToken(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret()))
                 .headers(headers)
                 .build();
 
         long fixedWait = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
         int maxRetryTimes = Integer.parseInt(sinkConnectorConfig.getMaxRetryTimes()) + 1;
-        imServiceWrapper.retryer = RetryerBuilder.<ConnectRecord>newBuilder()
+        imServiceHandler.retryer = RetryerBuilder.<ConnectRecord>newBuilder()
                 .retryIfException()
                 .retryIfResult(Objects::nonNull)
                 .withWaitStrategy(WaitStrategies.fixedWait(fixedWait, TimeUnit.MILLISECONDS))
@@ -122,7 +122,7 @@ public class ImServiceWrapper {
                     }
                 })
                 .build();
-        return imServiceWrapper;
+        return imServiceHandler;
     }
 
     public void sink(ConnectRecord connectRecord) throws ExecutionException, RetryException {

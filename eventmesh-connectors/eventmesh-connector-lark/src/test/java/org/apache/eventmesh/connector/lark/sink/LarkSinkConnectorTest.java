@@ -50,18 +50,18 @@ public class LarkSinkConnectorTest {
     private LarkSinkConnector larkSinkConnector;
 
     /**
-     * more test see {@link ImServiceWrapperTest}
+     * more test see {@link ImServiceHandlerTest}
      */
     @Mock
-    private ImServiceWrapper imServiceWrapper;
+    private ImServiceHandler imServiceHandler;
 
-    private MockedStatic<ImServiceWrapper> imServiceWrapperMockedStatic;
+    private MockedStatic<ImServiceHandler> imServiceWrapperMockedStatic;
 
     @BeforeEach
     public void setup() throws Exception {
-        imServiceWrapperMockedStatic = mockStatic(ImServiceWrapper.class);
-        when(ImServiceWrapper.create(any())).thenReturn(imServiceWrapper);
-        doNothing().when(imServiceWrapper).sink(any(ConnectRecord.class));
+        imServiceWrapperMockedStatic = mockStatic(ImServiceHandler.class);
+        when(ImServiceHandler.create(any())).thenReturn(imServiceHandler);
+        doNothing().when(imServiceHandler).sink(any(ConnectRecord.class));
 
         larkSinkConnector = new LarkSinkConnector();
         LarkSinkConfig sinkConfig = (LarkSinkConfig) ConfigUtil.parse(larkSinkConnector.configClass());
@@ -84,7 +84,7 @@ public class LarkSinkConnectorTest {
         }
         larkSinkConnector.put(connectRecords);
 
-        verify(imServiceWrapper, times(times)).sink(any(ConnectRecord.class));
+        verify(imServiceHandler, times(times)).sink(any(ConnectRecord.class));
     }
 
     @AfterEach

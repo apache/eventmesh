@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.lark.sink;
 
+import static org.apache.eventmesh.connector.lark.sink.ImServiceHandler.create;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.AUTH_CACHE;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.TENANT_ACCESS_TOKEN;
-import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.create;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -27,18 +27,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-
-import com.lark.oapi.service.im.v1.model.CreateMessageResp;
-import com.lark.oapi.service.im.v1.ImService;
-
 import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
 import org.apache.eventmesh.connector.lark.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,13 +48,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import com.lark.oapi.service.im.v1.ImService;
+import com.lark.oapi.service.im.v1.model.CreateMessageResp;
+
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ImServiceWrapperTest {
+public class ImServiceHandlerTest {
 
     private SinkConnectorConfig sinkConnectorConfig;
 
-    private ImServiceWrapper imServiceWrapper;
+    private ImServiceHandler imServiceHandler;
 
     @Mock
     private ImService imService;
@@ -71,16 +71,16 @@ public class ImServiceWrapperTest {
         // prevent rely on Lark's ExtService
         AUTH_CACHE.put(TENANT_ACCESS_TOKEN, "test-TenantAccessToken");
 
-        imServiceWrapper = create(sinkConnectorConfig);
+        imServiceHandler = create(sinkConnectorConfig);
 
         // prevent rely on Lark's ImService
         when(message.create(any(), any())).thenReturn(new CreateMessageResp());
         when(imService.message()).thenReturn(message);
-        Field imServiceField = ReflectionSupport.findFields(imServiceWrapper.getClass(),
+        Field imServiceField = ReflectionSupport.findFields(imServiceHandler.getClass(),
                 (f) -> f.getName().equals("imService"),
                 HierarchyTraversalMode.BOTTOM_UP).get(0);
         imServiceField.setAccessible(true);
-        imServiceField.set(imServiceWrapper, imService);
+        imServiceField.set(imServiceHandler, imService);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ImServiceWrapperTest {
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
                     System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
-            imServiceWrapper.sink(connectRecord);
+            imServiceHandler.sink(connectRecord);
         }
 
         verify(message, times(times)).create(any(), any());
@@ -106,7 +106,7 @@ public class ImServiceWrapperTest {
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
                     System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
-            Assertions.assertThrows(Exception.class, () -> imServiceWrapper.sink(connectRecord));
+            Assertions.assertThrows(Exception.class, () -> imServiceHandler.sink(connectRecord));
         }
 
         // (maxRetryTimes + 1) event are actually sent

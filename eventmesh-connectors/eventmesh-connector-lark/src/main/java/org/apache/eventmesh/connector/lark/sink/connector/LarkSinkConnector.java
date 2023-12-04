@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.lark.sink.connector;
 
-import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.create;
+import static org.apache.eventmesh.connector.lark.sink.ImServiceHandler.create;
 
-import org.apache.eventmesh.connector.lark.sink.ImServiceWrapper;
+import org.apache.eventmesh.connector.lark.sink.ImServiceHandler;
 import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
 import org.apache.eventmesh.connector.lark.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
@@ -62,7 +62,7 @@ public class LarkSinkConnector implements Sink {
 
     private LarkSinkConfig sinkConfig;
 
-    private ImServiceWrapper imServiceWrapper;
+    private ImServiceHandler imServiceHandler;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -85,7 +85,7 @@ public class LarkSinkConnector implements Sink {
         SinkConnectorConfig sinkConnectorConfig = sinkConfig.getSinkConnectorConfig();
         sinkConnectorConfig.validateSinkConfiguration();
 
-        imServiceWrapper = create(sinkConnectorConfig);
+        imServiceHandler = create(sinkConnectorConfig);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class LarkSinkConnector implements Sink {
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
             try {
-                imServiceWrapper.sink(connectRecord);
+                imServiceHandler.sink(connectRecord);
             } catch (ExecutionException | RetryException e) {
                 log.error("Failed to sink event to lark", e);
             }
