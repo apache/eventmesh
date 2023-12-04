@@ -19,7 +19,7 @@ package org.apache.eventmesh.connector.lark.sink;
 
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.AUTH_CACHE;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.TENANT_ACCESS_TOKEN;
-import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.createImServiceWrapper;
+import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.create;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -71,7 +71,7 @@ public class ImServiceWrapperTest {
         // prevent rely on Lark's ExtService
         AUTH_CACHE.put(TENANT_ACCESS_TOKEN, "test-TenantAccessToken");
 
-        imServiceWrapper = createImServiceWrapper(sinkConnectorConfig);
+        imServiceWrapper = create(sinkConnectorConfig);
 
         // prevent rely on Lark's ImService
         when(message.create(any(), any())).thenReturn(new CreateMessageResp());

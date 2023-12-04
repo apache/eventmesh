@@ -80,7 +80,7 @@ public class ImServiceWrapper {
 
     public ImServiceWrapper() {}
 
-    public static ImServiceWrapper createImServiceWrapper(SinkConnectorConfig sinkConnectorConfig) {
+    public static ImServiceWrapper create(SinkConnectorConfig sinkConnectorConfig) {
         ImServiceWrapper imServiceWrapper = new ImServiceWrapper();
         imServiceWrapper.sinkConnectorConfig = sinkConnectorConfig;
         imServiceWrapper.imService = Client.newBuilder(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret())
@@ -132,7 +132,7 @@ public class ImServiceWrapper {
                         .receiveId(sinkConnectorConfig.getReceiveId())
                         .uuid(UUID.randomUUID().toString());
 
-                String templateTypeKey = connectRecord.getExtension(ConnectRecordExtensionKeys.LARK_TEMPLATE_TYPE);
+                String templateTypeKey = connectRecord.getExtension(ConnectRecordExtensionKeys.TEMPLATE_TYPE_4_LARK);
                 if (null == templateTypeKey || "null".equals(templateTypeKey)) {
                     templateTypeKey = LarkMessageTemplateType.PLAIN_TEXT.getTemplateKey();
                 }
@@ -141,7 +141,7 @@ public class ImServiceWrapper {
                     bodyBuilder.content(createTextContent(connectRecord))
                             .msgType(MsgTypeEnum.MSG_TYPE_TEXT.getValue());
                 } else if (LarkMessageTemplateType.MARKDOWN == templateType) {
-                    String title = Optional.ofNullable(connectRecord.getExtension(ConnectRecordExtensionKeys.LARK_MARKDOWN_MESSAGE_TITLE))
+                    String title = Optional.ofNullable(connectRecord.getExtension(ConnectRecordExtensionKeys.MARKDOWN_MESSAGE_TITLE_4_LARK))
                             .orElse("EventMesh-Message");
                     bodyBuilder.content(createInteractiveContent(connectRecord, title))
                             .msgType(MsgTypeEnum.MSG_TYPE_INTERACTIVE.getValue());
@@ -233,12 +233,12 @@ public class ImServiceWrapper {
     }
 
     private boolean needAtAll(ConnectRecord connectRecord) {
-        String atAll = connectRecord.getExtension(ConnectRecordExtensionKeys.LARK_AT_ALL);
+        String atAll = connectRecord.getExtension(ConnectRecordExtensionKeys.AT_ALL_4_LARK);
         return null != atAll && !"null".equals(atAll) && Boolean.parseBoolean(atAll);
     }
 
     private String needAtUser(ConnectRecord connectRecord) {
-        String atUsers = connectRecord.getExtension(ConnectRecordExtensionKeys.LARK_AT_USERS);
+        String atUsers = connectRecord.getExtension(ConnectRecordExtensionKeys.AT_USERS_4_LARK);
         return null != atUsers && !"null".equals(atUsers) ? atUsers : "";
     }
 

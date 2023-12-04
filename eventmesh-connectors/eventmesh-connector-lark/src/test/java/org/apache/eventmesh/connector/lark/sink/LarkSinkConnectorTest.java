@@ -60,7 +60,7 @@ public class LarkSinkConnectorTest {
     @BeforeEach
     public void setup() throws Exception {
         imServiceWrapperMockedStatic = mockStatic(ImServiceWrapper.class);
-        when(ImServiceWrapper.createImServiceWrapper(any())).thenReturn(imServiceWrapper);
+        when(ImServiceWrapper.create(any())).thenReturn(imServiceWrapper);
         doNothing().when(imServiceWrapper).sink(any(ConnectRecord.class));
 
         larkSinkConnector = new LarkSinkConnector();

@@ -25,19 +25,19 @@ public interface ConnectRecordExtensionKeys {
     /**
      * {@code text} or {@code markdown}, otherwise use {@code text} to replace.
      */
-    String LARK_TEMPLATE_TYPE = "larktemplatetype";
+    String TEMPLATE_TYPE_4_LARK = "templatetype4lark";
 
     /**
      * The value format is {@code id,name;id,name;}. <br/>
      * Recommend to use {@code open_id} as {@code id}. <br/>
      * To prevent bad situations, you should ensure that the {@code id} is valid
      */
-    String LARK_AT_USERS = "larkatusers";
+    String AT_USERS_4_LARK = "atusers4lark";
 
     /**
      * true or false
      */
-    String LARK_AT_ALL = "larkatall";
+    String AT_ALL_4_LARK = "atall4lark";
 
-    String LARK_MARKDOWN_MESSAGE_TITLE = "larkmarkdownmessagetitle";
+    String MARKDOWN_MESSAGE_TITLE_4_LARK = "markdownmessagetitle4lark";
 }

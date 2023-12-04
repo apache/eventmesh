@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.lark.sink.connector;
 
-import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.createImServiceWrapper;
+import static org.apache.eventmesh.connector.lark.sink.ImServiceWrapper.create;
 
 import org.apache.eventmesh.connector.lark.sink.ImServiceWrapper;
 import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
@@ -85,7 +85,7 @@ public class LarkSinkConnector implements Sink {
         SinkConnectorConfig sinkConnectorConfig = sinkConfig.getSinkConnectorConfig();
         sinkConnectorConfig.validateSinkConfiguration();
 
-        imServiceWrapper = createImServiceWrapper(sinkConnectorConfig);
+        imServiceWrapper = create(sinkConnectorConfig);
     }
 
     @Override

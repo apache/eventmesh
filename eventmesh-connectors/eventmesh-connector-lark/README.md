@@ -17,22 +17,21 @@ Before using eventmesh-connector-lark to sink events, you need to configure the 
 ## Sink CloudEvent To Lark
 
 When using the eventmesh-connector-lark sinking event, you need to add the corresponding extension filed in CloudEvent:
-- When key=`larktemplatetype`, value=`text`/`markdown`, indicating the content type of the event
-- When the event type is markdown, you can add extension: key=`larkmarkdownmessagetitle`, value indicates the title of the event.
-- When key=`larkatusers`, value=`id-0,name-0;id-1,name-1`, indicating that the event requires `@`certain users
+- When key=`templatetype4lark`, value=`text`/`markdown`, indicating the text type of the event
+- When the text type is markdown, you can add extension: key=`markdownmessagetitle4lark`, value indicates the title of the event.
+- When key=`atusers4lark`, value=`id-0,name-0;id-1,name-1`, indicating that the event requires `@`certain users
     - It is recommended to use **open_id** for id.
-    - When the event is of text type, the id can be **open_id/union_id/user_id**; when the event is of markdown type, the id can be **open_id/user_id**. In particular, when the application type is [Custom Robot](https://open.larksuite.com/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN) and the event is of markdown type, only the use of **open_id** to `@` the user is supported.
-    - When the event is of text type and the id is invalid, name will be used instead for display; when the event is of markdown type and the id is invalid, an exception will be thrown directly (you should try to ensure the correctness of the id, and name can be considered omitted).
-- When key=`larkatall`, value=`true`/`false`, indicating that the event requires `@` everyone.
-
+    - When the text is of text type, the id can be **open_id/union_id/user_id**; when the text is of markdown type, the id can be **open_id/user_id**. In particular, when the application type is [custom robot](https://open.larksuite.com/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN) and the text is of markdown type, only the use of **open_id** to `@` the user is supported.
+    - When the text is of text type and the id is invalid, name will be used instead for display; when the text is of markdown type and the id is invalid, an exception will be thrown directly (you should try to ensure the correctness of the id, and name can be considered omitted).
+- When key=`atall4lark`, value=`true`/`false`, indicating that the event requires `@` everyone.
 
 
 ## Lark Open Platform API
 
 For the Lark open platform API involved in this module, please click the following link:
-- **Send Message** For details, please [view here](https://open.larksuite.com/document/server-docs/im-v1/message/create?appId=cli_a5e1bc31507ed00c)
-- **text**For details, please [view here](https://open.larksuite.com/document/server-docs/im-v1/message-content-description/create_json#c9e08671)
-- **markdown** details, please [view here](https://open.larksuite.com/document/common-capabilities/message-card/message-cards-content/using-markdown-tags)
+- **Send Message**, please [view here](https://open.larksuite.com/document/server-docs/im-v1/message/create?appId=cli_a5e1bc31507ed00c)
+- **text**, please [view here](https://open.larksuite.com/document/server-docs/im-v1/message-content-description/create_json#c9e08671)
+- **markdown**, please [view here](https://open.larksuite.com/document/common-capabilities/message-card/message-cards-content/using-markdown-tags)
 
 ---
 
@@ -53,18 +52,18 @@ For the Lark open platform API involved in this module, please click the followi
 ## 可下沉飞书的CLoudEvent
 
 使用eventmesh-connector-lark下沉事件时，需要在CloudEvent中添加对应的extension filed：
-- 当key=`larktemplatetype`时，value=`text`/`markdown`，表明该事件的内容类型
-- 当事件类型为markdown时，可以添加extension：key=`larkmarkdownmessagetitle`,value表明该事件的标题。
-- 当key=`larkatusers`时，value=`id-0,name-0;id-1,name-1`，表明该事件需要`@`某些用户
+- 当key=`templatetype4lark`时，value=`text`/`markdown`，表明该事件的文本类型
+- 当文本类型为markdown时，可以添加extension：key=`markdownmessagetitle4lark`,value表明该事件的标题。
+- 当key=`atusers4lark`时，value=`id-0,name-0;id-1,name-1`，表明该事件需要`@`某些用户
     - id推荐使用**open_id**。
-    - 当事件属于text类型时，id可以是**open_id/union_id/user_id**;当事件属于markdown类型时，id可以是**open_id/user_id**。特别地，当应用类型为[自定义机器人](https://open.feishu.cn/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN)且事件属于markdown类型，则仅支持使用**open_id**来`@`用户。
-    - 当事件属于text类型且id无效时，将利用name代替展示；当事件属于markdown类型时且id无效时，直接抛出异常(您应该尽量保证id的正确性，而name则可以考虑省略)。
-- 当key=`larkatall`时，value=`true`/`false`，表明该事件需要`@`所有人。
+    - 当文本属于text类型时，id可以是**open_id/union_id/user_id**;当文本属于markdown类型时，id可以是**open_id/user_id**。特别地，当应用类型为[自定义机器人](https://open.feishu.cn/document/ukTMukTMukTM/ucTM5YjL3ETO24yNxkjN)且文本属于markdown类型，则仅支持使用**open_id**来`@`用户。
+    - 当文本属于text类型且id无效时，将利用name代替展示；当文本属于markdown类型时且id无效时，直接抛出异常(您应该尽量保证id的正确性，而name则可以考虑省略)。
+- 当key=`atall4lark`时，value=`true`/`false`，表明该事件需要`@`所有人。
 
 
 ## 飞书开放平台API
 
 有关该模块涉及到的飞书开放平台API，请点击以下链接：
-- **发送消息**详情，请[查看这里](https://open.feishu.cn/document/server-docs/im-v1/message/create?appId=cli_a5e1bc31507ed00c)
-- **text**详情，请[查看这里](https://open.feishu.cn/document/server-docs/im-v1/message-content-description/create_json#c9e08671)
-- **markdown**详情，请[查看这里](https://open.feishu.cn/document/common-capabilities/message-card/message-cards-content/using-markdown-tags)
+- **发送消息**，请[查看这里](https://open.feishu.cn/document/server-docs/im-v1/message/create?appId=cli_a5e1bc31507ed00c)
+- **text**，请[查看这里](https://open.feishu.cn/document/server-docs/im-v1/message-content-description/create_json#c9e08671)
+- **markdown**，请[查看这里](https://open.feishu.cn/document/common-capabilities/message-card/message-cards-content/using-markdown-tags)
