@@ -140,9 +140,9 @@ public class ImServiceHandler {
 
                             long times = attempt.getAttemptNumber();
                             if (times > 1) {
-                                log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber() - 1);
                                 redoSinkNum.increment();
                                 log.info("Total redo sink task num : [{}]", redoSinkNum.sum());
+                                log.warn("Retry sink event to lark | times=[{}]", attempt.getAttemptNumber() - 1);
                             }
                         }
                     })
@@ -191,15 +191,17 @@ public class ImServiceHandler {
                 .supplyAsync(() -> {
                     try {
                         cnt.increment();
-                        if (cnt.sum() > 1) {
-                            log.warn("Retry sink event to lark | times=[{}]", cnt.sum() - 1);
-                        }
                         return imService.message().create(createMessageReq, requestOptions);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }, sinkAsyncWorker)
                 .whenCompleteAsync((resp, e) -> {
+                    if (cnt.sum() > 1) {
+                        redoSinkNum.increment();
+                        log.info("Total redo sink task num : [{}]", redoSinkNum.sum());
+                        log.warn("Retry sink event to lark | times=[{}]", cnt.sum() - 1);
+                    }
                     if (Objects.nonNull(e)) {
                         log.error("eventmesh-connector-lark internal exception.", e);
                         return;
@@ -222,7 +224,6 @@ public class ImServiceHandler {
                 }
                 // redo task
                 if (key.get().isDone()) {
-                    log.info("Total redo sink task num : [{}]", redoSinkNum.sum());
                     key.set(retryWorker.schedule(task, fixedWait, TimeUnit.MILLISECONDS));
                 }
             }
