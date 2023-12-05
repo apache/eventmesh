@@ -79,6 +79,20 @@ public class WeChatSinkConnectorTest {
         Mockito.doReturn(tokenCall).when(okHttpClient).newCall(Mockito.argThat(tokenMatcher));
         Mockito.doReturn(tokenResponse).when(tokenCall).execute();
 
+        weChatSinkConnector = new WeChatSinkConnector();
+        WeChatSinkConfig weChatSinkConfig = (WeChatSinkConfig) ConfigUtil.parse(weChatSinkConnector.configClass());
+        weChatSinkConnector.init(weChatSinkConfig);
+        Field clientField = ReflectionSupport.findFields(weChatSinkConnector.getClass(),
+            (f) -> f.getName().equals("okHttpClient"),
+            HierarchyTraversalMode.BOTTOM_UP).get(0);
+        clientField.setAccessible(true);
+        clientField.set(weChatSinkConnector, okHttpClient);
+        weChatSinkConnector.start();
+    }
+
+    @Test
+    public void testSendMessageToWeChat() throws Exception {
+
         Request sendMessageRequest = new Request.Builder().url("https://api.weixin.qq.com/cgi-bin/message/template/send").build();
         String sendMessageResponseJson = "{\"errcode\":0,\"errmsg\":\"ok\",\"msgid\":200228332}";
         ResponseBody sendMessageBody = ResponseBody.create(MediaType.parse("application/json; charset=utf-8"), sendMessageResponseJson);
@@ -95,31 +109,43 @@ public class WeChatSinkConnectorTest {
         Mockito.doReturn(sendMessageRequestCall).when(okHttpClient).newCall(Mockito.argThat(sendMessageMatcher));
         Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();
 
-        weChatSinkConnector = new WeChatSinkConnector();
-        WeChatSinkConfig weChatSinkConfig = (WeChatSinkConfig) ConfigUtil.parse(weChatSinkConnector.configClass());
-        weChatSinkConnector.init(weChatSinkConfig);
-        Field clientField = ReflectionSupport.findFields(weChatSinkConnector.getClass(),
-            (f) -> f.getName().equals("okHttpClient"),
-            HierarchyTraversalMode.BOTTOM_UP).get(0);
-        clientField.setAccessible(true);
-        clientField.set(weChatSinkConnector, okHttpClient);
-        weChatSinkConnector.start();
+        List<ConnectRecord> records = new ArrayList<>();
+        RecordPartition partition = new RecordPartition();
+        RecordOffset offset = new RecordOffset();
+        ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+            System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
+        records.add(connectRecord);
+
+        weChatSinkConnector.put(records);
+        verify(okHttpClient, times(2)).newCall(any(Request.class));
     }
 
     @Test
-    public void testSendMessageToWeChat() throws Exception {
-        final int times = 1;
-        List<ConnectRecord> records = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
-            records.add(connectRecord);
-        }
+    public void testSendMessageToWeChatAbnormally() throws Exception {
+        Request sendMessageRequest = new Request.Builder().url("https://api.weixin.qq.com/cgi-bin/message/template/send").build();
+        String sendMessageResponseJson = "{\"errcode\":42001,\"errmsg\":\"access_token expired rid: 656e8793-061949b5-738cb8f4\"}";
+        ResponseBody sendMessageBody = ResponseBody.create(MediaType.parse("application/json; charset=utf-8"), sendMessageResponseJson);
+        Response sendMessageResponse = new Response.Builder()
+            .code(200)
+            .protocol(Protocol.HTTP_1_0)
+            .request(sendMessageRequest)
+            .body(sendMessageBody)
+            .message("ok")
+            .build();
+        ArgumentMatcher<Request> sendMessageMatcher = (anyRequest) ->
+            sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
+        Call sendMessageRequestCall = Mockito.mock(Call.class);
+        Mockito.doReturn(sendMessageRequestCall).when(okHttpClient).newCall(Mockito.argThat(sendMessageMatcher));
+        Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();
 
+        RecordPartition partition = new RecordPartition();
+        RecordOffset offset = new RecordOffset();
+        List<ConnectRecord> records = new ArrayList<>();
+        ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+            System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
+        records.add(connectRecord);
         weChatSinkConnector.put(records);
-        verify(okHttpClient, times(times + 1)).newCall(any(Request.class));
+        verify(okHttpClient, times(2)).newCall(any(Request.class));
     }
 
     @AfterEach
