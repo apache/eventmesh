@@ -29,11 +29,14 @@ import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -140,12 +143,11 @@ public class WeChatSinkConnectorTest {
 
         RecordPartition partition = new RecordPartition();
         RecordOffset offset = new RecordOffset();
-        List<ConnectRecord> records = new ArrayList<>();
         ConnectRecord connectRecord = new ConnectRecord(partition, offset,
             System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
-        records.add(connectRecord);
-        weChatSinkConnector.put(records);
-        verify(okHttpClient, times(2)).newCall(any(Request.class));
+        Method sendMessageMethod = WeChatSinkConnector.class.getDeclaredMethod("sendMessage", ConnectRecord.class);
+        sendMessageMethod.setAccessible(true);
+        Assertions.assertThrows(InvocationTargetException.class, () -> sendMessageMethod.invoke(weChatSinkConnector, connectRecord));
     }
 
     @AfterEach
