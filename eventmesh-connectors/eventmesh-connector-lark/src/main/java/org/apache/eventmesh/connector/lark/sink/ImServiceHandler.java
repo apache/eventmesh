@@ -40,7 +40,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 
 import com.github.rholder.retry.Attempt;
@@ -213,18 +212,13 @@ public class ImServiceHandler {
                     isAck.set(true);
                 });
 
-        ScheduledFuture<?> future = retryWorker.schedule(task, fixedWait, TimeUnit.MILLISECONDS);
-        AtomicReference<ScheduledFuture<?>> key = new AtomicReference<>(future);
+        ScheduledFuture<?> future = retryWorker.scheduleAtFixedRate(task, 0L, fixedWait, TimeUnit.MILLISECONDS);
         cleanerWorker.submit(() -> {
             while (true) {
                 // complete task
                 if (isAck.get() || cnt.sum() >= maxRetryTimes) {
-                    key.get().cancel(true);
+                    future.cancel(true);
                     return;
-                }
-                // redo task
-                if (key.get().isDone()) {
-                    key.set(retryWorker.schedule(task, fixedWait, TimeUnit.MILLISECONDS));
                 }
             }
         });
