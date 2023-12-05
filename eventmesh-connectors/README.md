@@ -66,4 +66,6 @@ Add a new connector by implementing the source/sink interface using :
 |       [Spring](eventmesh-connector-spring)       |    Sink     |    ✅    |
 |                      WeCom                       |   Source    |    ⬜    |
 |        [WeCom](eventmesh-connector-wecom)        |    Sink     |    ✅    |
+|                      WeChat                      |   Source    |    ⬜    |
+|        [WeChat](eventmesh-connector-wechat)      |    Sink     |    ✅    |
 |         More connectors will be added...         | Source/Sink |   N/A   |
