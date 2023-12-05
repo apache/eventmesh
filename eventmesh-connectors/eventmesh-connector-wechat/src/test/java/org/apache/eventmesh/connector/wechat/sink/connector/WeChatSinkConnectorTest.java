@@ -121,6 +121,8 @@ public class WeChatSinkConnectorTest {
 
         weChatSinkConnector.put(records);
         verify(okHttpClient, times(2)).newCall(any(Request.class));
+
+        WeChatSinkConnector.ACCESS_TOKEN_CACHE.invalidate(WeChatSinkConnector.ACCESS_TOKEN_CACHE_KEY);
     }
 
     @Test
