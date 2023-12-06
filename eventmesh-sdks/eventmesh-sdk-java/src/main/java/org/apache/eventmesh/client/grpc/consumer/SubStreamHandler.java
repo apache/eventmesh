@@ -128,13 +128,15 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
         Map<String, String> prop = new HashMap<>();
         Map<String, CloudEventAttributeValue> reqMessageMap = reqMessage.getAttributesMap();
         reqMessageMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-        Map<String, CloudEventAttributeValue> cloudEventMap = reqMessage.getAttributesMap();
+        Map<String, CloudEventAttributeValue> cloudEventMap = cloudEvent.getAttributesMap();
         cloudEventMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
         subscriptionReply.putAllProperties(prop);
 
-        return CloudEvent.newBuilder().putAllAttributes(cloudEvent.getAttributesMap())
+        return CloudEvent.newBuilder(cloudEvent).putAllAttributes(reqMessageMap)
             .putAttributes(ProtocolKey.DATA_CONTENT_TYPE,
                 CloudEventAttributeValue.newBuilder().setCeString(EventMeshDataContentType.JSON.getCode()).build())
+            //Indicate that it is a subscription response
+            .putAttributes(ProtocolKey.SUB_MESSAGE_TYPE, CloudEventAttributeValue.newBuilder().setCeString(SubscriptionReply.TYPE).build())
             .setTextData(JsonUtils.toJSONString(subscriptionReply)).build();
     }
 
