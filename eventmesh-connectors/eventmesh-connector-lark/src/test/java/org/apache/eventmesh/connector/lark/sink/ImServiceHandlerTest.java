@@ -116,6 +116,7 @@ public class ImServiceHandlerTest {
                 imServiceHandler.sink(connectRecord);
             }
         }
+        verify(message, times(times)).create(any(), any());
     }
 
     @Test
