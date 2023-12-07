@@ -72,8 +72,8 @@ public class JsonPathParser {
 
         List<Variable> variableList = new ArrayList<>(variablesList.size());
         for (Variable element : variablesList) {
-            if (JsonPathUtils.isValidAndDefinite(element.getJsonPath())) {
-                String res = JsonPathUtils.matchJsonPathValueWithString(json, element.getJsonPath());
+            if (JsonPathUtils.isValidAndDefinite(element.getValue())) {
+                String res = JsonPathUtils.matchJsonPathValueWithString(json, element.getValue());
                 Variable variable = new Variable(element.getName(), res);
                 variableList.add(variable);
             } else {

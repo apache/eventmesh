@@ -38,6 +38,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
+import org.apache.eventmesh.transformer.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -53,6 +54,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,6 +137,20 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 LOGGER.error("apply filter failed, group:{}, topic:{}, bizSeqNo={}, uniqueId={}",
                     this.handleMsgContext.getConsumerGroup(),
                     this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId());
+                return;
+            }
+        }
+        Transformer transformer = eventMeshHTTPServer.getTransformerEngine()
+            .getTransformer(handleMsgContext.getConsumerGroup() + "-" + handleMsgContext.getTopic());
+        if (transformer != null) {
+            try {
+                String data = transformer.transform(JsonUtils.toJSONString(event));
+                event = CloudEventBuilder.from(event).withData(Objects.requireNonNull(JsonUtils.toJSONString(data))
+                    .getBytes(StandardCharsets.UTF_8)).build();
+            } catch (Exception exception) {
+                LOGGER.warn("apply transformer to cloudevents error, group:{}, topic:{}, bizSeqNo={}, uniqueId={}",
+                    this.handleMsgContext.getConsumerGroup(),
+                    this.handleMsgContext.getTopic(), this.handleMsgContext.getBizSeqNo(), this.handleMsgContext.getUniqueId(), exception);
                 return;
             }
         }

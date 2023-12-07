@@ -17,29 +17,39 @@
 
 package org.apache.eventmesh.transformer;
 
-import org.apache.commons.text.StringSubstitutor;
+public class TransformerParam {
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-public class Template {
-
+    private TransformerType transformerType;
+    private String value;
     private String template;
 
-    public Template(String template) {
+    public TransformerParam() {
+    }
+
+    public TransformerParam(TransformerType transformerType, String value, String template) {
+        this.transformerType = transformerType;
+        this.value = value;
         this.template = template;
     }
 
-    public String substitute(List<Variable> variables) throws TransformException {
+    public TransformerParam(TransformerType transformerType, String value) {
+        this(transformerType, value, null);
+    }
 
-        Map<String, String> valuesMap = variables.stream()
-            .filter(variable -> variable.getValue() != null)
-            .collect(Collectors.toMap(Variable::getName, Variable::getValue));
-        StringSubstitutor sub = new StringSubstitutor(valuesMap);
+    public TransformerType getTransformerType() {
+        return transformerType;
+    }
 
-        return sub.replace(template);
+    public void setTransformerType(TransformerType transformerType) {
+        this.transformerType = transformerType;
+    }
 
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public String getTemplate() {
@@ -49,4 +59,5 @@ public class Template {
     public void setTemplate(String template) {
         this.template = template;
     }
+
 }
