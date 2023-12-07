@@ -38,7 +38,7 @@ public enum TransformerType {
 
     @JsonCreator
     public static TransformerType getItem(String type) {
-        for(TransformerType transformerType : values()) {
+        for (TransformerType transformerType : values()) {
             if (Objects.equals(transformerType.getType(), type)) {
                 return transformerType;
             }
