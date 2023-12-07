@@ -17,8 +17,49 @@
 
 package org.apache.eventmesh.transformer;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum TransformerType {
-    ORIGINAL,
-    CONSTANT,
-    TEMPLATE
+    ORIGINAL(1, "original"),
+    CONSTANT(2, "constant"),
+    TEMPLATE(3, "template");
+
+    private int code;
+
+    private String type;
+
+    TransformerType(int code, String type) {
+        this.code = code;
+        this.type = type;
+    }
+
+    @JsonCreator
+    public static TransformerType getItem(String type) {
+        for(TransformerType transformerType : values()) {
+            if (Objects.equals(transformerType.getType(), type)) {
+                return transformerType;
+            }
+        }
+        return null;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    @JsonValue
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }
