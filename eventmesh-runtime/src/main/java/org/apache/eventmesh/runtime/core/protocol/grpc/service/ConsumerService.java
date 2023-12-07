@@ -87,11 +87,11 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             public void onNext(CloudEvent subscription) {
                 final String subMessageType = Optional.ofNullable(subscription.getAttributesMap().get(ProtocolKey.SUB_MESSAGE_TYPE))
                     .orElse(CloudEventAttributeValue.newBuilder().build()).getCeString();
-                if(StringUtils.equals(subMessageType, SubscriptionReply.TYPE)){
+                if (StringUtils.equals(subMessageType, SubscriptionReply.TYPE)) {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "reply-to-server", EventMeshConstants.PROTOCOL_GRPC,
                         EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
                     handleSubscribeReply(subscription, emitter);
-                }else {
+                } else {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
                         EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
