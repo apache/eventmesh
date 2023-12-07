@@ -127,8 +127,8 @@ public class WeComSinkConnector implements Sink {
         HttpPost httpPost = new HttpPost(target);
         httpPost.addHeader("Content-Type", EventMeshDataContentType.JSON.getCode());
         WeComMessageTemplateType templateType = WeComMessageTemplateType.of(
-            Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE_KEY))
-                .orElse(WeComMessageTemplateType.PLAIN_TEXT.getTemplateKey()));
+            Optional.ofNullable(record.getExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE))
+                .orElse(WeComMessageTemplateType.PLAIN_TEXT.getTemplateType()));
         Map<String, Object> contentMap = new HashMap<>();
         if (WeComMessageTemplateType.PLAIN_TEXT == templateType) {
             contentMap.put("content", new String((byte[]) record.getData()));
