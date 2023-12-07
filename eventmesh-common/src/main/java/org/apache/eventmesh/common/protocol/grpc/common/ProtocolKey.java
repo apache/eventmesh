@@ -47,6 +47,8 @@ public class ProtocolKey {
     public static final String GRPC_RESPONSE_MESSAGE = "response_message";
     public static final String GRPC_RESPONSE_TIME = "time";
 
+    public static final String SUB_MESSAGE_TYPE = "submessagetype";
+
     /**
      * CloudEvents spec
      *
