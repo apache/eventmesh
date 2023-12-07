@@ -42,8 +42,10 @@ public class TransformTest {
 
     @Test
     public void testOriginalTransformer() throws JsonProcessingException {
+        TransformerParam transformerParam = new TransformerParam();
+        transformerParam.setTransformerType(TransformerType.ORIGINAL);
 
-        Transformer transformer = new TransformerBuilder.Builder(TransformerType.ORIGINAL).build();
+        Transformer transformer = TransformerBuilder.buildTransformer(transformerParam);
         String output = transformer.transform(EVENT);
         Assertions.assertEquals(EVENT, output);
 
@@ -54,7 +56,8 @@ public class TransformTest {
 
     @Test
     public void testConstantTransformer() throws JsonProcessingException {
-        Transformer transformer = new TransformerBuilder.Builder(TransformerType.CONSTANT).setContent("constant test").build();
+        TransformerParam transformerParam = new TransformerParam(TransformerType.CONSTANT, "constant test");
+        Transformer transformer = TransformerBuilder.buildTransformer(transformerParam);
         String output = transformer.transform(EVENT);
         Assertions.assertEquals("constant test", output);
 
@@ -72,9 +75,9 @@ public class TransformTest {
         String output = transform.transform(EVENT);
         Assertions.assertEquals("Transformers test:data name is test-transformer", output);
 
-        Transformer transformer1 = new TransformerBuilder.Builder(TransformerType.TEMPLATE)
-            .setContent(content)
-            .setTemplate(template).build();
+        TransformerParam transformerParam = new TransformerParam(TransformerType.TEMPLATE, content, template);
+
+        Transformer transformer1 = TransformerBuilder.buildTransformer(transformerParam);
         String output1 = transformer1.transform(EVENT);
         Assertions.assertEquals("Transformers test:data name is test-transformer", output1);
 

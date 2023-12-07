@@ -92,6 +92,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private FilterEngine filterEngine;
 
+    private TransformerEngine transformerEngine;
+
     private HttpRetryer httpRetryer;
 
     private transient RateLimiter msgRateLimiter;
@@ -137,6 +139,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         filterEngine = new FilterEngine(metaStorage, producerManager, consumerManager);
 
+        transformerEngine = new TransformerEngine(metaStorage, producerManager, consumerManager);
+
         super.setHandlerService(new HandlerService());
         super.getHandlerService().setMetrics(this.getMetrics());
 
@@ -179,6 +183,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.getMetrics().shutdown();
 
         filterEngine.shutdown();
+
+        transformerEngine.shutdown();
 
         consumerManager.shutdown();
 
@@ -352,6 +358,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public FilterEngine getFilterEngine() {
         return filterEngine;
+    }
+
+    public TransformerEngine getTransformerEngine() {
+        return transformerEngine;
     }
 
     public MetaStorage getMetaStorage() {

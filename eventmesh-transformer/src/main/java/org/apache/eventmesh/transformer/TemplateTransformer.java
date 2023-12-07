@@ -37,8 +37,7 @@ class TemplateTransformer implements Transformer {
         // 1: get variable match results
         List<Variable> variableList = jsonPathParser.match(json);
         // 2: use results replace template
-        String res = template.substitute(variableList);
-        return res;
+        return template.substitute(variableList);
     }
 
 }
