@@ -44,6 +44,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 
+import io.cloudevents.SpecVersion;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
@@ -163,7 +165,7 @@ public class ServiceUtils {
     public static void sendResponseCompleted(StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
 
         Instant instant = now();
-        CloudEvent.Builder builder = CloudEvent.newBuilder().setId(RandomStringUtils.generateUUID())
+        CloudEvent.Builder builder = CloudEvent.newBuilder().setId(RandomStringUtils.generateUUID()).setSpecVersion(SpecVersion.V1.toString())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                 CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message).build())
@@ -182,7 +184,7 @@ public class ServiceUtils {
      */
     public static void sendResponseCompleted(StatusCode code, EventEmitter<CloudEvent> emitter) {
         Instant instant = now();
-        CloudEvent.Builder builder = CloudEvent.newBuilder()
+        CloudEvent.Builder builder = CloudEvent.newBuilder().setSpecVersion(SpecVersion.V1.toString())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()
