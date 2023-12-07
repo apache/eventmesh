@@ -31,6 +31,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SubscriptionReply {
 
+    public static final String TYPE = "subscription_reply";
+
     private String producerGroup;
 
     private String topic;
