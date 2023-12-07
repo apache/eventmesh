@@ -21,23 +21,30 @@ import java.util.Arrays;
 
 public enum WeComMessageTemplateType {
 
-    PLAIN_TEXT("text"),
-    MARKDOWN("markdown");
+    PLAIN_TEXT("text", "text"),
+    MARKDOWN("markdown", "markdown");
+
+    private final String templateType;
 
     private final String templateKey;
 
-    WeComMessageTemplateType(String templateKey) {
+    WeComMessageTemplateType(String templateType, String templateKey) {
+        this.templateType = templateType;
         this.templateKey = templateKey;
+    }
+
+    public String getTemplateType() {
+        return templateType;
     }
 
     public String getTemplateKey() {
         return templateKey;
     }
 
-    public static WeComMessageTemplateType of(String templateKey) {
+    public static WeComMessageTemplateType of(String templateType) {
         return Arrays.stream(values())
-            .filter(v -> v.getTemplateKey().equals(templateKey))
+            .filter(v -> v.getTemplateType().equals(templateType))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("TemplateKey: " + templateKey + " not found."));
+            .orElseThrow(() -> new IllegalArgumentException("TemplateType: " + templateType + " not found."));
     }
 }

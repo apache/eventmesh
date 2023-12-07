@@ -21,23 +21,30 @@ import java.util.Arrays;
 
 public enum DingDingMessageTemplateType {
 
-    PLAIN_TEXT("sampleText"),
-    MARKDOWN("sampleMarkdown");
+    PLAIN_TEXT("text", "sampleText"),
+    MARKDOWN("markdown", "sampleMarkdown");
+
+    private final String templateType;
 
     private final String templateKey;
 
-    DingDingMessageTemplateType(String templateKey) {
+    DingDingMessageTemplateType(String templateType, String templateKey) {
+        this.templateType = templateType;
         this.templateKey = templateKey;
+    }
+
+    public String getTemplateType() {
+        return templateType;
     }
 
     public String getTemplateKey() {
         return templateKey;
     }
 
-    public static DingDingMessageTemplateType of(String templateKey) {
+    public static DingDingMessageTemplateType of(String templateType) {
         return Arrays.stream(values())
-            .filter(v -> v.getTemplateKey().equals(templateKey))
+            .filter(v -> v.getTemplateType().equals(templateType))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("TemplateKey: " + templateKey + " not found."));
+            .orElseThrow(() -> new IllegalArgumentException("TemplateType: " + templateType + " not found."));
     }
 }
