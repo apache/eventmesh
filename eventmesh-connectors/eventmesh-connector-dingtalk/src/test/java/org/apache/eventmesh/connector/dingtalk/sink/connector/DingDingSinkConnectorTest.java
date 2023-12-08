@@ -94,8 +94,8 @@ public class DingDingSinkConnectorTest {
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
                 System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
-            connectRecord.addExtension(ConnectRecordExtensionKeys.DINGTALK_TEMPLATE_TYPE_KEY,
-                DingDingMessageTemplateType.PLAIN_TEXT.getTemplateKey());
+            connectRecord.addExtension(ConnectRecordExtensionKeys.DINGTALK_TEMPLATE_TYPE,
+                DingDingMessageTemplateType.PLAIN_TEXT.getTemplateType());
             records.add(connectRecord);
         }
         connector.put(records);

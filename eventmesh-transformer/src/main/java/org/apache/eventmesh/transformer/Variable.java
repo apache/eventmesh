@@ -21,11 +21,11 @@ public class Variable {
 
     private String name;
 
-    private String jsonPath;
+    private String value;
 
-    public Variable(String name, String jsonPath) {
+    public Variable(String name, String value) {
         this.name = name;
-        this.jsonPath = jsonPath;
+        this.value = value;
     }
 
     public String getName() {
@@ -36,11 +36,11 @@ public class Variable {
         this.name = name;
     }
 
-    public String getJsonPath() {
-        return jsonPath;
+    public String getValue() {
+        return value;
     }
 
-    public void setJsonPath(String jsonPath) {
-        this.jsonPath = jsonPath;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

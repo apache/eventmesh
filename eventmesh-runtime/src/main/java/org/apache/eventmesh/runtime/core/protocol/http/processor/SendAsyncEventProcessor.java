@@ -45,6 +45,7 @@ import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
+import org.apache.eventmesh.transformer.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -161,6 +162,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         final String topic = event.getSubject();
 
         Pattern filterPattern = eventMeshHTTPServer.getFilterEngine().getFilterPattern(producerGroup + "-" + topic);
+        Transformer transformer = eventMeshHTTPServer.getTransformerEngine().getTransformer(producerGroup + "-" + topic);
 
         // validate body
         if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup, topic)
@@ -250,6 +252,14 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
             if (filterPattern != null) {
                 isFiltered = filterPattern.filter(JsonUtils.toJSONString(event));
+            }
+
+            // apply transformer
+            if (isFiltered && transformer != null) {
+                String data = transformer.transform(JsonUtils.toJSONString(event));
+                event = CloudEventBuilder.from(event).withData(Objects.requireNonNull(JsonUtils.toJSONString(data))
+                    .getBytes(StandardCharsets.UTF_8)).build();
+                sendMessageContext.setEvent(event);
             }
 
             if (isFiltered) {

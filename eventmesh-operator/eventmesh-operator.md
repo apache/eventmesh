@@ -2,7 +2,9 @@
 
 ### Prerequisite
 
+- docker
 - golang
+- kubernetes
 
 ### Install
 
@@ -13,7 +15,7 @@
 - Create an Operator Project
 
 ```
-operator-sdk init --domain domain1test --repo github.com/xc/eventmesh-operator
+operator-sdk init --domain eventmesh --repo github.com/apache/eventmesh/eventmesh-operator
 
 Directory Structure:
 .
@@ -67,7 +69,7 @@ Directory Structure:
 - Create api、resource、controller
 
 ```
-operator-sdk create api --group grouptest --version v1 --kind EventMeshOperator --resource --controller 
+operator-sdk create api --group eventmesh --version v1 --kind EventMeshOperator --resource --controller 
 
 Directory Structure:
 .
@@ -148,7 +150,6 @@ Directory Structure:
 func (r *EventMeshOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
         _ = log.FromContext(ctx)
 
-        fmt.Print("Hello!")
         // TODO(user): your logic here
 
         return ctrl.Result{}, nil

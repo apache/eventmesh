@@ -19,40 +19,19 @@ package org.apache.eventmesh.transformer;
 
 public class TransformerBuilder {
 
-    public static final class Builder {
-
-        private final TransformerType transformerType;
-        private String template;
-        private String content;
-
-        public Builder(TransformerType transformerType) {
-            this.transformerType = transformerType;
+    public static Transformer buildTransformer(TransformerParam transformerParam) {
+        switch (transformerParam.getTransformerType()) {
+            case ORIGINAL:
+                return buildOriginalTransformer();
+            case CONSTANT:
+                return buildConstantTransformer(transformerParam.getValue());
+            case TEMPLATE:
+                return buildTemplateTransFormer(transformerParam.getValue(), transformerParam.getTemplate());
+            default:
+                throw new TransformException("invalid config");
         }
-
-        public Builder setContent(String content) {
-            this.content = content;
-            return this;
-        }
-
-        public Builder setTemplate(String template) {
-            this.template = template;
-            return this;
-        }
-
-        public Transformer build() {
-            switch (this.transformerType) {
-                case CONSTANT:
-                    return buildConstantTransformer(this.content);
-                case ORIGINAL:
-                    return buildOriginalTransformer();
-                case TEMPLATE:
-                    return buildTemplateTransFormer(this.content, this.template);
-                default:
-                    throw new TransformException("invalid config");
-            }
-        }
-
     }
+
 
     public static Transformer buildTemplateTransFormer(String jsonContent, String template) {
         JsonPathParser jsonPathParser = new JsonPathParser(jsonContent);

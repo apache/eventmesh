@@ -34,8 +34,8 @@ public class Template {
     public String substitute(List<Variable> variables) throws TransformException {
 
         Map<String, String> valuesMap = variables.stream()
-            .filter(variable -> variable.getJsonPath() != null)
-            .collect(Collectors.toMap(Variable::getName, Variable::getJsonPath));
+            .filter(variable -> variable.getValue() != null)
+            .collect(Collectors.toMap(Variable::getName, Variable::getValue));
         StringSubstitutor sub = new StringSubstitutor(valuesMap);
 
         return sub.replace(template);

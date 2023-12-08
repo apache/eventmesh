@@ -93,8 +93,8 @@ public class WeComSinkConnectorTest {
                 RecordOffset offset = new RecordOffset();
                 ConnectRecord connectRecord = new ConnectRecord(partition, offset,
                     System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
-                connectRecord.addExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE_KEY,
-                    WeComMessageTemplateType.PLAIN_TEXT.getTemplateKey());
+                connectRecord.addExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE,
+                    WeComMessageTemplateType.PLAIN_TEXT.getTemplateType());
                 records.add(connectRecord);
             }
             connector.put(records);

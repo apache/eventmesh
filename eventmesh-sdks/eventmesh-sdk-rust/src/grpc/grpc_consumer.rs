@@ -157,6 +157,14 @@ impl EventMeshGrpcConsumer {
                             None,
                             properties,
                         );
+                        received.attributes.insert(
+                            ProtocolKey::SUB_MESSAGE_TYPE.to_string(),
+                            PbCloudEventAttributeValue {
+                                attr: Some(PbAttr::CeString(
+                                    SubscriptionReply::SUB_TYPE.to_string(),
+                                )),
+                            },
+                        );
                         received.data =
                             Some(PbData::TextData(serde_json::to_string(&reply).unwrap()));
                         let _ = keeper.sender.send(received).await;
