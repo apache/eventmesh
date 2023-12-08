@@ -166,9 +166,9 @@ public class WeChatSinkConnector implements Sink {
                 throw new IOException("message response is null.");
             }
 
-            if (messageResponse.getErrocode() != 0) {
-                throw new IllegalAccessException(String.format("Send message to weCom error! errorCode=%s, errorMessage=%s",
-                    messageResponse.getErrocode(), messageResponse.getErrmsg()));
+            if (messageResponse.getErrcode() != 0) {
+                throw new IllegalAccessException(String.format("Send message to WeChat error! errorCode=%s, errorMessage=%s",
+                    messageResponse.getErrcode(), messageResponse.getErrmsg()));
             }
         }
 

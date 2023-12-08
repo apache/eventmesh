@@ -22,7 +22,7 @@ import lombok.Data;
 @Data
 public class TemplateMessageResponse {
 
-    private int errocode;
+    private int errcode;
 
     private String errmsg;
 
