@@ -44,6 +44,8 @@ impl ProtocolKey {
     pub const GRPC_RESPONSE_MESSAGE: &'static str = "response_message";
     pub const GRPC_RESPONSE_TIME: &'static str = "time";
 
+    pub const SUB_MESSAGE_TYPE: &'static str = "submessagetype";
+
     // CloudEvents spec
     pub const ID: &'static str = "id";
     pub const SOURCE: &'static str = "source";
