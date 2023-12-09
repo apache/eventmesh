@@ -28,8 +28,6 @@ import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -117,13 +115,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
         final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(replyMessage,
             clientConfig, listener.getProtocolType());
 
-        Map<String, String> prop = new HashMap<>();
-        Map<String, CloudEventAttributeValue> reqMessageMap = reqMessage.getAttributesMap();
-        reqMessageMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-        Map<String, CloudEventAttributeValue> cloudEventMap = cloudEvent.getAttributesMap();
-        cloudEventMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-
-        return CloudEvent.newBuilder(cloudEvent).putAllAttributes(reqMessageMap).putAllAttributes(cloudEventMap)
+        return CloudEvent.newBuilder(cloudEvent).putAllAttributes(reqMessage.getAttributesMap()).putAllAttributes(cloudEvent.getAttributesMap())
             .putAttributes(ProtocolKey.DATA_CONTENT_TYPE,
                 CloudEventAttributeValue.newBuilder().setCeString(EventMeshDataContentType.JSON.getCode()).build())
             // Indicate that it is a subscription response
