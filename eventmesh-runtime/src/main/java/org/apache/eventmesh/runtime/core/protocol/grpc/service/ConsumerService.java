@@ -23,7 +23,6 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.common.SubscriptionReply;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.ReplyMessageProcessor;
@@ -87,7 +86,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             public void onNext(CloudEvent subscription) {
                 final String subMessageType = Optional.ofNullable(subscription.getAttributesMap().get(ProtocolKey.SUB_MESSAGE_TYPE))
                     .orElse(CloudEventAttributeValue.newBuilder().build()).getCeString();
-                if (StringUtils.equals(subMessageType, SubscriptionReply.TYPE)) {
+                if (StringUtils.equals(subMessageType, ProtocolKey.SUB_REPLY_MESSAGE)) {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "reply-to-server", EventMeshConstants.PROTOCOL_GRPC,
                         EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
                     handleSubscribeReply(subscription, emitter);

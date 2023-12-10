@@ -25,13 +25,9 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEve
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.grpc.common.SubscriptionReply;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -118,26 +114,13 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
     private CloudEvent buildReplyMessage(final CloudEvent reqMessage, final T replyMessage) {
         final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(replyMessage,
             clientConfig, listener.getProtocolType());
-        SubscriptionReply subscriptionReply = SubscriptionReply.builder().producerGroup(clientConfig.getConsumerGroup())
-            .topic(EventMeshCloudEventUtils.getSubject(cloudEvent))
-            .content(EventMeshCloudEventUtils.getDataContent(cloudEvent))
-            .seqNum(EventMeshCloudEventUtils.getSeqNum(cloudEvent))
-            .uniqueId(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
-            .ttl(EventMeshCloudEventUtils.getTtl(cloudEvent)).build();
 
-        Map<String, String> prop = new HashMap<>();
-        Map<String, CloudEventAttributeValue> reqMessageMap = reqMessage.getAttributesMap();
-        reqMessageMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-        Map<String, CloudEventAttributeValue> cloudEventMap = cloudEvent.getAttributesMap();
-        cloudEventMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-        subscriptionReply.putAllProperties(prop);
-
-        return CloudEvent.newBuilder(cloudEvent).putAllAttributes(reqMessageMap)
+        return CloudEvent.newBuilder(cloudEvent).putAllAttributes(reqMessage.getAttributesMap()).putAllAttributes(cloudEvent.getAttributesMap())
             .putAttributes(ProtocolKey.DATA_CONTENT_TYPE,
                 CloudEventAttributeValue.newBuilder().setCeString(EventMeshDataContentType.JSON.getCode()).build())
-            //Indicate that it is a subscription response
-            .putAttributes(ProtocolKey.SUB_MESSAGE_TYPE, CloudEventAttributeValue.newBuilder().setCeString(SubscriptionReply.TYPE).build())
-            .setTextData(JsonUtils.toJSONString(subscriptionReply)).build();
+            // Indicate that it is a subscription response
+            .putAttributes(ProtocolKey.SUB_MESSAGE_TYPE, CloudEventAttributeValue.newBuilder().setCeString(ProtocolKey.SUB_REPLY_MESSAGE).build())
+            .build();
     }
 
     @Override
