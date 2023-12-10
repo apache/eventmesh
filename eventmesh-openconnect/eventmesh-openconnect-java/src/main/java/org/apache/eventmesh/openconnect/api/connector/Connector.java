@@ -33,11 +33,15 @@ public interface Connector {
     Class<? extends Config> configClass();
 
     /**
+     * This init method is obsolete. For detailed discussion,
+     * please see <a href="https://github.com/apache/eventmesh/issues/4565">here</a>
+     * <p>
      * Initializes the Connector with the provided configuration.
      *
      * @param config Configuration object
      * @throws Exception if initialization fails
      */
+    @Deprecated
     void init(Config config) throws Exception;
 
     /**
