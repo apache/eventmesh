@@ -48,11 +48,17 @@ public class JsonPathParser {
             Map.Entry<String, JsonNode> entry = fields.next();
             String name = entry.getKey();
             JsonNode valueNode = entry.getValue();
-            if (valueNode.isValueNode()) {
-                variablesList.add(new Variable(name, valueNode.asText()));
-            } else {
-                throw new TransformException("invalid config:" + jsonPathString);
+
+            if (!valueNode.isValueNode()) {
+                throw new TransformException("invalid config: " + jsonPathString);
             }
+
+            String valueText = valueNode.asText();
+            if (valueText.startsWith("$") && !valueText.startsWith("$.data")) {
+                throw new TransformException("invalid config: unsupported value " + jsonPathString);
+            }
+
+            variablesList.add(new Variable(name, valueText));
 
         }
 
