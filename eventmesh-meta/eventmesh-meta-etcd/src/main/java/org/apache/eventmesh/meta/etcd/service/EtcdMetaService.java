@@ -170,6 +170,9 @@ public class EtcdMetaService implements MetaService {
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             }
+        } catch (InterruptedException e) {
+            log.error("[EtcdRegistryService][findEventMeshInfoByCluster] InterruptedException", e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.error("[EtcdRegistryService][findEventMeshInfoByCluster] error, clusterName: {}", clusterName, e);
             throw new MetaException(e.getMessage());
@@ -294,7 +297,10 @@ public class EtcdMetaService implements MetaService {
                     List<KeyValue> keyValues = null;
                     try {
                         keyValues = etcdClient.getKVClient().get(etcdKey).get().getKvs();
-                    } catch (InterruptedException | ExecutionException e) {
+                    } catch (InterruptedException e) {
+                        log.error("get etcdKey[{}] failed[InterruptedException]", etcdKey, e);
+                        Thread.currentThread().interrupt();
+                    } catch (ExecutionException e) {
                         log.error("get etcdKey[{}] failed", etcdKey, e);
                     }
                     if (CollectionUtils.isEmpty(keyValues)) {
