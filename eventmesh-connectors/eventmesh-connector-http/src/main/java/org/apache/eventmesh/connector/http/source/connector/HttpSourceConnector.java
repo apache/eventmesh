@@ -60,19 +60,19 @@ public class HttpSourceConnector implements Source {
     }
 
     @Override
-    public void init(Config config) throws Exception {
+    public void init(Config config) {
         this.sourceConfig = (HttpSourceConfig) config;
         doInit();
     }
 
     @Override
-    public void init(ConnectorContext connectorContext) throws Exception {
+    public void init(ConnectorContext connectorContext) {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (HttpSourceConfig) sourceConnectorContext.getSourceConfig();
         doInit();
     }
 
-    private void doInit() throws Exception {
+    private void doInit() {
         this.queue = new LinkedBlockingQueue<>(1000);
 
         final Vertx vertx = Vertx.vertx();
@@ -100,11 +100,10 @@ public class HttpSourceConnector implements Source {
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         Throwable t = this.server.listen().cause();
         if (t != null) {
-            log.error("[HttpSourceConnector] Failed to start Vertx server.", t);
-            throw new EventMeshException("Failed to start Vertx server");
+            throw new EventMeshException("failed to start Vertx server", t);
         }
     }
 
@@ -119,11 +118,10 @@ public class HttpSourceConnector implements Source {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         Throwable t = this.server.close().cause();
         if (t != null) {
-            log.error("[HttpSourceConnector] Failed to stop Vertx server.", t);
-            throw new EventMeshException("Failed to stop Vertx server");
+            throw new EventMeshException("failed to stop Vertx server", t);
         }
     }
 

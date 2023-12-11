@@ -23,7 +23,7 @@ pubSubConfig:
     group: httpSource
     appId: 5032
     userName: httpSourceUser
-    passWord: httpmqPassWord
+    passWord: httpPassWord
 connectorConfig:
     connectorName: httpSource
     path: /test
