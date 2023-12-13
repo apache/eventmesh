@@ -1,5 +1,7 @@
 # Connectors
 
+>With the changes in the design of the Knative connector, this document is currently temporarily outdated.
+
 ## Connector
 
 A connector is a bridge that interacts with a specific external service or underlying data source (e.g., Databases) on behalf of user applications. A connector is either a Source or a Sink.
