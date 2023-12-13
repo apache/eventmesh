@@ -143,6 +143,7 @@ public class TransformTest {
     public void testTemplateTransFormerWithNonDataItem() {
         String extractJson = "{\"name\":\"$.data.name\",\"time\":\"$.time\"" + "}";
         String template = "Transformers test:data name is ${name}, time is ${time}";
+
         Throwable exception = Assertions.assertThrows(TransformException.class, ()->TransformerBuilder.buildTemplateTransFormer(extractJson, template));
         Assertions.assertEquals("invalid config: unsupported value {\"name\":\"$.data.name\",\"time\":\"$.time\"}" , exception.getMessage());
     }
