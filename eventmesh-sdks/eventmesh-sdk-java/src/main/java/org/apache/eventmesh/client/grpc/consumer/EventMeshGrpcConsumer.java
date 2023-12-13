@@ -85,7 +85,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public void init() {
-        this.channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort()).usePlaintext().build();
+        this.channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort()).enableRetry().usePlaintext()
+            .build();
         this.consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
         this.consumerAsyncClient = ConsumerServiceGrpc.newStub(channel);
         this.heartbeatClient = HeartbeatServiceGrpc.newBlockingStub(channel);
@@ -246,13 +247,10 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             return;
         }
 
-        final Map<String, List<SubscriptionItem>> subscriptionGroup =
-            subscriptionMap.values().stream()
-                .collect(Collectors.groupingBy(SubscriptionInfo::getUrl,
-                    mapping(SubscriptionInfo::getSubscriptionItem, toList())));
+        final Map<String, List<SubscriptionItem>> subscriptionGroup = subscriptionMap.values().stream()
+            .collect(Collectors.groupingBy(SubscriptionInfo::getUrl, mapping(SubscriptionInfo::getSubscriptionItem, toList())));
 
         subscriptionGroup.forEach((url, items) -> {
-            // Subscription subscription = buildSubscription(items, url);
             CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
                 items);
             subStreamHandler.sendSubscription(subscription);

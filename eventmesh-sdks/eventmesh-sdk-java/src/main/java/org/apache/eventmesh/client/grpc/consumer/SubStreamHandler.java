@@ -99,8 +99,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
             @Override
             public void onError(final Throwable t) {
-                LogUtils.error(log, "Received Server side error", t);
-                close();
+                log.error("Received Server side error", t);
             }
 
             @Override
