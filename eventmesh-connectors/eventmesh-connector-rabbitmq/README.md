@@ -7,7 +7,8 @@
 3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
 ```yaml
 pubSubConfig:  
-  meshAddress: 127.0.0.1:10000  
+  # default port is 10000
+  meshAddress: your.eventmesh.server:10000  
   subject: TopicTest  
   idc: FT  
   env: PRD  

@@ -6,8 +6,9 @@
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
 3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
 ```yaml
-pubSubConfig:  
-  meshAddress: 127.0.0.1:10000  
+pubSubConfig:
+  # 默认端口 10000
+  meshAddress: your.eventmesh.server:10000
   subject: TopicTest  
   idc: FT  
   env: PRD  
@@ -23,9 +24,9 @@ connectorConfig:
   passwd: passwd 
   virtualHost: coyrqpyz  
   exchangeType: TOPIC  
-  # 使用内置的 exchangeName 或在连接到 rabbitmq 服务器后创建新的 exchangeName。
+  # 使用内置的 exchangeName 或在连接到 rabbitmq 服务后创建新的 exchangeName。
   exchangeName: amq.topic  
-  # 如果在连接之前不存在，rabbitmq 服务器将自动创建 routingKey 和 queueName。
+  # 如果在连接之前不存在，rabbitmq 服务将自动创建 routingKey 和 queueName。
   routingKey: eventmesh  
   queueName: eventmesh  
   autoAck: true
