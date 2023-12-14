@@ -317,6 +317,7 @@ subprojects {
                                    "eventmesh-metrics-api",
                                    "eventmesh-meta-api",
                                    "eventmesh-trace-api",
+                                   "eventmesh-retry-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
                                    "eventmesh-protocol-api",
