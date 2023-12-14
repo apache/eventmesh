@@ -3,7 +3,7 @@
 ## Lark Sink Server Config And Start
 
 Before using eventmesh-connector-lark to sink events, you need to configure the server.
-- Please customize `sinkEnable``=`true`/`false` in `/resource/server-config.yml` to turn on/off the sink function.
+- Please customize `sinkEnable`=`true`/`false` in `/resource/server-config.yml` to turn on/off the sink function.
 - Regarding `/resource/sink-config.yml`, only the configuration under `sinkConnectorConfig` is explained here:
   - `connectorName`, specify the connector name
   - (required) `appId`, the appId obtained from lark
