@@ -23,8 +23,19 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +47,11 @@ public class FileSourceConnector implements Source {
 
     private OffsetStorageReader offsetStorageReader;
 
+    private String filePath;
+    private String fileName;
+    private InputStream inputStream;
+    private BufferedReader bufferedReader;
+
     @Override
     public Class<? extends Config> configClass() {
         return FileSourceConfig.class;
@@ -45,7 +61,8 @@ public class FileSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for hdfs source connector
         this.sourceConfig = (FileSourceConfig) config;
-
+        this.filePath = ((FileSourceConfig) config).getFilePath();
+        this.fileName = ((FileSourceConfig) config).getFileName();
     }
 
     @Override
@@ -58,12 +75,17 @@ public class FileSourceConnector implements Source {
 
     @Override
     public void start() throws Exception {
-
+        if (fileName == null || fileName.isEmpty() || filePath == null || filePath.isEmpty()) {
+            this.inputStream = System.in;
+        } else {
+            this.inputStream = Files.newInputStream(Paths.get(filePath + fileName),
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.READ);
+        }
+        this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     }
 
     @Override
     public void commit(ConnectRecord record) {
-
     }
 
     @Override
@@ -73,12 +95,28 @@ public class FileSourceConnector implements Source {
 
     @Override
     public void stop() {
-
+        try {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            inputStream.close();
+        } catch (Exception e) {
+            log.error("Error closing resources: {}", e.getMessage());
+        }
     }
 
     @Override
     public List<ConnectRecord> poll() {
-        return null;
+        List<ConnectRecord> connectRecords = new ArrayList<>();
+        try {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                ConnectRecord connectRecord = new ConnectRecord(new RecordPartition(), new RecordOffset(), System.currentTimeMillis(), line);
+                connectRecords.add(connectRecord);
+            }
+        } catch (IOException e) {
+            log.error("Error reading data from the file: {}", e.getMessage());
+        }
+        return connectRecords;
     }
-
 }
