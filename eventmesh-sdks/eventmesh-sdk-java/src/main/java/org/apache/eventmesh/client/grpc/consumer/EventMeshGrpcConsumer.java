@@ -37,6 +37,7 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.HeartbeatServiceGrp
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.ClientType;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
@@ -45,6 +46,7 @@ import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.collections4.MapUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import io.grpc.ManagedChannel;
@@ -68,7 +71,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     private ManagedChannel channel;
     private final EventMeshGrpcClientConfig clientConfig;
 
-    private final Map<String, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
+    private final Map<String /*topic*/, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
 
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
         new EventMeshThreadFactory("GRPCClientScheduler", true));
@@ -93,11 +96,22 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         heartBeat();
     }
 
+    /**
+     * Subscribes to an event at a specified URL(Webhook).
+     *
+     * @param subscriptionItems The list of subscription items.
+     * @param url               The URL to subscribe to.
+     * @return A response containing information about the subscription result.
+     */
     public Response subscribe(final List<SubscriptionItem> subscriptionItems, final String url) {
         LogUtils.info(log, "Create subscription: {} , url: {}", subscriptionItems, url);
 
-        addSubscription(subscriptionItems, url);
+        addSubscription(subscriptionItems, url, GrpcType.WEBHOOK);
 
+        return subscribeWebhook(subscriptionItems, url);
+    }
+
+    private Response subscribeWebhook(List<SubscriptionItem> subscriptionItems, String url) {
         final CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
             url, subscriptionItems);
         try {
@@ -114,6 +128,11 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         return null;
     }
 
+    /**
+     * Subscribes to a streaming.
+     *
+     * @param subscriptionItems The list of subscription items for streaming.
+     */
     public void subscribe(final List<SubscriptionItem> subscriptionItems) {
         LogUtils.info(log, "Create streaming subscription: {}", subscriptionItems);
 
@@ -122,7 +141,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             return;
         }
 
-        addSubscription(subscriptionItems, SDK_STREAM_URL);
+        addSubscription(subscriptionItems, SDK_STREAM_URL, GrpcType.STREAM);
 
         CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, null,
             subscriptionItems);
@@ -135,9 +154,9 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         subStreamHandler.sendSubscription(subscription);
     }
 
-    private void addSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
+    private void addSubscription(final List<SubscriptionItem> subscriptionItems, final String url, final GrpcType grpcType) {
         for (SubscriptionItem item : subscriptionItems) {
-            subscriptionMap.putIfAbsent(item.getTopic(), new SubscriptionInfo(item, url));
+            subscriptionMap.putIfAbsent(item.getTopic(), new SubscriptionInfo(item, url, grpcType));
         }
     }
 
@@ -246,14 +265,27 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         if (subscriptionMap.isEmpty()) {
             return;
         }
-
-        final Map<String, List<SubscriptionItem>> subscriptionGroup = subscriptionMap.values().stream()
+        final Collection<SubscriptionInfo> values = subscriptionMap.values();
+        final AtomicBoolean isStreamSub = new AtomicBoolean(false);
+        for (SubscriptionInfo info : values) {
+            if (info.grpcType == GrpcType.STREAM) {
+                isStreamSub.compareAndSet(false, true);
+                break;
+            }
+        }
+        final Map<String, List<SubscriptionItem>> subscriptionGroup = values.stream()
             .collect(Collectors.groupingBy(SubscriptionInfo::getUrl, mapping(SubscriptionInfo::getSubscriptionItem, toList())));
 
         subscriptionGroup.forEach((url, items) -> {
-            CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
-                items);
-            subStreamHandler.sendSubscription(subscription);
+            if (isStreamSub.get()) {
+                CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
+                    url,
+                    items);
+                subStreamHandler.sendSubscription(subscription);
+            } else {
+                subscribeWebhook(items, url);
+            }
+
         });
     }
 
@@ -276,10 +308,16 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         private transient SubscriptionItem subscriptionItem;
         private transient String url;
+        private GrpcType grpcType;
 
-        SubscriptionInfo(final SubscriptionItem subscriptionItem, final String url) {
+        SubscriptionInfo(final SubscriptionItem subscriptionItem, final String url, final GrpcType grpcType) {
             this.subscriptionItem = subscriptionItem;
             this.url = url;
+            this.grpcType = grpcType;
+        }
+
+        public GrpcType getGrpcType() {
+            return grpcType;
         }
 
         public SubscriptionItem getSubscriptionItem() {

@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 
 import org.apache.commons.collections4.MapUtils;
 
