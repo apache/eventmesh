@@ -85,7 +85,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public void init() {
-        this.channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort()).enableRetry().usePlaintext()
+        this.channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort()).usePlaintext()
             .build();
         this.consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
         this.consumerAsyncClient = ConsumerServiceGrpc.newStub(channel);
