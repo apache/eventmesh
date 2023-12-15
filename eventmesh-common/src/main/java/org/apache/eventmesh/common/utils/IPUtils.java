@@ -59,14 +59,19 @@ public class IPUtils {
         List<String> list = Arrays.asList(priority.split("<"));
         ArrayList<String> preferList = new ArrayList<>(list);
         NetworkInterface preferNetworkInterface = null;
+        boolean matchName = false;
 
         try {
             Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
+                String name = networkInterface.getName();
+                if(preferList.contains(name)){
+                    matchName = true;
+                }
                 if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
-                } else if (preferList.indexOf(networkInterface.getName()) // get the networkInterface that has higher priority
+                } else if (preferList.indexOf(name) // get the networkInterface that has higher priority
                     > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
@@ -76,7 +81,7 @@ public class IPUtils {
             ArrayList<String> ipv4Result = new ArrayList<String>();
             ArrayList<String> ipv6Result = new ArrayList<String>();
 
-            if (preferNetworkInterface != null) {
+            if (preferNetworkInterface != null && matchName) {
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
