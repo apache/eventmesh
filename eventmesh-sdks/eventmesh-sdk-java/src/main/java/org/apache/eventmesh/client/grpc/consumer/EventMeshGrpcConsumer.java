@@ -71,7 +71,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     private ManagedChannel channel;
     private final EventMeshGrpcClientConfig clientConfig;
 
-    private final Map<String /*topic*/, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
+    private final Map<String /* topic */, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
 
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
         new EventMeshThreadFactory("GRPCClientScheduler", true));
@@ -111,23 +111,6 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         return subscribeWebhook(subscriptionItems, url);
     }
 
-    private Response subscribeWebhook(List<SubscriptionItem> subscriptionItems, String url) {
-        final CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
-            url, subscriptionItems);
-        try {
-            CloudEvent response = consumerClient.subscribe(subscription);
-            LogUtils.info(log, "Received response:{}", response);
-            return Response.builder()
-                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
-                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
-                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
-                .build();
-        } catch (Exception e) {
-            log.error("Error in subscribe.", e);
-        }
-        return null;
-    }
-
     /**
      * Subscribes to a streaming.
      *
@@ -152,6 +135,23 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
         }
         subStreamHandler.sendSubscription(subscription);
+    }
+
+    private Response subscribeWebhook(List<SubscriptionItem> subscriptionItems, String url) {
+        final CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
+            url, subscriptionItems);
+        try {
+            CloudEvent response = consumerClient.subscribe(subscription);
+            LogUtils.info(log, "Received response:{}", response);
+            return Response.builder()
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
+        } catch (Exception e) {
+            log.error("Error in subscribe.", e);
+        }
+        return null;
     }
 
     private void addSubscription(final List<SubscriptionItem> subscriptionItems, final String url, final GrpcType grpcType) {
