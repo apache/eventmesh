@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 
 import java.util.ArrayList;
 import java.util.HashSet;

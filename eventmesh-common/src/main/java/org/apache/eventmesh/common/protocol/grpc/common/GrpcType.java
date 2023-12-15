@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
+package org.apache.eventmesh.common.protocol.grpc.common;
 
 public enum GrpcType {
     WEBHOOK, STREAM
