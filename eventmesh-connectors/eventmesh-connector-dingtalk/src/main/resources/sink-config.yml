@@ -17,16 +17,16 @@
 
 pubSubConfig:
     meshAddress: 127.0.0.1:10000
-    subject: TEST-TOPIC-DINGDING
+    subject: TEST-TOPIC-DINGTALK
     idc: FT
     env: PRD
-    group: dingDingSink
+    group: dingTalkSink
     appId: 5034
-    userName: dingDingSinkUser
-    passWord: dingDingPassWord
+    userName: dingTalkSinkUser
+    passWord: dingTalkPassWord
 sinkConnectorConfig:
-    connectorName: dingDingSink
-    appKey: dingDingAppKey
-    appSecret: dingDingAppSecret
-    openConversationId: dingDingOpenConversationId
-    robotCode: dingDingRobotCode
+    connectorName: dingTalkSink
+    appKey: dingTalkAppKey
+    appSecret: dingTalkAppSecret
+    openConversationId: dingTalkOpenConversationId
+    robotCode: dingTalkRobotCode
