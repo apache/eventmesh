@@ -2,7 +2,7 @@
 
 ## WecomSinkConnector: From eventmesh to WeCom
 
-1. launch your eventmesh-runtime.
+1. launch your EventMesh Runtime.
 2. enable sinkConnector and check `sink-config.yml`.
 3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
 

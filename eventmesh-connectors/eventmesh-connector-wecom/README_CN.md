@@ -2,7 +2,7 @@
 
 ## WecomSinkConnector：从 eventmesh 到企业微信
 
-1. 启动你的 eventmesh-runtime。
+1. 启动你的 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
 3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
 

@@ -14,7 +14,7 @@
 
 ### 1.2 启动
 
-1. 启动 eventmesh-runtime
+1. 启动 EventMesh Runtime
 2. 启动 eventmesh-connector-http
 
 完成后，HTTP source connector 会作为一个 HTTP 服务器对外提供服务。

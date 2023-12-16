@@ -14,7 +14,7 @@ Before using HTTP source connector, you need to configure the server.
 
 ### 1.2 Startup
 
-1. start eventmesh-runtime
+1. start EventMesh Runtime
 2. start eventmesh-connector-http
 
 When finished, the HTTP source connector will act as an HTTP server.

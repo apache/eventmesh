@@ -2,7 +2,7 @@
 
 ## RabbitMQSinkConnector：从 eventmesh 到 RabbitMQ
 
-1. 启动你的 RabbitMQ 服务和 eventmesh-runtime。
+1. 启动你的 RabbitMQ 服务和 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
 3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
 
@@ -35,7 +35,7 @@ connectorConfig:
 
 ## RabbitMQSourceConnector：从 RabbitMQ 到 eventmesh
 
-1. 启动你的 rabbitmq 服务和 eventmesh-runtime。 
+1. 启动你的 rabbitmq 服务和 EventMesh Runtime。 
 2. 启用 sourceConnector 并检查 `source-config.yml`（与 sink-config.yml 基本相同）。 
 3. 启动你的 RabbitMQConnectorServer，你会在 rabbitmq 服务中找到该 channel。 
 4. 向队列发送一个 CloudEvent 消息，然后你将在 eventmesh 中接收到该消息。
