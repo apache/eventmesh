@@ -22,3 +22,9 @@ sinkConnectorConfig:
   # Please refer to: https://developer.work.weixin.qq.com/document/path/90236
   robotWebhookKey: weComRobotWebhookKey
 ```
+
+### CloudEvent Attributes
+
+When using the eventmesh-connector-wecom sinking event, you need to add the corresponding extension filed in CloudEvent:
+
+- When key=`wecomTemplateType`, value=`text`/`markdown`, indicating the text type of the event.

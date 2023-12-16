@@ -25,3 +25,9 @@ sinkConnectorConfig:
   openConversationId: dingTalkOpenConversationId
   robotCode: dingTalkRobotCode
 ```
+
+### CloudEvent 属性
+
+使用 eventmesh-connector-dingtalk 下沉事件时，需要在 CloudEvent 中添加对应的 extension filed：
+
+- 当 key=`dingtalkTemplateType`时，value=`text`/`markdown`，表明该事件的文本类型。

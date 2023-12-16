@@ -25,3 +25,9 @@ sinkConnectorConfig:
   openConversationId: dingTalkOpenConversationId
   robotCode: dingTalkRobotCode
 ```
+
+### CloudEvent Attributes
+
+When using the eventmesh-connector-dingtalk sinking event, you need to add the corresponding extension filed in CloudEvent:
+
+- When key=`dingtalkTemplateType`, value=`text`/`markdown`, indicating the text type of the event.
