@@ -9,7 +9,7 @@
 ```yaml
 pubSubConfig:
   # 默认端口 10000
-  meshAddress: 127.0.0.1:10000
+  meshAddress: your.eventmesh.server:10000
   subject: TEST-TOPIC-DINGTALK
   idc: FT
   env: PRD
