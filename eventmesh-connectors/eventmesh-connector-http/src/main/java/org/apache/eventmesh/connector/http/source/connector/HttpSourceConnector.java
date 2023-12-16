@@ -33,7 +33,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.message.MessageReader;
 import io.cloudevents.http.vertx.VertxMessageFactory;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
@@ -83,7 +82,19 @@ public class HttpSourceConnector implements Source {
             .handler(LoggerHandler.create())
             .handler(ctx -> {
                 VertxMessageFactory.createReader(ctx.request())
-                    .map(MessageReader::toEvent)
+                    .map(reader -> {
+                        CloudEvent event = reader.toEvent();
+                        if (event.getSubject() == null) {
+                            throw new IllegalStateException("attribute 'subject' cannot be null");
+                        }
+                        if (event.getDataContentType() == null) {
+                            throw new IllegalStateException("attribute 'datacontenttype' cannot be null");
+                        }
+                        if (event.getData() == null) {
+                            throw new IllegalStateException("attribute 'data' cannot be null");
+                        }
+                        return event;
+                    })
                     .onSuccess(event -> {
                         queue.add(event);
                         log.info("[HttpSourceConnector] Succeed to convert payload into CloudEvent. StatusCode={}", HttpResponseStatus.OK.code());
@@ -91,7 +102,7 @@ public class HttpSourceConnector implements Source {
                     })
                     .onFailure(t -> {
                         log.error("[HttpSourceConnector] Malformed request. StatusCode={}", HttpResponseStatus.BAD_REQUEST.code(), t);
-                        ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).setStatusMessage(t.getMessage()).end();
+                        ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
                     });
             });
         this.server = vertx.createHttpServer(new HttpServerOptions()
