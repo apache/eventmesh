@@ -4,7 +4,7 @@
 
 1. 启动你的 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
-3. 向 EventMesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
+3. 使用在 `pubSubConfig.subject` 中指定的 Topic，向 EventMesh 发送消息。
 
 ```yaml
 pubSubConfig:
