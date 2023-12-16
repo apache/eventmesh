@@ -1,6 +1,6 @@
 # eventmesh-connector-dingtalk
 
-## DingtalkSinkConnector：从 eventmesh 到 dingtalk。
+## DingtalkSinkConnector：from eventmesh to dingtalk。
 
 1. launch your eventmesh-runtime.
 2. enable sinkConnector and check `sink-config.yml`.
