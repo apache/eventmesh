@@ -8,7 +8,7 @@
 
 ```yaml
 pubSubConfig:
-  # default port is 10000
+  # default port 10000
   meshAddress: 127.0.0.1:10000
   subject: TEST-TOPIC-WECOM
   idc: FT

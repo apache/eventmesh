@@ -1,13 +1,14 @@
-# eventmesh-connector-dingtalk
+# DingTalk
 
-## DingtalkSinkConnector：from eventmesh to dingtalk。
+## DingtalkSinkConnector: From eventmesh to DingTalk
 
 1. launch your eventmesh-runtime.
 2. enable sinkConnector and check `sink-config.yml`.
 3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+
 ```yaml
 pubSubConfig:
-  # default port is 10000
+  # default port 10000
   meshAddress: 127.0.0.1:10000
   subject: TEST-TOPIC-DINGTALK
   idc: FT

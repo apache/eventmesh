@@ -8,7 +8,7 @@
 
 ```yaml
 pubSubConfig:  
-  # default port is 10000
+  # default port 10000
   meshAddress: your.eventmesh.server:10000  
   subject: TopicTest  
   idc: FT  

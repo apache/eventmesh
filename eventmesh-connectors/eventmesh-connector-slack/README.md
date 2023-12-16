@@ -1,12 +1,14 @@
-# eventmesh-connector-slack
+# Slack
 
-## SlackSinkConnector：from eventmesh to slack。
+## SlackSinkConnector: From eventmesh to Slack
 
 1. launch your eventmesh-runtime.
 2. enable sinkConnector and check `sink-config.yml`.
 3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+
 ```yaml
 pubSubConfig:
+  # default port 10000
   meshAddress: 127.0.0.1:10000
   subject: TEST-TOPIC-SLACK
   idc: FT
