@@ -1,4 +1,4 @@
-# eventmesh-connector-lark
+# Feishu/Lark
 
 ## Lark Sink Server Config And Start
 

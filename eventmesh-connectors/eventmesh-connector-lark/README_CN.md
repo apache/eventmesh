@@ -1,4 +1,4 @@
-# eventmesh-connector-lark
+# 飞书/Lark
 
 ## Lark Sink Server 的配置与启动
 

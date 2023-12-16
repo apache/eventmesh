@@ -1,10 +1,11 @@
-# eventmesh-connector-rabbitmq
+# RabbitMQ
 
-## RabbitMQSinkConnector: from eventmesh to rabbitmq.
+## RabbitMQSinkConnector: From eventmesh to RabbitMQ
 
-1. launch your rabbitmq server and eventmesh-runtime.
+1. launch your RabbitMQ server and eventmesh-runtime.
 2. enable sinkConnector and check `sink-config.yml`.
 3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+
 ```yaml
 pubSubConfig:  
   # default port is 10000
@@ -32,8 +33,9 @@ connectorConfig:
   autoAck: true
 ```
 
-## RabbitMQSourceConnector: from rabbitmq to eventmesh.
+## RabbitMQSourceConnector: From RabbitMQ to eventmesh
+
 1. launch your rabbitmq server and eventmesh-runtime.
 2. enable sourceConnector and check `source-config.yml` (Basically the same as `sink-config.yml`)
 3. start your `RabbitMQConnectorServer` and you will find the channel in rabbitmq server.
-4. send a cloudevent message to the queue and then you will receive the message in eventmesh.
+4. send a CloudEvent message to the queue and then you will receive the message in eventmesh.

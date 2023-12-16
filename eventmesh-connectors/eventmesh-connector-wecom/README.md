@@ -1,12 +1,14 @@
-# eventmesh-connector-wecom
+# WeCom
 
-## WecomSinkConnector：from eventmesh to wecom。
+## WecomSinkConnector: From eventmesh to WeCom
 
 1. launch your eventmesh-runtime.
 2. enable sinkConnector and check `sink-config.yml`.
 3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+
 ```yaml
 pubSubConfig:
+  # default port is 10000
   meshAddress: 127.0.0.1:10000
   subject: TEST-TOPIC-WECOM
   idc: FT
