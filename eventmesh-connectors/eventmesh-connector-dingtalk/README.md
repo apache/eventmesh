@@ -1,10 +1,10 @@
 # DingTalk
 
-## DingtalkSinkConnector: From eventmesh to DingTalk
+## DingtalkSinkConnector: From EventMesh to DingTalk
 
 1. launch your EventMesh Runtime.
 2. enable sinkConnector and check `sink-config.yml`.
-3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+3. send a message to EventMesh with the topic defined in `pubSubConfig.subject`
 
 ```yaml
 pubSubConfig:

@@ -1,10 +1,10 @@
 # 钉钉
 
-## DingtalkSinkConnector：从 eventmesh 到钉钉
+## DingtalkSinkConnector：从 EventMesh 到钉钉
 
 1. 启动你的 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
-3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
+3. 向 EventMesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
 
 ```yaml
 pubSubConfig:
