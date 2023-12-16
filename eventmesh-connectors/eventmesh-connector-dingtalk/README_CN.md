@@ -30,4 +30,5 @@ sinkConnectorConfig:
 
 使用 eventmesh-connector-dingtalk 下沉事件时，需要在 CloudEvent 中添加对应的 extension filed：
 
-- 当 key=`dingtalkTemplateType`时，value=`text`/`markdown`，表明该事件的文本类型。
+- 当 key=`dingtalktemplatetype`时，value=`text`/`markdown`，表明该事件的文本类型。
+- 当文本类型 `dingtalktemplatetype` 为 markdown 时，可以为文本设置标题。添加 extension：key=`dingtalkmarkdownmessagetitle`，value 为该事件的标题。

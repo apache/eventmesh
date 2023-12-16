@@ -30,4 +30,5 @@ sinkConnectorConfig:
 
 When using the eventmesh-connector-dingtalk sinking event, you need to add the corresponding extension filed in CloudEvent:
 
-- When key=`dingtalkTemplateType`, value=`text`/`markdown`, indicating the text type of the event.
+- When key=`dingtalktemplatetype`, value=`text`/`markdown`, indicating the text type of the event.
+- When text type is markdown, you can add extension: key=`dingtalkmarkdownmessagetitle`, value indicates the title of the event.

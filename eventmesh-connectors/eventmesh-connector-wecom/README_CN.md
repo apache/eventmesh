@@ -27,4 +27,4 @@ sinkConnectorConfig:
 
 使用 eventmesh-connector-wecom 下沉事件时，需要在 CloudEvent 中添加对应的 extension filed：
 
-- 当 key=`wecomTemplateType`时，value=`text`/`markdown`，表明该事件的文本类型。
+- 当 key=`wecomtemplatetype`时，value=`text`/`markdown`，表明该事件的文本类型。

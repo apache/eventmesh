@@ -27,4 +27,4 @@ sinkConnectorConfig:
 
 When using the eventmesh-connector-wecom sinking event, you need to add the corresponding extension filed in CloudEvent:
 
-- When key=`wecomTemplateType`, value=`text`/`markdown`, indicating the text type of the event.
+- When key=`wecomtemplatetype`, value=`text`/`markdown`, indicating the text type of the event.
