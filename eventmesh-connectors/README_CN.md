@@ -34,7 +34,7 @@ CloudEvents 是一种以通用格式描述事件数据的规范，以提供服�
 
 #### Worker
 
-Worker 分为 Source Worker 与 Sink Worker，由`Application`类进行触发运行，分别实现了`ConnectorWorker`接口的方法，其中包含了 worker 的运行生命周期，worker 承载了 connector 的运行。Worker 可以通过镜像的方式轻量的独立运行，内部集成了 eventmesh-sdk-java 模块，采用 cloudevents 协议与 eventmesh 进行交互，目前默认采用 tcp 客户端，后续可以考虑支持动态可配
+Worker 分为 Source Worker 与 Sink Worker，由`Application`类进行触发运行，分别实现了`ConnectorWorker`接口的方法，其中包含了 worker 的运行生命周期，worker 承载了 connector 的运行。Worker 可以通过镜像的方式轻量的独立运行，内部集成了 eventmesh-sdk-java 模块，采用 CloudEvents 协议与 EventMesh 进行交互，目前默认采用 TCP 客户端，后续可以考虑支持动态可配。
 
 #### Connector
 
@@ -42,7 +42,7 @@ Connector 分为 Source Connector 与 Sink Connector，connector 有各自的配
 
 #### ConnectorRecord with CloudEvents
 
-`ConnectorRecord`为 connector 层数据协议，当 worker 与 eventmesh 进行交互时需开发协议适配器进行`ConnectorRecord`到 CloudEvents 的协议转换。
+`ConnectorRecord`为 connector 层数据协议，当 worker 与 EventMesh 进行交互时需开发协议适配器进行`ConnectorRecord`到 CloudEvents 的协议转换。
 
 #### Registry
 
