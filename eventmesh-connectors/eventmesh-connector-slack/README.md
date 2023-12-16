@@ -1,6 +1,6 @@
 # eventmesh-connector-slack
 
-## SlackSinkConnector：从 eventmesh 到 slack。
+## SlackSinkConnector：from eventmesh to slack。
 
 1. launch your eventmesh-runtime.
 2. enable sinkConnector and check `sink-config.yml`.
