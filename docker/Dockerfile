@@ -16,13 +16,13 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-FROM openjdk:8-jdk as builder
+FROM openjdk:11-jdk as builder
 WORKDIR /build
 COPY . .
 RUN ./gradlew clean build jar dist --parallel --daemon
 RUN ./gradlew installPlugin
 
-FROM openjdk:8-jdk
+FROM openjdk:11-jre
 RUN apt-get update && apt-get install -y locales
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
 WORKDIR /data/app/eventmesh
