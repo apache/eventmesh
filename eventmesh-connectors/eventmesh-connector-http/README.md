@@ -1,4 +1,4 @@
-# eventmesh-connector-http
+# HTTP
 
 ## 1 HTTP Source Connector
 
@@ -14,13 +14,15 @@ Before using HTTP source connector, you need to configure the server.
 
 ### 1.2 Startup
 
-1. start eventmesh-runtime
+1. start EventMesh Runtime
 2. start eventmesh-connector-http
 
 When finished, the HTTP source connector will act as an HTTP server.
 
 ### 1.3 Sending messages
+
 You can send messages to the source connector via HTTP.
+
 ```yaml
 connectorConfig:
     connectorName: httpSource
@@ -28,6 +30,7 @@ connectorConfig:
     port: 3755
     idleTimeout: 5
 ```
+
 The above example configures a URL `http://localhost:3755/test` in `source-config.yml`.
 
 You can send messages in `binary` mode or `structured` mode as specified in [cloudevent-spec](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/bindings/http-protocol-binding.md).
@@ -35,6 +38,7 @@ You can send messages in `binary` mode or `structured` mode as specified in [clo
 Here are two examples:
 
 1. Sending a message in `binary` mode.
+
 ```shell
 curl --location --request POST 'http://localhost:3755/test' \
 --header 'ce-id: 1' \
@@ -47,6 +51,7 @@ curl --location --request POST 'http://localhost:3755/test' \
 ```
 
 2. Sending a message in `structured` mode.
+
 ```shell
 curl --location --request POST 'http://localhost:3755/test' \
 --header 'Content-Type: application/cloudevents+json' \

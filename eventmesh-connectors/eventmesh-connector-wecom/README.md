@@ -1,13 +1,15 @@
-# eventmesh-connector-wecom
+# WeCom
 
-## WecomSinkConnector：from eventmesh to wecom。
+## WecomSinkConnector: From EventMesh to WeCom
 
-1. launch your eventmesh-runtime.
+1. launch your EventMesh Runtime.
 2. enable sinkConnector and check `sink-config.yml`.
-3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+3. send a message to EventMesh with the topic defined in `pubSubConfig.subject`
+
 ```yaml
 pubSubConfig:
-  meshAddress: 127.0.0.1:10000
+  # default port 10000
+  meshAddress: your.eventmesh.server:10000
   subject: TEST-TOPIC-WECOM
   idc: FT
   env: PRD
@@ -20,3 +22,9 @@ sinkConnectorConfig:
   # Please refer to: https://developer.work.weixin.qq.com/document/path/90236
   robotWebhookKey: weComRobotWebhookKey
 ```
+
+### CloudEvent Attributes
+
+When using the eventmesh-connector-wecom sinking event, you need to add the corresponding extension filed in CloudEvent:
+
+- When key=`wecomtemplatetype`, value=`text`/`markdown`, indicating the text type of the event.

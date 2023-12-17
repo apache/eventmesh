@@ -1,13 +1,15 @@
-# eventmesh-connector-slack
+# Slack
 
-## SlackSinkConnector：从 eventmesh 到 slack。
+## SlackSinkConnector：从 EventMesh 到 Slack
 
-1. 启动你的 eventmesh-runtime。
+1. 启动你的 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
-3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
+3. 使用在 `pubSubConfig.subject` 中指定的 Topic，向 EventMesh 发送消息。
+
 ```yaml
 pubSubConfig:
-  meshAddress: 127.0.0.1:10000
+  # 默认端口 10000
+  meshAddress: your.eventmesh.server:10000
   subject: TEST-TOPIC-SLACK
   idc: FT
   env: PRD

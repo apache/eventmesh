@@ -27,13 +27,13 @@ public class EventMeshMessageTest {
 
     @Test
     public void testGetProp() {
-        EventMeshMessage message = createLiteMessage();
+        EventMeshMessage message = createEventMeshMessage();
         Assertions.assertEquals(2L, message.getProp().size());
     }
 
     @Test
     public void testSetProp() {
-        EventMeshMessage message = createLiteMessage();
+        EventMeshMessage message = createEventMeshMessage();
         Map<String, String> prop = new HashMap<>();
         prop.put("key3", "value3");
         message.setProp(prop);
@@ -43,7 +43,7 @@ public class EventMeshMessageTest {
 
     @Test
     public void testAddProp() {
-        EventMeshMessage message = createLiteMessage();
+        EventMeshMessage message = createEventMeshMessage();
         message.addProp("key3", "value3");
         Assertions.assertEquals(3L, message.getProp().size());
         Assertions.assertEquals("value1", message.getProp("key1"));
@@ -51,19 +51,19 @@ public class EventMeshMessageTest {
 
     @Test
     public void testGetPropKey() {
-        EventMeshMessage message = createLiteMessage();
+        EventMeshMessage message = createEventMeshMessage();
         Assertions.assertEquals("value1", message.getProp("key1"));
     }
 
     @Test
     public void testRemoveProp() {
-        EventMeshMessage message = createLiteMessage();
+        EventMeshMessage message = createEventMeshMessage();
         message.removePropIfPresent("key1");
         Assertions.assertEquals(1L, message.getProp().size());
         Assertions.assertNull(message.getProp("key1"));
     }
 
-    private EventMeshMessage createLiteMessage() {
+    private EventMeshMessage createEventMeshMessage() {
         Map<String, String> prop = new HashMap<>();
         prop.put("key1", "value1");
         prop.put("key2", "value2");

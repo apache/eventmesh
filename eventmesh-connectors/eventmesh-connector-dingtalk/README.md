@@ -1,14 +1,15 @@
-# eventmesh-connector-dingtalk
+# DingTalk
 
-## DingtalkSinkConnector：from eventmesh to dingtalk。
+## DingtalkSinkConnector: From EventMesh to DingTalk
 
-1. launch your eventmesh-runtime.
+1. launch your EventMesh Runtime.
 2. enable sinkConnector and check `sink-config.yml`.
-3. send a message to eventmesh with the topic defined in `pubSubConfig.subject`
+3. send a message to EventMesh with the topic defined in `pubSubConfig.subject`
+
 ```yaml
 pubSubConfig:
-  # default port is 10000
-  meshAddress: 127.0.0.1:10000
+  # default port 10000
+  meshAddress: your.eventmesh.server:10000
   subject: TEST-TOPIC-DINGTALK
   idc: FT
   env: PRD
@@ -24,3 +25,10 @@ sinkConnectorConfig:
   openConversationId: dingTalkOpenConversationId
   robotCode: dingTalkRobotCode
 ```
+
+### CloudEvent Attributes
+
+When using the eventmesh-connector-dingtalk sinking event, you need to add the corresponding extension filed in CloudEvent:
+
+- When key=`dingtalktemplatetype`, value=`text`/`markdown`, indicating the text type of the event.
+- When text type is markdown, you can add extension: key=`dingtalkmarkdownmessagetitle`, value indicates the title of the event.
