@@ -1,14 +1,15 @@
-# eventmesh-connector-dingtalk
+# 钉钉
 
-## DingtalkSinkConnector：从 eventmesh 到 dingtalk。
+## DingtalkSinkConnector：从 EventMesh 到钉钉
 
-1. 启动你的 eventmesh-runtime。
+1. 启动你的 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
-3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
+3. 使用在 `pubSubConfig.subject` 中指定的 Topic，向 EventMesh 发送消息。
+
 ```yaml
 pubSubConfig:
-  # 默认端口10000
-  meshAddress: 127.0.0.1:10000
+  # 默认端口 10000
+  meshAddress: your.eventmesh.server:10000
   subject: TEST-TOPIC-DINGTALK
   idc: FT
   env: PRD
@@ -24,3 +25,10 @@ sinkConnectorConfig:
   openConversationId: dingTalkOpenConversationId
   robotCode: dingTalkRobotCode
 ```
+
+### CloudEvent 属性
+
+使用 eventmesh-connector-dingtalk 下沉事件时，需要在 CloudEvent 中添加对应的 extension filed：
+
+- 当 key=`dingtalktemplatetype`时，value=`text`/`markdown`，表明该事件的文本类型。
+- 当文本类型 `dingtalktemplatetype` 为 markdown 时，可以为文本设置标题。添加 extension：key=`dingtalkmarkdownmessagetitle`，value 为该事件的标题。

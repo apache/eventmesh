@@ -1,10 +1,11 @@
-# eventmesh-connector-mongodb
+# MongoDB
 
-## MongoDBSinkConnector：从 eventmesh 到 mongodb。
+## MongoDBSinkConnector：从 EventMesh 到 MongoDB
 
-1. 启动你的 mongodb 服务和 eventmesh-runtime。
+1. 启动你的 MongoDB 服务和 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
-3. 向 eventmesh 发送带有在 `pubSubConfig.subject` 中定义的主题消息。
+3. 使用在 `pubSubConfig.subject` 中指定的 Topic，向 EventMesh 发送消息。
+
 ```yaml
 pubSubConfig:
   # 默认端口 10000
@@ -26,9 +27,9 @@ connectorConfig:
   collection: yourCol
 ```
 
-## MongoDBSourceConnector：从 mongodb 到 eventmesh。
+## MongoDBSourceConnector：从 MongoDB 到 EventMesh
 
-1. 启动你的 mongodb 服务和 eventmesh-runtime。 
+1. 启动你的 MongoDB 服务和 EventMesh Runtime。 
 2. 启用 sourceConnector 并检查 `source-config.yml`（与 sink-config.yml 基本相同）。 
 3. 启动你的 MongoDBSourceConnector，现在都已经准备好了。 
-4. 向 mongodb 中 `yourDB` 的 `yourCol` 写入一个 cloudevent 消息，然后你将在 eventmesh 中接收到该消息。
+4. 向 MongoDB 中 `yourDB` 的 `yourCol` 写入一个 CloudEvent 消息，然后你将在 EventMesh 中接收到该消息。
