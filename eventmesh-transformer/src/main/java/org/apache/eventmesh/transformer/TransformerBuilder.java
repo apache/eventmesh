@@ -32,7 +32,6 @@ public class TransformerBuilder {
         }
     }
 
-
     public static Transformer buildTemplateTransFormer(String jsonContent, String template) {
         JsonPathParser jsonPathParser = new JsonPathParser(jsonContent);
         Template templateEntry = new Template(template);
