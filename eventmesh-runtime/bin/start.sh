@@ -129,7 +129,7 @@ export JAVA_HOME
 #elif [ $1 = "dev" ]; then JAVA_OPT="${JAVA_OPT} -server -Xms128M -Xmx256M -Xmn128m -XX:SurvivorRatio=4"
 #fi
 
-GC_LOG="${EVENTMESH_HOME}/logs/eventmesh_gc_%p.log"
+GC_LOG_FILE="${EVENTMESH_LOG_HOME}/eventmesh_gc_%p.log"
 
 #JAVA_OPT="${JAVA_OPT} -server -Xms2048M -Xmx4096M -Xmn2048m -XX:SurvivorRatio=4"
 JAVA_OPT=`cat ${EVENTMESH_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
@@ -137,15 +137,15 @@ JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent
 JAVA_OPT="${JAVA_OPT} -verbose:gc"
 if [[ "$JAVA_VERSION" == "8" ]]; then
     # Set JAVA_OPT for Java 8
-    JAVA_OPT="${JAVA_OPT} -Xloggc:${GC_LOG}"
+    JAVA_OPT="${JAVA_OPT} -Xloggc:${GC_LOG_FILE} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
     JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
-    JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
 elif [[ "$JAVA_VERSION" == "11" ]]; then
     # Set JAVA_OPT for Java 11
-    JAVA_OPT="${JAVA_OPT} -Xlog:gc*:${GC_LOG}:time:filecount=5:filesize=30m"
-    JAVA_OPT="${JAVA_OPT} -Xlog:safepoint:${GC_LOG} -Xlog:ergo*=debug:${GC_LOG}"
+    XLOG_PARAM="time,level,tags:filecount=5,filesize=30m"
+    JAVA_OPT="${JAVA_OPT} -Xlog:gc*:${GC_LOG_FILE}:${XLOG_PARAM}"
+    JAVA_OPT="${JAVA_OPT} -Xlog:safepoint:${GC_LOG_FILE}:${XLOG_PARAM} -Xlog:ergo*=debug:${GC_LOG_FILE}:${XLOG_PARAM}"
 fi
-JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${EVENTMESH_HOME}/logs -XX:ErrorFile=${EVENTMESH_HOME}/logs/hs_err_%p.log"
+JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${EVENTMESH_LOG_HOME} -XX:ErrorFile=${EVENTMESH_LOG_HOME}/hs_err_%p.log"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
 JAVA_OPT="${JAVA_OPT} -XX:MaxDirectMemorySize=8G"
