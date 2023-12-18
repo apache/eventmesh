@@ -28,7 +28,7 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
 WORKDIR /data/app/eventmesh
 COPY --from=builder /build/dist ./
 
-EXPOSE 10105 10000 10106 10205
+EXPOSE 10000 10105 10106 10205
 
 ENV DOCKER true
 ENV EVENTMESH_HOME /data/app/eventmesh
