@@ -16,23 +16,17 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-FROM openjdk:11-jdk as builder_11
+FROM openjdk:11-jdk as builder
 WORKDIR /build
 COPY . .
-RUN ./gradlew clean generateGrammarSource --parallel --daemon
-
-FROM openjdk:8-jdk as builder_8
-WORKDIR /build
-COPY . .
-RUN ./gradlew clean build jar dist -x spotlessJava -x generateGrammarSource --parallel --daemon
-COPY --from=builder_11 /build ./
+RUN ./gradlew clean build jar dist --parallel --daemon
 RUN ./gradlew installPlugin
 
-FROM openjdk:8-jre
+FROM openjdk:11-jre
 RUN apt-get update && apt-get install -y locales procps
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
 WORKDIR /data/app/eventmesh
-COPY --from=builder_8 /build/dist ./
+COPY --from=builder /build/dist ./
 
 EXPOSE 10000 10105 10106 10205
 
