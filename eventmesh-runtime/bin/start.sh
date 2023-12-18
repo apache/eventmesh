@@ -104,7 +104,7 @@ else
         exit 9;
 fi
 
-echo "EventMesh using Java location: $JAVA"
+echo "EventMesh using Java version: $JAVA_VERSION, path: $JAVA"
 
 EVENTMESH_HOME=$(cd "$(dirname "$0")/.." && pwd)
 export EVENTMESH_HOME
@@ -195,6 +195,6 @@ if [ $DOCKER ]; then
 	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 else
 	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out 2>&1 &
-echo $!>pid.file
+echo $!>${EVENTMESH_HOME}/bin/pid.file
 fi
 exit 0
