@@ -23,9 +23,8 @@ RUN ./gradlew clean generateGrammarSource --parallel --daemon
 
 FROM openjdk:8-jdk as builder_8
 WORKDIR /build
-COPY . .
-RUN ./gradlew clean build jar dist -x spotlessJava -x generateGrammarSource --parallel --daemon
 COPY --from=builder_11 /build ./
+RUN ./gradlew clean build jar dist -x spotlessJava -x generateGrammarSource --parallel --daemon
 RUN ./gradlew installPlugin
 
 FROM openjdk:8-jre
