@@ -26,7 +26,7 @@ export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-TMP_JAVA_HOME="/nemo/jdk1.8.0_152"
+TMP_JAVA_HOME="/customize/your/java/home/here"
 
 # detect operating system.
 OS=$(uname)
@@ -92,16 +92,6 @@ if [[ -d "$TMP_JAVA_HOME" ]] && is_java8_or_11 "$TMP_JAVA_HOME/bin/java"; then
 elif [[ -d "$JAVA_HOME" ]] && is_java8_or_11 "$JAVA_HOME/bin/java"; then
         JAVA="$JAVA_HOME/bin/java"
         JAVA_VERSION=$(extract_java_version "$JAVA_HOME/bin/java")
-elif is_java8_or_11 "/nemo/jdk8/bin/java"; then
-    JAVA="/nemo/jdk8/bin/java";
-elif is_java8_or_11 "/nemo/jdk1.8/bin/java"; then
-    JAVA="/nemo/jdk1.8/bin/java";
-elif is_java8_or_11 "/nemo/jdk11/bin/java"; then
-    JAVA="/nemo/jdk11/bin/java";
-    JAVA_VERSION=11
-elif is_java8_or_11 "/nemo/jdk/bin/java"; then
-    JAVA="/nemo/jdk/bin/java";
-    JAVA_VERSION=$(extract_java_version "/nemo/jdk/bin/java")
 elif is_java8_or_11 "$(which java)"; then
         JAVA="$(which java)"
         JAVA_VERSION=$(extract_java_version "$(which java)")
@@ -143,13 +133,15 @@ export JAVA_HOME
 #JAVA_OPT="${JAVA_OPT} -server -Xms2048M -Xmx4096M -Xmn2048m -XX:SurvivorRatio=4"
 JAVA_OPT=`cat ${EVENTMESH_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
-JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${EVENTMESH_HOME}/logs/eventmesh_gc_%p.log"
+JAVA_OPT="${JAVA_OPT} -verbose:gc"
 if [[ "$JAVA_VERSION" == "8" ]]; then
     # Set JAVA_OPT for Java 8
+    JAVA_OPT="${JAVA_OPT} -Xloggc:${EVENTMESH_HOME}/logs/eventmesh_gc_%p.log"
     JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
     JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
 elif [[ "$JAVA_VERSION" == "11" ]]; then
     # Set JAVA_OPT for Java 11
+    JAVA_OPT="${JAVA_OPT} -Xlog:gc:${EVENTMESH_HOME}/logs/eventmesh_gc_%p.log"
     JAVA_OPT="${JAVA_OPT} -Xlog:gc* -Xlog:safepoint -Xlog:ergo*=debug -Xlog:age*=debug"
 fi
 JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${EVENTMESH_HOME}/logs -XX:ErrorFile=${EVENTMESH_HOME}/logs/hs_err_%p.log"
