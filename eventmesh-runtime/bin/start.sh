@@ -82,10 +82,9 @@ function get_pid {
 }
 
 #===========================================================================================
-# Locate Java executable and check version
+# Locate Java Executable
 #===========================================================================================
 
-JAVA_VERSION=8
 if [[ -d "$TMP_JAVA_HOME" ]] && is_java8_or_11 "$TMP_JAVA_HOME/bin/java"; then
         JAVA="$TMP_JAVA_HOME/bin/java"
         JAVA_VERSION=$(extract_java_version "$TMP_JAVA_HOME/bin/java")
