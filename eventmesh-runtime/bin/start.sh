@@ -28,7 +28,7 @@ export LC_ALL=en_US.UTF-8
 
 TMP_JAVA_HOME="/customize/your/java/home/here"
 
-# detect operating system.
+# Detect operating system.
 OS=$(uname)
 
 function is_java8_or_11 {
@@ -61,7 +61,7 @@ function get_pid {
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
 		# If the process does not exist, it indicates that the previous process terminated abnormally.
     if [ ! -d /proc/$ppid ]; then
-      # Remove the residual file
+      # Remove the residual file.
       rm ${EVENTMESH_HOME}/bin/pid.file
       echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
       ppid=""
@@ -74,8 +74,13 @@ function get_pid {
 			# Known problem: grep Java may not be able to accurately identify Java processes
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
-			# It is required to identify the process as accurately as possible on Linux
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+		  if [ $DOCKER ]; then
+		    # No need to exclude root user in Docker containers.
+		    ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | awk -F ' ' {'print $2'})
+		  else
+        # It is required to identify the process as accurately as possible on Linux.
+        ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" | awk -F ' ' {'print $2'})
+      fi
 		fi
 	fi
 	echo "$ppid";
@@ -176,7 +181,7 @@ if [[ $pid == "ERROR"* ]]; then
   echo -e "${pid}"
   exit 9
 fi
-if [ -n "$pid" ];then
+if [ -n "$pid" ]; then
 	echo -e "ERROR\t The server is already running (pid=$pid), there is no need to execute start.sh again."
 	exit 9
 fi
@@ -186,8 +191,7 @@ make_logs_dir
 echo "Using Java version: $JAVA_VERSION, path: $JAVA" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 
 EVENTMESH_MAIN=org.apache.eventmesh.runtime.boot.EventMeshStartup
-if [ $DOCKER ]
-then
+if [ $DOCKER ]; then
 	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 else
 	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out 2>&1 &
