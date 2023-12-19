@@ -67,7 +67,7 @@ public class EventMeshRebalanceService {
         log.info("rebalance service shutdown......");
     }
 
-    public void printRebalanceThreadPoolState() {
-        EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
+    public int getRebalanceThreadPoolQueueSize() {
+        return ((ThreadPoolExecutor)serviceRebalanceScheduler).getQueue().size();
     }
 }
