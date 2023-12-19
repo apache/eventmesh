@@ -167,12 +167,20 @@ public class ClientSessionGroupMapping {
 
             session.setSessionState(SessionState.CLOSED);
 
-            if (EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
-                cleanClientGroupWrapperByCloseSub(session);
-            } else if (EventMeshConstants.PURPOSE_PUB.equals(session.getClient().getPurpose())) {
-                cleanClientGroupWrapperByClosePub(session);
-            } else {
-                log.error("client purpose config is error:{}", session.getClient().getPurpose());
+            final String clientGroup = session.getClient().getGroup();
+            if (!lockMap.containsKey(clientGroup)) {
+               lockMap.putIfAbsent(clientGroup, new Object());
+            }
+            synchronized (lockMap.get(clientGroup)) {
+                if (EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
+                    cleanClientGroupWrapperByCloseSub(session);
+                } else if (EventMeshConstants.PURPOSE_PUB.equals(
+                    session.getClient().getPurpose())) {
+                    cleanClientGroupWrapperByClosePub(session);
+                } else {
+                    log.error("client purpose config is error:{}",
+                        session.getClient().getPurpose());
+                }
             }
 
             if (session.getContext() != null) {
