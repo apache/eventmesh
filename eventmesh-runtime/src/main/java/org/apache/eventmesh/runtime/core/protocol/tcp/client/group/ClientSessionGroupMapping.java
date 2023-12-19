@@ -169,7 +169,7 @@ public class ClientSessionGroupMapping {
 
             final String clientGroup = session.getClient().getGroup();
             if (!lockMap.containsKey(clientGroup)) {
-               lockMap.putIfAbsent(clientGroup, new Object());
+                lockMap.putIfAbsent(clientGroup, new Object());
             }
             synchronized (lockMap.get(clientGroup)) {
                 if (EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
