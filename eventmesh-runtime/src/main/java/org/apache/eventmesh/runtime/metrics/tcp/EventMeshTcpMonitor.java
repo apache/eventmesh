@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -126,8 +127,16 @@ public class EventMeshTcpMonitor {
 
         }), delay, period, TimeUnit.MILLISECONDS);
 
-        monitorThreadPoolTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
-            eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
+        monitorThreadPoolTask =  eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
+            appLogger.info("{TaskHandle:{},Send:{},Ack:{},Reply:{},Push:{},Scheduler:{},Rebalance:{}}",
+                eventMeshTCPServer.getTcpThreadPoolGroup().getTaskHandleExecutorService().getQueue().size(),
+                eventMeshTCPServer.getTcpThreadPoolGroup().getSendExecutorService().getQueue().size(),
+                eventMeshTCPServer.getTcpThreadPoolGroup().getAckExecutorService().getQueue().size(),
+                eventMeshTCPServer.getTcpThreadPoolGroup().getReplyExecutorService().getQueue().size(),
+                eventMeshTCPServer.getTcpThreadPoolGroup().getBroadcastMsgDownstreamExecutorService().getQueue().size(),
+                ((ThreadPoolExecutor) eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler()).getQueue().size(),
+                eventMeshTCPServer.getEventMeshRebalanceService().getRebalanceThreadPoolQueueSize());
+
             eventMeshTCPServer.getTcpRetryer().printState();
 
             // monitor retry queue size
@@ -137,7 +146,6 @@ public class EventMeshTcpMonitor {
                 EventMeshConstants.PROTOCOL_TCP,
                 MonitorMetricConstants.RETRY_QUEUE_SIZE,
                 tcpSummaryMetrics.getRetrySize());
-
         }, 10, PRINT_THREADPOOLSTATE_INTERVAL, TimeUnit.SECONDS);
         log.info("EventMeshTcpMonitor started......");
     }

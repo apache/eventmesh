@@ -222,17 +222,21 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         ListenProcessor listenProcessor = new ListenProcessor(this);
         registerProcessor(Command.LISTEN_REQUEST, listenProcessor, taskHandleExecutorService);
 
+        ThreadPoolExecutor sendExecutorService = super.getTcpThreadPoolGroup().getSendExecutorService();
         MessageTransferProcessor messageTransferProcessor = new MessageTransferProcessor(this);
-        registerProcessor(Command.REQUEST_TO_SERVER, messageTransferProcessor, taskHandleExecutorService);
-        registerProcessor(Command.RESPONSE_TO_SERVER, messageTransferProcessor, taskHandleExecutorService);
-        registerProcessor(Command.ASYNC_MESSAGE_TO_SERVER, messageTransferProcessor, taskHandleExecutorService);
-        registerProcessor(Command.BROADCAST_MESSAGE_TO_SERVER, messageTransferProcessor, taskHandleExecutorService);
+        registerProcessor(Command.REQUEST_TO_SERVER, messageTransferProcessor, sendExecutorService);
+        registerProcessor(Command.ASYNC_MESSAGE_TO_SERVER, messageTransferProcessor, sendExecutorService);
+        registerProcessor(Command.BROADCAST_MESSAGE_TO_SERVER, messageTransferProcessor, sendExecutorService);
 
+        ThreadPoolExecutor replyExecutorService = super.getTcpThreadPoolGroup().getReplyExecutorService();
+        registerProcessor(Command.RESPONSE_TO_SERVER, messageTransferProcessor, replyExecutorService);
+
+        ThreadPoolExecutor ackExecutorService = super.getTcpThreadPoolGroup().getAckExecutorService();
         MessageAckProcessor messageAckProcessor = new MessageAckProcessor(this);
-        registerProcessor(Command.RESPONSE_TO_CLIENT_ACK, messageAckProcessor, taskHandleExecutorService);
-        registerProcessor(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, messageAckProcessor, taskHandleExecutorService);
-        registerProcessor(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, messageAckProcessor, taskHandleExecutorService);
-        registerProcessor(Command.REQUEST_TO_CLIENT_ACK, messageAckProcessor, taskHandleExecutorService);
+        registerProcessor(Command.RESPONSE_TO_CLIENT_ACK, messageAckProcessor, ackExecutorService);
+        registerProcessor(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, messageAckProcessor, ackExecutorService);
+        registerProcessor(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, messageAckProcessor, ackExecutorService);
+        registerProcessor(Command.REQUEST_TO_CLIENT_ACK, messageAckProcessor, ackExecutorService);
     }
 
     public EventMeshServer getEventMeshServer() {
