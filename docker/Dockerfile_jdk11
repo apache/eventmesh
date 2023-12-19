@@ -16,34 +16,23 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-name: Build
-on:
-  release:
-    types: [released]
+FROM openjdk:11-jdk as builder
+WORKDIR /build
+COPY . .
+RUN ./gradlew clean build jar dist --parallel --daemon
+RUN ./gradlew installPlugin
 
-jobs:
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            apache/eventmesh
+FROM openjdk:11-jdk
+RUN apt-get update && apt-get install -y locales procps
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
+WORKDIR /data/app/eventmesh
+COPY --from=builder /build/dist ./
 
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: ./docker/Dockerfile_jdk8
-          context: ./
+EXPOSE 10000 10105 10106 10205
+
+ENV DOCKER true
+ENV EVENTMESH_HOME /data/app/eventmesh
+ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
+ENV CONFPATH /data/app/eventmesh/conf
+
+CMD ["bash", "bin/start.sh"]
