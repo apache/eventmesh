@@ -27,7 +27,7 @@ COPY --from=builder_11 /build ./
 RUN ./gradlew clean build jar dist -x spotlessJava -x generateGrammarSource --parallel --daemon
 RUN ./gradlew installPlugin
 
-FROM openjdk:8-jre
+FROM openjdk:8-jdk
 RUN apt-get update && apt-get install -y locales procps
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
 WORKDIR /data/app/eventmesh
