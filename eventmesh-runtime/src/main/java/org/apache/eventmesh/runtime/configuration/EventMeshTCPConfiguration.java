@@ -59,7 +59,28 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     private int eventMeshTcpGlobalScheduler = 5;
 
     @ConfigFiled(field = "tcp.taskHandleExecutorPoolSize")
-    private int eventMeshTcpTaskHandleExecutorPoolSize = Runtime.getRuntime().availableProcessors();
+    private int eventMeshTcpTaskHandleExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
+
+    @ConfigFiled(field = "tcp.sendExecutorPoolSize")
+    private int eventMeshTcpMsgSendExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
+
+    @ConfigFiled(field = "tcp.replyExecutorPoolSize")
+    private int eventMeshTcpMsgReplyExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
+
+    @ConfigFiled(field = "tcp.ackExecutorPoolSize")
+    private int eventMeshTcpMsgAckExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
+
+    @ConfigFiled(field = "tcp.taskHandleExecutorQueueSize")
+    private int eventMeshTcpTaskHandleExecutorQueueSize = 10000;
+
+    @ConfigFiled(field = "tcp.sendExecutorQueueSize")
+    private int eventMeshTcpMsgSendExecutorQueueSize = 10000;
+
+    @ConfigFiled(field = "tcp.replyExecutorQueueSize")
+    private int eventMeshTcpMsgReplyExecutorQueueSize = 10000;
+
+    @ConfigFiled(field = "tcp.ackExecutorQueueSize")
+    private int eventMeshTcpMsgAckExecutorQueueSize = 10000;
 
     @ConfigFiled(field = "tcp.msgDownStreamExecutorPoolSize")
     private int eventMeshTcpMsgDownStreamExecutorPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 8);
