@@ -7,7 +7,7 @@ Connector 通过  `main()` 作为一个独立服务运行在 [eventmesh-connecto
 1. 启动你的 redis 实例和 EventMesh Runtime。
 2. 启用 sinkConnector 并检查 `sink-config.yml`。
 3. 启动你的 `RedisConnectServer`，它将订阅到 EventMesh Runtime 中 `pubSubConfig.subject` 中定义的主题，并将数据发送到 redis 中的 `connectorConfig.topic`。
-4. 使用在 `pubSubConfig.subject` 中指定的 Topic，向 EventMesh 发送消息。
+4. 使用在 `pubSubConfig.subject` 中指定的 Topic，向 EventMesh 发送消息，然后你将在 redis 中接收到该消息。
 
 ```yaml
 pubSubConfig:

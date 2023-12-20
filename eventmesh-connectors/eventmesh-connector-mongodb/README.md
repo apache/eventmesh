@@ -1,13 +1,13 @@
 # MongoDB
 
-Connector runs as a standalone service by `main()` in [eventmesh-connectors#connector](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors#connector)
+Connector runs as a standalone service by `main()` [eventmesh-connectors#connector](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors#connector)
 
 ## MongoDBSinkConnector: From EventMesh to MongoDB
 
 1. launch your MongoDB server and EventMesh Runtime.
 2. enable sinkConnector and check `sink-config.yml`.
 3. start your MongoDBConnectorServer, it will subscribe to the topic defined in `pubSubConfig.subject` of EventMesh Runtime and send data to `connectorConfig.collection` in your MongoDB.
-4. send a message to EventMesh with the topic defined in `pubSubConfig.subject`.
+4. send a message to EventMesh with the topic defined in `pubSubConfig.subject` and then you will receive the message in MongoDB.
 
 ```yaml
 pubSubConfig:
