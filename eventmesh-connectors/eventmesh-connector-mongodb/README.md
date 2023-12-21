@@ -1,7 +1,5 @@
 # MongoDB
 
-Connector runs as a standalone service by `main()` [eventmesh-connectors#connector](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors#connector)
-
 ## MongoDBSinkConnector: From EventMesh to MongoDB
 
 1. launch your MongoDB server and EventMesh Runtime.
