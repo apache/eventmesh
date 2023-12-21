@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            apache/eventmesh
+            pil0txia/eventmesh
 
       - name: Build and push
         uses: docker/build-push-action@v4
