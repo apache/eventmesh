@@ -109,7 +109,7 @@ allprojects {
         enforceCheck false
         java {
             target project.fileTree(project.projectDir) {
-                include '**/*.java'
+                include 'src/*/java/**/*.java'
                 exclude '**/org/apache/eventmesh/**/protos**'
                 exclude '**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**'
                 exclude '**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**'
