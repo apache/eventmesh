@@ -110,7 +110,7 @@ public abstract class TcpClient implements Closeable {
 
             @Override
             public void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
+                ch.pipeline().addLast(new Codec())
                     .addLast(handler, newExceptionHandler());
             }
         });

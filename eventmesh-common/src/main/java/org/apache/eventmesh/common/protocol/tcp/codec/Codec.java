@@ -35,8 +35,10 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageCodec;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
@@ -44,12 +46,25 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Codec {
+public class Codec extends ByteToMessageCodec<Package> {
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
+
+    private Encoder encoder = new Encoder();
+    private Decoder decoder = new Decoder();
+
+    @Override
+    protected void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
+        encoder.encode(ctx, pkg, out);
+    }
+
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        decoder.decode(ctx, in, out);
+    }
 
     public static class Encoder extends MessageToByteEncoder<Package> {
 
