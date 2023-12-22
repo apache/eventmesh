@@ -83,9 +83,13 @@ jobs:
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
         run: ./gradlew clean build jar dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
       - name: Install plugin
         run: ./gradlew installPlugin
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v2
