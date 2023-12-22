@@ -4,7 +4,8 @@
 
 1. launch your RabbitMQ server and EventMesh Runtime.
 2. enable sinkConnector and check `sink-config.yml`.
-3. send a message to EventMesh with the topic defined in `pubSubConfig.subject`
+3. start your `RabbitMQConnectorServer`, it will subscribe to the topic defined in `pubSubConfig.subject` of EventMesh Runtime and send data to `connectorConfig.queueName` in your RabbitMQ.
+4. send a message to EventMesh with the topic defined in `pubSubConfig.subject` and then you will receive the message in RabbitMQ.
 
 ```yaml
 pubSubConfig:  
@@ -35,7 +36,7 @@ connectorConfig:
 
 ## RabbitMQSourceConnector: From RabbitMQ to EventMesh
 
-1. launch your rabbitmq server and EventMesh Runtime.
+1. launch your RabbitMQ server and EventMesh Runtime.
 2. enable sourceConnector and check `source-config.yml` (Basically the same as `sink-config.yml`)
-3. start your `RabbitMQConnectorServer` and you will find the channel in rabbitmq server.
+3. start your `RabbitMQConnectorServer`, it will subscribe to the queue defined in `connectorConfig.queueName` in your RabbitMQ and send data to `pubSubConfig.subject` of EventMesh Runtime.
 4. send a CloudEvent message to the queue and then you will receive the message in EventMesh.
