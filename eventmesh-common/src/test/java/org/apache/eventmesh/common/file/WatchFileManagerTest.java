@@ -24,37 +24,45 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class WatchFileManagerTest {
+
+    @TempDir
+    File tempConfigDir;
 
     @Test
     public void testWatchFile() throws IOException, InterruptedException {
         String file = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
         File f = new File(file);
+        File tempConfigFile = new File(tempConfigDir, "configuration.properties");
+        Files.copy(f.toPath(), tempConfigFile.toPath());
+
         final FileChangeListener fileChangeListener = new FileChangeListener() {
 
             @Override
             public void onChanged(FileChangeContext changeContext) {
-                Assertions.assertEquals(f.getName(), changeContext.getFileName());
-                Assertions.assertEquals(f.getParent(), changeContext.getDirectoryPath());
+                Assertions.assertEquals(tempConfigFile.getName(), changeContext.getFileName());
+                Assertions.assertEquals(tempConfigFile.getParent(), changeContext.getDirectoryPath());
             }
 
             @Override
             public boolean support(FileChangeContext changeContext) {
-                return changeContext.getWatchEvent().context().toString().contains(f.getName());
+                return changeContext.getWatchEvent().context().toString().contains(tempConfigFile.getName());
             }
         };
-        WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
+        WatchFileManager.registerFileChangeListener(tempConfigFile.getParent(), fileChangeListener);
 
         Properties properties = new Properties();
-        properties.load(new BufferedReader(new FileReader(file)));
+        properties.load(new BufferedReader(new FileReader(tempConfigFile)));
         properties.setProperty("eventMesh.server.newAdd", "newAdd");
-        FileWriter fw = new FileWriter(file);
+        FileWriter fw = new FileWriter(tempConfigFile);
         properties.store(fw, "newAdd");
 
         ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
