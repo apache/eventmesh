@@ -3,6 +3,7 @@
 ## Connector
 
 A connector is an image or instance that interacts with a specific external service or underlying data source (e.g., Databases) on behalf of user applications. A connector is either a Source or a Sink.
+
 Connector runs as a standalone service by `main()`.
 
 ## Source
