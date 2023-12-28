@@ -76,7 +76,7 @@ public class KafkaSourceConnector implements Source {
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, sourceConfig.getConnectorConfig().getAutoCommitIntervalMS());
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sourceConfig.getConnectorConfig().getSessionTimeoutMS());
         this.pollTimeOut = sourceConfig.getConnectorConfig().getPollTimeOut();
-        this.kafkaConsumer = new KafkaConsumer<String, String>(props);
+        this.kafkaConsumer = new KafkaConsumer<>(props);
     }
 
     @Override

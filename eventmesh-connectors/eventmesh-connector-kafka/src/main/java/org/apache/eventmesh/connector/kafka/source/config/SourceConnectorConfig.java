@@ -26,11 +26,11 @@ public class SourceConnectorConfig {
     private String topic = "TopicTest";
     private String bootstrapServers = "127.0.0.1:9092";
     private String groupID = "kafkaSource";
-    private String keyConverter = "org.apache.kafka.common.serialization.StringSerializer";
-    private String valueConverter = "org.apache.kafka.common.serialization.StringSerializer";
+    private String keyConverter = "org.apache.kafka.common.serialization.StringDeserializer";
+    private String valueConverter = "org.apache.kafka.common.serialization.StringDeserializer";
     private String autoCommitIntervalMS = "1000";
     private String enableAutoCommit = "false";
-    private String sessionTimeoutMS = "3000";
+    private String sessionTimeoutMS = "10000";
     private String maxPollRecords = "1000";
     private int pollTimeOut = 100;
 }

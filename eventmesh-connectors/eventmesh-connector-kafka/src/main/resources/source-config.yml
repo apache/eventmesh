@@ -26,7 +26,8 @@ pubSubConfig:
     passWord: kafkaPassWord
 connectorConfig:
     connectorName: kafkaSource
-    bootstrapServers: 127.0.0.1:9090
+    bootstrapServers: 127.0.0.1:9092
     topic: TopicTest
     groupID: kafkaSource
+    sessionTimeoutMS: 10000
     maxPollRecords: 1000

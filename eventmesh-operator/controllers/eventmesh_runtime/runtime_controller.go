@@ -197,7 +197,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	}
 
 	podNames := getRuntimePodNames(podList.Items)
-	r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", eventMeshRuntime.Status.Nodes))
+	r.Logger.Info(fmt.Sprintf("Status.Nodes = %s", eventMeshRuntime.Status.Nodes))
 	r.Logger.Info(fmt.Sprintf("podNames = %s", podNames))
 	// Ensure every pod is in running phase
 	for _, pod := range podList.Items {
@@ -208,7 +208,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 
 	if podNames != nil {
 		eventMeshRuntime.Status.Nodes = podNames
-		r.Logger.Info(fmt.Sprintf("eventMeshRuntime.Stutas.Nodes = %s", eventMeshRuntime.Status.Nodes))
+		r.Logger.Info(fmt.Sprintf("eventMeshRuntime.Status.Nodes = %s", eventMeshRuntime.Status.Nodes))
 		// Update status.Size if needed
 		if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
 			r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
