@@ -157,7 +157,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 		return reconcile.Result{}, err
 	}
 	podNames := getConnectorPodNames(podList.Items)
-	r.Logger.Info(fmt.Sprintf("Stutas.Nodes = %s", connector.Status.Nodes))
+	r.Logger.Info(fmt.Sprintf("Status.Nodes = %s", connector.Status.Nodes))
 	r.Logger.Info(fmt.Sprintf("podNames = %s", podNames))
 	// Ensure every pod is in running phase
 	for _, pod := range podList.Items {
@@ -168,7 +168,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 
 	if podNames != nil {
 		connector.Status.Nodes = podNames
-		r.Logger.Info(fmt.Sprintf("eventMeshRuntime.Stutas.Nodes = %s", connector.Status.Nodes))
+		r.Logger.Info(fmt.Sprintf("Connector.Status.Nodes = %s", connector.Status.Nodes))
 		// Update status.Size if needed
 		if connector.Spec.Size != connector.Status.Size {
 			r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
