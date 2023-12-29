@@ -474,6 +474,7 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
+    def log4jVersion = '2.22.1'
 
     dependencyManagement {
         dependencies {
@@ -488,9 +489,11 @@ subprojects {
             dependency "com.google.guava:guava:31.0.1-jre"
 
             dependency "org.slf4j:slf4j-api:2.0.9"
-            dependency "org.apache.logging.log4j:log4j-api:2.22.1"
-            dependency "org.apache.logging.log4j:log4j-core:2.22.1"
-            dependency "org.apache.logging.log4j:log4j-slf4j2-impl:2.22.1"
+            dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}" // used with SLF4J 1.7.x or older for third-party dependencies
+            dependency "org.apache.logging.log4j:log4j-to-slf4j:${log4jVersion}" // do not use log4j-to-slf4j with log4j-slf4j-impl together
 
             dependency "com.lmax:disruptor:3.4.2"
 
