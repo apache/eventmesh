@@ -35,6 +35,10 @@ type ConnectorsSpec struct {
 	Size int `json:"size"`
 	// ConnectorContainers define some configuration
 	ConnectorContainers []corev1.Container `json:"connectorContainers"`
+	// HostNetwork can be true or false
+	HostNetwork bool `json:"hostNetwork,omitempty"`
+	// DNSPolicy Set DNS policy for the pod.
+	DNSPolicy corev1.DNSPolicy `json:"dnsPolicy,omitempty"`
 	// Volumes define the connector config
 	Volumes []corev1.Volume `json:"volumes"`
 	// ImagePullPolicy defines how the image is pulled
