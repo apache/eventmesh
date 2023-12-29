@@ -114,6 +114,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	eventMeshRuntime := &eventmeshoperatorv1.Runtime{}
 	err := r.Client.Get(context.TODO(), req.NamespacedName, eventMeshRuntime)
 	if err != nil {
+		share.IsEventMeshRuntimeInitialized = false
 		// If it's a not found exception, it means the cr has been deleted.
 		if errors.IsNotFound(err) {
 			r.Logger.Info("eventMeshRuntime resource not found. Ignoring since object must be deleted.")
