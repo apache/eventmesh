@@ -287,10 +287,10 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     jetcd-resolver 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
     jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
     kafka-clients 3.0.0: https://github.com/apache/kafka, Apache 2.0
-    log4j-api 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
-    log4j-core 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
-    log4j-slf4j-impl 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
-    log4j-to-slf4j 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
+    log4j-api 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
+    log4j-core 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
+    log4j-slf4j-impl 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
+    log4j-to-slf4j 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
     metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
@@ -467,7 +467,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     bcutil-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
     checker-qual 3.12.0: https://github.com/typetools/checker-framework, MIT
     reactive-streams 1.0.3: https://github.com/reactive-streams/reactive-streams-jvm, MIT
-    slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT
+    slf4j-api 2.0.9: https://github.com/qos-ch/slf4j, MIT
 
 ========================================================================
 BSD-3-Clause licenses
