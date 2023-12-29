@@ -291,7 +291,6 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     log4j-core 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-slf4j2-impl 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-slf4j-impl 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
-    log4j-to-slf4j 2.22.1: https://github.com/apache/logging-log4j2, Apache 2.0
     metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0

@@ -146,7 +146,6 @@ log4j-api-2.22.1.jar
 log4j-core-2.22.1.jar
 log4j-slf4j2-impl-2.22.1.jar
 log4j-slf4j-impl-2.22.1.jar
-log4j-to-slf4j-2.22.1.jar
 logback-classic-1.2.10.jar
 logback-core-1.2.10.jar
 lz4-java-1.7.1.jar
