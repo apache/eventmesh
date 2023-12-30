@@ -35,7 +35,6 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -220,7 +219,7 @@ public class EventMeshConsumer {
         broadcastMqConsumer.registerEventListener(createEventListener(SubscriptionMode.BROADCASTING));
 
         serviceState = ServiceState.INITED;
-        LogUtils.info(log, "EventMeshConsumer [{}] initialized.............", consumerGroup);
+        log.info("EventMeshConsumer [{}] initialized.............", consumerGroup);
     }
 
     public synchronized void start() throws Exception {
@@ -241,7 +240,7 @@ public class EventMeshConsumer {
         broadcastMqConsumer.start();
 
         serviceState = ServiceState.RUNNING;
-        LogUtils.info(log, "EventMeshConsumer [{}] started..........", consumerGroup);
+        log.info("EventMeshConsumer [{}] started..........", consumerGroup);
     }
 
     public synchronized void shutdown() throws Exception {
@@ -249,7 +248,7 @@ public class EventMeshConsumer {
         broadcastMqConsumer.shutdown();
 
         serviceState = ServiceState.STOPPED;
-        LogUtils.info(log, "EventMeshConsumer [{}] shutdown.........", consumerGroup);
+        log.info("EventMeshConsumer [{}] shutdown.........", consumerGroup);
     }
 
     public ServiceState getStatus() {
@@ -347,7 +346,7 @@ public class EventMeshConsumer {
                     }
                 }
             } else {
-                LogUtils.debug(log, "no active consumer for topic={}|msg={}", topic, event);
+                log.debug("no active consumer for topic={}|msg={}", topic, event);
             }
 
             eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
@@ -359,8 +358,7 @@ public class EventMeshConsumer {
         final EventMeshProducer producer = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {
-            LogUtils.warn(log, "consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
-                consumerGroup, bizSeqNo, uniqueId);
+            log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
             return;
         }
 
@@ -375,8 +373,7 @@ public class EventMeshConsumer {
 
             @Override
             public void onException(final OnExceptionContext context) {
-                LogUtils.warn(log, "consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup,
-                    bizSeqNo, uniqueId);
+                log.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
             }
         });
     }

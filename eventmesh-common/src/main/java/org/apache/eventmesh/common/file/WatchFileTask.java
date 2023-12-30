@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common.file;
 
-import org.apache.eventmesh.common.utils.LogUtils;
-
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -89,7 +87,7 @@ public class WatchFileTask extends Thread {
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
-                        LogUtils.warn(log, "[WatchFileTask] file overflow: {}", event.context());
+                        log.warn("[WatchFileTask] file overflow: {}", event.context());
                         continue;
                     }
                     precessWatchEvent(event);
@@ -97,7 +95,7 @@ public class WatchFileTask extends Thread {
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
                 if (interrupted) {
-                    LogUtils.debug(log, "[WatchFileTask] file watch is interrupted");
+                    log.debug("[WatchFileTask] file watch is interrupted");
                 }
             } catch (Exception ex) {
                 log.error("[WatchFileTask] an exception occurred during file listening : ", ex);

@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.connector.jdbc.DataChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges.Builder;
 import org.apache.eventmesh.connector.jdbc.Field;
@@ -424,7 +423,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
      * @param event   the event to be handled
      */
     protected void handleHeartbeatEvent(MysqlJdbcContext context, Event event) {
-        LogUtils.debug(log, "Replication client handle {}", event.getHeader().getEventType());
+        log.debug("Replication client handle {}", event.getHeader().getEventType());
     }
 
     /**
@@ -506,7 +505,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         }
         String sqlBegin = sql.substring(0, 6).toUpperCase();
         if (StringUtils.startsWithAny(sqlBegin, "INSERT", "UPDATE", "DELETE")) {
-            LogUtils.warn(log, "Received DML '[SQL={}]' for processing, binlog probably contains events generated with statement", sql);
+            log.warn("Received DML '[SQL={}]' for processing, binlog probably contains events generated with statement", sql);
             return;
         }
 
@@ -732,7 +731,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
     protected void handleGtidEvent(MysqlJdbcContext context, Event event) {
         GtidEventData gtidEvent = unwrapData(event);
         String gtid = gtidEvent.getMySqlGtid().toString();
-        LogUtils.debug(log, "Received GTID event: {}", gtid);
+        log.debug("Received GTID event: {}", gtid);
         localGtidSet.add(gtid);
         context.beginGtid(gtid);
     }

@@ -44,7 +44,6 @@ import com.lark.oapi.core.response.TenantAccessTokenResp;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class LarkSinkConnector implements Sink {
 
@@ -60,11 +59,11 @@ public class LarkSinkConnector implements Sink {
      * you can try to modify it.
      */
     public static final Cache<String, String> AUTH_CACHE = CacheBuilder.newBuilder()
-            .initialCapacity(12)
-            .maximumSize(10)
-            .concurrencyLevel(5)
-            .expireAfterWrite(30, TimeUnit.MINUTES)
-            .build();
+        .initialCapacity(12)
+        .maximumSize(10)
+        .concurrencyLevel(5)
+        .expireAfterWrite(30, TimeUnit.MINUTES)
+        .build();
 
     private LarkSinkConfig sinkConfig;
 
@@ -78,7 +77,8 @@ public class LarkSinkConnector implements Sink {
     }
 
     @Override
-    public void init(Config config) {}
+    public void init(Config config) {
+    }
 
     @Override
     public void init(ConnectorContext connectorContext) {
@@ -136,15 +136,15 @@ public class LarkSinkConnector implements Sink {
         return AUTH_CACHE.get(TENANT_ACCESS_TOKEN, () -> {
 
             Client client = Client.newBuilder(appId, appSecret)
-                    .appType(AppType.SELF_BUILT)
-                    .logReqAtDebug(true)
-                    .build();
+                .appType(AppType.SELF_BUILT)
+                .logReqAtDebug(true)
+                .build();
 
             TenantAccessTokenResp resp = client.ext().getTenantAccessTokenBySelfBuiltApp(
-                    SelfBuiltTenantAccessTokenReq.newBuilder()
-                            .appSecret(appSecret)
-                            .appId(appId)
-                            .build());
+                SelfBuiltTenantAccessTokenReq.newBuilder()
+                    .appSecret(appSecret)
+                    .appId(appId)
+                    .build());
             return resp.getTenantAccessToken();
         });
     }
