@@ -95,6 +95,10 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
                   .dependsOn(spotlessApply)
 
+    configurations {
+        errorprone.extendsFrom(annotationProcessor)
+    }
+
     dependencies {
         repositories {
             mavenLocal()
@@ -104,6 +108,7 @@ allprojects {
             }
         }
         testImplementation "org.junit.jupiter:junit-jupiter:5.6.0"
+        errorprone "com.google.errorprone:error_prone_core:2.24.0"
     }
 
     spotless {
@@ -138,6 +143,7 @@ allprojects {
     test {
         useJUnitPlatform()
     }
+
 }
 
 task tar(type: Tar) {
@@ -389,6 +395,28 @@ subprojects {
     task packageSources(type: Jar) {
         from project.sourceSets.main.allSource
         archiveClassifier.set('sources')
+    }
+
+    task errorPronePatch(type: JavaCompile) {
+        classpath = sourceSets.main.compileClasspath
+        destinationDirectory = file('target/errorprone')
+        source(sourceSets.main.java)
+        options.annotationProcessorPath = configurations.errorprone
+        options.compilerArgs.addAll(
+                '-XDcompilePolicy=simple',
+                '-Xplugin:ErrorProne -XepPatchChecks:InlineMeInliner,RemoveUnusedImports -XepPatchLocation:IN_PLACE'
+        )
+    }
+
+    task errorPronePatchTest(type: JavaCompile) {
+        classpath = sourceSets.test.compileClasspath
+        destinationDirectory = file('target/testErrorprone')
+        source(sourceSets.test.java)
+        options.annotationProcessorPath = configurations.errorprone
+        options.compilerArgs.addAll(
+                '-XDcompilePolicy=simple',
+                '-Xplugin:ErrorProne -XepPatchChecks:InlineMeInliner,RemoveUnusedImports -XepPatchLocation:IN_PLACE'
+        )
     }
 
     artifacts {
