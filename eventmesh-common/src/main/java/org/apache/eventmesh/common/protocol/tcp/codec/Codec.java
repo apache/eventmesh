@@ -223,7 +223,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             case REDIRECT_TO_CLIENT:
                 return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
             default:
-                LogUtils.warn(log, "Invalidate TCP command: {}", command);
+                log.warn("Invalidate TCP command: {}", command);
                 return null;
         }
     }

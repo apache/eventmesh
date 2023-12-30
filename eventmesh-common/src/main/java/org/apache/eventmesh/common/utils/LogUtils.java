@@ -17,198 +17,351 @@
 
 package org.apache.eventmesh.common.utils;
 
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.Marker;
+import org.slf4j.spi.CallerBoundaryAware;
+import org.slf4j.spi.LoggingEventBuilder;
 
 import lombok.experimental.UtilityClass;
+
+/**
+ * This class provides logging methods that encapsulate SLF4J and Supplier.
+ * If the log level is not enabled, the passed Supplier is invoked lazily,
+ * thereby avoiding unnecessary method execution time.
+ * <p>
+ * The statement
+ * <pre>
+ * LogUtil.debug(log, "A time-consuming method: {}", () -> myMethod());
+ * </pre>
+ * is equivalent to:
+ * <pre>
+ * if (logger.isDebugEnabled()) {
+ *     logger.debug("A time-consuming method: {}", myMethod());
+ * }
+ * </pre>
+ * If no object parameters are passed or existing objects are referenced, use
+ * <pre>
+ * log.debug("No time-consuming methods: {}", myObject);
+ * </pre>
+ * instead.
+ */
 
 @UtilityClass
 public final class LogUtils {
 
-    public static boolean isTraceEnabled(Logger logger) {
-        return logger.isTraceEnabled();
-    }
-
-    public static boolean isTraceEnabled(Logger logger, Marker marker) {
-        return logger.isTraceEnabled(marker);
-    }
+    private static final String FQCN = LogUtils.class.getName();
 
     public static void trace(Logger logger, String msg) {
-        if (isTraceEnabled(logger)) {
-            logger.trace(msg);
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(msg);
     }
 
     public static void trace(Logger logger, String format, Object arg) {
-        if (isTraceEnabled(logger)) {
-            logger.trace(format, arg);
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
-    }
-
-    public static void trace(Logger logger, String msg, Throwable t) {
-        if (isTraceEnabled(logger)) {
-            logger.trace(msg, t);
-        }
-    }
-
-    public static void trace(Logger logger, String format, Object... arguments) {
-        if (isTraceEnabled(logger)) {
-            logger.trace(format, arguments);
-        }
+        builder.log(format, arg);
     }
 
     public static void trace(Logger logger, String format, Object arg1, Object arg2) {
-        if (isTraceEnabled(logger)) {
-            logger.trace(format, arg1, arg2);
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg1, arg2);
+    }
+
+    public static void trace(Logger logger, String format, Object... arguments) {
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.log(format, arguments);
+    }
+
+    public static void trace(Logger logger, String format, Supplier<?> objectSupplier) {
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.addArgument(objectSupplier).log(format);
+    }
+
+    public static void trace(Logger logger, String format, Supplier<?>... objectSuppliers) {
+        LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        for (Supplier<?> objectSupplier : objectSuppliers) {
+            builder = builder.addArgument(objectSupplier);
+        }
+        builder.log(format);
+    }
+
+    public static void trace(Logger logger, String msg, Throwable t) {
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.setCause(t).log(msg);
     }
 
     public static void trace(Logger logger, Marker marker, String msg) {
-        if (isTraceEnabled(logger, marker)) {
-            logger.trace(marker, msg);
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.addMarker(marker).log(msg);
     }
 
     public static void trace(Logger logger, Marker marker, String format, Object arg) {
-        if (isTraceEnabled(logger, marker)) {
-            logger.trace(marker, format, arg);
+        final LoggingEventBuilder builder = logger.atTrace();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
-    }
-
-    public static boolean isDebugEnabled(Logger logger) {
-        return logger.isDebugEnabled();
+        builder.addMarker(marker).log(format, arg);
     }
 
     public static void debug(Logger logger, String msg) {
-        if (isDebugEnabled(logger)) {
-            logger.debug(msg);
+        final LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(msg);
     }
 
     public static void debug(Logger logger, String format, Object arg) {
-        if (isDebugEnabled(logger)) {
-            logger.debug(format, arg);
+        final LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg);
     }
 
     public static void debug(Logger logger, String format, Object arg1, Object arg2) {
-        if (isDebugEnabled(logger)) {
-            logger.debug(format, arg1, arg2);
+        final LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg1, arg2);
     }
 
     public static void debug(Logger logger, String format, Object... arguments) {
-        if (isDebugEnabled(logger)) {
-            logger.debug(format, arguments);
+        final LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arguments);
+    }
+
+    public static void debug(Logger logger, String format, Supplier<?> objectSupplier) {
+        final LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.addArgument(objectSupplier).log(format);
+    }
+
+    public static void debug(Logger logger, String format, Supplier<?>... objectSuppliers) {
+        LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        for (Supplier<?> objectSupplier : objectSuppliers) {
+            builder = builder.addArgument(objectSupplier);
+        }
+        builder.log(format);
     }
 
     public static void debug(Logger logger, String msg, Throwable t) {
-        if (isDebugEnabled(logger)) {
-            logger.debug(msg, t);
+        final LoggingEventBuilder builder = logger.atDebug();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
-    }
-
-    public static boolean isInfoEnabled(Logger logger) {
-        return logger.isInfoEnabled();
+        builder.setCause(t).log(msg);
     }
 
     public static void info(Logger logger, String msg) {
-        if (isInfoEnabled(logger)) {
-            logger.info(msg);
+        final LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(msg);
     }
 
     public static void info(Logger logger, String format, Object arg) {
-        if (isInfoEnabled(logger)) {
-            logger.info(format, arg);
+        final LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg);
     }
 
     public static void info(Logger logger, String format, Object arg1, Object arg2) {
-        if (isInfoEnabled(logger)) {
-            logger.info(format, arg1, arg2);
+        final LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg1, arg2);
     }
 
     public static void info(Logger logger, String format, Object... arguments) {
-        if (isInfoEnabled(logger)) {
-            logger.info(format, arguments);
+        final LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arguments);
+    }
+
+    public static void info(Logger logger, String format, Supplier<?> objectSupplier) {
+        final LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.addArgument(objectSupplier).log(format);
+    }
+
+    public static void info(Logger logger, String format, Supplier<?>... objectSuppliers) {
+        LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        for (Supplier<?> objectSupplier : objectSuppliers) {
+            builder = builder.addArgument(objectSupplier);
+        }
+        builder.log(format);
     }
 
     public static void info(Logger logger, String msg, Throwable t) {
-        if (isInfoEnabled(logger)) {
-            logger.info(msg, t);
+        final LoggingEventBuilder builder = logger.atInfo();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
-    }
-
-    public static boolean isWarnEnabled(Logger logger) {
-        return logger.isWarnEnabled();
+        builder.setCause(t).log(msg);
     }
 
     public static void warn(Logger logger, String msg) {
-        if (isWarnEnabled(logger)) {
-            logger.warn(msg);
+        final LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(msg);
     }
 
     public static void warn(Logger logger, String format, Object arg) {
-        if (isWarnEnabled(logger)) {
-            logger.warn(format, arg);
+        final LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg);
     }
 
     public static void warn(Logger logger, String format, Object arg1, Object arg2) {
-        if (isWarnEnabled(logger)) {
-            logger.warn(format, arg1, arg2);
+        final LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg1, arg2);
     }
 
     public static void warn(Logger logger, String format, Object... arguments) {
-        if (isWarnEnabled(logger)) {
-            logger.warn(format, arguments);
+        final LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arguments);
+    }
+
+    public static void warn(Logger logger, String format, Supplier<?> objectSupplier) {
+        final LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.addArgument(objectSupplier).log(format);
+    }
+
+    public static void warn(Logger logger, String format, Supplier<?>... objectSuppliers) {
+        LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        for (Supplier<?> objectSupplier : objectSuppliers) {
+            builder = builder.addArgument(objectSupplier);
+        }
+        builder.log(format);
     }
 
     public static void warn(Logger logger, String msg, Throwable t) {
-        if (isWarnEnabled(logger)) {
-            logger.warn(msg, t);
+        final LoggingEventBuilder builder = logger.atWarn();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
-    }
-
-    public static boolean isErrorEnabled(Logger logger) {
-        return logger.isErrorEnabled();
+        builder.setCause(t).log(msg);
     }
 
     public static void error(Logger logger, String msg) {
-        if (isErrorEnabled(logger)) {
-            logger.error(msg);
+        final LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(msg);
     }
 
     public static void error(Logger logger, String format, Object arg) {
-        if (isErrorEnabled(logger)) {
-            logger.error(format, arg);
+        final LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg);
     }
 
     public static void error(Logger logger, String format, Object arg1, Object arg2) {
-        if (isErrorEnabled(logger)) {
-            logger.error(format, arg1, arg2);
+        final LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arg1, arg2);
     }
 
     public static void error(Logger logger, String format, Object... arguments) {
-        if (isErrorEnabled(logger)) {
-            logger.error(format, arguments);
+        final LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.log(format, arguments);
+    }
+
+    public static void error(Logger logger, String format, Supplier<?> objectSupplier) {
+        final LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        builder.addArgument(objectSupplier).log(format);
+    }
+
+    public static void error(Logger logger, String format, Supplier<?>... objectSuppliers) {
+        LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
+        }
+        for (Supplier<?> objectSupplier : objectSuppliers) {
+            builder = builder.addArgument(objectSupplier);
+        }
+        builder.log(format);
     }
 
     public static void error(Logger logger, String msg, Throwable t) {
-        if (isErrorEnabled(logger)) {
-            logger.error(msg, t);
+        final LoggingEventBuilder builder = logger.atError();
+        if (builder instanceof CallerBoundaryAware) {
+            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
+        builder.setCause(t).log(msg);
     }
 
 }
