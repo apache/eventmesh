@@ -103,7 +103,8 @@ public class Codec extends ByteToMessageCodec<Package> {
         if (in == null) {
             return;
         }
-        if (in.readableBytes() < CONSTANT_MAGIC_FLAG.length + VERSION.length + 4 + 4) {
+        final int prefixLength = CONSTANT_MAGIC_FLAG.length + VERSION.length;
+        if (in.readableBytes() < prefixLength + 4 + 4) {
             // Not enough data to read the package length and header length
             return;
         }
@@ -112,12 +113,12 @@ public class Codec extends ByteToMessageCodec<Package> {
         validateFlagAndVersion(flagBytes, versionBytes, ctx);
         final int packageLength = in.readInt();
         final int headerLength = in.readInt();
-        if (in.readableBytes() < packageLength - 13) {
+        if (in.readableBytes() < packageLength - prefixLength) {
             // Not enough data yet, reset the reader index and wait for more data
             in.resetReaderIndex();
             return;
         }
-        final int bodyLength = packageLength - CONSTANT_MAGIC_FLAG.length - VERSION.length - headerLength;
+        final int bodyLength = packageLength - prefixLength - headerLength;
         Header header = parseHeader(in, headerLength);
         Object body = parseBody(in, header, bodyLength);
 
