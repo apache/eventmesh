@@ -82,7 +82,7 @@ jobs:
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
-        run: ./gradlew clean build jar dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
+        run: ./gradlew clean build dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
