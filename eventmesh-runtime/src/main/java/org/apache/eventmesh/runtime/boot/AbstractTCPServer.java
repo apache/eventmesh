@@ -187,8 +187,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         protected void initChannel(SocketChannel ch) {
             globalTrafficShapingHandler = newGTSHandler(tcpThreadPoolGroup.getScheduler(), eventMeshTCPConfiguration.getCtc().getReadLimit());
             ch.pipeline()
-                .addLast(getWorkerGroup(), new Codec.Encoder())
-                .addLast(getWorkerGroup(), new Codec.Decoder())
+                .addLast(getWorkerGroup(), new Codec())
                 .addLast(getWorkerGroup(), "global-traffic-shaping", globalTrafficShapingHandler)
                 .addLast(getWorkerGroup(), "channel-traffic-shaping", newCTSHandler(eventMeshTCPConfiguration.getCtc().getReadLimit()))
                 .addLast(getWorkerGroup(), tcpConnectionHandler)

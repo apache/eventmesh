@@ -37,10 +37,10 @@ public class CodecTest {
         header.setCmd(Command.HELLO_REQUEST);
         Package testP = new Package(header);
         testP.setBody(new Object());
-        Codec.Encoder ce = new Codec.Encoder();
+        Codec ce = new Codec();
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
         ce.encode(null, testP, buf);
-        Codec.Decoder cd = new Codec.Decoder();
+        Codec cd = new Codec();
         ArrayList<Object> result = new ArrayList<>();
         cd.decode(null, buf, result);
         Assertions.assertNotNull(result.get(0));
