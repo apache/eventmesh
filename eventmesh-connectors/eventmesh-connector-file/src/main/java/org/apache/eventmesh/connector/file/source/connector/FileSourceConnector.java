@@ -28,15 +28,17 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +51,6 @@ public class FileSourceConnector implements Source {
 
     private String filePath;
     private String fileName;
-    private InputStream inputStream;
     private BufferedReader bufferedReader;
 
     @Override
@@ -61,8 +62,8 @@ public class FileSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for hdfs source connector
         this.sourceConfig = (FileSourceConfig) config;
-        this.filePath = ((FileSourceConfig) config).getFilePath();
-        this.fileName = ((FileSourceConfig) config).getFileName();
+        this.filePath = buildFilePath(((FileSourceConfig) config).getConnectorConfig().getFilePath());
+        this.fileName = buildFileName(((FileSourceConfig) config).getConnectorConfig().getFileName());
     }
 
     @Override
@@ -70,18 +71,15 @@ public class FileSourceConnector implements Source {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (FileSourceConfig) sourceConnectorContext.getSourceConfig();
         this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
-
     }
 
     @Override
     public void start() throws Exception {
         if (fileName == null || fileName.isEmpty() || filePath == null || filePath.isEmpty()) {
-            this.inputStream = System.in;
+            this.bufferedReader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         } else {
-            this.inputStream = Files.newInputStream(Paths.get(filePath + fileName),
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.READ);
+            this.bufferedReader = Files.newBufferedReader(Paths.get(filePath, fileName), StandardCharsets.UTF_8);
         }
-        this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     }
 
     @Override
@@ -99,7 +97,6 @@ public class FileSourceConnector implements Source {
             if (bufferedReader != null) {
                 bufferedReader.close();
             }
-            inputStream.close();
         } catch (Exception e) {
             log.error("Error closing resources: {}", e.getMessage());
         }
@@ -118,5 +115,26 @@ public class FileSourceConnector implements Source {
             log.error("Error reading data from the file: {}", e.getMessage());
         }
         return connectRecords;
+    }
+
+    private String buildFilePath(String filePath) {
+        Calendar calendar = Calendar.getInstance(Locale.CHINA);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        String formattedDate = dateFormat.format(calendar.getTime());
+        String filePath1 = filePath.replace("%s", formattedDate);
+        File path = new File(filePath1);
+        if (!path.exists()) {
+            if (!path.mkdirs()) {
+                log.error("make file dir {} error", filePath);
+            }
+        }
+        return filePath1;
+    }
+
+    private String buildFileName(String fileName) {
+        Calendar calendar = Calendar.getInstance(Locale.CHINA);
+        long currentTime = calendar.getTime().getTime();
+        String formattedDate = calendar.get(Calendar.HOUR_OF_DAY) + "-" + currentTime;
+        return fileName.replace("%s", formattedDate);
     }
 }
