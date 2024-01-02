@@ -183,7 +183,7 @@ public abstract class TcpClient implements Closeable {
         Object key = RequestContext.key(msg);
         RequestContext context = RequestContext.context(key, msg);
         RequestContext previousContext = contexts.putIfAbsent(key, context);
-        if (Objects.isNull(previousContext)) {
+        if (Objects.nonNull(previousContext)) {
             LogUtils.info(log, "duplicate key : {}", key);
         }
         send(msg);
