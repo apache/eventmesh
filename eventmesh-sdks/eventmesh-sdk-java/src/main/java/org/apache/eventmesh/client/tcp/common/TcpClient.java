@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
+import java.util.Objects;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
@@ -181,12 +182,9 @@ public abstract class TcpClient implements Closeable {
     protected Package io(Package msg, long timeout) throws Exception {
         Object key = RequestContext.key(msg);
         RequestContext context = RequestContext.context(key, msg);
-        synchronized (contexts) {
-            if (!contexts.containsValue(context)) {
-                contexts.put(key, context);
-            } else {
-                LogUtils.info(log, "duplicate key : {}", key);
-            }
+        RequestContext previousContext = contexts.putIfAbsent(key, context);
+        if (Objects.isNull(previousContext)) {
+            LogUtils.info(log, "duplicate key : {}", key);
         }
         send(msg);
         Supplier<Package> supplier = () -> {
