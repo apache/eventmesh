@@ -67,6 +67,8 @@ Here are the guidelines:
 
 [Step 3: Run our demos](https://eventmesh.apache.org/docs/instruction/demo)
 
+[Step 4: EventMesh-Operator quick start](https://eventmesh.apache.org/docs/next/instruction/operator)  
+
 Besides, we also provide the docker-version guidelines for you if you prefer Docker:
 
 [Step 1: Deploy eventmesh-store using docker](https://eventmesh.apache.org/docs/instruction/store-with-docker)
@@ -74,6 +76,8 @@ Besides, we also provide the docker-version guidelines for you if you prefer Doc
 [Step 2: Start eventmesh-runtime using docker](https://eventmesh.apache.org/docs/instruction/runtime-with-docker)
 
 [Step 3: Run our demos](https://eventmesh.apache.org/docs/instruction/demo)
+
+[Step 4: EventMesh-Operator quick start](https://eventmesh.apache.org/docs/next/instruction/operator)
 
 ## Contributing
 
