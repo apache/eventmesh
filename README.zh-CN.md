@@ -71,7 +71,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 [第3步: 运行示例](https://eventmesh.apache.org/docs/instruction/demo)
 
-[第4步：EventMesh-Operator快速开始](https://eventmesh.apache.org/docs/next/instruction/operator/)
+[第4步：EventMesh-Operator快速入门](https://eventmesh.apache.org/docs/next/instruction/operator/)
 
 另外，如果您更喜欢使用Docker，则我们还为您提供了Docker版本的指南：
 
@@ -81,7 +81,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 [第3步: 运行示例](https://eventmesh.apache.org/docs/instruction/demo)
 
-[第4步：EventMesh-Operator快速开始](https://eventmesh.apache.org/docs/next/instruction/operator/)
+[第4步：EventMesh-Operator快速入门](https://eventmesh.apache.org/docs/next/instruction/operator/)
 
 ## 贡献
 
