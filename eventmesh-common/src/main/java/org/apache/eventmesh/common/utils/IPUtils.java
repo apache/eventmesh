@@ -66,7 +66,7 @@ public class IPUtils {
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
                 String interfaceName = networkInterface.getName();
-                if (preferList.contains(interfaceName)) {
+                if (preferList.contains(interfaceName) && !isInterfacePreferred) {
                     isInterfacePreferred = true;
                 }
                 if (preferNetworkInterface == null) {
