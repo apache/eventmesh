@@ -216,11 +216,6 @@ public class NacosMetaService implements MetaService {
         if (!startStatus.compareAndSet(true, false)) {
             return;
         }
-        shutdownNacosService();
-    }
-
-    @SuppressWarnings("checkstyle:WhitespaceAround")
-    private void shutdownNacosService() throws MetaException{
         try {
             nacosNamingService.shutDown();
             log.info("NacosRegistryService close");
@@ -236,6 +231,7 @@ public class NacosMetaService implements MetaService {
             throw new MetaException(e.getMessage());
         }
     }
+
 
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
