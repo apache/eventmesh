@@ -435,7 +435,7 @@ TCP, HTTP 和 GRPC 示例都在eventmesh-examples模块下
 
 #### 4.测试  
 
-完成[store](#部署eventmesh-store)和[runtime](#部署eventmesh-runtime)的部署后，就可以在`eventmesh-examples`模块下运行我们的`demo`来体验`eventmesh`了!  
+完成[store](#部署eventmesh-store-)和[runtime](#部署eventmesh-runtime)的部署后，就可以在`eventmesh-examples`模块下运行我们的`demo`来体验`eventmesh`了!  
 
 gradle编译：
 ```
@@ -628,8 +628,8 @@ Apache EventMesh 的开源协议遵循 [Apache License, Version 2.0](http://www.
 
 ## Community
 
-| 微信小助手                                              | 微信公众号                                             | Slack                                                        |
-| ------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| 微信小助手                                                   | 微信公众号                                                  | Slack                                                                                                   |
+|---------------------------------------------------------|--------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
 | <img src="resources/wechat-assistant.jpg" width="128"/> | <img src="resources/wechat-official.jpg" width="128"/> | [加入 Slack ](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1t1816dli-I0t3OE~IpdYWrZbIWhMbXg) |
 
 双周会议 : [#Tencent meeting](https://meeting.tencent.com/dm/wes6Erb9ioVV) : 346-6926-0133
@@ -638,10 +638,10 @@ Apache EventMesh 的开源协议遵循 [Apache License, Version 2.0](http://www.
 
 ### 邮件名单
 
-| 名称    | 描述                              | 订阅                                                  | 取消订阅                                                    | 邮件列表存档                                                 |
-| ------- | --------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| 用户    | 用户支持与用户问题                | [订阅](mailto:users-subscribe@eventmesh.apache.org)   | [取消订阅](mailto:users-unsubscribe@eventmesh.apache.org)   | [邮件存档](https://lists.apache.org/list.html?users@eventmesh.apache.org) |
-| 开发    | 开发相关 (设计文档， Issues等等.) | [订阅](mailto:dev-subscribe@eventmesh.apache.org)     | [取消订阅](mailto:dev-unsubscribe@eventmesh.apache.org)     | [邮件存档](https://lists.apache.org/list.html?dev@eventmesh.apache.org) |
-| Commits | 所有与仓库相关的 commits 信息通知 | [订阅](mailto:commits-subscribe@eventmesh.apache.org) | [取消订阅](mailto:commits-unsubscribe@eventmesh.apache.org) | [邮件存档](https://lists.apache.org/list.html?commits@eventmesh.apache.org) |
-| Issues  | Issues 或者 PR 提交和代码Review   | [订阅](mailto:issues-subscribe@eventmesh.apache.org)  | [取消订阅](mailto:issues-unsubscribe@eventmesh.apache.org)  | [邮件存档](https://lists.apache.org/list.html?issues@eventmesh.apache.org) |
+| 名称      | 描述                       | 订阅                                                  | 取消订阅                                                    | 邮件列表存档                                                                  |
+|---------|--------------------------|-----------------------------------------------------|---------------------------------------------------------|-------------------------------------------------------------------------|
+| 用户      | 用户支持与用户问题                | [订阅](mailto:users-subscribe@eventmesh.apache.org)   | [取消订阅](mailto:users-unsubscribe@eventmesh.apache.org)   | [邮件存档](https://lists.apache.org/list.html?users@eventmesh.apache.org)   |
+| 开发      | 开发相关 (设计文档， Issues等等.)   | [订阅](mailto:dev-subscribe@eventmesh.apache.org)     | [取消订阅](mailto:dev-unsubscribe@eventmesh.apache.org)     | [邮件存档](https://lists.apache.org/list.html?dev@eventmesh.apache.org)     |
+| Commits | 所有与仓库相关的 commits 信息通知    | [订阅](mailto:commits-subscribe@eventmesh.apache.org) | [取消订阅](mailto:commits-unsubscribe@eventmesh.apache.org) | [邮件存档](https://lists.apache.org/list.html?commits@eventmesh.apache.org) |
+| Issues  | Issues 或者 PR 提交和代码Review | [订阅](mailto:issues-subscribe@eventmesh.apache.org)  | [取消订阅](mailto:issues-unsubscribe@eventmesh.apache.org)  | [邮件存档](https://lists.apache.org/list.html?issues@eventmesh.apache.org)  |
 
