@@ -89,11 +89,11 @@ EventMesh Runtime是EventMesh集群中有状态的Mesh节点，负责Source Conn
 #### 本地构建运行
 
 依赖准备: 
-```
-建议使用64位操作系统，建议使用Linux / Unix；
-64位JDK 1.8+;
-Gradle至少为7.0, 推荐 7.0.*
-```
+
+- 建议使用64位操作系统，建议使用Linux / Unix；
+- 64位JDK 1.8+;
+- Gradle至少为7.0, 推荐 7.0.*
+
 ##### 1）源码启动  
 
 1.下载源码:   
@@ -241,7 +241,7 @@ sudo docker images
 ```
 $ sudo docker images
 REPOSITORY            TAG       IMAGE ID       CREATED         SIZE
-apache/eventmesh     v1.10.0    6e2964599c78   16 months ago   937MB
+apache/eventmesh     v1.10.0    6e2964599c78   10 days ago     937MB
 ```
 
 2.创建配置文件:  
@@ -521,12 +521,11 @@ tail -f demo_http_pub.out
 ### 运行EventMesh-Operator
 
 准备:  
-```
-docker
-golang (version 1.19)
-kubernetes (kubectl)
-kubernetes和docker之间有一定的兼容性，请检查它们之间的版本兼容性，并下载相应的版本，以确保它们能一起正常工作。
-```
+
+- docker
+- golang (version 1.19)
+- kubernetes (kubectl)
+> kubernetes和docker之间有一定的兼容性，请检查它们之间的版本兼容性，并下载相应的版本，以确保它们能一起正常工作。
 
 #### 本地源码运行
 
@@ -567,12 +566,6 @@ runtimes.eventmesh-operator.eventmesh     2023-11-28T01:35:21Z
 ```
 # run controller
 make run
-
-# 成功启动pod后，运行以下命令查看pod。
-kubectl get pods
-NAME                      READY   STATUS    RESTARTS   AGE
-connector-rocketmq-0      1/1     Running   0          12m
-eventmesh-runtime-0-a-0   1/1     Running   0          12m
 ```
 
 2.创建和删除CRs:  
