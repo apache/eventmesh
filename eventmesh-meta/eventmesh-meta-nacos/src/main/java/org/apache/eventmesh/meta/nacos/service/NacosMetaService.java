@@ -218,13 +218,20 @@ public class NacosMetaService implements MetaService {
         }
         try {
             nacosNamingService.shutDown();
+            log.info("NacosRegistryService close");
         } catch (NacosException e) {
             log.error("[NacosRegistryService][shutdown] error", e);
             throw new MetaException(e.getMessage());
         }
-        log.info("NacosRegistryService close");
+        try {
+            nacosConfigService.shutDown();
+            log.info("NacosConfigService close");
+        } catch (NacosException e) {
+            log.error("[NacosConfigService][shutdown] error", e);
+            throw new MetaException(e.getMessage());
+        }
     }
-
+    
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
         return findEventMeshInfos(true, Collections.singletonList(clusterName));
