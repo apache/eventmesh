@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-List pulsar = [
-        "org.apache.pulsar:pulsar-client:$pulsar_version"
-]
 dependencies {
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation pulsar
+    implementation("org.apache.pulsar:pulsar-client:$pulsar_version") {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    }
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

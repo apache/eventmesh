@@ -17,8 +17,6 @@
 
 import java.util.concurrent.TimeUnit
 
-
-
 buildscript {
     repositories {
         mavenLocal()
@@ -47,6 +45,18 @@ if(JavaVersion.current().isJava8()){
             options.addStringOption('xdoclint:none','-quiet')
         }
     }
+}
+
+def log4jVersion = '2.22.1'
+
+configurations {
+    distOnly
+}
+
+dependencies {
+    distOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    distOnly "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
+    distOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
 }
 
 allprojects {
@@ -94,6 +104,31 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
                   .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
+    configurations {
+        runtimeClasspath {
+            // Log4j API implementations
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-to-jul'
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+            // SLF4J implementations
+            exclude group: 'ch.qos.logback', module: 'logback-classic'
+            exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+            exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+            exclude group: 'org.slf4j', module: 'slf4j-nop'
+            exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+            exclude group: 'org.slf4j', module: 'slf4j-simple'
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+            // JUL implementations
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-jul'
+            exclude group: 'org.slf4j', module: 'jul-to-slf4j'
+            // Log4j 1.x and replacements
+            exclude group: 'log4j', module: 'log4j'
+            exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+            exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
+        }
+    }
+
     dependencies {
         repositories {
             mavenLocal()
@@ -139,6 +174,60 @@ allprojects {
     }
 }
 
+tasks.register('dist') {
+    group = JavaBasePlugin.BUILD_TASK_NAME
+    description "Creates the distribution directory"
+    def includedProjects =
+            ["eventmesh-common",
+             "eventmesh-meta:eventmesh-meta-api",
+             "eventmesh-metrics-plugin:eventmesh-metrics-api",
+             "eventmesh-protocol-plugin:eventmesh-protocol-api",
+             "eventmesh-retry:eventmesh-retry-api",
+             "eventmesh-runtime",
+             "eventmesh-security-plugin:eventmesh-security-api",
+             "eventmesh-spi",
+             "eventmesh-starter",
+             "eventmesh-storage-plugin:eventmesh-storage-api",
+             "eventmesh-trace-plugin:eventmesh-trace-api",
+             "eventmesh-webhook:eventmesh-webhook-api",
+             "eventmesh-webhook:eventmesh-webhook-admin",
+             "eventmesh-webhook:eventmesh-webhook-receive"]
+    includedProjects.each { dependsOn("${it}:jar") }
+    outputs.dirs('dist/apps', 'dist/bin', 'dist/conf', 'dist/lib', 'dist/licenses')
+    doLast {
+        includedProjects.each {
+            def project = findProject(it)
+            copy {
+                from project.jar.archivePath
+                into 'dist/apps'
+            }
+            copy {
+                from project.file('bin')
+                into 'dist/bin'
+            }
+            copy {
+                from project.file('conf')
+                from project.sourceSets.main.resources.srcDirs
+                into 'dist/conf'
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                exclude 'META-INF'
+            }
+            copy {
+                from project.configurations.runtimeClasspath
+                into 'dist/lib'
+            }
+        }
+        copy {
+            from configurations.distOnly
+            into 'dist/lib'
+        }
+        copy {
+            from 'tools/third-party-licenses'
+            into 'dist'
+        }
+    }
+}
+
 task tar(type: Tar) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
@@ -160,56 +249,60 @@ task zip(type: Zip) {
     }
 }
 
-task installPlugin() {
-    if (!new File("${rootDir}/dist").exists()) {
-        return
+tasks.register('installPlugin') {
+    doLast {
+        if (!new File("${rootDir}/dist").exists()) {
+            return
+        }
+        String[] libJars = java.util.Optional.ofNullable(new File("${rootDir}/dist/lib").list()).orElseGet(() -> new String[0])
+        getAllprojects().forEach(subProject -> {
+            var file = new File("${subProject.projectDir}/gradle.properties")
+            if (!file.exists()) {
+                return
+            }
+            var properties = new Properties()
+            properties.load(new FileInputStream(file))
+            var pluginType = properties.getProperty("pluginType")
+            var pluginName = properties.getProperty("pluginName")
+            if (pluginType == null || pluginName == null) {
+                return
+            }
+            var pluginFile = new File("${rootDir}/dist/plugin/${pluginType}/${pluginName}")
+            if (pluginFile.exists()) {
+                return
+            }
+            pluginFile.mkdirs()
+            println String.format(
+                    "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
+            )
+            copy {
+                from subProject.jar.archivePath
+                into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
+            }
+            copy {
+                from subProject.configurations.runtimeClasspath
+                into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
+                exclude(libJars)
+            }
+            copy {
+                from subProject.file('conf')
+                from subProject.sourceSets.main.resources.srcDirs
+                into "${rootDir}/dist/conf"
+                exclude 'META-INF'
+            }
+        })
     }
-    String[] libJars = java.util.Optional.ofNullable(new File("${rootDir}/dist/lib").list()).orElseGet(() -> new String[0])
-    getAllprojects().forEach(subProject -> {
-        var file = new File("${subProject.projectDir}/gradle.properties")
-        if (!file.exists()) {
-            return
-        }
-        var properties = new Properties()
-        properties.load(new FileInputStream(file))
-        var pluginType = properties.getProperty("pluginType")
-        var pluginName = properties.getProperty("pluginName")
-        if (pluginType == null || pluginName == null) {
-            return
-        }
-        var pluginFile = new File("${rootDir}/dist/plugin/${pluginType}/${pluginName}")
-        if (pluginFile.exists()) {
-            return
-        }
-        pluginFile.mkdirs()
-        println String.format(
-                "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
-        )
-
-        copy {
-            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
-            from "${subProject.getProjectDir()}/dist/apps"
-        }
-        copy {
-            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
-            from "${subProject.getProjectDir()}/dist/lib/"
-            exclude(libJars)
-        }
-        copy {
-            into "${rootDir}/dist/conf"
-            from "${subProject.getProjectDir()}/dist/conf"
-            exclude 'META-INF'
-        }
-    })
 }
 
 task printProjects() {
-    getAllprojects().forEach(subProject -> {
-        if ("EventMesh".equals(subProject.getName())) {
-            return
-        }
-        println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
-    })
+    doLast {
+        getAllprojects().forEach(subProject -> {
+            if ("EventMesh".equals(subProject.getName())) {
+                return
+            }
+            println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
+        })
+    }
 }
 
 subprojects {
@@ -300,77 +393,6 @@ subprojects {
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
-        }
-    }
-
-    task dist(dependsOn: ['jar']) {
-        doFirst {
-            new File("${projectDir}/dist/bin").mkdirs()
-            new File("${projectDir}/dist/apps").mkdirs()
-            new File("${projectDir}/dist/conf").mkdirs()
-            new File("${projectDir}/dist/lib").mkdirs()
-            new File("${projectDir}/dist/licenses").mkdirs()
-        }
-        Set<String> rootProject = ["eventmesh-common",
-                                   "eventmesh-storage-api",
-                                   "eventmesh-metrics-api",
-                                   "eventmesh-meta-api",
-                                   "eventmesh-trace-api",
-                                   "eventmesh-retry-api",
-                                   "eventmesh-runtime",
-                                   "eventmesh-security-api",
-                                   "eventmesh-protocol-api",
-                                   "eventmesh-starter",
-                                   "eventmesh-spi",
-                                   "eventmesh-webhook-api",
-                                   "eventmesh-webhook-admin",
-                                   "eventmesh-webhook-receive"]
-        doLast {
-            copy {
-                into("${projectDir}/dist/apps")
-                from project.jar.getArchivePath()
-            }
-            copy {
-                into("${projectDir}/dist/lib")
-                from project.configurations.runtimeClasspath
-            }
-            copy {
-                into("${projectDir}/dist/bin")
-                from 'bin'
-            }
-            copy {
-                into("${projectDir}/dist/conf")
-                from 'conf', sourceSets.main.resources.srcDirs
-                setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-                exclude 'META-INF'
-            }
-            if (rootProject.contains(project.name)) {
-                new File("${rootDir}/dist/apps").mkdirs()
-                new File("${rootDir}/dist/lib").mkdirs()
-                new File("${rootDir}/dist/bin").mkdirs()
-                new File("${rootDir}/dist/conf").mkdirs()
-                copy {
-                    into("${rootDir}/dist/apps")
-                    from "${projectDir}/dist/apps"
-                }
-                copy {
-                    into "${rootDir}/dist/lib"
-                    from "${projectDir}/dist/lib"
-                    exclude "eventmesh-*"
-                }
-                copy {
-                    into "${rootDir}/dist/bin"
-                    from "${projectDir}/dist/bin"
-                }
-                copy {
-                    into "${rootDir}/dist/conf"
-                    from "${projectDir}/dist/conf"
-                }
-            }
-            copy {
-                into "${rootDir}/dist"
-                from "${rootDir}/tools/third-party-licenses"
-            }
         }
     }
 
@@ -473,8 +495,14 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
+    def springBootVersion = '2.7.10'
+    def rocketmq_version = '4.9.5'
 
     dependencyManagement {
+        imports {
+            mavenBom "org.apache.logging.log4j:log4j-bom:${log4jVersion}"
+            mavenBom 'org.springframework:spring-framework-bom:5.3.26'
+        }
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.1"
@@ -487,9 +515,6 @@ subprojects {
             dependency "com.google.guava:guava:31.0.1-jre"
 
             dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.17.1"
-            dependency "org.apache.logging.log4j:log4j-core:2.17.1"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -527,7 +552,11 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
             dependency "com.jayway.jsonpath:json-path:2.7.0"
 
-            dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
+            dependency("org.springframework.boot:spring-boot-starter:${springBootVersion}") {
+                exclude group: 'org.springframework.boot', name: 'spring-boot-starter-logging'
+            }
+            dependency "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
+            dependency "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "org.junit.jupiter:junit-jupiter:5.6.0"
@@ -572,6 +601,23 @@ subprojects {
             dependency "software.amazon.awssdk:s3:2.20.29"
             dependency "com.github.rholder:guava-retrying:2.0.0"
 
+            dependency "org.apache.rocketmq:rocketmq-acl:$rocketmq_version"
+            dependency("org.apache.rocketmq:rocketmq-broker:$rocketmq_version") {
+                exclude group: 'ch.qos.logback', name: 'logback-classic'
+            }
+            dependency "org.apache.rocketmq:rocketmq-client:$rocketmq_version"
+            dependency "org.apache.rocketmq:rocketmq-common:$rocketmq_version"
+            dependency "org.apache.rocketmq:rocketmq-filter:$rocketmq_version"
+            dependency "org.apache.rocketmq:rocketmq-logging:$rocketmq_version"
+            dependency("org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version") {
+                exclude group: 'ch.qos.logback', name: 'logback-classic'
+            }
+            dependency "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version"
+            dependency "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version"
+            dependency "org.apache.rocketmq:rocketmq-store:$rocketmq_version"
+            dependency("org.apache.rocketmq:rocketmq-tools:$rocketmq_version") {
+                exclude group: 'ch.qos.logback', name: 'logback-classic'
+            }
         }
     }
 }
