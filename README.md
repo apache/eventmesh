@@ -281,7 +281,7 @@ Please check if the `default namesrvAddr` in the configuration file is occupied,
 Run an EventMesh container from the `apache/eventmesh` image with the `docker run` command.  
 - The `-p` option of the command binds the container port with the host machine port.
 - The `-v` option of the command mounts the configuration files from files in the host machine.  
-- 
+
 ```
 sudo docker run -d \
     -p 10000:10000 -p 10105:10105 \
