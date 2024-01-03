@@ -60,10 +60,14 @@ public class WatchFileManagerTest {
         WatchFileManager.registerFileChangeListener(tempConfigFile.getParent(), fileChangeListener);
 
         Properties properties = new Properties();
-        properties.load(new BufferedReader(new FileReader(tempConfigFile)));
-        properties.setProperty("eventMesh.server.newAdd", "newAdd");
-        FileWriter fw = new FileWriter(tempConfigFile);
-        properties.store(fw, "newAdd");
+        try (
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(tempConfigFile));
+                FileWriter fw = new FileWriter(tempConfigFile)
+        ) {
+            properties.load(bufferedReader);
+            properties.setProperty("eventMesh.server.newAdd", "newAdd");
+            properties.store(fw, "newAdd");
+        }
 
         ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
     }
