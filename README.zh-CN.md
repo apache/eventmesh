@@ -63,9 +63,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 ## 快速入门  
 本段指南将指导您完成EventMesh的部署步骤   
-- [部署EventMesh Store](#部署eventmesh-store) 
-  - [本地部署EventMesh Store](#本地部署eventmesh-store)
-  - [使用Docker部署EventMesh Store](#使用docker部署eventmesh-store)
+- [部署EventMesh Store](#部署eventmesh-store)
 - [部署EventMesh Runtime](#部署eventmesh-runtime)
   - [本地构建运行](#本地构建运行)
     - [源码启动](#1源码启动-)
@@ -80,77 +78,10 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 - [运行EventMesh-Operator](#运行eventmesh-operator)
   - [本地源码运行](#本地源码运行)  
 
-### 部署EventMesh Store
-开始之前需要准备以下环境:
-```
-建议使用64位操作系统，建议使用Linux/Unix；
-64位JDK 1.8+;
-Gradle至少为7.0, 推荐7.0.*
-4g+可用磁盘用于eventmesh-store服务器
-eventmesh在非standalone模式下，依赖RocketMQ作为存储层；若采用standalone模式，则可跳过该步，直接进行runtime的部署
-```
-#### 本地部署EventMesh Store
+### 部署EventMesh Store  
 
-##### 1) 下载
-从[RocketMQ官方网站](https://rocketmq.apache.org/download/)下载Binary代码（推荐使用4.9.*版本），这里以4.9.4为例: 
-```
-unzip rocketmq-all-4.9.4-bin-release.zip
-cd rocketmq-all-4.9.4-bin-release/
-```
-##### 2) 启动
-1.启动Name Server:
-```
-nohup sh bin/mqnamesrv & tail -f ~/logs/rocketmqlogs/namesrv.log
-```
-如果在看到The Name Server boot success...，则说明Name Server启动成功。   
-
-2.启动Broker:
-```
-nohup sh bin/mqbroker -n localhost:9876 &
-tail -f ~/logs/rocketmqlogs/broker.log
-```
-如果在看到The broker boot success...，则说明Broker启动成功
-
-#### 使用Docker部署EventMesh Store
-
-##### 1) 拉取镜像
-在命令行输入如下命令直接从 docker hub 上获取 RocketMQ 镜像:  
-```
-sudo docker pull apache/rocketmq:4.9.4
-```
-您可以使用以下命令列出并查看本地已有的镜像:
-```
-sudo docker images
-```
-如果终端显示如下所示的镜像信息，则说明 RocketMQ 镜像已经成功下载到本地。
-```
-REPOSITORY        TAG       IMAGE ID       CREATED         SIZE
-apache/rocketmq   4.9.4     a2a50ca263c3   13 months ago   548MB
-```
-
-##### 2) 运行容器
-1.运行namerv容器和broker容器:
-```
-sudo docker run -d -p 9876:9876 \
-  -v `pwd`/data/namesrv/logs:/root/logs \
-  -v `pwd`/data/namesrv/store:/root/store \
-  --name rmqnamesrv \
-  apache/rocketmq:4.9.4 \
-  sh mqnamesrv
-```
-
-2.运行broker容器:
-```
-sudo docker run -d -p 10911:10911 -p 10909:10909 \
-  -v `pwd`/data/broker/logs:/root/logs \
-  -v `pwd`/data/broker/store:/root/store \
-  --name rmqbroker \
-  --link rmqnamesrv:namesrv \
-  -e "NAMESRV_ADDR=namesrv:9876" \
-  apache/rocketmq:4.9.4 \
-  sh mqbroker -c ../conf/broker.conf
-```
-请注意 **rocketmq-broker ip**是**pod ip**, 如果你想修改这个**ip**, 可以通过挂载容器中**broker.conf**文件的方式并修改文件中的**brokerIP1**配置项为自定义值。
+> EventMesh现在支持`standalone`、`RocketMQ`、`Kafka`等中间件作为存储   
+> 如果是在非`standalone`模式下，需要先部署所需的`store`，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
 ### 部署EventMesh Runtime
 EventMesh Runtime是EventMesh集群中有状态的Mesh节点，负责Source Connector与Sink Connector之间的事件传输，并可以使用EventMesh Storage作为事件的存储队列。
