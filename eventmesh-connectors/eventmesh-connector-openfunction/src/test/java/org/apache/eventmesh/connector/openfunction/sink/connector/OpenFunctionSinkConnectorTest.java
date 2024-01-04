@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,10 @@ public class OpenFunctionSinkConnectorTest {
             String expectedMessage = message + i;
             Assertions.assertEquals(poll.getData(), expectedMessage);
         }
+    }
+
+    @AfterEach
+    public void shutdownConnector() {
         connector.stop();
     }
 
