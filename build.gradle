@@ -215,6 +215,7 @@ tasks.register('dist') {
             copy {
                 from project.configurations.runtimeClasspath
                 into 'dist/lib'
+                exclude 'eventmesh*'
             }
         }
         copy {
@@ -587,7 +588,10 @@ subprojects {
 
             dependency "com.alibaba.nacos:nacos-client:2.2.1"
 
-            dependency 'org.apache.zookeeper:zookeeper:3.7.1'
+            dependency('org.apache.zookeeper:zookeeper:3.7.1') {
+                exclude group: 'ch.qos.logback', name: 'logback-core'
+                exclude group: 'ch.qos.logback', name: 'logback-classic'
+            }
             dependency 'org.apache.curator:curator-client:5.4.0'
             dependency 'org.apache.curator:curator-framework:5.4.0'
             dependency 'org.apache.curator:curator-recipes:5.4.0'
