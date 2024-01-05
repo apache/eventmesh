@@ -65,7 +65,7 @@ public class SyncRequestInstance {
                 .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
-            log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
+            log.debug("sendmsg: {}, return: {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
         } catch (Exception e) {
             log.warn("send msg failed", e);
         }

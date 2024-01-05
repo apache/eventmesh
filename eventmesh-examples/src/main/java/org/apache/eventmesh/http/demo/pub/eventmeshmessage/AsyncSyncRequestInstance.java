@@ -47,7 +47,8 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
 
                 @Override
                 public void onSuccess(final EventMeshMessage o) {
-                    log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(), System.currentTimeMillis() - startTime);
+                    log.debug("sendmsg: {}, return: {}, cost: {} ms",
+                        eventMeshMessage.getContent(), o.getContent(), System.currentTimeMillis() - startTime);
                 }
 
                 @Override
