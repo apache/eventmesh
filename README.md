@@ -76,6 +76,7 @@ This section of the guide will walk you through the deployment steps for EventMe
     - [Run Demo with shell scripts](#4run-demo-with-shell-scripts-)
 - [Run EventMesh-Operator](#run-eventmesh-operator)
     - [Local source code run](#local-source-code-run)
+    - [Deploy Operator on k8s](#deploy-operator-on-k8s)
 
 ### Deployment EventMesh Store
 
@@ -572,6 +573,33 @@ eventmesh-runtime-0-a-0   1/1     Running   0          12m
 
 # delete CR
 make delete
+```
+
+#### Deploy Operator on k8s
+
+1.Deploy operator      
+Run the following commands(To delete a deployment, simply replace `deploy` with `undeploy`):  
+```
+make deploy
+```
+
+Run `kubectl get pods` to see the status of the deployed eventmesh-operator.
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
+```
+
+2.Execute the following command to deploy runtime, connector(To delete, simply replace `create` with `delete`.).
+```
+make create
+```
+
+Run `kubectl get pods` to see if the deployment was successful.
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+connector-rocketmq-0                  1/1     Running   0          9s
+eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
+eventmesh-runtime-0-a-0               1/1     Running   0          15s
 ```
 
 ## Contributing

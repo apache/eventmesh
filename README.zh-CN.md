@@ -77,6 +77,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
   - [测试](#4测试-)
 - [运行EventMesh-Operator](#运行eventmesh-operator)
   - [本地源码运行](#本地源码运行)  
+  - [部署operator到k8s](#部署operator到k8s)
 
 ### 部署EventMesh Store  
 
@@ -595,6 +596,33 @@ eventmesh-runtime-0-a-0   1/1     Running   0          12m
 
 # 删除CR
 make delete
+```
+
+#### 部署operator到k8s
+
+1.部署operator      
+运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy`即可):
+```
+make deploy
+```
+
+运行 `kubectl get pods` 查看部署的eventmesh-operator状态.
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
+```
+
+2.运行以下命令部署runtime、connector(删除部署, 只需将`create` 替换为 `delete`即可).
+```
+make create
+```
+
+运行 `kubectl get pods` 查看部署是否成功.
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+connector-rocketmq-0                  1/1     Running   0          9s
+eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
+eventmesh-runtime-0-a-0               1/1     Running   0          15s
 ```
 
 ## 贡献
