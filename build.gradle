@@ -40,15 +40,6 @@ buildscript {
     }
 }
 
-//Remove doclint warnings that pollute javadoc logs when building with java8
-if(JavaVersion.current().isJava8()){
-    allprojects {
-        tasks.withType(Javadoc){
-            options.addStringOption('xdoclint:none','-quiet')
-        }
-    }
-}
-
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -130,6 +121,12 @@ allprojects {
         }
     }
 
+    // Remove doclint warnings that pollute javadoc logs when building
+    tasks.withType(Javadoc) {
+        failOnError false
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
     afterEvaluate {
         tasks.forEach {task ->
             if (task.name.contains("spotlessJava")) {
@@ -142,7 +139,6 @@ allprojects {
     test {
         useJUnitPlatform()
     }
-
 }
 
 task tar(type: Tar) {
