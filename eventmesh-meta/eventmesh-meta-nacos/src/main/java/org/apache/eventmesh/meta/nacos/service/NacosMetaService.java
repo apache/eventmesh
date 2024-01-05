@@ -315,8 +315,8 @@ public class NacosMetaService implements MetaService {
             }
             URI uri = uriBuilder.build();
             HttpGet httpGet = new HttpGet(uri);
-            httpGet.setHeader("username",username);
-            httpGet.setHeader("password",password);
+            httpGet.setHeader(NacosConstant.USERNAME, username);
+            httpGet.setHeader(NacosConstant.PASSWORD, password);
             try (CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet)) {
                 if (closeableHttpResponse.getStatusLine().getStatusCode() == 200) {
                     String response = EntityUtils.toString(closeableHttpResponse.getEntity(), StandardCharsets.UTF_8);
