@@ -21,3 +21,10 @@ var (
 	// IsEventMeshRuntimeInitialized is whether the runtime list is initialized
 	IsEventMeshRuntimeInitialized = false
 )
+
+const (
+	// WaitForRuntimePodNameReadyInSecond is the time connector sleep for waiting runtime ready in second
+	WaitForRuntimePodNameReadyInSecond = 1
+	// RequeueAfterSecond is a universal interval of the reconcile function
+	RequeueAfterSecond = 6
+)

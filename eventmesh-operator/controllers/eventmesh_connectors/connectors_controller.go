@@ -98,6 +98,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=pods/exec,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="apps",resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="apps",resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -129,7 +130,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 			break
 		} else {
 			r.Logger.Info("connector Waiting for runtime ready...")
-			time.Sleep(time.Duration(3) * time.Second)
+			time.Sleep(time.Duration(share.WaitForRuntimePodNameReadyInSecond) * time.Second)
 		}
 	}
 
@@ -202,7 +203,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 	}
 
 	r.Logger.Info("Successful reconciliation!")
-	return reconcile.Result{}, nil
+	return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
 }
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {

@@ -91,12 +91,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime/finalizers,verbs=update
+//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtimes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtimes/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtimes/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=pods/exec,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="apps",resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -114,7 +114,6 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	eventMeshRuntime := &eventmeshoperatorv1.Runtime{}
 	err := r.Client.Get(context.TODO(), req.NamespacedName, eventMeshRuntime)
 	if err != nil {
-		share.IsEventMeshRuntimeInitialized = false
 		// If it's a not found exception, it means the cr has been deleted.
 		if errors.IsNotFound(err) {
 			r.Logger.Info("eventMeshRuntime resource not found. Ignoring since object must be deleted.")
@@ -234,16 +233,17 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	}
 
 	runningEventMeshRuntimeNum := getRunningRuntimeNum(podList.Items)
-	if runningEventMeshRuntimeNum != 0 {
+	if runningEventMeshRuntimeNum == eventMeshRuntime.Spec.Size {
 		share.IsEventMeshRuntimeInitialized = true
 	}
 
 	r.Logger.Info("Successful reconciliation!")
-	return reconcile.Result{}, nil
+
+	return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
 }
 
-func getRunningRuntimeNum(pods []corev1.Pod) int32 {
-	var num int32 = 0
+func getRunningRuntimeNum(pods []corev1.Pod) int {
+	var num = 0
 	for _, pod := range pods {
 		if reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
 			num++
