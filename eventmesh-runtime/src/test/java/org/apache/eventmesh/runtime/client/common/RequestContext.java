@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.client.common;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -77,7 +76,7 @@ public class RequestContext {
 
     public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
-        LogUtils.info(log, "_RequestContext|create|key=", key);
+        log.info("_RequestContext|create|key=", key);
         return c;
     }
 

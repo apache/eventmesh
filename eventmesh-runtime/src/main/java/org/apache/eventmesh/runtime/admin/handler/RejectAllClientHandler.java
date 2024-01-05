@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -83,7 +82,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
-                LogUtils.info(log, "rejectAllClient in admin====================");
+                log.info("rejectAllClient in admin====================");
                 if (!sessionMap.isEmpty()) {
                     // Iterate through the sessionMap and close each client connection
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {

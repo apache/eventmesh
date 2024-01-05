@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEve
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -72,11 +71,9 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
             public void onNext(final CloudEvent message) {
                 T msg = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(message, listener.getProtocolType());
                 if (msg instanceof Set) {
-                    LogUtils.info(log, "Received message from Server:{}", message);
+                    log.info("Received message from Server:{}", message);
                 } else {
-                    LogUtils.info(log, "Received message from Server.|seq={}|uniqueId={}|",
-                        EventMeshCloudEventUtils.getSeqNum(message),
-                        EventMeshCloudEventUtils.getUniqueId(message));
+                    log.info("Received message from Server.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message));
                     CloudEvent streamReply = null;
                     try {
                         Optional<T> reply = listener.handle(msg);
@@ -84,14 +81,10 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
                             streamReply = buildReplyMessage(message, reply.get());
                         }
                     } catch (Exception e) {
-                        LogUtils.error(log, "Error in handling reply message.|seq={}|uniqueId={}|",
-                            EventMeshCloudEventUtils.getSeqNum(message),
-                            EventMeshCloudEventUtils.getUniqueId(message), e);
+                        log.error("Error in handling reply message.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message), e);
                     }
                     if (streamReply != null) {
-                        LogUtils.info(log, "Sending reply message to Server.|seq={}|uniqueId={}|",
-                            EventMeshCloudEventUtils.getSeqNum(streamReply),
-                            EventMeshCloudEventUtils.getUniqueId(streamReply));
+                        log.info("Sending reply message to Server.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(streamReply), EventMeshCloudEventUtils.getUniqueId(streamReply));
                         senderOnNext(streamReply);
                     }
                 }
@@ -104,7 +97,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
             @Override
             public void onCompleted() {
-                LogUtils.info(log, "Finished receiving messages from server.");
+                log.info("Finished receiving messages from server.");
                 close();
             }
         };
@@ -139,7 +132,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
         latch.countDown();
 
-        LogUtils.info(log, "SubStreamHandler closed.");
+        log.info("SubStreamHandler closed.");
     }
 
     private void senderOnNext(final CloudEvent subscription) {

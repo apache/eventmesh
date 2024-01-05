@@ -29,7 +29,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.filter.pattern.Pattern;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -226,8 +225,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         addToWaitingMap(this);
 
-        LogUtils.info(CMD_LOGGER, "cmd={}|eventMesh2client|from={}|to={}", requestCode,
-            localAddress, currPushUrl);
+        CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode, localAddress, currPushUrl);
 
         try {
             eventMeshHTTPServer.getHttpClientPool().getClient().execute(builder, response -> {
@@ -269,10 +267,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     }
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
-                    LogUtils.info(MESSAGE_LOGGER, "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}",
-                        currPushUrl, handleMsgContext.getTopic(),
-                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    MESSAGE_LOGGER.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                        + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                     if (isComplete()) {
                         handleMsgContext.finish();
@@ -366,12 +362,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             return ClientRetCode.FAIL;
         } catch (NumberFormatException e) {
-            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+            MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl, handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         } catch (Exception e) {
-            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+            MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl, handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         }
     }

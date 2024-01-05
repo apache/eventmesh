@@ -18,7 +18,6 @@
 package org.apache.eventmesh.webhook.admin;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
@@ -63,8 +62,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     @Override
     public Integer insertWebHookConfig(final WebHookConfig webHookConfig) {
         if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
-            LogUtils.error(log, "webhookConfig callback path must start with {}",
-                WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+            log.error("webhookConfig callback path must start with {}", WebHookOperationConstant.CALLBACK_PATH_PREFIX);
             return 0;
         }
 
@@ -75,7 +73,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (webhookConfigFile.exists()) {
-            LogUtils.error(log, "webhookConfig {} exists", webHookConfig.getCallbackPath());
+            log.error("webhookConfig {} exists", webHookConfig.getCallbackPath());
             return 0;
         }
         return writeToFile(webhookConfigFile, webHookConfig) ? 1 : 0;
@@ -85,7 +83,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     public Integer updateWebHookConfig(final WebHookConfig webHookConfig) {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (!webhookConfigFile.exists()) {
-            LogUtils.error(log, "webhookConfig {} does not exist", webHookConfig.getCallbackPath());
+            log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
             return 0;
         }
         return writeToFile(webhookConfigFile, webHookConfig) ? 1 : 0;
@@ -96,7 +94,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         synchronized (SharedLatchHolder.lock) {
             final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
             if (!webhookConfigFile.exists()) {
-                LogUtils.error(log, "webhookConfig {} does not exist", webHookConfig.getCallbackPath());
+                log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
                 return 0;
             }
             return webhookConfigFile.delete() ? 1 : 0;
@@ -110,7 +108,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     public WebHookConfig queryWebHookConfigById(final WebHookConfig webHookConfig) {
         final File webhookConfigFile = getWebhookConfigFile(webHookConfig);
         if (!webhookConfigFile.exists()) {
-            LogUtils.error(log, "webhookConfig {} does not exist", webHookConfig.getCallbackPath());
+            log.error("webhookConfig {} does not exist", webHookConfig.getCallbackPath());
             return null;
         }
 
@@ -124,7 +122,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         final String manuDirPath = getWebhookConfigManuDir(webHookConfig);
         final File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {
-            LogUtils.warn(log, "webhookConfig dir {} does not exist", manuDirPath);
+            log.warn("webhookConfig dir {} does not exist", manuDirPath);
             return new ArrayList<>();
         }
 
@@ -155,7 +153,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
                 fileContent.append(line);
             }
         } catch (IOException e) {
-            LogUtils.error(log, "get webHookConfig from file {} error", webhookConfigFile.getPath(), e);
+            log.error("get webHookConfig from file {} error", webhookConfigFile.getPath(), e);
             return null;
         }
 
@@ -171,7 +169,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
                 fos.getChannel().lock();
                 bw.write(Objects.requireNonNull(JsonUtils.toJSONString(webHookConfig)));
             } catch (IOException e) {
-                LogUtils.error(log, "write webhookConfig {} to file error", webHookConfig.getCallbackPath());
+                log.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
                 return false;
             }
             return true;

@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
@@ -93,7 +92,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
     public void shutdown() throws Exception {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
-            LogUtils.info(log, "shutdown bossGroup");
+            log.info("shutdown bossGroup");
         }
         producerManager.shutdown();
 
@@ -101,13 +100,13 @@ public abstract class AbstractRemotingServer implements RemotingServer {
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
-            LogUtils.info(log, "shutdown ioGroup");
+            log.info("shutdown ioGroup");
         }
 
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
 
-            LogUtils.info(log, "shutdown workerGroup");
+            log.info("shutdown workerGroup");
         }
     }
 

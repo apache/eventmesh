@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.AssertUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -168,7 +167,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     .childHandler(new HttpsServerInitializer(useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
-                LogUtils.info(log, "HTTPServer[port={}] started.", this.getPort());
+                log.info("HTTPServer[port={}] started.", this.getPort());
 
                 bootstrap.bind(this.getPort())
                     .channel()
@@ -246,8 +245,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public void sendResponse(final ChannelHandlerContext ctx, final DefaultFullHttpResponse response) {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
-                LogUtils.warn(log, "send response to [{}] fail, will close this channel",
-                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                log.warn("send response to [{}] fail, will close this channel", RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 f.channel().close();
             }
         });
@@ -366,7 +364,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     return;
                 }
 
-                LogUtils.debug(log, "{}", requestCommand);
+                log.debug("{}", requestCommand);
 
                 final AsyncContext<HttpCommand> asyncContext =
                     new AsyncContext<>(requestCommand, responseCommand, asyncContextCompleteHandler);
@@ -414,7 +412,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                             if (asyncContext.isComplete()) {
                                 sendResponse(ctx, responseCommand.httpResponse());
-                                LogUtils.debug(log, "{}", asyncContext.getResponse());
+                                log.debug("{}", asyncContext.getResponse());
                                 final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
                                 TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
                                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
@@ -434,7 +432,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         metrics.getSummaryMetrics()
                             .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
 
-                        LogUtils.debug(log, "{}", asyncContext.getResponse());
+                        log.debug("{}", asyncContext.getResponse());
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
@@ -490,8 +488,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void channelActive(final ChannelHandlerContext ctx) throws Exception {
             if (connections.incrementAndGet() > MAX_CONNECTIONS) {
-                LogUtils.warn(log, "client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server",
-                    RemotingHelper.parseChannelRemoteAddr(ctx.channel()), MAX_CONNECTIONS);
+                log.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server", RemotingHelper.parseChannelRemoteAddr(ctx.channel()), MAX_CONNECTIONS);
                 ctx.close();
                 return;
             }
@@ -510,8 +507,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 final IdleStateEvent event = (IdleStateEvent) evt;
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                    LogUtils.info(log, "client|http|userEventTriggered|remoteAddress={}|msg={}",
-                        remoteAddress, evt.getClass().getName());
+                    log.info("client|http|userEventTriggered|remoteAddress={}|msg={}", remoteAddress, evt.getClass().getName());
                     ctx.close();
                 }
             }

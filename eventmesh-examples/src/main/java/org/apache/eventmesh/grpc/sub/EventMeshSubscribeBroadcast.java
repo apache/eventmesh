@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 
@@ -62,7 +61,7 @@ public class EventMeshSubscribeBroadcast extends GrpcAbstractDemo implements Rec
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        LogUtils.info(log, "receive async broadcast msg: {}", msg);
+        log.info("receive async broadcast msg: {}", msg);
         return Optional.empty();
     }
 

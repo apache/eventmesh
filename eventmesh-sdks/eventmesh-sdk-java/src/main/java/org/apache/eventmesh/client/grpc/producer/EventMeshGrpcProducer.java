@@ -73,7 +73,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     public <T> Response publish(List<T> messageList) {
-        LogUtils.info(log, "BatchPublish message :{}", messageList);
+        log.info("BatchPublish message :{}", messageList);
 
         if (CollectionUtils.isEmpty(messageList)) {
             return null;

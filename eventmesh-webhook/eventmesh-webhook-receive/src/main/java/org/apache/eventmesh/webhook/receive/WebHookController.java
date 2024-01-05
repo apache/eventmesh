@@ -128,7 +128,7 @@ public class WebHookController {
 
             @Override
             public void onException(OnExceptionContext context) {
-                LogUtils.warn(log, "", context.getException());
+                log.warn("", context.getException());
             }
 
         });

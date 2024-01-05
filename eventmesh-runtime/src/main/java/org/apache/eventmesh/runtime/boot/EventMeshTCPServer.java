@@ -24,7 +24,6 @@ import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
@@ -89,7 +88,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     }
 
     public void init() throws Exception {
-        LogUtils.info(log, "==================EventMeshTCPServer Initialing==================");
+        log.info("==================EventMeshTCPServer Initialing==================");
         super.init();
 
         rateLimiter = RateLimiter.create(eventMeshTCPConfiguration.getEventMeshTcpMsgReqnumPerSecond());
@@ -119,7 +118,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
         registerTCPRequestProcessor();
 
-        LogUtils.info(log, "--------------------------EventMeshTCPServer Inited");
+        log.info("--------------------------EventMeshTCPServer Inited");
     }
 
     @Override
@@ -135,7 +134,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             eventMeshRebalanceService.start();
         }
 
-        LogUtils.info(log, "--------------------------EventMeshTCPServer Started");
+        log.info("--------------------------EventMeshTCPServer Started");
     }
 
     @Override
@@ -154,7 +153,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             this.unRegister();
         }
 
-        LogUtils.info(log, "--------------------------EventMeshTCPServer Shutdown");
+        log.info("--------------------------EventMeshTCPServer Shutdown");
     }
 
     /**

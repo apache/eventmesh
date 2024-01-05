@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.lark.sink;
 import static org.apache.eventmesh.connector.lark.sink.ImServiceHandler.create;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.AUTH_CACHE;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.TENANT_ACCESS_TOKEN;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
