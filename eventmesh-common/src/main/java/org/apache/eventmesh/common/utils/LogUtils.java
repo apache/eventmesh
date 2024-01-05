@@ -24,6 +24,8 @@ import org.slf4j.Marker;
 import org.slf4j.spi.CallerBoundaryAware;
 import org.slf4j.spi.LoggingEventBuilder;
 
+import com.google.errorprone.annotations.InlineMe;
+
 import lombok.experimental.UtilityClass;
 
 /**
@@ -53,6 +55,7 @@ public final class LogUtils {
 
     private static final String FQCN = LogUtils.class.getName();
 
+    @InlineMe(replacement = "logger.trace(msg)")
     public static void trace(Logger logger, String msg) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -61,6 +64,7 @@ public final class LogUtils {
         builder.log(msg);
     }
 
+    @InlineMe(replacement = "logger.trace(format, arg)")
     public static void trace(Logger logger, String format, Object arg) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -69,6 +73,7 @@ public final class LogUtils {
         builder.log(format, arg);
     }
 
+    @InlineMe(replacement = "logger.trace(format, arg1, arg2)")
     public static void trace(Logger logger, String format, Object arg1, Object arg2) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -77,6 +82,7 @@ public final class LogUtils {
         builder.log(format, arg1, arg2);
     }
 
+    @InlineMe(replacement = "logger.trace(format, arguments)")
     public static void trace(Logger logger, String format, Object... arguments) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -104,6 +110,7 @@ public final class LogUtils {
         builder.log(format);
     }
 
+    @InlineMe(replacement = "logger.trace(msg, t)")
     public static void trace(Logger logger, String msg, Throwable t) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -112,6 +119,7 @@ public final class LogUtils {
         builder.setCause(t).log(msg);
     }
 
+    @InlineMe(replacement = "logger.trace(marker, msg)")
     public static void trace(Logger logger, Marker marker, String msg) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -120,6 +128,7 @@ public final class LogUtils {
         builder.addMarker(marker).log(msg);
     }
 
+    @InlineMe(replacement = "logger.trace(marker, format, arg)")
     public static void trace(Logger logger, Marker marker, String format, Object arg) {
         final LoggingEventBuilder builder = logger.atTrace();
         if (builder instanceof CallerBoundaryAware) {
@@ -128,6 +137,7 @@ public final class LogUtils {
         builder.addMarker(marker).log(format, arg);
     }
 
+    @InlineMe(replacement = "logger.debug(msg)")
     public static void debug(Logger logger, String msg) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
@@ -136,6 +146,7 @@ public final class LogUtils {
         builder.log(msg);
     }
 
+    @InlineMe(replacement = "logger.debug(format, arg)")
     public static void debug(Logger logger, String format, Object arg) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
@@ -144,6 +155,7 @@ public final class LogUtils {
         builder.log(format, arg);
     }
 
+    @InlineMe(replacement = "logger.debug(format, arg1, arg2)")
     public static void debug(Logger logger, String format, Object arg1, Object arg2) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
@@ -152,6 +164,7 @@ public final class LogUtils {
         builder.log(format, arg1, arg2);
     }
 
+    @InlineMe(replacement = "logger.debug(format, arguments)")
     public static void debug(Logger logger, String format, Object... arguments) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
@@ -179,6 +192,7 @@ public final class LogUtils {
         builder.log(format);
     }
 
+    @InlineMe(replacement = "logger.debug(msg, t)")
     public static void debug(Logger logger, String msg, Throwable t) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
@@ -187,6 +201,7 @@ public final class LogUtils {
         builder.setCause(t).log(msg);
     }
 
+    @InlineMe(replacement = "logger.info(msg)")
     public static void info(Logger logger, String msg) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
@@ -195,6 +210,7 @@ public final class LogUtils {
         builder.log(msg);
     }
 
+    @InlineMe(replacement = "logger.info(format, arg)")
     public static void info(Logger logger, String format, Object arg) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
@@ -203,6 +219,7 @@ public final class LogUtils {
         builder.log(format, arg);
     }
 
+    @InlineMe(replacement = "logger.info(format, arg1, arg2)")
     public static void info(Logger logger, String format, Object arg1, Object arg2) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
@@ -211,6 +228,7 @@ public final class LogUtils {
         builder.log(format, arg1, arg2);
     }
 
+    @InlineMe(replacement = "logger.info(format, arguments)")
     public static void info(Logger logger, String format, Object... arguments) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
@@ -238,6 +256,7 @@ public final class LogUtils {
         builder.log(format);
     }
 
+    @InlineMe(replacement = "logger.info(msg, t)")
     public static void info(Logger logger, String msg, Throwable t) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
@@ -246,6 +265,7 @@ public final class LogUtils {
         builder.setCause(t).log(msg);
     }
 
+    @InlineMe(replacement = "logger.warn(msg)")
     public static void warn(Logger logger, String msg) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
@@ -254,6 +274,7 @@ public final class LogUtils {
         builder.log(msg);
     }
 
+    @InlineMe(replacement = "logger.warn(format, arg)")
     public static void warn(Logger logger, String format, Object arg) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
@@ -262,6 +283,7 @@ public final class LogUtils {
         builder.log(format, arg);
     }
 
+    @InlineMe(replacement = "logger.warn(format, arg1, arg2)")
     public static void warn(Logger logger, String format, Object arg1, Object arg2) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
@@ -270,6 +292,7 @@ public final class LogUtils {
         builder.log(format, arg1, arg2);
     }
 
+    @InlineMe(replacement = "logger.warn(format, arguments)")
     public static void warn(Logger logger, String format, Object... arguments) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
@@ -297,6 +320,7 @@ public final class LogUtils {
         builder.log(format);
     }
 
+    @InlineMe(replacement = "logger.warn(msg, t)")
     public static void warn(Logger logger, String msg, Throwable t) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
@@ -305,6 +329,7 @@ public final class LogUtils {
         builder.setCause(t).log(msg);
     }
 
+    @InlineMe(replacement = "logger.error(msg)")
     public static void error(Logger logger, String msg) {
         final LoggingEventBuilder builder = logger.atError();
         if (builder instanceof CallerBoundaryAware) {
@@ -313,6 +338,7 @@ public final class LogUtils {
         builder.log(msg);
     }
 
+    @InlineMe(replacement = "logger.error(format, arg)")
     public static void error(Logger logger, String format, Object arg) {
         final LoggingEventBuilder builder = logger.atError();
         if (builder instanceof CallerBoundaryAware) {
@@ -321,6 +347,7 @@ public final class LogUtils {
         builder.log(format, arg);
     }
 
+    @InlineMe(replacement = "logger.error(format, arg1, arg2)")
     public static void error(Logger logger, String format, Object arg1, Object arg2) {
         final LoggingEventBuilder builder = logger.atError();
         if (builder instanceof CallerBoundaryAware) {
@@ -329,6 +356,7 @@ public final class LogUtils {
         builder.log(format, arg1, arg2);
     }
 
+    @InlineMe(replacement = "logger.error(format, arguments)")
     public static void error(Logger logger, String format, Object... arguments) {
         final LoggingEventBuilder builder = logger.atError();
         if (builder instanceof CallerBoundaryAware) {
@@ -356,6 +384,7 @@ public final class LogUtils {
         builder.log(format);
     }
 
+    @InlineMe(replacement = "logger.error(msg, t)")
     public static void error(Logger logger, String msg, Throwable t) {
         final LoggingEventBuilder builder = logger.atError();
         if (builder instanceof CallerBoundaryAware) {
