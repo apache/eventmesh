@@ -80,6 +80,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AbstractTCPServer extends AbstractRemotingServer {
 
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private ClientSessionGroupMapping clientSessionGroupMapping;
 
@@ -228,8 +230,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     @Sharable
     private class TcpDispatcher extends SimpleChannelInboundHandler<Package> {
 
-        private final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
-
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package pkg) throws Exception {
             long startTime = System.currentTimeMillis();
@@ -253,7 +253,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 }
 
                 if (Command.HELLO_REQUEST == cmd || Command.RECOMMEND_REQUEST == cmd) {
-                    messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
+                    MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     processTcpCommandRequest(pkg, ctx, startTime, cmd);
                     return;
                 }
@@ -345,16 +345,16 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         }
 
         private void logMessageFlow(ChannelHandlerContext ctx, Package pkg, Command cmd) {
-            if (!messageLogger.isInfoEnabled()) {
+            if (!MESSAGE_LOGGER.isInfoEnabled()) {
                 return;
             }
 
             if (pkg.getBody() instanceof EventMeshMessage) {
-                messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
+                MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
                     EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()),
                     clientSessionGroupMapping.getSession(ctx).getClient());
             } else {
-                messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
+                MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
                     clientSessionGroupMapping.getSession(ctx).getClient());
             }
         }
