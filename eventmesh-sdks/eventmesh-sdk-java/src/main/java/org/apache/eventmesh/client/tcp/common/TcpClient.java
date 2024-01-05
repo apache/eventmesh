@@ -178,9 +178,8 @@ public abstract class TcpClient implements Closeable {
     protected Package io(Package msg, long timeout) throws Exception {
         Object key = RequestContext.key(msg);
         RequestContext context = RequestContext.context(key, msg);
-        if (!contexts.containsValue(context)) {
-            contexts.put(key, context);
-        } else {
+        RequestContext previousContext = contexts.putIfAbsent(key, context);
+        if (previousContext != null) {
             log.info("duplicate key : {}", key);
         }
         send(msg);
