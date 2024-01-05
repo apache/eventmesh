@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
@@ -86,7 +87,7 @@ public class TransformerEngine {
                 for (String transformerKey : transformerMap.keySet()) {
                     if (!StringUtils.contains(transformerKey, producerGroup)) {
                         addTransformerListener(producerGroup);
-                        log.info("addTransformerListener for producer group: " + producerGroup);
+                        LogUtils.info(log, "addTransformerListener for producer group: " + producerGroup);
                     }
                 }
             }
@@ -95,7 +96,7 @@ public class TransformerEngine {
                 for (String transformerKey : transformerMap.keySet()) {
                     if (!StringUtils.contains(transformerKey, consumerGroup)) {
                         addTransformerListener(consumerGroup);
-                        log.info("addTransformerListener for consumer group: " + consumerGroup);
+                        LogUtils.info(log, "addTransformerListener for consumer group: " + consumerGroup);
                     }
                 }
             }

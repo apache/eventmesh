@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
@@ -53,7 +54,7 @@ public class AsyncPublishBroadcast {
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
 
-            log.info("begin send broadcast msg: {}", eventMeshMessage);
+            LogUtils.info(log, "begin send broadcast msg: {}", eventMeshMessage);
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
             ThreadUtils.sleep(2, TimeUnit.SECONDS);

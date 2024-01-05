@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
 import org.apache.commons.collections4.MapUtils;
@@ -62,7 +63,8 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         Objects.requireNonNull(client, "ConsumerGroupClient can not be null");
 
         if (client.getGrpcType() != grpcType) {
-            log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}", client.getGrpcType(), grpcType, client);
+            LogUtils.warn(log, "Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
+                client.getGrpcType(), grpcType, client);
             return;
         }
 

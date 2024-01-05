@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.filter.pattern.Pattern;
 import org.apache.eventmesh.filter.patternbuild.PatternBuilder;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
@@ -85,7 +86,7 @@ public class FilterEngine {
                 for (String filterKey : filterPatternMap.keySet()) {
                     if (!StringUtils.contains(filterKey, producerGroup)) {
                         addFilterListener(producerGroup);
-                        log.info("addFilterListener for producer group: " + producerGroup);
+                        LogUtils.info(log, "addFilterListener for producer group: " + producerGroup);
                     }
                 }
             }
@@ -94,7 +95,7 @@ public class FilterEngine {
                 for (String filterKey : filterPatternMap.keySet()) {
                     if (!StringUtils.contains(filterKey, consumerGroup)) {
                         addFilterListener(consumerGroup);
-                        log.info("addFilterListener for consumer group: " + consumerGroup);
+                        LogUtils.info(log, "addFilterListener for consumer group: " + consumerGroup);
                     }
                 }
             }

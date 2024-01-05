@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -140,7 +141,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    httpLogger.debug("{}", httpEventWrapper);
+                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());

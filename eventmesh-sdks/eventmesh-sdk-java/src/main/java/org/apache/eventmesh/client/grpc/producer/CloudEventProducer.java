@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -49,7 +50,7 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
 
     @Override
     public Response publish(final List<io.cloudevents.CloudEvent> events) {
-        log.info("BatchPublish message, batch size={}", events.size());
+        LogUtils.info(log, "BatchPublish message, batch size={}", events.size());
 
         if (CollectionUtils.isEmpty(events)) {
             return null;
@@ -64,17 +65,17 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
                 .respTime(EventMeshCloudEventUtils.getResponseTime(response))
                 .build();
 
-            log.info("Received response:{}", parsedResponse);
+            LogUtils.info(log, "Received response:{}", parsedResponse);
             return parsedResponse;
         } catch (Exception e) {
-            log.error("Error in BatchPublish message {}", events, e);
+            LogUtils.error(log, "Error in BatchPublish message {}", events, e);
         }
         return null;
     }
 
     @Override
     public Response publish(final io.cloudevents.CloudEvent cloudEvent) {
-        log.info("Publish message: {}", cloudEvent.toString());
+        LogUtils.info(log, "Publish message: {}", cloudEvent.toString());
         CloudEvent enhancedMessage = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(cloudEvent, clientConfig, PROTOCOL_TYPE);
         try {
             final CloudEvent response = publisherClient.publish(enhancedMessage);
@@ -83,24 +84,24 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
                 .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
                 .respTime(EventMeshCloudEventUtils.getResponseTime(response))
                 .build();
-            log.info("Received response:{} ", parsedResponse);
+            LogUtils.info(log, "Received response:{} ", parsedResponse);
             return parsedResponse;
         } catch (Exception e) {
-            log.error("Error in publishing message {}", cloudEvent, e);
+            LogUtils.error(log, "Error in publishing message {}", cloudEvent, e);
         }
         return null;
     }
 
     @Override
     public io.cloudevents.CloudEvent requestReply(final io.cloudevents.CloudEvent cloudEvent, final long timeout) {
-        log.info("RequestReply message {}", cloudEvent);
+        LogUtils.info(log, "RequestReply message {}", cloudEvent);
         final CloudEvent enhancedMessage = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(cloudEvent, clientConfig, PROTOCOL_TYPE);
         try {
             final CloudEvent reply = publisherClient.requestReply(enhancedMessage);
-            log.info("Received reply message:{}", reply);
+            LogUtils.info(log, "Received reply message:{}", reply);
             return EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(reply, PROTOCOL_TYPE);
         } catch (Exception e) {
-            log.error("Error in RequestReply message {}", cloudEvent, e);
+            LogUtils.error(log, "Error in RequestReply message {}", cloudEvent, e);
         }
         return null;
     }

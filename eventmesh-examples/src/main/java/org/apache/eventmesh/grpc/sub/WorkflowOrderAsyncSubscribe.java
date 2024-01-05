@@ -29,6 +29,7 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import org.apache.eventmesh.selector.NacosSelector;
@@ -80,7 +81,7 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) throws Exception {
-        log.info("receive async msg: {}", msg);
+        LogUtils.info(log, "receive async msg: {}", msg);
 
         final Map<String, String> props = msg.getProp();
         final String workflowInstanceId = props.get("workflowinstanceid");
@@ -90,7 +91,7 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
             .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         final ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
-        log.info("receive workflow msg: {}", response.getInstanceId());
+        LogUtils.info(log, "receive workflow msg: {}", response.getInstanceId());
         return Optional.empty();
     }
 

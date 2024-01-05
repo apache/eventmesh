@@ -28,7 +28,7 @@ public class LarkConnectServer {
     public static void main(String[] args) throws Exception {
 
         LarkConnectServerConfig larkConnectServerConfig = ConfigUtil.parse(LarkConnectServerConfig.class,
-            Constants.CONNECT_SERVER_CONFIG_FILE_NAME);
+                Constants.CONNECT_SERVER_CONFIG_FILE_NAME);
 
         if (larkConnectServerConfig.isSinkEnable()) {
             Application application = new Application();

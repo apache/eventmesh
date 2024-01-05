@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
@@ -60,7 +61,7 @@ public class SyncRequest {
 
             final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
 
-            log.info("begin send rr msg: {}", event);
+            LogUtils.info(log, "begin send rr msg: {}", event);
 
             final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
@@ -81,7 +82,7 @@ public class SyncRequest {
             }
 
             final String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-            log.info("receive rr reply: {}|{}", response, content);
+            LogUtils.info(log, "receive rr reply: {}|{}", response, content);
 
         } catch (Exception e) {
             log.error("SyncRequest failed", e);

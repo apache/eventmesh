@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
@@ -254,9 +255,11 @@ public final class HttpClientGroupMapping {
                 final ConsumerGroupTopicConf currentTopicConf = map.get(subTopic.getTopic());
                 if (!currentTopicConf.getUrls().add(url)) {
                     isChange = true;
-                    log.info("add subscribe success, group:{}, url:{} , topic:{}", consumerGroup, url, subTopic.getTopic());
+                    LogUtils.info(log, "add subscribe success, group:{}, url:{} , topic:{}", consumerGroup, url,
+                        subTopic.getTopic());
                 } else {
-                    log.warn("The group has subscribed, group:{}, url:{} , topic:{}", consumerGroup, url, subTopic.getTopic());
+                    LogUtils.warn(log, "The group has subscribed, group:{}, url:{} , topic:{}", consumerGroup, url,
+                        subTopic.getTopic());
                 }
 
                 if (!currentTopicConf.getIdcUrls().containsKey(clientIdc)) {
@@ -264,18 +267,18 @@ public final class HttpClientGroupMapping {
                     urls.add(url);
                     currentTopicConf.getIdcUrls().put(clientIdc, urls);
                     isChange = true;
-                    log.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}", consumerGroup, url, subTopic.getTopic(),
-                        clientIdc);
+                    LogUtils.info(log, "add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
+                        consumerGroup, url, subTopic.getTopic(), clientIdc);
                 } else {
                     final Set<String> tmpSet = new HashSet<>(currentTopicConf.getIdcUrls().get(clientIdc));
                     if (!tmpSet.contains(url)) {
                         currentTopicConf.getIdcUrls().get(clientIdc).add(url);
                         isChange = true;
-                        log.info("add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}", consumerGroup, url, subTopic.getTopic(),
-                            clientIdc);
+                        LogUtils.info(log, "add url to idcUrlMap success, group:{}, url:{}, topic:{}, clientIdc:{}",
+                            consumerGroup, url, subTopic.getTopic(), clientIdc);
                     } else {
-                        log.warn("The idcUrlMap has contains url, group:{}, url:{} , topic:{}, clientIdc:{}", consumerGroup, url, subTopic.getTopic(),
-                            clientIdc);
+                        LogUtils.warn(log, "The idcUrlMap has contains url, group:{}, url:{} , topic:{}, clientIdc:{}",
+                            consumerGroup, url, subTopic.getTopic(), clientIdc);
                     }
                 }
             }
@@ -294,46 +297,48 @@ public final class HttpClientGroupMapping {
 
         final ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
         if (consumerGroupConf == null) {
-            log.warn("unsubscribe fail, the current mesh does not have group subscriptionInfo, group:{}, url:{}", consumerGroup, unSubscribeUrl);
+            LogUtils.warn(log, "unsubscribe fail, the current mesh does not have group subscriptionInfo, group:{}, url:{}",
+                consumerGroup, unSubscribeUrl);
             return false;
         }
 
         final ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(unSubTopic);
         if (consumerGroupTopicConf == null) {
-            log.warn("unsubscribe fail, the current mesh does not have group-topic subscriptionInfo, group:{}, topic:{}, url:{}", consumerGroup,
-                unSubTopic, unSubscribeUrl);
+            LogUtils.warn(log, "unsubscribe fail, the current mesh does not have group-topic subscriptionInfo, group:{}, topic:{}, url:{}",
+                consumerGroup, unSubTopic, unSubscribeUrl);
             return false;
         }
 
         if (consumerGroupTopicConf.getUrls().remove(unSubscribeUrl)) {
             isChange = true;
-            log.info("remove url success, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
+            LogUtils.info(log, "remove url success, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
         } else {
-            log.warn("remove url fail, not exist subscrition of this url, group:{}, topic:{}, url:{}", consumerGroup, unSubTopic, unSubscribeUrl);
+            LogUtils.warn(log, "remove url fail, not exist subscrition of this url, group:{}, topic:{}, url:{}",
+                consumerGroup, unSubTopic, unSubscribeUrl);
         }
 
         if (consumerGroupTopicConf.getIdcUrls().containsKey(clientIdc)) {
             if (consumerGroupTopicConf.getIdcUrls().get(clientIdc).remove(unSubscribeUrl)) {
                 isChange = true;
-                log.info("remove url from idcUrlMap success, group:{}, topic:{}, url:{}, clientIdc:{}", consumerGroup, unSubTopic, unSubscribeUrl,
-                    clientIdc);
+                LogUtils.info(log, "remove url from idcUrlMap success, group:{}, topic:{}, url:{}, clientIdc:{}",
+                    consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
             } else {
-                log.warn("remove url from idcUrlMap fail, not exist subscriber of this url, group:{}, topic:{}, url:{}, clientIdc:{}", consumerGroup,
-                    unSubTopic, unSubscribeUrl, clientIdc);
+                LogUtils.warn(log, "remove url from idcUrlMap fail, not exist subscriber of this url, group:{}, topic:{}, url:{}, clientIdc:{}",
+                    consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
             }
         } else {
-            log.warn("remove url from idcUrlMap fail,not exist subscrition of this idc , group:{}, topic:{}, url:{}, clientIdc:{}", consumerGroup,
-                unSubTopic, unSubscribeUrl, clientIdc);
+            LogUtils.warn(log, "remove url from idcUrlMap fail,not exist subscrition of this idc , group:{}, topic:{}, url:{}, clientIdc:{}",
+                consumerGroup, unSubTopic, unSubscribeUrl, clientIdc);
         }
 
         if (isChange && CollectionUtils.isEmpty(consumerGroupTopicConf.getUrls())) {
             consumerGroupConf.getConsumerGroupTopicConf().remove(unSubTopic);
-            log.info("group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
+            LogUtils.info(log, "group unsubscribe topic success,group:{}, topic:{}", consumerGroup, unSubTopic);
         }
 
         if (isChange && MapUtils.isEmpty(consumerGroupConf.getConsumerGroupTopicConf())) {
             localConsumerGroupMapping.remove(consumerGroup);
-            log.info("group unsubscribe success,group:{}", consumerGroup);
+            LogUtils.info(log, "group unsubscribe success,group:{}", consumerGroup);
         }
         return isChange;
     }

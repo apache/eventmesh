@@ -37,6 +37,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -166,7 +167,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     @Override
     public void close() throws EventMeshException {
-        log.info("LiteConsumer shutdown begin.");
+        LogUtils.info(log, "LiteConsumer shutdown begin.");
         super.close();
 
         if (consumeExecutor != null) {
@@ -174,7 +175,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         }
         scheduler.shutdown();
 
-        log.info("LiteConsumer shutdown end.");
+        LogUtils.info(log, "LiteConsumer shutdown end.");
     }
 
     private RequestParam buildCommonRequestParam() {

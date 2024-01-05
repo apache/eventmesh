@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -60,7 +61,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     }
 
     public <T> Response publish(T message) {
-        log.info("Publish message ", message.toString());
+        LogUtils.info(log, "Publish message ", message.toString());
         if (message instanceof CloudEvent) {
             return cloudEventProducer.publish((CloudEvent) message);
         } else if (message instanceof EventMeshMessage) {
@@ -72,7 +73,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     public <T> Response publish(List<T> messageList) {
-        log.info("BatchPublish message :{}", messageList);
+        LogUtils.info(log, "BatchPublish message :{}", messageList);
 
         if (CollectionUtils.isEmpty(messageList)) {
             return null;

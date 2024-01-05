@@ -28,6 +28,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -217,10 +218,10 @@ public class ClientGroupWrapper {
             }
             Session s = topic2sessionInGroupMapping.get(topic).putIfAbsent(session.getSessionId(), session);
             if (s == null) {
-                log.info("Cache session success, group:{} topic:{} client:{} sessionId:{}", group, topic, session.getClient(),
-                    session.getSessionId());
+                LogUtils.info(log, "Cache session success, group:{} topic:{} client:{} sessionId:{}", group,
+                    topic, session.getClient(), session.getSessionId());
             } else {
-                log.warn("Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
+                LogUtils.warn(log, "Session already exists in topic2sessionInGroupMapping. group:{} topic:{} client:{} sessionId:{}", group, topic,
                     session.getClient(), session.getSessionId());
             }
 

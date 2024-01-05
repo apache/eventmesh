@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.file;
 
+import org.apache.eventmesh.common.utils.LogUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,10 +62,10 @@ public class WatchFileManager {
             return;
         }
 
-        log.info("[WatchFileManager] start close");
+        LogUtils.info(log, "[WatchFileManager] start close");
 
         for (Map.Entry<String, WatchFileTask> entry : WATCH_FILE_TASK_MAP.entrySet()) {
-            log.info("[WatchFileManager] start to shutdown : {}", entry.getKey());
+            LogUtils.info(log, "[WatchFileManager] start to shutdown : {}", entry.getKey());
 
             try {
                 entry.getValue().shutdown();

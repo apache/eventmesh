@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -141,12 +142,12 @@ public class EventMeshServer {
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
-        log.info("eventStore : {}", eventStore);
+        LogUtils.info(log, "eventStore : {}", eventStore);
         producerTopicManager = new ProducerTopicManager(this);
         producerTopicManager.init();
         serviceState = ServiceState.INITED;
 
-        log.info(SERVER_STATE_MSG, serviceState);
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public void start() throws Exception {
@@ -169,13 +170,13 @@ public class EventMeshServer {
         }
         producerTopicManager.start();
         serviceState = ServiceState.RUNNING;
-        log.info(SERVER_STATE_MSG, serviceState);
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
 
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPPING;
-        log.info(SERVER_STATE_MSG, serviceState);
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.shutdown();
@@ -198,7 +199,7 @@ public class EventMeshServer {
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPPED;
 
-        log.info(SERVER_STATE_MSG, serviceState);
+        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
     }
 
     public static Trace getTrace() {

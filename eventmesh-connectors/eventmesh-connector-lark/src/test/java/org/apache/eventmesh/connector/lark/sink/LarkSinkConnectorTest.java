@@ -85,7 +85,7 @@ public class LarkSinkConnectorTest {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
+                    System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
             connectRecords.add(connectRecord);
         }
         larkSinkConnector.put(connectRecords);

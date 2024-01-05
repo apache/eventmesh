@@ -44,49 +44,49 @@ public final class LogUtils {
 
     @InlineMe(replacement = "logger.trace(msg)")
     public static void trace(Logger logger, String msg) {
-        if (logger.isTraceEnabled()) {
+        if (isTraceEnabled(logger)) {
             logger.trace(msg);
         }
     }
 
     @InlineMe(replacement = "logger.trace(format, arg)")
     public static void trace(Logger logger, String format, Object arg) {
-        if (logger.isTraceEnabled()) {
+        if (isTraceEnabled(logger)) {
             logger.trace(format, arg);
         }
     }
 
     @InlineMe(replacement = "logger.trace(msg, t)")
     public static void trace(Logger logger, String msg, Throwable t) {
-        if (logger.isTraceEnabled()) {
+        if (isTraceEnabled(logger)) {
             logger.trace(msg, t);
         }
     }
 
     @InlineMe(replacement = "logger.trace(format, arguments)")
     public static void trace(Logger logger, String format, Object... arguments) {
-        if (logger.isTraceEnabled()) {
+        if (isTraceEnabled(logger)) {
             logger.trace(format, arguments);
         }
     }
 
     @InlineMe(replacement = "logger.trace(format, arg1, arg2)")
     public static void trace(Logger logger, String format, Object arg1, Object arg2) {
-        if (logger.isTraceEnabled()) {
+        if (isTraceEnabled(logger)) {
             logger.trace(format, arg1, arg2);
         }
     }
 
     @InlineMe(replacement = "logger.trace(marker, msg)")
     public static void trace(Logger logger, Marker marker, String msg) {
-        if (logger.isTraceEnabled(marker)) {
+        if (isTraceEnabled(logger, marker)) {
             logger.trace(marker, msg);
         }
     }
 
     @InlineMe(replacement = "logger.trace(marker, format, arg)")
     public static void trace(Logger logger, Marker marker, String format, Object arg) {
-        if (logger.isTraceEnabled(marker)) {
+        if (isTraceEnabled(logger, marker)) {
             logger.trace(marker, format, arg);
         }
     }
@@ -98,35 +98,35 @@ public final class LogUtils {
 
     @InlineMe(replacement = "logger.debug(msg)")
     public static void debug(Logger logger, String msg) {
-        if (logger.isDebugEnabled()) {
+        if (isDebugEnabled(logger)) {
             logger.debug(msg);
         }
     }
 
     @InlineMe(replacement = "logger.debug(format, arg)")
     public static void debug(Logger logger, String format, Object arg) {
-        if (logger.isDebugEnabled()) {
+        if (isDebugEnabled(logger)) {
             logger.debug(format, arg);
         }
     }
 
     @InlineMe(replacement = "logger.debug(format, arg1, arg2)")
     public static void debug(Logger logger, String format, Object arg1, Object arg2) {
-        if (logger.isDebugEnabled()) {
+        if (isDebugEnabled(logger)) {
             logger.debug(format, arg1, arg2);
         }
     }
 
     @InlineMe(replacement = "logger.debug(format, arguments)")
     public static void debug(Logger logger, String format, Object... arguments) {
-        if (logger.isDebugEnabled()) {
+        if (isDebugEnabled(logger)) {
             logger.debug(format, arguments);
         }
     }
 
     @InlineMe(replacement = "logger.debug(msg, t)")
     public static void debug(Logger logger, String msg, Throwable t) {
-        if (logger.isDebugEnabled()) {
+        if (isDebugEnabled(logger)) {
             logger.debug(msg, t);
         }
     }
@@ -138,35 +138,35 @@ public final class LogUtils {
 
     @InlineMe(replacement = "logger.info(msg)")
     public static void info(Logger logger, String msg) {
-        if (logger.isInfoEnabled()) {
+        if (isInfoEnabled(logger)) {
             logger.info(msg);
         }
     }
 
     @InlineMe(replacement = "logger.info(format, arg)")
     public static void info(Logger logger, String format, Object arg) {
-        if (logger.isInfoEnabled()) {
+        if (isInfoEnabled(logger)) {
             logger.info(format, arg);
         }
     }
 
     @InlineMe(replacement = "logger.info(format, arg1, arg2)")
     public static void info(Logger logger, String format, Object arg1, Object arg2) {
-        if (logger.isInfoEnabled()) {
+        if (isInfoEnabled(logger)) {
             logger.info(format, arg1, arg2);
         }
     }
 
     @InlineMe(replacement = "logger.info(format, arguments)")
     public static void info(Logger logger, String format, Object... arguments) {
-        if (logger.isInfoEnabled()) {
+        if (isInfoEnabled(logger)) {
             logger.info(format, arguments);
         }
     }
 
     @InlineMe(replacement = "logger.info(msg, t)")
     public static void info(Logger logger, String msg, Throwable t) {
-        if (logger.isInfoEnabled()) {
+        if (isInfoEnabled(logger)) {
             logger.info(msg, t);
         }
     }
@@ -178,35 +178,35 @@ public final class LogUtils {
 
     @InlineMe(replacement = "logger.warn(msg)")
     public static void warn(Logger logger, String msg) {
-        if (logger.isWarnEnabled()) {
+        if (isWarnEnabled(logger)) {
             logger.warn(msg);
         }
     }
 
     @InlineMe(replacement = "logger.warn(format, arg)")
     public static void warn(Logger logger, String format, Object arg) {
-        if (logger.isWarnEnabled()) {
+        if (isWarnEnabled(logger)) {
             logger.warn(format, arg);
         }
     }
 
     @InlineMe(replacement = "logger.warn(format, arg1, arg2)")
     public static void warn(Logger logger, String format, Object arg1, Object arg2) {
-        if (logger.isWarnEnabled()) {
+        if (isWarnEnabled(logger)) {
             logger.warn(format, arg1, arg2);
         }
     }
 
     @InlineMe(replacement = "logger.warn(format, arguments)")
     public static void warn(Logger logger, String format, Object... arguments) {
-        if (logger.isWarnEnabled()) {
+        if (isWarnEnabled(logger)) {
             logger.warn(format, arguments);
         }
     }
 
     @InlineMe(replacement = "logger.warn(msg, t)")
     public static void warn(Logger logger, String msg, Throwable t) {
-        if (logger.isWarnEnabled()) {
+        if (isWarnEnabled(logger)) {
             logger.warn(msg, t);
         }
     }
@@ -218,35 +218,35 @@ public final class LogUtils {
 
     @InlineMe(replacement = "logger.error(msg)")
     public static void error(Logger logger, String msg) {
-        if (logger.isErrorEnabled()) {
+        if (isErrorEnabled(logger)) {
             logger.error(msg);
         }
     }
 
     @InlineMe(replacement = "logger.error(format, arg)")
     public static void error(Logger logger, String format, Object arg) {
-        if (logger.isErrorEnabled()) {
+        if (isErrorEnabled(logger)) {
             logger.error(format, arg);
         }
     }
 
     @InlineMe(replacement = "logger.error(format, arg1, arg2)")
     public static void error(Logger logger, String format, Object arg1, Object arg2) {
-        if (logger.isErrorEnabled()) {
+        if (isErrorEnabled(logger)) {
             logger.error(format, arg1, arg2);
         }
     }
 
     @InlineMe(replacement = "logger.error(format, arguments)")
     public static void error(Logger logger, String format, Object... arguments) {
-        if (logger.isErrorEnabled()) {
+        if (isErrorEnabled(logger)) {
             logger.error(format, arguments);
         }
     }
 
     @InlineMe(replacement = "logger.error(msg, t)")
     public static void error(Logger logger, String msg, Throwable t) {
-        if (logger.isErrorEnabled()) {
+        if (isErrorEnabled(logger)) {
             logger.error(msg, t);
         }
     }

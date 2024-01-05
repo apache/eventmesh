@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.connector.jdbc.DataTypeConvertor;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
@@ -137,7 +138,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Build the SQL query to return a list of tables for the given database
         String sql = MysqlDialectSql.SHOW_DATABASE_TABLE.ofWrapperSQL("`" + databaseName + "`");
-        log.debug("List tables SQL:{}", sql);
+        LogUtils.debug(log, "List tables SQL:{}", sql);
         this.connection.query(sql, resultSet -> {
             // Execute the query and add each table ID to the list
             while (resultSet.next()) {
@@ -172,7 +173,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Get table creation SQL
         final String createTableSql = MysqlDialectSql.SHOW_CREATE_TABLE.ofWrapperSQL(tableId.getId());
-        log.debug("Show create table SQL:{}", createTableSql);
+        LogUtils.debug(log, "Show create table SQL:{}", createTableSql);
 
         this.connection.query(createTableSql, resultSet -> {
             boolean hasNext = resultSet.next();
@@ -185,7 +186,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Get table columns SQL
         final String selectTableSql = MysqlDialectSql.SELECT_TABLE_COLUMNS.ofWrapperSQL(tableId.getId());
-        log.debug("Select table SQL:{}", selectTableSql);
+        LogUtils.debug(log, "Select table SQL:{}", selectTableSql);
         Map<String, DefaultColumn> columns = new HashMap<>(16);
         // Execute query to get table columns
         this.connection.query(selectTableSql, resultSet -> {
@@ -209,7 +210,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
         // Get table columns details SQL
         final String showTableSql = MysqlDialectSql.SHOW_TABLE_COLUMNS.ofWrapperSQL(tableId.getTableName(), tableId.getCatalogName());
-        log.debug("Show table columns SQL:{}", showTableSql);
+        LogUtils.debug(log, "Show table columns SQL:{}", showTableSql);
         // Execute query to get table columns details
         List<DefaultColumn> columnList = new ArrayList<>(columns.size());
         this.connection.query(showTableSql, resultSet -> {

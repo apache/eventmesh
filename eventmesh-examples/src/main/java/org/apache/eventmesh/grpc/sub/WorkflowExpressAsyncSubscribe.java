@@ -29,6 +29,7 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import org.apache.eventmesh.selector.NacosSelector;
@@ -80,7 +81,7 @@ public class WorkflowExpressAsyncSubscribe extends GrpcAbstractDemo implements R
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) throws Exception {
-        log.info("receive async msg: {}", msg);
+        LogUtils.info(log, "receive async msg: {}", msg);
         if (msg == null) {
             log.info("async msg is null, workflow end.");
             return Optional.empty();
@@ -94,7 +95,7 @@ public class WorkflowExpressAsyncSubscribe extends GrpcAbstractDemo implements R
             .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         final ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
-        log.info("receive workflow msg: {}", response.getInstanceId());
+        LogUtils.info(log, "receive workflow msg: {}", response.getInstanceId());
         return Optional.empty();
     }
 

@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -84,7 +85,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            log.info("showClientBySubsys,subsys:{}", subSystem);
+            LogUtils.info(log, "showClientBySubsys,subsys:{}", subSystem);
             // Retrieve the mapping between Sessions and their corresponding client address
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();

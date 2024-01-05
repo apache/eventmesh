@@ -55,6 +55,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+
+
 @ExtendWith(MockitoExtension.class)
 public class WeChatSinkConnectorTest {
 
@@ -104,8 +106,8 @@ public class WeChatSinkConnectorTest {
             .body(sendMessageBody)
             .message("ok")
             .build();
-        ArgumentMatcher<Request> sendMessageMatcher =
-            (anyRequest) -> sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
+        ArgumentMatcher<Request> sendMessageMatcher = (anyRequest) ->
+            sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
         Call sendMessageRequestCall = Mockito.mock(Call.class);
         Mockito.doReturn(sendMessageRequestCall).when(okHttpClient).newCall(Mockito.argThat(sendMessageMatcher));
         Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();
@@ -135,8 +137,8 @@ public class WeChatSinkConnectorTest {
             .body(sendMessageBody)
             .message("ok")
             .build();
-        ArgumentMatcher<Request> sendMessageMatcher =
-            (anyRequest) -> sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
+        ArgumentMatcher<Request> sendMessageMatcher = (anyRequest) ->
+            sendMessageRequest.url().encodedPath().startsWith(anyRequest.url().encodedPath());
         Call sendMessageRequestCall = Mockito.mock(Call.class);
         Mockito.doReturn(sendMessageRequestCall).when(okHttpClient).newCall(Mockito.argThat(sendMessageMatcher));
         Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();

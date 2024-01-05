@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
@@ -47,13 +48,13 @@ public class AsyncSyncRequestInstance extends HttpAbstractDemo {
 
                 @Override
                 public void onSuccess(final EventMeshMessage o) {
-                    log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
+                    LogUtils.debug(log, "sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
                         System.currentTimeMillis() - startTime);
                 }
 
                 @Override
                 public void onException(Throwable e) {
-                    log.debug("send msg failed", e);
+                    LogUtils.debug(log, "send msg failed", e);
                 }
             }, 3_000);
 

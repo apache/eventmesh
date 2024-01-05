@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TransformerType {
-
     ORIGINAL(1, "original"),
     CONSTANT(2, "constant"),
     TEMPLATE(3, "template");
