@@ -75,7 +75,7 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
 
     @Override
     public Response publish(final io.cloudevents.CloudEvent cloudEvent) {
-        LogUtils.info(log, "Publish message: {}", cloudEvent.toString());
+        LogUtils.info(log, "Publish message: {}", cloudEvent::toString);
         CloudEvent enhancedMessage = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(cloudEvent, clientConfig, PROTOCOL_TYPE);
         try {
             final CloudEvent response = publisherClient.publish(enhancedMessage);

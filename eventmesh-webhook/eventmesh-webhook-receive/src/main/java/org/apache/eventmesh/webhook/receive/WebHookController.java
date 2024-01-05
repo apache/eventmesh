@@ -123,7 +123,7 @@ public class WebHookController {
 
             @Override
             public void onSuccess(SendResult sendResult) {
-                LogUtils.debug(log, sendResult.toString());
+                LogUtils.debug(log, "", sendResult::toString);
             }
 
             @Override

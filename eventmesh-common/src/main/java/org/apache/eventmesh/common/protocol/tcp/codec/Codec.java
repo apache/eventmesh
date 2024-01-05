@@ -73,9 +73,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-            if (log.isDebugEnabled()) {
-                log.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
-            }
+            LogUtils.debug(log, "Encode pkg={}", () -> JsonUtils.toJSONString(pkg));
 
             final byte[] headerData = JsonUtils.toJSONBytes(header);
             final byte[] bodyData;
@@ -161,7 +159,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(headerData));
+            LogUtils.debug(log, "Decode headerJson={}", () -> deserializeBytes(headerData));
             return JsonUtils.parseObject(headerData, Header.class);
         }
 
@@ -171,7 +169,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            LogUtils.debug(log, "Decode bodyJson={}", deserializeBytes(bodyData));
+            LogUtils.debug(log, "Decode bodyJson={}", () -> deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 

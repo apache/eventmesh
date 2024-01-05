@@ -133,7 +133,6 @@ public abstract class TcpClient implements Closeable {
             goodbye();
         } catch (Exception e) {
             Thread.currentThread().interrupt();
-
             LogUtils.warn(log, "close tcp client failed.|remote address={}", channel.remoteAddress(), e);
         }
     }

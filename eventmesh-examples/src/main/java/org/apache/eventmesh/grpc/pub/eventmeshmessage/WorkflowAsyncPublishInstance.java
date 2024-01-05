@@ -66,7 +66,7 @@ public class WorkflowAsyncPublishInstance extends GrpcAbstractDemo {
             EventMeshWorkflowClient eventMeshWorkflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
             ExecuteResponse response = eventMeshWorkflowClient.getWorkflowClient().execute(executeRequest.build());
 
-            LogUtils.info(log, "received response: {}", response.toString());
+            LogUtils.info(log, "received response: {}", response::toString);
 
             ThreadUtils.sleep(1, TimeUnit.MINUTES);
 
