@@ -52,33 +52,6 @@ public final class LogUtils {
 
     private static final String FQCN = LogUtils.class.getName();
 
-    public static void trace(Logger logger, String format, Supplier<?> objectSupplier) {
-        final LoggingEventBuilder builder = logger.atTrace();
-        if (builder instanceof CallerBoundaryAware) {
-            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
-        }
-        builder.addArgument(objectSupplier).log(format);
-    }
-
-    public static void trace(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
-        final LoggingEventBuilder builder = logger.atTrace();
-        if (builder instanceof CallerBoundaryAware) {
-            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
-        }
-        builder.addArgument(objectSupplier).setCause(t).log(format);
-    }
-
-    public static void trace(Logger logger, String format, Supplier<?>... objectSuppliers) {
-        LoggingEventBuilder builder = logger.atTrace();
-        if (builder instanceof CallerBoundaryAware) {
-            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
-        }
-        for (Supplier<?> objectSupplier : objectSuppliers) {
-            builder = builder.addArgument(objectSupplier);
-        }
-        builder.log(format);
-    }
-
     public static void debug(Logger logger, String format, Supplier<?> objectSupplier) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
@@ -151,33 +124,6 @@ public final class LogUtils {
 
     public static void warn(Logger logger, String format, Supplier<?>... objectSuppliers) {
         LoggingEventBuilder builder = logger.atWarn();
-        if (builder instanceof CallerBoundaryAware) {
-            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
-        }
-        for (Supplier<?> objectSupplier : objectSuppliers) {
-            builder = builder.addArgument(objectSupplier);
-        }
-        builder.log(format);
-    }
-
-    public static void error(Logger logger, String format, Supplier<?> objectSupplier) {
-        final LoggingEventBuilder builder = logger.atError();
-        if (builder instanceof CallerBoundaryAware) {
-            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
-        }
-        builder.addArgument(objectSupplier).log(format);
-    }
-
-    public static void error(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
-        final LoggingEventBuilder builder = logger.atError();
-        if (builder instanceof CallerBoundaryAware) {
-            ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
-        }
-        builder.addArgument(objectSupplier).setCause(t).log(format);
-    }
-
-    public static void error(Logger logger, String format, Supplier<?>... objectSuppliers) {
-        LoggingEventBuilder builder = logger.atError();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
         }
