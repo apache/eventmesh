@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.lark.sink;
 import static org.apache.eventmesh.connector.lark.sink.ImServiceHandler.create;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.AUTH_CACHE;
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.TENANT_ACCESS_TOKEN;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -79,8 +80,8 @@ public class ImServiceHandlerTest {
         when(message.create(any(), any())).thenReturn(new CreateMessageResp());
         when(imService.message()).thenReturn(message);
         Field imServiceField = ReflectionSupport.findFields(imServiceHandler.getClass(),
-                (f) -> f.getName().equals("imService"),
-                HierarchyTraversalMode.BOTTOM_UP).get(0);
+            (f) -> f.getName().equals("imService"),
+            HierarchyTraversalMode.BOTTOM_UP).get(0);
         imServiceField.setAccessible(true);
         imServiceField.set(imServiceHandler, imService);
     }
@@ -105,7 +106,7 @@ public class ImServiceHandlerTest {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                    System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
+                System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
             if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
                 imServiceHandler.sinkAsync(connectRecord);
                 long retryDelayInMills = Long.parseLong(sinkConnectorConfig.getRetryDelayInMills());
@@ -147,7 +148,7 @@ public class ImServiceHandlerTest {
             RecordPartition partition = new RecordPartition();
             RecordOffset offset = new RecordOffset();
             ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                    System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
+                System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
             if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
                 imServiceHandler.sinkAsync(connectRecord);
 

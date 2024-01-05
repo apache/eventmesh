@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.connection;
 
-
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
 import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 

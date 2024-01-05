@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common.file;
 
-
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
