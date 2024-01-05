@@ -488,7 +488,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         public void channelActive(final ChannelHandlerContext ctx) throws Exception {
             if (connections.incrementAndGet() > MAX_CONNECTIONS) {
-                log.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server", RemotingHelper.parseChannelRemoteAddr(ctx.channel()), MAX_CONNECTIONS);
+                log.warn("client|http|channelActive|remoteAddress={}|msg=too many client({}) connect this eventMesh server",
+                    RemotingHelper.parseChannelRemoteAddr(ctx.channel()), MAX_CONNECTIONS);
                 ctx.close();
                 return;
             }

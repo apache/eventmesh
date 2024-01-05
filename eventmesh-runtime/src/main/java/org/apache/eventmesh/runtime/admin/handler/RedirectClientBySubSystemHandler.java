@@ -101,7 +101,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
                 out.write("params illegal!".getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
-            log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================", subSystem, destEventMeshIp, destEventMeshPort);
+            log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
+                subSystem, destEventMeshIp, destEventMeshPort);
 
             // Retrieve the mapping between Sessions and their corresponding client address
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();

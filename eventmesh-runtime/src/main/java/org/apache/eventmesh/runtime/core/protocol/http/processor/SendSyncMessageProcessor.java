@@ -77,7 +77,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         final String localAddress = IPUtils.getLocalAddress();
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-        log.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(request.getRequestCode())), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
+        log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+            RequestCode.get(Integer.valueOf(request.getRequestCode())), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) request.getHeader();
 
@@ -174,9 +175,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        CloudEvent newEevent;
+        CloudEvent newEvent;
         try {
-            newEevent = CloudEventBuilder.from(event)
+            newEvent = CloudEventBuilder.from(event)
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                 .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
@@ -192,7 +193,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         final SendMessageContext sendMessageContext =
-            new SendMessageContext(bizNo, newEevent, eventMeshProducer, eventMeshHTTPServer);
+            new SendMessageContext(bizNo, newEvent, eventMeshProducer, eventMeshHTTPServer);
         summaryMetrics.recordSendMsg();
 
         final long startTime = System.currentTimeMillis();
@@ -275,7 +276,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             summaryMetrics.recordSendMsgFailed();
             summaryMetrics.recordSendMsgCost(endTime - startTime);
 
-            log.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}", endTime - startTime, topic, bizNo, uniqueId, ex);
+            log.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                endTime - startTime, topic, bizNo, uniqueId, ex);
         }
 
         return;

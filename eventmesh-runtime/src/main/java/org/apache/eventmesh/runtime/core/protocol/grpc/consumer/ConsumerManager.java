@@ -211,7 +211,8 @@ public class ConsumerManager {
                 final Set<String> consumerGroupRestart = new HashSet<>();
                 clientList.forEach(client -> {
                     if (System.currentTimeMillis() - client.getLastUpTime().getTime() > clientTimeout) {
-                        log.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it", JsonUtils.toJSONString(client), client.getLastUpTime());
+                        log.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
+                            JsonUtils.toJSONString(client), client.getLastUpTime());
 
                         deregisterClient(client);
                         if (getEventMeshConsumer(client.getConsumerGroup()).deregisterClient(client)) {

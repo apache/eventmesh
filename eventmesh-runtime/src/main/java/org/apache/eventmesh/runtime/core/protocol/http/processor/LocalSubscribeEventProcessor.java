@@ -67,7 +67,8 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         final HttpEventWrapper requestWrapper = handlerSpecific.getAsyncContext().getRequest();
         String localAddress = IPUtils.getLocalAddress();
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(channel);
-        log.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
+        log.info("uri={}|{}|client2eventMesh|from={}|to={}",
+            requestWrapper.getRequestURI(), EventMeshConstants.PROTOCOL_HTTP, remoteAddr, localAddress);
 
         // user request header
         requestWrapper.getHeaderMap().put(ProtocolKey.ClientInstanceKey.IP.getKey(), remoteAddr);
@@ -170,10 +171,10 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
             } catch (Exception e) {
-                log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}", System.currentTimeMillis() - startTime, JsonUtils.toJSONString(subscriptionList), url, e);
+                log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
+                    System.currentTimeMillis() - startTime, JsonUtils.toJSONString(subscriptionList), url, e);
 
-                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
-                    responseBodyMap, null);
+                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap, responseBodyMap, null);
             }
 
             // Update service metadata

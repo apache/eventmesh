@@ -73,7 +73,8 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
                 if (msg instanceof Set) {
                     log.info("Received message from Server:{}", message);
                 } else {
-                    log.info("Received message from Server.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message));
+                    log.info("Received message from Server.|seq={}|uniqueId={}|",
+                        EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message));
                     CloudEvent streamReply = null;
                     try {
                         Optional<T> reply = listener.handle(msg);
@@ -81,10 +82,12 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
                             streamReply = buildReplyMessage(message, reply.get());
                         }
                     } catch (Exception e) {
-                        log.error("Error in handling reply message.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message), e);
+                        log.error("Error in handling reply message.|seq={}|uniqueId={}|",
+                            EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message), e);
                     }
                     if (streamReply != null) {
-                        log.info("Sending reply message to Server.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(streamReply), EventMeshCloudEventUtils.getUniqueId(streamReply));
+                        log.info("Sending reply message to Server.|seq={}|uniqueId={}|",
+                            EventMeshCloudEventUtils.getSeqNum(streamReply), EventMeshCloudEventUtils.getUniqueId(streamReply));
                         senderOnNext(streamReply);
                     }
                 }

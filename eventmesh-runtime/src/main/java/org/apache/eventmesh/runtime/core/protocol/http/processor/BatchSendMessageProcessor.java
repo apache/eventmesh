@@ -282,7 +282,8 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         summaryMetrics.recordBatchSendMsgCost(elapsed);
 
-        batchMessageLogger.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}", batchId, elapsed, eventSize, topicBatchMessageMappings.keySet());
+        batchMessageLogger.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
+            batchId, elapsed, eventSize, topicBatchMessageMappings.keySet());
         completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.SUCCESS, null,
             SendMessageBatchResponseBody.class);
         return;

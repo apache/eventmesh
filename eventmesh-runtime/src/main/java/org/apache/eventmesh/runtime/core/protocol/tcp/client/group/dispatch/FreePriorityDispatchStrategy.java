@@ -50,7 +50,8 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
 
             if (session.isIsolated()) {
                 isolatedSessions.add(session);
-                log.info("session is not available because session is isolated,isolateTime:{},client:{}", session.getIsolateTime(), session.getClient());
+                log.info("session is not available because session is isolated,isolateTime:{},client:{}",
+                    session.getIsolateTime(), session.getClient());
                 continue;
             }
 
