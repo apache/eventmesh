@@ -18,7 +18,7 @@
 package org.apache.eventmesh.openconnect.util;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.common.utils.LogUtil;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
@@ -66,7 +66,7 @@ public class CloudEventUtil {
 
     public static ConnectRecord convertEventToRecord(CloudEvent event) {
         byte[] body = Objects.requireNonNull(event.getData()).toBytes();
-        LogUtils.info(log, "handle receive events {}", () -> new String(event.getData().toBytes(), Constants.DEFAULT_CHARSET));
+        LogUtil.info(log, "handle receive events {}", () -> new String(event.getData().toBytes(), Constants.DEFAULT_CHARSET));
         // todo: recordPartition & recordOffset
         ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), body);
         for (String extensionName : event.getExtensionNames()) {

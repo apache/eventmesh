@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.Response;
-import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.common.utils.LogUtil;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -75,7 +75,7 @@ public class CloudEventProducer implements GrpcProducer<io.cloudevents.CloudEven
 
     @Override
     public Response publish(final io.cloudevents.CloudEvent cloudEvent) {
-        LogUtils.info(log, "Publish message: {}", cloudEvent::toString);
+        LogUtil.info(log, "Publish message: {}", cloudEvent::toString);
         CloudEvent enhancedMessage = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(cloudEvent, clientConfig, PROTOCOL_TYPE);
         try {
             final CloudEvent response = publisherClient.publish(enhancedMessage);

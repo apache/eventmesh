@@ -48,9 +48,9 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class LogUtils {
+public final class LogUtil {
 
-    private static final String FQCN = LogUtils.class.getName();
+    private static final String FQCN = LogUtil.class.getName();
 
     public static void debug(Logger logger, String format, Supplier<?> objectSupplier) {
         final LoggingEventBuilder builder = logger.atDebug();

@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.common.utils.LogUtil;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -72,7 +72,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-            LogUtils.debug(log, "Encode pkg={}", () -> JsonUtils.toJSONString(pkg));
+            LogUtil.debug(log, "Encode pkg={}", () -> JsonUtils.toJSONString(pkg));
 
             final byte[] headerData = JsonUtils.toJSONBytes(header);
             final byte[] bodyData;
@@ -158,7 +158,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            LogUtils.debug(log, "Decode headerJson={}", () -> deserializeBytes(headerData));
+            LogUtil.debug(log, "Decode headerJson={}", () -> deserializeBytes(headerData));
             return JsonUtils.parseObject(headerData, Header.class);
         }
 
@@ -168,7 +168,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            LogUtils.debug(log, "Decode bodyJson={}", () -> deserializeBytes(bodyData));
+            LogUtil.debug(log, "Decode bodyJson={}", () -> deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
