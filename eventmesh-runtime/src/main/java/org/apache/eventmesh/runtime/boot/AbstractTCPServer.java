@@ -259,7 +259,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 }
 
                 if (clientSessionGroupMapping.getSession(ctx) == null) {
-                    messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
+                    MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}, no session is found", cmd, pkg);
                     throw new Exception("no session is found");
                 }
 

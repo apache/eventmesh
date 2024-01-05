@@ -148,9 +148,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
                 try {
                     // Delegate to the superclass
                     Event event = super.nextEvent(inputStream);
-                    if (log.isDebugEnabled()) {
-                        log.debug("MYSQL Binlog---EventType={}, EventData={}", event.getHeader().getEventType(), event);
-                    }
+                    log.debug("MYSQL Binlog---EventType={}, EventData={}", event.getHeader().getEventType(), event);
                     // We have to record the most recent TableMapEventData for each table number for our custom deserializers
                     if (event.getHeader().getEventType() == EventType.TABLE_MAP) {
                         TableMapEventData tableMapEvent = event.getData();

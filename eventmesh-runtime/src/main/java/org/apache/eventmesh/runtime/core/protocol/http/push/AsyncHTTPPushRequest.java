@@ -267,8 +267,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     }
                 } else {
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
-                    MESSAGE_LOGGER.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    MESSAGE_LOGGER.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
+                        currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                     if (isComplete()) {
                         handleMsgContext.finish();
@@ -278,16 +278,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             });
 
             if (MESSAGE_LOGGER.isDebugEnabled()) {
-                MESSAGE_LOGGER.debug("message|eventMesh2client|url={}|topic={}|event={}", currPushUrl,
-                    handleMsgContext.getTopic(),
-                    handleMsgContext.getEvent());
+                MESSAGE_LOGGER.debug("message|eventMesh2client|url={}|topic={}|event={}",
+                    currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getEvent());
             } else {
-                if (MESSAGE_LOGGER.isInfoEnabled()) {
-                    MESSAGE_LOGGER
-                        .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                            currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
-                }
+                MESSAGE_LOGGER.info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                    currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
             }
         } catch (IOException e) {
             MESSAGE_LOGGER.error("push2client err", e);

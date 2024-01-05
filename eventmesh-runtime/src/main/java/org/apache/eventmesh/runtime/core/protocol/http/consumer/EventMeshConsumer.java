@@ -209,9 +209,7 @@ public class EventMeshConsumer {
                 if (messageLogger.isDebugEnabled()) {
                     messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
                 } else {
-                    messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}",
-                        topic, bizSeqNo,
-                        uniqueId);
+                    messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
                 }
 
                 ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(
