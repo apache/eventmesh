@@ -217,8 +217,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
 
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
-            eventMeshHttpConfiguration.getEventMeshWebhookOrigin(),
-            urlAuthType);
+            eventMeshHttpConfiguration.getEventMeshWebhookOrigin(), urlAuthType);
 
         eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordPushMsg();
 
