@@ -20,6 +20,8 @@ package org.apache.eventmesh.common.protocol.tcp.codec;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.codec.Codec.Decoder;
+import org.apache.eventmesh.common.protocol.tcp.codec.Codec.Encoder;
 
 import java.util.ArrayList;
 
@@ -37,14 +39,12 @@ public class CodecTest {
         header.setCmd(Command.HELLO_REQUEST);
         Package testP = new Package(header);
         testP.setBody(new Object());
-        Codec ce = new Codec();
+        Encoder ce = new Codec.Encoder();
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
         ce.encode(null, testP, buf);
-        Codec cd = new Codec();
-        ArrayList<Object> result = new ArrayList<>();
-        cd.decode(null, buf, result);
-        Assertions.assertNotNull(result.get(0));
-        Assertions.assertEquals(testP.getHeader(), ((Package) result.get(0)).getHeader());
+        Decoder cd = new Codec.Decoder();
+        final Package decode = (Package)cd.decode(null, buf);
+        Assertions.assertEquals(testP.getHeader(), decode.getHeader());
     }
 
 }

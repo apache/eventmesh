@@ -25,18 +25,16 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageCodec;
-
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.MessageToByteEncoder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
@@ -44,125 +42,149 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Codec extends ByteToMessageCodec<Package> {
+public class Codec {
 
-    private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4; // 4M
+    private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
-    @Override
-    protected void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
-        Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
-        final Header header = pkg.getHeader();
-        Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-        if (log.isDebugEnabled()) {
-            log.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
-        }
+    public static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length;
 
-        final byte[] headerData = JsonUtils.toJSONBytes(header);
-        final byte[] bodyData;
+    public static class Encoder extends MessageToByteEncoder<Package> {
 
-        if (StringUtils.equals(Constants.CLOUD_EVENTS_PROTOCOL_NAME, header.getStringProperty(Constants.PROTOCOL_TYPE))) {
-            bodyData = (byte[]) pkg.getBody();
-        } else {
-            bodyData = JsonUtils.toJSONBytes(pkg.getBody());
-        }
+        @Override
+        public void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
+            Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
+            final Header header = pkg.getHeader();
+            Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
+            if (log.isDebugEnabled()) {
+                log.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
+            }
 
-        int headerLength = ArrayUtils.getLength(headerData);
-        int bodyLength = ArrayUtils.getLength(bodyData);
+            final byte[] headerData = JsonUtils.toJSONBytes(header);
+            final byte[] bodyData;
 
-        final int length = CONSTANT_MAGIC_FLAG.length + VERSION.length + headerLength + bodyLength;
+            if (StringUtils.equals(Constants.CLOUD_EVENTS_PROTOCOL_NAME, header.getStringProperty(Constants.PROTOCOL_TYPE))) {
+                bodyData = (byte[]) pkg.getBody();
+            } else {
+                bodyData = JsonUtils.toJSONBytes(pkg.getBody());
+            }
 
-        if (length > FRAME_MAX_LENGTH) {
-            throw new IllegalArgumentException("message size is exceed limit!");
-        }
-        /**
-         * Header + Body, Format:
-         * <pre>
-         * ┌───────────────┬─────────────┬──────────────────┬──────────────────┬──────────────────┬─────────────────┐
-         * │   MAGIC_FLAG  │   VERSION   │ package length   │   Header length  │      Header      │      body       │
-         * │    (9bytes)   │  (4bytes)   │    (4bytes)      │      (4bytes)    │   (header bytes) │   (body bytes)  │
-         * └───────────────┴─────────────┴──────────────────┴──────────────────┴──────────────────┴─────────────────┘
-         * </pre>
-         */
-        out.writeBytes(CONSTANT_MAGIC_FLAG);
-        out.writeBytes(VERSION);
-        out.writeInt(length);
-        out.writeInt(headerLength);
-        if (headerData != null) {
-            out.writeBytes(headerData);
-        }
-        if (bodyData != null) {
-            out.writeBytes(bodyData);
+            int headerLength = ArrayUtils.getLength(headerData);
+            int bodyLength = ArrayUtils.getLength(bodyData);
+
+            final int length = PREFIX_LENGTH + headerLength + bodyLength;
+
+            if (length > FRAME_MAX_LENGTH) {
+                throw new IllegalArgumentException("message size is exceed limit!");
+            }
+            /**
+             * Header + Body, Format:
+             * <pre>
+             * ┌───────────────┬─────────────┬──────────────────┬──────────────────┬──────────────────┬─────────────────┐
+             * │   MAGIC_FLAG  │   VERSION   │ package length   │   Header length  │      Header      │      body       │
+             * │    (9bytes)   │  (4bytes)   │    (4bytes)      │      (4bytes)    │   (header bytes) │   (body bytes)  │
+             * └───────────────┴─────────────┴──────────────────┴──────────────────┴──────────────────┴─────────────────┘
+             * </pre>
+             */
+            out.writeBytes(CONSTANT_MAGIC_FLAG);
+            out.writeBytes(VERSION);
+            out.writeInt(length);
+            out.writeInt(headerLength);
+            if (headerData != null) {
+                out.writeBytes(headerData);
+            }
+            if (bodyData != null) {
+                out.writeBytes(bodyData);
+            }
         }
     }
 
-    @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if (in == null) {
-            return;
+    public static class Decoder extends LengthFieldBasedFrameDecoder {
+
+
+        public Decoder() {
+            super(FRAME_MAX_LENGTH, 13, 4, -9, 0);
         }
-        final int prefixLength = CONSTANT_MAGIC_FLAG.length + VERSION.length;
-        if (in.readableBytes() < prefixLength + 4 + 4) {
-            // Not enough data to read the package length and header length
-            return;
-        }
-        byte[] flagBytes = parseFlag(in);
-        byte[] versionBytes = parseVersion(in);
-        validateFlagAndVersion(flagBytes, versionBytes, ctx);
-        final int packageLength = in.readInt();
-        final int headerLength = in.readInt();
-        if (in.readableBytes() < packageLength - prefixLength) {
-            // Not enough data yet, reset the reader index and wait for more data
-            in.resetReaderIndex();
-            return;
-        }
-        final int bodyLength = packageLength - prefixLength - headerLength;
-        Header header = parseHeader(in, headerLength);
-        Object body = parseBody(in, header, bodyLength);
 
-        Package pkg = new Package(header, body);
-        out.add(pkg);
-    }
+        @Override
+        protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
 
-    private byte[] parseFlag(ByteBuf in) {
-        final byte[] flagBytes = new byte[CONSTANT_MAGIC_FLAG.length];
-        in.readBytes(flagBytes);
-        return flagBytes;
-    }
+            ByteBuf target = null;
 
-    private byte[] parseVersion(ByteBuf in) {
-        final byte[] versionBytes = new byte[VERSION.length];
-        in.readBytes(versionBytes);
-        return versionBytes;
-    }
+            try {
+                target = (ByteBuf) super.decode(ctx, in);
+                if (null == target) {
+                    return null;
+                }
+                byte[] flagBytes = parseFlag(target);
+                byte[] versionBytes = parseVersion(target);
+                validateFlag(flagBytes, versionBytes, ctx);
 
-    private Header parseHeader(ByteBuf in, int headerLength) throws JsonProcessingException {
-        if (headerLength <= 0) {
+                final int length = target.readInt();
+                final int headerLength = target.readInt();
+                final int bodyLength = length - PREFIX_LENGTH - headerLength;
+                Header header = parseHeader(target, headerLength);
+                Object body = parseBody(target, header, bodyLength);
+
+                Package pkg = new Package(header, body);
+                return pkg;
+
+            } catch (Exception ex) {
+                log.error("decode error", ex);
+                ctx.channel().close();
+            } finally {
+                if (target != null) {
+                    target.release();
+                }
+            }
+
             return null;
         }
-        final byte[] headerData = new byte[headerLength];
-        in.readBytes(headerData);
-        LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(headerData));
-        return JsonUtils.parseObject(headerData, Header.class);
-    }
 
-    private Object parseBody(ByteBuf in, Header header, int bodyLength) throws JsonProcessingException {
-        if (bodyLength <= 0 || header == null) {
-            return null;
+        private byte[] parseFlag(ByteBuf in) {
+            final byte[] flagBytes = new byte[CONSTANT_MAGIC_FLAG.length];
+            in.readBytes(flagBytes);
+            return flagBytes;
         }
-        final byte[] bodyData = new byte[bodyLength];
-        in.readBytes(bodyData);
-        LogUtils.debug(log, "Decode bodyJson={}", deserializeBytes(bodyData));
-        return deserializeBody(deserializeBytes(bodyData), header);
-    }
 
-    private void validateFlagAndVersion(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
-        if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
-            String errorMsg = String.format("invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
-                deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
-            throw new IllegalArgumentException(errorMsg);
+        private byte[] parseVersion(ByteBuf in) {
+            final byte[] versionBytes = new byte[VERSION.length];
+            in.readBytes(versionBytes);
+            return versionBytes;
+        }
+
+        private Header parseHeader(ByteBuf in, int headerLength) throws JsonProcessingException {
+            if (headerLength <= 0) {
+                return null;
+            }
+            final byte[] headerData = new byte[headerLength];
+            in.readBytes(headerData);
+            if (log.isDebugEnabled()) {
+                log.debug("Decode headerJson={}", deserializeBytes(headerData));
+            }
+            return JsonUtils.parseObject(headerData, Header.class);
+        }
+
+        private Object parseBody(ByteBuf in, Header header, int bodyLength) throws JsonProcessingException {
+            if (bodyLength <= 0 || header == null) {
+                return null;
+            }
+            final byte[] bodyData = new byte[bodyLength];
+            in.readBytes(bodyData);
+            if (log.isDebugEnabled()) {
+                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
+            }
+            return deserializeBody(deserializeBytes(bodyData), header);
+        }
+
+        private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
+            if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
+                String errorMsg = String.format("invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
+                    deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
+                throw new IllegalArgumentException(errorMsg);
+            }
         }
     }
 
@@ -205,7 +227,9 @@ public class Codec extends ByteToMessageCodec<Package> {
             case REDIRECT_TO_CLIENT:
                 return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
             default:
-                LogUtils.warn(log, "Invalidate TCP command: {}", command);
+                if (log.isWarnEnabled()) {
+                    log.warn("Invalidate TCP command: {}", command);
+                }
                 return null;
         }
     }
