@@ -103,7 +103,6 @@ public class Codec {
 
     public static class Decoder extends LengthFieldBasedFrameDecoder {
 
-
         public Decoder() {
             super(FRAME_MAX_LENGTH, 13, 4, -9, 0);
         }

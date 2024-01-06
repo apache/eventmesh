@@ -23,8 +23,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec.Decoder;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec.Encoder;
 
-import java.util.ArrayList;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +41,7 @@ public class CodecTest {
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
         ce.encode(null, testP, buf);
         Decoder cd = new Codec.Decoder();
-        final Package decode = (Package)cd.decode(null, buf);
+        final Package decode = (Package) cd.decode(null, buf);
         Assertions.assertEquals(testP.getHeader(), decode.getHeader());
     }
 
