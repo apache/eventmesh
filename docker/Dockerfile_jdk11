@@ -19,7 +19,7 @@
 FROM openjdk:11-jdk as builder
 WORKDIR /build
 COPY . .
-RUN ./gradlew clean build jar dist --parallel --daemon
+RUN ./gradlew clean build dist --parallel --daemon
 RUN ./gradlew installPlugin
 
 FROM openjdk:11-jdk
