@@ -32,17 +32,23 @@ import lombok.experimental.UtilityClass;
  * <p>
  * The statement
  * <pre>
+ * {@code
  * LogUtil.debug(log, "A time-consuming method: {}", () -> myMethod());
+ * }
  * </pre>
  * is equivalent to:
  * <pre>
+ * {@code
  * if (logger.isDebugEnabled()) {
  *     logger.debug("A time-consuming method: {}", myMethod());
+ * }
  * }
  * </pre>
  * If no object parameters are passed or existing objects are referenced, use
  * <pre>
+ * {@code
  * log.debug("No time-consuming methods: {}", myObject);
+ * }
  * </pre>
  * instead.
  */

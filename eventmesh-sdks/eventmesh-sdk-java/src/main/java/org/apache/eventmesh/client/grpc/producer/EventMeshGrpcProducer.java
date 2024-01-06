@@ -61,7 +61,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     }
 
     public <T> Response publish(T message) {
-        LogUtil.info(log, "Publish message ", message::toString);
+        LogUtil.info(log, "Publish message: {}", message::toString);
         if (message instanceof CloudEvent) {
             return cloudEventProducer.publish((CloudEvent) message);
         } else if (message instanceof EventMeshMessage) {
@@ -73,7 +73,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     public <T> Response publish(List<T> messageList) {
-        log.info("BatchPublish message :{}", messageList);
+        log.info("BatchPublish message: {}", messageList);
 
         if (CollectionUtils.isEmpty(messageList)) {
             return null;

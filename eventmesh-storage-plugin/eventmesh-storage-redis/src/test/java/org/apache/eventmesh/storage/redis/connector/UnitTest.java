@@ -94,12 +94,10 @@ public class UnitTest extends AbstractRedisServer {
 
                 @Override
                 public void onSuccess(SendResult sendResult) {
-
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
-
                 }
             });
         }

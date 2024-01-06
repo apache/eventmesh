@@ -176,7 +176,6 @@ public class ClientGroupWrapper {
 
             @Override
             public void onSuccess(SendResult sendResult) {
-
             }
 
             @Override

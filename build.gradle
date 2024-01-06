@@ -121,12 +121,6 @@ allprojects {
         }
     }
 
-    // Remove doclint warnings that pollute javadoc logs when building
-    tasks.withType(Javadoc) {
-        failOnError false
-        options.addStringOption('Xdoclint:none', '-quiet')
-    }
-
     afterEvaluate {
         tasks.forEach {task ->
             if (task.name.contains("spotlessJava")) {
@@ -380,6 +374,9 @@ subprojects {
         source = sourceSets.main.java
         destinationDir = reporting.file("javadoc")
         options.encoding = "UTF-8"
+        // Remove doclint warnings that pollute javadoc logs when building
+        failOnError false
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 
     task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
