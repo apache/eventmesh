@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -160,9 +161,7 @@ public class Codec {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode headerJson={}", deserializeBytes(headerData));
-            }
+            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(headerData));
             return JsonUtils.parseObject(headerData, Header.class);
         }
 
@@ -172,9 +171,7 @@ public class Codec {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
-            }
+            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
