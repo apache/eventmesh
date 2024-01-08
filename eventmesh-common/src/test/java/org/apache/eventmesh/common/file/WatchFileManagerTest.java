@@ -50,11 +50,11 @@ public class WatchFileManagerTest {
         WatchFileManager.registerFileChangeListener(tempConfigFile.getParent(), mockFileChangeListener);
 
         Properties properties = new Properties();
-        try (
-                BufferedReader bufferedReader = new BufferedReader(new FileReader(configFile));
-                FileWriter fw = new FileWriter(tempConfigFile)
-        ) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(tempConfigFile))) {
             properties.load(bufferedReader);
+        }
+
+        try (FileWriter fw = new FileWriter(tempConfigFile)) {
             properties.setProperty("eventMesh.server.newAdd", "newAdd");
             properties.store(fw, "newAdd");
         }
