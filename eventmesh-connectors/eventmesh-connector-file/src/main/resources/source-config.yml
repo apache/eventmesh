@@ -30,12 +30,4 @@ connectorConfig:
     commitOffsetIntervalMs: 5000
     fileName: userFileName
     filePath: userFilePath
-offsetStorageConfig:
-    offsetStorageType: nacos
-    offsetStorageAddr: 127.0.0.1:8848
-    extensions: {
-                    #same with topic
-                    dataId: TopicTest,
-                    #same with group
-                    group: fileSource
-    }
+

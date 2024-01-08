@@ -25,7 +25,7 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,8 +49,6 @@ public class FileSourceConnector implements Source {
 
     private FileSourceConfig sourceConfig;
 
-    private OffsetStorageReader offsetStorageReader;
-
     private String filePath;
     private String fileName;
     private BufferedReader bufferedReader;
@@ -72,7 +70,6 @@ public class FileSourceConnector implements Source {
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (FileSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
     }
 
     @Override
