@@ -50,7 +50,9 @@ public class Codec {
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
-    public static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length;
+    private static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length; //13
+
+    private static final int PACKAGE_BYTES_FIELD_LENGTH = 4;
 
     public static class Encoder extends MessageToByteEncoder<Package> {
 
@@ -105,7 +107,24 @@ public class Codec {
     public static class Decoder extends LengthFieldBasedFrameDecoder {
 
         public Decoder() {
-            super(FRAME_MAX_LENGTH, PREFIX_LENGTH, Integer.BYTES, -9, 0);
+            /**
+             * lengthAdjustment value = -9 explain:
+             * Header + Body, Format:
+             * <pre>
+             * ┌───────────────┬─────────────┬──────────────────┬──────────────────┬──────────────────┬─────────────────┐
+             * │   MAGIC_FLAG  │   VERSION   │ package length   │   Header length  │      Header      │      body       │
+             * │    (9bytes)   │  (4bytes)   │    (4bytes)      │      (4bytes)    │   (header bytes) │   (body bytes)  │
+             * └───────────────┴─────────────┴──────────────────┴──────────────────┴──────────────────┴─────────────────┘
+             * </pre>
+             * package length = MAGIC_FLAG + VERSION + Header length + Body length,Currently,
+             * adding MAGIC_FLAG + VERSION + package length field (4 bytes) actually adds 17 bytes.
+             * However, the value of the package length field is only reduced by the four bytes of
+             * the package length field itself and the four bytes of the header length field.
+             * Therefore, the compensation value to be added to the length field value is -9,
+             * which means subtracting the extra 9 bytes.
+             * Refer to the encoding in the {@link Encoder}
+             */
+            super(FRAME_MAX_LENGTH, PREFIX_LENGTH, PACKAGE_BYTES_FIELD_LENGTH, -9, 0);
         }
 
         @Override
@@ -171,7 +190,7 @@ public class Codec {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(bodyData));
+            LogUtils.debug(log, "Decode bodyJson={}", deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
@@ -223,9 +242,7 @@ public class Codec {
             case REDIRECT_TO_CLIENT:
                 return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
             default:
-                if (log.isWarnEnabled()) {
-                    log.warn("Invalidate TCP command: {}", command);
-                }
+                LogUtils.warn(log, "Invalidate TCP command: {}", command);
                 return null;
         }
     }
