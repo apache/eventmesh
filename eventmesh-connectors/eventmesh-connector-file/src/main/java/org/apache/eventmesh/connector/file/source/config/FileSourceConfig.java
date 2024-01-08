@@ -21,10 +21,8 @@ import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.extern.slf4j.Slf4j;
 
 @Data
-@Slf4j
 @EqualsAndHashCode(callSuper = true)
 public class FileSourceConfig extends SourceConfig {
 

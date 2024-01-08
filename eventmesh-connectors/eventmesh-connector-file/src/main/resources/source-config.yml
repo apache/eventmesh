@@ -14,14 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+pubSubConfig:
+    meshAddress: 127.0.0.1:10000
+    subject: TopicTest
+    idc: FT
+    env: PRD
+    group: fileSource
+    appId: 5032
+    userName: fileSourceUser
+    passWord: filePassWord
 connectorConfig:
     connectorName: fileSource
     nameserver: 127.0.0.1:9877
     topic: TopicTest
     commitOffsetIntervalMs: 5000
-    fileName: TopicTest-%s
-    filePath: TopicTest/%s
+    fileName: userFileName
+    filePath: userFilePath
 offsetStorageConfig:
     offsetStorageType: nacos
     offsetStorageAddr: 127.0.0.1:8848

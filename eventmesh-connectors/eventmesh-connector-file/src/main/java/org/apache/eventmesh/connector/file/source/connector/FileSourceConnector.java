@@ -28,22 +28,24 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FileSourceConnector implements Source {
+    private static final int DEFAULT_BATCH_SIZE = 10;
+    private final ConcurrentHashMap<ConnectRecord, List<AtomicLong>> prepareCommitOffset = new ConcurrentHashMap<>();
 
     private FileSourceConfig sourceConfig;
 
@@ -62,8 +64,8 @@ public class FileSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for hdfs source connector
         this.sourceConfig = (FileSourceConfig) config;
-        this.filePath = buildFilePath(((FileSourceConfig) config).getConnectorConfig().getFilePath());
-        this.fileName = buildFileName(((FileSourceConfig) config).getConnectorConfig().getFileName());
+        this.filePath = ((FileSourceConfig) config).getConnectorConfig().getFilePath();
+        this.fileName = ((FileSourceConfig) config).getConnectorConfig().getFileName();
     }
 
     @Override
@@ -84,6 +86,7 @@ public class FileSourceConnector implements Source {
 
     @Override
     public void commit(ConnectRecord record) {
+
     }
 
     @Override
@@ -104,12 +107,24 @@ public class FileSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>();
+        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
         try {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                ConnectRecord connectRecord = new ConnectRecord(new RecordPartition(), new RecordOffset(), System.currentTimeMillis(), line);
+            int bytesRead;
+            long lastOffset = 0;
+            long prevTimeStamp = 0;
+            char[] buffer = new char[1024];
+            while ((bytesRead = bufferedReader.read(buffer)) != -1) {
+                String line = new String(buffer, 0, bytesRead);
+                lastOffset += bytesRead;
+                long timeStamp = System.currentTimeMillis();
+                RecordOffset recordOffset = convertToRecordOffset(lastOffset);
+                RecordPartition recordPartition = convertToRecordPartition(this.sourceConfig.getConnectorConfig().getTopic(), fileName);
+                ConnectRecord connectRecord = new ConnectRecord(recordPartition, recordOffset, timeStamp, line);
                 connectRecords.add(connectRecord);
+                if (timeStamp - prevTimeStamp > this.sourceConfig.getConnectorConfig().getCommitOffsetIntervalMs()) {
+                    this.commitOffset(connectRecord, lastOffset);
+                    prevTimeStamp = timeStamp;
+                }
             }
         } catch (IOException e) {
             log.error("Error reading data from the file: {}", e.getMessage());
@@ -117,24 +132,29 @@ public class FileSourceConnector implements Source {
         return connectRecords;
     }
 
-    private String buildFilePath(String filePath) {
-        Calendar calendar = Calendar.getInstance(Locale.CHINA);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        String formattedDate = dateFormat.format(calendar.getTime());
-        String filePath1 = filePath.replace("%s", formattedDate);
-        File path = new File(filePath1);
-        if (!path.exists()) {
-            if (!path.mkdirs()) {
-                log.error("make file dir {} error", filePath);
-            }
-        }
-        return filePath1;
+    public static RecordOffset convertToRecordOffset(Long offset) {
+        Map<String, String> offsetMap = new HashMap<>();
+        offsetMap.put("Offset", offset + "");
+        return new RecordOffset(offsetMap);
     }
 
-    private String buildFileName(String fileName) {
-        Calendar calendar = Calendar.getInstance(Locale.CHINA);
-        long currentTime = calendar.getTime().getTime();
-        String formattedDate = calendar.get(Calendar.HOUR_OF_DAY) + "-" + currentTime;
-        return fileName.replace("%s", formattedDate);
+    public static RecordPartition convertToRecordPartition(String topic, String fileName) {
+        Map<String, String> map = new HashMap<>();
+        map.put("topic", topic);
+        map.put("fileName", fileName);
+        return new RecordPartition(map);
+    }
+
+    public void commitOffset(ConnectRecord connectRecord, long canCommitOffset) {
+        if (canCommitOffset == -1) {
+            return;
+        }
+        long nextBeginOffset = canCommitOffset + 1;
+        List<AtomicLong> commitOffset = prepareCommitOffset.get(connectRecord);
+        if (commitOffset == null || commitOffset.isEmpty()) {
+            commitOffset = new ArrayList<>();
+        }
+        commitOffset.add(new AtomicLong(nextBeginOffset));
+        prepareCommitOffset.put(connectRecord, commitOffset);
     }
 }
