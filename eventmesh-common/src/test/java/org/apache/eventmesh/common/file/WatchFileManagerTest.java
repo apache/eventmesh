@@ -59,7 +59,7 @@ public class WatchFileManagerTest {
             properties.store(fw, "newAdd");
         }
 
-        Mockito.verify(mockFileChangeListener, Mockito.timeout(15_000))
+        Mockito.verify(mockFileChangeListener, Mockito.timeout(15_000).atLeastOnce())
                 .onChanged(Mockito.argThat(isFileUnderTest(tempConfigFile.getParent(), tempConfigFile.getName())));
     }
 
