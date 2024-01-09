@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
@@ -34,7 +36,7 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
         ConfigService configService = ConfigService.getInstance();
         this.eventMeshGrpcConfiguration = configService.buildConfigInstance(EventMeshGrpcConfiguration.class);
 
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
+        ConfigurationContextUtil.putIfAbsent(GRPC, eventMeshGrpcConfiguration);
     }
 
     @Override

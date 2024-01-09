@@ -36,7 +36,6 @@ import java.util.Set;
 
 import io.grpc.stub.StreamObserver;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -73,7 +72,8 @@ public class StreamPushRequest extends AbstractPushRequest {
 
             eventMeshCloudEvent = CloudEvent.newBuilder(eventMeshCloudEvent)
                 .putAttributes(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build()).build();
+                    CloudEventAttributeValue.newBuilder().setCeString(String.valueOf(lastPushTime)).build())
+                .build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
                 StreamObserver<CloudEvent> emitter = eventEmitter.getEmitter();
@@ -101,28 +101,26 @@ public class StreamPushRequest extends AbstractPushRequest {
         List<EventEmitter<CloudEvent>> emitterList = MapUtils.getObject(idcEmitters,
             eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
-            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
-            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
-                return emitterList;
-            } else {
-                log.error("Invalid Subscription Mode, no message returning back to subscriber.");
-                return Collections.emptyList();
-            }
+            return getEventEmitters(emitterList);
         }
 
         if (CollectionUtils.isNotEmpty(totalEmitters)) {
-            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
-                return Collections.singletonList(totalEmitters.get((startIdx + retryTimes) % totalEmitters.size()));
-            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
-                return totalEmitters;
-            } else {
-                log.error("Invalid Subscription Mode, no message returning back to subscriber.");
-                return Collections.emptyList();
-            }
+            return getEventEmitters(totalEmitters);
         }
 
         log.error("No event emitters from subscriber, no message returning.");
         return Collections.emptyList();
+    }
+
+    private List<EventEmitter<CloudEvent>> getEventEmitters(List<EventEmitter<CloudEvent>> emitterList) {
+        switch (subscriptionMode) {
+            case CLUSTERING:
+                return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
+            case BROADCASTING:
+                return emitterList;
+            default:
+                log.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                return Collections.emptyList();
+        }
     }
 }

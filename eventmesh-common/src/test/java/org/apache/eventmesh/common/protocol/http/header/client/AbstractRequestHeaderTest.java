@@ -20,20 +20,20 @@ package org.apache.eventmesh.common.protocol.http.header.client;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class AbstractRequestHeaderTest {
 
     public void assertMapContent(Header header) {
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.LANGUAGE));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.VERSION));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.ENV));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IDC));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.SYS));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PID));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IP));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.USERNAME));
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PASSWD));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.LANGUAGE));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.VERSION));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.ENV.getKey()));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IDC.getKey()));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.SYS.getKey()));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PID.getKey()));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.IP.getKey()));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.USERNAME.getKey()));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.ClientInstanceKey.PASSWD.getKey()));
     }
 }

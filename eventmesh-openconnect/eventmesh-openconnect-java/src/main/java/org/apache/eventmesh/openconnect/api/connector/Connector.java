@@ -18,7 +18,7 @@
 package org.apache.eventmesh.openconnect.api.connector;
 
 import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 /**
  * Connector
@@ -33,12 +33,24 @@ public interface Connector {
     Class<? extends Config> configClass();
 
     /**
+     * This init method is obsolete. For detailed discussion,
+     * please see <a href="https://github.com/apache/eventmesh/issues/4565">here</a>
+     * <p>
      * Initializes the Connector with the provided configuration.
      *
      * @param config Configuration object
      * @throws Exception if initialization fails
      */
+    @Deprecated
     void init(Config config) throws Exception;
+
+    /**
+     * Initializes the Connector with the provided context.
+     *
+     * @param connectorContext connectorContext
+     * @throws Exception if initialization fails
+     */
+    void init(ConnectorContext connectorContext) throws Exception;
 
     /**
      * Starts the Connector.

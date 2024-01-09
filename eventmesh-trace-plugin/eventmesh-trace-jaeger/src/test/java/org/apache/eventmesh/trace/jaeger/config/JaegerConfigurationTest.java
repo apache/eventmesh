@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.trace.jaeger.config;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.jaeger.JaegerTraceService;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JaegerConfigurationTest {
 

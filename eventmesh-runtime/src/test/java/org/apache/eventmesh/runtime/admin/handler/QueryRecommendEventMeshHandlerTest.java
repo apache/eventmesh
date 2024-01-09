@@ -37,8 +37,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
@@ -64,13 +64,13 @@ public class QueryRecommendEventMeshHandlerTest {
         String returnValue = "result";
 
         // case 1: normal case
-        tcpConfiguration.setEventMeshServerRegistryEnable(true);
+        tcpConfiguration.setEventMeshServerMetaStorageEnable(true);
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertEquals(returnValue, response);
+            Assertions.assertEquals(returnValue, response);
         }
 
         // case 2: params illegal
@@ -80,11 +80,11 @@ public class QueryRecommendEventMeshHandlerTest {
             dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(Boolean.TRUE);
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertEquals("params illegal!", response);
+            Assertions.assertEquals("params illegal!", response);
         }
 
         // case 3: registry disable
-        tcpConfiguration.setEventMeshServerRegistryEnable(false);
+        tcpConfiguration.setEventMeshServerMetaStorageEnable(false);
         outputStream = mock(ByteArrayOutputStream.class);
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
@@ -92,7 +92,7 @@ public class QueryRecommendEventMeshHandlerTest {
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertNotEquals(returnValue, response);
+            Assertions.assertNotEquals(returnValue, response);
         }
     }
 }

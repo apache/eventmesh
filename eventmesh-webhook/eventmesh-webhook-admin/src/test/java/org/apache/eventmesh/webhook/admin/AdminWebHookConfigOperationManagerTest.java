@@ -19,8 +19,8 @@ package org.apache.eventmesh.webhook.admin;
 
 import org.apache.eventmesh.common.config.ConfigService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AdminWebHookConfigOperationManagerTest {
 
@@ -32,7 +32,7 @@ public class AdminWebHookConfigOperationManagerTest {
         AdminWebHookConfigOperationManager adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManager();
         adminWebHookConfigOperationManage.init();
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
             adminWebHookConfigOperationManage.getWebHookConfigOperation() instanceof FileWebHookConfigOperation);
     }
 }

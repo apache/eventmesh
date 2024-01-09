@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.api.PubClient;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
@@ -31,12 +32,11 @@ import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,9 +61,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        if (log.isInfoEnabled()) {
-            log.info("PubClientImpl|{}|started!", clientNo);
-        }
+        LogUtils.info(log, "PubClientImpl|{}|started!", clientNo);
     }
 
     public void reconnect() throws Exception {
@@ -87,10 +85,8 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     PubClientImpl.this.reconnect();
                 }
                 Package msg = MessageUtils.heartBeat();
-                if (log.isDebugEnabled()) {
-                    log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                        clientNo, msg.getHeader().getCommand(), msg);
-                }
+                LogUtils.debug(log, "PubClientImpl|{}|send heartbeat|Command={}|msg={}",
+                    clientNo, msg.getHeader().getCommand(), msg);
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception ignored) {
                 // ignore
@@ -118,9 +114,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
-        }
+        LogUtils.info(log, "PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
         return dispatcher(msg, timeout);
     }
 
@@ -128,31 +122,31 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Add test case assertions on the basis of the original IO
      */
     public Package dispatcher(Package request, long timeout) throws Exception {
-        Assert.assertNotNull(request);
+        Assertions.assertNotNull(request);
         Package response = super.io(request, timeout);
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         Command cmd = response.getHeader().getCommand();
         switch (request.getHeader().getCommand()) {
             case RECOMMEND_REQUEST:
-                Assert.assertEquals(Command.RECOMMEND_RESPONSE, cmd);
+                Assertions.assertEquals(Command.RECOMMEND_RESPONSE, cmd);
                 break;
             case HELLO_REQUEST:
-                Assert.assertEquals(Command.HELLO_RESPONSE, cmd);
+                Assertions.assertEquals(Command.HELLO_RESPONSE, cmd);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(Command.HEARTBEAT_RESPONSE, cmd);
+                Assertions.assertEquals(Command.HEARTBEAT_RESPONSE, cmd);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(Command.CLIENT_GOODBYE_RESPONSE, cmd);
+                Assertions.assertEquals(Command.CLIENT_GOODBYE_RESPONSE, cmd);
                 break;
             case BROADCAST_MESSAGE_TO_SERVER:
-                Assert.assertEquals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK, cmd);
+                Assertions.assertEquals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case ASYNC_MESSAGE_TO_SERVER:
-                Assert.assertEquals(Command.ASYNC_MESSAGE_TO_SERVER_ACK, cmd);
+                Assertions.assertEquals(Command.ASYNC_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case REQUEST_TO_SERVER:
-                Assert.assertEquals(Command.RESPONSE_TO_CLIENT, cmd);
+                Assertions.assertEquals(Command.RESPONSE_TO_CLIENT, cmd);
                 break;
             default:
                 break;
@@ -165,9 +159,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Send an event message, the return value is ACCESS and ACK is given
      */
     public Package publish(Package msg, long timeout) throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-        }
+        LogUtils.info(log, "PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return dispatcher(msg, timeout);
     }
 
@@ -175,9 +167,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * send broadcast message
      */
     public Package broadcast(Package msg, long timeout) throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-        }
+        LogUtils.info(log, "PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return dispatcher(msg, timeout);
     }
 
@@ -191,9 +181,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            if (log.isInfoEnabled()) {
-                log.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-            }
+            LogUtils.info(log, "PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);

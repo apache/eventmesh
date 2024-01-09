@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
@@ -79,6 +80,7 @@ public class WebHookController {
      * @param path   CallbackPath
      * @param header map of webhook request header
      * @param body   data
+     * @throws Exception if any uncaught exception occurs during execution
      */
     public void execute(String path, Map<String, String> header, byte[] body) throws Exception {
 
@@ -113,23 +115,20 @@ public class WebHookController {
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
             .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
-            .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
+            .cloudEventSource(webHookConfig.getManufacturerDomain())
             .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent
         webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sendResult.toString());
-                }
+                LogUtils.debug(log, sendResult.toString());
             }
 
             @Override
             public void onException(OnExceptionContext context) {
-                if (log.isWarnEnabled()) {
-                    log.warn("", context.getException());
-                }
+                LogUtils.warn(log, "", context.getException());
             }
 
         });

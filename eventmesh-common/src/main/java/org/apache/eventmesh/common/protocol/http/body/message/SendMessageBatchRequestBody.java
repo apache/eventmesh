@@ -115,8 +115,9 @@ public class SendMessageBatchRequestBody extends Body {
         String batchId = MapUtils.getString(bodyParam,
             BATCHID);
         String size = StringUtils.isBlank(MapUtils.getString(bodyParam,
-            SIZE)) ? "1" : MapUtils.getString(bodyParam,
-            SIZE);
+            SIZE)) ? "1"
+                : MapUtils.getString(bodyParam,
+                    SIZE);
         String contents = MapUtils.getString(bodyParam,
             CONTENTS, null);
         SendMessageBatchRequestBody body = new SendMessageBatchRequestBody();

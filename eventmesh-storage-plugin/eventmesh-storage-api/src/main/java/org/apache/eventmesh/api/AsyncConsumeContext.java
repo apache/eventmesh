@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.api;
 
-
 public abstract class AsyncConsumeContext {
 
     public abstract void commit(EventMeshAction action);

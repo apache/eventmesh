@@ -18,7 +18,6 @@
 package org.apache.eventmesh.storage.rocketmq.producer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
@@ -39,18 +38,19 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProducerImplTest {
 
     private ProducerImpl producer;
@@ -58,7 +58,7 @@ public class ProducerImplTest {
     @Mock
     private DefaultMQProducer rocketmqProducer;
 
-    @Before
+    @BeforeEach
     public void before() throws NoSuchFieldException, IllegalAccessException {
         Properties config = new Properties();
         config.setProperty("access_points", "IP1:9876,IP2:9876");
@@ -72,7 +72,7 @@ public class ProducerImplTest {
 
     }
 
-    @After
+    @AfterEach
     public void after() {
         producer.shutdown();
     }
@@ -117,7 +117,7 @@ public class ProducerImplTest {
         MQClientException exception = new MQClientException("Send message to RocketMQ broker failed.", new Exception());
         Mockito.when(rocketmqProducer.send(any(Message.class))).thenThrow(exception);
 
-        try {
+        StorageRuntimeException e = Assertions.assertThrows(StorageRuntimeException.class, () -> {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
                 .withId("id1")
                 .withSource(URI.create("https://github.com/cloudevents/*****"))
@@ -126,10 +126,8 @@ public class ProducerImplTest {
                 .withData(new byte[]{'a'})
                 .build();
             producer.send(cloudEvent);
-            failBecauseExceptionWasNotThrown(StorageRuntimeException.class);
-        } catch (Exception e) {
-            assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
-        }
+        });
+        assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
 
         Mockito.verify(rocketmqProducer).send(any(Message.class));
     }

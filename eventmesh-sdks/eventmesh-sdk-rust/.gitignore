@@ -1,2 +1,6 @@
+target
+Cargo.lock
+.git
 target/
 .vscode
+.idea

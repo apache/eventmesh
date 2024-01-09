@@ -34,7 +34,6 @@ import io.netty.channel.ChannelHandlerContext;
 
 import lombok.RequiredArgsConstructor;
 
-
 @RequiredArgsConstructor
 public class AdminShutdownProcessor implements HttpRequestProcessor {
 
@@ -48,7 +47,7 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP, remoteAddr, IPUtils.getLocalAddress());
+            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 

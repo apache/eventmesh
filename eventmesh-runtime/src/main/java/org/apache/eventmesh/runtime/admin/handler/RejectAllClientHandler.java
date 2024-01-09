@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -34,10 +35,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
+
+/**
+ * This class handles the HTTP requests of {@code /clientManage/rejectAllClient} endpoint,
+ * which is used to reject ALL client connections belonging to the current EventMesh server node.
+ * <p>
+ * CAUTION: USE WITH CARE
+ * <p>
+ * It uses the {@link EventMeshTcp2Client#serverGoodby2Client} method to close the matching client connection.
+ *
+ * @see AbstractHttpHandler
+ */
 
 @Slf4j
 @EventHttpHandler(path = "/clientManage/rejectAllClient")
@@ -45,6 +56,13 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
 
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
+    /**
+     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     *
+     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public RejectAllClientHandler(final EventMeshTCPServer eventMeshTCPServer,
         final HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
@@ -52,25 +70,26 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     }
 
     /**
-     * remove all clients accessed by eventMesh
+     * Handles requests by rejecting all clients.
      *
-     * @param httpExchange
-     * @throws IOException
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     @Override
     public void handle(final HttpExchange httpExchange) throws IOException {
         try (OutputStream out = httpExchange.getResponseBody()) {
+            // Retrieve the mapping between Sessions and their corresponding client address
             final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
-                if (log.isInfoEnabled()) {
-                    log.info("rejectAllClient in admin====================");
-                }
+                LogUtils.info(log, "rejectAllClient in admin====================");
                 if (!sessionMap.isEmpty()) {
+                    // Iterate through the sessionMap and close each client connection
                     for (final Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         final InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                            eventMeshTCPServer.getTcpThreadPoolGroup(), entry.getValue(), clientSessionGroupMapping);
+                        // Add the remote client address to a list of successfully rejected addresses
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
@@ -80,7 +99,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
                 log.error("clientManage rejectAllClient fail", e);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
-                        sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
+                    sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
                     .getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }

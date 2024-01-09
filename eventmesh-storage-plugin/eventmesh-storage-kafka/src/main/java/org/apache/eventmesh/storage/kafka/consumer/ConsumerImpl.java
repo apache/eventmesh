@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventDeserializer;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -83,7 +82,6 @@ public class ConsumerImpl {
         }
     }
 
-
     public synchronized void shutdown() {
         if (this.started.compareAndSet(true, false)) {
             // Shutdown the executor and interrupt any running tasks
@@ -92,11 +90,9 @@ public class ConsumerImpl {
         }
     }
 
-
     public boolean isStarted() {
         return this.started.get();
     }
-
 
     public boolean isClosed() {
         return !this.isStarted();

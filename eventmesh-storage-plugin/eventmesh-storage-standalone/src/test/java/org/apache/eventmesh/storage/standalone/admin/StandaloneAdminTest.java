@@ -31,18 +31,21 @@ import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import io.cloudevents.CloudEvent;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class StandaloneAdminTest {
 
     @Mock
@@ -50,7 +53,7 @@ public class StandaloneAdminTest {
 
     private StandaloneAdmin standaloneAdmin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initStaticInstance();
     }
@@ -58,19 +61,19 @@ public class StandaloneAdminTest {
     @Test
     public void testIsStarted() {
         standaloneAdmin.start();
-        Assert.assertTrue(standaloneAdmin.isStarted());
+        Assertions.assertTrue(standaloneAdmin.isStarted());
     }
 
     @Test
     public void testIsClosed() {
         standaloneAdmin.shutdown();
-        Assert.assertTrue(standaloneAdmin.isClosed());
+        Assertions.assertTrue(standaloneAdmin.isClosed());
     }
 
     @Test
     public void testGetTopic() throws Exception {
-        Assert.assertNotNull(standaloneAdmin.getTopic());
-        Assert.assertFalse(standaloneAdmin.getTopic().isEmpty());
+        Assertions.assertNotNull(standaloneAdmin.getTopic());
+        Assertions.assertFalse(standaloneAdmin.getTopic().isEmpty());
     }
 
     @Test
@@ -90,15 +93,15 @@ public class StandaloneAdminTest {
         Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(TOPIC_EXISTS);
         Mockito.when(standaloneBroker.getMessage(TEST_TOPIC, OFF_SET)).thenReturn(createDefaultCloudEvent());
         List<CloudEvent> events = standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH);
-        Assert.assertNotNull(events);
-        Assert.assertFalse(events.isEmpty());
+        Assertions.assertNotNull(events);
+        Assertions.assertFalse(events.isEmpty());
     }
 
     @Test
     public void testGetEvent_throwException() {
         Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(TOPIC_DO_NOT_EXISTS);
-        Exception exception = Assert.assertThrows(Exception.class, () -> standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH));
-        Assert.assertEquals("The topic name doesn't exist in the message queue", exception.getMessage());
+        Exception exception = Assertions.assertThrows(Exception.class, () -> standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH));
+        Assertions.assertEquals("The topic name doesn't exist in the message queue", exception.getMessage());
     }
 
     @Test

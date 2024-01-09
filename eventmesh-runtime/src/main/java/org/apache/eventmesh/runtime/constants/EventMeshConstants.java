@@ -66,7 +66,7 @@ public class EventMeshConstants {
     public static final String REQ_IDC = "req0idc";
     public static final String REQ_GROUP = "req0group";
 
-    //default TTL 4 hours
+    // default TTL 4 hours
     public static final Integer DEFAULT_MSG_TTL_MILLS = 14400000;
 
     public static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
@@ -85,7 +85,6 @@ public class EventMeshConstants {
     public static final String PURPOSE_ALL = "all";
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-
 
     public static final String BORN_TIMESTAMP = "BORN_TIME";
     public static final String STORE_TIMESTAMP = "STORE_TIME";
@@ -109,7 +108,7 @@ public class EventMeshConstants {
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
     public static final String MANAGE_MSG = "msg";
-    public static final String EVENTMESH_SEND_BACK_TIMES = "eventmeshdendbacktimes";
+    public static final String EVENTMESH_SEND_BACK_TIMES = "eventmeshsendbacktimes";
 
     public static final String EVENTMESH_SEND_BACK_IP = "eventmeshsendbackip";
 
@@ -125,11 +124,11 @@ public class EventMeshConstants {
 
     public static final String PROPERTY_MESSAGE_KEYS = "keys";
 
-    public static final String PROPERTY_MESSAGE_REPLY_TO = "REPLY_TO";  //requester clientId
+    public static final String PROPERTY_MESSAGE_REPLY_TO = "REPLY_TO"; // requester clientId
 
     public static final String PROPERTY_RR_REQUEST_ID = "RR_REQUEST_UNIQ_ID";
 
-    public static final String LEAVE_TIME = "leave" + Constants.MESSAGE_PROP_SEPARATOR + "time";            //leaveBrokerTime
+    public static final String LEAVE_TIME = "leave" + Constants.MESSAGE_PROP_SEPARATOR + "time"; // leaveBrokerTime
     public static final String ARRIVE_TIME = "arrive" + Constants.MESSAGE_PROP_SEPARATOR + "time";
     public static final String STORE_TIME = "store" + Constants.MESSAGE_PROP_SEPARATOR + "time";
     public static final String PRODUCER_GROUP = "producerGroup";

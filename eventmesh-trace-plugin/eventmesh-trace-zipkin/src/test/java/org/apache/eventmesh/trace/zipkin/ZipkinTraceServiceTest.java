@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.trace.zipkin;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.eventmesh.common.utils.ReflectUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -38,13 +38,13 @@ public class ZipkinTraceServiceTest {
             (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
 
-        Assert.assertNotNull(zipkinTraceService.getSdkTracerProvider());
-        Assert.assertNotNull(zipkinTraceService.getShutdownHook());
+        Assertions.assertNotNull(zipkinTraceService.getSdkTracerProvider());
+        Assertions.assertNotNull(zipkinTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
             assertThrows(IllegalArgumentException.class,
                 () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.getShutdownHook()));
-        Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
+        Assertions.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ZipkinTraceServiceTest {
         try {
             sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
         } catch (NoSuchFieldException e) {
-            sdkTracerProviderField = ReflectUtils.lookUpField(ZipkinTraceService.class, "sdkTracerProvider");
+            sdkTracerProviderField = ReflectUtils.lookUpFieldByParentClass(ZipkinTraceService.class, "sdkTracerProvider");
             if (sdkTracerProviderField == null) {
                 throw e;
             }

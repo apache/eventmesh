@@ -47,12 +47,10 @@ public class ProtocolPluginFactory {
     public static ProtocolAdaptor<ProtocolTransportObject> getProtocolAdaptor(String protocolType) {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = PROTOCOL_ADAPTOR_MAP.computeIfAbsent(
             protocolType,
-            (type) -> EventMeshExtensionFactory.getExtension(ProtocolAdaptor.class, type)
-        );
+            (type) -> EventMeshExtensionFactory.getExtension(ProtocolAdaptor.class, type));
         if (protocolAdaptor == null) {
             throw new IllegalArgumentException(
-                String.format("Cannot find the Protocol adaptor: %s", protocolType)
-            );
+                String.format("Cannot find the Protocol adaptor: %s", protocolType));
         }
         return protocolAdaptor;
     }

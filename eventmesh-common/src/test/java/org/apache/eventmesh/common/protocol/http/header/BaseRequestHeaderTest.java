@@ -17,16 +17,13 @@
 
 package org.apache.eventmesh.common.protocol.http.header;
 
-
-import static org.hamcrest.CoreMatchers.is;
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class BaseRequestHeaderTest {
 
@@ -35,7 +32,7 @@ public class BaseRequestHeaderTest {
         Map<String, Object> headerParam = new HashMap<>();
         headerParam.put(ProtocolKey.REQUEST_CODE, "200");
         BaseRequestHeader header = BaseRequestHeader.buildHeader(headerParam);
-        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
-        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is("200"));
+        Assertions.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
+        Assertions.assertEquals("200", header.toMap().get(ProtocolKey.REQUEST_CODE));
     }
 }

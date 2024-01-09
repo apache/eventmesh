@@ -26,19 +26,17 @@ import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
-import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
-import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
+import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
+import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcessor {
-
 
     public RequestCloudEventProcessor(final EventMeshGrpcServer eventMeshGrpcServer) {
         super(eventMeshGrpcServer, eventMeshGrpcServer.getAcl());
@@ -65,6 +63,7 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
         eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
+
             @Override
             public void onSuccess(io.cloudevents.CloudEvent event) {
                 try {
@@ -79,7 +78,8 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
                         endTime - startTime, topic, seqNum, uniqueId);
                     eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
                 } catch (Exception e) {
-                    ServiceUtils.streamCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2), emitter);
+                    ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2),
+                        emitter);
                     long endTime = System.currentTimeMillis();
                     log.error("message|mq2eventmesh|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId, e);
@@ -88,7 +88,8 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
 
             @Override
             public void onException(Throwable e) {
-                ServiceUtils.streamCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2), emitter);
+                ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2),
+                    emitter);
                 long endTime = System.currentTimeMillis();
                 log.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId, e);

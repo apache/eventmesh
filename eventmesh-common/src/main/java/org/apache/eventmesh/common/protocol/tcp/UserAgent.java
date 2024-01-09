@@ -103,7 +103,6 @@ public class UserAgent {
             return false;
         }
 
-
         if (!Objects.equals(path, userAgent.path)) {
             return false;
         }

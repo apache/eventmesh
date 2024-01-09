@@ -43,9 +43,12 @@ public class ProtocolKey {
 
     public static final String CLIENT_TYPE = "clienttype";
 
-    public static final String GRPC_RESPONSE_CODE = "status_code";
-    public static final String GRPC_RESPONSE_MESSAGE = "response_message";
+    public static final String GRPC_RESPONSE_CODE = "statuscode";
+    public static final String GRPC_RESPONSE_MESSAGE = "responsemessage";
     public static final String GRPC_RESPONSE_TIME = "time";
+
+    public static final String SUB_MESSAGE_TYPE = "submessagetype";
+    public static final String SUB_REPLY_MESSAGE = "subscription_reply";
 
     /**
      * CloudEvents spec

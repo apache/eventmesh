@@ -20,16 +20,19 @@ package org.apache.eventmesh.common.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ReflectUtils {
 
     /**
-     * Look up fields inherited from the parent class.
+     * Look up not private fields inherited from the parent class.
      *
      * @param clazz
      * @param fieldName
      * @return
      */
-    public static Field lookUpField(Class<?> clazz, String fieldName) {
+    public static Field lookUpFieldByParentClass(Class<?> clazz, String fieldName) {
         Class<?> superClass = clazz.getSuperclass();
         while (superClass != null) {
             Field[] superFields = superClass.getDeclaredFields();

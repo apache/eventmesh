@@ -26,7 +26,6 @@ import io.cloudevents.jackson.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
-
 public class CloudEventCodec extends BaseCodec {
 
     private static final CloudEventCodec INSTANCE = new CloudEventCodec();

@@ -25,13 +25,13 @@ import java.util.Map;
 
 public class SendMessageBatchV2ResponseBody extends Body {
 
-    //return code
+    // return code
     private Integer retCode;
 
-    //response message
+    // response message
     private String retMsg;
 
-    //response time
+    // response time
     private long resTime = System.currentTimeMillis();
 
     public Integer getRetCode() {

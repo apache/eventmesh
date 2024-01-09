@@ -34,7 +34,6 @@ import io.cloudevents.lang.Nullable;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
-
 @ParametersAreNonnullByDefault
 public final class RocketMQMessageFactory {
 
@@ -46,7 +45,6 @@ public final class RocketMQMessageFactory {
         return createReader(message.getProperties(), message.getBody());
     }
 
-
     public static MessageReader createReader(final Map<String, String> props,
         @Nullable final byte[] body)
         throws CloudEventRWException {
@@ -55,10 +53,8 @@ public final class RocketMQMessageFactory {
             () -> null,
             format -> null,
             () -> props.get(RocketMQHeaders.SPEC_VERSION),
-            sv -> new RocketMQBinaryMessageReader(sv, props, body)
-        );
+            sv -> new RocketMQBinaryMessageReader(sv, props, body));
     }
-
 
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic) {
         return new RocketMQMessageWriter<>(topic);

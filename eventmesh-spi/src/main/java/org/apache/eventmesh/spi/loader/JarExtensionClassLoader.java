@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
@@ -113,8 +112,8 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 pluginUrls.addAll(loadJarPathFromResource(file.getPath()));
             }
         }
-        //  Sort the path here just to guarantee load the ConsumeMessageConcurrentlyService
-        //  defined in EventMesh rather than defined in rocketmq
+        // Sort the path here just to guarantee load the ConsumeMessageConcurrentlyService
+        // defined in EventMesh rather than defined in rocketmq
         pluginUrls.sort(Comparator.comparing(URL::getPath));
         return pluginUrls;
     }

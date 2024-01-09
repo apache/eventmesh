@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.trace.api.common;
 
-
 public class EventMeshTraceConstants {
 
     public static final String TRACE_EVENTMESH_SDK_CLIENT_SPAN = "eventmesh-sdk-client-span";

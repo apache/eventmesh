@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.grpc;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -53,23 +54,23 @@ public class GrpcAbstractDemo {
             .build();
     }
 
-    protected static CloudEvent buildCloudEvent(final Map<String, String> content) {
+    protected static CloudEvent buildCloudEvent(final Map<String, String> content, String topic) {
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
-            .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
+            .withSubject(topic)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
             .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
             .build();
 
     }
 
-    protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content) {
+    protected static EventMeshMessage buildEventMeshMessage(final Map<String, String> content, String topic) {
         return EventMeshMessage.builder()
             .content(JsonUtils.toJSONString(content))
-            .topic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC)
+            .topic(topic)
             .uniqueId(RandomStringUtils.generateNum(30))
             .bizSeqNo(RandomStringUtils.generateNum(30))
             .build()

@@ -60,8 +60,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "clientmanage.threads.num")
     private int eventMeshServerClientManageThreadNum = 4;
 
-    @ConfigFiled(field = "registry.threads.num")
-    private int eventMeshServerRegistryThreadNum = 10;
+    @ConfigFiled(field = "metaStorage.threads.num")
+    private int eventMeshServerMetaStorageThreadNum = 10;
 
     @ConfigFiled(field = "admin.threads.num")
     private int eventMeshServerAdminThreadNum = 2;
@@ -72,8 +72,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     @ConfigFiled(field = "")
     private int eventMeshServerWebhookThreadNum = 4;
 
-    @ConfigFiled(field = "pull.registry.interval")
-    private int eventMeshServerPullRegistryInterval = 30000;
+    @ConfigFiled(field = "pull.metaStorage.interval")
+    private int eventMeshServerPullMetaStorageInterval = 30000;
 
     @ConfigFiled(field = "async.accumulation.threshold")
     private int eventMeshServerAsyncAccumulationThreshold = 1000;
@@ -131,4 +131,5 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigFiled(field = "blacklist.ipv6")
     private List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
+
 }
