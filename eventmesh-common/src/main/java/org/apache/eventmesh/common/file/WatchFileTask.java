@@ -83,6 +83,11 @@ public class WatchFileTask extends Thread {
 
     public void shutdown() {
         watch = false;
+        try {
+            this.watchService.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to close WatchService", e);
+        }
     }
 
     @Override
