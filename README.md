@@ -89,14 +89,16 @@ The EventMesh Runtime is a stateful mesh node in an EventMesh cluster that is re
 
 #### Run on your local machine
 
-Dependencies:
+Dependencies:  
+
 - 64-bit OS, we recommend Linux/Unix.
 - 64-bit JDK 1.8 or JDK 11
 - Gradle 7.0+, The recommended version can be found in the `gradle/wrapper/gradle-wrapper.properties` file.
 
 ##### 1）Run from source code
 
-1.Download source code:   
+1.Download source code:    
+
 Download and extract the source code of the latest release from [EventMesh download](https://eventmesh.apache.org/download/).For example, with the current latest version, you will get `apache-eventmesh-1.10.0-source.tar.gz`.
 
 There are two ways to install the plugin:
@@ -119,7 +121,7 @@ EventMesh will load plugins in the `dist/plugin` directory by default, you can c
 eventMesh.connector.plugin.type=rocketmq
 ```
 
-4.Configuring the VM startup parameters  
+4.Configuring the VM startup parameters
 ```
 -Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
 -Deventmesh.log.home=eventmesh-runtime/logs
@@ -155,6 +157,7 @@ vim conf/eventmesh.properties
 ```
 
 2.Build and Load Plugins    
+
 Apache EventMesh introduces the SPI (Service Provider Interface) mechanism, which enables EventMesh to discover and load the plugins at runtime.The plugins could be installed with these methods:  
 - Gradle Dependencies: Declare the plugins as the build dependencies in `eventmesh-starter/build.gradle`.  
 ```
@@ -219,12 +222,14 @@ bash bin/stop.sh
 
 #### EventMesh Runtime with Docker
 
-Dependencies:  
+Dependencies:   
+
 - 64-bit OS, we recommend Linux/Unix.   
 - 64-bit JDK 1.8 or JDK 11.    
 - Gradle 7.0+, The recommended version can be found in the `gradle/wrapper/gradle-wrapper.properties` file.  
 
-1.Pull EventMesh Image  
+1.Pull EventMesh Image   
+
 Download the pre-built image of [eventmesh](https://hub.docker.com/r/apache/eventmesh) from Docker Hub with docker pull:
 ```
 sudo docker pull apache/eventmesh:v1.10.0
@@ -237,7 +242,8 @@ REPOSITORY            TAG       IMAGE ID       CREATED         SIZE
 apache/eventmesh   v1.10.0    6e2964599c78     10 days ago     937MB
 ```
 
-2.Edit Configuration:    
+2.Edit Configuration:     
+
 Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime. To integrate RocketMQ as a connector, these two configuration files should be created: `eventmesh.properties` and `rocketmq-client.properties`.
 ```
 sudo mkdir -p /data/eventmesh/rocketmq/conf
@@ -299,8 +305,10 @@ CONTAINER ID   IMAGE                        COMMAND                  CREATED    
 5bb6b6092672   apache/eventmesh:v1.10.0   "/bin/sh -c 'sh star…"     5 seconds ago   Up 3 seconds   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105->10105/tcp, :::10105->10105/tcp   eager_driscoll
 ```
 
-6.Managing EventMesh Containers     
+6.Managing EventMesh Containers    
+
 After successfully running an EventMesh container, you can manage the container by entering it, viewing logs, deleting it, and so on.  
+
 To connect to the EventMesh container:
 ```
 sudo docker exec -it [your container id or name] /bin/bash
@@ -342,7 +350,8 @@ Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncS
 Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublish
 ```
 
-##### 1.2 BROADCAST
+##### 1.2 BROADCAST  
+
 - Start subscriber to subscribe the topic (we have created the `TEST-TOPIC-TCP-BROADCAST` by default, you can also create other topic to test)
 ```
 Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncSubscribeBroadcast
@@ -352,12 +361,14 @@ Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncS
 Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublishBroadcast
 ````
 
-#### 2.HTTP
+#### 2.HTTP 
+
 > For HTTP, the eventmesh-sdk-java implements sending and subscribing to asynchronous events.  
 > 
 > In the demo, the `content` field of the Java class `EventMeshMessage` represents a special protocol. Therefore, if you are using the eventmesh-sdk-java's http-client, you only need to design the content of the protocol and provide the consumer's application at the same time.   
 
-##### 2.1 ASYNC
+##### 2.1 ASYNC  
+
 - The subscriber is a SpringBoot demo, so run this demo to start subscriber (we have created the topic `TEST-TOPIC-HTTP-ASYNC` by default, you can also create other topic to test)
 ```
 Run the main method of org.apache.eventmesh.http.demo.sub.SpringBootDemoApplication
@@ -374,7 +385,8 @@ Run the main method of org.apache.eventmesh.http.demo.pub.eventmeshmessage.Async
 > 
 > It can subscribe to consume events through Webhook and event streaming, and also supports the CNCF CloudEvents protocol. 
 
-##### 3.1 ASYNC Publish & Webhook Subscribe
+##### 3.1 ASYNC Publish & Webhook Subscribe  
+
 > Producers can asynchronously send events to the EventMesh Runtime without waiting for the events to be stored in the Event Store.
 > 
 > For Webhook consumers, events will be pushed to the consumer's HTTP Endpoint URL, i.e., the consumer's `subscribeUrl`. This method is similar to the previously mentioned Http EventMesh client.  
@@ -389,7 +401,8 @@ Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPubli
 Run the main method of org.apache.eventmesh.grpc.sub.app.SpringBootDemoApplication
 ```
 
-##### 3.2 SYNC Publish & Stream Subscribe
+##### 3.2 SYNC Publish & Stream Subscribe  
+
 > Producers synchronously send events to the EventMesh Runtime while waiting for the events to be stored in the Event Store.  
 > 
 > For event stream consumers, events are pushed in a streaming to the ReceiveMsgHook client. This method is similar to the EventMesh client.  
@@ -404,7 +417,8 @@ Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.RequestRep
 Run the main method of org.apache.eventmesh.grpc.sub.EventmeshAsyncSubscribe
 ```
 
-##### 3.3 Publish BATCH Message
+##### 3.3 Publish BATCH Message  
+
 > Asynchronously batch publish multiple events to the EventMesh Runtime.
 - Start publisher to publish batch message (we have created the `TEST-TOPIC-GRPC-ASYNC` by default, you can also create other topic to test.)
 ```
@@ -499,7 +513,8 @@ You can see the run logs for the different modes under the `/logs` directory.
 
 ### Run EventMesh-Operator
 
-Dependencies:  
+Dependencies:   
+
 - docker
 - golang (version 1.19)
 - kubernetes (kubectl)  
@@ -522,7 +537,8 @@ make install
 make uninstall
 ```
 
-If you get error `eventmesh-operator/bin/controller-gen: No such file or directory`    
+If you get error `eventmesh-operator/bin/controller-gen: No such file or directory`   
+
 Run the following command:  
 ```
 # download controller-gen locally if necessary.
@@ -546,8 +562,10 @@ run eventmesh-operator:
 make run
 ```
 
-2.Create and delete CRs:  
-Custom resource objects are located at: `/config/samples` 
+2.Create and delete CRs:    
+
+Custom resource objects are located at: `/config/samples`    
+
 When deleting CR, simply replace `create` with `delete`.   
 ```
 # Create CR for eventmesh-runtime、eventmesh-connector-rocketmq,Creating a clusterIP lets eventmesh-runtime communicate with other components.
@@ -578,6 +596,7 @@ make delete
 #### Deploy Operator on k8s
 
 1.Deploy operator      
+
 Run the following commands(To delete a deployment, simply replace `deploy` with `undeploy`):  
 ```
 make deploy

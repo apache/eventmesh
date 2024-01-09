@@ -61,8 +61,10 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 - [EventMesh-catalog](https://github.com/apache/eventmesh-catalog): 使用 AsyncAPI 进行事件模式管理的目录服务。
 - [EventMesh-go](https://github.com/apache/eventmesh-go): EventMesh 运行时的 Go 语言实现。
 
-## 快速入门  
+## 快速入门   
+
 本段指南将指导您完成EventMesh的部署步骤   
+
 - [部署EventMesh Store](#部署eventmesh-store-)
 - [部署EventMesh Runtime](#部署eventmesh-runtime)
   - [本地构建运行](#本地构建运行)
@@ -84,7 +86,8 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 > EventMesh现在支持`standalone`、`RocketMQ`、`Kafka`等中间件作为存储   
 > 如果是在非`standalone`模式下，需要先部署所需的`store`，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
-### 部署EventMesh Runtime
+### 部署EventMesh Runtime  
+
 EventMesh Runtime是EventMesh集群中有状态的Mesh节点，负责Source Connector与Sink Connector之间的事件传输，并可以使用EventMesh Storage作为事件的存储队列。
 
 #### 本地构建运行
@@ -156,7 +159,8 @@ cd dist
 vim conf/eventmesh.properties
 ```
 
-2.构建并加载插件  
+2.构建并加载插件   
+
 Apache EventMesh引入了 SPI 机制，使 EventMesh 能够在运行时发现并加载插件。有两种方式安装插件:  
 - Gradle依赖项: 在`eventmesh-starter/build.gradle`中将插件声明为构建依赖项。  
 ```
@@ -187,7 +191,8 @@ tail -f logs/eventmesh.out
 
 #### 远程部署
 
-在[EventMesh download](https://eventmesh.apache.org/download/)页面选择所需要版本的Binary Distribution进行下载,您将获得`apache-eventmesh-1.10.0-bin.tar.gz`。   
+在[EventMesh download](https://eventmesh.apache.org/download/)页面选择所需要版本的Binary Distribution进行下载,您将获得`apache-eventmesh-1.10.0-bin.tar.gz`。    
+
 1.下载:  
 ```
 # 解压
@@ -222,12 +227,14 @@ bash bin/stop.sh
 #### Docker部署EventMesh Runtime
 
 准备:   
+
 - 建议使用64位的linux系统。
 - 请预先安装Docker Engine。Docker的安装过程可以参考[docker官方文档](https://docs.docker.com/engine/install/)。
 - 建议掌握基础的docker概念和命令行，例如注册中心、挂载等等。不过这不是必须的，因为本次操作所需的命令都已为您列出。
 - 若您选择非standalone模式，请确保[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)已成功启动并且可以使用ip地址访问到；若您选择standalone模式，则无需启动RocketMQ 。
 
-1.获取EventMesh镜像  
+1.获取EventMesh镜像    
+
 首先，你可以打开一个命令行，并且使用下面的`pull`命令从[Docker Hub](https://hub.docker.com)中下载最新发布的[EventMesh](https://hub.docker.com/r/apache/eventmesh)。   
 ```
 sudo docker pull apache/eventmesh:v1.10.0
@@ -245,7 +252,8 @@ REPOSITORY            TAG       IMAGE ID       CREATED         SIZE
 apache/eventmesh     v1.10.0    6e2964599c78   10 days ago     937MB
 ```
 
-2.创建配置文件:  
+2.创建配置文件:   
+
 在根据EventMesh镜像运行对应容器之前，你需要创建两个配置文件，分别是:`eventmesh.properties`和`rocketmq-client.properties`。  
 首先，你需要使用下面的命令创建这两个文件。  
 ```
@@ -289,8 +297,10 @@ sudo vim eventmesh.properties
 |-----------------------------------------|---------------------------------|------------------------------------|  
 | `eventMesh.server.rocketmq.namesrvAddr` | `127.0.0.1:9876;127.0.0.1:9876` | `RocketMQ namesrv default address` |
 
-5.运行EventMesh  
+5.运行EventMesh    
+
 现在你就可以开始根据下载好的EventMesh镜像运行容器了。   
+
 使用到的命令是`docker run`，有以下两点内容需要格外注意。  
 - 绑定容器端口和宿主机端口: 使用`docker run`的`-p`选项。
 - 将宿主机中的两份配置文件挂在到容器中: 使用`docker run`的`-v`选项。  
@@ -316,7 +326,8 @@ CONTAINER ID   IMAGE                        COMMAND                  CREATED    
 5bb6b6092672   apache/eventmesh:v1.10.0     "/bin/sh -c 'sh star…"   5 seconds ago   Up 3 seconds   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105->10105/tcp, :::10105->10105/tcp   eager_driscoll
 ```
 
-6.管理EventMesh容器   
+6.管理EventMesh容器    
+
 在成功的运行了 EventMesh 容器后，你可以通过进入容器、查看日志、删除容器等方式管理容器。
 **进入容器**命令示例:  
 ```
@@ -545,7 +556,7 @@ make install
 make uninstall
 ```
 
-如果出现错误`eventmesh-operator/bin/controller-gen: No such file or directory` 
+如果出现错误`eventmesh-operator/bin/controller-gen: No such file or directory`
 运行以下命令:  
 ```
 # 如有必要，在本地下载controller-gen.
@@ -569,9 +580,9 @@ runtimes.eventmesh-operator.eventmesh     2023-11-28T01:35:21Z
 make run
 ```
 
-2.创建和删除CRs:  
-自定义资源对象位于: `/config/samples`  
-删除CR，只需将`create`替换为`delete`即可。  
+2.创建和删除CRs:    
+
+自定义资源对象位于: `/config/samples`,删除CR，只需将`create`替换为`delete`即可。  
 ```
 # 为eventmesh-runtime、eventmesh-connector-rocketmq创建CR,创建clusterIP可让eventmesh-runtime与其他组件通信。
 make create
@@ -601,6 +612,7 @@ make delete
 #### 部署operator到k8s
 
 1.部署operator      
+
 运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy`即可):
 ```
 make deploy
