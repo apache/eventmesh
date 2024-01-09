@@ -21,6 +21,7 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATIO
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.OPERATION_MODE_NACOS;
 
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.config.AdminConfiguration;
 
@@ -32,12 +33,10 @@ import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class AdminWebHookConfigOperationManager {
 
-    private static final transient Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP
-        = new HashMap<>();
+    private static final Map<String, Class<? extends WebHookConfigOperation>> WEBHOOK_CONFIG_OPERATION_MAP = new HashMap<>();
 
     static {
         WEBHOOK_CONFIG_OPERATION_MAP.put(OPERATION_MODE_FILE, FileWebHookConfigOperation.class);
@@ -65,18 +64,20 @@ public class AdminWebHookConfigOperationManager {
             throw new IllegalStateException("operationMode is not supported.");
         }
 
+        // Affects which implementation of the WebHookConfigOperation interface is used.
         final Constructor<? extends WebHookConfigOperation> constructor =
             WEBHOOK_CONFIG_OPERATION_MAP.get(operationMode).getDeclaredConstructor(Properties.class);
-        final boolean oldAccesssible = constructor.isAccessible();
+        // Save the original accessibility of constructor
+        final boolean oldAccessible = constructor.isAccessible();
         try {
             constructor.setAccessible(true);
             final Properties operationProperties = adminConfiguration.getOperationProperties();
-            if (log.isInfoEnabled()) {
-                log.info("operationMode is {}  properties is {} ", operationMode, operationProperties);
-            }
+
+            LogUtils.info(log, "operationMode is {}  properties is {} ", operationMode, operationProperties);
             this.webHookConfigOperation = constructor.newInstance(operationProperties);
         } finally {
-            constructor.setAccessible(oldAccesssible);
+            // Restore the original accessibility of constructor
+            constructor.setAccessible(oldAccessible);
         }
 
     }

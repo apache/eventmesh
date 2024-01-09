@@ -84,8 +84,7 @@ public class HttpLoadBalanceUtils {
             final int splitIndex = eventMeshAddrWight.lastIndexOf(":");
             final Weight<String> weight = new Weight<>(
                 eventMeshAddrWight.substring(0, splitIndex),
-                Integer.parseInt(eventMeshAddrWight.substring(splitIndex + 1))
-            );
+                Integer.parseInt(eventMeshAddrWight.substring(splitIndex + 1)));
             eventMeshAddrWeightList.add(weight);
         }
         return eventMeshAddrWeightList;

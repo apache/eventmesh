@@ -131,7 +131,6 @@ public class Client {
         return lastUpTime;
     }
 
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -149,4 +148,3 @@ public class Client {
         return sb.toString();
     }
 }
-

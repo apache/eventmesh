@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
 import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.EventHandler;
 import org.apache.eventmesh.runtime.admin.handler.GrpcClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.HTTPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.InsertWebHookConfigHandler;
+import org.apache.eventmesh.runtime.admin.handler.MetaHandler;
 import org.apache.eventmesh.runtime.admin.handler.MetricsHandler;
 import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
 import org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByIdHandler;
@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByManufactur
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.RegistryHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectAllClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler;
@@ -44,7 +43,7 @@ import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -52,11 +51,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpServer;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+/**
+ * This class is responsible for managing the client connections
+ * and initializing the client handlers.
+ * <p>
+ * It starts the AdminController for managing the event store or MQ.
+ */
 
 @SuppressWarnings("restriction")
 @Slf4j
@@ -68,36 +73,50 @@ public class ClientManageController {
 
     private final transient EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final transient Registry eventMeshRegistry;
+    private final transient MetaStorage eventMeshMetaStorage;
 
     @Setter
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
+    /**
+     * Constructs a new ClientManageController with the given server instance.
+     *
+     * @param eventMeshTCPServer   the TCP server instance of EventMesh
+     * @param eventMeshHTTPServer  the HTTP server instance of EventMesh
+     * @param eventMeshGrpcServer  the gRPC server instance of EventMesh
+     * @param eventMeshMetaStorage the registry adaptor of EventMesh
+     */
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer,
         EventMeshHTTPServer eventMeshHTTPServer,
         EventMeshGrpcServer eventMeshGrpcServer,
-        Registry eventMeshRegistry) {
+        MetaStorage eventMeshMetaStorage) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
-        this.eventMeshRegistry = eventMeshRegistry;
-
+        this.eventMeshMetaStorage = eventMeshMetaStorage;
     }
 
-
+    /**
+     * Invoke this method to start this controller on the specified port.
+     *
+     * @throws IOException if an I/O error occurs while starting the server
+     */
     public void start() throws IOException {
+        // Get the server's admin port.
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
+        // Create an HTTP server and bind it to the specified port.
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
 
-        //todo Optimized for automatic injection
-        initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
-            eventMeshGrpcServer, eventMeshRegistry, httpHandlerManager);
+        // TODO: Optimized for automatic injection
 
+        // Initialize the client handler and register it with the HTTP handler manager.
+        initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
+            eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
+
+        // Register the handlers from the HTTP handler manager with the HTTP server.
         httpHandlerManager.registerHttpHandler(server);
-        AdminController adminController = new AdminController();
-        adminController.run(server);
 
         server.start();
         log.info("ClientManageController start success, port:{}", port);
@@ -106,7 +125,7 @@ public class ClientManageController {
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
         EventMeshHTTPServer eventMeshHTTPServer,
         EventMeshGrpcServer eventMeshGrpcServer,
-        Registry eventMeshRegistry,
+        MetaStorage eventMeshMetaStorage,
         HttpHandlerManager httpHandlerManager) {
         new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
         new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
@@ -128,7 +147,7 @@ public class ClientManageController {
         new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer, httpHandlerManager);
         new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
         new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType(), httpHandlerManager);
-        new RegistryHandler(eventMeshRegistry, httpHandlerManager);
+        new MetaHandler(eventMeshMetaStorage, httpHandlerManager);
 
         if (Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
             WebHookConfigOperation webHookConfigOperation = adminWebHookConfigOperationManage.getWebHookConfigOperation();
@@ -139,6 +158,5 @@ public class ClientManageController {
             new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation, httpHandlerManager);
         }
     }
-
 
 }

@@ -215,6 +215,13 @@ Apache 2.0 licenses
 The following components are provided under the Apache License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
+    alibabacloud-gateway-spi 0.0.1: http://www.aliyun.com Apache 2.0
+    annotations 4.1.1.4: http://source.android.com/ Apache 2.0
+    arns 2.20.29: https://aws.amazon.com/sdkforjava Apache 2.0
+    auth 2.20.29: https://aws.amazon.com/sdkforjava Apache 2.0
+    aws-core 2.20.29 https://aws.amazon.com/sdkforjava Apache 2.0
+    aws-query-protocol 2.20.29 https://aws.amazon.com/sdkforjava Apache 2.0
+    aws-xml-protocol 2.20.29 https://aws.amazon.com/sdkforjava Apache 2.0
     assertj-core 2.6.0: https://github.com/assertj/assertj-core, Apache 2.0
     async-http-client 2.12.0: https://github.com/AsyncHttpClient/async-http-client, Apache 2.0
     byte-buddy 1.11.0: https://github.com/raphw/byte-buddy, Apache 2.0
@@ -222,6 +229,9 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     cloudevents-api 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
     cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
     cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
+    classmate 1.5.1: https://github.com/FasterXML/java-classmate, Apache 2.0
+    crt-core 2.20.29: https://aws.amazon.com/sdkforjava, Apache 2.0
+    eventstream 2.20.29: https://github.com/awslabs/aws-eventstream-java, Apache 2.0
     commons-beanutils 1.9.4: https://github.com/apache/commons-beanutils, Apache 2.0
     commons-cli 1.2: https://github.com/apache/commons-cli, Apache 2.0
     commons-codec 1.11: https://github.com/apache/commons-codec, Apache 2.0
@@ -237,11 +247,13 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     curator-recipes 4.0.1: https://github.com/apache/curator, Apache 2.0
     disruptor 3.4.2: https://github.com/LMAX-Exchange/disruptor, Apache 2.0
     dledger 0.2.3: https://github.com/openmessaging/dledger, Apache 2.0
+    dingtalk 2.0.61: https://github.com/aliyun/alibabacloud-sdk, Apache 2.0
     error_prone_annotations 2.7.1: https://github.com/google/error-prone, Apache 2.0
     failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
     listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
-    fastjson 1.2.76: https://github.com/alibaba/fastjson, Apache 2.0
+    fastjson 1.2.83: https://github.com/alibaba/fastjson, Apache 2.0
     guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
+    gateway-dingtalk 1.0.2: https://github.com/aliyun/alibabacloud-gateway, Apache 2.0
     guice 4.2.2: https://github.com/google/guice, Apache 2.0
     grpc-api 1.43.2: https://github.com/grpc/grpc-java, Apache-2.0
     grpc-context 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
@@ -255,6 +267,8 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     gson 2.8.2: https://github.com/google/gson, Apache 2.0
     httpasyncclient 4.1.3: https://github.com/apache/httpasyncclient, Apache 2.0
     httpclient 4.5.13: https://github.com/apache/httpcomponents-client, Apache 2.0
+    hibernate-validator 6.2.0.Final: https://github.com/hibernate/hibernate-validator, Apache 2.0
+    httpmime 4.5.13: http://hc.apache.org/httpcomponents-client, Apache 2.0
     httpcore 4.4.13: https://github.com/apache/httpcomponents-core, Apache 2.0
     j2objc-annotations 1.3: https://github.com/google/j2objc, Apache 2.0
     jackson-annotations 2.13.0: https://github.com/FasterXML/jackson-annotations, Apache 2.0
@@ -262,11 +276,13 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     jackson-databind 2.13.0: https://github.com/FasterXML/jackson-databind, Apache 2.0
     javassist 3.24.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
     javax.inject 1: https://github.com/javax-inject/javax-inject, Apache 2.0
+    jboss-logging 3.4.1.Final:https://github.com/jboss-logging/jboss-logging, Apache 2.0
     jboss-marshalling 2.0.11.Final:https://github.com/jboss-remoting/jboss-marshalling, Apache 2.0
     jboss-marshalling-river 2.0.11.Final: https://github.com/jboss-remoting/jboss-marshalling, Apache 2.0
     jcip-annotations 1.0: https://github.com/stephenc/jcip-annotations, Apache 2.0
     jcommander 1.72: https://github.com/cbeust/jcommander, Apache 2.0
     jetcd-common 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
+    json-utils 2.20.29: https://aws.amazon.com/sdkforjava, Apache 2.0
     jetcd-core 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
     jetcd-resolver 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
     jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
@@ -274,11 +290,13 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     log4j-api 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-core 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-slf4j-impl 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
+    log4j-to-slf4j 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
     metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-json 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     nacos-auth-plugin 2.1.0: https://github.com/alibaba/nacos, Apache 2.0
+    mysql-binlog-connector-java 0.28.0: https://github.com/osheroff/mysql-binlog-connector-java, Apache 2.0
     nacos-client 2.0.4: https://github.com/alibaba/nacos, Apache 2.0
     nacos-encryption-plugin 2.1.0: https://github.com/alibaba/nacos, Apache 2.0
     netty-all 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
@@ -331,6 +349,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     opentelemetry-sdk-metrics 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
     opentelemetry-sdk-trace 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
     opentelemetry-semconv 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
+    oapi-sdk  2.0.28: ttps://github.com/larksuite/oapi-sdk-java, Apache 2.0
     perfmark-api 0.23.0: https://github.com/perfmark/perfmark, Apache 2.0
     pinpoint-annotations 2.4.1: https://github.com/pinpoint-apm/pinpoint, Apache 2.0
     pinpoint-bootstrap 2.4.1: https://github.com/pinpoint-apm/pinpoint, Apache 2.0
@@ -341,6 +360,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     pinpoint-grpc 2.4.1: https://github.com/pinpoint-apm/pinpoint, Apache 2.0
     pinpoint-profiler 2.4.1: https://github.com/pinpoint-apm/pinpoint, Apache 2.0
     pinpoint-rpc 2.4.1: https://github.com/pinpoint-apm/pinpoint, Apache 2.0
+    profiles  2.20.29: https://aws.amazon.com/sdkforjava, Apache 2.0
     pravega-client 0.11.0: https://github.com/pravega/pravega, Apache 2.0
     pravega-common 0.11.0: https://github.com/pravega/pravega, Apache 2.0
     pravega-shared-authplugin 0.11.0: https://github.com/pravega/pravega, Apache 2.0
@@ -350,6 +370,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     proto-google-common-protos 1.0.0: https://github.com/googleapis/common-protos-java, Apache 2.0
     pulsar-client 2.10.1: https://github.com/apache/pulsar, Apache 2.0
     pulsar-client-admin-api 2.10.1: https://github.com/apache/pulsar, Apache 2.0
+    protocol-core 2.20.29: https://aws.amazon.com/sdkforjava, Apache 2.0
     pulsar-client-api 2.10.1: https://github.com/apache/pulsar, Apache 2.0
     reactor-core 3.4.13: https://github.com/reactor/reactor-core, Apache 2.0
     rocketmq-acl 4.9.3: https://github.com/apache/rocketmq, Apache 2.0
@@ -367,7 +388,21 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     simpleclient 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
     simpleclient_common 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
     simpleclient_httpserver 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
-    snakeyaml 1.30: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
+    snakeyaml 2.0: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
+    s3  2.20.29: https://aws.amazon.com/sdkforjava, Apache 2.0
+    sdk-core  2.20.29: https://aws.amazon.com/sdkforjava, Apache 2.0
+    spring-aop  5.3.15: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-beans  5.3.20: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-context  5.3.15: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-core  5.3.20: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-expression  5.3.15: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-jcl  5.3.20: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-messaging  5.3.20: https://github.com/spring-projects/spring-framework, Apache 2.0
+    spring-boot  2.5.9: https://github.com/spring-projects/spring-boot, Apache 2.0
+    spring-boot-autoconfigure  2.5.9: https://github.com/spring-projects/spring-boot, Apache 2.0
+    spring-boot-starter  2.5.9: https://github.com/spring-projects/spring-boot, Apache 2.0
+    spring-boot-starter-logging  2.5.9: https://github.com/spring-projects/spring-boot, Apache 2.0
+    spring-boot-starter-validation  2.5.9: https://github.com/spring-projects/spring-boot, Apache 2.0
     truth 0.30: https://github.com/google/truth, Apache 2.0
     validation-api 1.1.0.Final: https://github.com/jakartaee/validation, Apache 2.0
     zipkin 2.23.2: https://github.com/openzipkin/zipkin, Apache 2.0
@@ -415,6 +450,8 @@ The following components are provided under the EPL License. See project link fo
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
     junit 4.13.2: https://github.com/junit-team/junit5, EPL
+    jakarta.annotation-api 1.3.5: https://projects.eclipse.org/projects/ee4j.ca, EPL
+    jakarta.validation-api 2.0.2: https://beanvalidation.org, EPL
 
 ========================================================================
 MIT licenses
@@ -440,6 +477,10 @@ The following components are provided under the BSD-3-Clause License. See projec
 The text of each license is also included at licenses/license-[project].txt.
 
     jline 0.9.94: https://github.com/jline, BSD-3-Clause
+    ST4 4.3.4: https://github.com/antlr/antlr4, BSD-3-Clause
+    antlr4-runtime 4.13.0: https://github.com/antlr/antlr4, BSD-3-Clause
+    antlr4 4.13.0: https://github.com/antlr/antlr4, BSD-3-Clause
+    dom4j  2.0.3: https://github.com/dom4j/dom4j, BSD-3-Clause
 
 ========================================================================
 BSD-2-Clause licenses
@@ -459,3 +500,12 @@ The following components are provided under the MPL & GPL & Apache License. See 
 The text of each license is also included at licenses/license-[project].txt.
 
     amqp-client 5.16.0: https://github.com/rabbitmq/rabbitmq-java-client MPL & GPL & Apache License
+
+
+========================================================================
+CDDL  & GPL2
+========================================================================
+The following components are provided under the CDDL & GPL2. See project link for details.
+The text of each license is also included at licenses/license-[project].txt.
+
+    jaxb-api 2.3.0: http://www.oracle.com/ CDDL & GPL2

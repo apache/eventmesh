@@ -39,8 +39,6 @@ public class EventMeshCommon {
      */
     public static final String USER_AGENT_PURPOSE_SUB = "sub";
 
-    // protocol type
-    public static final String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
     public static final String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
     public static final String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 }

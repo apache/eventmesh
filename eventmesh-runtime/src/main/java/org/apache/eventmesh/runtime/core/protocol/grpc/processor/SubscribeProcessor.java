@@ -17,20 +17,20 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 
@@ -46,9 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscribeProcessor {
 
-    private final transient EventMeshGrpcServer eventMeshGrpcServer;
+    private static final GrpcType grpcType = GrpcType.WEBHOOK;
 
-    private final transient GrpcType grpcType = GrpcType.WEBHOOK;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
     private final Acl acl;
 
@@ -70,13 +70,10 @@ public class SubscribeProcessor {
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
-
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            if (log.isWarnEnabled()) {
-                log.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
-            }
+            LogUtils.warn(log, "CLIENT HAS NO PERMISSION to Subscribe. failed", e);
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
@@ -88,6 +85,8 @@ public class SubscribeProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
+
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         final String env = EventMeshCloudEventUtils.getEnv(subscription);
         final String idc = EventMeshCloudEventUtils.getIdc(subscription);
         final String sys = EventMeshCloudEventUtils.getSys(subscription);
@@ -127,14 +126,10 @@ public class SubscribeProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            if (log.isInfoEnabled()) {
-                log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
-            }
+            LogUtils.info(log, "ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            if (log.isWarnEnabled()) {
-                log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
-            }
+            LogUtils.warn(log, "EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
         ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "subscribe success", emitter);
     }
@@ -143,6 +138,7 @@ public class SubscribeProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
+        Objects.requireNonNull(subscriptionItems, "subscriptionItems must not be null");
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             for (final SubscriptionItem item : subscriptionItems) {
                 this.acl.doAclCheckInHttpReceive(EventMeshCloudEventUtils.getConsumerGroup(subscription),

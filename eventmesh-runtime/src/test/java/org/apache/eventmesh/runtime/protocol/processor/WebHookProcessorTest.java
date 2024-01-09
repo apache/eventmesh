@@ -32,13 +32,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.reflect.Whitebox;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.data.BytesCloudEventData;
@@ -50,46 +53,39 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 
+@ExtendWith(MockitoExtension.class)
 public class WebHookProcessorTest {
 
     @Mock
     private transient HookConfigOperationManager hookConfigOperationManager;
     @Mock
     private transient WebHookMQProducer webHookMQProducer;
-
-    private transient WebHookController controller = new WebHookController();
+    @Spy
+    private transient ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
 
     private transient ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
 
-    @Before
-    public void init() throws Exception {
-        hookConfigOperationManager = Mockito.mock(HookConfigOperationManager.class);
-        Mockito.when(hookConfigOperationManager.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
-        webHookMQProducer = Mockito.mock(WebHookMQProducer.class);
-        Mockito.doNothing().when(webHookMQProducer).send(captor.capture(), any());
-        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
+    @InjectMocks
+    private transient WebHookController controller = new WebHookController();
 
-        Whitebox.setInternalState(controller, HookConfigOperationManager.class, hookConfigOperationManager);
-        Whitebox.setInternalState(controller, WebHookMQProducer.class, webHookMQProducer);
-        Whitebox.setInternalState(controller, ProtocolAdaptor.class, protocolAdaptor);
+    @BeforeEach
+    public void init() throws Exception {
+        Mockito.when(hookConfigOperationManager.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
+        Mockito.doNothing().when(webHookMQProducer).send(captor.capture(), any());
     }
 
     @Test
     public void testHandler() {
-        try {
-            WebHookProcessor processor = new WebHookProcessor();
-            processor.setWebHookController(controller);
-            processor.handler(buildMockWebhookRequest());
+        WebHookProcessor processor = new WebHookProcessor();
+        processor.setWebHookController(controller);
+        processor.handler(buildMockWebhookRequest());
 
-            CloudEvent msgSendToMq = captor.getValue();
-            Assert.assertNotNull(msgSendToMq);
-            Assert.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
-            Assert.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
-            Assert.assertEquals("github.ForkEvent", msgSendToMq.getType());
-            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
-        }
+        CloudEvent msgSendToMq = captor.getValue();
+        Assertions.assertNotNull(msgSendToMq);
+        Assertions.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
+        Assertions.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
+        Assertions.assertEquals("github.ForkEvent", msgSendToMq.getType());
+        Assertions.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes(StandardCharsets.UTF_8)), msgSendToMq.getData());
     }
 
     private HttpRequest buildMockWebhookRequest() {
@@ -107,10 +103,10 @@ public class WebHookProcessorTest {
         WebHookConfig config = new WebHookConfig();
         config.setCallbackPath("/webhook/github/eventmesh/all");
         config.setManufacturerName("github");
+        config.setManufacturerDomain("www.github.com");
         config.setManufacturerEventName("ForkEvent");
         config.setContentType("application/json");
         config.setSecret("secret");
-        config.setCloudEventSource("github");
         config.setCloudEventName("github-eventmesh");
         config.setCloudEventIdGenerateMode("uuid");
         return config;

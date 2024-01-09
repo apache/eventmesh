@@ -31,7 +31,6 @@ import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -55,8 +54,8 @@ public class ClientAckContext {
         this.events = events;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) == null ? "" :
-            Objects.requireNonNull(events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)).toString();
+        String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) == null ? ""
+            : Objects.requireNonNull(events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)).toString();
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
     }
@@ -125,8 +124,8 @@ public class ClientAckContext {
             +
             ",seq=" + seq
             +
-            //TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
-            //               ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
+            // TODO ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
+            // ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
             ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null)
             +
             ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)

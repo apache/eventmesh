@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Data
 @Builder
 public class WebhookProtocolTransportObject implements ProtocolTransportObject {

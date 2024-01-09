@@ -39,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RedisConsumer implements Consumer {
 
-
     private Redisson redisson;
 
     private EventMeshMessageListener messageListener;
@@ -118,6 +117,7 @@ public class RedisConsumer implements Consumer {
         public void onMessage(CharSequence channel, CloudEvent msg) {
 
             final EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+
                 @Override
                 public void commit(EventMeshAction action) {
                     log.info("channel: {} consumer event: {} finish action: {}",

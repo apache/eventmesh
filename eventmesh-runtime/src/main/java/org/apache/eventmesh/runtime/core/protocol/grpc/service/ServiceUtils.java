@@ -25,13 +25,13 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtoSupport;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +42,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
+
+import io.cloudevents.SpecVersion;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.protobuf.Any;
@@ -86,13 +89,13 @@ public class ServiceUtils {
         }
         final String dataContentType = EventMeshCloudEventUtils.getDataContentType(cloudEvent);
         if (ProtoSupport.isTextContent(dataContentType)) {
-            return flag & (StringUtils.isNotEmpty(cloudEvent.getTextData()));
+            return flag && (StringUtils.isNotEmpty(cloudEvent.getTextData()));
         }
         if (ProtoSupport.isProtoContent(dataContentType)) {
-            return flag & (cloudEvent.getProtoData() != Any.getDefaultInstance());
+            return flag && (cloudEvent.getProtoData() != Any.getDefaultInstance());
         }
 
-        return flag & (cloudEvent.getBinaryData() != ByteString.EMPTY);
+        return flag && (cloudEvent.getBinaryData() != ByteString.EMPTY);
     }
 
     public static boolean validateCloudEventBatchData(CloudEventBatch cloudEventBatch) {
@@ -130,7 +133,6 @@ public class ServiceUtils {
         return true;
     }
 
-
     public static boolean validateHeartBeat(CloudEvent heartbeat) {
         org.apache.eventmesh.common.protocol.grpc.common.ClientType clientType = EventMeshCloudEventUtils.getClientType(heartbeat);
         if (org.apache.eventmesh.common.protocol.grpc.common.ClientType.SUB == clientType && StringUtils.isEmpty(
@@ -144,6 +146,7 @@ public class ServiceUtils {
         List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
             new TypeReference<List<HeartbeatItem>>() {
             });
+        Objects.requireNonNull(heartbeatItems, "heartbeatItems can't be null");
         for (HeartbeatItem item : heartbeatItems) {
             if (StringUtils.isEmpty(item.getTopic())) {
                 return false;
@@ -162,7 +165,7 @@ public class ServiceUtils {
     public static void sendResponseCompleted(StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
 
         Instant instant = now();
-        CloudEvent.Builder builder = CloudEvent.newBuilder().setId(RandomStringUtils.generateUUID())
+        CloudEvent.Builder builder = CloudEvent.newBuilder().setId(RandomStringUtils.generateUUID()).setSpecVersion(SpecVersion.V1.toString())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE,
                 CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message).build())
@@ -181,7 +184,7 @@ public class ServiceUtils {
      */
     public static void sendResponseCompleted(StatusCode code, EventEmitter<CloudEvent> emitter) {
         Instant instant = now();
-        CloudEvent.Builder builder = CloudEvent.newBuilder()
+        CloudEvent.Builder builder = CloudEvent.newBuilder().setSpecVersion(SpecVersion.V1.toString())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_MESSAGE, CloudEventAttributeValue.newBuilder().setCeString(code.getErrMsg()).build())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_TIME, CloudEventAttributeValue.newBuilder()

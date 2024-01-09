@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 
 import org.apache.commons.collections4.MapUtils;
 
@@ -28,7 +28,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;

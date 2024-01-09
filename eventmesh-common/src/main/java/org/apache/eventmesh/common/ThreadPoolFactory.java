@@ -54,7 +54,6 @@ public abstract class ThreadPoolFactory {
         return Executors.newSingleThreadScheduledExecutor(new EventMeshThreadFactory(threadName, true));
     }
 
-
     public static ScheduledExecutorService createScheduledExecutor(int core, ThreadFactory threadFactory) {
         return Executors.newScheduledThreadPool(core, threadFactory);
     }

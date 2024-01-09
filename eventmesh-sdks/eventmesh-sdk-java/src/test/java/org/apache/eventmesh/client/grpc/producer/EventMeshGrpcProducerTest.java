@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.grpc.producer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -40,18 +41,17 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(PublisherServiceBlockingStub.class)
-@PowerMockIgnore({"javax.management.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class EventMeshGrpcProducerTest {
 
     private EventMeshGrpcProducer producer;
@@ -63,7 +63,7 @@ public class EventMeshGrpcProducerTest {
     @Mock
     private EventMeshMessageProducer eventMeshMessageProducer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         producer = new EventMeshGrpcProducer(EventMeshGrpcClientConfig.builder().build());
         producer.setCloudEventProducer(cloudEventProducer);
@@ -94,11 +94,7 @@ public class EventMeshGrpcProducerTest {
 
     @Test
     public void testPublishWithException() {
-        try {
-            producer.publish(defaultEventMeshMessageBuilder().content("mockExceptionContent").build());
-        } catch (Exception e) {
-            assertThat(e).isNotNull();
-        }
+        assertThrows(IllegalArgumentException.class, () -> producer.publish("Not a supported message"));
     }
 
     @Test

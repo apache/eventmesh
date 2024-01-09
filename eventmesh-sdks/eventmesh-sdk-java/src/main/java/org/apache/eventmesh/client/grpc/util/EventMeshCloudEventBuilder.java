@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.grpc.util;
 
-
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.exception.ProtocolNotSupportException;
 import org.apache.eventmesh.common.Constants;
@@ -142,34 +141,34 @@ public class EventMeshCloudEventBuilder {
 
     private static CloudEvent switchEventMeshMessage2EventMeshCloudEvent(EventMeshMessage message, EventMeshGrpcClientConfig clientConfig,
         EventMeshProtocolType protocolType) {
-        final EventMeshMessage eventMeshMessage = message;
-        final String ttl = eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
-            ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL : eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
-        final Map<String, String> props = eventMeshMessage.getProp() == null ? new HashMap<>() : eventMeshMessage.getProp();
-        final String seqNum = eventMeshMessage.getBizSeqNo() == null ? RandomStringUtils.generateNum(30) : eventMeshMessage.getBizSeqNo();
-        final String uniqueId = eventMeshMessage.getUniqueId() == null ? RandomStringUtils.generateNum(30) : eventMeshMessage.getUniqueId();
-        final String dataContentType = props.computeIfAbsent(ProtocolKey.DATA_CONTENT_TYPE, (key) -> "text/plain");
+        final String ttl = message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null
+            ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
+            : message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
+        final Map<String, String> props = message.getProp() == null ? new HashMap<>() : message.getProp();
+        final String seqNum = message.getBizSeqNo() == null ? RandomStringUtils.generateNum(30) : message.getBizSeqNo();
+        final String uniqueId = message.getUniqueId() == null ? RandomStringUtils.generateNum(30) : message.getUniqueId();
+        final String dataContentType = props.computeIfAbsent(ProtocolKey.DATA_CONTENT_TYPE, key -> "text/plain");
         final Map<String, CloudEventAttributeValue> attributeValueMap = buildCommonCloudEventAttributes(clientConfig, protocolType);
 
         attributeValueMap.put(ProtocolKey.TTL, CloudEventAttributeValue.newBuilder().setCeString(ttl).build());
         attributeValueMap.put(ProtocolKey.SEQ_NUM, CloudEventAttributeValue.newBuilder().setCeString(seqNum).build());
         attributeValueMap.put(ProtocolKey.UNIQUE_ID, CloudEventAttributeValue.newBuilder().setCeString(uniqueId).build());
+        attributeValueMap.put(ProtocolKey.PROTOCOL_DESC,
+            CloudEventAttributeValue.newBuilder().setCeString(Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT).build());
         attributeValueMap.put(ProtocolKey.PRODUCERGROUP,
             CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getProducerGroup()).build());
-        if (null != eventMeshMessage.getTopic()) {
-            attributeValueMap.put(ProtocolKey.SUBJECT, CloudEventAttributeValue.newBuilder().setCeString(eventMeshMessage.getTopic()).build());
+        if (null != message.getTopic()) {
+            attributeValueMap.put(ProtocolKey.SUBJECT, CloudEventAttributeValue.newBuilder().setCeString(message.getTopic()).build());
         }
         attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());
-        props.entrySet()
-            .forEach(
-                entry -> attributeValueMap.put(entry.getKey(), CloudEventAttributeValue.newBuilder().setCeString(entry.getValue()).build()));
+        props.forEach((key, value) -> attributeValueMap.put(key, CloudEventAttributeValue.newBuilder().setCeString(value).build()));
         CloudEvent.Builder builder = CloudEvent.newBuilder()
             .setId(RandomStringUtils.generateUUID())
             .setSource(URI.create("/").toString())
             .setSpecVersion(SpecVersion.V1.toString())
             .setType(CLOUD_EVENT_TYPE)
             .putAllAttributes(attributeValueMap);
-        final String content = eventMeshMessage.getContent();
+        final String content = message.getContent();
         if (StringUtils.isNotEmpty(content)) {
             if (ProtoSupport.isTextContent(dataContentType)) {
                 builder.setTextData(content);
@@ -190,62 +189,38 @@ public class EventMeshCloudEventBuilder {
 
     private static CloudEvent switchCloudEvent2EventMeshCloudEvent(io.cloudevents.CloudEvent message, EventMeshGrpcClientConfig clientConfig,
         EventMeshProtocolType protocolType) {
-        final io.cloudevents.CloudEvent cloudEvent = message;
-        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(cloudEvent);
-        if (null == cloudEvent.getExtension(ProtocolKey.ENV)) {
-            cloudEventBuilder.withExtension(ProtocolKey.ENV, clientConfig.getEnv());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.IDC)) {
-            cloudEventBuilder.withExtension(ProtocolKey.IDC, clientConfig.getEnv());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.IP)) {
-            cloudEventBuilder.withExtension(ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()));
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.PID)) {
-            cloudEventBuilder.withExtension(ProtocolKey.PID, Long.toString(ThreadUtils.getPID()));
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.SYS)) {
-            cloudEventBuilder.withExtension(ProtocolKey.SYS, clientConfig.getSys());
-        }
 
-        if (null == cloudEvent.getExtension(ProtocolKey.LANGUAGE)) {
-            cloudEventBuilder.withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
-        }
+        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.from(message);
 
-        if (null == cloudEvent.getExtension(ProtocolKey.PROTOCOL_TYPE)) {
-            cloudEventBuilder.withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType.protocolTypeName());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.PROTOCOL_DESC)) {
-            cloudEventBuilder.withExtension(ProtocolKey.PROTOCOL_DESC, "grpc-cloud-event");
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.PROTOCOL_VERSION)) {
-            cloudEventBuilder.withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.UNIQUE_ID)) {
-            cloudEventBuilder.withExtension(ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30));
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.SEQ_NUM)) {
-            cloudEventBuilder.withExtension(ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30));
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.USERNAME)) {
-            cloudEventBuilder.withExtension(ProtocolKey.USERNAME, clientConfig.getUserName());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.PASSWD)) {
-            cloudEventBuilder.withExtension(ProtocolKey.PASSWD, clientConfig.getPassword());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.PRODUCERGROUP)) {
-            cloudEventBuilder.withExtension(ProtocolKey.PRODUCERGROUP, clientConfig.getProducerGroup());
-        }
-        if (null == cloudEvent.getExtension(ProtocolKey.TTL)) {
-            final String ttl = Constants.DEFAULT_EVENTMESH_MESSAGE_TTL;
-            cloudEventBuilder.withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, ttl);
-        }
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.ENV, clientConfig.getEnv());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.IDC, clientConfig.getIdc());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.IP, Objects.requireNonNull(IPUtils.getLocalAddress()));
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PID, Long.toString(ThreadUtils.getPID()));
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.SYS, clientConfig.getSys());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_TYPE, protocolType.protocolTypeName());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_DESC, Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT);
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PROTOCOL_VERSION, message.getSpecVersion().toString());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30));
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30));
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.USERNAME, clientConfig.getUserName());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PASSWD, clientConfig.getPassword());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.PRODUCERGROUP, clientConfig.getProducerGroup());
+        buildCloudEventIfAbsent(message, cloudEventBuilder, ProtocolKey.TTL, Constants.DEFAULT_EVENTMESH_MESSAGE_TTL);
+
         try {
             return CloudEvent.parseFrom(eventProtoFormat.serialize(cloudEventBuilder.build()));
         } catch (InvalidProtocolBufferException exc) {
             log.error("Parse from CloudEvents CloudEvent bytes to EventMesh CloudEvent error", exc);
         }
         return null;
+    }
+
+    private static void buildCloudEventIfAbsent(io.cloudevents.CloudEvent message, CloudEventBuilder cloudEventBuilder,
+        String extension, String value) {
+        if (Objects.isNull(message.getExtension(extension))) {
+            cloudEventBuilder.withExtension(extension, value);
+        }
     }
 
     public static <T> CloudEventBatch buildEventMeshCloudEventBatch(final List<T> messageList, final EventMeshGrpcClientConfig clientConfig,
@@ -258,6 +233,7 @@ public class EventMeshCloudEventBuilder {
         return CloudEventBatch.newBuilder().addAllEvents(cloudEventList).build();
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T buildMessageFromEventMeshCloudEvent(final CloudEvent cloudEvent, final EventMeshProtocolType protocolType) {
 
         if (null == cloudEvent) {
@@ -269,7 +245,7 @@ public class EventMeshCloudEventBuilder {
 
         // This is GRPC response cloudEvent
         if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
-            //The SubscriptionItem collection contains the content for the subscription.
+            // The SubscriptionItem collection contains the content for the subscription.
             return (T) JsonUtils.parseTypeReferenceObject(content,
                 new TypeReference<Set<HashMap<String, String>>>() {
 

@@ -33,7 +33,10 @@ dependencies {
 
     implementation "commons-io:commons-io"
 
+    implementation "commons-validator:commons-validator"
+
     implementation project(":eventmesh-common")
+    implementation project(":eventmesh-filter")
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-standalone")
@@ -42,14 +45,9 @@ dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-token")
-
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
-
-
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-
-
+    implementation project(":eventmesh-transformer")
+    implementation project(":eventmesh-meta:eventmesh-meta-api")
+    implementation project(":eventmesh-meta:eventmesh-meta-nacos")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
     implementation "io.grpc:grpc-core"
@@ -78,10 +76,10 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
-    testImplementation "org.mockito:mockito-core"
+    implementation project(":eventmesh-retry:eventmesh-retry-api")
+
     testImplementation "org.mockito:mockito-inline"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.mockito:mockito-junit-jupiter"
     testImplementation "commons-io:commons-io"
 
     testCompileOnly 'org.projectlombok:lombok'

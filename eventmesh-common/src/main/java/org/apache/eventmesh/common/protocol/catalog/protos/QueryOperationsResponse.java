@@ -335,7 +335,7 @@ public final class QueryOperationsResponse extends
 
     @Override
     public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
+        return this.equals(DEFAULT_INSTANCE)
             ? new Builder() : new Builder().mergeFrom(this);
     }
 
@@ -481,7 +481,7 @@ public final class QueryOperationsResponse extends
         }
 
         public Builder mergeFrom(QueryOperationsResponse other) {
-            if (other == QueryOperationsResponse.getDefaultInstance()) {
+            if (other.equals(QueryOperationsResponse.getDefaultInstance())) {
                 return this;
             }
             if (operationsBuilder_ == null) {

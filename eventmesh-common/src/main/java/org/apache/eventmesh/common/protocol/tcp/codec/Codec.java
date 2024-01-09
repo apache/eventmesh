@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.LogUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageCodec;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
@@ -44,12 +46,25 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Codec {
+public class Codec extends ByteToMessageCodec<Package> {
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
+
+    private Encoder encoder = new Encoder();
+    private Decoder decoder = new Decoder();
+
+    @Override
+    protected void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
+        encoder.encode(ctx, pkg, out);
+    }
+
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        decoder.decode(ctx, in, out);
+    }
 
     public static class Encoder extends MessageToByteEncoder<Package> {
 
@@ -146,9 +161,7 @@ public class Codec {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode headerJson={}", deserializeBytes(headerData));
-            }
+            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(headerData));
             return JsonUtils.parseObject(headerData, Header.class);
         }
 
@@ -158,9 +171,7 @@ public class Codec {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            if (log.isDebugEnabled()) {
-                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
-            }
+            LogUtils.debug(log, "Decode bodyJson={}", deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
@@ -194,15 +205,25 @@ public class Codec {
             case RESPONSE_TO_CLIENT_ACK:
             case ASYNC_MESSAGE_TO_CLIENT_ACK:
             case BROADCAST_MESSAGE_TO_CLIENT_ACK:
+            case HELLO_RESPONSE:
+            case RECOMMEND_RESPONSE:
+            case SUBSCRIBE_RESPONSE:
+            case LISTEN_RESPONSE:
+            case UNSUBSCRIBE_RESPONSE:
+            case HEARTBEAT_RESPONSE:
+            case ASYNC_MESSAGE_TO_SERVER_ACK:
+            case BROADCAST_MESSAGE_TO_SERVER_ACK:
+            case CLIENT_GOODBYE_REQUEST:
+            case CLIENT_GOODBYE_RESPONSE:
+            case SERVER_GOODBYE_REQUEST:
+            case SERVER_GOODBYE_RESPONSE:
                 // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
                 // just a string.
                 return bodyJsonString;
             case REDIRECT_TO_CLIENT:
                 return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
             default:
-                if (log.isWarnEnabled()) {
-                    log.warn("Invalidate TCP command: {}", command);
-                }
+                LogUtils.warn(log, "Invalidate TCP command: {}", command);
                 return null;
         }
     }

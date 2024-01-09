@@ -38,7 +38,7 @@ import java.util.Objects;
 public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient implements EventMeshProtocolProducer<T> {
 
     public AbstractProducerHttpClient(final EventMeshHttpClientConfig eventMeshHttpClientConfig)
-        throws EventMeshException {
+                                                                                                 throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
@@ -90,7 +90,6 @@ public abstract class AbstractProducerHttpClient<T> extends AbstractHttpClient i
     public abstract RequestParam builderPublishRequestParam(T t);
 
     public abstract RequestParam builderRequestParam(T t, long timeout);
-
 
     public abstract void validateMessage(T t);
 

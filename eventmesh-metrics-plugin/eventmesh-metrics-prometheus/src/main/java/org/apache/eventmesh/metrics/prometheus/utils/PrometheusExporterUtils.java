@@ -43,21 +43,21 @@ public class PrometheusExporterUtils {
      * @param getMetric
      */
     @SneakyThrows
-    public static void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
-        Metric summaryMetrics, Function getMetric) {
+    public static <T extends Metric> void observeOfValue(Meter meter, String metricName, String metricDesc, String protocol,
+        Metric summaryMetrics, Function<T, Number> getMetric, Class<T> clazz) {
         Method method = getMetric.getClass().getMethod("apply", Object.class);
-        Class metricType = (Class) method.getGenericReturnType();
+        Class<?> metricType = (Class<?>) method.getGenericReturnType();
         if (metricType == Long.class) {
             meter.longValueObserverBuilder(metricName)
                 .setDescription(metricDesc)
                 .setUnit(protocol)
-                .setUpdater(result -> result.observe((long) getMetric.apply(summaryMetrics), Labels.empty()))
+                .setUpdater(result -> result.observe((long) getMetric.apply(clazz.cast(summaryMetrics)), Labels.empty()))
                 .build();
         } else if (metricType == Double.class) {
             meter.doubleValueObserverBuilder(metricName)
                 .setDescription(metricDesc)
                 .setUnit(protocol)
-                .setUpdater(result -> result.observe((double) getMetric.apply(summaryMetrics), Labels.empty()))
+                .setUpdater(result -> result.observe((double) getMetric.apply(clazz.cast(summaryMetrics)), Labels.empty()))
                 .build();
         }
     }
@@ -70,8 +70,7 @@ public class PrometheusExporterUtils {
      * @return
      */
     public static String[] join(String metricName, String desc) {
-        String[] array = {metricName, desc};
-        return array;
+        return new String[]{metricName, desc};
     }
 
 }

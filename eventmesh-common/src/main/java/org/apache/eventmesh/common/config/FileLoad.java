@@ -44,9 +44,9 @@ public interface FileLoad {
     YamlFileLoad YAML_FILE_LOAD = new YamlFileLoad();
 
     static FileLoad getFileLoad(String fileType) {
-        if (Objects.equals("properties", fileType)) {
+        if (StringUtils.equals("properties", fileType)) {
             return PROPERTIES_FILE_LOAD;
-        } else if (Objects.equals("yaml", fileType)) {
+        } else if (StringUtils.equals("yaml", fileType)) {
             return YAML_FILE_LOAD;
         }
         return PROPERTIES_FILE_LOAD;

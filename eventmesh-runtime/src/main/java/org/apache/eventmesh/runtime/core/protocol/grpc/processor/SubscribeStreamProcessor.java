@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -29,13 +30,13 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class SubscribeStreamProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final GrpcType grpcType = GrpcType.STREAM;
+    private static final GrpcType grpcType = GrpcType.STREAM;
 
     private final Acl acl;
 
@@ -95,7 +96,7 @@ public class SubscribeStreamProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
-        for (SubscriptionItem item : subscriptionItems) {
+        for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
                 .env(env)
                 .idc(idc)
@@ -148,7 +149,7 @@ public class SubscribeStreamProcessor {
             List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
                 new TypeReference<List<SubscriptionItem>>() {
                 });
-            for (SubscriptionItem item : subscriptionItems) {
+            for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
                 this.acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }

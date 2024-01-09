@@ -34,9 +34,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,7 +84,6 @@ public class UpStreamMsgContext extends RetryContext {
             + ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT);
     }
 
-    @Override
     public void retry() {
         log.info("retry upStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
             EventMeshUtil.getMessageBizSeq(this.event));
@@ -117,13 +116,13 @@ public class UpStreamMsgContext extends RetryContext {
         Package msg = new Package();
 
         return new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
                 log.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
                     System.currentTimeMillis() - createTime);
-                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command
-                    .ASYNC_MESSAGE_TO_SERVER_ACK) {
+                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK || replyCmd == Command.ASYNC_MESSAGE_TO_SERVER_ACK) {
                     msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), seq));
                     msg.setBody(event);
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
@@ -135,9 +134,8 @@ public class UpStreamMsgContext extends RetryContext {
                 session.getSender().getUpstreamBuff().release();
 
                 // retry
-                // reset delay time
-                retryContext.delay(10000);
-                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(retryContext);
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getTcpRetryer()
+                    .newTimeout(retryContext, 10, TimeUnit.SECONDS);
 
                 session.getSender().getFailMsgCount().incrementAndGet();
                 log.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
@@ -161,5 +159,10 @@ public class UpStreamMsgContext extends RetryContext {
             default:
                 return cmd;
         }
+    }
+
+    @Override
+    public void doRun() throws Exception {
+        retry();
     }
 }

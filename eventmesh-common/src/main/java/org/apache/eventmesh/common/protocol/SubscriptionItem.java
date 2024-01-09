@@ -93,5 +93,3 @@ public class SubscriptionItem implements Serializable {
         return Objects.hashCode(topic, mode, type);
     }
 }
-
-

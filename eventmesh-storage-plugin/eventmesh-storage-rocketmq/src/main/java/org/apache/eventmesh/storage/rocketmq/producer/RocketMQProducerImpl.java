@@ -46,7 +46,8 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public synchronized void init(Properties keyValue) {
-        String producerGroup = keyValue.getProperty(Constants.PRODUCER_GROUP);
+        String producerGroup =
+            keyValue.getProperty(Constants.PRODUCER_GROUP) == null ? "RMQ-producerGroup" : keyValue.getProperty(Constants.PRODUCER_GROUP);
 
         String omsNamesrv = clientConfiguration.getNamesrvAddr();
         Properties properties = new Properties();
@@ -110,7 +111,6 @@ public class RocketMQProducerImpl implements Producer {
     public void setExtFields() {
         producer.setExtFields();
     }
-
 
     @Override
     public void sendOneway(CloudEvent message) {
