@@ -148,7 +148,7 @@ The `eventmesh.properties` file contains the properties of EventMesh Runtime env
 sudo vim eventmesh.properties
 ``` 
 
-Specify RocketMQ as Event Store(The default is standalone.):
+Specify RocketMQ as Event Store(The default is standalone):
 ```
 # storage plugin
 eventMesh.storage.plugin.type=rocketmq
@@ -226,7 +226,7 @@ connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
 runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 ```
 
-#### 2.Execute the following command to deploy runtime, connector(To delete, simply replace `create` with `delete`.).  
+#### 2.Execute the following command to deploy runtime, connector(To delete, simply replace `create` with `delete`).  
 
 ```
 make create
