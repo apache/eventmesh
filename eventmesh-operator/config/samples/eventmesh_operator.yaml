@@ -56,11 +56,11 @@ spec:
             periodSeconds: 10
           resources:
             limits:
-              cpu: 500m
-              memory: 128Mi
+              cpu: 200m
+              memory: 2048Mi
             requests:
-              cpu: 10m
-              memory: 64Mi
+              cpu: 100m
+              memory: 1024Mi
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
