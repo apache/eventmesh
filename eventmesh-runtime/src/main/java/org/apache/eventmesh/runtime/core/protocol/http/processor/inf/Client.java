@@ -131,6 +131,10 @@ public class Client {
         return lastUpTime;
     }
 
+    public void reNewLastUpTime() {
+        this.setLastUpTime(new Date());
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

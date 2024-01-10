@@ -30,7 +30,6 @@ import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +93,7 @@ public class SubscriptionManager {
                     client.setUrl(url);
                     return client;
                 });
-                clientInner.setLastUpTime(new Date());
+                clientInner.reNewLastUpTime();
                 if (!localClients.contains(clientInner)) {
                     localClients.add(clientInner);
                 }
