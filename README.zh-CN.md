@@ -65,7 +65,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[docker](#在-docker-中运行-eventmesh-runtime-)、[k8s](#在-kubernetes-中运行-eventmesh-runtime-)部署EventMesh的步骤:
 
-本节指南只是帮助你快速入门EventMesh部署，按照默认配置启动EventMesh，如果您需要更加详细的EventMesh部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
+本节指南只是帮助您快速入门EventMesh部署，按照默认配置启动EventMesh，如果您需要更加详细的EventMesh部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
 
 ### 部署 EventMesh Store  
 
@@ -95,6 +95,12 @@ cd apache-eventmesh-1.10.0
 vim conf/eventmesh.properties
 ```
 
+指定事件存储为 RocketMQ(默认为standalone)：
+```
+# storage plugin
+eventMesh.storage.plugin.type=rocketmq
+```
+
 执行`start.sh`脚本启动EventMesh Runtime服务器。
 ```
 bash bin/start.sh
@@ -113,8 +119,6 @@ bash bin/stop.sh
 ```
 
 ### 在 Docker 中运行 EventMesh Runtime  
-
-#### Docker部署EventMesh Runtime 
 
 #### 1.获取EventMesh镜像
 
@@ -148,7 +152,13 @@ sudo touch rocketmq-client.properties
 ```
 sudo vim eventmesh.properties
 ```
-你可以直接将 GitHub 仓库中的对应[配置文件](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties)中的内容复制过来。
+你可以直接将 GitHub 仓库中的对应[配置文件](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties)中的内容复制过来。  
+
+指定事件存储为 RocketMQ(默认为standalone)：
+```
+# storage plugin
+eventMesh.storage.plugin.type=rocketmq
+```
 
 请检查配置文件里的默认端口是否已被占用，如果被占用请修改成未被占用的端口:
 
@@ -163,9 +173,9 @@ sudo vim eventmesh.properties
 
 这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。
 
-使用下面的`vim`命令编辑`eventmesh.properties`。
+使用下面的`vim`命令编辑`rocketmq-client.properties`。
 ```
-sudo vim eventmesh.properties
+sudo vim rocketmq-client.properties
 ```
 你可以直接将GitHub仓库中的对应[配置文件](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties)中的内容复制过来
 > 请注意，如果您正在运行的 namesetver 地址不是配置文件中的默认值，请将其修改为实际正在运行的nameserver地址。

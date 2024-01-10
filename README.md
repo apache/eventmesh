@@ -92,6 +92,12 @@ Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, clie
 vim conf/eventmesh.properties
 ```
 
+Specify RocketMQ as Event Store(The default is standalone.):
+```
+# storage plugin
+eventMesh.storage.plugin.type=rocketmq
+```
+
 Execute the `start.sh` script to start the EventMesh Runtime server.
 ```
 bash bin/start.sh
@@ -142,6 +148,12 @@ The `eventmesh.properties` file contains the properties of EventMesh Runtime env
 sudo vim eventmesh.properties
 ``` 
 
+Specify RocketMQ as Event Store(The default is standalone.):
+```
+# storage plugin
+eventMesh.storage.plugin.type=rocketmq
+```
+
 Please check if the default port in the configuration file is occupied, if it is occupied please change it to an unoccupied port:
 
 | Configuration Key                  | Default Value | Description                  |   
@@ -156,7 +168,7 @@ Please check if the default port in the configuration file is occupied, if it is
 The `rocketmq-client.properties` file contains the properties of the Apache RocketMQ nameserver.
 
 ```
-sudo vim eventmesh.properties
+sudo vim rocketmq-client.properties
 ```
 Please refer to the [default configuration file](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties) and change the value of eventMesh.server.rocketmq.namesrvAddr to the nameserver address of RocketMQ.
 > Note that if the `nameserver` address you are running is not the default in the configuration file, change it to the `nameserver` address that is actually running.
