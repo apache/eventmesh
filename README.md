@@ -77,7 +77,7 @@ $ java -version
 java version "1.8.0_311"
 ```
 
-#### 1.Download:
+#### 1.Download EventMesh:
 
 Download and extract the executable binaries of the latest release from[EventMesh download](https://eventmesh.apache.org/download/).For example, with the current latest version, you will get `apache-eventmesh-1.10.0.tar.gz`.
 ```
@@ -85,7 +85,7 @@ tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
 ```
 
-#### 2.Deploy
+#### 2.Run EventMesh: 
 
 Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime. The executable binaries contain all plugins in the bundle, thus there's no need to build them from source code.
 ```
