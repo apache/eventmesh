@@ -63,11 +63,11 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 ## 快速入门
 
-本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[Docker](#在-docker-中运行-eventmesh-runtime-)、[K8s](#在-kubernetes-中运行-eventmesh-runtime-)部署EventMesh的步骤:
+本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[Docker](#在-docker-中运行-eventmesh-runtime)、[K8s](#在-kubernetes-中运行-eventmesh-runtime)部署EventMesh的步骤:
 
 本节指南只是帮助您快速入门 EventMesh 部署，按照默认配置启动 EventMesh，如果您需要更加详细的 EventMesh 部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
 
-### 部署 Event Store  
+### 部署 Event Store
 
 > EventMesh 现在支持多个[事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`
 > 如果是在非`standalone`模式下，需要先部署所需的`store`，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
@@ -83,7 +83,7 @@ tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
 ```
 
-#### 2. 运行  
+#### 2. 运行
 
 编辑`eventmesh.properties`以更改 EventMesh Runtime 的配置（如 TCP 端口、客户端黑名单）。
 ```
@@ -115,7 +115,7 @@ bash bin/stop.sh
 
 脚本打印 `shutdown server ok!` 时，代表 EventMesh Runtime 已停止。
 
-### 在 Docker 中运行 EventMesh Runtime  
+### 在 Docker 中运行 EventMesh Runtime
 
 #### 1.获取 EventMesh 镜像
 
@@ -131,7 +131,7 @@ REPOSITORY         TAG       IMAGE ID       CREATED      SIZE
 apache/eventmesh   latest    f32f9e5e4694   2 days ago   917MB
 ```
 
-#### 2.创建配置文件:
+#### 2.创建配置文件
 
 如果您使用 standalone 模式启动 EventMesh Runtime，并且没有自定义配置，可以跳转至下一步骤。
 
@@ -223,7 +223,7 @@ cd logs
 tail -n 50 -f eventmesh.out
 ```
 
-### 在 Kubernetes 中运行 EventMesh Runtime  
+### 在 Kubernetes 中运行 EventMesh Runtime
 
 1.部署 Operator
 
