@@ -28,7 +28,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,6 +56,8 @@ public class SubscriptionManager {
      */
     private final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
+    private final ConcurrentHashMap<String, Client> urlClientInfoMapping = new ConcurrentHashMap<>(64);
+
     private final ReentrantLock lock = new ReentrantLock();
 
     public SubscriptionManager(boolean isEventMeshServerMetaStorageEnable, MetaStorage metaStorage) {
@@ -81,17 +82,7 @@ public class SubscriptionManager {
                 List<Client> localClients = localClientInfoMapping.computeIfAbsent(groupTopicKey, (groupTopicKeyInner) ->
                     new ArrayList<>()
                 );
-                boolean isContains = false;
-                for (final Client localClient : localClients) {
-                    // TODO: compare the whole Client would be better?
-                    if (StringUtils.equals(localClient.getUrl(), url)) {
-                        isContains = true;
-                        localClient.setLastUpTime(new Date());
-                        break;
-                    }
-                }
-
-                if (!isContains) {
+                Client clientInner = urlClientInfoMapping.computeIfAbsent(url, urlInner -> {
                     Client client = new Client();
                     client.setEnv(clientInfo.getEnv());
                     client.setIdc(clientInfo.getIdc());
@@ -101,8 +92,11 @@ public class SubscriptionManager {
                     client.setConsumerGroup(consumerGroup);
                     client.setTopic(subscription.getTopic());
                     client.setUrl(url);
-                    client.setLastUpTime(new Date());
-                    localClients.add(client);
+                    return client;
+                });
+                clientInner.setLastUpTime(new Date());
+                if (!localClients.contains(clientInner)) {
+                    localClients.add(clientInner);
                 }
             }
         } finally {
