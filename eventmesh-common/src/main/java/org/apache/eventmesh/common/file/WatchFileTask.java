@@ -19,6 +19,7 @@ package org.apache.eventmesh.common.file;
 
 import org.apache.eventmesh.common.utils.LogUtils;
 
+import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -55,11 +56,21 @@ public class WatchFileTask extends Thread {
             throw new IllegalArgumentException("must be a file directory : " + directoryPath);
         }
 
-        try (WatchService watchService = FILE_SYSTEM.newWatchService()) {
-            this.watchService = watchService;
+        try {
+            this.watchService = FILE_SYSTEM.newWatchService();
+        } catch (IOException ex) {
+            throw new RuntimeException("WatchService initialization fail", ex);
+        }
+
+        try {
             path.register(this.watchService, StandardWatchEventKinds.OVERFLOW, StandardWatchEventKinds.ENTRY_MODIFY,
                 StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
+            try {
+                this.watchService.close();
+            } catch (IOException e) {
+                ex.addSuppressed(e);
+            }
             throw new UnsupportedOperationException("WatchService registry fail", ex);
         }
     }
@@ -72,6 +83,11 @@ public class WatchFileTask extends Thread {
 
     public void shutdown() {
         watch = false;
+        try {
+            this.watchService.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to close WatchService", e);
+        }
     }
 
     @Override
