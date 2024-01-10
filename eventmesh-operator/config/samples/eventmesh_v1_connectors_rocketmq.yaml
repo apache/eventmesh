@@ -90,7 +90,7 @@ spec:
           cpu: 250m
         limits:
           memory: 1024Mi
-          cpu: 500m
+          cpu: 1000m
   # configuration file settings to be mounted.
   volumes:
     - name: connector-rocketmq-config
