@@ -73,7 +73,7 @@ spec:
   # imagePullPolicy is the image pull policy
   imagePullPolicy: Always
   # set DNS policy for the pod
-  dnsPolicy: ClusterFirstWithHostNet
+  # dnsPolicy: ClusterFirstWithHostNet
   # define the connector-rocketmq container.
   connectorContainers:
     - name: connector-rocketmq
