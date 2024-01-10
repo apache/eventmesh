@@ -61,36 +61,31 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 - [EventMesh-catalog](https://github.com/apache/eventmesh-catalog): 使用 AsyncAPI 进行事件模式管理的目录服务。
 - [EventMesh-go](https://github.com/apache/eventmesh-go): EventMesh 运行时的 Go 语言实现。
 
-## 快速入门   
+## 快速入门
 
-本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[docker](#在-docker-中运行-eventmesh-runtime-)、[k8s](#在-kubernetes-中运行-eventmesh-runtime-)部署EventMesh的步骤:
+本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[Docker](#在-docker-中运行-eventmesh-runtime-)、[K8s](#在-kubernetes-中运行-eventmesh-runtime-)部署EventMesh的步骤:
 
-本节指南只是帮助您快速入门EventMesh部署，按照默认配置启动EventMesh，如果您需要更加详细的EventMesh部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
+本节指南只是帮助您快速入门 EventMesh 部署，按照默认配置启动 EventMesh，如果您需要更加详细的 EventMesh 部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
 
-### 部署 EventMesh Store  
+### 部署 Event Store  
 
-> EventMesh现在支持`standalone`、`RocketMQ`、`Kafka`等中间件作为存储   
+> EventMesh 现在支持多个[事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`
 > 如果是在非`standalone`模式下，需要先部署所需的`store`，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
 ### 在本地运行 EventMesh Runtime
 
-请在开始之前检查JKD版本，需要下载Java 8.
-```
-$ java -version
-java version "1.8.0_311"
-```
-
 #### 1.下载
 
-在[EventMesh download](https://eventmesh.apache.org/download/)页面选择所需要版本的Binary Distribution进行下载,您将获得`apache-eventmesh-1.10.0-bin.tar.gz`。
+从 [EventMesh Download](https://eventmesh.apache.org/download/) 页面下载最新版本的 Binary Distribution 发行版并解压：
 ```
+wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
 tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
 ```
 
 #### 2. 运行  
 
-编辑`eventmesh.properties`以更改EventMesh Runtime的配置（如 TCP 端口、客户端黑名单）。
+编辑`eventmesh.properties`以更改 EventMesh Runtime 的配置（如 TCP 端口、客户端黑名单）。
 ```
 vim conf/eventmesh.properties
 ```
@@ -101,30 +96,32 @@ vim conf/eventmesh.properties
 eventMesh.storage.plugin.type=rocketmq
 ```
 
-执行`start.sh`脚本启动EventMesh Runtime服务器。
+执行 `start.sh` 脚本启动 EventMesh Runtime 服务器。
 ```
 bash bin/start.sh
 ```
-如果看到`EventMeshTCPServer[port=10000] started....`, 则说明设置成功。
 
 查看输出日志:
 ```
-cd /root/apache-eventmesh-1.10.0/logs
-tail -f eventmesh.out
+tail -n 50 -f logs/eventmesh.out
 ```
+
+当日志输出 `server state:RUNNING`，则代表 EventMesh Runtime 启动成功了。
 
 停止:
 ```
 bash bin/stop.sh
 ```
 
+脚本打印 `shutdown server ok!` 时，代表 EventMesh Runtime 已停止。
+
 ### 在 Docker 中运行 EventMesh Runtime  
 
-#### 1.获取EventMesh镜像
+#### 1.获取 EventMesh 镜像
 
-首先，你可以打开一个命令行，并且使用下面的`pull`命令从[Docker Hub](https://hub.docker.com)中下载最新发布的[EventMesh](https://hub.docker.com/r/apache/eventmesh)。
+首先，你可以打开一个命令行，并且使用下面的 `pull` 命令从 [Docker Hub](https://hub.docker.com) 中下载最新发布的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)。
 ```
-sudo docker pull apache/eventmesh:v1.10.0
+sudo docker pull apache/eventmesh:latest
 ```
 
 您可以使用以下命令列出并查看本地已有的镜像。
@@ -136,25 +133,29 @@ apache/eventmesh   latest    f32f9e5e4694   2 days ago   917MB
 
 #### 2.创建配置文件:
 
-在根据EventMesh镜像运行对应容器之前，你需要创建两个配置文件，分别是:`eventmesh.properties`和`rocketmq-client.properties`。  
-首先，你需要使用下面的命令创建这两个文件。
+如果您使用 standalone 模式启动 EventMesh Runtime，并且没有自定义配置，可以跳转至下一步骤。
+
+首先，在宿主机上创建 EventMesh 的配置文件目录。此目录可以自由指定：
 ```
-sudo mkdir -p /data/eventmesh/rocketmq/conf
-cd /data/eventmesh/rocketmq/conf
-sudo touch eventmesh.properties
-sudo touch rocketmq-client.properties
+sudo mkdir -p /data/eventmesh/conf
+cd /data/eventmesh/conf
 ```
 
-#### 3.配置`eventmesh.properties`
+#### 3.配置 `eventmesh.properties`
 
-这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。  
-使用下面的`vim`命令编辑`eventmesh.properties`。
+这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。 
+
+下载配置文件（替换下载链接中的 `1.10.0` 为您正在使用的版本）
+```
+sudo wget https://raw.githubusercontent.com/apache/eventmesh/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties
+```
+
+使用下面的 `vim` 命令编辑 `eventmesh.properties`。
 ```
 sudo vim eventmesh.properties
 ```
-你可以直接将 GitHub 仓库中的对应[配置文件](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties)中的内容复制过来。  
 
-指定事件存储为 RocketMQ(默认为standalone)：
+指定事件存储为 RocketMQ (默认为 standalone)：
 ```
 # storage plugin
 eventMesh.storage.plugin.type=rocketmq
@@ -169,16 +170,21 @@ eventMesh.storage.plugin.type=rocketmq
 | `eventMesh.server.grpc.port`       | `10205` | `EventMesh grpc server port` | 
 | `eventMesh.server.admin.http.port` | `10106` | `HTTP management port`       | 
 
-#### 4.配置`rocketmq-client.properties`
+#### 4.配置 `rocketmq-client.properties`
 
 这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。
 
-使用下面的`vim`命令编辑`rocketmq-client.properties`。
+下载配置文件（替换下载链接中的 `1.10.0` 为您正在使用的版本）
+```
+sudo wget https://raw.githubusercontent.com/apache/eventmesh/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties
+```
+
+使用下面的 `vim` 命令编辑 `rocketmq-client.properties`。
 ```
 sudo vim rocketmq-client.properties
 ```
-你可以直接将GitHub仓库中的对应[配置文件](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties)中的内容复制过来
-> 请注意，如果您正在运行的 namesetver 地址不是配置文件中的默认值，请将其修改为实际正在运行的nameserver地址。
+
+> 请注意，如果您正在运行的 namesrv 地址不是配置文件中的默认值，请将其修改为实际正在运行的 namesrv 地址。
 
 请检查配置文件里的默认namesrvAddr是否已被占用，如果被占用请修改成未被占用的地址:
 
@@ -190,17 +196,13 @@ sudo vim rocketmq-client.properties
 
 现在你就可以开始根据下载好的EventMesh镜像运行容器了。
 
-使用到的命令是`docker run`，有以下两点内容需要格外注意。
-- 绑定容器端口和宿主机端口: 使用`docker run`的`-p`选项。
-- 将宿主机中的两份配置文件挂在到容器中: 使用`docker run`的`-v`选项。
+使用到的命令是 `docker run`，有以下两点内容需要格外注意。
+- 绑定容器端口和宿主机端口: 使用 `docker run` 的 `-p` 选项。
+- 将宿主机中的两份配置文件挂在到容器中: 使用 `docker run` 的 `-v` 选项。
 
 综合一下，对应的启动命令为:
 ```
-sudo docker run -d --name eventmesh \
-    -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 \
-    -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties \
-    -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
-    apache/eventmesh:latest
+sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -v /data/eventmesh/conf/eventmesh.properties:/data/app/eventmesh/conf/eventmesh.properties -v /data/eventmesh/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties -t apache/eventmesh:latest
 ```
 
 接下来，你可以使用下面的命令查看容器的状态。
@@ -217,20 +219,20 @@ CONTAINER ID   IMAGE                        COMMAND                  CREATED    
 
 读取 EventMesh 容器的日志：
 ```
-cd ../logs
-tail -f eventmesh.out
+cd logs
+tail -n 50 -f eventmesh.out
 ```
 
 ### 在 Kubernetes 中运行 EventMesh Runtime  
 
 1.部署 Operator
 
-运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy`即可):
+运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy` 即可):
 ```
 make deploy
 ```
 
-运行 `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh`查看部署的 EventMesh-Operator状态以及CRD信息.
+运行 `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh` 查看部署的 EventMesh-Operator 状态以及 CRD 信息.
 ```
 $ kubectl get pods
 NAME                                  READY   STATUS    RESTARTS   AGE
@@ -241,7 +243,7 @@ connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
 runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 ```
 
-2.运行以下命令部署runtime、connector(删除部署, 只需将`create` 替换为 `delete`即可).
+2.运行以下命令部署 runtime、connector (删除部署, 只需将 `create` 替换为 `delete` 即可).
 ```
 make create
 ```

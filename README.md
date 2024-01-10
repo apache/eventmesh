@@ -60,27 +60,22 @@ Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the
 
 ## Quick start
 
-This section of the guide will show you the steps to deploy EventMesh from [local](#run-eventmesh-runtime-locally), [docker](#run-eventmesh-runtime-in-docker), [k8s](#run-eventmesh-runtime-in-kubernetes).  
+This section of the guide will show you the steps to deploy EventMesh from [Local](#run-eventmesh-runtime-locally), [Docker](#run-eventmesh-runtime-in-docker), [K8s](#run-eventmesh-runtime-in-kubernetes).  
 
 This section guide is just to help you quickly get started with EventMesh deployment. Start EventMesh according to the default configuration. If you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/next/introduction).
 
-### Deployment EventMesh Store
+### Deployment Event Store
 
-> EventMesh now supports `standalone`, `RocketMQ`, `Kafka` and other middleware as a storage.      
+> EventMesh now supports multiple [Event Store](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status).The default storage mode is `standalone`. 
 > If you are in non-`standalone` mode, you need to deploy the required `store` first, using `rocketmq` mode as an example: Deploy [RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/).  
 
 ### Run EventMesh Runtime locally
 
-Please check the JKD version before you start, you need to install Java 8.  
-```
-$ java -version
-java version "1.8.0_311"
-```
-
 #### 1.Download EventMesh:
 
-Download and extract the executable binaries of the latest release from[EventMesh download](https://eventmesh.apache.org/download/).For example, with the current latest version, you will get `apache-eventmesh-1.10.0.tar.gz`.
+Download the latest version of the Binary Distribution from the [EventMesh Download](https://eventmesh.apache.org/download/) page and extract it:
 ```
+wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
 tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
 ```
@@ -102,24 +97,26 @@ Execute the `start.sh` script to start the EventMesh Runtime server.
 ```
 bash bin/start.sh
 ```
-If you see `EventMeshTCPServer[port=10000] started....`, then the setup was successful.
 
 View the output log:
 ```
-cd /root/apache-eventmesh-1.10.0/logs
-tail -f eventmesh.out
+tail -n 50 -f logs/eventmesh.out
 ```
+
+When the log output shows server `state:RUNNING`, it means EventMesh Runtime has started successfully.
 
 You can stop the run with the following command:
 ```
 bash bin/stop.sh
 ```
 
+When the script prints `shutdown server ok!`, it means EventMesh Runtime has stopped.
+
 ### Run EventMesh Runtime in Docker
 
-#### 1.Pull EventMesh Image  
+#### 1.Pull EventMesh Image
 
-Download the pre-built image of [eventmesh](https://hub.docker.com/r/apache/eventmesh) from Docker Hub with docker pull:
+Download the pre-built image of [EventMesh](https://hub.docker.com/r/apache/eventmesh) from Docker Hub with docker pull:
 ```
 sudo docker pull apache/eventmesh:latest
 ```
@@ -131,19 +128,27 @@ REPOSITORY         TAG       IMAGE ID       CREATED      SIZE
 apache/eventmesh   latest    f32f9e5e4694   2 days ago   917MB
 ```
 
-#### 2.Edit Configuration:
+#### 2.Edit Configuration
 
-Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime. To integrate RocketMQ as a connector, these two configuration files should be created: `eventmesh.properties` and `rocketmq-client.properties`.
+If you are starting EventMesh Runtime in standalone mode and haven't customized the configuration, you can proceed to the next step.
+
+First, create the EventMesh configuration file directory on the host machine. This directory can be freely specified:
 ```
-sudo mkdir -p /data/eventmesh/rocketmq/conf
-cd /data/eventmesh/rocketmq/conf
-sudo touch eventmesh.properties
-sudo touch rocketmq-client.properties
+sudo mkdir -p /data/eventmesh/conf
+cd /data/eventmesh/conf
 ```
 
 #### 3.Configure `eventmesh.properties`
 
-The `eventmesh.properties` file contains the properties of EventMesh Runtime environment and integrated plugins.Please refer to the [default configuration file](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties) for the available configuration keys.
+This configuration file includes parameters required for the EventMesh Runtime environment and integration with other plugins.
+
+Download the configuration file (replace `1.10.0` in the download link with the version you are using):
+
+```
+sudo wget https://raw.githubusercontent.com/apache/eventmesh/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties
+```
+
+Edit `eventmesh.properties`:
 ```
 sudo vim eventmesh.properties
 ``` 
@@ -165,12 +170,18 @@ Please check if the default port in the configuration file is occupied, if it is
 
 #### 4.Configure `rocketmq-client.properties`
 
-The `rocketmq-client.properties` file contains the properties of the Apache RocketMQ nameserver.
+In the case of RocketMQ, the configuration file includes parameters required to connect to the RocketMQ namesrv.
 
+Download the configuration file (replace 1.10.0 in the download link with the version you are using):
+```
+sudo wget https://raw.githubusercontent.com/apache/eventmesh/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties
+```
+
+Edit `rocketmq-client.properties`:
 ```
 sudo vim rocketmq-client.properties
 ```
-Please refer to the [default configuration file](https://github.com/apache/eventmesh/blob/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties) and change the value of eventMesh.server.rocketmq.namesrvAddr to the nameserver address of RocketMQ.
+
 > Note that if the `nameserver` address you are running is not the default in the configuration file, change it to the `nameserver` address that is actually running.
 
 Please check if the `default namesrvAddr` in the configuration file is occupied, if it is occupied please change it to an unoccupied address:
@@ -182,28 +193,26 @@ Please check if the `default namesrvAddr` in the configuration file is occupied,
 #### 5.Run and Manage EventMesh Container
 
 Run an EventMesh container from the `apache/eventmesh` image with the `docker run` command.
+
 - The `-p` option of the command binds the container port with the host machine port.
 - The `-v` option of the command mounts the configuration files from files in the host machine.
 
+Use the following command to start the EventMesh container:
 ```
-sudo docker run -d --name eventmesh \
-    -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 \
-    -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties \
-    -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
-    apache/eventmesh:latest
+sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -v /data/eventmesh/conf/eventmesh.properties:/data/app/eventmesh/conf/eventmesh.properties -v /data/eventmesh/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties -t apache/eventmesh:latest
 ```
 
 The docker ps command lists the details (id, name, status, etc.) of the running containers. The container id is the unique identifier of the container.
 ```
 $ sudo docker ps
-CONTAINER ID   IMAGE                        COMMAND                  CREATED         STATUS         PORTS                                                                                                                                                                 NAMES
-5bb6b6092672   apache/eventmesh:latest      "/bin/sh -c 'sh star…"   6 seconds ago   Up 3 seconds   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, :::10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp, :::10205->10205/tcp   eventmesh
+CONTAINER ID   IMAGE                      COMMAND               CREATED          STATUS         PORTS                                                                                                                                                                 NAMES
+b7a1546ee96a   apache/eventmesh:latest   "bash bin/start.sh"   10 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, :::10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp, :::10205->10205/tcp   eventmesh
 ```
 
 To read the log of the EventMesh container:
 ```
-cd ../logs
-tail -f eventmesh.out
+cd logs
+tail -n 50 -f eventmesh.out
 ```
 
 ### Run EventMesh Runtime in Kubernetes
