@@ -214,11 +214,6 @@ Run the following commands(To delete a deployment, simply replace `deploy` with 
 ```
 make deploy
 ```
-```
-tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
-cd apache-eventmesh-1.10.0
-```
-
 
 Run `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh`to see the status of the deployed eventmesh-operator.
 ```
