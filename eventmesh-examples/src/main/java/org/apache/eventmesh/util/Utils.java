@@ -18,6 +18,7 @@
 package org.apache.eventmesh.util;
 
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.IPUtils;
 
 import org.apache.commons.lang3.SystemUtils;
 
@@ -59,12 +60,11 @@ public class Utils {
     private static String getLinuxLocalIp() throws SocketException {
         String ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
 
-        for (final Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+        for (final Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
             final NetworkInterface intf = en.nextElement();
             final String name = intf.getName();
             if (!name.contains("docker") && !name.contains("lo")) {
-                for (final Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
-                    enumIpAddr.hasMoreElements(); ) {
+                for (final Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     final InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         final String ipaddress = inetAddress.getHostAddress();
@@ -90,6 +90,15 @@ public class Utils {
             properties.load(inputStream);
             return properties;
         }
+    }
+
+    /**
+     * @param port server port
+     * @param path path
+     * @return url
+     */
+    public static String getURL(String port, String path) {
+        return "http://" + IPUtils.getLocalAddress() + ":" + port + path;
     }
 
 }

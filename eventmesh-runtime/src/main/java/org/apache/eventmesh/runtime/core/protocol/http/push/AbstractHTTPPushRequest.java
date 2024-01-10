@@ -20,44 +20,49 @@ package org.apache.eventmesh.runtime.core.protocol.http.push;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.RetryContext;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
-import org.apache.eventmesh.runtime.core.protocol.http.retry.RetryContext;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
 
 public abstract class AbstractHTTPPushRequest extends RetryContext {
 
-    public EventMeshHTTPServer eventMeshHTTPServer;
+    public final EventMeshHTTPServer eventMeshHTTPServer;
 
-    public long createTime = System.currentTimeMillis();
+    public final long createTime = System.currentTimeMillis();
 
     public long lastPushTime = System.currentTimeMillis();
 
-    public Map<String /** IDC*/, List<String>> urls;
+    /**
+     * key: IDC
+     */
+    public final Map<String, List<String>> urls;
 
-    public List<String> totalUrls;
+    public final List<String> totalUrls;
 
     public volatile int startIdx;
 
-    public EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+    public final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    public HttpRetryer retryer;
+    public final HttpRetryer retryer;
 
-    public int ttl;
+    public final int ttl;
 
-    public HandleMsgContext handleMsgContext;
+    public final HandleMsgContext handleMsgContext;
 
-    private AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
+    private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
     public AbstractHTTPPushRequest(HandleMsgContext handleMsgContext) {
         this.eventMeshHTTPServer = handleMsgContext.getEventMeshHTTPServer();
@@ -67,17 +72,17 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         this.eventMeshHttpConfiguration = handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
         this.retryer = handleMsgContext.getEventMeshHTTPServer().getHttpRetryer();
         this.ttl = handleMsgContext.getTtl();
-        this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
+        this.startIdx = ThreadLocalRandom.current().nextInt(0, totalUrls.size());
+        super.commonConfiguration = eventMeshHttpConfiguration;
     }
 
     public void tryHTTPRequest() {
     }
 
-    public void delayRetry(long delayTime) {
+    public void delayRetry(long delayTime, TimeUnit timeUnit) {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES && delayTime > 0) {
             retryTimes++;
-            delay(delayTime);
-            retryer.pushRetry(this);
+            retryer.newTimeout(this, delayTime, timeUnit);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
         }
@@ -86,8 +91,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     public void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
-            retryer.pushRetry(this);
+            retryer.newTimeout(this, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS, TimeUnit.MILLISECONDS);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
         }
@@ -125,4 +129,10 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
             delayRetry();
         }
     }
+
+    @Override
+    protected ProducerManager getProducerManager() {
+        return eventMeshHTTPServer.getProducerManager();
+    }
+
 }

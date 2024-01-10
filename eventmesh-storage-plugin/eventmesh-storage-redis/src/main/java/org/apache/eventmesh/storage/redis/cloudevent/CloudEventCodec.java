@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.redis.cloudevent;
@@ -26,12 +26,19 @@ import io.cloudevents.jackson.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
-
 public class CloudEventCodec extends BaseCodec {
 
-    public static final CloudEventCodec INSTANCE = new CloudEventCodec();
+    private static final CloudEventCodec INSTANCE = new CloudEventCodec();
 
     private static final JsonFormat jsonFormat = new JsonFormat(false, true);
+
+    private CloudEventCodec() {
+        // To prevent class instantiation
+    }
+
+    public static CloudEventCodec getInstance() {
+        return INSTANCE;
+    }
 
     private static final Encoder encoder = in -> {
         ByteBuf out = ByteBufAllocator.DEFAULT.buffer();

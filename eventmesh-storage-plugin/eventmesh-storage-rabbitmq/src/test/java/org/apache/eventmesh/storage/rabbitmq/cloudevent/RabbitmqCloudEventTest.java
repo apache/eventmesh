@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.rabbitmq.cloudevent;
@@ -21,9 +21,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -32,7 +32,7 @@ public class RabbitmqCloudEventTest {
 
     private CloudEvent cloudEvent;
 
-    @Before
+    @BeforeEach
     public void before() {
         cloudEvent = CloudEventBuilder.v1()
             .withId("1")
@@ -49,22 +49,22 @@ public class RabbitmqCloudEventTest {
     public void toByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals(cloudEvent.getSubject(), "topic");
+        Assertions.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
-        Assert.assertNotNull(data);
+        Assertions.assertNotNull(data);
     }
 
     @Test
     public void getFromByteArray() throws Exception {
         RabbitmqCloudEventWriter writer = new RabbitmqCloudEventWriter();
         RabbitmqCloudEvent rabbitmqCloudEvent = writer.writeBinary(cloudEvent);
-        Assert.assertEquals(cloudEvent.getSubject(), "topic");
+        Assertions.assertEquals("topic", cloudEvent.getSubject());
 
         byte[] data = RabbitmqCloudEvent.toByteArray(rabbitmqCloudEvent);
-        Assert.assertNotNull(data);
+        Assertions.assertNotNull(data);
 
         RabbitmqCloudEvent event = RabbitmqCloudEvent.getFromByteArray(data);
-        Assert.assertEquals(event.getExtensions().get("subject"), "topic");
+        Assertions.assertEquals("topic", event.getExtensions().get("subject"));
     }
 }

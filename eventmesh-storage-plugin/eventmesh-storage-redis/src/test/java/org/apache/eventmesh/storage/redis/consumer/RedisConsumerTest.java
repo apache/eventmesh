@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.redis.consumer;
@@ -28,10 +28,10 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.redisson.api.RTopic;
 
 import io.cloudevents.CloudEvent;
@@ -41,14 +41,14 @@ public class RedisConsumerTest extends AbstractRedisServer {
 
     private RedisConsumer redisConsumer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         redisConsumer = new RedisConsumer();
         redisConsumer.init(new Properties());
         redisConsumer.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         redisConsumer.shutdown();
     }
@@ -60,10 +60,9 @@ public class RedisConsumerTest extends AbstractRedisServer {
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
 
         redisConsumer.registerEventListener((cloudEvent, context) -> {
-                downLatch.countDown();
-                context.commit(EventMeshAction.CommitMessage);
-            }
-        );
+            downLatch.countDown();
+            context.commit(EventMeshAction.CommitMessage);
+        });
 
         final String topic = RedisConsumerTest.class.getSimpleName();
 
@@ -84,7 +83,7 @@ public class RedisConsumerTest extends AbstractRedisServer {
             redissonTopic.publish(cloudEvent);
         }
 
-        Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
+        Assertions.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
 
         redisConsumer.unsubscribe(topic);
     }

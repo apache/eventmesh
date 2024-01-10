@@ -21,8 +21,8 @@ import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.pulsar.consumer.PulsarConsumerImpl;
 import org.apache.eventmesh.storage.pulsar.producer.PulsarProducerImpl;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ClientConfigurationTest {
 
@@ -43,8 +43,8 @@ public class ClientConfigurationTest {
     }
 
     private void assertConfig(ClientConfiguration config) {
-        Assert.assertEquals(config.getServiceAddr(), "127.0.0.1:6650");
-        Assert.assertEquals(config.getAuthPlugin(), "authPlugin-success!!!");
-        Assert.assertEquals(config.getAuthParams(), "authParams-success!!!");
+        Assertions.assertEquals("127.0.0.1:6650", config.getServiceAddr());
+        Assertions.assertEquals("authPlugin-success!!!", config.getAuthPlugin());
+        Assertions.assertEquals("authParams-success!!!", config.getAuthParams());
     }
 }

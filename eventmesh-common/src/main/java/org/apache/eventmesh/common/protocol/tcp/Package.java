@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
-
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
 public class Package implements ProtocolTransportObject {
@@ -33,7 +32,6 @@ public class Package implements ProtocolTransportObject {
     public Object getBody() {
         return body;
     }
-
 
     public void setHeader(Header header) {
         this.header = header;

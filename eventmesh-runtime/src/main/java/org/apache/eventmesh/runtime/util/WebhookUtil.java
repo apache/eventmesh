@@ -18,9 +18,11 @@
 package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.api.auth.AuthService;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
@@ -48,28 +50,41 @@ public class WebhookUtil {
 
     private static final Map<String, AuthService> AUTH_SERVICES_MAP = new ConcurrentHashMap<>();
 
+    private static final String[] ALLOWED_SCHEMES = new String[]{"http", "https"};
+
+    private static final UrlValidator URL_VALIDATOR = new UrlValidator(ALLOWED_SCHEMES);
+
     public static boolean obtainDeliveryAgreement(final CloseableHttpClient httpClient,
         final String targetUrl,
         final String requestOrigin) {
 
-        if (log.isInfoEnabled()) {
-            log.info("obtain webhook delivery agreement for url: {}", targetUrl);
+        LogUtils.info(log, "obtain webhook delivery agreement for url: {}", targetUrl);
+
+        if (isInvalidUrl(targetUrl)) {
+            LogUtils.error(log, "Target url is invalid url: {}", targetUrl);
+            return false;
         }
 
         final HttpOptions builder = new HttpOptions(targetUrl);
         builder.addHeader(REQUEST_ORIGIN_HEADER, requestOrigin);
 
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
-            final String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
+            String allowedOrigin = null;
+
+            if (response.getLastHeader(ALLOWED_ORIGIN_HEADER) != null) {
+                allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
+            }
             return StringUtils.isEmpty(allowedOrigin)
                 || "*".equals(allowedOrigin) || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("HTTP Options Method is not supported at the Delivery Target: {}, "
-                    + "unable to obtain the webhook delivery agreement.", targetUrl);
-            }
+            LogUtils.error(log, "HTTP Options Method is not supported at the Delivery Target: {}, "
+                + "unable to obtain the webhook delivery agreement.", targetUrl);
         }
         return true;
+    }
+
+    private static boolean isInvalidUrl(String targetUrl) {
+        return !URL_VALIDATOR.isValid(targetUrl);
     }
 
     public static void setWebhookHeaders(final HttpPost builder,

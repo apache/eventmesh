@@ -39,7 +39,6 @@ public class ConsumerGroupStateEvent {
         return sb.toString();
     }
 
-
     public enum ConsumerGroupStateAction {
         NEW,
         CHANGE,

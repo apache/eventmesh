@@ -26,12 +26,12 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class StandaloneConsumerAdaptor implements Consumer {
 
     private StandaloneConsumer consumer;
-
-    public StandaloneConsumerAdaptor() {
-    }
 
     @Override
     public boolean isStarted() {

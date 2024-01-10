@@ -21,8 +21,8 @@ import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ZipkinConfigurationTest {
 
@@ -38,14 +38,14 @@ public class ZipkinConfigurationTest {
     }
 
     private void assertConfig(ZipkinConfiguration config) {
-        Assert.assertEquals("127.0.0.1", config.getEventMeshZipkinIP());
-        Assert.assertEquals(816, config.getEventMeshZipkinPort());
+        Assertions.assertEquals("127.0.0.1", config.getEventMeshZipkinIP());
+        Assertions.assertEquals(816, config.getEventMeshZipkinPort());
     }
 
     private void assertBaseConfig(ExporterConfiguration config) {
-        Assert.assertEquals(816, config.getEventMeshTraceMaxExportSize());
-        Assert.assertEquals(1816, config.getEventMeshTraceMaxQueueSize());
-        Assert.assertEquals(2816, config.getEventMeshTraceExportTimeout());
-        Assert.assertEquals(3816, config.getEventMeshTraceExportInterval());
+        Assertions.assertEquals(816, config.getEventMeshTraceMaxExportSize());
+        Assertions.assertEquals(1816, config.getEventMeshTraceMaxQueueSize());
+        Assertions.assertEquals(2816, config.getEventMeshTraceExportTimeout());
+        Assertions.assertEquals(3816, config.getEventMeshTraceExportInterval());
     }
 }

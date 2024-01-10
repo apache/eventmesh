@@ -19,13 +19,8 @@ package org.apache.eventmesh.protocol.meshmessage;
 
 public enum MeshMessageProtocolConstant {
     ;
+
     public static final String PROTOCOL_NAME = "eventmeshmessage";
-
-    public static final String PROTOCOL_DESC_HTTP = "http";
-
-    public static final String PROTOCOL_DESC_GRPC = "grpc";
-
-    public static final String PROTOCOL_DESC_TCP = "tcp";
 
     public static final String PROTOCOL_KEY_CONTENT = "content";
 }

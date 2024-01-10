@@ -37,7 +37,7 @@ public class TcpSummaryMetrics implements Metric {
 
     private int allConnections;
 
-    private int retrySize;
+    private long retrySize;
 
     public TcpSummaryMetrics() {
         this.client2eventMeshMsgNum = new AtomicInteger(0);
@@ -130,11 +130,11 @@ public class TcpSummaryMetrics implements Metric {
         this.allConnections = allConnections;
     }
 
-    public void setRetrySize(int retrySize) {
+    public void setRetrySize(long retrySize) {
         this.retrySize = retrySize;
     }
 
-    public int getRetrySize() {
+    public long getRetrySize() {
         return retrySize;
     }
 }

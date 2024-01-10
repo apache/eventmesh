@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import java.util.HashMap;
@@ -33,14 +34,14 @@ import io.netty.handler.codec.http.HttpResponse;
 import lombok.Setter;
 
 @EventMeshTrace(isEnable = true)
-public class WebHookProcessor implements HttpProcessor {
+public class WebHookProcessor implements ShortHttpProcessor {
 
     @Setter
     private WebHookController webHookController;
 
     @Override
     public String[] paths() {
-        return new String[]{"/webhook"};
+        return new String[]{WebHookOperationConstant.CALLBACK_PATH_PREFIX};
     }
 
     @Override

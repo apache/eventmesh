@@ -20,12 +20,12 @@ package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
+import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
 import java.util.concurrent.TimeUnit;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,10 +48,8 @@ public class SyncRequestInstance extends HttpAbstractDemo {
                 .build();
 
             final EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10_000);
-            if (log.isDebugEnabled()) {
-                log.debug("send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
-                    System.currentTimeMillis() - startTime);
-            }
+            LogUtils.debug(log, "send msg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
+                System.currentTimeMillis() - startTime);
         } catch (Exception e) {
             log.error("send msg failed, ", e);
         }

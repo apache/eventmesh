@@ -25,6 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -61,14 +62,14 @@ public class HttpTinyClient {
         }
     }
 
-    private static String encodingParams(List<String> paramValues, String encoding)
+    private static String encodingParams(Collection<String> paramValues, String encoding)
         throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if (null == paramValues) {
             return null;
         }
 
-        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext(); ) {
+        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext();) {
             sb.append(iter.next()).append("=");
             sb.append(URLEncoder.encode(iter.next(), encoding));
             if (iter.hasNext()) {
@@ -78,9 +79,9 @@ public class HttpTinyClient {
         return sb.toString();
     }
 
-    private static void setHeaders(HttpURLConnection conn, List<String> headers, String encoding) {
+    private static void setHeaders(HttpURLConnection conn, Collection<String> headers, String encoding) {
         if (null != headers) {
-            for (Iterator<String> iter = headers.iterator(); iter.hasNext(); ) {
+            for (Iterator<String> iter = headers.iterator(); iter.hasNext();) {
                 conn.addRequestProperty(iter.next(), iter.next());
             }
         }

@@ -1,0 +1,7 @@
+[submodule "eventmesh-sdks/eventmesh-sdk-c/third_party/json-c"]
+	path = eventmesh-sdks/eventmesh-sdk-c/third_party/json-c
+	url = git@github.com:json-c/json-c.git
+	branch = json-c-0.17
+[submodule "eventmesh-sdks/eventmesh-sdk-c/third_party/curl"]
+	path = eventmesh-sdks/eventmesh-sdk-c/third_party/curl
+	url = git@github.com:curl/curl.git

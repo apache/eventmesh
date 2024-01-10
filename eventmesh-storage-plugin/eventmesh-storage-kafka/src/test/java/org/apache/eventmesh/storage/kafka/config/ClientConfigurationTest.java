@@ -21,8 +21,8 @@ import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.storage.kafka.consumer.KafkaConsumerImpl;
 import org.apache.eventmesh.storage.kafka.producer.KafkaProducerImpl;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * test config of Kafka SPI Impl
@@ -50,21 +50,22 @@ public class ClientConfigurationTest {
     }
 
     private void assertConfig(ClientConfiguration config) {
-        Assert.assertEquals(config.getNamesrvAddr(), "127.0.0.1:9092;127.0.0.1:9092");
-        Assert.assertEquals(config.getClientUserName(), "username-succeed!!!");
-        Assert.assertEquals(config.getClientPass(), "password-succeed!!!");
-        Assert.assertEquals(config.getConsumeThreadMin(), Integer.valueOf(1816));
-        Assert.assertEquals(config.getConsumeThreadMax(), Integer.valueOf(2816));
-        Assert.assertEquals(config.getConsumeQueueSize(), Integer.valueOf(3816));
-        Assert.assertEquals(config.getPullBatchSize(), Integer.valueOf(4816));
-        Assert.assertEquals(config.getAckWindow(), Integer.valueOf(5816));
-        Assert.assertEquals(config.getPubWindow(), Integer.valueOf(6816));
-        Assert.assertEquals(config.getConsumeTimeout(), 7816);
-        Assert.assertEquals(config.getPollNameServerInterval(), Integer.valueOf(8816));
-        Assert.assertEquals(config.getHeartbeatBrokerInterval(), Integer.valueOf(9816));
-        Assert.assertEquals(config.getRebalanceInterval(), Integer.valueOf(11816));
-        Assert.assertEquals(config.getClusterName(), "cluster-succeed!!!");
-        Assert.assertEquals(config.getAccessKey(), "accessKey-succeed!!!");
-        Assert.assertEquals(config.getSecretKey(), "secretKey-succeed!!!");
+        Assertions.assertEquals("127.0.0.1:9092;127.0.0.1:9092", config.getNamesrvAddr());
+        Assertions.assertEquals("username-succeed!!!", config.getClientUserName());
+        Assertions.assertEquals("password-succeed!!!", config.getClientPass());
+        Assertions.assertEquals(Integer.valueOf(1816), config.getConsumeThreadMin());
+        Assertions.assertEquals(Integer.valueOf(2816), config.getConsumeThreadMax());
+        Assertions.assertEquals(Integer.valueOf(3816), config.getConsumeQueueSize());
+        Assertions.assertEquals(Integer.valueOf(4816), config.getPullBatchSize());
+        Assertions.assertEquals(Integer.valueOf(5816), config.getAckWindow());
+        Assertions.assertEquals(Integer.valueOf(6816), config.getPubWindow());
+        Assertions.assertEquals(7816, config.getConsumeTimeout());
+        Assertions.assertEquals(Integer.valueOf(8816), config.getPollNameServerInterval());
+        Assertions.assertEquals(Integer.valueOf(9816), config.getHeartbeatBrokerInterval());
+        Assertions.assertEquals(Integer.valueOf(11816), config.getRebalanceInterval());
+        Assertions.assertEquals("cluster-succeed!!!", config.getClusterName());
+        Assertions.assertEquals("accessKey-succeed!!!", config.getAccessKey());
+        Assertions.assertEquals("secretKey-succeed!!!", config.getSecretKey());
+
     }
 }

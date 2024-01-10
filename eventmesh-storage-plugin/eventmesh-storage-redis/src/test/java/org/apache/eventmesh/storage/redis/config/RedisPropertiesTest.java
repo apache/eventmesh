@@ -8,11 +8,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.eventmesh.storage.redis.config;
@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.config.ConfigService;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RedisPropertiesTest {
 
@@ -34,14 +34,14 @@ public class RedisPropertiesTest {
     }
 
     private void assertConfig(RedisProperties config) {
-        Assert.assertEquals(config.getServerAddress(), "redis://127.0.0.1:6379");
-        Assert.assertEquals(config.getServerType(), RedisProperties.ServerType.SINGLE);
-        Assert.assertEquals(config.getServerMasterName(), "serverMasterName-success!!!");
+        Assertions.assertEquals("redis://127.0.0.1:6379", config.getServerAddress());
+        Assertions.assertEquals(RedisProperties.ServerType.SINGLE, config.getServerType());
+        Assertions.assertEquals("serverMasterName-success!!!", config.getServerMasterName());
 
         Properties properties = new Properties();
         properties.put("threads", "2");
         properties.put("nettyThreads", "2");
         Properties redissonProperties = config.getRedissonProperties();
-        Assert.assertEquals(redissonProperties, properties);
+        Assertions.assertEquals(properties, redissonProperties);
     }
 }

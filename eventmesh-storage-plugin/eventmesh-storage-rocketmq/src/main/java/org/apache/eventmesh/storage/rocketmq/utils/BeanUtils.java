@@ -108,7 +108,7 @@ public final class BeanUtils {
                 try {
                     setProperties(clazz, obj, "set" + beanFieldNameWithCapitalization, entry.getValue());
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
-                    //ignored...
+                    // ignored...
                 }
             }
         } catch (RuntimeException e) {
@@ -146,4 +146,3 @@ public final class BeanUtils {
         }
     }
 }
-

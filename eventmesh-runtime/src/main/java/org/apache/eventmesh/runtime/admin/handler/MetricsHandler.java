@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -27,16 +28,27 @@ import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
+import java.util.Objects;
 
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
+
+/**
+ * This class handles the {@code /metrics} endpoint,
+ * corresponding to the {@code eventmesh-dashboard} path {@code /metrics}.
+ * <p>
+ * This handler is responsible for retrieving summary information of metrics,
+ * including HTTP and TCP metrics.
+ *
+ * @see AbstractHttpHandler
+ */
 
 @Slf4j
 @EventHttpHandler(path = "/metrics")
@@ -45,6 +57,14 @@ public class MetricsHandler extends AbstractHttpHandler {
     private final HttpSummaryMetrics httpSummaryMetrics;
     private final TcpSummaryMetrics tcpSummaryMetrics;
 
+    /**
+     * Constructs a new instance with the provided EventMesh server instance and HTTP handler manager.
+     *
+     * @param eventMeshHTTPServer the HTTP server instance of EventMesh
+     * @param eventMeshTcpServer the TCP server instance of EventMesh
+     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
         EventMeshTCPServer eventMeshTcpServer,
         HttpHandlerManager httpHandlerManager) {
@@ -54,25 +74,36 @@ public class MetricsHandler extends AbstractHttpHandler {
     }
 
     /**
-     * OPTIONS /metrics
+     * Handles the OPTIONS request first for {@code /metrics}.
+     * <p>
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
+     * the {@link HttpExchange} object and sends a 200 status code.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
         out.close();
     }
 
     /**
-     * GET /metrics Return a response that contains a summary of metrics
+     * Handles the GET request for {@code /metrics}.
+     * <p>
+     * This method retrieves the EventMesh metrics summary and returns it as a JSON response.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
         try {
             GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
@@ -117,10 +148,9 @@ public class MetricsHandler extends AbstractHttpHandler {
                 tcpSummaryMetrics.getEventMesh2clientTPS(),
                 tcpSummaryMetrics.getAllTPS(),
                 tcpSummaryMetrics.getAllConnections(),
-                tcpSummaryMetrics.getSubTopicNum()
-            );
+                tcpSummaryMetrics.getSubTopicNum());
             String result = JsonUtils.toJSONString(getMetricsResponse);
-            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(200, bytes.length);
             out.write(bytes);
         } catch (Exception e) {
@@ -132,7 +162,7 @@ public class MetricsHandler extends AbstractHttpHandler {
 
             Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJSONString(error);
-            byte[] bytes = result.getBytes(Constants.DEFAULT_CHARSET);
+            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
             httpExchange.sendResponseHeaders(500, bytes.length);
             out.write(bytes);
         } finally {
@@ -146,14 +176,28 @@ public class MetricsHandler extends AbstractHttpHandler {
         }
     }
 
-
+    /**
+     * Handles the HTTP requests for {@code /metrics}.
+     * <p>
+     * It delegates the handling to {@code preflight()} or {@code get()} methods
+     * based on the request method type (OPTIONS or GET).
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if ("OPTIONS".equals(httpExchange.getRequestMethod())) {
-            preflight(httpExchange);
-        }
-        if ("GET".equals(httpExchange.getRequestMethod())) {
-            get(httpExchange);
+        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
+            case OPTIONS:
+                preflight(httpExchange);
+                break;
+            case GET:
+                get(httpExchange);
+                break;
+            default:
+                break;
         }
     }
 }

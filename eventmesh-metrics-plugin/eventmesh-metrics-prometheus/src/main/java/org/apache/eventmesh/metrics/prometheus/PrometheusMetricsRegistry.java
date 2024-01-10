@@ -57,7 +57,7 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
                         .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
                     int port = prometheusConfiguration.getEventMeshPrometheusPort();
                     try {
-                        //Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
+                        // Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
                         prometheusHttpServer = new HTTPServer(port, true);
                     } catch (IOException e) {
                         log.error("failed to start prometheus server, port: {} due to {}", port, e.getMessage());

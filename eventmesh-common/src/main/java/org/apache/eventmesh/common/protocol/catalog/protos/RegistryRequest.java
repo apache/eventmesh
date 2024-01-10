@@ -342,7 +342,7 @@ public final class RegistryRequest extends
 
     @Override
     public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
+        return this.equals(DEFAULT_INSTANCE)
                 ? new Builder() : new Builder().mergeFrom(this);
     }
 
@@ -477,7 +477,7 @@ public final class RegistryRequest extends
         }
 
         public Builder mergeFrom(RegistryRequest other) {
-            if (other == RegistryRequest.getDefaultInstance()) {
+            if (other.equals(RegistryRequest.getDefaultInstance())) {
                 return this;
             }
             if (!other.getFileName().isEmpty()) {

@@ -27,7 +27,6 @@ import org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -45,9 +44,7 @@ public class TcpMessageProtocolResolver {
         String protocolVersion = header.getProperty(Constants.PROTOCOL_VERSION).toString();
         String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
-        if (StringUtils.isBlank(protocolType)
-            || StringUtils.isBlank(protocolVersion)
-            || StringUtils.isBlank(protocolDesc)) {
+        if (StringUtils.isAnyBlank(protocolType, protocolVersion, protocolDesc)) {
             throw new ProtocolHandleException(String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
                 protocolType, protocolVersion, protocolDesc));
         }
@@ -57,20 +54,15 @@ public class TcpMessageProtocolResolver {
         }
 
         String topic = message.getTopic();
-
         String content = message.getBody();
 
-        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-            cloudEventBuilder = CloudEventBuilder.v1();
-
-        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-            cloudEventBuilder = CloudEventBuilder.v03();
+        if (StringUtils.equalsAny(protocolVersion, SpecVersion.V1.toString(), SpecVersion.V03.toString())) {
+            cloudEventBuilder = CloudEventBuilder.fromSpecVersion(SpecVersion.parse(protocolVersion));
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolVersion: %s", protocolVersion));
         }
 
-        cloudEventBuilder = cloudEventBuilder
-            .withId(header.getSeq())
+        cloudEventBuilder.withId(header.getSeq())
             .withSource(URI.create("/"))
             .withType("eventmeshmessage")
             .withSubject(topic)
@@ -80,19 +72,19 @@ public class TcpMessageProtocolResolver {
             cloudEventBuilder.withDataContentType(message.getHeaders().get(Constants.DATA_CONTENT_TYPE));
         }
 
-        for (String propKey : header.getProperties().keySet()) {
+        for (Map.Entry<String, Object> prop : header.getProperties().entrySet()) {
             try {
-                cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
+                cloudEventBuilder.withExtension(prop.getKey(), prop.getValue().toString());
             } catch (Exception e) {
-                throw new ProtocolHandleException(String.format("Abnormal propKey: %s", propKey), e);
+                throw new ProtocolHandleException(String.format("Abnormal propKey: %s", prop.getKey()), e);
             }
         }
 
-        for (String propKey : message.getProperties().keySet()) {
+        for (Map.Entry<String, String> prop : message.getProperties().entrySet()) {
             try {
-                cloudEventBuilder.withExtension(propKey, message.getProperties().get(propKey));
+                cloudEventBuilder.withExtension(prop.getKey(), prop.getValue());
             } catch (Exception e) {
-                throw new ProtocolHandleException(String.format("Abnormal propKey: %s", propKey), e);
+                throw new ProtocolHandleException(String.format("Abnormal propKey: %s", prop.getKey()), e);
             }
         }
 
@@ -103,12 +95,12 @@ public class TcpMessageProtocolResolver {
     public static Package buildEventMeshMessage(CloudEvent cloudEvent) {
         EventMeshMessage eventMeshMessage = new EventMeshMessage();
         eventMeshMessage.setTopic(cloudEvent.getSubject());
-        eventMeshMessage.setBody(new String(Objects.requireNonNull(cloudEvent.getData()).toBytes(), StandardCharsets.UTF_8));
+        eventMeshMessage.setBody(new String(Objects.requireNonNull(cloudEvent.getData()).toBytes(), Constants.DEFAULT_CHARSET));
 
         Map<String, String> prop = new HashMap<>();
-        for (String extKey : cloudEvent.getExtensionNames()) {
-            prop.put(extKey, Objects.requireNonNull(cloudEvent.getExtension(extKey)).toString());
-        }
+        cloudEvent.getExtensionNames().forEach(k -> {
+            prop.put(k, Objects.requireNonNull(cloudEvent.getExtension(k)).toString());
+        });
         eventMeshMessage.setProperties(prop);
 
         Package pkg = new Package();
