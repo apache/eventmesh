@@ -287,11 +287,11 @@ spec:
           # resources describes the compute resource requirements and limits
           resources:
             requests:
-              memory: "1024Mi"
-              cpu: "250m"
+              memory: 2048Mi
+              cpu: 2000m
             limits:
-              memory: "2048Mi"
-              cpu: "500m"
+              memory: 8192Mi
+              cpu: 8000m
         # configuration file settings to be mounted.
         volumes:
           - name: runtime-config

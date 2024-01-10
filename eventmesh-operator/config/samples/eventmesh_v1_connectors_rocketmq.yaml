@@ -86,11 +86,11 @@ spec:
       # resources describes the compute resource requirements and limits
       resources:
         requests:
-          memory: "512Mi"
-          cpu: "250m"
+          memory: 512Mi
+          cpu: 250m
         limits:
-          memory: "1024Mi"
-          cpu: "500m"
+          memory: 1024Mi
+          cpu: 500m
   # configuration file settings to be mounted.
   volumes:
     - name: connector-rocketmq-config
