@@ -30,6 +30,7 @@
 ![EventMesh Architecture](resources/eventmesh-architecture-4.png)
 
 ### EventMesh Dashboard
+
 ![EventMesh Dashboard](resources/dashboard.png)
 
 ## Features
@@ -49,9 +50,11 @@ Apache EventMesh has a vast amount of features to help users achieve their goals
 - Easy Function develop and framework integration.
 
 ## Roadmap
+
 Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the release history and new features of Apache EventMesh.
 
 ## Subprojects
+
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache official website resources for EventMesh.
 - [EventMesh-workflow](https://github.com/apache/eventmesh-workflow): Serverless workflow runtime for event Orchestration on EventMesh.
 - [EventMesh-dashboard](https://github.com/apache/eventmesh-dashboard): Operation and maintenance console of EventMesh.
