@@ -141,7 +141,7 @@ CONTAINER ID   IMAGE                     COMMAND                   CREATED      
 9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp         eventmesh
 ```
 
-进入容器（将eventmesh替换为您指定的容器名称或 ID）：
+进入容器（将 `eventmesh` 替换为您指定的容器名称或 ID）：
 
 ```shell
 sudo docker exec -it eventmesh /bin/bash
@@ -176,7 +176,9 @@ connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
 runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 ```
 
-#### 2. 运行以下命令部署 runtime、connector (删除部署, 只需将 `create` 替换为 `delete` 即可).
+#### 2. 部署 EventMesh Runtime
+
+运行以下命令部署 runtime、connector-rocketmq (删除部署, 只需将 `create` 替换为 `delete` 即可).
 
 ```shell
 $ make create

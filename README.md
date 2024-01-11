@@ -171,7 +171,9 @@ connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
 runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 ```
 
-#### 2. Execute the following command to deploy runtime, connector(To delete, simply replace `create` with `delete`).  
+#### 2. Deploy EventMesh Runtime
+
+Execute the following command to deploy runtime, connector-rocketmq (To delete, simply replace `create` with `delete`).  
 
 ```shell
 $ make create
