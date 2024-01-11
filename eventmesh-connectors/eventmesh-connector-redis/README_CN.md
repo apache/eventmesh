@@ -21,7 +21,7 @@ pubSubConfig:
 connectorConfig:
   connectorName: redisSink
   server: redis://127.0.0.1:6379
-  # redis 中的主题
+  # Redis 中的主题
   topic: SinkTopic
 ```
 

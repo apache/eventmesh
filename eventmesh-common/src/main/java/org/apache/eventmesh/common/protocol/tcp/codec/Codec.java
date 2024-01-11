@@ -31,13 +31,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageCodec;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
-import io.netty.handler.codec.ReplayingDecoder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
@@ -45,25 +43,16 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Codec extends ByteToMessageCodec<Package> {
+public class Codec {
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
-    private Encoder encoder = new Encoder();
-    private Decoder decoder = new Decoder();
+    private static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length; //13
 
-    @Override
-    protected void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
-        encoder.encode(ctx, pkg, out);
-    }
-
-    @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        decoder.decode(ctx, in, out);
-    }
+    private static final int PACKAGE_BYTES_FIELD_LENGTH = 4;
 
     public static class Encoder extends MessageToByteEncoder<Package> {
 
@@ -86,7 +75,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             int headerLength = ArrayUtils.getLength(headerData);
             int bodyLength = ArrayUtils.getLength(bodyData);
 
-            final int length = CONSTANT_MAGIC_FLAG.length + VERSION.length + headerLength + bodyLength;
+            final int length = PREFIX_LENGTH + headerLength + bodyLength;
 
             if (length > FRAME_MAX_LENGTH) {
                 throw new IllegalArgumentException("message size is exceed limit!");
@@ -113,31 +102,62 @@ public class Codec extends ByteToMessageCodec<Package> {
         }
     }
 
-    public static class Decoder extends ReplayingDecoder<Package> {
+    public static class Decoder extends LengthFieldBasedFrameDecoder {
+
+        public Decoder() {
+            /**
+             * lengthAdjustment value = -9 explain:
+             * Header + Body, Format:
+             * <pre>
+             * ┌───────────────┬─────────────┬──────────────────┬──────────────────┬──────────────────┬─────────────────┐
+             * │   MAGIC_FLAG  │   VERSION   │ package length   │   Header length  │      Header      │      body       │
+             * │    (9bytes)   │  (4bytes)   │    (4bytes)      │      (4bytes)    │   (header bytes) │   (body bytes)  │
+             * └───────────────┴─────────────┴──────────────────┴──────────────────┴──────────────────┴─────────────────┘
+             * </pre>
+             * package length = MAGIC_FLAG + VERSION + Header length + Body length,Currently,
+             * adding MAGIC_FLAG + VERSION + package length field (4 bytes) actually adds 17 bytes.
+             * However, the value of the package length field is only reduced by the four bytes of
+             * the package length field itself and the four bytes of the header length field.
+             * Therefore, the compensation value to be added to the length field value is -9,
+             * which means subtracting the extra 9 bytes.
+             * Refer to the encoding in the {@link Encoder}
+             */
+            super(FRAME_MAX_LENGTH, PREFIX_LENGTH, PACKAGE_BYTES_FIELD_LENGTH, -9, 0);
+        }
 
         @Override
-        public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-            try {
-                if (null == in) {
-                    return;
-                }
+        protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
 
-                byte[] flagBytes = parseFlag(in);
-                byte[] versionBytes = parseVersion(in);
+            ByteBuf target = null;
+
+            try {
+                target = (ByteBuf) super.decode(ctx, in);
+                if (null == target) {
+                    return null;
+                }
+                byte[] flagBytes = parseFlag(target);
+                byte[] versionBytes = parseVersion(target);
                 validateFlag(flagBytes, versionBytes, ctx);
 
-                final int length = in.readInt();
-                final int headerLength = in.readInt();
-                final int bodyLength = length - CONSTANT_MAGIC_FLAG.length - VERSION.length - headerLength;
-                Header header = parseHeader(in, headerLength);
-                Object body = parseBody(in, header, bodyLength);
+                final int length = target.readInt();
+                final int headerLength = target.readInt();
+                final int bodyLength = length - PREFIX_LENGTH - headerLength;
+                Header header = parseHeader(target, headerLength);
+                Object body = parseBody(target, header, bodyLength);
 
                 Package pkg = new Package(header, body);
-                out.add(pkg);
-            } catch (Exception e) {
-                log.error("decode error| received data: {}.", deserializeBytes(in.array()), e);
-                throw e;
+                return pkg;
+
+            } catch (Exception ex) {
+                log.error("decode error", ex);
+                ctx.channel().close();
+            } finally {
+                if (target != null) {
+                    target.release();
+                }
             }
+
+            return null;
         }
 
         private byte[] parseFlag(ByteBuf in) {
