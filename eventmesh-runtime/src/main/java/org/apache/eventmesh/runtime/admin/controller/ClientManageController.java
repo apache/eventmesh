@@ -40,6 +40,7 @@ import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler
 import org.apache.eventmesh.runtime.admin.handler.TCPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.TopicHandler;
 import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
+import org.apache.eventmesh.runtime.boot.EventMeshAdminServer;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -48,17 +49,13 @@ import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Objects;
-
-import com.sun.net.httpserver.HttpServer;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class is responsible for managing the client connections
- * and initializing the client handlers.
+ * This class is responsible for managing the client connections and initializing the client handlers.
  * <p>
  * It starts the AdminController for managing the event store or MQ.
  */
@@ -104,21 +101,26 @@ public class ClientManageController {
     public void start() throws IOException {
         // Get the server's admin port.
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
-        // Create an HTTP server and bind it to the specified port.
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+        HttpHandlerManagerAdapter adapter = new HttpHandlerManagerAdapter(httpHandlerManager);
+        EventMeshAdminServer server = new EventMeshAdminServer(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), adapter);
+        adapter.bind(server);
+        try {
+            server.init();
+            // TODO: Optimized for automatic injection
 
-        // TODO: Optimized for automatic injection
+            // Initialize the client handler and register it with the HTTP handler manager.
+            initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
+                eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
 
-        // Initialize the client handler and register it with the HTTP handler manager.
-        initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
-            eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
+            // Register the handlers from the HTTP handler manager with the HTTP server.
+            httpHandlerManager.registerHttpWrapper(adapter);
 
-        // Register the handlers from the HTTP handler manager with the HTTP server.
-        httpHandlerManager.registerHttpHandler(server);
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        server.start();
         log.info("ClientManageController start success, port:{}", port);
     }
 

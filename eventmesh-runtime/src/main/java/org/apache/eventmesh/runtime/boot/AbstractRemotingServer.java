@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.EventLoopGroup;
@@ -48,7 +49,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
 
     private int port;
 
-    private void buildBossGroup(final String threadPrefix) {
+    protected void buildBossGroup(final String threadPrefix) {
         if (useEpoll()) {
             bossGroup = new EpollEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyEpoll-Boss", true));
         } else {
@@ -57,7 +58,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
 
     }
 
-    private void buildIOGroup(final String threadPrefix) {
+    protected void buildIOGroup(final String threadPrefix) {
         if (useEpoll()) {
             ioGroup = new EpollEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
         } else {
@@ -65,7 +66,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
         }
     }
 
-    private void buildWorkerGroup(final String threadPrefix) {
+    protected void buildWorkerGroup(final String threadPrefix) {
         workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
     }
 
@@ -94,8 +95,9 @@ public abstract class AbstractRemotingServer implements RemotingServer {
             bossGroup.shutdownGracefully();
             log.info("shutdown bossGroup");
         }
-        producerManager.shutdown();
-
+        if (Objects.isNull(producerManager)) {
+            producerManager.shutdown();
+        }
         ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {

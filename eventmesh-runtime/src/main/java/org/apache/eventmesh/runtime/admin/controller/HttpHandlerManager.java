@@ -26,8 +26,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
- * This class manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
- * for an {@linkplain com.sun.net.httpserver.HttpServer HttpServer}.
+ * This class manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler} for an {@linkplain
+ * com.sun.net.httpserver.HttpServer HttpServer}.
  */
 
 public class HttpHandlerManager {
@@ -37,9 +37,8 @@ public class HttpHandlerManager {
     /**
      * Registers an HTTP handler.
      *
-     * @param httpHandler The {@link HttpHandler} to be registered.
-     *                    A handler which is invoked to process HTTP exchanges.
-     *                    Each HTTP exchange is handled by one of these handlers.
+     * @param httpHandler The {@link HttpHandler} to be registered. A handler which is invoked to process HTTP exchanges. Each HTTP exchange is
+     *                    handled by one of these handlers.
      */
     public void register(HttpHandler httpHandler) {
         this.httpHandlers.add(httpHandler);
@@ -48,12 +47,10 @@ public class HttpHandlerManager {
     /**
      * Registers multiple HTTP handlers to a given HttpServer.
      * <p>
-     * Each HTTP handler is annotated with the {@link EventHttpHandler} annotation,
-     * which specifies the path where the handler should be registered.
+     * Each HTTP handler is annotated with the {@link EventHttpHandler} annotation, which specifies the path where the handler should be registered.
      *
-     * @param server A HttpServer object that is bound to an IP address and port number
-     *               and listens for incoming TCP connections from clients on this address.
-     *               The registered HTTP handlers will be associated with this server.
+     * @param server A HttpServer object that is bound to an IP address and port number and listens for incoming TCP connections from clients on this
+     *               address. The registered HTTP handlers will be associated with this server.
      */
     public void registerHttpHandler(HttpServer server) {
         httpHandlers.forEach(httpHandler -> {
@@ -61,5 +58,9 @@ public class HttpHandlerManager {
             server.createContext(eventHttpHandler.path(), httpHandler);
         });
 
+    }
+
+    public void registerHttpWrapper(HttpHandlerManagerAdapter adapter) {
+        httpHandlers.forEach(adapter::register);
     }
 }

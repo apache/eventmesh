@@ -95,7 +95,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * HTTP serves as the runtime module server for the protocol
- *
  */
 @Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
@@ -110,7 +109,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         DiskAttribute.deleteOnExitTemporaryFile = false;
     }
 
-    private final transient AtomicBoolean started = new AtomicBoolean(false);
+    protected final transient AtomicBoolean started = new AtomicBoolean(false);
     private final transient boolean useTLS;
     private Boolean useTrace = false; // Determine whether trace is enabled
     private static final int MAX_CONNECTIONS = 20_000;
@@ -139,7 +138,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.httpThreadPoolGroup = new HTTPThreadPoolGroup(eventMeshHttpConfiguration);
     }
 
-    private void initSharableHandlers() {
+    protected void initSharableHandlers() {
         httpConnectionHandler = new HttpConnectionHandler();
         httpDispatcher = new HttpDispatcher();
     }
@@ -415,8 +414,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                                 log.debug("{}", asyncContext.getResponse());
                                 final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
                                 TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
-                                    EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
-                                    false),
+                                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+                                        false),
                                     traceMap,
                                     EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
                             }
@@ -481,7 +480,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     @Sharable
-    private class HttpConnectionHandler extends ChannelDuplexHandler {
+    protected class HttpConnectionHandler extends ChannelDuplexHandler {
 
         public final transient AtomicInteger connections = new AtomicInteger(0);
 
