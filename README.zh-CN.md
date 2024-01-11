@@ -71,14 +71,15 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 > EventMesh 现在支持多个[事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`
 > 
-> 如果是在非`standalone`模式下，需要先部署所需的`store`，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
+> 如果是在非`standalone`模式下，需要先部署所需的事件存储，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
 ### 在本地运行 EventMesh Runtime
 
 #### 1. 下载
 
 从 [EventMesh Download](https://eventmesh.apache.org/download/) 页面下载最新版本的 Binary Distribution 发行版并解压：
-```
+
+```shell
 wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
 tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
@@ -87,19 +88,22 @@ cd apache-eventmesh-1.10.0
 #### 2. 运行
 
 执行 `start.sh` 脚本启动 EventMesh Runtime 服务器。
-```
+
+```shell
 bash bin/start.sh
 ```
 
 查看输出日志:
-```
+
+```shell
 tail -n 50 -f logs/eventmesh.out
 ```
 
 当日志输出 `server state:RUNNING`，则代表 EventMesh Runtime 启动成功了。
 
 停止:
-```
+
+```shell
 bash bin/stop.sh
 ```
 
@@ -109,8 +113,9 @@ bash bin/stop.sh
 
 #### 1. 获取 EventMesh 镜像
 
-首先，你可以打开一个命令行，并且使用下面的 `pull` 命令从 [Docker Hub](https://hub.docker.com) 中下载最新发布的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)。
-```
+使用下面的命令行下载最新版本的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)。
+
+```shell
 sudo docker pull apache/eventmesh:latest
 ```
 
@@ -123,19 +128,28 @@ sudo docker pull apache/eventmesh:latest
 - 绑定容器端口和宿主机端口: 使用 `docker run` 的 `-p` 选项。
 
 综合一下，对应的启动命令为:
-```
+
+```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
 ```
 
 如果成功的话，你会看到终端打印出了如下所示容器的信息，其中就有运行 EventMesh 镜像的容器。
-```
+
+```shell
 $ sudo docker ps
 CONTAINER ID   IMAGE                     COMMAND                   CREATED         STATUS         PORTS                                                                                                                                  NAMES
 9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp                                               eventmesh
 ```
 
-读取 EventMesh 容器的日志：
+进入容器（将eventmesh替换为您指定的容器名称或 ID）：
+
+```shell
+sudo docker exec -it eventmesh /bin/bash
 ```
+
+读取 EventMesh 容器的日志：
+
+```shell
 cd logs
 tail -n 50 -f eventmesh.out
 ```
@@ -145,12 +159,14 @@ tail -n 50 -f eventmesh.out
 #### 1. 部署 Operator
 
 运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy` 即可):
-```
-make deploy
+
+```shell
+$ make deploy
 ```
 
 运行 `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh` 查看部署的 EventMesh-Operator 状态以及 CRD 信息.
-```
+
+```shell
 $ kubectl get pods
 NAME                                  READY   STATUS    RESTARTS   AGE
 eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
@@ -161,12 +177,14 @@ runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 ```
 
 #### 2. 运行以下命令部署 runtime、connector (删除部署, 只需将 `create` 替换为 `delete` 即可).
-```
-make create
+
+```shell
+$ make create
 ```
 
 运行 `kubectl get pods` 查看部署是否成功.
-```
+
+```shell
 NAME                                  READY   STATUS    RESTARTS   AGE
 connector-rocketmq-0                  1/1     Running   0          9s
 eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s

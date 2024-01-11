@@ -68,14 +68,15 @@ This section guide is just to help you quickly get started with EventMesh deploy
 
 > EventMesh now supports multiple [Event Store](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status).The default storage mode is `standalone`. 
 > 
-> If you are in non-`standalone` mode, you need to deploy the required `store` first, using `rocketmq` mode as an example: Deploy [RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/).
+> If you are in a non ' standalone ' mode, you need to deploy the required Event Store first. using `rocketmq` mode as an example: Deploy [RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/).
 
 ### Run EventMesh Runtime locally
 
 #### 1. Download EventMesh:
 
 Download the latest version of the Binary Distribution from the [EventMesh Download](https://eventmesh.apache.org/download/) page and extract it:
-```
+
+```shell
 wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
 tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
@@ -84,19 +85,22 @@ cd apache-eventmesh-1.10.0
 #### 2. Run EventMesh:
 
 Execute the `start.sh` script to start the EventMesh Runtime server.
-```
+
+```shell
 bash bin/start.sh
 ```
 
 View the output log:
-```
+
+```shell
 tail -n 50 -f logs/eventmesh.out
 ```
 
 When the log output shows server `state:RUNNING`, it means EventMesh Runtime has started successfully.
 
 You can stop the run with the following command:
-```
+
+```shell
 bash bin/stop.sh
 ```
 
@@ -106,13 +110,15 @@ When the script prints `shutdown server ok!`, it means EventMesh Runtime has sto
 
 #### 1. Pull EventMesh Image
 
-Download the pre-built image of [EventMesh](https://hub.docker.com/r/apache/eventmesh) from Docker Hub with docker pull:
-```
+Use the following command line to download the latest version of [EventMesh](https://hub.docker.com/r/apache/eventmesh).
+
+```shell
 sudo docker pull apache/eventmesh:latest
 ```
 
 To verify that the apache/eventmesh image is successfully installed, list the downloaded images with docker images:
-```
+
+```shell
 $ sudo docker images
 REPOSITORY         TAG       IMAGE ID       CREATED      SIZE
 apache/eventmesh   latest    f32f9e5e4694   2 days ago   917MB
@@ -125,19 +131,28 @@ Run an EventMesh container from the `apache/eventmesh` image with the `docker ru
 - The `-p` option of the command binds the container port with the host machine port.
 
 Use the following command to start the EventMesh container:
-```
+
+```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
 ```
 
 The `docker ps` command lists the details (id, name, status, etc.) of the running containers. The container id is the unique identifier of the container.
-```
+
+```shell
 $ sudo docker ps
 CONTAINER ID   IMAGE                     COMMAND                   CREATED         STATUS         PORTS                                                                                                                                  NAMES
 9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp                                               eventmesh
 ```
 
-To read the log of the EventMesh container:
+Enter the container (replace `eventmesh` with the container name or ID you specified):
+
+```shell
+sudo docker exec -it eventmesh /bin/bash
 ```
+
+To read the log of the EventMesh container:
+
+```shell
 cd logs
 tail -n 50 -f eventmesh.out
 ```
@@ -147,12 +162,14 @@ tail -n 50 -f eventmesh.out
 #### 1. Deploy operator
 
 Run the following commands(To delete a deployment, simply replace `deploy` with `undeploy`):
-```
-make deploy
+
+```shell
+$ make deploy
 ```
 
 Run `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh`to see the status of the deployed eventmesh-operator.
-```
+
+```shell
 $ kubectl get pods
 NAME                                  READY   STATUS    RESTARTS   AGE
 eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
@@ -164,12 +181,13 @@ runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 
 #### 2. Execute the following command to deploy runtime, connector(To delete, simply replace `create` with `delete`).  
 
-```
-make create
+```shell
+$ make create
 ```
 
 Run `kubectl get pods` to see if the deployment was successful.
-```
+
+```shell
 NAME                                  READY   STATUS    RESTARTS   AGE
 connector-rocketmq-0                  1/1     Running   0          9s
 eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
