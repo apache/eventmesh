@@ -65,16 +65,17 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[Docker](#在-docker-中运行-eventmesh-runtime)、[K8s](#在-kubernetes-中运行-eventmesh-runtime)部署EventMesh的步骤:
 
-本节指南只是帮助您快速入门 EventMesh 部署，按照默认配置启动 EventMesh，如果您需要更加详细的 EventMesh 部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
+本节指南按照默认配置启动 EventMesh，如果您需要更加详细的 EventMesh 部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/next/introduction)。
 
 ### 部署 Event Store
 
 > EventMesh 现在支持多个[事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`
+> 
 > 如果是在非`standalone`模式下，需要先部署所需的`store`，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
 ### 在本地运行 EventMesh Runtime
 
-#### 1.下载
+#### 1. 下载
 
 从 [EventMesh Download](https://eventmesh.apache.org/download/) 页面下载最新版本的 Binary Distribution 发行版并解压：
 ```
@@ -84,17 +85,6 @@ cd apache-eventmesh-1.10.0
 ```
 
 #### 2. 运行
-
-编辑`eventmesh.properties`以更改 EventMesh Runtime 的配置（如 TCP 端口、客户端黑名单）。
-```
-vim conf/eventmesh.properties
-```
-
-指定事件存储为 RocketMQ(默认为standalone)：
-```
-# storage plugin
-eventMesh.storage.plugin.type=rocketmq
-```
 
 执行 `start.sh` 脚本启动 EventMesh Runtime 服务器。
 ```
@@ -117,104 +107,31 @@ bash bin/stop.sh
 
 ### 在 Docker 中运行 EventMesh Runtime
 
-#### 1.获取 EventMesh 镜像
+#### 1. 获取 EventMesh 镜像
 
 首先，你可以打开一个命令行，并且使用下面的 `pull` 命令从 [Docker Hub](https://hub.docker.com) 中下载最新发布的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)。
 ```
 sudo docker pull apache/eventmesh:latest
 ```
 
-您可以使用以下命令列出并查看本地已有的镜像。
-```
-$ sudo docker images
-REPOSITORY         TAG       IMAGE ID       CREATED      SIZE
-apache/eventmesh   latest    f32f9e5e4694   2 days ago   917MB
-```
-
-#### 2.创建配置文件
-
-如果您使用 standalone 模式启动 EventMesh Runtime，并且没有自定义配置，可以跳转至下一步骤。
-
-首先，在宿主机上创建 EventMesh 的配置文件目录。此目录可以自由指定：
-```
-sudo mkdir -p /data/eventmesh/conf
-cd /data/eventmesh/conf
-```
-
-#### 3.配置 `eventmesh.properties`
-
-这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。 
-
-下载配置文件（替换下载链接中的 `1.10.0` 为您正在使用的版本）
-```
-sudo wget https://raw.githubusercontent.com/apache/eventmesh/1.10.0-prepare/eventmesh-runtime/conf/eventmesh.properties
-```
-
-使用下面的 `vim` 命令编辑 `eventmesh.properties`。
-```
-sudo vim eventmesh.properties
-```
-
-指定事件存储为 RocketMQ (默认为 standalone)：
-```
-# storage plugin
-eventMesh.storage.plugin.type=rocketmq
-```
-
-请检查配置文件里的默认端口是否已被占用，如果被占用请修改成未被占用的端口:
-
-| 属性                                 | 默认值     | 备注                           |   
-|------------------------------------|---------|------------------------------|  
-| `eventMesh.server.http.port`       | `10105` | `EventMesh http server port` |  
-| `eventMesh.server.tcp.port`        | `10000` | `EventMesh tcp server port`  | 
-| `eventMesh.server.grpc.port`       | `10205` | `EventMesh grpc server port` | 
-| `eventMesh.server.admin.http.port` | `10106` | `HTTP management port`       | 
-
-#### 4.配置 `rocketmq-client.properties`
-
-这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。
-
-下载配置文件（替换下载链接中的 `1.10.0` 为您正在使用的版本）
-```
-sudo wget https://raw.githubusercontent.com/apache/eventmesh/1.10.0-prepare/eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/resources/rocketmq-client.properties
-```
-
-使用下面的 `vim` 命令编辑 `rocketmq-client.properties`。
-```
-sudo vim rocketmq-client.properties
-```
-
-> 请注意，如果您正在运行的 namesrv 地址不是配置文件中的默认值，请将其修改为实际正在运行的 namesrv 地址。
-
-请检查配置文件里的默认namesrvAddr是否已被占用，如果被占用请修改成未被占用的地址:
-
-| 属性                                      | 默认值                             | 备注                                 |   
-|-----------------------------------------|---------------------------------|------------------------------------|  
-| `eventMesh.server.rocketmq.namesrvAddr` | `127.0.0.1:9876;127.0.0.1:9876` | `RocketMQ namesrv default address` |
-
-#### 5.运行EventMesh
+#### 2. 运行EventMesh
 
 现在你就可以开始根据下载好的EventMesh镜像运行容器了。
 
-使用到的命令是 `docker run`，有以下两点内容需要格外注意。
+使用到的命令是 `docker run`。
+
 - 绑定容器端口和宿主机端口: 使用 `docker run` 的 `-p` 选项。
-- 将宿主机中的两份配置文件挂在到容器中: 使用 `docker run` 的 `-v` 选项。
 
 综合一下，对应的启动命令为:
 ```
-sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -v /data/eventmesh/conf/eventmesh.properties:/data/app/eventmesh/conf/eventmesh.properties -v /data/eventmesh/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties -t apache/eventmesh:latest
-```
-
-接下来，你可以使用下面的命令查看容器的状态。
-```
-sudo docker ps
+sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
 ```
 
 如果成功的话，你会看到终端打印出了如下所示容器的信息，其中就有运行 EventMesh 镜像的容器。
 ```
 $ sudo docker ps
-CONTAINER ID   IMAGE                        COMMAND                  CREATED         STATUS         PORTS                                                                                                                                                                 NAMES
-5bb6b6092672   apache/eventmesh:latest      "/bin/sh -c 'sh star…"   6 seconds ago   Up 3 seconds   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, :::10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp, :::10205->10205/tcp   eventmesh
+CONTAINER ID   IMAGE                     COMMAND                   CREATED         STATUS         PORTS                                                                                                                                  NAMES
+9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp                                               eventmesh
 ```
 
 读取 EventMesh 容器的日志：
@@ -225,7 +142,7 @@ tail -n 50 -f eventmesh.out
 
 ### 在 Kubernetes 中运行 EventMesh Runtime
 
-1.部署 Operator
+#### 1. 部署 Operator
 
 运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy` 即可):
 ```
@@ -243,7 +160,7 @@ connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
 runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 ```
 
-2.运行以下命令部署 runtime、connector (删除部署, 只需将 `create` 替换为 `delete` 即可).
+#### 2. 运行以下命令部署 runtime、connector (删除部署, 只需将 `create` 替换为 `delete` 即可).
 ```
 make create
 ```
