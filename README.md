@@ -116,14 +116,6 @@ Use the following command line to download the latest version of [EventMesh](htt
 sudo docker pull apache/eventmesh:latest
 ```
 
-To verify that the apache/eventmesh image is successfully installed, list the downloaded images with docker images:
-
-```shell
-$ sudo docker images
-REPOSITORY         TAG       IMAGE ID       CREATED      SIZE
-apache/eventmesh   latest    f32f9e5e4694   2 days ago   917MB
-```
-
 #### 2. Run and Manage EventMesh Container
 
 Run an EventMesh container from the `apache/eventmesh` image with the `docker run` command.
