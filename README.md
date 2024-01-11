@@ -75,7 +75,7 @@ This section guide is just to help you quickly get started with EventMesh deploy
 
 ### Run EventMesh Runtime locally
 
-#### 1. Download EventMesh:
+#### 1. Download EventMesh
 
 Download the latest version of the Binary Distribution from the [EventMesh Download](https://eventmesh.apache.org/download/) page and extract it:
 
@@ -85,7 +85,7 @@ tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
 ```
 
-#### 2. Run EventMesh:
+#### 2. Run EventMesh
 
 Execute the `start.sh` script to start the EventMesh Runtime server.
 
@@ -113,7 +113,7 @@ When the script prints `shutdown server ok!`, it means EventMesh Runtime has sto
 
 #### 1. Pull EventMesh Image
 
-Use the following command line to download the latest version of [EventMesh](https://hub.docker.com/r/apache/eventmesh).
+Use the following command line to download the latest version of [EventMesh](https://hub.docker.com/r/apache/eventmesh):
 
 ```shell
 sudo docker pull apache/eventmesh:latest
@@ -176,7 +176,7 @@ runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 
 #### 2. Deploy EventMesh Runtime
 
-Execute the following command to deploy runtime, connector-rocketmq (To delete, simply replace `create` with `delete`).  
+Execute the following command to deploy runtime, connector-rocketmq (To delete, simply replace `create` with `delete`):  
 
 ```shell
 $ make create

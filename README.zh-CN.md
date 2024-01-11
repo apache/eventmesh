@@ -113,7 +113,7 @@ bash bin/stop.sh
 
 #### 1. 获取 EventMesh 镜像
 
-使用下面的命令行下载最新版本的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)。
+使用下面的命令行下载最新版本的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)：
 
 ```shell
 sudo docker pull apache/eventmesh:latest
@@ -127,7 +127,7 @@ sudo docker pull apache/eventmesh:latest
 
 - 绑定容器端口和宿主机端口: 使用 `docker run` 的 `-p` 选项。
 
-综合一下，对应的启动命令为:
+启动命令为：
 
 ```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
@@ -178,7 +178,7 @@ runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
 
 #### 2. 部署 EventMesh Runtime
 
-运行以下命令部署 runtime、connector-rocketmq (删除部署, 只需将 `create` 替换为 `delete` 即可).
+运行以下命令部署 runtime、connector-rocketmq (删除部署, 只需将 `create` 替换为 `delete` 即可)：
 
 ```shell
 $ make create
