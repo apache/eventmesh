@@ -140,8 +140,8 @@ The `docker ps` command lists the details (id, name, status, etc.) of the runnin
 
 ```shell
 $ sudo docker ps
-CONTAINER ID   IMAGE                     COMMAND                   CREATED         STATUS         PORTS                                                                                                                                  NAMES
-9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp                                               eventmesh
+CONTAINER ID   IMAGE                     COMMAND                   CREATED         STATUS         PORTS                                                                                            NAMES
+9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp         eventmesh
 ```
 
 Enter the container (replace `eventmesh` with the container name or ID you specified):
