@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: manager-role
+  name: eventmesh-operator
 rules:
 - apiGroups:
   - ""
@@ -40,6 +40,30 @@ rules:
   - ""
   resources:
   - pods/exec
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
   verbs:
   - create
   - delete
@@ -101,7 +125,7 @@ rules:
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
-  - runtime
+  - runtimes
   verbs:
   - create
   - delete
@@ -113,13 +137,13 @@ rules:
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
-  - runtime/finalizers
+  - runtimes/finalizers
   verbs:
   - update
 - apiGroups:
   - eventmesh-operator.eventmesh
   resources:
-  - runtime/status
+  - runtimes/status
   verbs:
   - get
   - patch
