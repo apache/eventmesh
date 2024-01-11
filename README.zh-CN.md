@@ -70,8 +70,6 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 ### 部署 Event Store
 
 > EventMesh 支持[多种事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`，不依赖其他事件存储作为层。
-> 
-> 如果是在非`standalone`模式下，需要先部署所需的事件存储，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
 ### 在本地运行 EventMesh Runtime
 

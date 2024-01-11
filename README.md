@@ -70,8 +70,6 @@ This section guide is just to help you quickly get started with EventMesh deploy
 ### Deployment Event Store
 
 > EventMesh supports [multiple Event Stores](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status), the default storage mode is ' standalone ', and does not rely on other event stores as layers.
-> 
-> If you are in a non ' standalone ' mode, you need to deploy the required Event Store first, using `rocketmq` mode as an example: Deploy [RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/).
 
 ### Run EventMesh Runtime locally
 
