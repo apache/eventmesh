@@ -75,7 +75,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 ### 在本地运行 EventMesh Runtime
 
-#### 1. 下载
+#### 1. 下载 EventMesh
 
 从 [EventMesh Download](https://eventmesh.apache.org/download/) 页面下载最新版本的 Binary Distribution 发行版并解压：
 
@@ -85,7 +85,7 @@ tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
 cd apache-eventmesh-1.10.0
 ```
 
-#### 2. 运行
+#### 2. 运行 EventMesh
 
 执行 `start.sh` 脚本启动 EventMesh Runtime 服务器。
 
@@ -119,7 +119,7 @@ bash bin/stop.sh
 sudo docker pull apache/eventmesh:latest
 ```
 
-#### 2. 运行EventMesh
+#### 2. 运行 EventMesh
 
 现在你就可以开始根据下载好的EventMesh镜像运行容器了。
 
