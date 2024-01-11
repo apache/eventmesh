@@ -69,7 +69,7 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 
 ### 部署 Event Store
 
-> EventMesh 现在支持多个[事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`
+> EventMesh 支持[多种事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`，不依赖其他事件存储作为层。
 > 
 > 如果是在非`standalone`模式下，需要先部署所需的事件存储，以`rocketmq`模式为例: 部署[RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/)
 
@@ -137,8 +137,8 @@ sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205
 
 ```shell
 $ sudo docker ps
-CONTAINER ID   IMAGE                     COMMAND                   CREATED         STATUS         PORTS                                                                                            NAMES
-9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"       9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp         eventmesh
+CONTAINER ID   IMAGE                     COMMAND               CREATED         STATUS         PORTS                                                                                      NAMES
+9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"   9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp   eventmesh
 ```
 
 进入容器（将 `eventmesh` 替换为您指定的容器名称或 ID）：
@@ -147,7 +147,7 @@ CONTAINER ID   IMAGE                     COMMAND                   CREATED      
 sudo docker exec -it eventmesh /bin/bash
 ```
 
-读取 EventMesh 容器的日志：
+查看 EventMesh 容器的日志：
 
 ```shell
 cd logs
