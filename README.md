@@ -65,13 +65,13 @@ Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the
 
 This section of the guide will show you the steps to deploy EventMesh from [Local](#run-eventmesh-runtime-locally), [Docker](#run-eventmesh-runtime-in-docker), [K8s](#run-eventmesh-runtime-in-kubernetes).  
 
-This section guide is just to help you quickly get started with EventMesh deployment. Start EventMesh according to the default configuration. If you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/next/introduction).
+This section guide is just to help you quickly get started with EventMesh deployment, start EventMesh according to the default configuration, if you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/next/introduction).
 
 ### Deployment Event Store
 
 > EventMesh now supports multiple [Event Store](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status).The default storage mode is `standalone`. 
 > 
-> If you are in a non ' standalone ' mode, you need to deploy the required Event Store first. using `rocketmq` mode as an example: Deploy [RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/).
+> If you are in a non ' standalone ' mode, you need to deploy the required Event Store first, using `rocketmq` mode as an example: Deploy [RocketMQ](https://rocketmq.apache.org/docs/quickStart/01quickstart/).
 
 ### Run EventMesh Runtime locally
 
