@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-configurations {
-    implementation.exclude group: 'org.slf4j', module: 'slf4j-simple'
-}
-
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")

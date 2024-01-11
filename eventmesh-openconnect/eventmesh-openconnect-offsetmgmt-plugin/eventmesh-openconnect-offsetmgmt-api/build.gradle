@@ -18,9 +18,6 @@
 dependencies {
     api project(":eventmesh-spi")
     api "org.slf4j:slf4j-api"
-    implementation "org.apache.logging.log4j:log4j-api"
-    implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -29,4 +26,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation "org.mockito:mockito-core"
+
+    testRuntimeOnly "org.apache.logging.log4j:log4j-core"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl"
 }

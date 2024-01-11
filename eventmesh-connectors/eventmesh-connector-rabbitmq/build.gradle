@@ -16,11 +16,6 @@
  */
 
 
-configurations {
-    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
-    implementation.exclude group: 'log4j', module: 'log4j'
-}
-
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
