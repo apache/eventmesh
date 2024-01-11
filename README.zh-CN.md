@@ -161,7 +161,7 @@ tail -n 50 -f eventmesh.out
 运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy` 即可):
 
 ```shell
-$ make deploy
+$ cd eventmesh-operator && make deploy
 ```
 
 运行 `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh` 查看部署的 EventMesh-Operator 状态以及 CRD 信息.

@@ -159,7 +159,7 @@ tail -n 50 -f eventmesh.out
 Run the following commands(To delete a deployment, simply replace `deploy` with `undeploy`):
 
 ```shell
-$ make deploy
+$ cd eventmesh-operator && make deploy
 ```
 
 Run `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh`to see the status of the deployed eventmesh-operator.
