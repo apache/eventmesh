@@ -17,7 +17,7 @@
 # under the License.
 #
 
-name: "Analyze"
+name: "CodeQL"
 
 on:
   push:
@@ -27,7 +27,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Analyze
     strategy:
       fail-fast: false
       matrix:
