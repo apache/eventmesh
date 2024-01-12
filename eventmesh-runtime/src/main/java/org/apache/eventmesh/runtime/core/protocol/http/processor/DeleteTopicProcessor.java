@@ -172,6 +172,6 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.DELETE_TOPIC.getRequestURI()};
+        return new String[] {RequestURI.DELETE_TOPIC.getRequestURI()};
     }
 }
