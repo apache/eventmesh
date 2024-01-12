@@ -33,12 +33,14 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macOS-latest ]
         java: [ 8, 11 ]
-        language: ['java', 'go']
+        language: ['java', 'go', 'cpp']
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
@@ -49,8 +51,8 @@ jobs:
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
           languages: ${{ matrix.language }}
 
-      - if: matrix.language == 'cpp' || matrix.language == 'csharp'
-        name: Build C
+      - name: Build C SDK
+        if: matrix.language == 'cpp'
         run: |
           git submodule init
           git submodule update
