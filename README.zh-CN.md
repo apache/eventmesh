@@ -119,7 +119,7 @@ sudo docker pull apache/eventmesh:latest
 
 #### 2. 运行 EventMesh
 
-使用一下命令启动 EventMesh 容器：
+使用以下命令启动 EventMesh 容器：
 
 ```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
