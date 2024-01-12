@@ -71,7 +71,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
     private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
-    private static final Logger BATCH_MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.BATCH_MSG);
+    private static final Logger BATCH_MSG_LOGGER = LoggerFactory.getLogger(EventMeshConstants.BATCH_MSG);
 
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -112,7 +112,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         int eventSize = eventList.size();
 
         if (eventSize > httpConfiguration.getEventMeshEventBatchSize()) {
-            BATCH_MESSAGE_LOGGER.error("Event batch size exceeds the limit: {}", httpConfiguration.getEventMeshEventBatchSize());
+            BATCH_MSG_LOGGER.error("Event batch size exceeds the limit: {}", httpConfiguration.getEventMeshEventBatchSize());
             completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
                 "Event batch size exceeds the limit: " + httpConfiguration.getEventMeshEventBatchSize(), SendMessageBatchResponseBody.class);
             return;
@@ -129,7 +129,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
             String content = event.getData() == null ? "" : new String(event.getData().toBytes(), Constants.DEFAULT_CHARSET);
             if (content.length() > httpConfiguration.getEventMeshEventSize()) {
-                BATCH_MESSAGE_LOGGER.error("Event size exceeds the limit: {}", httpConfiguration.getEventMeshEventSize());
+                BATCH_MSG_LOGGER.error("Event size exceeds the limit: {}", httpConfiguration.getEventMeshEventSize());
                 completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR,
                     "Event size exceeds the limit: " + httpConfiguration.getEventMeshEventSize(), SendMessageBatchResponseBody.class);
                 return;
@@ -223,9 +223,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     topicBatchMessageMappings.put(cloudEvent.getSubject(), tmp);
                 }
 
-                BATCH_MESSAGE_LOGGER.debug("msg2MQMsg suc, event:{}", cloudEvent.getData());
+                BATCH_MSG_LOGGER.debug("msg2MQMsg suc, event:{}", cloudEvent.getData());
             } catch (Exception e) {
-                BATCH_MESSAGE_LOGGER.error("msg2MQMsg err, event:{}", cloudEvent.getData(), e);
+                BATCH_MSG_LOGGER.error("msg2MQMsg err, event:{}", cloudEvent.getData(), e);
             }
 
         }
@@ -253,7 +253,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
                     @Override
                     public void onException(OnExceptionContext context) {
-                        BATCH_MESSAGE_LOGGER.warn("", context.getException());
+                        BATCH_MSG_LOGGER.warn("", context.getException());
                         eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     }
 
@@ -271,7 +271,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
                     @Override
                     public void onException(OnExceptionContext context) {
-                        BATCH_MESSAGE_LOGGER.warn("", context.getException());
+                        BATCH_MSG_LOGGER.warn("", context.getException());
                         eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     }
 
@@ -282,7 +282,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         summaryMetrics.recordBatchSendMsgCost(elapsed);
 
-        BATCH_MESSAGE_LOGGER.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
+        BATCH_MSG_LOGGER.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
             batchId, elapsed, eventSize, topicBatchMessageMappings.keySet());
         completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.SUCCESS, null,
             SendMessageBatchResponseBody.class);
