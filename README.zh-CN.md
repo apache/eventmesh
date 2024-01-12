@@ -119,22 +119,10 @@ sudo docker pull apache/eventmesh:latest
 
 #### 2. 运行 EventMesh
 
-使用到的命令是 `docker run`。
-
-- 绑定容器端口和宿主机端口: 使用 `docker run` 的 `-p` 选项。
-
-启动命令为：
+使用一下命令启动 EventMesh 容器：
 
 ```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
-```
-
-如果成功的话，你会看到终端打印出了如下所示容器的信息，其中就有运行 EventMesh 镜像的容器。
-
-```shell
-$ sudo docker ps
-CONTAINER ID   IMAGE                     COMMAND               CREATED         STATUS         PORTS                                                                                      NAMES
-9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"   9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp   eventmesh
 ```
 
 进入容器（将 `eventmesh` 替换为您指定的容器名称或 ID）：

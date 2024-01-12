@@ -119,23 +119,12 @@ sudo docker pull apache/eventmesh:latest
 
 #### 2. Run and Manage EventMesh Container
 
-Run an EventMesh container from the `apache/eventmesh` image with the `docker run` command.
-
-- The `-p` option of the command binds the container port with the host machine port.
-
 Use the following command to start the EventMesh container:
 
 ```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
 ```
 
-The `docker ps` command lists the details (id, name, status, etc.) of the running containers. The container id is the unique identifier of the container.
-
-```shell
-$ sudo docker ps
-CONTAINER ID   IMAGE                     COMMAND               CREATED         STATUS         PORTS                                                                                      NAMES
-9c08130ee797   apache/eventmesh:latest   "bash bin/start.sh"   9 seconds ago   Up 8 seconds   0.0.0.0:10000->10000/tcp, 0.0.0.0:10105-10106->10105-10106/tcp, 0.0.0.0:10205->10205/tcp   eventmesh
-```
 
 Enter the container (replace `eventmesh` with the container name or ID you specified):
 
