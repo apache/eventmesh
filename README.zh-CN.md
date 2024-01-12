@@ -125,13 +125,13 @@ sudo docker pull apache/eventmesh:latest
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
 ```
 
-进入容器（将 `eventmesh` 替换为您指定的容器名称或 ID）：
+进入容器：
 
 ```shell
 sudo docker exec -it eventmesh /bin/bash
 ```
 
-查看 EventMesh 容器的日志：
+查看日志：
 
 ```shell
 cd logs
