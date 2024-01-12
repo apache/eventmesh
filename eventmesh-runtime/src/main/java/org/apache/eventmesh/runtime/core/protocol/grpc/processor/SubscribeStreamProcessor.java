@@ -32,6 +32,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsume
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -48,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscribeStreamProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+    private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -77,7 +78,7 @@ public class SubscribeStreamProcessor {
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            ACL_LOGGER.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
             ServiceUtils.sendStreamResponseCompleted(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }

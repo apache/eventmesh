@@ -43,7 +43,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class HeartbeatProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -69,7 +69,7 @@ public class HeartbeatProcessor {
         try {
             doAclCheck(heartbeat);
         } catch (AclException e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION, HeartbeatProcessor failed", e);
+            ACL_LOGGER.warn("CLIENT HAS NO PERMISSION, HeartbeatProcessor failed", e);
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
