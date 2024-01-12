@@ -40,6 +40,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - if: matrix.language == 'cpp' || matrix.language == 'csharp'
+        name: Build C
+        run: |
+          git submodule init
+          git submodule update
+          make -C ./eventmesh-sdks/eventmesh-sdk-c  
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
