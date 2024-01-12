@@ -23,7 +23,6 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.MANUFACT
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.webhook.api.Manufacturer;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -62,8 +61,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     @Override
     public Integer insertWebHookConfig(final WebHookConfig webHookConfig) {
         if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
-            LogUtils.error(log, "webhookConfig callback path must start with {}",
-                WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+            log.error("webhookConfig callback path must start with {}", WebHookOperationConstant.CALLBACK_PATH_PREFIX);
             return 0;
         }
 
@@ -72,7 +70,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         try {
             if (configService.getConfig(getWebHookConfigDataId(webHookConfig),
                 getManuGroupId(webHookConfig), TIMEOUT_MS) != null) {
-                LogUtils.error(log, "insertWebHookConfig failed, config has existed");
+                log.error("insertWebHookConfig failed, config has existed");
                 return 0;
             }
             result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig),
@@ -109,7 +107,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
         try {
             if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig),
                 TIMEOUT_MS) == null) {
-                LogUtils.error(log, "updateWebHookConfig failed, config is not existed");
+                log.error("updateWebHookConfig failed, config is not existed");
                 return 0;
             }
             result = configService.publishConfig(getWebHookConfigDataId(webHookConfig),

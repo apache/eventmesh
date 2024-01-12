@@ -31,7 +31,6 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
@@ -213,7 +212,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshHttpConfiguration.getEventMeshServerIp())
                 .build();
 
-            LogUtils.debug(MESSAGE_LOGGER, "msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
+            MESSAGE_LOGGER.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
         } catch (Exception e) {
             MESSAGE_LOGGER.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             completeResponse(request, asyncContext, sendMessageResponseHeader,
@@ -232,7 +231,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
             try {
-                LogUtils.debug(HTTP_LOGGER, "{}", httpCommand);
+                HTTP_LOGGER.debug("{}", httpCommand);
                 eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
 
                 summaryMetrics.recordHTTPReqResTimeCost(

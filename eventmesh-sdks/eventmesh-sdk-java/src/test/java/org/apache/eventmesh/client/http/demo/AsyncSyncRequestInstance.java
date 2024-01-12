@@ -69,8 +69,8 @@ public class AsyncSyncRequestInstance {
 
                 @Override
                 public void onSuccess(EventMeshMessage o) {
-                    log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
-                        System.currentTimeMillis() - startTime);
+                    log.debug("sendmsg: {}, return: {}, cost: {}ms",
+                        eventMeshMessage.getContent(), o.getContent(), System.currentTimeMillis() - startTime);
                 }
 
                 @Override

@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import org.apache.eventmesh.common.utils.AssertUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -80,6 +79,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AbstractTCPServer extends AbstractRemotingServer {
+
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private ClientSessionGroupMapping clientSessionGroupMapping;
@@ -229,8 +230,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
     @Sharable
     private class TcpDispatcher extends SimpleChannelInboundHandler<Package> {
 
-        private final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
-
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package pkg) throws Exception {
             long startTime = System.currentTimeMillis();
@@ -254,13 +253,13 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 }
 
                 if (Command.HELLO_REQUEST == cmd || Command.RECOMMEND_REQUEST == cmd) {
-                    LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
+                    MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                     processTcpCommandRequest(pkg, ctx, startTime, cmd);
                     return;
                 }
 
                 if (clientSessionGroupMapping.getSession(ctx) == null) {
-                    LogUtils.info(messageLogger, "pkg|c2eventMesh|cmd={}|pkg={},no session is found", cmd, pkg);
+                    MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}, no session is found", cmd, pkg);
                     throw new Exception("no session is found");
                 }
 
@@ -346,16 +345,16 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         }
 
         private void logMessageFlow(ChannelHandlerContext ctx, Package pkg, Command cmd) {
-            if (!messageLogger.isInfoEnabled()) {
+            if (!MESSAGE_LOGGER.isInfoEnabled()) {
                 return;
             }
 
             if (pkg.getBody() instanceof EventMeshMessage) {
-                messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
+                MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
                     EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()),
                     clientSessionGroupMapping.getSession(ctx).getClient());
             } else {
-                messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
+                MESSAGE_LOGGER.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
                     clientSessionGroupMapping.getSession(ctx).getClient());
             }
         }

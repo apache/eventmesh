@@ -231,7 +231,7 @@ public class NacosMetaService implements MetaService {
             throw new MetaException(e.getMessage());
         }
     }
-    
+
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
         return findEventMeshInfos(true, Collections.singletonList(clusterName));

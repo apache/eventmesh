@@ -29,7 +29,6 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 
@@ -96,11 +95,11 @@ public class SubService implements InitializingBean {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                LogUtils.warn(log, "exception occurred when countDownLatch.await ", e);
+                log.warn("exception occurred when countDownLatch.await ", e);
                 Thread.currentThread().interrupt();
             }
 
-            LogUtils.info(log, "stopThread start....");
+            log.info("stopThread start....");
 
         });
 
@@ -109,7 +108,7 @@ public class SubService implements InitializingBean {
 
     @PreDestroy
     public void cleanup() {
-        LogUtils.info(log, "start destroy....");
+        log.info("start destroy....");
 
         try {
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem), url);
@@ -122,15 +121,15 @@ public class SubService implements InitializingBean {
             log.error("exception occurred when close consumer ", e);
         }
 
-        LogUtils.info(log, "end destroy....");
+        log.info("end destroy....");
     }
 
     /**
      * Count the message already consumed
      */
     public void consumeMessage(final String msg) {
-        LogUtils.info(log, "consume message: {}", msg);
+        log.info("consume message: {}", msg);
         countDownLatch.countDown();
-        LogUtils.info(log, "remaining number of messages to be consumed: {}", countDownLatch.getCount());
+        log.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
     }
 }
