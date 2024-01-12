@@ -119,8 +119,6 @@ sudo docker pull apache/eventmesh:latest
 
 #### 2. 运行 EventMesh
 
-现在你就可以开始根据下载好的EventMesh镜像运行容器了。
-
 使用到的命令是 `docker run`。
 
 - 绑定容器端口和宿主机端口: 使用 `docker run` 的 `-p` 选项。
