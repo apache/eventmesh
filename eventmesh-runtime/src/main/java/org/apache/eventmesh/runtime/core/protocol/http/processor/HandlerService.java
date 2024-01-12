@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.enums.ConnectionType;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
@@ -297,7 +296,7 @@ public class HandlerService {
 
         private void postHandler(ConnectionType type) {
             metrics.getSummaryMetrics().recordHTTPRequest();
-            LogUtils.debug(httpLogger, "{}", request);
+            httpLogger.debug("{}", request);
             if (Objects.isNull(response)) {
                 this.response = HttpResponseUtils.createSuccess();
             }
@@ -311,7 +310,7 @@ public class HandlerService {
 
         private void preHandler() {
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
-            LogUtils.debug(httpLogger, "{}", response);
+            httpLogger.debug("{}", response);
         }
 
         private void error() {

@@ -67,6 +67,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshConsumer {
 
+    public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+
     private final EventMeshHTTPServer eventMeshHTTPServer;
 
     private final AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
@@ -76,8 +78,6 @@ public class EventMeshConsumer {
     private final AtomicBoolean inited4Persistent = new AtomicBoolean(Boolean.FALSE);
 
     private final AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
-
-    public final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private ConsumerGroupConf consumerGroupConf;
 
@@ -124,10 +124,10 @@ public class EventMeshConsumer {
                     .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
                     .build();
-                if (messageLogger.isDebugEnabled()) {
-                    messageLogger.debug("message|mq2eventMesh|topic={}|event={}", topic, event);
+                if (MESSAGE_LOGGER.isDebugEnabled()) {
+                    MESSAGE_LOGGER.debug("message|mq2eventMesh|topic={}|event={}", topic, event);
                 } else {
-                    messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
+                    MESSAGE_LOGGER.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
                 }
 
                 if (topicNameHelper.isPresent() && topicNameHelper.get().isRetryTopic(topic)) {
@@ -206,12 +206,10 @@ public class EventMeshConsumer {
                 String bizSeqNo = getEventExtension(event, ProtocolKey.ClientInstanceKey.BIZSEQNO.getKey());
                 String uniqueId = getEventExtension(event, ProtocolKey.ClientInstanceKey.UNIQUEID.getKey());
 
-                if (messageLogger.isDebugEnabled()) {
-                    messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
+                if (MESSAGE_LOGGER.isDebugEnabled()) {
+                    MESSAGE_LOGGER.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
                 } else {
-                    messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}",
-                        topic, bizSeqNo,
-                        uniqueId);
+                    MESSAGE_LOGGER.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
                 }
 
                 ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(

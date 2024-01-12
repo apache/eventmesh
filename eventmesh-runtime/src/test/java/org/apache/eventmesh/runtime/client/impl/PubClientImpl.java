@@ -21,7 +21,6 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.client.api.PubClient;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
@@ -61,7 +60,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        LogUtils.info(log, "PubClientImpl|{}|started!", clientNo);
+        log.info("PubClientImpl|{}|started!", clientNo);
     }
 
     public void reconnect() throws Exception {
@@ -85,8 +84,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     PubClientImpl.this.reconnect();
                 }
                 Package msg = MessageUtils.heartBeat();
-                LogUtils.debug(log, "PubClientImpl|{}|send heartbeat|Command={}|msg={}",
-                    clientNo, msg.getHeader().getCommand(), msg);
+                log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
                 PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             } catch (Exception ignored) {
                 // ignore
@@ -114,7 +112,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
-        LogUtils.info(log, "PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
+        log.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
         return dispatcher(msg, timeout);
     }
 
@@ -159,7 +157,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Send an event message, the return value is ACCESS and ACK is given
      */
     public Package publish(Package msg, long timeout) throws Exception {
-        LogUtils.info(log, "PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        log.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return dispatcher(msg, timeout);
     }
 
@@ -167,7 +165,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * send broadcast message
      */
     public Package broadcast(Package msg, long timeout) throws Exception {
-        LogUtils.info(log, "PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        log.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return dispatcher(msg, timeout);
     }
 
@@ -181,7 +179,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            LogUtils.info(log, "PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+            log.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);

@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
@@ -53,10 +52,10 @@ public class SyncRequest {
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
 
-            LogUtils.info(log, "begin send rr msg: {}", eventMeshMessage);
+            log.info("begin send rr msg: {}", eventMeshMessage);
 
             final Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            LogUtils.info(log, "receive rr reply: {}", response);
+            log.info("receive rr reply: {}", response);
 
         } catch (Exception e) {
             log.error("SyncRequest failed", e);

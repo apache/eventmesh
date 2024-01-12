@@ -18,7 +18,6 @@
 package org.apache.eventmesh.grpc.sub.app.controller;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.grpc.sub.app.service.SubService;
 
 import java.util.HashMap;
@@ -44,7 +43,7 @@ public class SubController {
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(final HttpServletRequest request) {
         final String content = request.getParameter("content");
-        LogUtils.info(log, "=======receive message======= {}", content);
+        log.info("=======receive message======= {}", content);
 
         subService.consumeMessage(content);
 

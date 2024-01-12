@@ -39,9 +39,7 @@ public class BroadCastSubClient {
                 if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                     if (msg.getBody() instanceof EventMeshMessage) {
                         String body = ((EventMeshMessage) msg.getBody()).getBody();
-                        if (log.isInfoEnabled()) {
-                            log.info("receive message : {}", body);
-                        }
+                        log.info("receive message : {}", body);
                     }
                 }
             });
