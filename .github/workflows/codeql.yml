@@ -17,7 +17,7 @@
 # under the License.
 #
 
-name: "CodeQL"
+name: "Analyze"
 
 on:
   push:
