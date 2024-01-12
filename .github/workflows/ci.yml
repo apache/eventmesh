@@ -33,28 +33,11 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macOS-latest ]
         java: [ 8, 11 ]
-        language: ['java', 'go']
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file.
-          # Prefix the list here with "+" to use these queries and those in the config file.
-          # queries: ./path/to/local/query, your-org/your-repo/queries@main
-          languages: ${{ matrix.language }}
-
-      - if: matrix.language == 'cpp' || matrix.language == 'csharp'
-        name: Build C
-        run: |
-          git submodule init
-          git submodule update
-          make -C ./eventmesh-sdks/eventmesh-sdk-c  
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -86,9 +69,6 @@ jobs:
         run: ./gradlew installPlugin
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
-
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v2
 
       - name: Upload coverage report to codecov.io
         run: bash <(curl -s https://codecov.io/bash) || echo 'Failed to upload coverage report!'
