@@ -126,13 +126,13 @@ sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205
 ```
 
 
-Enter the container (replace `eventmesh` with the container name or ID you specified):
+Enter the container:
 
 ```shell
 sudo docker exec -it eventmesh /bin/bash
 ```
 
-To view the log of the EventMesh container:
+view the log:
 
 ```shell
 cd logs
