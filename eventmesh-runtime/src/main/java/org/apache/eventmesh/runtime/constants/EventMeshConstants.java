@@ -152,6 +152,9 @@ public class EventMeshConstants {
     public static final String MESSAGE = "message";
     public static final String CMD = "cmd";
     public static final String ACL = "acl";
+    public static final String BATCH_MSG = "batchMessage";
+    public static final String TCP_MONITOR = "tcpMonitor";
+    public static final String APP_MONITOR = "appMonitor";
     public static final String MSG_TYPE = "msgtype";
     public static final String PERSISTENT = "persistent";
     public static final String HANDLER_ORIGIN = "Access-Control-Allow-Origin";
