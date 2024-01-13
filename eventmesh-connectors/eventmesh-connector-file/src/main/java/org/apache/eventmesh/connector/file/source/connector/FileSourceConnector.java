@@ -97,13 +97,13 @@ public class FileSourceConnector implements Source {
     @Override
     public List<ConnectRecord> poll() {
         List<ConnectRecord> connectRecords = new ArrayList<>();
+        RecordPartition recordPartition = convertToRecordPartition(this.sourceConfig.getConnectorConfig().getTopic(), fileName);
         try {
             int bytesRead;
             char[] buffer = new char[1024];
             while ((bytesRead = bufferedReader.read(buffer)) != -1) {
                 String line = new String(buffer, 0, bytesRead);
                 long timeStamp = System.currentTimeMillis();
-                RecordPartition recordPartition = convertToRecordPartition(this.sourceConfig.getConnectorConfig().getTopic(), fileName);
                 ConnectRecord connectRecord = new ConnectRecord(recordPartition, null, timeStamp, line);
                 connectRecords.add(connectRecord);
             }
