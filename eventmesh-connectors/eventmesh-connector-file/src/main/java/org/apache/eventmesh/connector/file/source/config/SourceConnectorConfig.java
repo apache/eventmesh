@@ -28,8 +28,6 @@ public class SourceConnectorConfig {
 
     private String topic;
 
-    private long commitOffsetIntervalMs = 5 * 1000;
-
     private String fileName;
 
     private String filePath;

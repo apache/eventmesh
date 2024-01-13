@@ -27,7 +27,7 @@ connectorConfig:
     connectorName: fileSource
     nameserver: 127.0.0.1:9877
     topic: TopicTest
-    commitOffsetIntervalMs: 5000
     fileName: userFileName
     filePath: userFilePath
+
 
