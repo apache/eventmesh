@@ -25,9 +25,7 @@ pubSubConfig:
     passWord: filePassWord
 connectorConfig:
     connectorName: fileSource
-    nameserver: 127.0.0.1:9877
     topic: TopicTest
     fileName: userFileName
     filePath: userFilePath
-
 
