@@ -97,7 +97,7 @@ public class FileSourceConnector implements Source {
     @Override
     public List<ConnectRecord> poll() {
         List<ConnectRecord> connectRecords = new ArrayList<>();
-        RecordPartition recordPartition = convertToRecordPartition(this.sourceConfig.getConnectorConfig().getTopic(), fileName);
+        RecordPartition recordPartition = convertToRecordPartition(fileName);
         try {
             int bytesRead;
             char[] buffer = new char[1024];
@@ -113,9 +113,8 @@ public class FileSourceConnector implements Source {
         return connectRecords;
     }
 
-    public static RecordPartition convertToRecordPartition(String topic, String fileName) {
+    public static RecordPartition convertToRecordPartition(String fileName) {
         Map<String, String> map = new HashMap<>();
-        map.put("topic", topic);
         map.put("fileName", fileName);
         return new RecordPartition(map);
     }

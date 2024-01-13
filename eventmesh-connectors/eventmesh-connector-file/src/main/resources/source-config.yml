@@ -25,7 +25,6 @@ pubSubConfig:
     passWord: filePassWord
 connectorConfig:
     connectorName: fileSource
-    topic: TopicTest
     fileName: userFileName
     filePath: userFilePath
 

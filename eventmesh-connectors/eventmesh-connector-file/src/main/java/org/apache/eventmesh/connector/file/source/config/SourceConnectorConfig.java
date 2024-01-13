@@ -24,8 +24,6 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String topic;
-
     private String fileName;
 
     private String filePath;
