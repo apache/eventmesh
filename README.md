@@ -65,7 +65,7 @@ Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the
 
 This section of the guide will show you the steps to deploy EventMesh from [Local](#run-eventmesh-runtime-locally), [Docker](#run-eventmesh-runtime-in-docker), [K8s](#run-eventmesh-runtime-in-kubernetes).  
 
-This section guide is just to help you quickly get started with EventMesh deployment, start EventMesh according to the default configuration, if you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/next/introduction).
+This section guides the launch of EventMesh according to the default configuration, if you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/introduction).
 
 ### Deployment Event Store
 
