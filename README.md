@@ -69,7 +69,7 @@ This section guides the launch of EventMesh according to the default configurati
 
 ### Deployment Event Store
 
-> EventMesh supports [multiple Event Stores](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status), the default storage mode is ' standalone ', and does not rely on other event stores as layers.
+> EventMesh supports [multiple Event Stores](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status), the default storage mode is `standalone`, and does not rely on other event stores as layers.
 
 ### Run EventMesh Runtime locally
 
