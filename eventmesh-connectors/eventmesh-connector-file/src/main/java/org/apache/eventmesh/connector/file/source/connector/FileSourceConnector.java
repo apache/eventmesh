@@ -26,6 +26,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FileSourceConnector implements Source {
+    private static final int BUFFER_SIZE = 8192;
     private FileSourceConfig sourceConfig;
     private String filePath;
     private String fileName;
@@ -55,7 +57,7 @@ public class FileSourceConnector implements Source {
         // init config for hdfs source connector
         this.sourceConfig = (FileSourceConfig) config;
         this.filePath = ((FileSourceConfig) config).getConnectorConfig().getFilePath();
-        this.fileName = ((FileSourceConfig) config).getConnectorConfig().getFileName();
+        this.fileName = getFileName(filePath);
     }
 
     @Override
@@ -69,7 +71,8 @@ public class FileSourceConnector implements Source {
         if (fileName == null || fileName.isEmpty() || filePath == null || filePath.isEmpty()) {
             this.bufferedReader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         } else {
-            this.bufferedReader = Files.newBufferedReader(Paths.get(filePath, fileName), StandardCharsets.UTF_8);
+            this.bufferedReader = new BufferedReader(new InputStreamReader(Files.newInputStream(
+                Paths.get(filePath, fileName)), StandardCharsets.UTF_8), BUFFER_SIZE);
         }
     }
 
@@ -100,7 +103,7 @@ public class FileSourceConnector implements Source {
         RecordPartition recordPartition = convertToRecordPartition(fileName);
         try {
             int bytesRead;
-            char[] buffer = new char[1024];
+            char[] buffer = new char[BUFFER_SIZE];
             while ((bytesRead = bufferedReader.read(buffer)) != -1) {
                 String line = new String(buffer, 0, bytesRead);
                 long timeStamp = System.currentTimeMillis();
@@ -117,5 +120,10 @@ public class FileSourceConnector implements Source {
         Map<String, String> map = new HashMap<>();
         map.put("fileName", fileName);
         return new RecordPartition(map);
+    }
+
+    private static String getFileName(String filePath) throws NullPointerException {
+        File file = new File(filePath);
+        return file.getName();
     }
 }

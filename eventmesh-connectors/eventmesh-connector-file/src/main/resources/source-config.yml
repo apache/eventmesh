@@ -25,6 +25,5 @@ pubSubConfig:
     passWord: filePassWord
 connectorConfig:
     connectorName: fileSource
-    fileName: userFileName
     filePath: userFilePath
 
