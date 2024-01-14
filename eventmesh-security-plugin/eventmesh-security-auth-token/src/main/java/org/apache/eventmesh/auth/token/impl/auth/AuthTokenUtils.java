@@ -74,7 +74,6 @@ public class AuthTokenUtils {
         String topic = aclProperties.getTopic();
 
         Object topics = aclProperties.getExtendedField("topics");
-      
         if (!(topics instanceof Set)) {
             return false;
         }
