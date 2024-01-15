@@ -25,20 +25,17 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
+import org.apache.eventmesh.common.utils.LogUtil;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageCodec;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
-import io.netty.handler.codec.ReplayingDecoder;
-
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
@@ -46,25 +43,16 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Codec extends ByteToMessageCodec<Package> {
+public class Codec {
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
-    private Encoder encoder = new Encoder();
-    private Decoder decoder = new Decoder();
+    private static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length; //13
 
-    @Override
-    protected void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
-        encoder.encode(ctx, pkg, out);
-    }
-
-    @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        decoder.decode(ctx, in, out);
-    }
+    private static final int PACKAGE_BYTES_FIELD_LENGTH = 4;
 
     public static class Encoder extends MessageToByteEncoder<Package> {
 
@@ -73,9 +61,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
             final Header header = pkg.getHeader();
             Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
-            if (log.isDebugEnabled()) {
-                log.debug("Encoder pkg={}", JsonUtils.toJSONString(pkg));
-            }
+            LogUtil.debug(log, "Encode pkg={}", () -> JsonUtils.toJSONString(pkg));
 
             final byte[] headerData = JsonUtils.toJSONBytes(header);
             final byte[] bodyData;
@@ -89,7 +75,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             int headerLength = ArrayUtils.getLength(headerData);
             int bodyLength = ArrayUtils.getLength(bodyData);
 
-            final int length = CONSTANT_MAGIC_FLAG.length + VERSION.length + headerLength + bodyLength;
+            final int length = PREFIX_LENGTH + headerLength + bodyLength;
 
             if (length > FRAME_MAX_LENGTH) {
                 throw new IllegalArgumentException("message size is exceed limit!");
@@ -116,31 +102,62 @@ public class Codec extends ByteToMessageCodec<Package> {
         }
     }
 
-    public static class Decoder extends ReplayingDecoder<Package> {
+    public static class Decoder extends LengthFieldBasedFrameDecoder {
+
+        public Decoder() {
+            /**
+             * lengthAdjustment value = -9 explain:
+             * Header + Body, Format:
+             * <pre>
+             * ┌───────────────┬─────────────┬──────────────────┬──────────────────┬──────────────────┬─────────────────┐
+             * │   MAGIC_FLAG  │   VERSION   │ package length   │   Header length  │      Header      │      body       │
+             * │    (9bytes)   │  (4bytes)   │    (4bytes)      │      (4bytes)    │   (header bytes) │   (body bytes)  │
+             * └───────────────┴─────────────┴──────────────────┴──────────────────┴──────────────────┴─────────────────┘
+             * </pre>
+             * package length = MAGIC_FLAG + VERSION + Header length + Body length,Currently,
+             * adding MAGIC_FLAG + VERSION + package length field (4 bytes) actually adds 17 bytes.
+             * However, the value of the package length field is only reduced by the four bytes of
+             * the package length field itself and the four bytes of the header length field.
+             * Therefore, the compensation value to be added to the length field value is -9,
+             * which means subtracting the extra 9 bytes.
+             * Refer to the encoding in the {@link Encoder}
+             */
+            super(FRAME_MAX_LENGTH, PREFIX_LENGTH, PACKAGE_BYTES_FIELD_LENGTH, -9, 0);
+        }
 
         @Override
-        public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-            try {
-                if (null == in) {
-                    return;
-                }
+        protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
 
-                byte[] flagBytes = parseFlag(in);
-                byte[] versionBytes = parseVersion(in);
+            ByteBuf target = null;
+
+            try {
+                target = (ByteBuf) super.decode(ctx, in);
+                if (null == target) {
+                    return null;
+                }
+                byte[] flagBytes = parseFlag(target);
+                byte[] versionBytes = parseVersion(target);
                 validateFlag(flagBytes, versionBytes, ctx);
 
-                final int length = in.readInt();
-                final int headerLength = in.readInt();
-                final int bodyLength = length - CONSTANT_MAGIC_FLAG.length - VERSION.length - headerLength;
-                Header header = parseHeader(in, headerLength);
-                Object body = parseBody(in, header, bodyLength);
+                final int length = target.readInt();
+                final int headerLength = target.readInt();
+                final int bodyLength = length - PREFIX_LENGTH - headerLength;
+                Header header = parseHeader(target, headerLength);
+                Object body = parseBody(target, header, bodyLength);
 
                 Package pkg = new Package(header, body);
-                out.add(pkg);
-            } catch (Exception e) {
-                log.error("decode error| received data: {}.", deserializeBytes(in.array()), e);
-                throw e;
+                return pkg;
+
+            } catch (Exception ex) {
+                log.error("decode error", ex);
+                ctx.channel().close();
+            } finally {
+                if (target != null) {
+                    target.release();
+                }
             }
+
+            return null;
         }
 
         private byte[] parseFlag(ByteBuf in) {
@@ -161,7 +178,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             }
             final byte[] headerData = new byte[headerLength];
             in.readBytes(headerData);
-            LogUtils.debug(log, "Decode headerJson={}", deserializeBytes(headerData));
+            LogUtil.debug(log, "Decode headerJson={}", () -> deserializeBytes(headerData));
             return JsonUtils.parseObject(headerData, Header.class);
         }
 
@@ -171,7 +188,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             }
             final byte[] bodyData = new byte[bodyLength];
             in.readBytes(bodyData);
-            LogUtils.debug(log, "Decode bodyJson={}", deserializeBytes(bodyData));
+            LogUtil.debug(log, "Decode bodyJson={}", () -> deserializeBytes(bodyData));
             return deserializeBody(deserializeBytes(bodyData), header);
         }
 
@@ -223,7 +240,7 @@ public class Codec extends ByteToMessageCodec<Package> {
             case REDIRECT_TO_CLIENT:
                 return JsonUtils.parseObject(bodyJsonString, RedirectInfo.class);
             default:
-                LogUtils.warn(log, "Invalidate TCP command: {}", command);
+                log.warn("Invalidate TCP command: {}", command);
                 return null;
         }
     }

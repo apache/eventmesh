@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
@@ -73,7 +72,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
         }
 
         final String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
-        LogUtils.info(log, "receive async msg: {}|{}", msg, content);
+        log.info("receive async msg: {}|{}", msg, content);
         return Optional.empty();
     }
 }

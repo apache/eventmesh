@@ -23,7 +23,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -52,7 +51,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @EventMeshTrace
 public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
-    private final Logger httpLogger = LoggerFactory.getLogger("http");
+    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -69,7 +68,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
         HttpEventWrapper responseWrapper;
 
-        httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        HTTP_LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
             EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
@@ -96,7 +95,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
             Map<String, Object> responseBodyMap = new HashMap<>();
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + "topic is null");
-            httpLogger.warn("delete topic fail, topic is null");
+            HTTP_LOGGER.warn("delete topic fail, topic is null");
             responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
             responseWrapper.setHttpResponseStatus(HttpResponseStatus.BAD_REQUEST);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -123,7 +122,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
                 Map<String, Object> responseBodyMap = new HashMap<>();
                 StringBuilder sb = new StringBuilder();
                 sb.append(faildTopic.toString()).append(" not exist in eventmesh");
-                httpLogger.warn("delete topic fail, {}", sb.toString());
+                HTTP_LOGGER.warn("delete topic fail, {}", sb.toString());
                 responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_OPERATE_FAIL.getRetCode());
                 responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_OPERATE_FAIL.getErrMsg() + sb.toString());
                 responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
@@ -135,19 +134,19 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
             for (String item : topicArr) {
                 boolean flag = HttpClientGroupMapping.getInstance().getLocalTopicSet().remove(StringUtils.deleteWhitespace(item));
                 if (flag) {
-                    httpLogger.info("remove topic success, topic:{}", item);
+                    HTTP_LOGGER.info("remove topic success, topic:{}", item);
                 }
             }
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
+                    HTTP_LOGGER.debug("{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());
                 } catch (Exception ex) {
                     // ignore
-                    httpLogger.warn("delete topic, sendResponse fail,", ex);
+                    HTTP_LOGGER.warn("delete topic, sendResponse fail,", ex);
                 }
             };
 
@@ -164,7 +163,7 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR, responseHeaderMap,
                 responseBodyMap, null);
             long endTime = System.currentTimeMillis();
-            httpLogger.warn(
+            HTTP_LOGGER.warn(
                 "delete topic fail, eventMesh2client|cost={}ms|topic={}", endTime - startTime, topic, e);
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
@@ -173,6 +172,6 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.DELETE_TOPIC.getRequestURI()};
+        return new String[] {RequestURI.DELETE_TOPIC.getRequestURI()};
     }
 }

@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -45,7 +44,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @EventMeshTrace
 public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
-    private final Logger httpLogger = LoggerFactory.getLogger("http");
+    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -62,7 +61,7 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
         HttpEventWrapper responseWrapper;
 
-        httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        HTTP_LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
             EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
@@ -79,12 +78,12 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
+                    HTTP_LOGGER.debug("{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());
                 } catch (Exception ex) {
-                    httpLogger.warn("query subscription, sendResponse fail", ex);
+                    HTTP_LOGGER.warn("query subscription, sendResponse fail", ex);
                 }
             };
 
@@ -105,7 +104,7 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR, responseHeaderMap,
                 responseBodyMap, null);
             long endTime = System.currentTimeMillis();
-            httpLogger.warn("query subscription fail,eventMesh2client|cost={}ms", endTime - startTime, e);
+            HTTP_LOGGER.warn("query subscription fail,eventMesh2client|cost={}ms", endTime - startTime, e);
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
         }
@@ -113,6 +112,6 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.SUBSCRIPTION_QUERY.getRequestURI()};
+        return new String[] {RequestURI.SUBSCRIPTION_QUERY.getRequestURI()};
     }
 }
