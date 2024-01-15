@@ -51,9 +51,9 @@ public class EventMeshTcpMonitor {
         return eventMeshTCPServer;
     }
 
-    private final Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
+    private static final Logger TCP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.TCP_MONITOR);
 
-    private final Logger appLogger = LoggerFactory.getLogger("appMonitor");
+    private static final Logger APP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.APP_MONITOR);
 
     private static final int period = 60 * 1000;
 
@@ -115,7 +115,7 @@ public class EventMeshTcpMonitor {
                 int sendTopics = session.getSessionContext().getSendTopics().size();
                 int subscribeTopics = session.getSessionContext().getSubscribeTopics().size();
 
-                tcpLogger.info("session|deliveredFailCount={}|deliveredMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
+                TCP_LOGGER.info("session|deliveredFailCount={}|deliveredMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
                     deliveredFailCount.longValue(), deliveredMsgsCount.longValue(),
                     unAckMsgsCount, sendTopics, subscribeTopics, session.getClient());
 
@@ -128,7 +128,7 @@ public class EventMeshTcpMonitor {
         }), delay, period, TimeUnit.MILLISECONDS);
 
         monitorThreadPoolTask = eventMeshTCPServer.getTcpThreadPoolGroup().getScheduler().scheduleAtFixedRate(() -> {
-            appLogger.info("{TaskHandle:{},Send:{},Ack:{},Reply:{},Push:{},Scheduler:{},Rebalance:{}}",
+            APP_LOGGER.info("{TaskHandle:{},Send:{},Ack:{},Reply:{},Push:{},Scheduler:{},Rebalance:{}}",
                 eventMeshTCPServer.getTcpThreadPoolGroup().getTaskHandleExecutorService().getQueue().size(),
                 eventMeshTCPServer.getTcpThreadPoolGroup().getSendExecutorService().getQueue().size(),
                 eventMeshTCPServer.getTcpThreadPoolGroup().getAckExecutorService().getQueue().size(),
@@ -141,7 +141,7 @@ public class EventMeshTcpMonitor {
 
             // monitor retry queue size
             tcpSummaryMetrics.setRetrySize(eventMeshTCPServer.getTcpRetryer().getPendingTimeouts());
-            appLogger.info(
+            APP_LOGGER.info(
                 MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON,
                 EventMeshConstants.PROTOCOL_TCP,
                 MonitorMetricConstants.RETRY_QUEUE_SIZE,
@@ -151,25 +151,25 @@ public class EventMeshTcpMonitor {
     }
 
     private void printAppLogger(TcpSummaryMetrics tcpSummaryMetrics) {
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CLIENT_2_EVENTMESH_TPS,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CLIENT_2_EVENTMESH_TPS,
             tcpSummaryMetrics.getClient2eventMeshTPS());
 
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_MQ_TPS,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_MQ_TPS,
             tcpSummaryMetrics.getEventMesh2mqTPS());
 
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.MQ_2_EVENTMESH_TPS,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.MQ_2_EVENTMESH_TPS,
             tcpSummaryMetrics.getMq2eventMeshTPS());
 
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_CLIENT_TPS,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_CLIENT_TPS,
             tcpSummaryMetrics.getEventMesh2clientTPS());
 
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.ALL_TPS,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.ALL_TPS,
             tcpSummaryMetrics.getAllTPS());
 
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CONNECTION,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CONNECTION,
             tcpSummaryMetrics.getAllConnections());
 
-        appLogger.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.SUB_TOPIC_NUM,
+        APP_LOGGER.info("protocol: {}, s: {}, t: {}", EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.SUB_TOPIC_NUM,
             tcpSummaryMetrics.getSubTopicNum());
     }
 

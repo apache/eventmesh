@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-name: Build
+name: Docker
 on:
   release:
     types: [released]

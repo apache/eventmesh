@@ -70,7 +70,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HandlerService {
 
-    private final Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
+    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
@@ -158,7 +158,7 @@ public class HandlerService {
         ReferenceCountUtil.release(httpRequest);
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
-                httpLogger.warn("send response to [{}] fail, will close this channel",
+                HTTP_LOGGER.warn("send response to [{}] fail, will close this channel",
                     RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 if (isClose) {
                     f.channel().close();
@@ -174,7 +174,7 @@ public class HandlerService {
         ReferenceCountUtil.release(httpRequest);
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
-                httpLogger.warn("send response to [{}] with short-lived connection fail, will close this channel",
+                HTTP_LOGGER.warn("send response to [{}] with short-lived connection fail, will close this channel",
                     RemotingHelper.parseChannelRemoteAddr(f.channel()));
             }
         }).addListener(ChannelFutureListener.CLOSE);
@@ -296,7 +296,7 @@ public class HandlerService {
 
         private void postHandler(ConnectionType type) {
             metrics.getSummaryMetrics().recordHTTPRequest();
-            httpLogger.debug("{}", request);
+            HTTP_LOGGER.debug("{}", request);
             if (Objects.isNull(response)) {
                 this.response = HttpResponseUtils.createSuccess();
             }
@@ -310,7 +310,7 @@ public class HandlerService {
 
         private void preHandler() {
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
-            httpLogger.debug("{}", response);
+            HTTP_LOGGER.debug("{}", response);
         }
 
         private void error() {
