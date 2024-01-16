@@ -74,7 +74,7 @@ public class ThreadWrapperTest {
                 try {
                     TimeUnit.MILLISECONDS.sleep(500);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                     log.error("Error occurred during sleep", e);
                 }
                 counter.set(100);
             }
