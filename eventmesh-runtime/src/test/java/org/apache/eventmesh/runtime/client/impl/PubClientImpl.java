@@ -73,7 +73,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
             task.cancel(false);
             super.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("An error occurred during close(): {}", e.getMessage(), e);
         }
     }
 
