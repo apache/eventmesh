@@ -52,7 +52,6 @@ public class AuthTokenUtils {
                 throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
                     + aclProperties.getTopic());
             }
-            token = token.replace("Bearer ", "");
             String publicKeyUrl = getPublicKeyUrl();
             validateToken(token, publicKeyUrl, aclProperties);
         } else {
@@ -63,8 +62,7 @@ public class AuthTokenUtils {
     public static void helloTaskAuthTokenByPublicKey(AclProperties aclProperties) {
         String token = aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
-            String publicKeyUrl = getPublicKeyUrl();
-            validateToken(token, publicKeyUrl, aclProperties);
+            validateToken(token, getPublicKeyUrl(), aclProperties);
         } else {
             throw new AclException("invalid token!");
         }
@@ -75,6 +73,7 @@ public class AuthTokenUtils {
         String topic = aclProperties.getTopic();
 
         Object topics = aclProperties.getExtendedField("topics");
+
         if (!(topics instanceof Set)) {
             return false;
         }
@@ -85,7 +84,22 @@ public class AuthTokenUtils {
 
     }
 
-    public static void validateToken(String token, String publicKeyUrl, AclProperties aclProperties) {
+    private static String getPublicKeyUrl() {
+        String publicKeyUrl = null;
+        for (String key : ConfigurationContextUtil.KEYS) {
+            CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
+            if (null == commonConfiguration) {
+                continue;
+            }
+            if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
+                throw new AclException("publicKeyUrl cannot be null");
+            }
+            publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
+        }
+        return publicKeyUrl;
+    }
+
+    private static void validateToken(String token, String publicKeyUrl, AclProperties aclProperties) {
         String sub;
         token = token.replace("Bearer ", "");
         byte[] validationKeyBytes;
@@ -110,22 +124,6 @@ public class AuthTokenUtils {
         } catch (JwtException e) {
             throw new AclException("invalid token!", e);
         }
-
-    }
-
-    public static String getPublicKeyUrl() {
-        String publicKeyUrl = null;
-        for (String key : ConfigurationContextUtil.KEYS) {
-            CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-            if (null == commonConfiguration) {
-                continue;
-            }
-            if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
-                throw new AclException("publicKeyUrl cannot be null");
-            }
-            publicKeyUrl = commonConfiguration.getEventMeshSecurityPublickey();
-        }
-        return publicKeyUrl;
 
     }
 
