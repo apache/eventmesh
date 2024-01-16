@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.concurrent.Executor;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
@@ -215,6 +215,7 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
 
                 @Override
                 public void onSuccess(final CloudEvent event) {
+
                     log.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                         + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
 
@@ -262,8 +263,10 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
                     asyncContext.onComplete(err, handler);
 
                     eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
+
                     log.error("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                         + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, e);
+
                 }
             }, Integer.parseInt(ttl));
         } catch (Exception ex) {

@@ -398,7 +398,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         private void processHttpCommandRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) {
             final HttpCommand request = asyncContext.getRequest();
-
             final HttpRequestProcessor choosed = httpRequestProcessorTable.get(request.getRequestCode());
             Runnable runnable = () -> {
                 try {
@@ -427,6 +426,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     if (!asyncContext.isComplete()) {
                         return;
                     }
+
                     log.debug("{}", asyncContext.getResponse());
                     metrics.getSummaryMetrics()
                         .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());

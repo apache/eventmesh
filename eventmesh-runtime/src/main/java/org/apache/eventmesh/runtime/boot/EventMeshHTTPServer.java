@@ -70,6 +70,7 @@ import com.google.common.util.concurrent.RateLimiter;
 
 import lombok.extern.slf4j.Slf4j;
 
+
 /**
  * Add multiple managers to the underlying server
  */
@@ -83,21 +84,15 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private final Acl acl;
     private final EventBus eventBus = new EventBus();
-
+    private final transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
     private ConsumerManager consumerManager;
     private ProducerManager producerManager;
     private SubscriptionManager subscriptionManager;
-
     private FilterEngine filterEngine;
-
     private TransformerEngine transformerEngine;
-
     private HttpRetryer httpRetryer;
-
     private transient RateLimiter msgRateLimiter;
     private transient RateLimiter batchRateLimiter;
-
-    private final transient HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
 
