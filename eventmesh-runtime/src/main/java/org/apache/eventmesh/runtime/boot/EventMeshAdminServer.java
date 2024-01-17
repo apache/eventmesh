@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
@@ -69,7 +68,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                     .childHandler(new AdminServerInitializer(httpHandlerManager))
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
-                LogUtils.info(log, "AdminHttpServer[port={}] started.", this.getPort());
+                log.info("AdminHttpServer[port={}] started.", this.getPort());
 
                 bootstrap.bind(this.getPort())
                     .channel()
