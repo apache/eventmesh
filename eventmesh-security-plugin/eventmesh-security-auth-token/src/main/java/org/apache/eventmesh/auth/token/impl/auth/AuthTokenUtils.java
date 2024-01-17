@@ -81,7 +81,6 @@ public class AuthTokenUtils {
         Set<String> groupTopics = TypeUtils.castSet(topics, String.class);
 
         return groupTopics.contains(topic);
-
     }
 
     private static String getPublicKeyUrl() {
@@ -124,7 +123,6 @@ public class AuthTokenUtils {
         } catch (JwtException e) {
             throw new AclException("invalid token!", e);
         }
-
     }
 
 }
