@@ -75,7 +75,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * TCP serves as the runtime module server for the protocol
- *
  */
 @Slf4j
 public class AbstractTCPServer extends AbstractRemotingServer {
@@ -110,6 +109,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
     public void init() throws Exception {
         super.init("eventMesh-tcp");
+        initProducerManager();
         tcpThreadPoolGroup.initThreadPool();
     }
 
@@ -172,7 +172,6 @@ public class AbstractTCPServer extends AbstractRemotingServer {
 
     /**
      * Registers the processors required by the runtime module
-     *
      */
     public void registerProcessor(final Command command, final TcpProcessor processor,
         final ThreadPoolExecutor executor) {
@@ -302,8 +301,8 @@ public class AbstractTCPServer extends AbstractRemotingServer {
         private boolean isNeedTrace(Command cmd) {
             return eventMeshTCPConfiguration.isEventMeshServerTraceEnable()
                 && (Command.REQUEST_TO_SERVER == cmd
-                    || Command.ASYNC_MESSAGE_TO_SERVER == cmd
-                    || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
+                || Command.ASYNC_MESSAGE_TO_SERVER == cmd
+                || Command.BROADCAST_MESSAGE_TO_SERVER == cmd);
         }
 
         private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {

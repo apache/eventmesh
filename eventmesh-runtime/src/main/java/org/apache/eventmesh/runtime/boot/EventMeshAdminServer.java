@@ -51,10 +51,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     @Override
     public void init() throws Exception {
-        String threadPrefix = "eventMesh-admin-http";
-        buildBossGroup(threadPrefix);
-        buildIOGroup(threadPrefix);
-        buildWorkerGroup(threadPrefix);
+        super.init("eventMesh-admin-http");
         httpConnectionHandler = new HttpConnectionHandler();
     }
 

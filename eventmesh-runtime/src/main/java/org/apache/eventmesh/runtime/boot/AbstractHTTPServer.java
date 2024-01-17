@@ -145,6 +145,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public void init() throws Exception {
         super.init("eventMesh-http");
+        initProducerManager();
         httpThreadPoolGroup.initThreadPool();
     }
 

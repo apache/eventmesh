@@ -58,7 +58,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
 
     }
 
-    protected void buildIOGroup(final String threadPrefix) {
+    private void buildIOGroup(final String threadPrefix) {
         if (useEpoll()) {
             ioGroup = new EpollEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-NettyEpoll-IO"));
         } else {
@@ -66,7 +66,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
         }
     }
 
-    protected void buildWorkerGroup(final String threadPrefix) {
+    private void buildWorkerGroup(final String threadPrefix) {
         workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
     }
 
@@ -83,7 +83,6 @@ public abstract class AbstractRemotingServer implements RemotingServer {
         buildBossGroup(threadPrefix);
         buildIOGroup(threadPrefix);
         buildWorkerGroup(threadPrefix);
-        initProducerManager();
     }
 
     public void start() throws Exception {
