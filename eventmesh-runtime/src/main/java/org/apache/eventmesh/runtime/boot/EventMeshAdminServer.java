@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.utils.LogUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManagerAdapter;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -42,17 +42,12 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     private HttpConnectionHandler httpConnectionHandler;
 
-    HttpHandlerManagerAdapter httpHandlerManagerAdapter;
+    HttpHandlerManager httpHandlerManager;
 
     public EventMeshAdminServer(int port, boolean useTLS,
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration, HttpHandlerManagerAdapter httpHandlerManagerAdapter) {
+        EventMeshHTTPConfiguration eventMeshHttpConfiguration, HttpHandlerManager httpHandlerManager) {
         super(port, useTLS, eventMeshHttpConfiguration);
-        this.httpHandlerManagerAdapter = httpHandlerManagerAdapter;
-    }
-
-    public EventMeshAdminServer(int port, boolean useTLS,
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(port, useTLS, eventMeshHttpConfiguration);
+        this.httpHandlerManager = httpHandlerManager;
     }
 
     @Override
@@ -71,7 +66,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
             try {
                 bootstrap.group(this.getBossGroup(), this.getIoGroup())
                     .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                    .childHandler(new AdminServerInitializer(httpHandlerManagerAdapter))
+                    .childHandler(new AdminServerInitializer(httpHandlerManager))
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
                 LogUtils.info(log, "AdminHttpServer[port={}] started.", this.getPort());
@@ -97,10 +92,10 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     private class AdminServerInitializer extends ChannelInitializer<SocketChannel> {
 
-        HttpHandlerManagerAdapter httpHandlerManagerAdapter;
+        HttpHandlerManager httpHandlerManager;
 
-        public AdminServerInitializer(HttpHandlerManagerAdapter httpHandlerManagerAdapter) {
-            this.httpHandlerManagerAdapter = httpHandlerManagerAdapter;
+        public AdminServerInitializer(HttpHandlerManager httpHandlerManager) {
+            this.httpHandlerManager = httpHandlerManager;
         }
 
         @Override
@@ -112,17 +107,17 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 new HttpResponseEncoder(),
                 httpConnectionHandler,
                 new HttpObjectAggregator(Integer.MAX_VALUE),
-                new AdminServerHandler(httpHandlerManagerAdapter));
+                new AdminServerHandler(httpHandlerManager));
         }
     }
 
 
     private class AdminServerHandler extends ChannelInboundHandlerAdapter {
 
-        HttpHandlerManagerAdapter httpHandlerManagerAdapter;
+        HttpHandlerManager httpHandlerManager;
 
-        public AdminServerHandler(HttpHandlerManagerAdapter httpHandlerManagerAdapter) {
-            this.httpHandlerManagerAdapter = httpHandlerManagerAdapter;
+        public AdminServerHandler(HttpHandlerManager httpHandlerManager) {
+            this.httpHandlerManager = httpHandlerManager;
         }
 
         @Override
@@ -131,7 +126,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 return;
             }
             HttpRequest httpRequest = (HttpRequest) msg;
-            httpHandlerManagerAdapter.exec(ctx, httpRequest);
+            httpHandlerManager.exec(ctx, httpRequest);
 
         }
     }

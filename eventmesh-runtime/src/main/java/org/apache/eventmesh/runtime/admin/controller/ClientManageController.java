@@ -102,9 +102,8 @@ public class ClientManageController {
         // Get the server's admin port.
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
-        HttpHandlerManagerAdapter adapter = new HttpHandlerManagerAdapter(httpHandlerManager);
-        EventMeshAdminServer server = new EventMeshAdminServer(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), adapter);
-        adapter.bind(server);
+        EventMeshAdminServer server = new EventMeshAdminServer(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), httpHandlerManager);
+        httpHandlerManager.bind(server);
         try {
             server.init();
             // TODO: Optimized for automatic injection
@@ -113,12 +112,10 @@ public class ClientManageController {
             initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
                 eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
 
-            // Register the handlers from the HTTP handler manager with the HTTP server.
-            httpHandlerManager.registerHttpWrapper(adapter);
-
+            httpHandlerManager.register();
             server.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("ClientManageController start err", e);
         }
 
         log.info("ClientManageController start success, port:{}", port);
