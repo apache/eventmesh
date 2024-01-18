@@ -99,7 +99,7 @@ public class HttpHandlerManager {
                 ctx.writeAndFlush(HttpResponseUtils.createInternalServerError()).addListener(ChannelFutureListener.CLOSE);
             }
         } else {
-            ctx.writeAndFlush(HttpResponseUtils.create404NotFound()).addListener(ChannelFutureListener.CLOSE);
+            ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
         }
     }
 

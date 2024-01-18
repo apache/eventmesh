@@ -45,10 +45,6 @@ public class HttpResponseUtils {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static HttpResponse create404NotFound() {
-        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
-    }
-
     private static ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
         byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
