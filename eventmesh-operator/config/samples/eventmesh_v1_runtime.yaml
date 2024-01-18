@@ -23,6 +23,10 @@ data:
   rocketmq.properties: |
     #######################rocketmq-client##################
     eventMesh.server.rocketmq.namesrvAddr=127.0.0.1:9876;127.0.0.1:9876
+    eventMesh.server.rocketmq.cluster=DefaultCluster
+    eventMesh.server.rocketmq.accessKey=********
+    eventMesh.server.rocketmq.secretKey=********
+
   eventmesh.properties: |
     ###############################EVNETMESH-runtime ENV#################################
     eventMesh.server.idc=DEFAULT
@@ -254,7 +258,16 @@ spec:
   runtimePodTemplate:
     template:
       spec:
-        # hostNetwork: true
+        # Host networking requested for this pod. Use the host's network namespace.
+        # If this option is set, the ports that will be used must be specified.
+        # Default to false.
+        hostNetwork: false
+        # Defaults to "ClusterFirst"
+        # Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+        # DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy.
+        # To have DNS options set along with hostNetwork, you have to specify DNS policy
+        # explicitly to 'ClusterFirstWithHostNet'.
+        dnsPolicy: ClusterFirstWithHostNet
         # define the runtime container.
         containers:
         - name: eventmesh-runtime
@@ -271,6 +284,14 @@ spec:
               name: runtime-config
           # imagePullPolicy is the image pull policy
           imagePullPolicy: Always
+          # resources describes the compute resource requirements and limits
+          resources:
+            requests:
+              memory: 2048Mi
+              cpu: 2000m
+            limits:
+              memory: 8192Mi
+              cpu: 8000m
         # configuration file settings to be mounted.
         volumes:
           - name: runtime-config
