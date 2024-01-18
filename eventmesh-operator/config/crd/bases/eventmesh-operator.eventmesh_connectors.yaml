@@ -2266,6 +2266,12 @@ spec:
                         type: string
                     type: object
                 type: object
+              dnsPolicy:
+                description: DNSPolicy Set DNS policy for the pod.
+                type: string
+              hostNetwork:
+                description: HostNetwork can be true or false
+                type: boolean
               imagePullPolicy:
                 description: ImagePullPolicy defines how the image is pulled
                 type: string
