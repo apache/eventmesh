@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import org.apache.eventmesh.runtime.boot.AbstractHTTPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.Utils;
 
 import java.io.ByteArrayInputStream;
@@ -67,12 +67,6 @@ public class HttpHandlerManager {
 
     private final Map<String, HttpHandler> httpHandlerMap = new ConcurrentHashMap<>();
 
-    private AbstractHTTPServer abstractHTTPServer;
-
-    public void bind(AbstractHTTPServer abstractHTTPServer) {
-        this.abstractHTTPServer = abstractHTTPServer;
-    }
-
     /**
      * Registers an HTTP handler.
      *
@@ -102,10 +96,10 @@ public class HttpHandlerManager {
                 return;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                abstractHTTPServer.sendError(ctx, HttpResponseStatus.valueOf(500));
+                ctx.writeAndFlush(HttpResponseUtils.createInternalServerError()).addListener(ChannelFutureListener.CLOSE);
             }
         } else {
-            abstractHTTPServer.sendError(ctx, HttpResponseStatus.NOT_FOUND);
+            ctx.writeAndFlush(HttpResponseUtils.create404NotFound()).addListener(ChannelFutureListener.CLOSE);
         }
     }
 

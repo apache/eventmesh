@@ -103,7 +103,6 @@ public class ClientManageController {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
         EventMeshAdminServer server = new EventMeshAdminServer(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), httpHandlerManager);
-        httpHandlerManager.bind(server);
         try {
             server.init();
             // TODO: Optimized for automatic injection
