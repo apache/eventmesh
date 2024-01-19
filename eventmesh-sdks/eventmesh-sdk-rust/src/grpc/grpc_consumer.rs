@@ -161,11 +161,12 @@ impl EventMeshGrpcConsumer {
                             ProtocolKey::SUB_MESSAGE_TYPE.to_string(),
                             PbCloudEventAttributeValue {
                                 attr: Some(PbAttr::CeString(
-                                    ProtocolKey::SUB_REPLY_MESSAGE.to_string(),
+                                    SubscriptionReply::SUB_TYPE.to_string(),
                                 )),
                             },
                         );
-                        received.data = None;
+                        received.data =
+                            Some(PbData::TextData(serde_json::to_string(&reply).unwrap()));
                         let _ = keeper.sender.send(received).await;
                     }
                 } else {
