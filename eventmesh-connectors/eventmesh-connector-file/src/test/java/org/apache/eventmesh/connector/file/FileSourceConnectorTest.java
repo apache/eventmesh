@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.file.source.connector;
+package org.apache.eventmesh.connector.file;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.connector.file.source.config.FileSourceConfig;
 import org.apache.eventmesh.connector.file.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.connector.file.source.connector.FileSourceConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.nio.charset.StandardCharsets;
@@ -35,23 +36,22 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 class FileSourceConnectorTest {
+
     private FileSourceConnector fileSourceConnector;
     @Mock
     private FileSourceConfig fileSourceConfig;
 
     @Test
     void testFileSourceConnector() throws Exception {
-        String directoryPath = "d/f/";
+        String directoryPath = "d/g/";
         Path directory = Paths.get(directoryPath);
         Files.createDirectories(directory);
         Path newFilePath = directory.resolve("foo.txt");
-        if (!Files.exists(newFilePath)) {
-            Files.createFile(newFilePath);
-        }
+        Files.createFile(newFilePath);
         fileSourceConfig = mock(FileSourceConfig.class);
         SourceConnectorConfig connectorConfig = mock(SourceConnectorConfig.class);
         when(fileSourceConfig.getConnectorConfig()).thenReturn(connectorConfig);
-        when(fileSourceConfig.getConnectorConfig().getFilePath()).thenReturn("d/f/foo.txt");
+        when(fileSourceConfig.getConnectorConfig().getFilePath()).thenReturn("d/g/foo.txt");
         String filePath = fileSourceConfig.getConnectorConfig().getFilePath();
         Path mockPath = Paths.get(filePath);
         String content = "line1\nline2\nline3";
@@ -62,6 +62,7 @@ class FileSourceConnectorTest {
         fileSourceConnector.start();
         List<ConnectRecord> connectRecords = fileSourceConnector.poll();
         fileSourceConnector.stop();
+        Files.delete(newFilePath);
         Assertions.assertEquals(content, connectRecords.get(0).getData().toString());
     }
 }
