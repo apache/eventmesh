@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class FileSourceConnector implements Source {
     private FileSourceConfig sourceConfig;
     private String filePath;
     private String fileName;
-    private BufferedReader bufferedReader;
+    public BufferedReader bufferedReader;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -68,11 +69,11 @@ public class FileSourceConnector implements Source {
 
     @Override
     public void start() throws Exception {
-        if (fileName == null || fileName.isEmpty() || filePath == null || filePath.isEmpty()) {
+        if (filePath == null || filePath.isEmpty()) {
             this.bufferedReader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         } else {
-            this.bufferedReader = new BufferedReader(new InputStreamReader(Files.newInputStream(
-                Paths.get(filePath, fileName)), StandardCharsets.UTF_8), BUFFER_SIZE);
+            Path path = Paths.get(filePath);
+            this.bufferedReader = new BufferedReader(new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8), BUFFER_SIZE);
         }
     }
 
