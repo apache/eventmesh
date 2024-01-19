@@ -46,7 +46,7 @@ public class FileSourceConnector implements Source {
     private FileSourceConfig sourceConfig;
     private String filePath;
     private String fileName;
-    public BufferedReader bufferedReader;
+    private BufferedReader bufferedReader;
 
     @Override
     public Class<? extends Config> configClass() {
