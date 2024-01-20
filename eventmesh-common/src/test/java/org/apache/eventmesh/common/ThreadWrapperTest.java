@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ThreadWrapperTest {
 
     @Test
@@ -74,7 +77,7 @@ public class ThreadWrapperTest {
                 try {
                     TimeUnit.MILLISECONDS.sleep(500);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("[ThreadWrapperTest][shutdown] InterruptedException", e);
                 }
                 counter.set(100);
             }
