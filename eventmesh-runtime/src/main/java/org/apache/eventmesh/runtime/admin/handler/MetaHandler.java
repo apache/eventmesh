@@ -98,51 +98,46 @@ public class MetaHandler extends AbstractHttpHandler {
      * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
         httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
-        try {
-            List<GetRegistryResponse> getRegistryResponseList = new ArrayList<>();
-            List<EventMeshDataInfo> eventMeshDataInfos = eventMeshMetaStorage.findAllEventMeshInfo();
-            for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfos) {
-                GetRegistryResponse getRegistryResponse = new GetRegistryResponse(
-                    eventMeshDataInfo.getEventMeshClusterName(),
-                    eventMeshDataInfo.getEventMeshName(),
-                    eventMeshDataInfo.getEndpoint(),
-                    eventMeshDataInfo.getLastUpdateTimestamp(),
-                    eventMeshDataInfo.getMetadata().toString());
-                getRegistryResponseList.add(getRegistryResponse);
-            }
-            getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
-
-            String result = JsonUtils.toJSONString(getRegistryResponseList);
-            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } catch (NullPointerException e) {
-            // registry not initialized, return empty list
-            String result = JsonUtils.toJSONString(new ArrayList<>());
-            httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
-
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJSONString(error);
-            httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            try {
+                List<GetRegistryResponse> getRegistryResponseList = new ArrayList<>();
+                List<EventMeshDataInfo> eventMeshDataInfos = eventMeshMetaStorage.findAllEventMeshInfo();
+                for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfos) {
+                    GetRegistryResponse getRegistryResponse = new GetRegistryResponse(
+                        eventMeshDataInfo.getEventMeshClusterName(),
+                        eventMeshDataInfo.getEventMeshName(),
+                        eventMeshDataInfo.getEndpoint(),
+                        eventMeshDataInfo.getLastUpdateTimestamp(),
+                        eventMeshDataInfo.getMetadata().toString());
+                    getRegistryResponseList.add(getRegistryResponse);
                 }
+                getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
+
+                String result = JsonUtils.toJSONString(getRegistryResponseList);
+                httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            } catch (NullPointerException e) {
+                // registry not initialized, return empty list
+                String result = JsonUtils.toJSONString(new ArrayList<>());
+                httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            } catch (Exception e) {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                printWriter.flush();
+                String stackTrace = writer.toString();
+
+                Error error = new Error(e.toString(), stackTrace);
+                String result = JsonUtils.toJSONString(error);
+                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             }
+        } catch (IOException e) {
+            log.warn("out close failed...", e);
         }
     }
 
