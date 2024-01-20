@@ -66,10 +66,10 @@ public class EtcdCustomService extends EtcdMetaService {
                 }
                 return eventMeshServicePubTopicInfoList;
             }
+        } catch (InterruptedException e) {
+            log.error("[EtcdRegistryService][findEventMeshServicePubTopicInfos] InterruptedException", e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
             log.error("[EtcdRegistryService][findEventMeshServicePubTopicInfos] error", e);
             throw new MetaException(e.getMessage());
         }
@@ -91,10 +91,10 @@ public class EtcdCustomService extends EtcdMetaService {
                     new String(keyValues.get(0).getValue().getBytes(), Constants.DEFAULT_CHARSET),
                     EventMeshAppSubTopicInfo.class);
             }
+        } catch (InterruptedException e) {
+            log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] InterruptedException", e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
             log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
             throw new MetaException(e.getMessage());
         }
