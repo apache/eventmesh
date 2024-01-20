@@ -67,7 +67,7 @@ public class EtcdCustomService extends EtcdMetaService {
                 return eventMeshServicePubTopicInfoList;
             }
         } catch (Exception e) {
-            if(e instanceof InterruptedException) {
+            if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
             log.error("[EtcdRegistryService][findEventMeshServicePubTopicInfos] error", e);
@@ -92,7 +92,7 @@ public class EtcdCustomService extends EtcdMetaService {
                     EventMeshAppSubTopicInfo.class);
             }
         } catch (Exception e) {
-            if(e instanceof InterruptedException) {
+            if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
             log.error("[EtcdRegistryService][findEventMeshAppSubTopicInfoByGroup] error, group: {}", group, e);
