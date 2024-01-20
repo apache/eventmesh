@@ -276,7 +276,6 @@ public class SourceWorker implements ConnectorWorker {
         try {
             source.stop();
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("source destroy error", e);
         }
         log.info("pollService stopping");
