@@ -17,6 +17,8 @@
 
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation('org.mockito:mockito-junit-jupiter')
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
