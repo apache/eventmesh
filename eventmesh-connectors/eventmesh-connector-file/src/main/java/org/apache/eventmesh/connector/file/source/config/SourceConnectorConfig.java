@@ -24,9 +24,5 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String nameserver;
-
-    private String topic;
-
-    private long commitOffsetIntervalMs = 5 * 1000;
+    private String filePath;
 }

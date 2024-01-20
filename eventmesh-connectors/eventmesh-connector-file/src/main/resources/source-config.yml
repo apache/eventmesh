@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 pubSubConfig:
     meshAddress: 127.0.0.1:10000
     subject: TopicTest
@@ -26,15 +25,5 @@ pubSubConfig:
     passWord: filePassWord
 connectorConfig:
     connectorName: fileSource
-    nameserver: 127.0.0.1:9877
-    topic: TopicTest
-    commitOffsetIntervalMs: 5000
-offsetStorageConfig:
-    offsetStorageType: nacos
-    offsetStorageAddr: 127.0.0.1:8848
-    extensions: {
-                    #same with topic
-                    dataId: TopicTest,
-                    #same with group
-                    group: fileSource
-    }
+    filePath: userFilePath
+

@@ -23,18 +23,30 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FileSourceConnector implements Source {
-
+    private static final int BUFFER_SIZE = 8192;
     private FileSourceConfig sourceConfig;
-
-    private OffsetStorageReader offsetStorageReader;
+    private String filePath;
+    private String fileName;
+    private BufferedReader bufferedReader;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -45,20 +57,24 @@ public class FileSourceConnector implements Source {
     public void init(Config config) throws Exception {
         // init config for hdfs source connector
         this.sourceConfig = (FileSourceConfig) config;
-
+        this.filePath = ((FileSourceConfig) config).getConnectorConfig().getFilePath();
+        this.fileName = getFileName(filePath);
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (FileSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
-
     }
 
     @Override
     public void start() throws Exception {
-
+        if (filePath == null || filePath.isEmpty()) {
+            this.bufferedReader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+        } else {
+            Path path = Paths.get(filePath);
+            this.bufferedReader = new BufferedReader(new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8), BUFFER_SIZE);
+        }
     }
 
     @Override
@@ -73,12 +89,42 @@ public class FileSourceConnector implements Source {
 
     @Override
     public void stop() {
-
+        try {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+        } catch (Exception e) {
+            log.error("Error closing resources: {}", e.getMessage());
+        }
     }
 
     @Override
     public List<ConnectRecord> poll() {
-        return null;
+        List<ConnectRecord> connectRecords = new ArrayList<>();
+        RecordPartition recordPartition = convertToRecordPartition(fileName);
+        try {
+            int bytesRead;
+            char[] buffer = new char[BUFFER_SIZE];
+            while ((bytesRead = bufferedReader.read(buffer)) != -1) {
+                String line = new String(buffer, 0, bytesRead);
+                long timeStamp = System.currentTimeMillis();
+                ConnectRecord connectRecord = new ConnectRecord(recordPartition, null, timeStamp, line);
+                connectRecords.add(connectRecord);
+            }
+        } catch (IOException e) {
+            log.error("Error reading data from the file: {}", e.getMessage());
+        }
+        return connectRecords;
     }
 
+    public static RecordPartition convertToRecordPartition(String fileName) {
+        Map<String, String> map = new HashMap<>();
+        map.put("fileName", fileName);
+        return new RecordPartition(map);
+    }
+
+    private static String getFileName(String filePath) throws NullPointerException {
+        File file = new File(filePath);
+        return file.getName();
+    }
 }
