@@ -146,22 +146,11 @@ impl EventMeshGrpcConsumer {
                 let handled_msg = listener_inner.handle(eventmesh_message.unwrap());
                 if let Ok(msg_option) = handled_msg {
                     if let Some(_msg) = msg_option {
-                        let properties = HashMap::<String, String>::new();
-                        let reply = SubscriptionReply::new(
-                            EventMeshCloudEventUtils::get_subject(&received),
-                            EventMeshCloudEventUtils::get_subject(&received),
-                            EventMeshCloudEventUtils::get_data_content(&received),
-                            EventMeshCloudEventUtils::get_seq_num(&received),
-                            EventMeshCloudEventUtils::get_unique_id(&received),
-                            EventMeshCloudEventUtils::get_ttl(&received),
-                            None,
-                            properties,
-                        );
                         received.attributes.insert(
                             ProtocolKey::SUB_MESSAGE_TYPE.to_string(),
                             PbCloudEventAttributeValue {
                                 attr: Some(PbAttr::CeString(
-                                    ProtocolKey::SUB_REPLY_MESSAGE.to_string(),
+                                    SubscriptionReply::SUB_TYPE.to_string(),
                                 )),
                             },
                         );
