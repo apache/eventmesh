@@ -276,7 +276,6 @@ public class SourceWorker implements ConnectorWorker {
         try {
             source.stop();
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("source destroy error", e);
         }
         log.info("pollService stopping");
@@ -330,7 +329,7 @@ public class SourceWorker implements ConnectorWorker {
             log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
             if (committableOffsets.hasPending()) {
                 log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
-                    + "The source partition with the most pending messages is {}, with {} pending messages",
+                        + "The source partition with the most pending messages is {}, with {} pending messages",
                     this,
                     committableOffsets.numUncommittableMessages(),
                     committableOffsets.numDeques(),
@@ -338,7 +337,7 @@ public class SourceWorker implements ConnectorWorker {
                     committableOffsets.largestDequeSize());
             } else {
                 log.debug("{} There are currently no pending messages for this offset commit; "
-                    + "all messages dispatched to the task's producer since the last commit have been acknowledged",
+                        + "all messages dispatched to the task's producer since the last commit have been acknowledged",
                     this);
             }
         }
