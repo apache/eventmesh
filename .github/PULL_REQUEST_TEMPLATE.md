@@ -23,7 +23,7 @@
 (If this PR fixes a GitHub issue, please add `Fixes #<XXX>` or `Closes #<XXX>`.)
 -->
 
-Fixes #<XXXX>.
+Fixes #issue_id
 
 ### Motivation
 
