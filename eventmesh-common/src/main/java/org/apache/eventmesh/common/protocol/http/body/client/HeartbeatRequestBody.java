@@ -66,12 +66,46 @@ public class HeartbeatRequestBody extends Body {
         return map;
     }
 
-    @ToString
+    @Data
     public static class HeartbeatEntity {
 
-        public String topic;
-        public String serviceId;
-        public String url;
-        public String instanceId;
+        private String topic;
+        private String serviceId;
+        private String url;
+        private String instanceId;
+
+        public String getTopic() {
+            return topic;
+        }
+
+        public void setTopic(String topic) {
+            this.topic = topic;
+        }
+
+        public String getServiceId() {
+            return serviceId;
+        }
+
+        public void setServiceId(String serviceId) {
+            this.serviceId = serviceId;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public String getInstanceId() {
+            return instanceId;
+        }
+
+        public void setInstanceId(String instanceId) {
+            this.instanceId = instanceId;
+        }
     }
+
+
 }

@@ -114,8 +114,8 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
             try {
                 final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem -> {
                     final HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
-                    heartbeatEntity.topic = subscriptionItem.getTopic();
-                    heartbeatEntity.url = subscribeUrl;
+                    heartbeatEntity.setTopic(subscriptionItem.getTopic());
+                    heartbeatEntity.setUrl(subscribeUrl);
                     return heartbeatEntity;
                 }).collect(Collectors.toList());
 

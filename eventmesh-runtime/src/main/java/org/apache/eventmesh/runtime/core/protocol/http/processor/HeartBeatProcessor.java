@@ -107,8 +107,8 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             client.setIp(heartbeatRequestHeader.getIp());
             client.setPid(heartbeatRequestHeader.getPid());
             client.setConsumerGroup(heartbeatRequestBody.getConsumerGroup());
-            client.setTopic(heartbeatEntity.topic);
-            client.setUrl(heartbeatEntity.url);
+            client.setTopic(heartbeatEntity.getTopic());
+            client.setUrl(heartbeatEntity.getUrl());
             client.setLastUpTime(new Date());
 
             if (StringUtils.isAnyBlank(client.getTopic(), client.getUrl())) {
