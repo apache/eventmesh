@@ -38,17 +38,34 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.incubator.codec.quic.QuicChannel;
+import io.netty.incubator.codec.quic.QuicClientCodecBuilder;
+import io.netty.incubator.codec.quic.QuicSslContext;
+import io.netty.incubator.codec.quic.QuicSslContextBuilder;
+import io.netty.util.CharsetUtil;
+import io.netty.util.NetUtil;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
@@ -191,6 +208,9 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String remoteResult = post(closeableHttpClient, targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap,
                 response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
+            // send by QUIC protocol
+            postQuic(targetMesh, builderRemoteHeaderMap(localAddress), remoteBodyMap);
+
             Map<String, String> remoteResultMap = Optional.ofNullable(JsonUtils.parseTypeReferenceObject(
                 remoteResult,
                 new TypeReference<Map<String, String>>() {
@@ -212,6 +232,46 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
                 JsonUtils.toJSONString(subscriptionList), e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
                 responseBodyMap, null);
+        }
+    }
+
+    private void postQuic(String targetMesh, Map<String, String> requestBody, Map<String, Object> responseBody) {
+        QuicSslContext context = QuicSslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+        NioEventLoopGroup group = new NioEventLoopGroup(1);
+        try {
+            ChannelHandler codec = new QuicClientCodecBuilder()
+                .sslContext(context)
+                .maxIdleTimeout(5000, TimeUnit.MILLISECONDS)
+                .initialMaxData(10000000)
+                .initialMaxStreamDataBidirectionalLocal(1000000)
+                .build();
+
+            Bootstrap bs = new Bootstrap();
+            Channel channel = bs.group(group)
+                .channel(NioDatagramChannel.class)
+                .handler(codec)
+                .bind(0).sync().channel();
+
+            QuicChannel quicChannel = QuicChannel.newBootstrap(channel)
+                .streamHandler(new ChannelInboundHandlerAdapter() {
+                    @Override
+                    public void channelActive(ChannelHandlerContext ctx) {
+                        String jsonStr = Optional.ofNullable(JsonUtils.toJSONString(requestBody)).orElse("");
+                        ByteBuf buffer = ctx.alloc().directBuffer();
+                        buffer.writeCharSequence(jsonStr, CharsetUtil.US_ASCII);
+                        ctx.writeAndFlush(buffer);
+                    }
+                })
+                .remoteAddress(new InetSocketAddress(targetMesh, 9999))
+                .connect()
+                .get();
+
+            quicChannel.closeFuture().sync();
+            channel.close().sync();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            group.shutdownGracefully();
         }
     }
 

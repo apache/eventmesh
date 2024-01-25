@@ -59,6 +59,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    implementation 'io.netty.incubator:netty-incubator-codec-native-quic:0.0.50.Final:windows-x86_64'
+
     // for debug only, can be removed
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")

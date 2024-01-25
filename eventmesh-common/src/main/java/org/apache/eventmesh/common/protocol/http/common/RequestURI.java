@@ -37,7 +37,9 @@ public enum RequestURI {
 
     DELETE_TOPIC("/eventmesh/topic/delete", "DELETE TOPIC"),
 
-    SUBSCRIPTION_QUERY("/eventmesh/subscrition/query", "SUBSCRIPTION QUERY");
+    SUBSCRIPTION_QUERY("/eventmesh/subscrition/query", "SUBSCRIPTION QUERY"),
+
+    QUIC_SUBSCRIBE_LOCAL("/eventmesh/subscribe/local/quic", "QUIC SUBSCRIBE LOCAL");
 
     private final String requestURI;
 
