@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.grpc.common;
+package org.apache.eventmesh.common;
 
 public class EventMeshCommon {
 

@@ -28,7 +28,7 @@ dependencies {
 
     api project (":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api")
     implementation project (":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos")
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-tcp-sdk-java")
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

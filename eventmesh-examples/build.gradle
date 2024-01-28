@@ -22,7 +22,11 @@ configurations {
 }
 
 dependencies {
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-tcp-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-grpc-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-http-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-workflow-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-catalog-sdk-java")
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-connectors:eventmesh-connector-spring")

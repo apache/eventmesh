@@ -20,6 +20,7 @@ package org.apache.eventmesh.client.tcp.common;
 import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
