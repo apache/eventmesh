@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.metrics.api.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class GrpcSummaryMetricsTest {
 
@@ -31,12 +31,12 @@ public class GrpcSummaryMetricsTest {
         grpcSummaryMetrics.getClient2EventMeshMsgNum().addAndGet(1024);
 
         grpcSummaryMetrics.refreshTpsMetrics(500);
-        Assert.assertEquals(256, grpcSummaryMetrics.getEventMesh2ClientTPS());
-        Assert.assertEquals(512, grpcSummaryMetrics.getEventMesh2MqTPS());
-        Assert.assertEquals(1024, grpcSummaryMetrics.getMq2EventMeshTPS());
-        Assert.assertEquals(2048, grpcSummaryMetrics.getClient2EventMeshTPS());
+        Assertions.assertEquals(256, grpcSummaryMetrics.getEventMesh2ClientTPS());
+        Assertions.assertEquals(512, grpcSummaryMetrics.getEventMesh2MqTPS());
+        Assertions.assertEquals(1024, grpcSummaryMetrics.getMq2EventMeshTPS());
+        Assertions.assertEquals(2048, grpcSummaryMetrics.getClient2EventMeshTPS());
 
         grpcSummaryMetrics.clearAllMessageCounter();
-        Assert.assertEquals(0, grpcSummaryMetrics.getEventMesh2ClientMsgNum().get());
+        Assertions.assertEquals(0, grpcSummaryMetrics.getEventMesh2ClientMsgNum().get());
     }
 }

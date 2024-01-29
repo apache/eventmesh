@@ -31,7 +31,6 @@ import org.apache.eventmesh.util.Utils;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -55,9 +54,7 @@ public class AsyncPublish {
             for (int i = 0; i < 5; i++) {
                 final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateAsyncEventMqMsg();
 
-                if (log.isInfoEnabled()) {
-                    log.info("begin send async msg[{}]: {}", i, eventMeshMessage);
-                }
+                log.info("begin send async msg[{}]: {}", i, eventMeshMessage);
                 client.publish(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);

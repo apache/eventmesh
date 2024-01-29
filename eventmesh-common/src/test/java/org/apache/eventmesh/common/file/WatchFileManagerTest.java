@@ -17,45 +17,53 @@
 
 package org.apache.eventmesh.common.file;
 
-import org.apache.eventmesh.common.utils.ThreadUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
 
 public class WatchFileManagerTest {
+
+    @TempDir
+    File tempConfigDir;
 
     @Test
     public void testWatchFile() throws IOException, InterruptedException {
         String file = WatchFileManagerTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        final FileChangeListener fileChangeListener = new FileChangeListener() {
-            @Override
-            public void onChanged(FileChangeContext changeContext) {
-                Assert.assertEquals(f.getName(), changeContext.getFileName());
-                Assert.assertEquals(f.getParent(), changeContext.getDirectoryPath());
-            }
+        File configFile = new File(file);
+        File tempConfigFile = new File(tempConfigDir, "configuration.properties");
+        Files.copy(configFile.toPath(), tempConfigFile.toPath());
 
-            @Override
-            public boolean support(FileChangeContext changeContext) {
-                return changeContext.getWatchEvent().context().toString().contains(f.getName());
-            }
-        };
-        WatchFileManager.registerFileChangeListener(f.getParent(), fileChangeListener);
+        final FileChangeListener mockFileChangeListener = Mockito.mock(FileChangeListener.class);
+        Mockito.when(mockFileChangeListener.support(
+                Mockito.argThat(isFileUnderTest(tempConfigFile.getParent(), tempConfigFile.getName())))
+        ).thenReturn(true);
+
+        WatchFileManager.registerFileChangeListener(tempConfigFile.getParent(), mockFileChangeListener);
 
         Properties properties = new Properties();
-        properties.load(new BufferedReader(new FileReader(file)));
-        properties.setProperty("eventMesh.server.newAdd", "newAdd");
-        FileWriter fw = new FileWriter(file);
-        properties.store(fw, "newAdd");
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(tempConfigFile))) {
+            properties.load(bufferedReader);
+        }
 
-        ThreadUtils.sleep(500, TimeUnit.MILLISECONDS);
+        try (FileWriter fw = new FileWriter(tempConfigFile)) {
+            properties.setProperty("eventMesh.server.newAdd", "newAdd");
+            properties.store(fw, "newAdd");
+        }
+
+        Mockito.verify(mockFileChangeListener, Mockito.timeout(15_000).atLeastOnce())
+                .onChanged(Mockito.argThat(isFileUnderTest(tempConfigFile.getParent(), tempConfigFile.getName())));
+    }
+
+    private ArgumentMatcher<FileChangeContext> isFileUnderTest(String directoryPath, String fileName) {
+        return argument -> argument.getDirectoryPath().equals(directoryPath) && argument.getFileName().equals(fileName);
     }
 }

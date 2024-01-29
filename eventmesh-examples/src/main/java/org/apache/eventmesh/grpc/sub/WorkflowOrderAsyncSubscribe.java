@@ -80,9 +80,7 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("receive async msg: {}", msg);
-        }
+        log.info("receive async msg: {}", msg);
 
         final Map<String, String> props = msg.getProp();
         final String workflowInstanceId = props.get("workflowinstanceid");
@@ -92,9 +90,7 @@ public class WorkflowOrderAsyncSubscribe extends GrpcAbstractDemo implements Rec
             .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         final ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
-        if (log.isInfoEnabled()) {
-            log.info("receive workflow msg: {}", response.getInstanceId());
-        }
+        log.info("receive workflow msg: {}", response.getInstanceId());
         return Optional.empty();
     }
 

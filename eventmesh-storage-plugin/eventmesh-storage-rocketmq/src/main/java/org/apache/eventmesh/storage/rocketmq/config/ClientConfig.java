@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.storage.rocketmq.config;
 
-
 import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
 
 import lombok.Getter;
@@ -42,7 +41,7 @@ public class ClientConfig implements NonStandardKeys {
     private String rmqConsumerGroup;
     private String rmqProducerGroup = "__OMS_PRODUCER_DEFAULT_GROUP";
     private int rmqMaxRedeliveryTimes = 16;
-    private int rmqMessageConsumeTimeout = 15; //In minutes
+    private int rmqMessageConsumeTimeout = 15; // In minutes
     private int rmqMaxConsumeThreadNums = 64;
     private int rmqMinConsumeThreadNums = 20;
     private String rmqMessageDestination;

@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.metrics.api;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MetricsPluginFactoryTest {
 
     @Test
     public void testGetMetricsRegistry_throwException() {
-        Exception exception = Assert.assertThrows(NullPointerException.class, () -> MetricsPluginFactory.getMetricsRegistry("security"));
-        Assert.assertTrue(exception.getMessage().contains("is not supported"));
+        Exception exception = Assertions.assertThrows(NullPointerException.class, () -> MetricsPluginFactory.getMetricsRegistry("security"));
+        Assertions.assertTrue(exception.getMessage().contains("is not supported"));
     }
 }

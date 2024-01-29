@@ -25,12 +25,10 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEve
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.grpc.common.SubscriptionReply;
-import org.apache.eventmesh.common.utils.JsonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
@@ -38,7 +36,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SubStreamHandler<T> extends Thread {
+public class SubStreamHandler<T> extends Thread implements Serializable {
 
     private final transient CountDownLatch latch = new CountDownLatch(1);
 
@@ -68,18 +66,15 @@ public class SubStreamHandler<T> extends Thread {
 
     private StreamObserver<CloudEvent> createReceiver() {
         return new StreamObserver<CloudEvent>() {
+
             @Override
             public void onNext(final CloudEvent message) {
                 T msg = EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(message, listener.getProtocolType());
-                if (msg instanceof Map) {
-                    if (log.isInfoEnabled()) {
-                        log.info("Received message from Server:{}", message);
-                    }
+                if (msg instanceof Set) {
+                    log.info("Received message from Server:{}", message);
                 } else {
-                    if (log.isInfoEnabled()) {
-                        log.info("Received message from Server.|seq={}|uniqueId={}|", EventMeshCloudEventUtils.getSeqNum(message),
-                            EventMeshCloudEventUtils.getUniqueId(message));
-                    }
+                    log.info("Received message from Server.|seq={}|uniqueId={}|",
+                        EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message));
                     CloudEvent streamReply = null;
                     try {
                         Optional<T> reply = listener.handle(msg);
@@ -87,17 +82,12 @@ public class SubStreamHandler<T> extends Thread {
                             streamReply = buildReplyMessage(message, reply.get());
                         }
                     } catch (Exception e) {
-                        if (log.isErrorEnabled()) {
-                            log.error("Error in handling reply message.|seq={}|uniqueId={}|",
-                                EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message), e);
-                        }
+                        log.error("Error in handling reply message.|seq={}|uniqueId={}|",
+                            EventMeshCloudEventUtils.getSeqNum(message), EventMeshCloudEventUtils.getUniqueId(message), e);
                     }
                     if (streamReply != null) {
-                        if (log.isInfoEnabled()) {
-                            log.info("Sending reply message to Server.|seq={}|uniqueId={}|",
-                                EventMeshCloudEventUtils.getSeqNum(streamReply),
-                                EventMeshCloudEventUtils.getUniqueId(streamReply));
-                        }
+                        log.info("Sending reply message to Server.|seq={}|uniqueId={}|",
+                            EventMeshCloudEventUtils.getSeqNum(streamReply), EventMeshCloudEventUtils.getUniqueId(streamReply));
                         senderOnNext(streamReply);
                     }
                 }
@@ -105,17 +95,12 @@ public class SubStreamHandler<T> extends Thread {
 
             @Override
             public void onError(final Throwable t) {
-                if (log.isErrorEnabled()) {
-                    log.error("Received Server side error", t);
-                }
-                close();
+                log.error("Received Server side error", t);
             }
 
             @Override
             public void onCompleted() {
-                if (log.isInfoEnabled()) {
-                    log.info("Finished receiving messages from server.");
-                }
+                log.info("Finished receiving messages from server.");
                 close();
             }
         };
@@ -124,24 +109,13 @@ public class SubStreamHandler<T> extends Thread {
     private CloudEvent buildReplyMessage(final CloudEvent reqMessage, final T replyMessage) {
         final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(replyMessage,
             clientConfig, listener.getProtocolType());
-        SubscriptionReply subscriptionReply = SubscriptionReply.builder().producerGroup(clientConfig.getConsumerGroup())
-            .topic(EventMeshCloudEventUtils.getSubject(cloudEvent))
-            .content(EventMeshCloudEventUtils.getDataContent(cloudEvent))
-            .seqNum(EventMeshCloudEventUtils.getSeqNum(cloudEvent))
-            .uniqueId(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
-            .ttl(EventMeshCloudEventUtils.getTtl(cloudEvent)).build();
 
-        Map<String, String> prop = new HashMap<>();
-        Map<String, CloudEventAttributeValue> reqMessageMap = reqMessage.getAttributesMap();
-        reqMessageMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-        Map<String, CloudEventAttributeValue> cloudEventMap = reqMessage.getAttributesMap();
-        cloudEventMap.entrySet().forEach(entry -> prop.put(entry.getKey(), entry.getValue().getCeString()));
-        subscriptionReply.putAllProperties(prop);
-
-        return CloudEvent.newBuilder().putAllAttributes(cloudEvent.getAttributesMap())
+        return CloudEvent.newBuilder(cloudEvent).putAllAttributes(reqMessage.getAttributesMap()).putAllAttributes(cloudEvent.getAttributesMap())
             .putAttributes(ProtocolKey.DATA_CONTENT_TYPE,
                 CloudEventAttributeValue.newBuilder().setCeString(EventMeshDataContentType.JSON.getCode()).build())
-            .setTextData(JsonUtils.toJSONString(subscriptionReply)).build();
+            // Indicate that it is a subscription response
+            .putAttributes(ProtocolKey.SUB_MESSAGE_TYPE, CloudEventAttributeValue.newBuilder().setCeString(ProtocolKey.SUB_REPLY_MESSAGE).build())
+            .build();
     }
 
     @Override
@@ -150,6 +124,7 @@ public class SubStreamHandler<T> extends Thread {
             latch.await();
         } catch (InterruptedException e) {
             log.error("SubStreamHandler Thread interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -160,9 +135,7 @@ public class SubStreamHandler<T> extends Thread {
 
         latch.countDown();
 
-        if (log.isInfoEnabled()) {
-            log.info("SubStreamHandler closed.");
-        }
+        log.info("SubStreamHandler closed.");
     }
 
     private void senderOnNext(final CloudEvent subscription) {

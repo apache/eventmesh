@@ -34,6 +34,4 @@ public class RocketMQHeaders {
 
     public static final String SPEC_VERSION = ATTRIBUTES_TO_HEADERS.get(CloudEventV1.SPECVERSION);
 
-
 }
-

@@ -62,9 +62,7 @@ public class CloudEventsSubscribeReply extends GrpcAbstractDemo implements Recei
 
     @Override
     public Optional<CloudEvent> handle(final CloudEvent msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive request-reply msg: {}", msg);
-        }
+        log.info("receive request-reply msg: {}", msg);
 
         if (msg != null) {
             return Optional.of(msg);

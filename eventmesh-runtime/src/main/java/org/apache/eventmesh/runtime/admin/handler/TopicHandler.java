@@ -37,24 +37,40 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Objects;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * The topic handler
+ * This class handles the {@code /topic} endpoint,
+ * corresponding to the {@code eventmesh-dashboard} path {@code /topic},
+ * including the "Create Topic" and "Remove" buttons.
+ * <p>
+ * It provides functionality for managing topics, including retrieving the list of topics (GET),
+ * creating a new topic (POST), and deleting an existing topic (DELETE).
+ * <p>
+ * An instance of {@link MQAdminWrapper} is used to interact with the messaging system.
+ *
+ * @see AbstractHttpHandler
+ * @see MQAdminWrapper
  */
+
 @Slf4j
 @EventHttpHandler(path = "/topic")
 public class TopicHandler extends AbstractHttpHandler {
 
     private final MQAdminWrapper admin;
 
+    /**
+     * Constructs a new instance with the specified connector plugin type and HTTP handler manager.
+     *
+     * @param connectorPluginType The name of event storage connector plugin.
+     * @param httpHandlerManager httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
+     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     */
     public TopicHandler(
         String connectorPluginType,
-        HttpHandlerManager httpHandlerManager
-    ) {
+        HttpHandlerManager httpHandlerManager) {
         super(httpHandlerManager);
         admin = new MQAdminWrapper(connectorPluginType);
         try {
@@ -65,7 +81,13 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * OPTIONS /topic
+     * Handles the OPTIONS request first for {@code /topic}.
+     * <p>
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
+     * the {@link HttpExchange} object and sends a 200 status code.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void preflight(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
@@ -78,7 +100,12 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * GET /topic Return a response that contains the list of topics
+     * Handles the GET request for {@code /topic}.
+     * <p>
+     * This method retrieves the list of topics from the {@link MQAdminWrapper} and returns it as a JSON response.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
 
@@ -104,7 +131,12 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * POST /topic Create a topic if it doesn't exist
+     * Handles the POST request for {@code /topic}.
+     * <p>
+     * This method creates a topic if it doesn't exist based on the request data, then returns {@code 200 OK}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void post(HttpExchange httpExchange) throws IOException {
 
@@ -131,7 +163,12 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     /**
-     * DELETE /topic Delete a topic if it exists
+     * Handles the DELETE request for {@code /topic}.
+     * <p>
+     * This method deletes a topic if it exists based on the request data, then returns {@code 200 OK}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
      */
     void delete(HttpExchange httpExchange) throws IOException {
 
@@ -157,6 +194,17 @@ public class TopicHandler extends AbstractHttpHandler {
         }
     }
 
+    /**
+     * Handles the HTTP requests for {@code /topic}.
+     * <p>
+     * It delegates the handling to {@code preflight()}, {@code get()}, {@code post()} or {@code delete()} methods
+     * based on the request method type (OPTIONS, GET, POST or DELETE).
+     * <p>
+     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
+     *
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if an I/O error occurs while handling the request
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {

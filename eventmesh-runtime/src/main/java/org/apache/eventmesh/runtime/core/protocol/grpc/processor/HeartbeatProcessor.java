@@ -34,6 +34,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class HeartbeatProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -56,27 +57,27 @@ public class HeartbeatProcessor {
     public void process(CloudEvent heartbeat, EventEmitter<CloudEvent> emitter) throws Exception {
 
         if (!ServiceUtils.validateCloudEventAttributes(heartbeat)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateHeartBeat(heartbeat)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
         try {
             doAclCheck(heartbeat);
         } catch (AclException e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION, HeartbeatProcessor failed", e);
-            ServiceUtils.completed(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ACL_LOGGER.warn("CLIENT HAS NO PERMISSION, HeartbeatProcessor failed", e);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
         // only handle heartbeat for consumers
         org.apache.eventmesh.common.protocol.grpc.common.ClientType clientType = EventMeshCloudEventUtils.getClientType(heartbeat);
         if (org.apache.eventmesh.common.protocol.grpc.common.ClientType.SUB != clientType) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -92,6 +93,7 @@ public class HeartbeatProcessor {
         List<HeartbeatItem> heartbeatItems = JsonUtils.parseTypeReferenceObject(heartbeat.getTextData(),
             new TypeReference<List<HeartbeatItem>>() {
             });
+        Objects.requireNonNull(heartbeatItems, "heartbeatItems can't be null");
         for (HeartbeatItem item : heartbeatItems) {
             ConsumerGroupClient hbClient = ConsumerGroupClient.builder()
                 .env(env)
@@ -106,11 +108,11 @@ public class HeartbeatProcessor {
 
             // consumer group client is lost, and the client needs to resubscribe.
             if (!consumerManager.updateClientTime(hbClient)) {
-                ServiceUtils.completed(StatusCode.CLIENT_RESUBSCRIBE, emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.CLIENT_RESUBSCRIBE, emitter);
                 return;
             }
         }
-        ServiceUtils.completed(StatusCode.SUCCESS, "heartbeat success", emitter);
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "heartbeat success", emitter);
     }
 
     private void doAclCheck(CloudEvent heartbeat) throws AclException {

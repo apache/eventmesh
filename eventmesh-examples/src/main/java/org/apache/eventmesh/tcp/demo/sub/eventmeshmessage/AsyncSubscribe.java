@@ -71,12 +71,10 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            if (msg.getProperties().containsKey(Constants.MSG_TAG)) {
-                log.info("receive async msg with tag: {}", msg);
-            } else {
-                log.info("receive async msg: {}", msg);
-            }
+        if (msg.getProperties().containsKey(Constants.MSG_TAG)) {
+            log.info("receive async msg with tag: {}", msg);
+        } else {
+            log.info("receive async msg: {}", msg);
         }
         return Optional.empty();
     }

@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.tcp.common;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -40,8 +40,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
@@ -53,23 +51,21 @@ public class EventMeshTestUtils {
 
     private static final String DEFAULT_TTL_MS = "30000";
 
-
     private static UserAgent getUserAgent(Integer port, String subsystem, Integer pid) {
         return UserAgent.builder()
-        .env(UtilsConstants.ENV)
-        .host(UtilsConstants.HOST)
-        .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
-        .username(UtilsConstants.USER_NAME)
-        .group(UtilsConstants.GROUP)
-        .path(UtilsConstants.PATH)
-        .port(port)
-        .subsystem(subsystem)
-        .pid(pid)
-        .version(UtilsConstants.VERSION)
-        .idc(UtilsConstants.IDC)
-        .build();
+            .env(UtilsConstants.ENV)
+            .host(UtilsConstants.HOST)
+            .password(generateRandomString(UtilsConstants.PASSWORD_LENGTH))
+            .username(UtilsConstants.USER_NAME)
+            .group(UtilsConstants.GROUP)
+            .path(UtilsConstants.PATH)
+            .port(port)
+            .subsystem(subsystem)
+            .pid(pid)
+            .version(UtilsConstants.VERSION)
+            .idc(UtilsConstants.IDC)
+            .build();
     }
-     
 
     // generate pub-client
     public static UserAgent generateClient1() {
@@ -111,7 +107,7 @@ public class EventMeshTestUtils {
     }
 
     public static EventMeshMessage getEventMeshMessage(String eventMeshTcpSyncTestTopic, String msgType, String msg,
-                                                       String keys, String keyMsg, String testMessage, String tag) {
+        String keys, String keyMsg, String testMessage, String tag) {
         final EventMeshMessage mqmsg = new EventMeshMessage();
         mqmsg.setTopic(eventMeshTcpSyncTestTopic);
         mqmsg.getProperties().put(msgType, msg);
@@ -124,9 +120,10 @@ public class EventMeshTestUtils {
         mqmsg.setBody(testMessage);
         return mqmsg;
     }
-         
+
     public static EventMeshMessage generateSyncRRMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.MSG_TYPE,
+<<<<<<< HEAD
                                    "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR", null);
     }
 
@@ -134,10 +131,20 @@ public class EventMeshTestUtils {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO, 
                                    "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
                                    "notnull", "testAsyncRR", null);
+=======
+            "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR");
+    }
+
+    private static EventMeshMessage generateAsyncRRMqMsg() {
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", "testAsyncRR");
+>>>>>>> master
     }
 
     public static EventMeshMessage generateAsyncEventMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
+<<<<<<< HEAD
                                    "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
                                    "notnull", ASYNC_MSG_BODY, null);
     }
@@ -152,6 +159,16 @@ public class EventMeshTestUtils {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, UtilsConstants.REPLY_TO,
                                    "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
                                    "notnull", ASYNC_MSG_BODY, null);
+=======
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", ASYNC_MSG_BODY);
+    }
+
+    public static EventMeshMessage generateBroadcastMqMsg() {
+        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", ASYNC_MSG_BODY);
+>>>>>>> master
     }
 
     private static String generateRandomString(final int length) {
@@ -171,7 +188,7 @@ public class EventMeshTestUtils {
             .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .build();
@@ -202,7 +219,7 @@ public class EventMeshTestUtils {
             .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(StandardCharsets.UTF_8))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .withExtension(UtilsConstants.MSG_TYPE, "persistent")

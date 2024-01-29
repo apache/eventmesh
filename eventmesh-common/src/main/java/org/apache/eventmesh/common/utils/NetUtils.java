@@ -30,8 +30,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -71,7 +71,7 @@ public class NetUtils {
         return result;
     }
 
-    public static String addressToString(List<InetSocketAddress> clients) {
+    public static String addressToString(Collection<InetSocketAddress> clients) {
         if (clients.isEmpty()) {
             return "no session had been closed";
         }

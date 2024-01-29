@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
+import org.apache.eventmesh.common.utils.LogUtil;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.GrpcAbstractDemo;
 import org.apache.eventmesh.selector.NacosSelector;
@@ -33,7 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
 
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 
@@ -66,9 +66,7 @@ public class WorkflowAsyncPublishInstance extends GrpcAbstractDemo {
             EventMeshWorkflowClient eventMeshWorkflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
             ExecuteResponse response = eventMeshWorkflowClient.getWorkflowClient().execute(executeRequest.build());
 
-            if (log.isInfoEnabled()) {
-                log.info("received response: {}", response.toString());
-            }
+            LogUtil.info(log, "received response: {}", response::toString);
 
             ThreadUtils.sleep(1, TimeUnit.MINUTES);
 

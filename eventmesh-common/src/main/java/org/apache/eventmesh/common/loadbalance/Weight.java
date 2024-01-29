@@ -41,7 +41,6 @@ public class Weight<T> {
         currentWeight.addAndGet(value);
     }
 
-
     public T getTarget() {
         return target;
     }
@@ -53,7 +52,6 @@ public class Weight<T> {
     public int getValue() {
         return value;
     }
-
 
     public AtomicInteger getCurrentWeight() {
         return currentWeight;

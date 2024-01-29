@@ -80,9 +80,7 @@ public class WorkflowExpressAsyncSubscribe extends GrpcAbstractDemo implements R
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) throws Exception {
-        if (log.isInfoEnabled()) {
-            log.info("receive async msg: {}", msg);
-        }
+        log.info("receive async msg: {}", msg);
         if (msg == null) {
             log.info("async msg is null, workflow end.");
             return Optional.empty();
@@ -96,9 +94,7 @@ public class WorkflowExpressAsyncSubscribe extends GrpcAbstractDemo implements R
             .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         final ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
-        if (log.isInfoEnabled()) {
-            log.info("receive workflow msg: {}", response.getInstanceId());
-        }
+        log.info("receive workflow msg: {}", response.getInstanceId());
         return Optional.empty();
     }
 

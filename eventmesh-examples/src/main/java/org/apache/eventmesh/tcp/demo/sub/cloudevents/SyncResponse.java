@@ -79,9 +79,7 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
         }
 
         final String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-        if (log.isInfoEnabled()) {
-            log.info("receive sync rr msg. CloudEvent: {}, CloudEvent's data: {}", event, content);
-        }
+        log.info("receive sync rr msg. CloudEvent: {}, CloudEvent's data: {}", event, content);
         return Optional.of(event);
     }
 

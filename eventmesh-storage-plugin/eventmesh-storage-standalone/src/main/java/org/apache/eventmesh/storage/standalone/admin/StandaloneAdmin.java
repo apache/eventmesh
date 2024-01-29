@@ -49,8 +49,7 @@ public class StandaloneAdmin extends AbstractAdmin {
             final int messageCount = messageQueue.getPutIndex() - messageQueue.getTakeIndex();
             topicList.add(new TopicProperties(
                 topicMetadata.getTopicName(),
-                messageCount
-            ));
+                messageCount));
         });
         topicList.sort(Comparator.comparing(t -> t.name));
         return topicList;

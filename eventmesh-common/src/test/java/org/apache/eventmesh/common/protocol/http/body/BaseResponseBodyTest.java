@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.common.protocol.http.body;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class BaseResponseBodyTest {
 
@@ -31,10 +29,10 @@ public class BaseResponseBodyTest {
         BaseResponseBody body = new BaseResponseBody();
         body.setRetCode(200);
         body.setRetMsg("SUCCESS");
-        Assert.assertTrue(body.toMap().containsKey(ProtocolKey.RETCODE));
-        Assert.assertTrue(body.toMap().containsKey(ProtocolKey.RETMSG));
-        Assert.assertTrue(body.toMap().containsKey(ProtocolKey.RESTIME));
-        Assert.assertThat(body.toMap().get(ProtocolKey.RETCODE), is(200));
-        Assert.assertThat(body.toMap().get(ProtocolKey.RETMSG), is("SUCCESS"));
+        Assertions.assertTrue(body.toMap().containsKey(ProtocolKey.RETCODE));
+        Assertions.assertTrue(body.toMap().containsKey(ProtocolKey.RETMSG));
+        Assertions.assertTrue(body.toMap().containsKey(ProtocolKey.RESTIME));
+        Assertions.assertEquals(200, body.toMap().get(ProtocolKey.RETCODE));
+        Assertions.assertEquals("SUCCESS", body.toMap().get(ProtocolKey.RETMSG));
     }
 }

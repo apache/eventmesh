@@ -21,21 +21,23 @@ import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +49,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SubscribeStreamProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+    private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private final GrpcType grpcType = GrpcType.STREAM;
+    private static final GrpcType grpcType = GrpcType.STREAM;
 
     private final Acl acl;
 
@@ -64,20 +66,20 @@ public class SubscribeStreamProcessor {
     public void process(CloudEvent subscription, EventEmitter<CloudEvent> emitter) throws Exception {
 
         if (!ServiceUtils.validateCloudEventAttributes(subscription)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
-            ServiceUtils.completed(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
-            ServiceUtils.streamCompleted(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ACL_LOGGER.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            ServiceUtils.sendStreamResponseCompleted(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -95,7 +97,7 @@ public class SubscribeStreamProcessor {
         List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
             new TypeReference<List<SubscriptionItem>>() {
             });
-        for (SubscriptionItem item : subscriptionItems) {
+        for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
                 .env(env)
                 .idc(idc)
@@ -135,7 +137,7 @@ public class SubscribeStreamProcessor {
             log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        ServiceUtils.streamCompleted(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
+        ServiceUtils.sendStreamResponse(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
     private void doAclCheck(CloudEvent subscription) throws AclException {
@@ -148,7 +150,7 @@ public class SubscribeStreamProcessor {
             List<SubscriptionItem> subscriptionItems = JsonUtils.parseTypeReferenceObject(subscription.getTextData(),
                 new TypeReference<List<SubscriptionItem>>() {
                 });
-            for (SubscriptionItem item : subscriptionItems) {
+            for (SubscriptionItem item : Objects.requireNonNull(subscriptionItems)) {
                 this.acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(), RequestCode.SUBSCRIBE.getRequestCode());
             }
         }

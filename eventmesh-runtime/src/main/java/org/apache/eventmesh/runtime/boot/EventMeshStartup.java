@@ -40,15 +40,12 @@ public class EventMeshStartup {
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    if (log.isInfoEnabled()) {
-                        log.info("eventMesh shutting down hook begin.");
-                    }
+                    log.info("eventMesh shutting down hook begin.");
                     long start = System.currentTimeMillis();
                     server.shutdown();
                     long end = System.currentTimeMillis();
-                    if (log.isInfoEnabled()) {
-                        log.info("eventMesh shutdown cost {}ms", end - start);
-                    }
+
+                    log.info("eventMesh shutdown cost {}ms", end - start);
                 } catch (Exception e) {
                     log.error("exception when shutdown.", e);
                 }
@@ -60,4 +57,3 @@ public class EventMeshStartup {
 
     }
 }
-

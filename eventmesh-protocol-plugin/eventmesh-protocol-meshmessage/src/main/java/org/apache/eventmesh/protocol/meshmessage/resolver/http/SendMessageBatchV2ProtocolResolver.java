@@ -42,7 +42,7 @@ public class SendMessageBatchV2ProtocolResolver {
             SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody = (SendMessageBatchV2RequestBody) body;
 
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.fromSpecVersion(
-                    SpecVersion.parse(sendMessageBatchV2RequestHeader.getProtocolVersion()));
+                SpecVersion.parse(sendMessageBatchV2RequestHeader.getProtocolVersion()));
 
             return getBuildCloudEvent(sendMessageBatchV2RequestHeader, sendMessageBatchV2RequestBody, cloudEventBuilder);
         } catch (Exception e) {
@@ -58,13 +58,13 @@ public class SendMessageBatchV2ProtocolResolver {
             .withSource(URI.create("/"))
             .withData(sendMessageBatchV2RequestBody.getMsg().getBytes(Constants.DEFAULT_CHARSET))
             .withExtension(ProtocolKey.REQUEST_CODE, sendMessageBatchV2RequestHeader.getCode())
-            .withExtension(ProtocolKey.ClientInstanceKey.ENV, sendMessageBatchV2RequestHeader.getEnv())
-            .withExtension(ProtocolKey.ClientInstanceKey.IDC, sendMessageBatchV2RequestHeader.getIdc())
-            .withExtension(ProtocolKey.ClientInstanceKey.IP, sendMessageBatchV2RequestHeader.getIp())
-            .withExtension(ProtocolKey.ClientInstanceKey.PID, sendMessageBatchV2RequestHeader.getPid())
-            .withExtension(ProtocolKey.ClientInstanceKey.SYS, sendMessageBatchV2RequestHeader.getSys())
-            .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, sendMessageBatchV2RequestHeader.getUsername())
-            .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, sendMessageBatchV2RequestHeader.getPasswd())
+            .withExtension(ProtocolKey.ClientInstanceKey.ENV.getKey(), sendMessageBatchV2RequestHeader.getEnv())
+            .withExtension(ProtocolKey.ClientInstanceKey.IDC.getKey(), sendMessageBatchV2RequestHeader.getIdc())
+            .withExtension(ProtocolKey.ClientInstanceKey.IP.getKey(), sendMessageBatchV2RequestHeader.getIp())
+            .withExtension(ProtocolKey.ClientInstanceKey.PID.getKey(), sendMessageBatchV2RequestHeader.getPid())
+            .withExtension(ProtocolKey.ClientInstanceKey.SYS.getKey(), sendMessageBatchV2RequestHeader.getSys())
+            .withExtension(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), sendMessageBatchV2RequestHeader.getUsername())
+            .withExtension(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), sendMessageBatchV2RequestHeader.getPasswd())
             .withExtension(ProtocolKey.VERSION, sendMessageBatchV2RequestHeader.getVersion().getVersion())
             .withExtension(ProtocolKey.LANGUAGE, sendMessageBatchV2RequestHeader.getLanguage())
             .withExtension(ProtocolKey.PROTOCOL_TYPE, sendMessageBatchV2RequestHeader.getProtocolType())

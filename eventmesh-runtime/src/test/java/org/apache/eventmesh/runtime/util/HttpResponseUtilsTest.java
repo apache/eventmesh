@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -30,20 +30,20 @@ public class HttpResponseUtilsTest {
 
     @Test
     public void testCreateSuccess() {
-        Assert.assertEquals(HttpVersion.HTTP_1_1, HttpResponseUtils.createSuccess().protocolVersion());
-        Assert.assertEquals(HttpResponseStatus.OK, HttpResponseUtils.createSuccess().status());
+        Assertions.assertEquals(HttpVersion.HTTP_1_1, HttpResponseUtils.createSuccess().protocolVersion());
+        Assertions.assertEquals(HttpResponseStatus.OK, HttpResponseUtils.createSuccess().status());
     }
 
     @Test
     public void testCreateNotFound() {
-        Assert.assertEquals(HttpVersion.HTTP_1_1, HttpResponseUtils.createNotFound().protocolVersion());
-        Assert.assertEquals(HttpResponseStatus.NOT_FOUND, HttpResponseUtils.createNotFound().status());
+        Assertions.assertEquals(HttpVersion.HTTP_1_1, HttpResponseUtils.createNotFound().protocolVersion());
+        Assertions.assertEquals(HttpResponseStatus.NOT_FOUND, HttpResponseUtils.createNotFound().status());
     }
 
     @Test
     public void testCreateInternalServerError() {
-        Assert.assertEquals(HttpVersion.HTTP_1_1, HttpResponseUtils.createInternalServerError().protocolVersion());
-        Assert.assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, HttpResponseUtils.createInternalServerError().status());
+        Assertions.assertEquals(HttpVersion.HTTP_1_1, HttpResponseUtils.createInternalServerError().protocolVersion());
+        Assertions.assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, HttpResponseUtils.createInternalServerError().status());
     }
 
 }

@@ -20,7 +20,6 @@ package org.apache.eventmesh.tcp.common;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UtilsConstants {
 
@@ -47,6 +46,5 @@ public class UtilsConstants {
     public static final String REPLY_TO = "replyto";
     public static final String PROPERTY_MESSAGE_REPLY_TO = "propertymessagereplyto";
     public static final String CONTENT = "content";
-
 
 }

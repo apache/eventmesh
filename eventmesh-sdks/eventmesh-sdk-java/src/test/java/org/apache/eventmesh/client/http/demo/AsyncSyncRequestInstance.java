@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.client.http.demo;
 
-
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
@@ -30,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,9 +38,9 @@ public class AsyncSyncRequestInstance {
 
         EventMeshHttpProducer eventMeshHttpProducer = null;
         try {
-            //String eventMeshIPPort = args[0];
+            // String eventMeshIPPort = args[0];
             String eventMeshIPPort = "";
-            //final String topic = args[1];
+            // final String topic = args[1];
             final String topic = "TEST-TOPIC-HTTP-ASYNC";
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
@@ -68,10 +66,11 @@ public class AsyncSyncRequestInstance {
                 .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
+
                 @Override
                 public void onSuccess(EventMeshMessage o) {
-                    log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
-                        System.currentTimeMillis() - startTime);
+                    log.debug("sendmsg: {}, return: {}, cost: {}ms",
+                        eventMeshMessage.getContent(), o.getContent(), System.currentTimeMillis() - startTime);
                 }
 
                 @Override

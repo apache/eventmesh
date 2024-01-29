@@ -34,15 +34,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-import lombok.Data;
-
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * ZipkinTraceService
  */
 @Config(field = "zipkinConfiguration")
 @Config(field = "exporterConfiguration")
-@Data
+@Getter
+@Setter
 public class ZipkinTraceService extends AbstractTraceService {
 
     /**
@@ -54,11 +55,11 @@ public class ZipkinTraceService extends AbstractTraceService {
 
     @Override
     public void init() {
-        //zipkin's config
+        // zipkin's config
         final String eventMeshZipkinIP = zipkinConfiguration.getEventMeshZipkinIP();
         final int eventMeshZipkinPort = zipkinConfiguration.getEventMeshZipkinPort();
 
-        //exporter's config
+        // exporter's config
         final int eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
         final int eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
         final int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
@@ -74,7 +75,7 @@ public class ZipkinTraceService extends AbstractTraceService {
             .setMaxQueueSize(eventMeshTraceMaxQueueSize)
             .build();
 
-        //set the trace service's name
+        // set the trace service's name
         final Resource serviceNameResource =
             Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 
@@ -106,7 +107,7 @@ public class ZipkinTraceService extends AbstractTraceService {
             throw new TraceException("trace close error", ex);
         }
 
-        //todo: turn the value of useTrace in AbstractHTTPServer into false
+        // todo: turn the value of useTrace in AbstractHTTPServer into false
     }
 
     public ZipkinConfiguration getClientConfiguration() {

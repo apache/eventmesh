@@ -1,0 +1,308 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runtime-config
+data:
+  rocketmq.properties: |
+    #######################rocketmq-client##################
+    eventMesh.server.rocketmq.namesrvAddr=127.0.0.1:9876;127.0.0.1:9876
+    eventMesh.server.rocketmq.cluster=DefaultCluster
+    eventMesh.server.rocketmq.accessKey=********
+    eventMesh.server.rocketmq.secretKey=********
+
+  eventmesh.properties: |
+    ###############################EVNETMESH-runtime ENV#################################
+    eventMesh.server.idc=DEFAULT
+    eventMesh.server.env=PRD
+    eventMesh.server.provide.protocols=HTTP,TCP,GRPC
+    eventMesh.server.cluster=COMMON
+    eventMesh.server.name=EVENTMESH-runtime
+    eventMesh.sysid=0000
+    eventMesh.server.http.port=10105
+    eventMesh.server.grpc.port=10205
+    ########################## eventMesh tcp configuration ############################
+    eventMesh.server.tcp.enabled=true
+    eventMesh.server.tcp.port=10000
+    eventMesh.server.tcp.readerIdleSeconds=120
+    eventMesh.server.tcp.writerIdleSeconds=120
+    eventMesh.server.tcp.allIdleSeconds=120
+    eventMesh.server.tcp.clientMaxNum=10000
+    # client isolation time if the message send failure
+    eventMesh.server.tcp.pushFailIsolateTimeInMills=30000
+    # rebalance internal
+    eventMesh.server.tcp.RebalanceIntervalInMills=30000
+    # session expire time about client
+    eventMesh.server.session.expiredInMills=60000
+    # flow control, include the global level and session level
+    eventMesh.server.tcp.msgReqnumPerSecond=15000
+    eventMesh.server.http.msgReqnumPerSecond=15000
+    eventMesh.server.session.upstreamBufferSize=20
+
+    # for single event publish, maximum size allowed per event
+    eventMesh.server.maxEventSize=1000
+    # for batch event publish, maximum number of events allowed in one batch
+    eventMesh.server.maxEventBatchSize=10
+
+    # thread number about global scheduler
+    eventMesh.server.global.scheduler=5
+    eventMesh.server.tcp.taskHandleExecutorPoolSize=8
+    #retry
+    eventMesh.server.retry.async.pushRetryTimes=3
+    eventMesh.server.retry.sync.pushRetryTimes=3
+    eventMesh.server.retry.async.pushRetryDelayInMills=500
+    eventMesh.server.retry.sync.pushRetryDelayInMills=500
+    eventMesh.server.retry.pushRetryQueueSize=10000
+    #admin
+    eventMesh.server.admin.http.port=10106
+    #metaStorage
+    eventMesh.server.metaStorage.metaStorageIntervalInMills=10000
+    eventMesh.server.metaStorage.fetchMetaStorageAddrIntervalInMills=20000
+    #auto-ack
+    #eventMesh.server.defibus.client.comsumeTimeoutInMin=5
+
+    #sleep interval between closing client of different group in server graceful shutdown
+    eventMesh.server.gracefulShutdown.sleepIntervalInMills=1000
+    eventMesh.server.rebalanceRedirect.sleepIntervalInMills=200
+
+    #ip address blacklist
+    eventMesh.server.blacklist.ipv4=0.0.0.0/8,127.0.0.0/8,169.254.0.0/16,255.255.255.255/32
+    eventMesh.server.blacklist.ipv6=::/128,::1/128,ff00::/8
+
+    #connector plugin
+    eventMesh.connector.plugin.type=standalone
+
+    #storage plugin
+    eventMesh.storage.plugin.type=standalone
+
+    #security plugin
+    eventMesh.server.security.enabled=false
+    eventMesh.security.plugin.type=security
+    eventMesh.security.validation.type.token=false
+    eventMesh.security.publickey=
+
+    #metaStorage plugin
+    eventMesh.metaStorage.plugin.enabled=false
+    eventMesh.metaStorage.plugin.type=nacos
+    eventMesh.metaStorage.plugin.server-addr=127.0.0.1:8848
+    eventMesh.metaStorage.plugin.username=nacos
+    eventMesh.metaStorage.plugin.password=nacos
+    # metaStorage plugin: nacos
+    #eventMesh.metaStorage.nacos.endpoint=
+    #eventMesh.metaStorage.nacos.accessKey=
+    #eventMesh.metaStorage.nacos.secretKey=
+    #eventMesh.metaStorage.nacos.clusterName=
+    #eventMesh.metaStorage.nacos.namespace=
+    # The default value is half of CPU's num
+    #eventMesh.metaStorage.nacos.namingPollingThreadCount=5
+
+    # metaStorage plugin: zookeeper
+    #eventMesh.metaStorage.zookeeper.scheme=
+    #eventMesh.metaStorage.zookeeper.auth=
+    #eventMesh.metaStorage.zookeeper.connectionTimeoutMs=
+    #eventMesh.metaStorage.zookeeper.sessionTimeoutMs=
+
+    # Fully qualified name of org.apache.curator.RetryPolicy implementation
+    #eventMesh.metaStorage.zookeeper.retryPolicy.class=
+
+    # Constructor arguments for different org.apache.curator.RetryPolicy implementations
+    #eventMesh.metaStorage.zookeeper.retryPolicy.baseSleepTimeMs=
+    #eventMesh.metaStorage.zookeeper.retryPolicy.maxRetries=
+    #eventMesh.metaStorage.zookeeper.retryPolicy.maxSleepTimeMs=
+    #eventMesh.metaStorage.zookeeper.retryPolicy.retryIntervalMs=
+    #eventMesh.metaStorage.zookeeper.retryPolicy.nTimes=
+    #eventMesh.metaStorage.zookeeper.retryPolicy.sleepMsBetweenRetries=
+
+    # The TLS configuration of metaStorage plugin: consul
+    # keyStoreInstanceType's value can refer to com.ecwid.consul.transport.TLSConfig.KeyStoreInstanceType
+    #eventMesh.metaStorage.consul.tls.keyStoreInstanceType=
+    #eventMesh.metaStorage.consul.tls.certificatePath=
+    #eventMesh.metaStorage.consul.tls.certificatePassword=
+    #eventMesh.metaStorage.consul.tls.keyStorePath=
+    #eventMesh.metaStorage.consul.tls.keyStorePassword=
+
+    # metrics plugin, if you have multiple plugin, you can use ',' to split
+    eventMesh.metrics.plugin=prometheus
+
+    # trace plugin
+    eventMesh.server.trace.enabled=false
+    eventMesh.trace.plugin=zipkin
+
+    # webhook
+    # Start webhook admin service
+    eventMesh.webHook.admin.start=true
+    # Webhook event configuration storage mode. Currently, only file and Nacos are supported
+    eventMesh.webHook.operationMode=file
+    # The file storage path of the file storage mode. If #{eventmeshhome} is written, it is in the eventmesh root directory
+    eventMesh.webHook.fileMode.filePath= #{eventMeshHome}/webhook
+    # Nacos storage mode, and the configuration naming rule is eventmesh webHook. nacosMode. {nacos native configuration key} please see the specific configuration [nacos github api](https://github.com/alibaba/nacos/blob/develop/api/src/main/java/com/alibaba/nacos/api/SystemPropertyKeyConst.java)
+    ## Address of Nacos
+    eventMesh.webHook.nacosMode.serverAddr=127.0.0.1:8848
+    # Webhook CloudEvent sending mode. This property is the same as the eventMesh.storage.plugin.type configuration.
+    eventMesh.webHook.producer.storage=standalone
+  server.env: |
+    APP_START_JVM_OPTION:::-server -Xms128M -Xmx256M -Xmn128m -XX:SurvivorRatio=4 -Duser.language=zh
+  log4j2.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration status="debug" monitorInterval="60">
+        <Appenders>
+            <Console name="console" target="SYSTEM_OUT">
+                <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %c{1}(%F:%L) - %m%n"/>
+            </Console>
+        </Appenders>
+
+        <Loggers>
+            <AsyncRoot level="debug" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncRoot>
+
+            <AsyncLogger name="retry" level="info" additivity="false" includeLocation="true">
+                <AppenderRef ref="retryAppender"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="httpMonitor" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="tcpMonitor" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="appMonitor" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="cmd" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="message" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="batchMessage" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="http" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="metaStorage" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="acl" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="org.apache.eventmesh.runtime" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="org.apache.rocketmq" level="INFO" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="RocketmqClient" level="INFO" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="RocketmqRemoting" level="INFO" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="RocketmqCommon" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="sessionLogger" level="debug" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+
+            <AsyncLogger name="subscribeLogger" level="info" additivity="false" includeLocation="true">
+                <AppenderRef ref="console"/>
+            </AsyncLogger>
+        </Loggers>
+    </Configuration>
+---
+
+apiVersion: eventmesh-operator.eventmesh/v1
+kind: Runtime
+metadata:
+  name: eventmesh-runtime
+spec:
+  # size is the number of the runtime cluster
+  size: 1
+  # replicaPerGroup is the number of each runtime cluster
+  replicaPerGroup: 1
+  # allowRestart defines whether allow pod restart
+  allowRestart: true
+  # define runtime pod template
+  runtimePodTemplate:
+    template:
+      spec:
+        # Host networking requested for this pod. Use the host's network namespace.
+        # If this option is set, the ports that will be used must be specified.
+        # Default to false.
+        hostNetwork: false
+        # Defaults to "ClusterFirst"
+        # Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+        # DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy.
+        # To have DNS options set along with hostNetwork, you have to specify DNS policy
+        # explicitly to 'ClusterFirstWithHostNet'.
+        dnsPolicy: ClusterFirstWithHostNet
+        # define the runtime container.
+        containers:
+        - name: eventmesh-runtime
+          image: alonexc/eventmesh-runtime:runtime-1.9.0
+          ports:
+          - name: tcp
+            containerPort: 10000
+          - name: http
+            containerPort: 10105
+          - name: grpc
+            containerPort: 10205
+          volumeMounts:
+            - mountPath: "/data/app/eventmesh/conf"
+              name: runtime-config
+          # imagePullPolicy is the image pull policy
+          imagePullPolicy: Always
+          # resources describes the compute resource requirements and limits
+          resources:
+            requests:
+              memory: 2048Mi
+              cpu: 2000m
+            limits:
+              memory: 8192Mi
+              cpu: 8000m
+        # configuration file settings to be mounted.
+        volumes:
+          - name: runtime-config
+            configMap:
+              name: runtime-config
+              items:
+                - key: rocketmq.properties
+                  path: rocketmq.properties
+                - key: eventmesh.properties
+                  path: eventmesh.properties
+                - key: server.env
+                  path: server.env
+                - key: log4j2.xml
+                  path: log4j2.xml

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.storage.redis;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import ai.grakn.redismock.RedisServer;
 
@@ -26,13 +26,13 @@ public abstract class AbstractRedisServer {
 
     private static RedisServer redisServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupRedisServer() throws Exception {
         redisServer = RedisServer.newRedisServer(6379);
         redisServer.start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutdownRedisServer() {
         if (redisServer != null) {
             redisServer.stop();

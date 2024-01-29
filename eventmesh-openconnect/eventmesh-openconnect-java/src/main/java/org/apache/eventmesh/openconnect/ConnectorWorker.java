@@ -22,6 +22,8 @@ package org.apache.eventmesh.openconnect;
  */
 public interface ConnectorWorker {
 
+    void init();
+
     /**
      * Starts the worker
      */

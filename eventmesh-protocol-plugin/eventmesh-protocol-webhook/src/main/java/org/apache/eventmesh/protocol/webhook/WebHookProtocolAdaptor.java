@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;

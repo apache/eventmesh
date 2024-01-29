@@ -24,6 +24,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+import org.apache.eventmesh.webhook.api.common.SharedLatchHolder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,7 +52,7 @@ public class WebhookFileListener {
     private final transient Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
     private final transient Map<WatchKey, String> watchKeyPathMap = new ConcurrentHashMap<>(); // WatchKey's path
     private transient String filePath;
-    private transient Map<String, WebHookConfig> cacheWebHookConfig;
+    private final transient Map<String, WebHookConfig> cacheWebHookConfig;
 
     public WebhookFileListener(final String filePath, final Map<String, WebHookConfig> cacheWebHookConfig) {
         this.filePath = WebHookOperationConstant.getFilePath(filePath);
@@ -90,20 +91,21 @@ public class WebhookFileListener {
     }
 
     /**
-     * Read the file and cache it in map
+     * Read the file and cache it in local map for manufacturers webhook payload delivery
+     * <p>
+     * A shared lock is used to ensure that this method should be invoked after the {@code webhookConfigFile} is written completely
+     * by {@code org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#writeToFile} when multiple modify events are triggered.
      *
      * @param webhookConfigFile webhookConfigFile
      */
     private void cacheInit(final File webhookConfigFile) {
         final StringBuilder fileContent = new StringBuilder();
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()),
-            StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(webhookConfigFile.getAbsolutePath()), StandardCharsets.UTF_8)) {
             while (br.ready()) {
                 fileContent.append(br.readLine());
             }
-
         } catch (IOException e) {
-            log.error("cacheInit failed", e);
+            log.error("cacheInit buffer read failed", e);
         }
         final WebHookConfig webHookConfig = JsonUtils.parseObject(fileContent.toString(), WebHookConfig.class);
         cacheWebHookConfig.put(webhookConfigFile.getName(), webHookConfig);
@@ -143,36 +145,47 @@ public class WebhookFileListener {
                 WatchKey key = null;
                 try {
                     assert service != null;
+                    // The code will block here until a file system event occurs
                     key = service.take();
                 } catch (InterruptedException e) {
                     log.error("Interrupted", e);
+                    Thread.currentThread().interrupt();
                 }
 
                 assert key != null;
+                // A newly created config file will be captured for two events, ENTRY_CREATE and ENTRY_MODIFY
                 for (final WatchEvent<?> event : key.pollEvents()) {
                     final String flashPath = watchKeyPathMap.get(key);
                     // manufacturer change
-                    final String path = flashPath.concat("/").concat(event.context().toString());
+                    final String path = flashPath.concat(WebHookOperationConstant.FILE_SEPARATOR).concat(event.context().toString());
                     final File file = new File(path);
-                    if (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
-                        if (file.isFile()) {
-                            cacheInit(file);
-                        } else {
+                    // Wait for file write/delete completion before initializing the cache
+                    synchronized (SharedLatchHolder.lock) {
+                        if (file.isDirectory() && (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind())) {
+                            // If it is a folder, re-register the listener
                             try {
                                 key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
                                 watchKeyPathMap.put(key, path);
                             } catch (IOException e) {
                                 log.error("registerWatchKey failed", e);
                             }
-                        }
-                    } else if (ENTRY_DELETE == event.kind()) {
-                        if (file.isDirectory()) {
-                            watchKeyPathMap.remove(key);
-                        } else {
-                            deleteConfig(file);
+                        } else if (file.isFile() && ENTRY_MODIFY == event.kind()) {
+                            // If it is a file, cache it only when it is modified to wait for complete file writes
+                            try {
+                                cacheInit(file);
+                            } catch (Exception e) {
+                                log.error("cacheInit failed", e);
+                            }
+                        } else if (ENTRY_DELETE == event.kind()) {
+                            if (file.isDirectory()) {
+                                watchKeyPathMap.remove(key);
+                            } else {
+                                deleteConfig(file);
+                            }
                         }
                     }
                 }
+                // Reset the WatchKey to receive subsequent file system events
                 if (!key.reset()) {
                     break;
                 }

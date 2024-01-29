@@ -69,9 +69,7 @@ public class SyncRequest {
 
     private static void publishMsg(EventMeshTCPClient<CloudEvent> client) {
         final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-        if (log.isInfoEnabled()) {
-            log.info("begin send req-resp msg: {}", event);
-        }
+        log.info("begin send req-resp msg: {}", event);
 
         final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
         logResponse(response);
@@ -96,8 +94,6 @@ public class SyncRequest {
         }
 
         final String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-        if (log.isInfoEnabled()) {
-            log.info("receive rr reply, response: {}, response's content: {}", response, content);
-        }
+        log.info("receive rr reply, response: {}, response's content: {}", response, content);
     }
 }

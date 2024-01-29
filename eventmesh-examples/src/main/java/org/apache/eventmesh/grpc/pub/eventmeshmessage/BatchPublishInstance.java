@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,7 +44,8 @@ public class BatchPublishInstance extends GrpcAbstractDemo {
 
             List<EventMeshMessage> messageList = new ArrayList<>();
             for (int i = 0; i < 5; i++) {
-                messageList.add(buildEventMeshMessage(content));
+                messageList.add(buildEventMeshMessage(content,
+                    ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC));
             }
 
             eventMeshGrpcProducer.publish(messageList);

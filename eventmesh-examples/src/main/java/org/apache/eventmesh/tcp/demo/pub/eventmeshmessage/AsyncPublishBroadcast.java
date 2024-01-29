@@ -31,7 +31,6 @@ import org.apache.eventmesh.util.Utils;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -54,9 +53,7 @@ public class AsyncPublishBroadcast {
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
 
-            if (log.isInfoEnabled()) {
-                log.info("begin send broadcast msg: {}", eventMeshMessage);
-            }
+            log.info("begin send broadcast msg: {}", eventMeshMessage);
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
             ThreadUtils.sleep(2, TimeUnit.SECONDS);

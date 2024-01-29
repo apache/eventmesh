@@ -25,11 +25,9 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.HeartbeatProcessor;
 
-
 import java.util.concurrent.ThreadPoolExecutor;
 
 import io.grpc.stub.StreamObserver;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +58,7 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
                     StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
-                ServiceUtils.completed(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
             }
         });
     }

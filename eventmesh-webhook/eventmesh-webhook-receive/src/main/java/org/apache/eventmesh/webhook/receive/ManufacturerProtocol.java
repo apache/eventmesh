@@ -28,7 +28,6 @@ public interface ManufacturerProtocol {
 
     String getManufacturerName();
 
-
     /**
      * - 1.authentication - 2.parse webhook content to WebHookRequest
      *

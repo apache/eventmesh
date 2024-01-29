@@ -77,12 +77,10 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
         }
 
         final String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
-        if (log.isInfoEnabled()) {
-            if (Objects.nonNull(msg.getExtension(Constants.MSG_TAG))) {
-                log.info("receive async msg, msg:{}, msg's data:{}, tag:{}", msg, content, msg.getExtension(Constants.MSG_TAG));
-            } else {
-                log.info("receive async msg, msg:{}, msg's data:{}", msg, content);
-            }
+        if (Objects.nonNull(msg.getExtension(Constants.MSG_TAG))) {
+            log.info("receive async msg, msg:{}, msg's data:{}, tag:{}", msg, content, msg.getExtension(Constants.MSG_TAG));
+        } else {
+            log.info("receive async msg, msg:{}, msg's data:{}", msg, content);
         }
         return Optional.empty();
     }

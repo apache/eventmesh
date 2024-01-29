@@ -49,10 +49,8 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
 
             if (session.isIsolated()) {
                 isolatedSessions.add(session);
-                if (log.isInfoEnabled()) {
-                    log.info("session is not available because session is isolated,isolateTime:{},client:{}",
-                        session.getIsolateTime(), session.getClient());
-                }
+                log.info("session is not available because session is isolated,isolateTime:{},client:{}",
+                    session.getIsolateTime(), session.getClient());
                 continue;
             }
 
@@ -61,14 +59,10 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
 
         if (CollectionUtils.isEmpty(filtered)) {
             if (CollectionUtils.isEmpty(isolatedSessions)) {
-                if (log.isWarnEnabled()) {
-                    log.warn("all sessions can't downstream msg");
-                }
+                log.warn("all sessions can't downstream msg");
                 return null;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn("all sessions are isolated,group:{},topic:{}", group, topic);
-                }
+                log.warn("all sessions are isolated,group:{},topic:{}", group, topic);
                 filtered.addAll(isolatedSessions);
             }
         }

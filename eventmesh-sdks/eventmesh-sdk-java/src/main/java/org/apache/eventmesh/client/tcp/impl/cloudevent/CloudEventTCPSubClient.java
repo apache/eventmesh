@@ -36,8 +36,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,6 +45,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 
 import com.google.common.base.Preconditions;
@@ -57,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<CloudEvent> {
 
-    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new LinkedList<>());
+    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private ReceiveMsgHook<CloudEvent> callback;
 
     public CloudEventTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
@@ -160,6 +161,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         }
     }
 
+    @Sharable
     private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
 
         public CloudEventTCPSubHandler(
@@ -179,8 +181,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(cloudEvent).ifPresent(
-                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
-                );
+                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

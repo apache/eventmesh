@@ -28,9 +28,9 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.protobuf.Timestamp;
 
@@ -39,7 +39,7 @@ public class EventMeshCloudEventUtilsTest {
 
     private CloudEvent cloudEvent;
 
-    @Before
+    @BeforeEach
     public void init() {
 
         final Map<String, CloudEventAttributeValue> attributeValueMap = new HashMap<>(64);
@@ -79,192 +79,192 @@ public class EventMeshCloudEventUtilsTest {
 
     @Test
     public void testGetEnv() {
-        Assert.assertEquals("dev", EventMeshCloudEventUtils.getEnv(cloudEvent));
-        Assert.assertEquals("dev", EventMeshCloudEventUtils.getEnv(cloudEvent, "test"));
-        Assert.assertEquals("test", EventMeshCloudEventUtils.getEnv(CloudEvent.newBuilder().build(), "test"));
+        Assertions.assertEquals("dev", EventMeshCloudEventUtils.getEnv(cloudEvent));
+        Assertions.assertEquals("dev", EventMeshCloudEventUtils.getEnv(cloudEvent, "test"));
+        Assertions.assertEquals("test", EventMeshCloudEventUtils.getEnv(CloudEvent.newBuilder().build(), "test"));
     }
 
     @Test
     public void testGetIdc() {
-        Assert.assertEquals("eventmesh", EventMeshCloudEventUtils.getIdc(cloudEvent));
-        Assert.assertEquals("eventmesh", EventMeshCloudEventUtils.getIdc(cloudEvent, "test"));
-        Assert.assertEquals("test", EventMeshCloudEventUtils.getIdc(CloudEvent.newBuilder().build(), "test"));
+        Assertions.assertEquals("eventmesh", EventMeshCloudEventUtils.getIdc(cloudEvent));
+        Assertions.assertEquals("eventmesh", EventMeshCloudEventUtils.getIdc(cloudEvent, "test"));
+        Assertions.assertEquals("test", EventMeshCloudEventUtils.getIdc(CloudEvent.newBuilder().build(), "test"));
     }
 
     @Test
     public void testGetSys() {
-        Assert.assertEquals("eventmesh", EventMeshCloudEventUtils.getSys(cloudEvent));
-        Assert.assertEquals("eventmesh", EventMeshCloudEventUtils.getSys(cloudEvent, "test"));
-        Assert.assertEquals("Linux", EventMeshCloudEventUtils.getSys(CloudEvent.newBuilder().build(), "Linux"));
+        Assertions.assertEquals("eventmesh", EventMeshCloudEventUtils.getSys(cloudEvent));
+        Assertions.assertEquals("eventmesh", EventMeshCloudEventUtils.getSys(cloudEvent, "test"));
+        Assertions.assertEquals("Linux", EventMeshCloudEventUtils.getSys(CloudEvent.newBuilder().build(), "Linux"));
     }
 
     @Test
     public void testGetPid() {
-        Assert.assertEquals("1243", EventMeshCloudEventUtils.getPid(cloudEvent));
-        Assert.assertEquals("1243", EventMeshCloudEventUtils.getPid(cloudEvent, "test"));
-        Assert.assertEquals("987", EventMeshCloudEventUtils.getPid(CloudEvent.newBuilder().build(), "987"));
+        Assertions.assertEquals("1243", EventMeshCloudEventUtils.getPid(cloudEvent));
+        Assertions.assertEquals("1243", EventMeshCloudEventUtils.getPid(cloudEvent, "test"));
+        Assertions.assertEquals("987", EventMeshCloudEventUtils.getPid(CloudEvent.newBuilder().build(), "987"));
     }
 
     @Test
     public void testGetIp() {
-        Assert.assertEquals("127.0.0.1", EventMeshCloudEventUtils.getIp(cloudEvent));
-        Assert.assertEquals("127.0.0.1", EventMeshCloudEventUtils.getIp(cloudEvent, "127.0.0.2"));
-        Assert.assertEquals("192.168.1.1", EventMeshCloudEventUtils.getIp(CloudEvent.newBuilder().build(), "192.168.1.1"));
+        Assertions.assertEquals("127.0.0.1", EventMeshCloudEventUtils.getIp(cloudEvent));
+        Assertions.assertEquals("127.0.0.1", EventMeshCloudEventUtils.getIp(cloudEvent, "127.0.0.2"));
+        Assertions.assertEquals("192.168.1.1", EventMeshCloudEventUtils.getIp(CloudEvent.newBuilder().build(), "192.168.1.1"));
     }
 
     @Test
     public void testGetUserName() {
-        Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getUserName(cloudEvent));
-        Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getUserName(cloudEvent, "mxsm1"));
-        Assert.assertEquals("root", EventMeshCloudEventUtils.getUserName(CloudEvent.newBuilder().build(), "root"));
+        Assertions.assertEquals("mxsm", EventMeshCloudEventUtils.getUserName(cloudEvent));
+        Assertions.assertEquals("mxsm", EventMeshCloudEventUtils.getUserName(cloudEvent, "mxsm1"));
+        Assertions.assertEquals("root", EventMeshCloudEventUtils.getUserName(CloudEvent.newBuilder().build(), "root"));
     }
 
     @Test
     public void testGetPassword() {
-        Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getPassword(cloudEvent));
-        Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getPassword(cloudEvent, "mxsm1"));
-        Assert.assertEquals("root", EventMeshCloudEventUtils.getPassword(CloudEvent.newBuilder().build(), "root"));
+        Assertions.assertEquals("mxsm", EventMeshCloudEventUtils.getPassword(cloudEvent));
+        Assertions.assertEquals("mxsm", EventMeshCloudEventUtils.getPassword(cloudEvent, "mxsm1"));
+        Assertions.assertEquals("root", EventMeshCloudEventUtils.getPassword(CloudEvent.newBuilder().build(), "root"));
     }
 
     @Test
     public void testGetLanguage() {
-        Assert.assertEquals("java", EventMeshCloudEventUtils.getLanguage(cloudEvent));
-        Assert.assertEquals("java", EventMeshCloudEventUtils.getLanguage(cloudEvent, "Go"));
-        Assert.assertEquals("Go", EventMeshCloudEventUtils.getLanguage(CloudEvent.newBuilder().build(), "Go"));
+        Assertions.assertEquals("java", EventMeshCloudEventUtils.getLanguage(cloudEvent));
+        Assertions.assertEquals("java", EventMeshCloudEventUtils.getLanguage(cloudEvent, "Go"));
+        Assertions.assertEquals("Go", EventMeshCloudEventUtils.getLanguage(CloudEvent.newBuilder().build(), "Go"));
     }
 
     @Test
     public void testGetProtocolType() {
-        Assert.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent));
-        Assert.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent, "Go"));
-        Assert.assertEquals("eventmeshMessage", EventMeshCloudEventUtils.getProtocolType(CloudEvent.newBuilder().build(), "eventmeshMessage"));
+        Assertions.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent));
+        Assertions.assertEquals(EventMeshProtocolType.CLOUD_EVENTS.protocolTypeName(), EventMeshCloudEventUtils.getProtocolType(cloudEvent, "Go"));
+        Assertions.assertEquals("eventmeshMessage", EventMeshCloudEventUtils.getProtocolType(CloudEvent.newBuilder().build(), "eventmeshMessage"));
     }
 
     @Test
     public void testGetProtocolVersion() {
-        Assert.assertEquals("1.0", EventMeshCloudEventUtils.getProtocolVersion(cloudEvent));
-        Assert.assertEquals("1.0", EventMeshCloudEventUtils.getProtocolVersion(cloudEvent, "1.1"));
-        Assert.assertEquals("1.2", EventMeshCloudEventUtils.getProtocolVersion(CloudEvent.newBuilder().build(), "1.2"));
+        Assertions.assertEquals("1.0", EventMeshCloudEventUtils.getProtocolVersion(cloudEvent));
+        Assertions.assertEquals("1.0", EventMeshCloudEventUtils.getProtocolVersion(cloudEvent, "1.1"));
+        Assertions.assertEquals("1.2", EventMeshCloudEventUtils.getProtocolVersion(CloudEvent.newBuilder().build(), "1.2"));
     }
 
     @Test
     public void testGetProtocolDesc() {
-        Assert.assertEquals("version 1.0", EventMeshCloudEventUtils.getProtocolDesc(cloudEvent));
-        Assert.assertEquals("version 1.0", EventMeshCloudEventUtils.getProtocolDesc(cloudEvent, "version 1.1"));
-        Assert.assertEquals("version 1.2", EventMeshCloudEventUtils.getProtocolDesc(CloudEvent.newBuilder().build(), "version 1.2"));
+        Assertions.assertEquals("version 1.0", EventMeshCloudEventUtils.getProtocolDesc(cloudEvent));
+        Assertions.assertEquals("version 1.0", EventMeshCloudEventUtils.getProtocolDesc(cloudEvent, "version 1.1"));
+        Assertions.assertEquals("version 1.2", EventMeshCloudEventUtils.getProtocolDesc(CloudEvent.newBuilder().build(), "version 1.2"));
     }
 
     @Test
     public void testGetSeqNum() {
-        Assert.assertEquals("100", EventMeshCloudEventUtils.getSeqNum(cloudEvent));
-        Assert.assertEquals("100", EventMeshCloudEventUtils.getSeqNum(cloudEvent, "200"));
-        Assert.assertEquals("200", EventMeshCloudEventUtils.getSeqNum(CloudEvent.newBuilder().build(), "200"));
+        Assertions.assertEquals("100", EventMeshCloudEventUtils.getSeqNum(cloudEvent));
+        Assertions.assertEquals("100", EventMeshCloudEventUtils.getSeqNum(cloudEvent, "200"));
+        Assertions.assertEquals("200", EventMeshCloudEventUtils.getSeqNum(CloudEvent.newBuilder().build(), "200"));
     }
 
     @Test
     public void testGetUniqueId() {
-        Assert.assertEquals("100", EventMeshCloudEventUtils.getUniqueId(cloudEvent));
-        Assert.assertEquals("100", EventMeshCloudEventUtils.getUniqueId(cloudEvent, "200"));
-        Assert.assertEquals("200", EventMeshCloudEventUtils.getUniqueId(CloudEvent.newBuilder().build(), "200"));
+        Assertions.assertEquals("100", EventMeshCloudEventUtils.getUniqueId(cloudEvent));
+        Assertions.assertEquals("100", EventMeshCloudEventUtils.getUniqueId(cloudEvent, "200"));
+        Assertions.assertEquals("200", EventMeshCloudEventUtils.getUniqueId(CloudEvent.newBuilder().build(), "200"));
     }
 
     @Test
     public void testGetTtl() {
-        Assert.assertEquals("100", EventMeshCloudEventUtils.getTtl(cloudEvent));
-        Assert.assertEquals("100", EventMeshCloudEventUtils.getTtl(cloudEvent, "200"));
-        Assert.assertEquals("200", EventMeshCloudEventUtils.getTtl(CloudEvent.newBuilder().build(), "200"));
+        Assertions.assertEquals("100", EventMeshCloudEventUtils.getTtl(cloudEvent));
+        Assertions.assertEquals("100", EventMeshCloudEventUtils.getTtl(cloudEvent, "200"));
+        Assertions.assertEquals("200", EventMeshCloudEventUtils.getTtl(CloudEvent.newBuilder().build(), "200"));
     }
 
     @Test
     public void testGetProducerGroup() {
-        Assert.assertEquals("mxsm_producer_group", EventMeshCloudEventUtils.getProducerGroup(cloudEvent));
-        Assert.assertEquals("mxsm_producer_group", EventMeshCloudEventUtils.getProducerGroup(cloudEvent, "mxsm_producer_group"));
-        Assert.assertEquals("mxsm_producer_group1",
+        Assertions.assertEquals("mxsm_producer_group", EventMeshCloudEventUtils.getProducerGroup(cloudEvent));
+        Assertions.assertEquals("mxsm_producer_group", EventMeshCloudEventUtils.getProducerGroup(cloudEvent, "mxsm_producer_group"));
+        Assertions.assertEquals("mxsm_producer_group1",
             EventMeshCloudEventUtils.getProducerGroup(CloudEvent.newBuilder().build(), "mxsm_producer_group1"));
     }
 
     @Test
     public void testGetTag() {
-        Assert.assertEquals("tag", EventMeshCloudEventUtils.getTag(cloudEvent));
-        Assert.assertEquals("tag", EventMeshCloudEventUtils.getTag(cloudEvent, "tag1"));
-        Assert.assertEquals("tag1", EventMeshCloudEventUtils.getTag(CloudEvent.newBuilder().build(), "tag1"));
+        Assertions.assertEquals("tag", EventMeshCloudEventUtils.getTag(cloudEvent));
+        Assertions.assertEquals("tag", EventMeshCloudEventUtils.getTag(cloudEvent, "tag1"));
+        Assertions.assertEquals("tag1", EventMeshCloudEventUtils.getTag(CloudEvent.newBuilder().build(), "tag1"));
     }
 
     @Test
     public void testGetContentType() {
-        Assert.assertEquals("text/plain", EventMeshCloudEventUtils.getContentType(cloudEvent));
-        Assert.assertEquals("text/plain", EventMeshCloudEventUtils.getContentType(cloudEvent, "application/json"));
-        Assert.assertEquals("application/json", EventMeshCloudEventUtils.getContentType(CloudEvent.newBuilder().build(), "application/json"));
+        Assertions.assertEquals("text/plain", EventMeshCloudEventUtils.getContentType(cloudEvent));
+        Assertions.assertEquals("text/plain", EventMeshCloudEventUtils.getContentType(cloudEvent, "application/json"));
+        Assertions.assertEquals("application/json", EventMeshCloudEventUtils.getContentType(CloudEvent.newBuilder().build(), "application/json"));
     }
 
     @Test
     public void testGetSubject() {
-        Assert.assertEquals("topic", EventMeshCloudEventUtils.getSubject(cloudEvent));
-        Assert.assertEquals("topic", EventMeshCloudEventUtils.getSubject(cloudEvent, "topic12"));
-        Assert.assertEquals("mxsm-topic", EventMeshCloudEventUtils.getSubject(CloudEvent.newBuilder().build(), "mxsm-topic"));
+        Assertions.assertEquals("topic", EventMeshCloudEventUtils.getSubject(cloudEvent));
+        Assertions.assertEquals("topic", EventMeshCloudEventUtils.getSubject(cloudEvent, "topic12"));
+        Assertions.assertEquals("mxsm-topic", EventMeshCloudEventUtils.getSubject(CloudEvent.newBuilder().build(), "mxsm-topic"));
     }
 
     @Test
     public void testGetDataContentType() {
-        Assert.assertEquals("text/plain", EventMeshCloudEventUtils.getDataContentType(cloudEvent));
-        Assert.assertEquals("text/plain", EventMeshCloudEventUtils.getDataContentType(cloudEvent, "application/json"));
-        Assert.assertEquals("application/json", EventMeshCloudEventUtils.getDataContentType(CloudEvent.newBuilder().build(), "application/json"));
+        Assertions.assertEquals("text/plain", EventMeshCloudEventUtils.getDataContentType(cloudEvent));
+        Assertions.assertEquals("text/plain", EventMeshCloudEventUtils.getDataContentType(cloudEvent, "application/json"));
+        Assertions.assertEquals("application/json", EventMeshCloudEventUtils.getDataContentType(CloudEvent.newBuilder().build(), "application/json"));
     }
 
     @Test
     public void testGetResponseCode() {
-        Assert.assertEquals("0", EventMeshCloudEventUtils.getResponseCode(cloudEvent));
-        Assert.assertEquals("0", EventMeshCloudEventUtils.getResponseCode(cloudEvent, "1"));
-        Assert.assertEquals("1", EventMeshCloudEventUtils.getResponseCode(CloudEvent.newBuilder().build(), "1"));
+        Assertions.assertEquals("0", EventMeshCloudEventUtils.getResponseCode(cloudEvent));
+        Assertions.assertEquals("0", EventMeshCloudEventUtils.getResponseCode(cloudEvent, "1"));
+        Assertions.assertEquals("1", EventMeshCloudEventUtils.getResponseCode(CloudEvent.newBuilder().build(), "1"));
     }
 
     @Test
     public void testGetResponseMessage() {
-        Assert.assertEquals("0", EventMeshCloudEventUtils.getResponseMessage(cloudEvent));
-        Assert.assertEquals("0", EventMeshCloudEventUtils.getResponseMessage(cloudEvent, "1"));
-        Assert.assertEquals("1", EventMeshCloudEventUtils.getResponseMessage(CloudEvent.newBuilder().build(), "1"));
+        Assertions.assertEquals("0", EventMeshCloudEventUtils.getResponseMessage(cloudEvent));
+        Assertions.assertEquals("0", EventMeshCloudEventUtils.getResponseMessage(cloudEvent, "1"));
+        Assertions.assertEquals("1", EventMeshCloudEventUtils.getResponseMessage(CloudEvent.newBuilder().build(), "1"));
     }
 
     @Test
     public void testGetResponseTime() {
-        Assert.assertEquals("2023-04-11T19:07Z", EventMeshCloudEventUtils.getResponseTime(cloudEvent));
-        Assert.assertEquals("2023-04-11T19:07Z", EventMeshCloudEventUtils.getResponseTime(cloudEvent, "2023-04-11 17:45:10"));
-        Assert.assertEquals("1970-01-01T00:00Z", EventMeshCloudEventUtils.getResponseTime(CloudEvent.newBuilder().build(), "1970-01-01T00:00Z"));
+        Assertions.assertEquals("2023-04-11T19:07Z", EventMeshCloudEventUtils.getResponseTime(cloudEvent));
+        Assertions.assertEquals("2023-04-11T19:07Z", EventMeshCloudEventUtils.getResponseTime(cloudEvent, "2023-04-11 17:45:10"));
+        Assertions.assertEquals("1970-01-01T00:00Z", EventMeshCloudEventUtils.getResponseTime(CloudEvent.newBuilder().build(), "1970-01-01T00:00Z"));
     }
 
     @Test
     public void testGetCluster() {
-        Assert.assertEquals("DefaultCluster", EventMeshCloudEventUtils.getCluster(cloudEvent));
-        Assert.assertEquals("DefaultCluster", EventMeshCloudEventUtils.getCluster(cloudEvent, "DefaultCluster1"));
-        Assert.assertEquals("DefaultCluster1", EventMeshCloudEventUtils.getCluster(CloudEvent.newBuilder().build(), "DefaultCluster1"));
+        Assertions.assertEquals("DefaultCluster", EventMeshCloudEventUtils.getCluster(cloudEvent));
+        Assertions.assertEquals("DefaultCluster", EventMeshCloudEventUtils.getCluster(cloudEvent, "DefaultCluster1"));
+        Assertions.assertEquals("DefaultCluster1", EventMeshCloudEventUtils.getCluster(CloudEvent.newBuilder().build(), "DefaultCluster1"));
     }
 
     @Test
     public void testGetConsumerGroup() {
-        Assert.assertEquals("ConsumerGroup", EventMeshCloudEventUtils.getConsumerGroup(cloudEvent));
-        Assert.assertEquals("ConsumerGroup", EventMeshCloudEventUtils.getConsumerGroup(cloudEvent, "ConsumerGroup111"));
-        Assert.assertEquals("ConsumerGroup111", EventMeshCloudEventUtils.getConsumerGroup(CloudEvent.newBuilder().build(), "ConsumerGroup111"));
+        Assertions.assertEquals("ConsumerGroup", EventMeshCloudEventUtils.getConsumerGroup(cloudEvent));
+        Assertions.assertEquals("ConsumerGroup", EventMeshCloudEventUtils.getConsumerGroup(cloudEvent, "ConsumerGroup111"));
+        Assertions.assertEquals("ConsumerGroup111", EventMeshCloudEventUtils.getConsumerGroup(CloudEvent.newBuilder().build(), "ConsumerGroup111"));
     }
 
     @Test
     public void testGetClientType() {
-        Assert.assertEquals(ClientType.SUB, EventMeshCloudEventUtils.getClientType(cloudEvent));
-        Assert.assertEquals(ClientType.SUB, EventMeshCloudEventUtils.getClientType(cloudEvent, ClientType.PUB));
-        Assert.assertEquals(ClientType.PUB, EventMeshCloudEventUtils.getClientType(CloudEvent.newBuilder().build(), ClientType.PUB));
+        Assertions.assertEquals(ClientType.SUB, EventMeshCloudEventUtils.getClientType(cloudEvent));
+        Assertions.assertEquals(ClientType.SUB, EventMeshCloudEventUtils.getClientType(cloudEvent, ClientType.PUB));
+        Assertions.assertEquals(ClientType.PUB, EventMeshCloudEventUtils.getClientType(CloudEvent.newBuilder().build(), ClientType.PUB));
     }
 
     @Test
     public void testGetURL() {
-        Assert.assertEquals("http://127.0.0.1", EventMeshCloudEventUtils.getURL(cloudEvent));
-        Assert.assertEquals("http://127.0.0.1", EventMeshCloudEventUtils.getURL(cloudEvent, "http://127.0.0.2"));
-        Assert.assertEquals("http://127.0.0.2", EventMeshCloudEventUtils.getURL(CloudEvent.newBuilder().build(), "http://127.0.0.2"));
+        Assertions.assertEquals("http://127.0.0.1", EventMeshCloudEventUtils.getURL(cloudEvent));
+        Assertions.assertEquals("http://127.0.0.1", EventMeshCloudEventUtils.getURL(cloudEvent, "http://127.0.0.2"));
+        Assertions.assertEquals("http://127.0.0.2", EventMeshCloudEventUtils.getURL(CloudEvent.newBuilder().build(), "http://127.0.0.2"));
     }
 
     @Test
     public void testGetDataContent() {
-        Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getDataContent(cloudEvent));
-        Assert.assertEquals("mxsm", EventMeshCloudEventUtils.getDataContent(cloudEvent, "http://127.0.0.2"));
-        Assert.assertEquals("http://127.0.0.2", EventMeshCloudEventUtils.getDataContent(CloudEvent.newBuilder().build(), "http://127.0.0.2"));
+        Assertions.assertEquals("mxsm", EventMeshCloudEventUtils.getDataContent(cloudEvent));
+        Assertions.assertEquals("mxsm", EventMeshCloudEventUtils.getDataContent(cloudEvent, "http://127.0.0.2"));
+        Assertions.assertEquals("http://127.0.0.2", EventMeshCloudEventUtils.getDataContent(CloudEvent.newBuilder().build(), "http://127.0.0.2"));
     }
 
 
