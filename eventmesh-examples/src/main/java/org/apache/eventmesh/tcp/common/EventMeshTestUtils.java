@@ -182,7 +182,7 @@ public class EventMeshTestUtils {
             .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC_TAG)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(Objects.requireNonNull(JsonUtils.toJSONString(content)).getBytes(Constants.DEFAULT_CHARSET))
             .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
             .withExtension(Constants.MSG_TAG, ExampleConstants.TAG_PREFIX + i)
