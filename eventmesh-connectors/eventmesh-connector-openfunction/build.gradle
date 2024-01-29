@@ -17,7 +17,7 @@
 
 dependencies {
     implementation project(":eventmesh-common")
-    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-grpc-sdk-java")
+    implementation project(":eventmesh-sdks:eventmesh-sdk-java:eventmesh-sdk-java-grpc")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
 
     implementation "io.grpc:grpc-core"
