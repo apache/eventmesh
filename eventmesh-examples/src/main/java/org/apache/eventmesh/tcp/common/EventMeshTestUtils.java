@@ -123,30 +123,19 @@ public class EventMeshTestUtils {
 
     public static EventMeshMessage generateSyncRRMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.MSG_TYPE,
-<<<<<<< HEAD
-                                   "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR", null);
-    }
-
-    private static EventMeshMessage generateAsyncRRMqMsg() {
-        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO, 
-                                   "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-                                   "notnull", "testAsyncRR", null);
-=======
-            "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR");
+            "persistent", UtilsConstants.KEYS, generateRandomString(16), "testSyncRR", null);
     }
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
             "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-            "notnull", "testAsyncRR");
->>>>>>> master
+            "notnull", "testAsyncRR", null);
     }
 
     public static EventMeshMessage generateAsyncEventMqMsg() {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
-<<<<<<< HEAD
-                                   "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-                                   "notnull", ASYNC_MSG_BODY, null);
+            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
+            "notnull", ASYNC_MSG_BODY, null);
     }
 
     public static EventMeshMessage generateAsyncEventMqMsgWithTag(int i) {
@@ -159,16 +148,6 @@ public class EventMeshTestUtils {
         return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, UtilsConstants.REPLY_TO,
                                    "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
                                    "notnull", ASYNC_MSG_BODY, null);
-=======
-            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-            "notnull", ASYNC_MSG_BODY);
-    }
-
-    public static EventMeshMessage generateBroadcastMqMsg() {
-        return getEventMeshMessage(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, UtilsConstants.REPLY_TO,
-            "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI", UtilsConstants.PROPERTY_MESSAGE_REPLY_TO,
-            "notnull", ASYNC_MSG_BODY);
->>>>>>> master
     }
 
     private static String generateRandomString(final int length) {
