@@ -40,10 +40,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -90,7 +90,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
             try {
                 bootstrap.group(this.getBossGroup(), this.getIoGroup())
                     .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                    .childHandler(new AdminServerInitializer(httpHandlerManager))
+                    .childHandler(new AdminServerInitializer())
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
                 log.info("AdminHttpServer[port={}] started.", this.getPort());
@@ -264,7 +264,6 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
         public void writeAndFlash() {
             byte[] bytes = outputStream.toByteArray();
             Headers responseHeaders = getResponseHeaders();
-
             DefaultFullHttpResponse defaultFullHttpResponse =
                 new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(getResponseCode()),
                     Unpooled.copiedBuffer(bytes));
@@ -277,11 +276,6 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     private class AdminServerInitializer extends ChannelInitializer<SocketChannel> {
 
-        HttpHandlerManager httpHandlerManager;
-
-        public AdminServerInitializer(HttpHandlerManager httpHandlerManager) {
-            this.httpHandlerManager = httpHandlerManager;
-        }
 
         @Override
         protected void initChannel(final SocketChannel channel) {
@@ -292,23 +286,14 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 new HttpResponseEncoder(),
                 httpConnectionHandler,
                 new HttpObjectAggregator(Integer.MAX_VALUE),
-                new AdminServerHandler());
+                new SimpleChannelInboundHandler<HttpRequest>() {
+
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {
+                        parseHttpRequest(ctx, msg);
+                    }
+                });
         }
     }
-
-
-    private class AdminServerHandler extends ChannelInboundHandlerAdapter {
-
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            if (!(msg instanceof HttpRequest)) {
-                return;
-            }
-            HttpRequest httpRequest = (HttpRequest) msg;
-            parseHttpRequest(ctx, httpRequest);
-
-        }
-    }
-
 
 }
