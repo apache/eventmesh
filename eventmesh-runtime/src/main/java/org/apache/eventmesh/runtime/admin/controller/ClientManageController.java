@@ -40,7 +40,7 @@ import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler
 import org.apache.eventmesh.runtime.admin.handler.TCPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.TopicHandler;
 import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
-import org.apache.eventmesh.runtime.boot.EventMeshAdminServer;
+import org.apache.eventmesh.runtime.boot.EventMeshAdminBootstrap;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -102,9 +102,10 @@ public class ClientManageController {
         // Get the server's admin port.
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
-        EventMeshAdminServer server = new EventMeshAdminServer(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), httpHandlerManager);
+        EventMeshAdminBootstrap adminBootstrap =
+            new EventMeshAdminBootstrap(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), httpHandlerManager);
         try {
-            server.init();
+            adminBootstrap.init();
             // TODO: Optimized for automatic injection
 
             // Initialize the client handler and register it with the HTTP handler manager.
@@ -112,7 +113,7 @@ public class ClientManageController {
                 eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
 
             httpHandlerManager.register();
-            server.start();
+            adminBootstrap.start();
         } catch (Exception e) {
             log.error("ClientManageController start err", e);
         }
