@@ -40,7 +40,6 @@ import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler
 import org.apache.eventmesh.runtime.admin.handler.TCPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.TopicHandler;
 import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
-import org.apache.eventmesh.runtime.boot.EventMeshAdminBootstrap;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -75,6 +74,8 @@ public class ClientManageController {
     @Setter
     private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
+    private HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+
     /**
      * Constructs a new ClientManageController with the given server instance.
      *
@@ -99,26 +100,17 @@ public class ClientManageController {
      * @throws IOException if an I/O error occurs while starting the server
      */
     public void start() throws IOException {
-        // Get the server's admin port.
-        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
-        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
-        EventMeshAdminBootstrap adminBootstrap =
-            new EventMeshAdminBootstrap(port, false, eventMeshHTTPServer.getEventMeshHttpConfiguration(), httpHandlerManager);
-        try {
-            adminBootstrap.init();
-            // TODO: Optimized for automatic injection
 
+        try {
+            // TODO: Optimized for automatic injection
             // Initialize the client handler and register it with the HTTP handler manager.
             initClientHandler(eventMeshTCPServer, eventMeshHTTPServer,
                 eventMeshGrpcServer, eventMeshMetaStorage, httpHandlerManager);
 
             httpHandlerManager.register();
-            adminBootstrap.start();
         } catch (Exception e) {
             log.error("ClientManageController start err", e);
         }
-
-        log.info("ClientManageController start success, port:{}", port);
     }
 
     private void initClientHandler(EventMeshTCPServer eventMeshTCPServer,
@@ -158,4 +150,15 @@ public class ClientManageController {
         }
     }
 
+    public HttpHandlerManager getHttpHandlerManager() {
+        return httpHandlerManager;
+    }
+
+    public EventMeshTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
+    }
+
+    public EventMeshHTTPServer getEventMeshHTTPServer() {
+        return eventMeshHTTPServer;
+    }
 }

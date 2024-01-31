@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
@@ -71,11 +72,16 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     HttpHandlerManager httpHandlerManager;
 
+    private ClientManageController clientManageController;
+
+
     public EventMeshAdminServer(int port, boolean useTLS,
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration, HttpHandlerManager httpHandlerManager) {
+        EventMeshHTTPConfiguration eventMeshHttpConfiguration, ClientManageController clientManageController) {
         super(port, useTLS, eventMeshHttpConfiguration);
-        this.httpHandlerManager = httpHandlerManager;
+        this.clientManageController = clientManageController;
+        this.httpHandlerManager = clientManageController.getHttpHandlerManager();
     }
+
 
     @Override
     public void init() throws Exception {

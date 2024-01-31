@@ -57,13 +57,15 @@ public class EventMeshServer {
 
     private final CommonConfiguration configuration;
 
-    private transient ClientManageController clientManageController;
+    //  private transient ClientManageController clientManageController;
 
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
 
     private static final String SERVER_STATE_MSG = "server state:{}";
 
     private static final ConfigService configService = ConfigService.getInstance();
+
+    private EventMeshAdminBootstrap adminBootstrap;
 
     public EventMeshServer() {
 
@@ -135,8 +137,11 @@ public class EventMeshServer {
 
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
 
-            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
+            ClientManageController clientManageController =
+                new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
             clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
+            adminBootstrap = new EventMeshAdminBootstrap(this, clientManageController);
+            adminBootstrap.init();
         }
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
@@ -164,8 +169,8 @@ public class EventMeshServer {
             eventMeshBootstrap.start();
         }
 
-        if (Objects.nonNull(clientManageController)) {
-            clientManageController.start();
+        if (Objects.nonNull(adminBootstrap)) {
+            adminBootstrap.start();
         }
         producerTopicManager.start();
         serviceState = ServiceState.RUNNING;

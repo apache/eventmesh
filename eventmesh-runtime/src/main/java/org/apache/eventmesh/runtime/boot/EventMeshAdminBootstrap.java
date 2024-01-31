@@ -17,34 +17,28 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 public class EventMeshAdminBootstrap implements EventMeshBootstrap {
 
     private EventMeshAdminServer eventMeshAdminServer;
+    
+    private ClientManageController clientManageController;
 
-    private int port;
+    private EventMeshServer eventMeshServer;
 
-    private boolean useTLS;
-
-    private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
-    private HttpHandlerManager httpHandlerManager;
-
-    public EventMeshAdminBootstrap(int port, boolean useTLS,
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration, HttpHandlerManager httpHandlerManager) {
-        this.port = port;
-        this.useTLS = useTLS;
-        this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
-        this.httpHandlerManager = httpHandlerManager;
-
+    public EventMeshAdminBootstrap(EventMeshServer eventMeshServer, ClientManageController clientManageController) {
+        this.clientManageController = clientManageController;
+        this.eventMeshServer = eventMeshServer;
     }
 
     @Override
     public void init() throws Exception {
-        if (eventMeshHttpConfiguration != null && httpHandlerManager != null) {
-            eventMeshAdminServer = new EventMeshAdminServer(port, useTLS, eventMeshHttpConfiguration, httpHandlerManager);
+        if (clientManageController != null) {
+            int port = clientManageController.getEventMeshTCPServer().getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
+            EventMeshHTTPConfiguration eventMeshHttpConfiguration = clientManageController.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
+            eventMeshAdminServer = new EventMeshAdminServer(port, false, eventMeshHttpConfiguration, clientManageController);
             eventMeshAdminServer.init();
         }
 
@@ -53,6 +47,7 @@ public class EventMeshAdminBootstrap implements EventMeshBootstrap {
     @Override
     public void start() throws Exception {
         if (eventMeshAdminServer != null) {
+            clientManageController.start();
             eventMeshAdminServer.start();
         }
 
