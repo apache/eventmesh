@@ -23,7 +23,6 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -37,9 +36,8 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigById} endpoint
- * and returns the corresponding WebHook configuration information
- * based on the WebHook callback path specified in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
+ * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigById} endpoint and returns the corresponding WebHook configuration
+ * information based on the WebHook callback path specified in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
  * Parameters:
  * <ul>
@@ -77,11 +75,9 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
      * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
      *
      * @param operation the WebHookConfigOperation implementation used to query the WebHook config
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
-    public QueryWebHookConfigByIdHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public QueryWebHookConfigByIdHandler(WebHookConfigOperation operation) {
+        super();
         this.operation = operation;
     }
 

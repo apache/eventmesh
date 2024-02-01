@@ -17,28 +17,20 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-
 public class EventMeshAdminBootstrap implements EventMeshBootstrap {
 
     private EventMeshAdminServer eventMeshAdminServer;
-    
-    private ClientManageController clientManageController;
 
     private EventMeshServer eventMeshServer;
 
-    public EventMeshAdminBootstrap(EventMeshServer eventMeshServer, ClientManageController clientManageController) {
-        this.clientManageController = clientManageController;
+    public EventMeshAdminBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
     }
 
     @Override
     public void init() throws Exception {
-        if (clientManageController != null) {
-            int port = clientManageController.getEventMeshTCPServer().getEventMeshTCPConfiguration().getEventMeshServerAdminPort();
-            EventMeshHTTPConfiguration eventMeshHttpConfiguration = clientManageController.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
-            eventMeshAdminServer = new EventMeshAdminServer(port, false, eventMeshHttpConfiguration, clientManageController);
+        if (eventMeshServer != null) {
+            eventMeshAdminServer = new EventMeshAdminServer(eventMeshServer);
             eventMeshAdminServer.init();
         }
 
@@ -47,7 +39,6 @@ public class EventMeshAdminBootstrap implements EventMeshBootstrap {
     @Override
     public void start() throws Exception {
         if (eventMeshAdminServer != null) {
-            clientManageController.start();
             eventMeshAdminServer.start();
         }
 

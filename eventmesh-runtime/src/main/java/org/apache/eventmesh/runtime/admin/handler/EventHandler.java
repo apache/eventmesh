@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -72,13 +71,10 @@ public class EventHandler extends AbstractHttpHandler {
      * Constructs a new instance with the specified connector plugin type and HTTP handler manager.
      *
      * @param connectorPluginType The name of event storage connector plugin.
-     * @param httpHandlerManager httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public EventHandler(
-        String connectorPluginType,
-        HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+        String connectorPluginType) {
+        super();
         admin = new MQAdminWrapper(connectorPluginType);
         try {
             admin.init(null);

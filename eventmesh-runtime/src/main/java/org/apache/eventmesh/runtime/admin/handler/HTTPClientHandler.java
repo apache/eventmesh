@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
@@ -44,12 +43,10 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the {@code /client/http} endpoint,
- * corresponding to the {@code eventmesh-dashboard} path {@code /http}.
+ * This class handles the {@code /client/http} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /http}.
  * <p>
- * It is responsible for managing operations on HTTP clients,
- * including retrieving the information list of connected HTTP clients
- * and deleting HTTP clients by disconnecting their connections based on the provided host and port.
+ * It is responsible for managing operations on HTTP clients, including retrieving the information list of connected HTTP clients and deleting HTTP
+ * clients by disconnecting their connections based on the provided host and port.
  *
  * @see AbstractHttpHandler
  */
@@ -64,20 +61,17 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
      * @param eventMeshHTTPServer the HTTP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler} for an
-     *                            {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public HTTPClientHandler(
-        EventMeshHTTPServer eventMeshHTTPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+        EventMeshHTTPServer eventMeshHTTPServer) {
+        super();
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     /**
      * Handles the OPTIONS request first for {@code /client/http}.
      * <p>
-     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
-     * the {@link HttpExchange} object and sends a 200 status code.
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object and sends a 200 status code.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -95,8 +89,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
     /**
      * Handles the DELETE request for {@code /client/http}.
      * <p>
-     * This method deletes a connected HTTP client by disconnecting their connections
-     * based on the provided host and port, then returns {@code 200 OK}.
+     * This method deletes a connected HTTP client by disconnecting their connections based on the provided host and port, then returns {@code 200
+     * OK}.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -206,8 +200,8 @@ public class HTTPClientHandler extends AbstractHttpHandler {
     /**
      * Handles the HTTP requests for {@code /client/http}.
      * <p>
-     * It delegates the handling to {@code preflight()}, {@code list()} or {@code delete()} methods
-     * based on the request method type (OPTIONS, GET or DELETE).
+     * It delegates the handling to {@code preflight()}, {@code list()} or {@code delete()} methods based on the request method type (OPTIONS, GET or
+     * DELETE).
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
      *

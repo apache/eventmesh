@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
@@ -62,13 +61,10 @@ public class MetricsHandler extends AbstractHttpHandler {
      *
      * @param eventMeshHTTPServer the HTTP server instance of EventMesh
      * @param eventMeshTcpServer the TCP server instance of EventMesh
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
-        EventMeshTCPServer eventMeshTcpServer,
-        HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+        EventMeshTCPServer eventMeshTcpServer) {
+        super();
         this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
     }

@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -40,9 +39,8 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/redirectClientByIpPort} endpoint,
- * which is used to redirect matching clients to a target EventMesh server node
- * based on the provided IP address and port.
+ * This class handles the HTTP requests of {@code /clientManage/redirectClientByIpPort} endpoint, which is used to redirect matching clients to a
+ * target EventMesh server node based on the provided IP address and port.
  * <p>
  * The request must specify the client's and target EventMesh node's IP and port.
  * <p>
@@ -67,12 +65,10 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public RedirectClientByIpPortHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public RedirectClientByIpPortHandler(EventMeshTCPServer eventMeshTCPServer) {
+        super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -129,8 +125,8 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
                     +
                     "={}|destEventMeshPort={}", ip, port, destEventMeshIp, destEventMeshPort, e);
                 result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
-                    +
-                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                        +
+                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                     sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
@@ -138,8 +134,8 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             }
             // Serialize the result of redirection into output stream
             result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
-                +
-                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                    +
+                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                 sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
             NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));

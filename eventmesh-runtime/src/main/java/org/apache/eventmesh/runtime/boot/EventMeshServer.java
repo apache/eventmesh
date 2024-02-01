@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
-import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
@@ -66,6 +65,12 @@ public class EventMeshServer {
     private static final ConfigService configService = ConfigService.getInstance();
 
     private EventMeshAdminBootstrap adminBootstrap;
+
+    private EventMeshTCPServer eventMeshTCPServer = null;
+
+    private EventMeshGrpcServer eventMeshGrpcServer = null;
+
+    private EventMeshHTTPServer eventMeshHTTPServer = null;
 
     public EventMeshServer() {
 
@@ -115,12 +120,6 @@ public class EventMeshServer {
             trace.init();
         }
 
-        EventMeshTCPServer eventMeshTCPServer = null;
-
-        EventMeshGrpcServer eventMeshGrpcServer = null;
-
-        EventMeshHTTPServer eventMeshHTTPServer = null;
-
         // server init
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.init();
@@ -136,11 +135,7 @@ public class EventMeshServer {
         }
 
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
-
-            ClientManageController clientManageController =
-                new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
-            clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
-            adminBootstrap = new EventMeshAdminBootstrap(this, clientManageController);
+            adminBootstrap = new EventMeshAdminBootstrap(this);
             adminBootstrap.init();
         }
 
@@ -232,5 +227,17 @@ public class EventMeshServer {
 
     public CommonConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public EventMeshTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
+    }
+
+    public EventMeshGrpcServer getEventMeshGrpcServer() {
+        return eventMeshGrpcServer;
+    }
+
+    public EventMeshHTTPServer getEventMeshHTTPServer() {
+        return eventMeshHTTPServer;
     }
 }

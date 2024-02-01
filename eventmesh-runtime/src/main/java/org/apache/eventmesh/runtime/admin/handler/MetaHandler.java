@@ -21,7 +21,6 @@ import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -42,12 +41,10 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the {@code /registry} endpoint,
- * corresponding to the {@code eventmesh-dashboard} path {@code /registry}.
+ * This class handles the {@code /registry} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /registry}.
  * <p>
- * This handler is responsible for retrieving a list of EventMesh clusters from the
- * {@link MetaStorage} object, encapsulate them into a list of {@link GetRegistryResponse} objects,
- * and sort them by {@code EventMeshClusterName}.
+ * This handler is responsible for retrieving a list of EventMesh clusters from the {@link MetaStorage} object, encapsulate them into a list of {@link
+ * GetRegistryResponse} objects, and sort them by {@code EventMeshClusterName}.
  *
  * @see AbstractHttpHandler
  */
@@ -59,23 +56,17 @@ public class MetaHandler extends AbstractHttpHandler {
     private final MetaStorage eventMeshMetaStorage;
 
     /**
-     * Constructs a new instance with the specified {@link MetaStorage} and {@link HttpHandlerManager}.
-     *
-     * @param eventMeshMetaStorage  The {@link MetaStorage} instance used for retrieving EventMesh cluster information.
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@linkplain com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshMetaStorage The {@link MetaStorage} instance used for retrieving EventMesh cluster information.
      */
-    public MetaHandler(MetaStorage eventMeshMetaStorage,
-        HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public MetaHandler(MetaStorage eventMeshMetaStorage) {
+        super();
         this.eventMeshMetaStorage = eventMeshMetaStorage;
     }
 
     /**
      * Handles the OPTIONS request first for {@code /registry}.
      * <p>
-     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
-     * the {@link HttpExchange} object and sends a 200 status code.
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object and sends a 200 status code.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -149,8 +140,7 @@ public class MetaHandler extends AbstractHttpHandler {
     /**
      * Handles the HTTP requests for {@code /registry}.
      * <p>
-     * It delegates the handling to {@code preflight()} or {@code get()} methods
-     * based on the request method type (OPTIONS or GET).
+     * It delegates the handling to {@code preflight()} or {@code get()} methods based on the request method type (OPTIONS or GET).
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}
      *
