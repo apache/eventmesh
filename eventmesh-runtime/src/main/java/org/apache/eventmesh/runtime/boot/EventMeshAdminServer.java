@@ -17,35 +17,9 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
-import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
-import org.apache.eventmesh.runtime.admin.handler.EventHandler;
-import org.apache.eventmesh.runtime.admin.handler.GrpcClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.HTTPClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.InsertWebHookConfigHandler;
-import org.apache.eventmesh.runtime.admin.handler.MetaHandler;
-import org.apache.eventmesh.runtime.admin.handler.MetricsHandler;
-import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
-import org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByIdHandler;
-import org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByManufacturerHandler;
-import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
-import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
-import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.RejectAllClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.RejectClientByIpPortHandler;
-import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
-import org.apache.eventmesh.runtime.admin.handler.TCPClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.TopicHandler;
-import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
-import org.apache.eventmesh.runtime.meta.MetaStorage;
+import org.apache.eventmesh.runtime.admin.handler.AdminHandlerManager;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.Utils;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
-import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,10 +31,8 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -96,71 +68,19 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     private HttpConnectionHandler httpConnectionHandler = new HttpConnectionHandler();
 
-    private final Map<String, HttpHandler> httpHandlerMap = new ConcurrentHashMap<>();
-
-    private EventMeshTCPServer eventMeshTCPServer;
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
-
-    private EventMeshGrpcServer eventMeshGrpcServer;
-
-    private MetaStorage eventMeshMetaStorage;
-
-    private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
+    private AdminHandlerManager adminHandlerManager;
 
     public EventMeshAdminServer(EventMeshServer eventMeshServer) {
         super(eventMeshServer.getEventMeshTCPServer().getEventMeshTCPConfiguration().getEventMeshServerAdminPort(), false,
             eventMeshServer.getEventMeshHTTPServer().getEventMeshHttpConfiguration());
-        this.eventMeshGrpcServer = eventMeshServer.getEventMeshGrpcServer();
-        this.eventMeshHTTPServer = eventMeshServer.getEventMeshHTTPServer();
-        this.eventMeshTCPServer = eventMeshServer.getEventMeshTCPServer();
-        this.eventMeshMetaStorage = eventMeshServer.getMetaStorage();
-        this.adminWebHookConfigOperationManage = eventMeshTCPServer.getAdminWebHookConfigOperationManage();
-
+        adminHandlerManager = new AdminHandlerManager(eventMeshServer);
     }
 
 
     @Override
     public void init() throws Exception {
         super.init("eventMesh-admin-http");
-        registerHttpHandler();
-    }
-
-    private void registerHttpHandler() {
-        initHandler(new ShowClientHandler(eventMeshTCPServer));
-        initHandler(new ShowClientBySystemHandler(eventMeshTCPServer));
-        initHandler(new RejectAllClientHandler(eventMeshTCPServer));
-        initHandler(new RejectClientByIpPortHandler(eventMeshTCPServer));
-        initHandler(new RejectClientBySubSystemHandler(eventMeshTCPServer));
-        initHandler(new RedirectClientBySubSystemHandler(eventMeshTCPServer));
-        initHandler(new RedirectClientByPathHandler(eventMeshTCPServer));
-        initHandler(new RedirectClientByIpPortHandler(eventMeshTCPServer));
-        initHandler(new ShowListenClientByTopicHandler(eventMeshTCPServer));
-        initHandler(new QueryRecommendEventMeshHandler(eventMeshTCPServer));
-        initHandler(new TCPClientHandler(eventMeshTCPServer));
-        initHandler(new HTTPClientHandler(eventMeshHTTPServer));
-        initHandler(new GrpcClientHandler(eventMeshGrpcServer));
-        initHandler(new ConfigurationHandler(
-            eventMeshTCPServer.getEventMeshTCPConfiguration(),
-            eventMeshHTTPServer.getEventMeshHttpConfiguration(),
-            eventMeshGrpcServer.getEventMeshGrpcConfiguration()));
-        initHandler(new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
-        initHandler(new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType()));
-        initHandler(new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType()));
-        initHandler(new MetaHandler(eventMeshMetaStorage));
-        if (Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
-            WebHookConfigOperation webHookConfigOperation = adminWebHookConfigOperationManage.getWebHookConfigOperation();
-            initHandler(new InsertWebHookConfigHandler(webHookConfigOperation));
-            initHandler(new UpdateWebHookConfigHandler(webHookConfigOperation));
-            initHandler(new DeleteWebHookConfigHandler(webHookConfigOperation));
-            initHandler(new QueryWebHookConfigByIdHandler(webHookConfigOperation));
-            initHandler(new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation));
-        }
-    }
-
-    private void initHandler(HttpHandler httpHandler) {
-        EventHttpHandler eventHttpHandler = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
-        httpHandlerMap.putIfAbsent(eventHttpHandler.path(), httpHandler);
+        adminHandlerManager.registerHttpHandler();
     }
 
     @Override
@@ -194,14 +114,10 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
         started.compareAndSet(false, true);
     }
 
-    public Optional<HttpHandler> getHttpHandler(String path) {
-        return Optional.ofNullable(httpHandlerMap.get(path));
-    }
-
     public void parseHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         String uriStr = httpRequest.uri();
         URI uri = URI.create(uriStr);
-        Optional<HttpHandler> httpHandlerOpt = getHttpHandler(uri.getPath());
+        Optional<HttpHandler> httpHandlerOpt = adminHandlerManager.getHttpHandler(uri.getPath());
         if (httpHandlerOpt.isPresent()) {
             try {
                 AdminHttpExchange adminHttpExchange = new AdminHttpExchange(ctx, httpRequest);
