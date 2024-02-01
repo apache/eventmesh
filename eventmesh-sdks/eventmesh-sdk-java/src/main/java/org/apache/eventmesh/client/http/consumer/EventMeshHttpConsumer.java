@@ -22,8 +22,8 @@ import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.model.RequestParam;
 import org.apache.eventmesh.client.http.util.HttpUtils;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
@@ -55,10 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoCloseable {
 
-    private final transient ThreadPoolExecutor consumeExecutor;
-
     private static final List<SubscriptionItem> SUBSCRIPTIONS = Collections.synchronizedList(new ArrayList<>());
-
+    private final transient ThreadPoolExecutor consumeExecutor;
     private final transient ScheduledThreadPoolExecutor scheduler;
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
