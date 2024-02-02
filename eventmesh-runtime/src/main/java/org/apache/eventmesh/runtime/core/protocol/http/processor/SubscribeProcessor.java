@@ -155,46 +155,44 @@ public class SubscribeProcessor extends AbstractHttpRequestProcessor {
         }
 
         SubscriptionManager subscriptionManager = eventMeshHTTPServer.getSubscriptionManager();
-        synchronized (subscriptionManager.getLocalClientInfoMapping()) {
-            ClientInfo clientInfo = getClientInfo(subscribeRequestHeader);
-            subscriptionManager.registerClient(clientInfo, consumerGroup, subTopicList, url);
-            subscriptionManager.updateSubscription(clientInfo, consumerGroup, url, subTopicList);
+        ClientInfo clientInfo = getClientInfo(subscribeRequestHeader);
+        subscriptionManager.registerClient(clientInfo, consumerGroup, subTopicList, url);
+        subscriptionManager.updateSubscription(clientInfo, consumerGroup, url, subTopicList);
 
-            final long startTime = System.currentTimeMillis();
-            HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
-            try {
-                // subscription relationship change notification
-                eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                    subscriptionManager.getLocalConsumerGroupMapping().get(consumerGroup));
+        final long startTime = System.currentTimeMillis();
+        HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
+        try {
+            // subscription relationship change notification
+            eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
+                subscriptionManager.getLocalConsumerGroupMapping().get(consumerGroup));
 
-                final CompleteHandler<HttpCommand> handler = httpCommand -> {
-                    try {
-                        log.debug("{}", httpCommand);
-                        eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+            final CompleteHandler<HttpCommand> handler = httpCommand -> {
+                try {
+                    log.debug("{}", httpCommand);
+                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
 
-                        summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
-                    } catch (Exception ex) {
-                        log.error("onResponse error", ex);
-                    }
-                };
+                    summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                } catch (Exception ex) {
+                    log.error("onResponse error", ex);
+                }
+            };
 
-                responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
-                asyncContext.onComplete(responseEventMeshCommand, handler);
-            } catch (Exception e) {
-                completeResponse(request, asyncContext, subscribeResponseHeader,
-                    EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR,
-                    EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
-                    SubscribeResponseBody.class);
-                final long endTime = System.currentTimeMillis();
- 
-                log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, JsonUtils.toJSONString(subscribeRequestBody.getTopics()), subscribeRequestBody.getUrl(), e);
+            responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+            asyncContext.onComplete(responseEventMeshCommand, handler);
+        } catch (Exception e) {
+            completeResponse(request, asyncContext, subscribeResponseHeader,
+                EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR,
+                EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
+                SubscribeResponseBody.class);
+            final long endTime = System.currentTimeMillis();
+            log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                endTime - startTime, JsonUtils.toJSONString(subscribeRequestBody.getTopics()), subscribeRequestBody.getUrl(), e);
+            summaryMetrics.recordSendMsgFailed();
+            summaryMetrics.recordSendMsgCost(endTime - startTime);
 
-                summaryMetrics.recordSendMsgFailed();
-                summaryMetrics.recordSendMsgCost(endTime - startTime);
-            }
-            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
+        eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
+
     }
 
     @Override
