@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -39,8 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This class handles the HTTP requests of {@code /clientManage/showClient} endpoint.
  * <p>
- * It is used to query information about all clients connected to the current EventMesh server node
- * and to provide statistics on the number of clients in each subsystem.
+ * It is used to query information about all clients connected to the current EventMesh server node and to provide statistics on the number of clients
+ * in each subsystem.
  *
  * @see AbstractHttpHandler
  */
@@ -54,12 +53,10 @@ public class ShowClientHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public ShowClientHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public ShowClientHandler(EventMeshTCPServer eventMeshTCPServer) {
+        super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 

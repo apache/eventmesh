@@ -21,7 +21,6 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
@@ -50,12 +49,10 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the {@code /client/tcp} endpoint,
- * corresponding to the {@code eventmesh-dashboard} path {@code /tcp}.
+ * This class handles the {@code /client/tcp} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /tcp}.
  * <p>
- * It is responsible for managing operations on TCP clients,
- * including retrieving the information list of connected TCP clients
- * and deleting TCP clients by disconnecting their connections based on the provided host and port.
+ * It is responsible for managing operations on TCP clients, including retrieving the information list of connected TCP clients and deleting TCP
+ * clients by disconnecting their connections based on the provided host and port.
  *
  * @see AbstractHttpHandler
  */
@@ -69,21 +66,18 @@ public class TCPClientHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
     public TCPClientHandler(
-        EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+        EventMeshTCPServer eventMeshTCPServer) {
+        super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     /**
      * Handles the OPTIONS request first for {@code /client/tcp}.
      * <p>
-     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
-     * the {@link HttpExchange} object and sends a 200 status code.
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object and sends a 200 status code.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -101,8 +95,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
     /**
      * Handles the DELETE request for {@code /client/tcp}.
      * <p>
-     * This method deletes a connected TCP client by disconnecting their connections
-     * based on the provided host and port, then returns {@code 200 OK}.
+     * This method deletes a connected TCP client by disconnecting their connections based on the provided host and port, then returns {@code 200
+     * OK}.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -213,8 +207,8 @@ public class TCPClientHandler extends AbstractHttpHandler {
     /**
      * Handles the HTTP requests for {@code /client/tcp}.
      * <p>
-     * It delegates the handling to {@code preflight()}, {@code list()} or {@code delete()} methods
-     * based on the request method type (OPTIONS, GET or DELETE).
+     * It delegates the handling to {@code preflight()}, {@code list()} or {@code delete()} methods based on the request method type (OPTIONS, GET or
+     * DELETE).
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
      *
