@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -43,9 +42,8 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/rejectClientBySubSystem} endpoint,
- * which is used to reject a client connection
- * that matches the provided client subsystem id in a Data Communication Network (DCN).
+ * This class handles the HTTP requests of {@code /clientManage/rejectClientBySubSystem} endpoint, which is used to reject a client connection that
+ * matches the provided client subsystem id in a Data Communication Network (DCN).
  * <p>
  * The request must specify the client's subsystem id.
  * <p>
@@ -67,12 +65,10 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer) {
+        super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -133,8 +129,8 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
             } catch (Exception e) {
                 log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={}", subSystem, e);
                 result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
-                    +
-                    "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
+                        +
+                        "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
                     subSystem, e.getMessage());
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));

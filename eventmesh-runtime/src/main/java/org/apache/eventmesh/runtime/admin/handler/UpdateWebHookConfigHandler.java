@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -67,11 +66,9 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
      * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
      *
      * @param operation the WebHookConfigOperation implementation used to update the WebHook config
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
-    public UpdateWebHookConfigHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public UpdateWebHookConfigHandler(WebHookConfigOperation operation) {
+        super();
         this.operation = operation;
     }
 

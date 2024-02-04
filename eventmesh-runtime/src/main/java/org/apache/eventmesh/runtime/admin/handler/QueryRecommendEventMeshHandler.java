@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -37,9 +36,8 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /eventMesh/recommend} endpoint,
- * which is used to calculate and return the recommended EventMesh server node to the client
- * based on the provided {@code group} and {@code purpose} parameters.
+ * This class handles the HTTP requests of {@code /eventMesh/recommend} endpoint, which is used to calculate and return the recommended EventMesh
+ * server node to the client based on the provided {@code group} and {@code purpose} parameters.
  * <p>
  * Parameters:
  * <ul>
@@ -60,12 +58,10 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public QueryRecommendEventMeshHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public QueryRecommendEventMeshHandler(EventMeshTCPServer eventMeshTCPServer) {
+        super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 

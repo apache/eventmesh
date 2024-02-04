@@ -21,7 +21,6 @@ import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
 import org.apache.eventmesh.runtime.admin.response.Error;
@@ -42,12 +41,11 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the {@code /topic} endpoint,
- * corresponding to the {@code eventmesh-dashboard} path {@code /topic},
- * including the "Create Topic" and "Remove" buttons.
+ * This class handles the {@code /topic} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /topic}, including the "Create Topic"
+ * and "Remove" buttons.
  * <p>
- * It provides functionality for managing topics, including retrieving the list of topics (GET),
- * creating a new topic (POST), and deleting an existing topic (DELETE).
+ * It provides functionality for managing topics, including retrieving the list of topics (GET), creating a new topic (POST), and deleting an existing
+ * topic (DELETE).
  * <p>
  * An instance of {@link MQAdminWrapper} is used to interact with the messaging system.
  *
@@ -65,13 +63,10 @@ public class TopicHandler extends AbstractHttpHandler {
      * Constructs a new instance with the specified connector plugin type and HTTP handler manager.
      *
      * @param connectorPluginType The name of event storage connector plugin.
-     * @param httpHandlerManager httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
     public TopicHandler(
-        String connectorPluginType,
-        HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+        String connectorPluginType) {
+        super();
         admin = new MQAdminWrapper(connectorPluginType);
         try {
             admin.init(null);
@@ -83,8 +78,7 @@ public class TopicHandler extends AbstractHttpHandler {
     /**
      * Handles the OPTIONS request first for {@code /topic}.
      * <p>
-     * This method adds CORS (Cross-Origin Resource Sharing) response headers to
-     * the {@link HttpExchange} object and sends a 200 status code.
+     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object and sends a 200 status code.
      *
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs while handling the request
@@ -197,8 +191,8 @@ public class TopicHandler extends AbstractHttpHandler {
     /**
      * Handles the HTTP requests for {@code /topic}.
      * <p>
-     * It delegates the handling to {@code preflight()}, {@code get()}, {@code post()} or {@code delete()} methods
-     * based on the request method type (OPTIONS, GET, POST or DELETE).
+     * It delegates the handling to {@code preflight()}, {@code get()}, {@code post()} or {@code delete()} methods based on the request method type
+     * (OPTIONS, GET, POST or DELETE).
      * <p>
      * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}.
      *

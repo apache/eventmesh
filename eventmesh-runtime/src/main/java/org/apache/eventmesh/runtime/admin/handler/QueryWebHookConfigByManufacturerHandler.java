@@ -23,7 +23,6 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -39,25 +38,22 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigByManufacturer} endpoint
- * and returns a list of WebHook configurations
+ * This class handles the HTTP requests of {@code /webhook/queryWebHookConfigByManufacturer} endpoint and returns a list of WebHook configurations
  * based on the WebHook manufacturer name (such as github) specified in {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
- * The implementation of
- * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigByManufacturer WebHookConfigOperation}
+ * The implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigByManufacturer WebHookConfigOperation}
  * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
  * <p>
- * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
- * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#queryWebHookConfigByManufacturer FileWebHookConfigOperation}
- * method as implementation to retrieve the WebHook configuration from a file;
+ * For example, when {@code eventMesh.webHook.operationMode=file}
+ * It calls the {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#queryWebHookConfigByManufacturer
+ * FileWebHookConfigOperation} method as implementation to retrieve the WebHook configuration from a file;
  * <p>
- * When {@code eventMesh.webHook.operationMode=nacos}, It calls the
- * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#queryWebHookConfigByManufacturer NacosWebHookConfigOperation}
- * method as implementation to retrieve the WebHook configuration from Nacos.
+ * When {@code eventMesh.webHook.operationMode=nacos}
+ * It calls the {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#queryWebHookConfigByManufacturer
+ * NacosWebHookConfigOperation} method as implementation to retrieve the WebHook configuration from Nacos.
  * <p>
- * The
- * {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigByManufacturer HookConfigOperationManager}
- * , another implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
+ * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigByManufacturer
+ * HookConfigOperationManager} , another implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
  * interface, is not used for this endpoint.
  *
  * @see AbstractHttpHandler
@@ -74,15 +70,11 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
      * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
      *
      * @param operation the WebHookConfigOperation implementation used to query the WebHook config
-     * @param httpHandlerManager Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                           for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
      */
-    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation,
-        HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation) {
+        super();
         this.operation = operation;
         Objects.requireNonNull(operation, "WebHookConfigOperation can not be null");
-        Objects.requireNonNull(httpHandlerManager, "HttpHandlerManager can not be null");
 
     }
 

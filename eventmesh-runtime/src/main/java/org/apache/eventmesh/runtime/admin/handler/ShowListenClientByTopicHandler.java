@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.NetUtils;
-import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -38,8 +37,7 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/showListenClientByTopic} endpoint,
- * which is used to display clients information
+ * This class handles the HTTP requests of {@code /clientManage/showListenClientByTopic} endpoint, which is used to display clients information
  * subscribed to a specific topic.
  * <p>
  * Parameters:
@@ -59,12 +57,10 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
     /**
      * Constructs a new instance with the provided server instance and HTTP handler manager.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
-     * @param httpHandlerManager  Manages the registration of {@linkplain com.sun.net.httpserver.HttpHandler HttpHandler}
-     *                            for an {@link com.sun.net.httpserver.HttpServer HttpServer}.
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
-        super(httpHandlerManager);
+    public ShowListenClientByTopicHandler(EventMeshTCPServer eventMeshTCPServer) {
+        super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -98,7 +94,7 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
                         for (Session session : listenSessions.values()) {
                             UserAgent userAgent = session.getClient();
                             result.append(String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
-                                .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))
+                                    .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()))
                                 .append(newLine);
                         }
                     }
