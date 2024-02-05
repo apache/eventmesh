@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
+import java.util.concurrent.Executor;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -66,5 +67,11 @@ public interface HttpRequestProcessor {
         Object extension = event.getExtension(protocolKey);
         return Objects.isNull(extension) ? "" : extension.toString();
     }
+
+    /**
+     *
+     * @return {@link Executor}
+     */
+    Executor executor();
 
 }

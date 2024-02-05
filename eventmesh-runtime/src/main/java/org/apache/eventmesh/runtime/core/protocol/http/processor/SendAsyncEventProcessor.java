@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import java.util.concurrent.Executor;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.AclException;
@@ -309,5 +310,10 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
     @Override
     public String[] paths() {
         return new String[]{RequestURI.PUBLISH.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor();
     }
 }

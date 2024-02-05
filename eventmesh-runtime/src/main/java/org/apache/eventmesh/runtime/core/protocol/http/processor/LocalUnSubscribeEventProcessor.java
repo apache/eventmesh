@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import java.util.concurrent.Executor;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -227,6 +228,11 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
     @Override
     public String[] paths() {
         return new String[]{RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 
     private void registerClient(final HttpEventWrapper requestWrapper, final String consumerGroup, final List<String> topicList, final String url) {

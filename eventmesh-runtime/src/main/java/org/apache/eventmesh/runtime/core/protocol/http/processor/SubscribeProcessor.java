@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import java.util.concurrent.Executor;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
@@ -36,7 +37,6 @@ import org.apache.eventmesh.runtime.core.consumer.ClientInfo;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
@@ -51,7 +51,7 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SubscribeProcessor implements HttpRequestProcessor {
+public class SubscribeProcessor extends AbstractHttpRequestProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -195,6 +195,11 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         }
     }
 
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
+    }
+
     private ClientInfo getClientInfo(final SubscribeRequestHeader subscribeRequestHeader) {
         ClientInfo clientInfo = new ClientInfo();
         clientInfo.setEnv(subscribeRequestHeader.getEnv());
@@ -204,4 +209,6 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         clientInfo.setPid(subscribeRequestHeader.getPid());
         return clientInfo;
     }
+
+
 }

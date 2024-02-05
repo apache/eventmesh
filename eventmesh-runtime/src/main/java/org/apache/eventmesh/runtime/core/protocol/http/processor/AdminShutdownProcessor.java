@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import java.util.concurrent.Executor;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -24,7 +25,6 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class AdminShutdownProcessor implements HttpRequestProcessor {
+public class AdminShutdownProcessor extends AbstractHttpRequestProcessor {
 
     public final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
@@ -53,5 +53,10 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
 
         HttpCommand responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
         asyncContext.onComplete(responseEventMeshCommand);
+    }
+
+    @Override
+    public Executor executor() {
+        return (Runnable runnable)-> {runnable.run();};
     }
 }
