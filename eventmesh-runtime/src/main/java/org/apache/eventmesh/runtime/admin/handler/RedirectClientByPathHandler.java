@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -28,13 +29,12 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderValues;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,7 +62,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
     private final EventMeshTCPServer eventMeshTCPServer;
 
     /**
-     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     * Constructs a new instance with the provided server instance.
      *
      * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
@@ -71,72 +71,60 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    /**
-     * Handles requests by redirecting matching clients to a target EventMesh server node.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
+    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
         String result = "";
-        try (OutputStream out = httpExchange.getResponseBody()) {
-            String queryString = httpExchange.getRequestURI().getQuery();
-            Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            // Extract parameters from the query string
-            String path = queryStringInfo.get(EventMeshConstants.MANAGE_PATH);
-            String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
-            String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
+        String queryString = httpCommand.getRequestURI().getQuery();
+        Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
+        // Extract parameters from the query string
+        String path = queryStringInfo.get(EventMeshConstants.MANAGE_PATH);
+        String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
+        String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
-            // Check the validity of the parameters
-            if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp)
-                || StringUtils.isBlank(destEventMeshPort)
-                || !StringUtils.isNumeric(destEventMeshPort)) {
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                result = "params illegal!";
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
-            }
-            log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
-                destEventMeshIp, destEventMeshPort);
-            // Retrieve the mapping between Sessions and their corresponding client address
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            StringBuilder redirectResult = new StringBuilder();
-            try {
-                if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's path matches the given param
-                    for (Session session : sessionMap.values()) {
-                        // For each matching session found, redirect the client
-                        // to the new EventMesh node specified by given EventMesh IP and port.
-                        if (session.getClient().getPath().contains(path)) {
-                            redirectResult.append("|");
-                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
-                                destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                session, clientSessionGroupMapping));
-                        }
+        // Check the validity of the parameters
+        if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp)
+            || StringUtils.isBlank(destEventMeshPort)
+            || !StringUtils.isNumeric(destEventMeshPort)) {
+            result = "params illegal!";
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            return;
+        }
+        log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
+            destEventMeshIp, destEventMeshPort);
+        // Retrieve the mapping between Sessions and their corresponding client address
+        ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+        ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+        StringBuilder redirectResult = new StringBuilder();
+        try {
+            if (!sessionMap.isEmpty()) {
+                // Iterate through the sessionMap to find matching sessions where the client's path matches the given param
+                for (Session session : sessionMap.values()) {
+                    // For each matching session found, redirect the client
+                    // to the new EventMesh node specified by given EventMesh IP and port.
+                    if (session.getClient().getPath().contains(path)) {
+                        redirectResult.append("|");
+                        redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
+                            destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                            session, clientSessionGroupMapping));
                     }
                 }
-            } catch (Exception e) {
-                log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
-                    +
-                    "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
-                result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
-                        +
-                        "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                    sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
             }
-            result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
-                    +
-                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
-            NetUtils.sendSuccessResponseHeaders(httpExchange);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            log.error("redirectClientByPath fail...", e);
+            log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
+                +
+                "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
+            result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
+                    +
+                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            return;
         }
+        result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
+                +
+                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+            sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+
     }
 }

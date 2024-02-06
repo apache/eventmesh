@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -28,8 +29,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderValues;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +63,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
     private final transient EventMeshTCPServer eventMeshTCPServer;
 
     /**
-     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     * Constructs a new instance with the provided server instance.
      *
      * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
@@ -83,68 +83,56 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
         return sb.toString();
     }
 
-    /**
-     * Handles requests by rejecting matching clients.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
+    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
         String result;
-        try (OutputStream out = httpExchange.getResponseBody()) {
-            String queryString = httpExchange.getRequestURI().getQuery();
-            Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            // Extract parameter from the query string
-            String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
+        String queryString = httpCommand.getRequestURI().getQuery();
+        Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
+        // Extract parameter from the query string
+        String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
-            // Check the validity of the parameters
-            if (StringUtils.isBlank(subSystem)) {
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                result = "params illegal!";
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
-            }
+        // Check the validity of the parameters
+        if (StringUtils.isBlank(subSystem)) {
+            result = "params illegal!";
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            return;
+        }
 
-            log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
-            // Retrieve the mapping between Sessions and their corresponding client address
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
-            try {
-                if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
-                    for (Session session : sessionMap.values()) {
-                        // Reject client connection for each matching session found
-                        if (session.getClient().getSubsystem().equals(subSystem)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), session,
-                                clientSessionGroupMapping);
-                            // Add the remote client address to a list of successfully rejected addresses
-                            if (addr != null) {
-                                successRemoteAddrs.add(addr);
-                            }
+        log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
+        // Retrieve the mapping between Sessions and their corresponding client address
+        ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+        ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+        final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
+        try {
+            if (!sessionMap.isEmpty()) {
+                // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
+                for (Session session : sessionMap.values()) {
+                    // Reject client connection for each matching session found
+                    if (session.getClient().getSubsystem().equals(subSystem)) {
+                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), session,
+                            clientSessionGroupMapping);
+                        // Add the remote client address to a list of successfully rejected addresses
+                        if (addr != null) {
+                            successRemoteAddrs.add(addr);
                         }
                     }
                 }
-            } catch (Exception e) {
-                log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={}", subSystem, e);
-                result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
-                        +
-                        "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
-                    subSystem, e.getMessage());
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
             }
-            // Serialize the successfully rejected client addresses into output stream
-            result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
-                +
-                "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
-            NetUtils.sendSuccessResponseHeaders(httpExchange);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            log.error("rejectClientBySubSystem fail...", e);
+            log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={}", subSystem, e);
+            result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
+                    +
+                    "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
+                subSystem, e.getMessage());
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            return;
         }
+        // Serialize the successfully rejected client addresses into output stream
+        result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
+            +
+            "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+
 
     }
 }
