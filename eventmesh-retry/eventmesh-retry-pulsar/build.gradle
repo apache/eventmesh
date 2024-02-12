@@ -1,0 +1,12 @@
+List pulsar = ["org.apache.pulsar:pulsar-client:$pulsar_version"]
+
+dependencies {
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-pulsar")
+    implementation project(path: ':eventmesh-retry:eventmesh-retry-api')
+    implementation pulsar
+    implementation 'org.projectlombok:lombok:1.18.28'
+    implementation project(':eventmesh-common')
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
