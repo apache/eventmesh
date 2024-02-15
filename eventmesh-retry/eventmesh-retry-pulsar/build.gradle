@@ -1,4 +1,6 @@
-List pulsar = ["org.apache.pulsar:pulsar-client:$pulsar_version"]
+List pulsar = [
+        "org.apache.pulsar:pulsar-client:$pulsar_version"
+]
 
 dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
@@ -6,7 +8,12 @@ dependencies {
     implementation project(path: ':eventmesh-retry:eventmesh-retry-api')
     implementation pulsar
     implementation 'org.projectlombok:lombok:1.18.28'
-    implementation project(':eventmesh-common')
-    testImplementation platform('org.junit:junit-bom:5.9.1')
+    implementation project(":eventmesh-common")
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }

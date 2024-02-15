@@ -128,4 +128,3 @@ include 'eventmesh-retry:eventmesh-retry-api'
 include 'eventmesh-retry:eventmesh-retry-rocketmq'
 include 'eventmesh-retry:eventmesh-retry-pulsar'
 findProject(':eventmesh-retry:eventmesh-retry-pulsar')?.name = 'eventmesh-retry-pulsar'
-
