@@ -46,9 +46,6 @@ public abstract class AbstractEvent implements Event {
         return tableId;
     }
 
-    /**
-     * @return
-     */
     @Override
     public JdbcConnectData getJdbcConnectData() {
         return data;

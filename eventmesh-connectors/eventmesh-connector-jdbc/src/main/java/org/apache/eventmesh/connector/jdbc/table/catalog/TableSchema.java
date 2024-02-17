@@ -40,14 +40,14 @@ public class TableSchema implements Serializable {
     /**
      * A map of column names to their respective column objects.
      */
-    private Map<String, ? extends Column> columnMap;
+    private Map<String, ? extends Column<?>> columnMap;
 
     /**
      * A list of columns in the table.
      */
-    private List<? extends Column> columns;
+    private List<? extends Column<?>> columns;
 
-    private Map<Integer, ? extends Column> orderColumnMap;
+    private Map<Integer, ? extends Column<?>> orderColumnMap;
 
     /**
      * The primary key of the table.
@@ -58,8 +58,8 @@ public class TableSchema implements Serializable {
 
     private String comment;
 
-    public TableSchema(TableId tableId, Map<String, ? extends Column> columnMap, List<? extends Column> columns,
-        Map<Integer, ? extends Column> orderColumnMap, PrimaryKey primaryKey, List<UniqueKey> uniqueKeys, String comment) {
+    public TableSchema(TableId tableId, Map<String, ? extends Column<?>> columnMap, List<? extends Column<?>> columns,
+        Map<Integer, ? extends Column<?>> orderColumnMap, PrimaryKey primaryKey, List<UniqueKey> uniqueKeys, String comment) {
         this.tableId = tableId;
         this.columnMap = columnMap;
         this.columns = columns;
@@ -88,9 +88,9 @@ public class TableSchema implements Serializable {
     public static class TableSchemaBuilder {
 
         private TableId tableId;
-        private Map<String, Column> columnMap;
-        private Map<Integer, Column> orderColumnMap;
-        private List<Column> columns;
+        private Map<String, Column<?>> columnMap;
+        private Map<Integer, Column<?>> orderColumnMap;
+        private List<Column<?>> columns;
         private PrimaryKey primaryKey;
         private List<UniqueKey> uniqueKeys;
         private String comment;
@@ -104,12 +104,12 @@ public class TableSchema implements Serializable {
             return this;
         }
 
-        public TableSchemaBuilder withColumns(Map<String, Column> columnMap) {
+        public TableSchemaBuilder withColumns(Map<String, Column<?>> columnMap) {
             this.columnMap = columnMap;
             return this;
         }
 
-        public TableSchemaBuilder withColumns(List<Column> columns) {
+        public TableSchemaBuilder withColumns(List<Column<?>> columns) {
             this.columns = columns;
             return this;
         }
