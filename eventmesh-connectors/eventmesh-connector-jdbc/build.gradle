@@ -43,7 +43,6 @@ dependencies {
     implementation project(":eventmesh-spi")
     implementation 'com.zendesk:mysql-binlog-connector-java:0.28.0'
     implementation 'mysql:mysql-connector-java:8.0.32'
-    implementation 'org.postgresql:postgresql:42.6.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
