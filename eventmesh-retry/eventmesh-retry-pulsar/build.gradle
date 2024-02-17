@@ -22,7 +22,6 @@ dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-pulsar")
     implementation project(path: ':eventmesh-retry:eventmesh-retry-api')
     implementation pulsar
-    implementation 'org.projectlombok:lombok:1.18.28'
     implementation project(":eventmesh-common")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'io.cloudevents:cloudevents-json-jackson'
