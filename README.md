@@ -188,7 +188,7 @@ Each contributor has played an important role in promoting the robust developmen
 Here is the [List of Contributors](https://github.com/apache/eventmesh/graphs/contributors), thank you all! :)
 
 <a href="https://github.com/apache/eventmesh/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=apache/eventmesh" />
+  <img src="https://contrib.rocks/image?repo=apache/eventmesh&max=2000" />
 </a>
 
 
