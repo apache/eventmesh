@@ -39,7 +39,6 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 
-public class BatchSendMessageV2Processor implements HttpRequestProcessor {
+public class BatchSendMessageV2Processor extends AbstractHttpRequestProcessor {
 
     private static final Logger CMD_LOGGER = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
@@ -253,5 +253,10 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
             EventMeshRetCode.SUCCESS, null, SendMessageBatchV2ResponseBody.class);
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getBatchMsgExecutor();
     }
 }

@@ -33,6 +33,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,5 +114,10 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
     @Override
     public String[] paths() {
         return new String[] {RequestURI.SUBSCRIPTION_QUERY.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 }

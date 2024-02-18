@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,5 +151,10 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
     @Override
     public String[] paths() {
         return new String[] {RequestURI.CREATE_TOPIC.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 }

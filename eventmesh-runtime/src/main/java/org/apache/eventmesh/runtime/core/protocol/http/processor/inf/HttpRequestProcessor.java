@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,5 +67,10 @@ public interface HttpRequestProcessor {
         Object extension = event.getExtension(protocolKey);
         return Objects.isNull(extension) ? "" : extension.toString();
     }
+
+    /**
+     * @return {@link Executor}
+     */
+    Executor executor();
 
 }

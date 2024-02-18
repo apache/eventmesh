@@ -52,6 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
@@ -308,6 +309,11 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.PUBLISH.getRequestURI()};
+        return new String[] {RequestURI.PUBLISH.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor();
     }
 }
