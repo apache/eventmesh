@@ -17,24 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.concurrent.Executor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
+public abstract class AbstractHttpRequestProcessor implements HttpRequestProcessor {
 
-/**
- * http processor
- */
-public interface HttpProcessor {
-
-    String[] paths();
-
-    HttpResponse handler(HttpRequest httpRequest);
-
-    /**
-     * @return {@link Executor}
-     */
-    default Executor executor() {
-        return null;
-    }
 }

@@ -39,7 +39,6 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
@@ -58,7 +58,7 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SendSyncMessageProcessor implements HttpRequestProcessor {
+public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
 
     private transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -215,6 +215,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
                 @Override
                 public void onSuccess(final CloudEvent event) {
+
                     log.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                         + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
 
@@ -262,8 +263,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     asyncContext.onComplete(err, handler);
 
                     eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
+
                     log.error("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                         + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, e);
+
                 }
             }, Integer.parseInt(ttl));
         } catch (Exception ex) {
@@ -281,5 +284,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         return;
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor();
     }
 }

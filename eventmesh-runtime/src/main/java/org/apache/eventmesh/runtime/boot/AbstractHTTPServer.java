@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.AssertUtils;
-import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -117,7 +116,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     /**
      * key: request code
      */
-    protected final transient Map<String, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
+    protected final transient Map<String, HttpRequestProcessor> httpRequestProcessorTable =
         new ConcurrentHashMap<>(64);
 
     private HttpConnectionHandler httpConnectionHandler;
@@ -198,11 +197,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     /**
      * Registers the processors required by the runtime module
      */
-    public void registerProcessor(final Integer requestCode, final HttpRequestProcessor processor, final ThreadPoolExecutor executor) {
+    public void registerProcessor(final Integer requestCode, final HttpRequestProcessor processor) {
         AssertUtils.notNull(requestCode, "requestCode can't be null");
         AssertUtils.notNull(processor, "processor can't be null");
-        AssertUtils.notNull(executor, "executor can't be null");
-        this.httpRequestProcessorTable.put(requestCode.toString(), new Pair<>(processor, executor));
+        this.httpRequestProcessorTable.putIfAbsent(requestCode.toString(), processor);
     }
 
     /**
@@ -400,46 +398,54 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         private void processHttpCommandRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) {
             final HttpCommand request = asyncContext.getRequest();
-            final Pair<HttpRequestProcessor, ThreadPoolExecutor> choosed = httpRequestProcessorTable.get(request.getRequestCode());
-            try {
-                choosed.getObject2().submit(() -> {
-                    try {
-                        final HttpRequestProcessor processor = choosed.getObject1();
-                        if (processor.rejectRequest()) {
-                            final HttpCommand responseCommand =
-                                request.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR);
-                            asyncContext.onComplete(responseCommand);
+            final HttpRequestProcessor choosed = httpRequestProcessorTable.get(request.getRequestCode());
+            Runnable runnable = () -> {
+                try {
+                    final HttpRequestProcessor processor = choosed;
+                    if (processor.rejectRequest()) {
+                        final HttpCommand responseCommand =
+                            request.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR);
+                        asyncContext.onComplete(responseCommand);
 
-                            if (asyncContext.isComplete()) {
-                                sendResponse(ctx, responseCommand.httpResponse());
-                                log.debug("{}", asyncContext.getResponse());
-                                final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
-                                TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
-                                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
-                                        false),
-                                    traceMap,
-                                    EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
-                            }
+                        if (asyncContext.isComplete()) {
+                            sendResponse(ctx, responseCommand.httpResponse());
+                            log.debug("{}", asyncContext.getResponse());
+                            final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
+                            TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
 
-                            return;
+                                    EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+                                    false),
+                                traceMap,
+                                EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
                         }
 
-                        processor.processRequest(ctx, asyncContext);
-                        if (!asyncContext.isComplete()) {
-                            return;
-                        }
-
-                        metrics.getSummaryMetrics()
-                            .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
-
-                        log.debug("{}", asyncContext.getResponse());
-
-                        sendResponse(ctx, asyncContext.getResponse().httpResponse());
-
-                    } catch (Exception e) {
-                        log.error("process error", e);
+                        return;
                     }
-                });
+
+                    processor.processRequest(ctx, asyncContext);
+                    if (!asyncContext.isComplete()) {
+                        return;
+                    }
+
+                    log.debug("{}", asyncContext.getResponse());
+                    metrics.getSummaryMetrics()
+                        .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                    sendResponse(ctx, asyncContext.getResponse().httpResponse());
+
+                } catch (Exception e) {
+                    log.error("process error", e);
+                }
+            };
+
+            try {
+                if (Objects.nonNull(choosed.executor())) {
+                    choosed.executor().execute(() -> {
+                        runnable.run();
+                    });
+                } else {
+                    runnable.run();
+                }
+
             } catch (RejectedExecutionException re) {
                 asyncContext.onComplete(request.createHttpCommandResponse(EventMeshRetCode.OVERLOAD));
                 metrics.getSummaryMetrics().recordHTTPDiscard();

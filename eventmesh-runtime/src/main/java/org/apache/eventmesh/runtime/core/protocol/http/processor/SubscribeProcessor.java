@@ -36,7 +36,6 @@ import org.apache.eventmesh.runtime.core.consumer.ClientInfo;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
@@ -45,13 +44,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SubscribeProcessor implements HttpRequestProcessor {
+public class SubscribeProcessor extends AbstractHttpRequestProcessor {
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -186,13 +186,20 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2),
                     SubscribeResponseBody.class);
                 final long endTime = System.currentTimeMillis();
+ 
                 log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, JsonUtils.toJSONString(subscribeRequestBody.getTopics()), subscribeRequestBody.getUrl(), e);
+
                 summaryMetrics.recordSendMsgFailed();
                 summaryMetrics.recordSendMsgCost(endTime - startTime);
             }
             eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
         }
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 
     private ClientInfo getClientInfo(final SubscribeRequestHeader subscribeRequestHeader) {
@@ -204,4 +211,6 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         clientInfo.setPid(subscribeRequestHeader.getPid());
         return clientInfo;
     }
+
+
 }

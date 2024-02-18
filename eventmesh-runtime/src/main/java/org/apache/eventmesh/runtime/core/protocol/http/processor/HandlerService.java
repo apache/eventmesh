@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -86,20 +87,26 @@ public class HandlerService {
         log.info("HandlerService start ");
     }
 
-    public void register(HttpProcessor httpProcessor, ThreadPoolExecutor threadPoolExecutor) {
+    public void register(HttpProcessor httpProcessor, Executor threadPoolExecutor) {
         for (String path : httpProcessor.paths()) {
             this.register(path, httpProcessor, threadPoolExecutor);
         }
     }
 
-    public void register(String path, HttpProcessor httpProcessor, ThreadPoolExecutor threadPoolExecutor) {
+    public void register(HttpProcessor httpProcessor) {
+        for (String path : httpProcessor.paths()) {
+            this.register(path, httpProcessor, httpProcessor.executor());
+        }
+    }
+
+    public void register(String path, HttpProcessor httpProcessor, Executor threadPoolExecutor) {
 
         if (httpProcessorMap.containsKey(path)) {
             throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
                 path, httpProcessor.getClass().getSimpleName()));
         }
         ProcessorWrapper processorWrapper = new ProcessorWrapper();
-        processorWrapper.threadPoolExecutor = threadPoolExecutor;
+        processorWrapper.executor = threadPoolExecutor;
         if (httpProcessor instanceof AsyncHttpProcessor) {
             processorWrapper.async = (AsyncHttpProcessor) httpProcessor;
         }
@@ -140,7 +147,7 @@ public class HandlerService {
             handlerSpecific.ctx = ctx;
             handlerSpecific.traceOperation = traceOperation;
             handlerSpecific.asyncContext = new AsyncContext<>(new HttpEventWrapper(), null, asyncContextCompleteHandler);
-            processorWrapper.threadPoolExecutor.execute(handlerSpecific);
+            processorWrapper.executor.execute(handlerSpecific);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             this.sendResponse(ctx, httpRequest, HttpResponseUtils.createInternalServerError());
@@ -380,7 +387,7 @@ public class HandlerService {
 
     private static class ProcessorWrapper {
 
-        private ThreadPoolExecutor threadPoolExecutor;
+        private Executor executor;
 
         private HttpProcessor httpProcessor;
 
