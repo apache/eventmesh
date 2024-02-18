@@ -17,17 +17,26 @@
 
 package org.apache.eventmesh.connector.jdbc;
 
+/**
+ * Represents data associated with a JDBC connector.
+ */
 public final class JdbcConnectData {
 
+    /**
+     * Constant representing data changes in the JDBC connector.
+     */
     public static final byte DATA_CHANGES = 1;
 
+    /**
+     * Constant representing schema changes in the JDBC connector.
+     */
     public static final byte SCHEMA_CHANGES = 1 << 1;
 
     private Payload payload = new Payload();
 
     private Schema schema;
 
-    private byte type;
+    private byte type = 0;
 
     public JdbcConnectData() {
     }
@@ -66,5 +75,13 @@ public final class JdbcConnectData {
 
     public void markSchemaChanges() {
         this.type |= SCHEMA_CHANGES;
+    }
+
+    public boolean isDataChanges() {
+        return (this.type & DATA_CHANGES) != 0;
+    }
+
+    public boolean isSchemaChanges() {
+        return (this.type & SCHEMA_CHANGES) != 0;
     }
 }

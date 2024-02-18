@@ -21,7 +21,9 @@ import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.Payload;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.ColumnCreateTableContext;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.CopyCreateTableContext;
+import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.DecimalLiteralContext;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.QueryCreateTableContext;
+import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.TableOptionAutoIncrementContext;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.TableOptionCharsetContext;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.TableOptionCollateContext;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.TableOptionEngineContext;
@@ -32,9 +34,10 @@ import org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.MysqlAntl
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlSourceMateData;
 import org.apache.eventmesh.connector.jdbc.table.catalog.Table;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
+import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlOptions.MysqlTableOptions;
 import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlTableEditor;
-import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlTableOptions;
 import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlTableSchema;
+import org.apache.eventmesh.connector.jdbc.utils.Antlr4Utils;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,7 +101,7 @@ public class CreateTableParserListener extends TableBaseParserListener {
 
     @Override
     public void exitColumnCreateTable(ColumnCreateTableContext ctx) {
-        String ddl = ctx.getText();
+        String ddl = Antlr4Utils.getText(ctx);
         parser.runIfAllNotNull(() -> {
             listeners.remove(columnDefinitionListener);
             // help JVM GC
@@ -114,7 +117,12 @@ public class CreateTableParserListener extends TableBaseParserListener {
                 .catalogName(currentDatabase)
                 .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
                 .build();
-            Table table = new Table(tableSchema.getSimpleName(), tableSchema.getPrimaryKey(), tableSchema.getUniqueKeys(), tableSchema.getComment());
+            Table table = Table.newBuilder().withTableId(tableSchema.getTableId())
+                .withPrimaryKey(tableSchema.getPrimaryKey())
+                .withUniqueKeys(tableSchema.getUniqueKeys())
+                .withComment(tableSchema.getComment())
+                .withOptions(tableSchema.getTableOptions())
+                .build();
             CatalogChanges changes = CatalogChanges.newBuilder().operationType(SchemaChangeEventType.TABLE_CREATE).table(table)
                 .columns(tableSchema.getColumns()).build();
             payload.withSource(sourceMateData).withDdl(ddl).withCatalogChanges(changes);
@@ -136,7 +144,7 @@ public class CreateTableParserListener extends TableBaseParserListener {
     @Override
     public void enterTableOptionEngine(TableOptionEngineContext ctx) {
         if (ctx.ENGINE() != null) {
-            this.tableEditor.withOption(MysqlTableOptions.ENGINE, ctx.ENGINE().getText());
+            this.tableEditor.withOption(MysqlTableOptions.ENGINE, ctx.engineName().getText());
         }
         super.enterTableOptionEngine(ctx);
     }
@@ -153,6 +161,16 @@ public class CreateTableParserListener extends TableBaseParserListener {
         }
 
         super.enterTableOptionCharset(ctx);
+    }
+
+    @Override
+    public void enterTableOptionAutoIncrement(TableOptionAutoIncrementContext ctx) {
+        DecimalLiteralContext decimalLiteralContext = ctx.decimalLiteral();
+        if (null != decimalLiteralContext) {
+            String autoIncrementNumber = Antlr4Utils.getText(decimalLiteralContext);
+            this.tableEditor.withOption(MysqlTableOptions.AUTO_INCREMENT, autoIncrementNumber);
+        }
+        super.enterTableOptionAutoIncrement(ctx);
     }
 
     @Override
