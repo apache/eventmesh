@@ -17,80 +17,92 @@
 
 package org.apache.eventmesh.connector.jdbc.table.type;
 
+import java.sql.Types;
+
 /**
  * see {@link java.sql.SQLType}
  */
 public enum SQLType {
 
+    BIT(Types.BIT),
+
     /**
      * Identifies the generic SQL type {@code TINYINT}.
      */
-    TINYINT,
+    TINYINT(Types.TINYINT),
     /**
      * Identifies the generic SQL type {@code SMALLINT}.
      */
-    SMALLINT,
+    SMALLINT(Types.SMALLINT),
     /**
      * Identifies the generic SQL type {@code INTEGER}.
      */
-    INTEGER,
+    INTEGER(Types.INTEGER),
     /**
      * Identifies the generic SQL type {@code BIGINT}.
      */
-    BIGINT,
+    BIGINT(Types.BIGINT),
     /**
      * Identifies the generic SQL type {@code FLOAT}.
      */
-    FLOAT,
+    FLOAT(Types.FLOAT),
 
     /**
      * Identifies the generic SQL type {@code DOUBLE}.
      */
-    DOUBLE,
+    DOUBLE(Types.DOUBLE),
 
     /**
      * Identifies the generic SQL type {@code DECIMAL}.
      */
-    DECIMAL,
+    DECIMAL(Types.DECIMAL),
+    NUMERIC(Types.NUMERIC),
+    REAL(Types.REAL),
 
     /**
      * Identifies the generic SQL type {@code DATE}.
      */
-    DATE,
+    DATE(Types.DATE),
     /**
      * Identifies the generic SQL type {@code TIME}.
      */
-    TIME,
+    TIME(Types.TIME),
     /**
      * Identifies the generic SQL type {@code TIMESTAMP}.
      */
-    TIMESTAMP,
+    TIMESTAMP(Types.TIMESTAMP),
+
+    TIMESTAMP_WITH_TIMEZONE(Types.TIMESTAMP_WITH_TIMEZONE),
+
     /**
      * Identifies the generic SQL type {@code BINARY}.
      */
-    BINARY,
+    BINARY(Types.BINARY),
 
     /**
      * Identifies the generic SQL value {@code NULL}.
      */
-    NULL,
+    NULL(Types.NULL),
 
     /**
      * Identifies the generic SQL type {@code ARRAY}.
      */
-    ARRAY,
+    ARRAY(Types.ARRAY),
 
     /**
      * Identifies the generic SQL type {@code BOOLEAN}.
      */
-    BOOLEAN,
+    BOOLEAN(Types.BOOLEAN),
 
-    /**
-     * EventMesh generic SQL type
-     */
-    ROW,
+    STRING(Types.VARCHAR);
 
-    MAP,
+    private int type;
 
-    STRING
+    SQLType(int type) {
+        this.type = type;
+    }
+
+    public int ofType() {
+        return type;
+    }
 }

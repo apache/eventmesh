@@ -17,17 +17,59 @@
 
 package org.apache.eventmesh.connector.jdbc.event;
 
+/**
+ * Enumeration representing different types of data change events.
+ */
 public enum DataChangeEventType {
 
-    INSERT("I"), UPDATE("U"), DELETE("D");
+    /**
+     * Represents an INSERT data change event.
+     */
+    INSERT("I"),
+
+    /**
+     * Represents an UPDATE data change event.
+     */
+    UPDATE("U"),
+
+    /**
+     * Represents a DELETE data change event.
+     */
+    DELETE("D");
+
     private final String code;
 
+    /**
+     * Constructs a DataChangeEventType with the specified code.
+     *
+     * @param code The code representing the data change event type.
+     */
     DataChangeEventType(String code) {
         this.code = code;
     }
 
+    /**
+     * Parses a DataChangeEventType from the given code.
+     *
+     * @param code The code to parse.
+     * @return The corresponding DataChangeEventType.
+     * @throws IllegalArgumentException If the provided code is unknown.
+     */
+    public static DataChangeEventType parseFromCode(String code) {
+        for (DataChangeEventType type : DataChangeEventType.values()) {
+            if (type.code.equals(code)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown DataChangeEventType code: " + code);
+    }
+
+    /**
+     * Gets the code representing the DataChangeEventType.
+     *
+     * @return The code of the DataChangeEventType.
+     */
     public String ofCode() {
         return this.code;
     }
-
 }

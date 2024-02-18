@@ -17,19 +17,25 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.mysql;
 
+import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
 import org.apache.eventmesh.connector.jdbc.context.mysql.MysqlOffsetContext;
 import org.apache.eventmesh.connector.jdbc.context.mysql.MysqlPartition;
+import org.apache.eventmesh.connector.jdbc.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.event.EventConsumer;
+import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
+import org.apache.eventmesh.connector.jdbc.source.SourceMateData;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlConstants;
-import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDialectSql;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlJdbcContext;
+import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlSourceMateData;
 import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.AbstractSnapshotEngine;
+import org.apache.eventmesh.connector.jdbc.table.catalog.DefaultValueConvertor;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
+import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlDefaultValueConvertorImpl;
 import org.apache.eventmesh.connector.jdbc.utils.MysqlUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -60,6 +66,8 @@ public class MysqlSnapshotEngine extends
 
     private MysqlJdbcConnection connection;
 
+    private DefaultValueConvertor defaultValueConvertor = new MysqlDefaultValueConvertorImpl();
+
     public MysqlSnapshotEngine(JdbcSourceConfig jdbcSourceConfig, MysqlDatabaseDialect databaseDialect, MysqlJdbcContext jdbcContext) {
         super(jdbcSourceConfig, databaseDialect, jdbcContext, jdbcContext.getPartition(), jdbcContext.getOffsetContext());
         this.connection = databaseDialect.getConnection();
@@ -74,6 +82,29 @@ public class MysqlSnapshotEngine extends
     @Override
     public void close() throws Exception {
         shutdown();
+    }
+
+    /**
+     * Builds the source metadata.
+     *
+     * @param context         The context.
+     * @param snapshotContext The snapshot context.
+     * @param tableId         The table id
+     * @return The source metadata.
+     */
+    @Override
+    protected SourceMateData buildSourceMateData(MysqlJdbcContext context, SnapshotContext<MysqlPartition, MysqlOffsetContext> snapshotContext,
+        TableId tableId) {
+
+        MysqlSourceMateData sourceMateData = MysqlSourceMateData.newBuilder()
+            .name(sourceConnectorConfig.getName())
+            .withTableId(tableId)
+            .serverId(sourceConnectorConfig.getMysqlConfig().getServerId())
+            .snapshot(true)
+            .position(context.getSourceInfo().getCurrentBinlogPosition())
+            .build();
+
+        return sourceMateData;
     }
 
     @Override
@@ -185,7 +216,17 @@ public class MysqlSnapshotEngine extends
                 if (event == null) {
                     return;
                 }
-                event.getJdbcConnectData().getPayload().ofSourceMateData().setSnapshot(true);
+                // handle default value expression
+                if (event.getJdbcConnectData().isSchemaChanges()) {
+                    CatalogChanges catalogChanges = event.getJdbcConnectData().getPayload().getCatalogChanges();
+                    SchemaChangeEventType schemaChangeEventType = SchemaChangeEventType.ofSchemaChangeEventType(catalogChanges.getType(),
+                        catalogChanges.getOperationType());
+                    if (SchemaChangeEventType.TABLE_CREATE == schemaChangeEventType || SchemaChangeEventType.TABLE_ALERT == schemaChangeEventType) {
+                        catalogChanges.getColumns().forEach(
+                            column -> column.setDefaultValue(defaultValueConvertor.parseDefaultValue(column, column.getDefaultValueExpression())));
+                    }
+                }
+                event.getJdbcConnectData().getPayload().withDdl(ddl).ofSourceMateData().setSnapshot(true);
                 eventQueue.put(event);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

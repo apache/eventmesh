@@ -65,6 +65,6 @@ public interface MysqlColumnEditor extends ColumnEditor<MysqlColumnEditor, Mysql
      * @param collationName The name of the collation to set.
      * @return The column editor with the collation set.
      */
-    MysqlColumnEditor collate(String collationName);
+    MysqlColumnEditor collation(String collationName);
 
 }
