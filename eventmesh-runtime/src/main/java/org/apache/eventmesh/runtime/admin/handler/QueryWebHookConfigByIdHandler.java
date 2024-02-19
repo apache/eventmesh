@@ -17,21 +17,23 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICATION_JSON;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
-
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Objects;
 
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,7 +74,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
     private final WebHookConfigOperation operation;
 
     /**
-     * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
+     * Constructs a new instance with the specified WebHook config operation.
      *
      * @param operation the WebHookConfigOperation implementation used to query the WebHook config
      */
@@ -81,27 +83,23 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
         this.operation = operation;
     }
 
-    /**
-     * Handles requests by retrieving a WebHook configuration.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-        NetUtils.sendSuccessResponseHeaders(httpExchange);
-
+    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         // Resolve to WebHookConfig
-        String requestBody = NetUtils.parsePostBody(httpExchange);
-        WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
-
-        try (OutputStream out = httpExchange.getResponseBody()) {
+        Body body = httpCommand.getBody();
+        if (!Objects.isNull(body)) {
+            WebHookConfig webHookConfig = JsonUtils.mapToObject(body.toMap(), WebHookConfig.class);
             // Retrieve the WebHookConfig by callback path
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
-            out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
-        } catch (Exception e) {
-            log.error("get WebHookConfigOperation implementation Failed.", e);
+            String json = JsonUtils.toJSONString(result);
+            HttpResponse httpResponse =
+                HttpResponseUtils.getHttpResponse(Objects.requireNonNull(json).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
+                    HttpResponseStatus.OK);
+            write(ctx, httpResponse);
         }
+        throw new Exception();
     }
 }

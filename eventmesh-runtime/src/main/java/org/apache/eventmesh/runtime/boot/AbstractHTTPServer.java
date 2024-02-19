@@ -255,7 +255,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * @param httpRequest
      * @return
      */
-    private Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
+    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
         final long bodyDecodeStart = System.currentTimeMillis();
         final Map<String, Object> httpRequestBody = new HashMap<>();
 
