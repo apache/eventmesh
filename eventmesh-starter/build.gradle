@@ -17,5 +17,4 @@
 
 dependencies {
     implementation project(":eventmesh-runtime")
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-rocketmq")
 }
