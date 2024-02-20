@@ -197,7 +197,7 @@ public class EventHandler extends AbstractHttpHandler {
 
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-            byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
+            byte[] rawRequest = request.getBytes(Constants.DEFAULT_CHARSET);
             CloudEvent event = Objects.requireNonNull(EventFormatProvider
                 .getInstance()
                 .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
