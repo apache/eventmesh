@@ -240,6 +240,7 @@ public class MessageQueue {
         if (takeIndex == items.length) {
             takeIndex = 0;
         }
+        count--;
         notFull.signalAll();
         return item;
     }
