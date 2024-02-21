@@ -236,7 +236,7 @@ public class MessageQueue {
      * @return The MessageEntity object at the head of the queue.
      */
     private MessageEntity dequeue() {
-        MessageEntity item = items[takeIndex++];
+        final MessageEntity item = items[takeIndex++];
         if (takeIndex == items.length) {
             takeIndex = 0;
         }
