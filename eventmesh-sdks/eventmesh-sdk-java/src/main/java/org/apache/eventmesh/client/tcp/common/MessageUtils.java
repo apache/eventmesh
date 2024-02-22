@@ -45,19 +45,15 @@ import io.openmessaging.api.Message;
 
 public class MessageUtils {
 
-    private static final int SEQ_LENGTH = 10;
-
     /**
      * USERAGENT for PUB
      */
     public static final String USER_AGENT_PURPOSE_PUB = "pub";
-
     /**
      * USERAGENT for SUB
      */
     public static final String USER_AGENT_PURPOSE_SUB = "sub";
-
-    public static final String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
+    private static final int SEQ_LENGTH = 10;
 
     public static Package hello(UserAgent user) {
         final Package msg = getPackage(Command.HELLO_REQUEST);
@@ -110,7 +106,7 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
             msg.setBody(message);
         } else if (message instanceof Message) {
-            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, OPEN_MESSAGE_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.OPEN_MESSAGE_PROTOCOL_NAME);
             // todo: this version need to be confirmed.
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
         } else {

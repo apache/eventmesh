@@ -30,4 +30,6 @@ public class EventMeshCommon {
     public static final int DEFAULT_TIME_OUT_MILLS = 20 * 1000;
 
     public static final String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
+
+    public static final String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 }
