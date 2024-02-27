@@ -47,6 +47,7 @@ import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,7 +70,7 @@ public class ZookeeperMetaService implements MetaService {
     private String serverAddr;
 
     @Getter
-    public CuratorFramework zkClient;
+    private CuratorFramework zkClient;
 
     private ConcurrentMap<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
 
@@ -184,49 +185,15 @@ public class ZookeeperMetaService implements MetaService {
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
         List<EventMeshDataInfo> eventMeshDataInfoList = new ArrayList<>();
         for (String key : ConfigurationContextUtil.KEYS) {
+
             CommonConfiguration configuration = ConfigurationContextUtil.get(key);
             if (Objects.isNull(configuration)) {
                 continue;
             }
             String eventMeshName = configuration.getEventMeshName();
-            try {
-                String serviceName = eventMeshName.concat("-").concat(key);
-                String servicePath = formatServicePath(clusterName, serviceName);
+            String serviceName = eventMeshName.concat("-").concat(key);
 
-                List<String> instances = zkClient.getChildren()
-                    .forPath(servicePath);
-
-                if (CollectionUtils.isEmpty(instances)) {
-                    continue;
-                }
-
-                for (String endpoint : instances) {
-                    String instancePath = servicePath.concat(ZookeeperConstant.PATH_SEPARATOR).concat(endpoint);
-
-                    Stat stat = new Stat();
-                    byte[] data;
-                    try {
-                        data = zkClient.getData()
-                            .storingStatIn(stat)
-                            .forPath(instancePath);
-                    } catch (Exception e) {
-                        log.warn("[ZookeeperRegistryService][findEventMeshInfoByCluster] failed for path: {}", instancePath, e);
-                        continue;
-                    }
-
-                    EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
-
-                    EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
-                            Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
-
-                    eventMeshDataInfoList.add(eventMeshDataInfo);
-                }
-
-            } catch (Exception e) {
-                throw new MetaException("ZookeeperRegistry findEventMeshInfoByCluster failed", e);
-            }
-
+            findEventMeshInfo("findEventMeshInfoByCluster", clusterName, serviceName, eventMeshDataInfoList);
         }
         return eventMeshDataInfoList;
     }
@@ -239,44 +206,49 @@ public class ZookeeperMetaService implements MetaService {
 
             String serviceName = entry.getKey();
             String clusterName = entry.getValue().getEventMeshClusterName();
-            try {
-                String servicePath = formatServicePath(clusterName, serviceName);
 
-                List<String> instances = zkClient.getChildren()
-                    .forPath(servicePath);
+            findEventMeshInfo("findAllEventMeshInfo", clusterName, serviceName, eventMeshDataInfoList);
+        }
+        return eventMeshDataInfoList;
+    }
 
-                if (CollectionUtils.isEmpty(instances)) {
+    private void findEventMeshInfo(String tipTitle, String clusterName,
+                                   String serviceName, List<EventMeshDataInfo> eventMeshDataInfoList) throws MetaException {
+        try {
+            String servicePath = formatServicePath(clusterName, serviceName);
+
+            List<String> instances = zkClient.getChildren().forPath(servicePath);
+
+            if (CollectionUtils.isEmpty(instances)) {
+                return;
+            }
+
+            for (String endpoint : instances) {
+                String instancePath = servicePath.concat(ZookeeperConstant.PATH_SEPARATOR).concat(endpoint);
+
+                Stat stat = new Stat();
+                byte[] data;
+                try {
+                    data = zkClient.getData()
+                        .storingStatIn(stat)
+                        .forPath(instancePath);
+                } catch (Exception e) {
+                    log.warn("[ZookeeperRegistryService][{}] failed for path: {}", tipTitle, instancePath, e);
                     continue;
                 }
 
-                for (String endpoint : instances) {
-                    String instancePath = servicePath.concat(ZookeeperConstant.PATH_SEPARATOR).concat(endpoint);
+                EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
-                    Stat stat = new Stat();
-                    byte[] data;
-                    try {
-                        data = zkClient.getData()
-                            .storingStatIn(stat)
-                            .forPath(instancePath);
-                    } catch (Exception e) {
-                        log.warn("[ZookeeperRegistryService][findAllEventMeshInfo] failed for path: {}", instancePath, e);
-                        continue;
-                    }
+                EventMeshDataInfo eventMeshDataInfo =
+                    new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
+                        Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
 
-                    EventMeshInstance eventMeshInstance = JsonUtils.parseObject(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
-
-                    EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
-                            Objects.requireNonNull(eventMeshInstance, "instance must not be Null").getMetaData());
-
-                    eventMeshDataInfoList.add(eventMeshDataInfo);
-                }
-
-            } catch (Exception e) {
-                throw new MetaException("ZookeeperRegistry findAllEventMeshInfo failed", e);
+                eventMeshDataInfoList.add(eventMeshDataInfo);
             }
+
+        } catch (Exception e) {
+            throw new MetaException(String.format("ZookeeperRegistry {0} failed", tipTitle), e);
         }
-        return eventMeshDataInfoList;
     }
 
     @Override
@@ -290,7 +262,7 @@ public class ZookeeperMetaService implements MetaService {
 
     @Override
     public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
-        return null;
+        return new HashMap<>();
     }
 
     // todo: to be implemented
