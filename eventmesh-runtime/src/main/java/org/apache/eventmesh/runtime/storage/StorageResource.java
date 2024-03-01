@@ -18,24 +18,22 @@
 package org.apache.eventmesh.runtime.storage;
 
 import org.apache.eventmesh.api.storage.StorageResourceService;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshComponent;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshSwitchableComponent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class StorageResource {
+public class StorageResource extends EventMeshComponent {
 
     private static final Map<String, StorageResource> STORAGE_RESOURCE_CACHE = new HashMap<>(16);
 
     private StorageResourceService storageResourceService;
-
-    private final AtomicBoolean inited = new AtomicBoolean(false);
-
-    private final AtomicBoolean released = new AtomicBoolean(false);
 
     private StorageResource() {
 
@@ -58,18 +56,18 @@ public class StorageResource {
         return storageResource;
     }
 
-    public void init() throws Exception {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
+
+
+    public void componentInit() throws Exception {
         storageResourceService.init();
     }
 
-    public void release() throws Exception {
-        if (!released.compareAndSet(false, true)) {
-            return;
-        }
-        inited.compareAndSet(true, false);
+    public void componentStart() throws Exception {
+        log.debug("StorageResource Component Starting...");
+    }
+
+    public void componentStop() throws Exception {
         storageResourceService.release();
     }
+
 }

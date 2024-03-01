@@ -22,8 +22,9 @@ import static org.apache.eventmesh.common.Constants.HTTP;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshComponent;
 
-public class EventMeshHttpBootstrap implements EventMeshBootstrap {
+public class EventMeshHttpBootstrap extends EventMeshComponent implements EventMeshBootstrap  {
 
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
@@ -41,7 +42,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void init() throws Exception {
+    public void componentInit() throws Exception {
         // server init
         if (eventMeshHttpConfiguration != null) {
             eventMeshHttpServer = new EventMeshHTTPServer(eventMeshServer, eventMeshHttpConfiguration);
@@ -50,7 +51,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void start() throws Exception {
+    public void componentStart() throws Exception {
         // server start
         if (eventMeshHttpServer != null) {
             eventMeshHttpServer.start();
@@ -58,7 +59,7 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void shutdown() throws Exception {
+    public void componentStop() throws Exception {
         // server shutdown
         if (eventMeshHttpServer != null) {
             eventMeshHttpServer.shutdown();

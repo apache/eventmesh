@@ -29,19 +29,24 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshSwitchableComponent;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshServer {
+public class EventMeshServer extends EventMeshSwitchableComponent {
 
+    private static final ConfigService configService = ConfigService.getInstance();
+
+    private ServiceState serviceState;
+
+    private static final String SERVER_STATE_MSG = "server state:{}";
     private final Acl acl;
 
     private MetaStorage metaStorage;
@@ -50,19 +55,11 @@ public class EventMeshServer {
 
     private final StorageResource storageResource;
 
-    private ServiceState serviceState;
-
     private ProducerTopicManager producerTopicManager;
-
-    private final CommonConfiguration configuration;
 
     //  private transient ClientManageController clientManageController;
 
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
-
-    private static final String SERVER_STATE_MSG = "server state:{}";
-
-    private static final ConfigService configService = ConfigService.getInstance();
 
     private EventMeshAdminBootstrap adminBootstrap;
 
@@ -73,29 +70,42 @@ public class EventMeshServer {
     private EventMeshHTTPServer eventMeshHTTPServer = null;
 
     public EventMeshServer() {
-
         // Initialize configuration
         this.configuration = configService.buildConfigInstance(CommonConfiguration.class);
+        /*EventMeshSwitchableComponent.setCommonConfiguration(configuration);*/
         AssertUtils.notNull(this.configuration, "configuration is null");
 
         // Initialize acl, registry, trace and storageResource
         this.acl = Acl.getInstance(this.configuration.getEventMeshSecurityPluginType());
+        bindLifeCycle(this.acl);
+
         this.metaStorage = MetaStorage.getInstance(this.configuration.getEventMeshMetaStoragePluginType());
+        bindLifeCycle(this.metaStorage);
+
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
+        bindLifeCycle(this.trace);
+
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
+        bindLifeCycle(this.storageResource);
 
         // Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (String provideServerProtocol : provideServerProtocols) {
             switch (provideServerProtocol.toUpperCase()) {
                 case HTTP:
-                    BOOTSTRAP_LIST.add(new EventMeshHttpBootstrap(this));
+                    EventMeshHttpBootstrap httpBootstrap = new EventMeshHttpBootstrap(this);
+                    BOOTSTRAP_LIST.add(httpBootstrap);
+                    bindLifeCycle(httpBootstrap);
                     break;
                 case TCP:
-                    BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
+                    EventMeshTcpBootstrap tcpBootstrap = new EventMeshTcpBootstrap(this);
+                    BOOTSTRAP_LIST.add(tcpBootstrap);
+                    bindLifeCycle(tcpBootstrap);
                     break;
                 case GRPC:
-                    BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
+                    EventMeshGrpcBootstrap grpcBootstrap = new EventMeshGrpcBootstrap(this);
+                    BOOTSTRAP_LIST.add(grpcBootstrap);
+                    bindLifeCycle(grpcBootstrap);
                     break;
                 default:
                     // nothing to do
@@ -104,25 +114,26 @@ public class EventMeshServer {
 
         // If no protocols are provided, initialize BOOTSTRAP_LIST with default protocols
         if (BOOTSTRAP_LIST.isEmpty()) {
-            BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
+            EventMeshTcpBootstrap tcpBootstrap = new EventMeshTcpBootstrap(this);
+            BOOTSTRAP_LIST.add(tcpBootstrap);
+            bindLifeCycle(tcpBootstrap);
         }
+
+        producerTopicManager = new ProducerTopicManager(this);
+        bindLifeCycle(producerTopicManager);
     }
 
-    public void init() throws Exception {
-        storageResource.init();
-        if (configuration.isEventMeshServerSecurityEnable()) {
-            acl.init();
-        }
-        if (configuration.isEventMeshServerMetaStorageEnable()) {
-            metaStorage.init();
-        }
-        if (configuration.isEventMeshServerTraceEnable()) {
-            trace.init();
-        }
+    @Override
+    protected boolean shouldTurn(CommonConfiguration configuration) {
+        return true;
+    }
 
-        // server init
+    public void componentInit() throws Exception {
+    }
+
+    @Override
+    protected void postBindInited() throws Exception {
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
-            eventMeshBootstrap.init();
             if (eventMeshBootstrap instanceof EventMeshTcpBootstrap) {
                 eventMeshTCPServer = ((EventMeshTcpBootstrap) eventMeshBootstrap).getEventMeshTcpServer();
             }
@@ -134,70 +145,35 @@ public class EventMeshServer {
             }
         }
 
-        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
-            adminBootstrap = new EventMeshAdminBootstrap(this);
-            adminBootstrap.init();
-        }
+        // adminBootstrap Depend on http\grpc\tcp Server
+        adminBootstrap = new EventMeshAdminBootstrap(this);
+        bindLifeCycle(adminBootstrap);
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
-
         log.info("eventStore : {}", eventStore);
-        producerTopicManager = new ProducerTopicManager(this);
-        producerTopicManager.init();
-        serviceState = ServiceState.INITED;
 
+        serviceState = ServiceState.INITED;
         log.info(SERVER_STATE_MSG, serviceState);
     }
 
-    public void start() throws Exception {
-        if (Objects.nonNull(configuration)) {
-            if (configuration.isEventMeshServerSecurityEnable()) {
-                acl.start();
-            }
-            // registry start
-            if (configuration.isEventMeshServerMetaStorageEnable()) {
-                metaStorage.start();
-            }
-        }
-        // server start
-        for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
-            eventMeshBootstrap.start();
-        }
 
-        if (Objects.nonNull(adminBootstrap)) {
-            adminBootstrap.start();
-        }
-        producerTopicManager.start();
+    public void componentStart() throws Exception {
+    }
+
+    protected void postBindStarted() throws Exception {
         serviceState = ServiceState.RUNNING;
         log.info(SERVER_STATE_MSG, serviceState);
-
     }
 
-    public void shutdown() throws Exception {
+    public void componentStop() throws Exception {
         serviceState = ServiceState.STOPPING;
         log.info(SERVER_STATE_MSG, serviceState);
+    }
 
-        for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
-            eventMeshBootstrap.shutdown();
-        }
-
-        if (configuration != null && configuration.isEventMeshServerMetaStorageEnable()) {
-            metaStorage.shutdown();
-        }
-
-        storageResource.release();
-
-        if (configuration != null && configuration.isEventMeshServerSecurityEnable()) {
-            acl.shutdown();
-        }
-
-        if (configuration != null && configuration.isEventMeshServerTraceEnable()) {
-            trace.shutdown();
-        }
-        producerTopicManager.shutdown();
+    @Override
+    protected void postBindStopped() {
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPPED;
-
         log.info(SERVER_STATE_MSG, serviceState);
     }
 
@@ -240,4 +216,6 @@ public class EventMeshServer {
     public EventMeshHTTPServer getEventMeshHTTPServer() {
         return eventMeshHTTPServer;
     }
+
+
 }

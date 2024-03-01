@@ -22,8 +22,9 @@ import static org.apache.eventmesh.common.Constants.TCP;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshComponent;
 
-public class EventMeshTcpBootstrap implements EventMeshBootstrap {
+public class EventMeshTcpBootstrap extends EventMeshComponent implements EventMeshBootstrap {
 
     private EventMeshTCPServer eventMeshTcpServer;
 
@@ -41,7 +42,7 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void init() throws Exception {
+    public void componentInit() throws Exception {
         // server init
         if (eventMeshTcpConfiguration != null) {
             eventMeshTcpServer = new EventMeshTCPServer(eventMeshServer, eventMeshTcpConfiguration);
@@ -50,7 +51,7 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void start() throws Exception {
+    public void componentStart() throws Exception {
         // server start
         if (eventMeshTcpConfiguration != null) {
             eventMeshTcpServer.start();
@@ -58,7 +59,7 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void shutdown() throws Exception {
+    public void componentStop() throws Exception {
         if (eventMeshTcpConfiguration != null) {
             eventMeshTcpServer.shutdown();
         }
