@@ -22,32 +22,26 @@ import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.meta.bo.EventMeshAppSubTopicInfo;
 import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshSwitchableComponent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Acl {
+public class Acl extends EventMeshSwitchableComponent {
 
     private static final Map<String, Acl> ACL_CACHE = new HashMap<>(16);
 
     private AclService aclService;
 
-    private final AtomicBoolean inited = new AtomicBoolean(false);
-
-    private final AtomicBoolean started = new AtomicBoolean(false);
-
-    private final AtomicBoolean shutdown = new AtomicBoolean(false);
-
     private Acl() {
-
     }
 
     public static Acl getInstance(String aclPluginType) {
@@ -67,26 +61,23 @@ public class Acl {
         return acl;
     }
 
-    public void init() throws AclException {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected boolean shouldTurn(CommonConfiguration configuration) {
+        return configuration.isEventMeshServerSecurityEnable();
+    }
+
+    @Override
+    protected void componentInit() throws AclException {
         aclService.init();
     }
 
-    public void start() throws AclException {
-        if (!started.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected void componentStart() throws AclException {
         aclService.start();
     }
 
-    public void shutdown() throws AclException {
-        inited.compareAndSet(true, false);
-        started.compareAndSet(true, false);
-        if (!shutdown.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected void componentStop() throws AclException {
         aclService.shutdown();
     }
 
@@ -112,7 +103,7 @@ public class Acl {
     }
 
     public void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
-        String requestURI) throws AclException {
+                                     String requestURI) throws AclException {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
@@ -122,17 +113,17 @@ public class Acl {
     }
 
     public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-        int requestCode) throws AclException {
+                                        int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
     public void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-        String requestURI) throws AclException {
+                                        String requestURI) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
     public void doAclCheckInTcpReceive(String remoteAddr, String token, String subsystem, String topic,
-        String requestURI, Object obj) throws AclException {
+                                       String requestURI, Object obj) throws AclException {
         aclService.doAclCheckInReceive(buildTcpAclProperties(remoteAddr, token, subsystem, topic, requestURI, obj));
     }
 
@@ -141,7 +132,7 @@ public class Acl {
     }
 
     public void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,
-        int requestCode) throws AclException {
+                                          int requestCode) throws AclException {
         aclService.doAclCheckInHeartbeat(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
@@ -235,5 +226,6 @@ public class Acl {
         }
         return aclProperties;
     }
+
 
 }

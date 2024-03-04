@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.runtime.trace;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshSwitchableComponent;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,11 +36,9 @@ import io.opentelemetry.context.Context;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Trace {
+public class Trace extends EventMeshSwitchableComponent {
 
     private static final Map<String, Trace> TRACE_CACHE = new HashMap<>(16);
-
-    private final AtomicBoolean inited = new AtomicBoolean(false);
 
     private EventMeshTraceService eventMeshTraceService;
 
@@ -60,11 +59,24 @@ public class Trace {
 
     }
 
-    public void init() throws Exception {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected boolean shouldTurn(CommonConfiguration configuration) {
+        return configuration.isEventMeshServerTraceEnable();
+    }
+
+    @Override
+    protected void componentInit() throws Exception {
         eventMeshTraceService.init();
+    }
+
+    @Override
+    protected void componentStart() throws Exception {
+        log.debug("Trace Component Starting...");
+    }
+
+    @Override
+    protected void componentStop() throws Exception {
+        eventMeshTraceService.shutdown();
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
@@ -208,9 +220,4 @@ public class Trace {
         }
     }
 
-    public void shutdown() throws Exception {
-        if (useTrace && inited.compareAndSet(true, false)) {
-            eventMeshTraceService.shutdown();
-        }
-    }
 }

@@ -25,6 +25,8 @@ import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshSwitchableComponent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
@@ -35,17 +37,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MetaStorage {
+public class MetaStorage extends EventMeshSwitchableComponent {
 
     private static final Map<String, MetaStorage> META_CACHE = new HashMap<>(16);
 
     private MetaService metaService;
-
-    private final AtomicBoolean inited = new AtomicBoolean(false);
-
-    private final AtomicBoolean started = new AtomicBoolean(false);
-
-    private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
     private MetaStorage() {
 
@@ -68,26 +64,23 @@ public class MetaStorage {
         return metaStorage;
     }
 
-    public void init() throws MetaException {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected boolean shouldTurn(CommonConfiguration configuration) {
+        return configuration.isEventMeshServerMetaStorageEnable();
+    }
+
+    @Override
+    protected void componentInit() throws MetaException {
         metaService.init();
     }
 
-    public void start() throws MetaException {
-        if (!started.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected void componentStart() throws MetaException {
         metaService.start();
     }
 
-    public void shutdown() throws MetaException {
-        inited.compareAndSet(true, false);
-        started.compareAndSet(true, false);
-        if (!shutdown.compareAndSet(false, true)) {
-            return;
-        }
+    @Override
+    protected void componentStop() throws MetaException {
         synchronized (this) {
             metaService.shutdown();
         }
