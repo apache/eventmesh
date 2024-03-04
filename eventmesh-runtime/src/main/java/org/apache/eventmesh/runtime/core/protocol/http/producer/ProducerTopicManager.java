@@ -47,12 +47,14 @@ public class ProducerTopicManager extends EventMeshComponent {
         this.eventMeshServer = eventMeshServer;
     }
 
+    @Override
     public void componentInit() {
         scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
             new EventMeshThreadFactory("Producer-Topic-Manager", true));
         log.info("ProducerTopicManager inited......");
     }
 
+    @Override
     public void componentStart() {
 
         if (scheduledTask == null) {
@@ -75,6 +77,7 @@ public class ProducerTopicManager extends EventMeshComponent {
         log.info("ProducerTopicManager started......");
     }
 
+    @Override
     public void componentStop() {
         if (scheduledTask != null) {
             scheduledTask.cancel(false);

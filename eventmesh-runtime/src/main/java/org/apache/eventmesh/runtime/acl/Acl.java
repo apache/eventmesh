@@ -66,14 +66,17 @@ public class Acl extends EventMeshSwitchableComponent {
         return configuration.isEventMeshServerSecurityEnable();
     }
 
+    @Override
     public void componentInit() throws AclException {
         aclService.init();
     }
 
+    @Override
     public void componentStart() throws AclException {
         aclService.start();
     }
 
+    @Override
     public void componentStop() throws AclException {
         aclService.shutdown();
     }

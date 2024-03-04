@@ -56,16 +56,17 @@ public class StorageResource extends EventMeshComponent {
         return storageResource;
     }
 
-
-
+    @Override
     public void componentInit() throws Exception {
         storageResourceService.init();
     }
 
+    @Override
     public void componentStart() throws Exception {
         log.debug("StorageResource Component Starting...");
     }
 
+    @Override
     public void componentStop() throws Exception {
         storageResourceService.release();
     }

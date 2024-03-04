@@ -64,16 +64,19 @@ public class Trace extends EventMeshSwitchableComponent {
         return configuration.isEventMeshServerTraceEnable();
     }
 
+    @Override
     public void componentInit() throws Exception {
         eventMeshTraceService.init();
     }
 
+    @Override
     public void componentStart() throws Exception {
         log.debug("Trace Component Starting...");
     }
 
+    @Override
     public void componentStop() throws Exception {
-        log.debug("Trace Component stopping...");
+        eventMeshTraceService.shutdown();
     }
 
     public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
@@ -217,9 +220,4 @@ public class Trace extends EventMeshSwitchableComponent {
         }
     }
 
-    public void shutdown() throws Exception {
-        if (useTrace && inited.compareAndSet(true, false)) {
-            eventMeshTraceService.shutdown();
-        }
-    }
 }

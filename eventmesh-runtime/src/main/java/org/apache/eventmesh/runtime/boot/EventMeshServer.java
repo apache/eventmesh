@@ -128,6 +128,7 @@ public class EventMeshServer extends EventMeshSwitchableComponent {
         return true;
     }
 
+    @Override
     public void componentInit() throws Exception {
     }
 
@@ -156,7 +157,7 @@ public class EventMeshServer extends EventMeshSwitchableComponent {
         log.info(SERVER_STATE_MSG, serviceState);
     }
 
-
+    @Override
     public void componentStart() throws Exception {
     }
 
@@ -165,6 +166,7 @@ public class EventMeshServer extends EventMeshSwitchableComponent {
         log.info(SERVER_STATE_MSG, serviceState);
     }
 
+    @Override
     public void componentStop() throws Exception {
         serviceState = ServiceState.STOPPING;
         log.info(SERVER_STATE_MSG, serviceState);

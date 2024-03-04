@@ -69,14 +69,17 @@ public class MetaStorage extends EventMeshSwitchableComponent {
         return configuration.isEventMeshServerMetaStorageEnable();
     }
 
+    @Override
     public void componentInit() throws MetaException {
         metaService.init();
     }
 
+    @Override
     public void componentStart() throws MetaException {
         metaService.start();
     }
 
+    @Override
     public void componentStop() throws MetaException {
         synchronized (this) {
             metaService.shutdown();
