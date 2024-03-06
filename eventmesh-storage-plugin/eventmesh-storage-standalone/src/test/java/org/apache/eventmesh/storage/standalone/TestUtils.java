@@ -22,7 +22,7 @@ import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 
 import java.net.URI;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,8 +35,6 @@ public class TestUtils {
     public static final int OFF_SET = 0;
     public static final int LENGTH = 5;
     public static final int EXCEEDED_MESSAGE_STORE_WINDOW = 60 * 60 * 1000 + 1000;
-    public static final boolean TOPIC_EXISTS = true;
-    public static final boolean TOPIC_DO_NOT_EXISTS = false;
 
     public static ConcurrentHashMap<TopicMetadata, MessageQueue> createDefaultMessageContainer() {
         ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>(1);
@@ -63,7 +61,7 @@ public class TestUtils {
     }
 
     public static List<CloudEvent> createCloudEvents() {
-        return Arrays.asList(createDefaultCloudEvent());
+        return Collections.singletonList(createDefaultCloudEvent());
     }
 
     public static MessageEntity createDefaultMessageEntity() {
