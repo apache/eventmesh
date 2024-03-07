@@ -43,6 +43,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageRead
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -196,7 +197,7 @@ public class SourceWorker implements ConnectorWorker {
             while (retryTimes < MAX_RETRY_TIMES) {
                 try {
                     Package sendResult = eventMeshTCPClient.publish(event, 3000);
-                    if (sendResult.getHeader().getCode() == 0) {
+                    if (sendResult.getHeader().getCode() == OPStatus.SUCCESS.getCode()) {
                         // publish success
                         // commit record
                         this.source.commit(connectRecord);
