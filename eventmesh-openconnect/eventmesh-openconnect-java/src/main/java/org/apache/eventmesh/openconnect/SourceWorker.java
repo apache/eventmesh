@@ -26,6 +26,7 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.callback.SendExcepionContext;
@@ -43,7 +44,6 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageRead
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 
 import org.apache.commons.collections4.CollectionUtils;
 
