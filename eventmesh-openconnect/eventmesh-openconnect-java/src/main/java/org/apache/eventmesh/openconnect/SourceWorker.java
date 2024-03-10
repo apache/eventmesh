@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -196,7 +197,7 @@ public class SourceWorker implements ConnectorWorker {
             while (retryTimes < MAX_RETRY_TIMES) {
                 try {
                     Package sendResult = eventMeshTCPClient.publish(event, 3000);
-                    if (sendResult.getHeader().getCode() == 0) {
+                    if (sendResult.getHeader().getCode() == OPStatus.SUCCESS.getCode()) {
                         // publish success
                         // commit record
                         this.source.commit(connectRecord);
