@@ -22,6 +22,7 @@ import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
+import org.apache.eventmesh.openconnect.api.integration.IInnerPubSubService;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Application {
+    private static IInnerPubSubService innerPubSubService;
 
     public static final Map<String, Connector> CONNECTOR_MAP = new HashMap<>();
 
@@ -51,8 +53,11 @@ public class Application {
         this.extensions = extensions;
     }
 
-    public void run(Class<? extends Connector> clazz) throws Exception {
+    public static void bindInnerPubSubService(IInnerPubSubService innerPubSubService) {
+        Application.innerPubSubService = innerPubSubService;
+    }
 
+    public void run(Class<? extends Connector> clazz) throws Exception {
         Connector connector = null;
         try {
             if (MapUtils.isNotEmpty(extensions) && extensions.containsKey(CREATE_EXTENSION_KEY)) {
@@ -80,9 +85,9 @@ public class Application {
 
         ConnectorWorker worker;
         if (isSink(clazz)) {
-            worker = new SinkWorker((Sink) connector, (SinkConfig) config);
+            worker = new SinkWorker((Sink) connector, (SinkConfig) config,innerPubSubService);
         } else if (isSource(clazz)) {
-            worker = new SourceWorker((Source) connector, (SourceConfig) config);
+            worker = new SourceWorker((Source) connector, (SourceConfig) config,innerPubSubService);
         } else {
             log.error("class {} is not sink and source", clazz);
             return;

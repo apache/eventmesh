@@ -31,6 +31,8 @@ public class EventMeshConstants {
 
     public static final String PROTOCOL_GRPC = "grpc";
 
+    public static final String PROTOCOL_INNER = "inner";
+
     public static final String DEFAULT_CHARSET = Constants.DEFAULT_CHARSET.name();
 
     public static final String IP_PORT_SEPARATOR = ":";

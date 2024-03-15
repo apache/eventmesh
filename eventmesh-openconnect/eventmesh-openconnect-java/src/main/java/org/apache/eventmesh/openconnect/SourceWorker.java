@@ -24,7 +24,6 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -34,6 +33,8 @@ import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
+import org.apache.eventmesh.openconnect.api.integration.IInnerPubSubService;
+import org.apache.eventmesh.openconnect.api.integration.IntegrationCloudEventTCPClientAdapter;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -91,14 +92,17 @@ public class SourceWorker implements ConnectorWorker {
 
     private final ExecutorService startService = Executors.newSingleThreadExecutor();
 
+    private final IInnerPubSubService innerPubSubService;
+
     private final BlockingQueue<ConnectRecord> queue;
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
     private volatile boolean isRunning = false;
 
-    public SourceWorker(Source source, SourceConfig config) {
+    public SourceWorker(Source source, SourceConfig config,IInnerPubSubService innerPubSubService) {
         this.source = source;
         this.config = config;
+        this.innerPubSubService =innerPubSubService;
         queue = new LinkedBlockingQueue<>(1000);
         eventMeshTCPClient = buildEventMeshPubClient(config);
     }
@@ -121,6 +125,10 @@ public class SourceWorker implements ConnectorWorker {
             .idc(config.getPubSubConfig().getIdc())
             .build();
         UserAgent userAgent = MessageUtils.generatePubClient(agent);
+
+        if (null != innerPubSubService) {
+            return new IntegrationCloudEventTCPClientAdapter(userAgent,meshIp,meshPort, innerPubSubService);
+        }
 
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host(meshIp)
@@ -197,7 +205,7 @@ public class SourceWorker implements ConnectorWorker {
             while (retryTimes < MAX_RETRY_TIMES) {
                 try {
                     Package sendResult = eventMeshTCPClient.publish(event, 3000);
-                    if (sendResult.getHeader().getCode() == OPStatus.SUCCESS.getCode()) {
+                    if (sendResult.getHeader().getCode() == 0) {
                         // publish success
                         // commit record
                         this.source.commit(connectRecord);

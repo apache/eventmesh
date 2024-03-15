@@ -29,6 +29,7 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
+import org.apache.eventmesh.runtime.core.protocol.inner.InnerLocalServer;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
@@ -72,6 +73,8 @@ public class EventMeshServer {
 
     private EventMeshHTTPServer eventMeshHTTPServer = null;
 
+    private InnerLocalServer innerServer = null;
+
     public EventMeshServer() {
 
         // Initialize configuration
@@ -84,6 +87,7 @@ public class EventMeshServer {
         trace = Trace.getInstance(this.configuration.getEventMeshTracePluginType(), this.configuration.isEventMeshServerTraceEnable());
         this.storageResource = StorageResource.getInstance(this.configuration.getEventMeshStoragePluginType());
 
+        this.innerServer = new InnerLocalServer(this);
         // Initialize BOOTSTRAP_LIST based on protocols provided in configuration
         final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
         for (String provideServerProtocol : provideServerProtocols) {
@@ -168,6 +172,7 @@ public class EventMeshServer {
             adminBootstrap.start();
         }
         producerTopicManager.start();
+        innerServer.start();
         serviceState = ServiceState.RUNNING;
         log.info(SERVER_STATE_MSG, serviceState);
 

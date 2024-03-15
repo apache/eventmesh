@@ -49,6 +49,7 @@ dependencies {
     implementation project(":eventmesh-meta:eventmesh-meta-api")
     implementation project(":eventmesh-meta:eventmesh-meta-nacos")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
 
     implementation "io.grpc:grpc-core"
     implementation "io.grpc:grpc-protobuf"

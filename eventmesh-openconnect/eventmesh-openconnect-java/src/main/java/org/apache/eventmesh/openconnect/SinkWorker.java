@@ -28,6 +28,8 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
+import org.apache.eventmesh.openconnect.api.integration.IInnerPubSubService;
+import org.apache.eventmesh.openconnect.api.integration.IntegrationCloudEventTCPClientAdapter;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
@@ -46,11 +48,14 @@ public class SinkWorker implements ConnectorWorker {
     private final Sink sink;
     private final SinkConfig config;
 
+    private final IInnerPubSubService innerPubSubService;
+
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
-    public SinkWorker(Sink sink, SinkConfig config) {
+    public SinkWorker(Sink sink, SinkConfig config, IInnerPubSubService innerPubSubService) {
         this.sink = sink;
         this.config = config;
+        this.innerPubSubService = innerPubSubService;
         eventMeshTCPClient = buildEventMeshSubClient(config);
     }
 
@@ -72,6 +77,10 @@ public class SinkWorker implements ConnectorWorker {
             .idc(config.getPubSubConfig().getIdc())
             .build();
         UserAgent userAgent = MessageUtils.generateSubClient(agent);
+
+        if (null != innerPubSubService) {
+            return new IntegrationCloudEventTCPClientAdapter(userAgent,meshIp,meshPort,innerPubSubService);
+        }
 
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host(meshIp)
