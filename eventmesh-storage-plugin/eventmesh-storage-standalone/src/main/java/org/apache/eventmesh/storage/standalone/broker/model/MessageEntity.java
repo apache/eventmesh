@@ -23,9 +23,11 @@ import io.cloudevents.CloudEvent;
 
 public class MessageEntity implements Serializable {
 
+    private static final long serialVersionUID = 6646148767540524786L;
+
     private TopicMetadata topicMetadata;
 
-    private CloudEvent message;
+    private transient CloudEvent message;
 
     private long offset;
 
