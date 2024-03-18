@@ -85,7 +85,7 @@ public class ProducerImpl extends AbstractProducer {
             log.error("Send message InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
             throw this.checkProducerException(msg.getTopic(), messageId, e);
-        } catch (ThreadDeath e){
+        } catch (ThreadDeath e) {
             log.error("Send message ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), messageId, e);
         } catch (Exception e) {
@@ -105,7 +105,7 @@ public class ProducerImpl extends AbstractProducer {
             log.error("Send message oneway InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
-        } catch (ThreadDeath e){
+        } catch (ThreadDeath e) {
             log.error("Send message oneway ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         } catch (Exception e) {
@@ -125,7 +125,7 @@ public class ProducerImpl extends AbstractProducer {
             log.error("Send message async InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
-        } catch (ThreadDeath e){
+        } catch (ThreadDeath e) {
             log.error("Send message async ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public class ProducerImpl extends AbstractProducer {
             log.error("Send message async InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
-        } catch (ThreadDeath e){
+        } catch (ThreadDeath e) {
             log.error("Send message async ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         } catch (Exception e) {
