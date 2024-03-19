@@ -236,4 +236,7 @@ public class Acl {
         return aclProperties;
     }
 
+    public boolean checkValid(String username, String password) {
+        return aclService.doAclCheckUserNameAndPassword(username, password);
+    }
 }
