@@ -104,7 +104,6 @@ public class ProducerImpl extends AbstractProducer {
         } catch (InterruptedException e) {
             log.error("Send message oneway InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
-            throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         } catch (ThreadDeath e) {
             log.error("Send message oneway ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
@@ -124,7 +123,6 @@ public class ProducerImpl extends AbstractProducer {
         } catch (InterruptedException e) {
             log.error("Send message async InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
-            throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         } catch (ThreadDeath e) {
             log.error("Send message async ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
@@ -158,7 +156,6 @@ public class ProducerImpl extends AbstractProducer {
         } catch (InterruptedException e) {
             log.error("Send message async InterruptedException", e);
             Thread.currentThread().interrupt(); // Restore interrupted status
-            throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         } catch (ThreadDeath e) {
             log.error("Send message async ThreadDeath", e);
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
