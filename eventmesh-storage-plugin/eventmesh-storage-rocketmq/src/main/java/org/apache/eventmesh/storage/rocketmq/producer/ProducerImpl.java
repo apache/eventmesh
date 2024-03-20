@@ -68,7 +68,7 @@ public class ProducerImpl extends AbstractProducer {
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 
-    public SendResult send(CloudEvent cloudEvent) throws InterruptedException {
+    public SendResult send(CloudEvent cloudEvent) {
         this.checkProducerServiceState(rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
             RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
@@ -81,6 +81,10 @@ public class ProducerImpl extends AbstractProducer {
             messageId = sendResultRmq.getMsgId();
             sendResult.setMessageId(messageId);
             return sendResult;
+        } catch (InterruptedException e) {
+            log.error("Send message InterruptedException", e);
+            Thread.currentThread().interrupt(); // Restore interrupted status
+            return new SendResult();
         } catch (Exception e) {
             log.error(String.format("Send message Exception, %s", msg), e);
             throw this.checkProducerException(msg.getTopic(), messageId, e);
