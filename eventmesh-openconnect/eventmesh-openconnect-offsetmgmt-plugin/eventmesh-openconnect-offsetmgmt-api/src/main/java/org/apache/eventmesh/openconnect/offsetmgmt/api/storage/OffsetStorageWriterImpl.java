@@ -84,7 +84,8 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
      */
     public synchronized boolean beginFlush() {
         if (isFlushing()) {
-            throw new RuntimeException("OffsetStorageWriter is already flushing");
+            log.warn("OffsetStorageWriter is already flushing");
+            return false;
         }
         if (data.isEmpty()) {
             return false;
