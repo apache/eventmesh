@@ -23,6 +23,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -56,7 +57,6 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -87,9 +87,11 @@ public class SourceWorker implements ConnectorWorker {
 
     private volatile RecordOffsetManagement.CommittableOffsets committableOffsets;
 
-    private final ExecutorService pollService = Executors.newSingleThreadExecutor();
+    private final ExecutorService pollService =
+        ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-pollService");
 
-    private final ExecutorService startService = Executors.newSingleThreadExecutor();
+    private final ExecutorService startService =
+        ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-startService");
 
     private final BlockingQueue<ConnectRecord> queue;
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
