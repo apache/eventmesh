@@ -59,6 +59,16 @@ public class AsyncPublish {
 
                 ThreadUtils.sleep(1, TimeUnit.SECONDS);
             }
+
+            for (int i = 0; i < 4; i++) {
+                CloudEvent event = EventMeshTestUtils.generateCloudEventV1AsyncWithTag(i);
+                if (log.isInfoEnabled()) {
+                    log.info("begin send async msg[{}] with tag: {}", i, event);
+                }
+                client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+
+                ThreadUtils.sleep(1, TimeUnit.SECONDS);
+            }
             ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("AsyncPublish failed", e);

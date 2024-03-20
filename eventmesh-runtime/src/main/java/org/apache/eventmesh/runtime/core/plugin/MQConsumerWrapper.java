@@ -46,6 +46,10 @@ public class MQConsumerWrapper extends MQWrapper {
         meshMQPushConsumer.subscribe(topic);
     }
 
+    public void subscribe(String topic, String subExpression) throws Exception {
+        meshMQPushConsumer.subscribe(topic, subExpression);
+    }
+
     public void unsubscribe(String topic) throws Exception {
         meshMQPushConsumer.unsubscribe(topic);
     }

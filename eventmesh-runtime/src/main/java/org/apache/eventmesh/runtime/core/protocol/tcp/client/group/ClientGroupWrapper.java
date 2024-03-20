@@ -613,9 +613,17 @@ public class ClientGroupWrapper {
 
     public void subscribe(SubscriptionItem subscriptionItem) throws Exception {
         if (SubscriptionMode.BROADCASTING == subscriptionItem.getMode()) {
-            broadCastMsgConsumer.subscribe(subscriptionItem.getTopic());
+            if (StringUtils.isBlank(subscriptionItem.getSubExpression())) {
+                broadCastMsgConsumer.subscribe(subscriptionItem.getTopic());
+            } else {
+                broadCastMsgConsumer.subscribe(subscriptionItem.getTopic(), subscriptionItem.getSubExpression());
+            }
         } else {
-            persistentMsgConsumer.subscribe(subscriptionItem.getTopic());
+            if (StringUtils.isBlank(subscriptionItem.getSubExpression())) {
+                persistentMsgConsumer.subscribe(subscriptionItem.getTopic());
+            } else {
+                persistentMsgConsumer.subscribe(subscriptionItem.getTopic(), subscriptionItem.getSubExpression());
+            }
         }
     }
 

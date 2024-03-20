@@ -79,6 +79,11 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
     }
 
     @Override
+    public void subscribe(String topic, String subExpression, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
+        cloudEventTCPSubClient.subscribe(topic, subExpression, subscriptionMode, subscriptionType);
+    }
+
+    @Override
     public void unsubscribe() throws EventMeshException {
         cloudEventTCPSubClient.unsubscribe();
     }

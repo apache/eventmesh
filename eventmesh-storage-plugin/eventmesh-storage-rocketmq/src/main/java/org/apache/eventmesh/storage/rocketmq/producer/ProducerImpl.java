@@ -69,10 +69,7 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public SendResult send(CloudEvent cloudEvent) {
-        this.checkProducerServiceState(rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
-        supplySysProp(msg, cloudEvent);
+        Message msg = prepareSend(cloudEvent);
         String messageId = null;
         try {
             org.apache.rocketmq.client.producer.SendResult sendResultRmq = this.rocketmqProducer.send(msg);
@@ -88,10 +85,7 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void sendOneway(CloudEvent cloudEvent) {
-        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
-        supplySysProp(msg, cloudEvent);
+        Message msg = prepareSend(cloudEvent);
         try {
             this.rocketmqProducer.sendOneway(msg);
         } catch (Exception e) {
@@ -101,10 +95,7 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
-        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
-        msg = supplySysProp(msg, cloudEvent);
+        Message msg =  prepareSend(cloudEvent);
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
         } catch (Exception e) {
@@ -115,22 +106,14 @@ public class ProducerImpl extends AbstractProducer {
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
         throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-
-        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
-
-        supplySysProp(msg, cloudEvent);
+        Message msg =  prepareSend(cloudEvent);
 
         rocketmqProducer.request(msg, rrCallbackConvert(msg, rrCallback), timeout);
     }
 
     public void reply(final CloudEvent cloudEvent, final SendCallback sendCallback) {
-        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-        org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+        Message msg = prepareSend(cloudEvent);
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
-        supplySysProp(msg, cloudEvent);
 
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
@@ -141,11 +124,18 @@ public class ProducerImpl extends AbstractProducer {
 
     }
 
+    private Message prepareSend(CloudEvent cloudEvent) {
+        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
+        Message msg =
+            RocketMQMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject())).writeBinary(cloudEvent);
+        return supplySysProp(msg, cloudEvent);
+    }
+
     private Message supplySysProp(Message msg, CloudEvent cloudEvent) {
         for (String sysPropKey : MessageConst.STRING_HASH_SET) {
             String ceKey = sysPropKey.toLowerCase().replace("_", Constants.MESSAGE_PROP_SEPARATOR);
-            if (cloudEvent.getExtension(ceKey) != null && StringUtils.isNotEmpty(Objects.requireNonNull(cloudEvent.getExtension(ceKey)).toString())) {
-                MessageAccessor.putProperty(msg, sysPropKey, Objects.requireNonNull(cloudEvent.getExtension(ceKey)).toString());
+            if (cloudEvent.getExtension(ceKey) != null && StringUtils.isNotEmpty(cloudEvent.getExtension(ceKey).toString())) {
+                MessageAccessor.putProperty(msg, sysPropKey, cloudEvent.getExtension(ceKey).toString());
                 msg.getProperties().remove(ceKey);
             }
         }

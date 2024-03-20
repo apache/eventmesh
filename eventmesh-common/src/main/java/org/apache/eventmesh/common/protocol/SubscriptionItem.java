@@ -28,6 +28,8 @@ public class SubscriptionItem implements Serializable {
 
     private String topic;
 
+    private String subExpression;
+
     @JsonDeserialize(converter = SubscriptionModeConverter.class)
     private SubscriptionMode mode;
 
@@ -41,6 +43,13 @@ public class SubscriptionItem implements Serializable {
         this.topic = topic;
         this.mode = mode;
         this.type = type;
+    }
+
+    public SubscriptionItem(String topic, SubscriptionMode mode, SubscriptionType type, String subExpression) {
+        this.topic = topic;
+        this.mode = mode;
+        this.type = type;
+        this.subExpression = subExpression;
     }
 
     public SubscriptionType getType() {
@@ -67,12 +76,21 @@ public class SubscriptionItem implements Serializable {
         this.mode = mode;
     }
 
+    public String getSubExpression() {
+        return subExpression;
+    }
+
+    public void setSubExpression(String subExpression) {
+        this.subExpression = subExpression;
+    }
+
     @Override
     public String toString() {
         return "SubscriptionItem{"
             + "topic=" + topic
             + ", mode=" + mode
             + ", type=" + type
+            + ", subExpression=" + subExpression
             + '}';
     }
 
@@ -85,11 +103,11 @@ public class SubscriptionItem implements Serializable {
             return false;
         }
         SubscriptionItem that = (SubscriptionItem) o;
-        return Objects.equal(topic, that.topic) && mode == that.mode && type == that.type;
+        return Objects.equal(topic, that.topic) && mode == that.mode && type == that.type && Objects.equal(subExpression, that.subExpression);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(topic, mode, type);
+        return Objects.hashCode(topic, mode, type, subExpression);
     }
 }

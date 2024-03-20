@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -54,6 +55,11 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
                 SubscriptionType.ASYNC);
+
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC_TAG,
+                ExampleConstants.TAG_PREFIX + "0||" + ExampleConstants.TAG_PREFIX + "2",
+                SubscriptionMode.CLUSTERING,
+                SubscriptionType.ASYNC);
             client.registerSubBusiHandler(new AsyncSubscribe());
 
             client.listen();
@@ -65,7 +71,11 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        log.info("receive async msg: {}", msg);
+        if (msg.getProperties().containsKey(Constants.MSG_TAG)) {
+            log.info("receive async msg with tag: {}", msg);
+        } else {
+            log.info("receive async msg: {}", msg);
+        }
         return Optional.empty();
     }
 }

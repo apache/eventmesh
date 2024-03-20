@@ -92,7 +92,7 @@ public class Constants {
 
     public static final String PROPERTY_MESSAGE_STORE_TIMESTAMP = "storetimestamp";
 
-    public static final String MESSAGE_PROP_SEPARATOR = "99";
+    public static final String MESSAGE_PROP_SEPARATOR = "95";
 
     public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
@@ -193,6 +193,8 @@ public class Constants {
      * application/cloudevents+json Content-type
      */
     public static final String CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json";
+
+    public static final String MSG_TAG = "tags";
 
     public static final String HTTP = "HTTP";
 

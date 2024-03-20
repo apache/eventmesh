@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -29,6 +30,7 @@ import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -56,6 +58,9 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
             client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING,
                 SubscriptionType.ASYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC_TAG,
+                ExampleConstants.TAG_PREFIX + 1 + "||" + ExampleConstants.TAG_PREFIX + 3,
+                SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(new AsyncSubscribe());
 
             client.listen();
@@ -72,7 +77,11 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
         }
 
         final String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
-        log.info("receive async msg: {}|{}", msg, content);
+        if (Objects.nonNull(msg.getExtension(Constants.MSG_TAG))) {
+            log.info("receive async msg, msg:{}, msg's data:{}, tag:{}", msg, content, msg.getExtension(Constants.MSG_TAG));
+        } else {
+            log.info("receive async msg, msg:{}, msg's data:{}", msg, content);
+        }
         return Optional.empty();
     }
 }

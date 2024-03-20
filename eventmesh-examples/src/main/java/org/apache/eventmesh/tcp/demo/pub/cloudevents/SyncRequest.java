@@ -27,6 +27,7 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
@@ -42,6 +43,15 @@ import lombok.extern.slf4j.Slf4j;
 public class SyncRequest {
 
     public static void main(String[] args) throws Exception {
+        EventMeshTCPClient<CloudEvent> client = createClient();
+        try {
+            publishMsg(client);
+        } catch (Exception e) {
+            log.error("SyncRequest failed", e);
+        }
+    }
+
+    private static EventMeshTCPClient<CloudEvent> createClient() throws IOException {
         final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
@@ -51,40 +61,39 @@ public class SyncRequest {
             .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
+        final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+            eventMeshTcpClientConfig, CloudEvent.class);
+        client.init();
+        return client;
+    }
 
-        try {
+    private static void publishMsg(EventMeshTCPClient<CloudEvent> client) {
+        final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
+        log.info("begin send req-resp msg: {}", event);
 
-            final EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, CloudEvent.class);
-            client.init();
+        final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+        logResponse(response);
+    }
 
-            final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-
-            log.info("begin send rr msg: {}", event);
-
-            final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            // check-NPE EventFormat
-            final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
-            if (null == eventFormat) {
-                log.error("eventFormat is null. end the process");
-                return;
-            }
-
-            final CloudEvent replyEvent = eventFormat
-                .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
-
-            // check-NPE CloudEventData
-            final CloudEventData cloudEventData = replyEvent.getData();
-            if (null == cloudEventData) {
-                log.error("replyEvent.data is null. end the process");
-                return;
-            }
-
-            final String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-            log.info("receive rr reply: {}|{}", response, content);
-
-        } catch (Exception e) {
-            log.error("SyncRequest failed", e);
+    private static void logResponse(Package response) {
+        // check-NPE EventFormat
+        final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+        if (null == eventFormat) {
+            log.error("eventFormat is null. end the process");
+            return;
         }
+
+        final CloudEvent replyEvent = eventFormat
+            .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
+
+        // check-NPE CloudEventData
+        final CloudEventData cloudEventData = replyEvent.getData();
+        if (null == cloudEventData) {
+            log.error("replyEvent.data is null. end the process");
+            return;
+        }
+
+        final String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
+        log.info("receive rr reply, response: {}, response's content: {}", response, content);
     }
 }

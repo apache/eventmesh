@@ -35,6 +35,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,6 +93,25 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         try {
             subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
             Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
+            io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+        } catch (Exception ex) {
+            throw new EventMeshException("Subscribe error", ex);
+        }
+    }
+
+    @Override
+    public void subscribe(String topic, String subExpression, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+        throws EventMeshException {
+        if (StringUtils.isBlank(subExpression)) {
+            subscribe(topic, subscriptionMode, subscriptionType);
+            return;
+        }
+        if (subscriptionType.equals(SubscriptionType.SYNC) && !StringUtils.equals(subExpression, "*")) {
+            throw new UnsupportedOperationException("Subscription by tag is not supported in synchronous mode.");
+        }
+        try {
+            subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType, subExpression));
+            Package request = MessageUtils.subscribe(topic, subExpression, subscriptionMode, subscriptionType);
             io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
         } catch (Exception ex) {
             throw new EventMeshException("Subscribe error", ex);
