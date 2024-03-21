@@ -97,76 +97,71 @@ public class MetricsHandler extends AbstractHttpHandler {
      * @throws IOException if an I/O error occurs while handling the request
      */
     void get(HttpExchange httpExchange) throws IOException {
-        OutputStream out = httpExchange.getResponseBody();
         httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
 
-        try {
-            GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
-                httpSummaryMetrics.maxHTTPTPS(),
-                httpSummaryMetrics.avgHTTPTPS(),
-                httpSummaryMetrics.maxHTTPCost(),
-                httpSummaryMetrics.avgHTTPCost(),
-                httpSummaryMetrics.avgHTTPBodyDecodeCost(),
-                httpSummaryMetrics.getHttpDiscard(),
-                httpSummaryMetrics.maxSendBatchMsgTPS(),
-                httpSummaryMetrics.avgSendBatchMsgTPS(),
-                httpSummaryMetrics.getSendBatchMsgNumSum(),
-                httpSummaryMetrics.getSendBatchMsgFailNumSum(),
-                httpSummaryMetrics.getSendBatchMsgFailRate(),
-                httpSummaryMetrics.getSendBatchMsgDiscardNumSum(),
-                httpSummaryMetrics.maxSendMsgTPS(),
-                httpSummaryMetrics.avgSendMsgTPS(),
-                httpSummaryMetrics.getSendMsgNumSum(),
-                httpSummaryMetrics.getSendMsgFailNumSum(),
-                httpSummaryMetrics.getSendMsgFailRate(),
-                httpSummaryMetrics.getReplyMsgNumSum(),
-                httpSummaryMetrics.getReplyMsgFailNumSum(),
-                httpSummaryMetrics.maxPushMsgTPS(),
-                httpSummaryMetrics.avgPushMsgTPS(),
-                httpSummaryMetrics.getHttpPushMsgNumSum(),
-                httpSummaryMetrics.getHttpPushFailNumSum(),
-                httpSummaryMetrics.getHttpPushMsgFailRate(),
-                httpSummaryMetrics.maxHTTPPushLatency(),
-                httpSummaryMetrics.avgHTTPPushLatency(),
-                httpSummaryMetrics.getBatchMsgQueueSize(),
-                httpSummaryMetrics.getSendMsgQueueSize(),
-                httpSummaryMetrics.getPushMsgQueueSize(),
-                httpSummaryMetrics.getHttpRetryQueueSize(),
-                httpSummaryMetrics.avgBatchSendMsgCost(),
-                httpSummaryMetrics.avgSendMsgCost(),
-                httpSummaryMetrics.avgReplyMsgCost(),
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            try {
+                GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
+                    httpSummaryMetrics.maxHTTPTPS(),
+                    httpSummaryMetrics.avgHTTPTPS(),
+                    httpSummaryMetrics.maxHTTPCost(),
+                    httpSummaryMetrics.avgHTTPCost(),
+                    httpSummaryMetrics.avgHTTPBodyDecodeCost(),
+                    httpSummaryMetrics.getHttpDiscard(),
+                    httpSummaryMetrics.maxSendBatchMsgTPS(),
+                    httpSummaryMetrics.avgSendBatchMsgTPS(),
+                    httpSummaryMetrics.getSendBatchMsgNumSum(),
+                    httpSummaryMetrics.getSendBatchMsgFailNumSum(),
+                    httpSummaryMetrics.getSendBatchMsgFailRate(),
+                    httpSummaryMetrics.getSendBatchMsgDiscardNumSum(),
+                    httpSummaryMetrics.maxSendMsgTPS(),
+                    httpSummaryMetrics.avgSendMsgTPS(),
+                    httpSummaryMetrics.getSendMsgNumSum(),
+                    httpSummaryMetrics.getSendMsgFailNumSum(),
+                    httpSummaryMetrics.getSendMsgFailRate(),
+                    httpSummaryMetrics.getReplyMsgNumSum(),
+                    httpSummaryMetrics.getReplyMsgFailNumSum(),
+                    httpSummaryMetrics.maxPushMsgTPS(),
+                    httpSummaryMetrics.avgPushMsgTPS(),
+                    httpSummaryMetrics.getHttpPushMsgNumSum(),
+                    httpSummaryMetrics.getHttpPushFailNumSum(),
+                    httpSummaryMetrics.getHttpPushMsgFailRate(),
+                    httpSummaryMetrics.maxHTTPPushLatency(),
+                    httpSummaryMetrics.avgHTTPPushLatency(),
+                    httpSummaryMetrics.getBatchMsgQueueSize(),
+                    httpSummaryMetrics.getSendMsgQueueSize(),
+                    httpSummaryMetrics.getPushMsgQueueSize(),
+                    httpSummaryMetrics.getHttpRetryQueueSize(),
+                    httpSummaryMetrics.avgBatchSendMsgCost(),
+                    httpSummaryMetrics.avgSendMsgCost(),
+                    httpSummaryMetrics.avgReplyMsgCost(),
 
-                tcpSummaryMetrics.getRetrySize(),
-                tcpSummaryMetrics.getClient2eventMeshTPS(),
-                tcpSummaryMetrics.getEventMesh2mqTPS(),
-                tcpSummaryMetrics.getMq2eventMeshTPS(),
-                tcpSummaryMetrics.getEventMesh2clientTPS(),
-                tcpSummaryMetrics.getAllTPS(),
-                tcpSummaryMetrics.getAllConnections(),
-                tcpSummaryMetrics.getSubTopicNum());
-            String result = JsonUtils.toJSONString(getMetricsResponse);
-            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
-            httpExchange.sendResponseHeaders(200, bytes.length);
-            out.write(bytes);
-        } catch (Exception e) {
-            StringWriter writer = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(writer);
-            e.printStackTrace(printWriter);
-            printWriter.flush();
-            String stackTrace = writer.toString();
+                    tcpSummaryMetrics.getRetrySize(),
+                    tcpSummaryMetrics.getClient2eventMeshTPS(),
+                    tcpSummaryMetrics.getEventMesh2mqTPS(),
+                    tcpSummaryMetrics.getMq2eventMeshTPS(),
+                    tcpSummaryMetrics.getEventMesh2clientTPS(),
+                    tcpSummaryMetrics.getAllTPS(),
+                    tcpSummaryMetrics.getAllConnections(),
+                    tcpSummaryMetrics.getSubTopicNum());
+                String result = JsonUtils.toJSONString(getMetricsResponse);
+                byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
+                httpExchange.sendResponseHeaders(200, bytes.length);
+                out.write(bytes);
+            } catch (Exception e) {
+                try (StringWriter writer = new StringWriter()) {
+                    try (PrintWriter printWriter = new PrintWriter(writer)) {
+                        e.printStackTrace(printWriter);
+                    }
 
-            Error error = new Error(e.toString(), stackTrace);
-            String result = JsonUtils.toJSONString(error);
-            byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
-            httpExchange.sendResponseHeaders(500, bytes.length);
-            out.write(bytes);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("out close failed...", e);
+                    String stackTrace = writer.toString();
+
+                    Error error = new Error(e.toString(), stackTrace);
+                    String result = JsonUtils.toJSONString(error);
+                    byte[] bytes = Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET);
+                    httpExchange.sendResponseHeaders(500, bytes.length);
+                    out.write(bytes);
                 }
             }
         }
