@@ -51,7 +51,6 @@ public class PublishProcessor extends AbstractMqttProcessor {
 
     @Override
     public void process(ChannelHandlerContext ctx, MqttMessage mqttMessage) throws MqttException {
-        //
         clientManager.getOrRegisterClient(ctx, mqttMessage);
         MqttPublishMessage mqttPublishMessage = (MqttPublishMessage) mqttMessage;
         MqttFixedHeader mqttFixedHeaderInfo = mqttPublishMessage.fixedHeader();
