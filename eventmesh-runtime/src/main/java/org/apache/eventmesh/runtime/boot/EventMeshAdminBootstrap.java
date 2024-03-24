@@ -17,18 +17,32 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-public class EventMeshAdminBootstrap implements EventMeshBootstrap {
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshSwitchableComponent;
+
+import java.util.List;
+
+public class EventMeshAdminBootstrap extends EventMeshSwitchableComponent implements EventMeshBootstrap {
 
     private EventMeshAdminServer eventMeshAdminServer;
 
     private EventMeshServer eventMeshServer;
+
+    // http grpc tcp
+    private final int exposeServerChannelCount = 3;
 
     public EventMeshAdminBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
     }
 
     @Override
-    public void init() throws Exception {
+    protected boolean shouldTurn(CommonConfiguration configuration) {
+        final List<String> provideServerProtocols = configuration.getEventMeshProvideServerProtocols();
+        return !(provideServerProtocols.size() == exposeServerChannelCount);
+    }
+
+    @Override
+    protected void componentInit() throws Exception {
         if (eventMeshServer != null) {
             eventMeshAdminServer = new EventMeshAdminServer(eventMeshServer);
             eventMeshAdminServer.init();
@@ -37,7 +51,7 @@ public class EventMeshAdminBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void start() throws Exception {
+    protected void componentStart() throws Exception {
         if (eventMeshAdminServer != null) {
             eventMeshAdminServer.start();
         }
@@ -45,7 +59,7 @@ public class EventMeshAdminBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void shutdown() throws Exception {
+    protected void componentStop() throws Exception {
         if (eventMeshAdminServer != null) {
             eventMeshAdminServer.shutdown();
         }

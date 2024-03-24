@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.meta.bo.EventMeshServicePubTopicInfo;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshComponent;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ProducerTopicManager {
+public class ProducerTopicManager extends EventMeshComponent {
 
     private final EventMeshServer eventMeshServer;
 
@@ -46,13 +47,15 @@ public class ProducerTopicManager {
         this.eventMeshServer = eventMeshServer;
     }
 
-    public void init() {
+    @Override
+    protected void componentInit() {
         scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
             new EventMeshThreadFactory("Producer-Topic-Manager", true));
         log.info("ProducerTopicManager inited......");
     }
 
-    public void start() {
+    @Override
+    protected void componentStart() {
 
         if (scheduledTask == null) {
             synchronized (ProducerTopicManager.class) {
@@ -74,7 +77,8 @@ public class ProducerTopicManager {
         log.info("ProducerTopicManager started......");
     }
 
-    public void shutdown() {
+    @Override
+    protected void componentStop() {
         if (scheduledTask != null) {
             scheduledTask.cancel(false);
         }
@@ -88,5 +92,6 @@ public class ProducerTopicManager {
     public EventMeshServicePubTopicInfo getEventMeshServicePubTopicInfo(String producerGroup) {
         return eventMeshServicePubTopicInfoMap.get(producerGroup);
     }
+
 
 }

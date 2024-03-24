@@ -22,8 +22,9 @@ import static org.apache.eventmesh.common.Constants.GRPC;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.runtime.lifecircle.EventMeshComponent;
 
-public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
+public class EventMeshGrpcBootstrap extends EventMeshComponent implements EventMeshBootstrap {
 
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
@@ -40,7 +41,7 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void init() throws Exception {
+    public void componentInit() throws Exception {
         // server init
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer = new EventMeshGrpcServer(this.eventMeshServer, this.eventMeshGrpcConfiguration);
@@ -49,7 +50,7 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void start() throws Exception {
+    protected void componentStart() throws Exception {
         // server start
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer.start();
@@ -57,13 +58,13 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
     }
 
     @Override
-    public void shutdown() throws Exception {
+    protected void componentStop() throws Exception {
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer.shutdown();
         }
     }
 
-    public EventMeshGrpcServer getEventMeshGrpcServer() {
+    protected EventMeshGrpcServer getEventMeshGrpcServer() {
         return eventMeshGrpcServer;
     }
 
