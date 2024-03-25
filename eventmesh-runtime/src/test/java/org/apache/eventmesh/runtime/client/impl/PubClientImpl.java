@@ -195,7 +195,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                 } else {
-                    log.error("msg ignored,context not found .|{}|{}", cmd, msg);
+                    log.warn("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
                 log.error("server goodbye request: ---------------------------{}", msg);
@@ -206,7 +206,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                 } else {
-                    log.error("msg ignored,context not found .|{}|{}", cmd, msg);
+                    log.warn("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             }
         }
