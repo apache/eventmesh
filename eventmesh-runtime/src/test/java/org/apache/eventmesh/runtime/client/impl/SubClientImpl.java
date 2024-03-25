@@ -236,7 +236,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     contexts.remove(context.getKey());
                     context.finish(msg);
                 } else {
-                    log.error("msg ignored,context not found.|{}|{}", cmd, msg);
+                    log.warn("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             }
         }
