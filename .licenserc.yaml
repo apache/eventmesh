@@ -41,10 +41,8 @@ header:
     - '**/Cargo.lock'
     - 'LICENSE'
     - 'NOTICE'
-    - 'DISCLAIMER'
     - 'gradlew'
     - 'gradlew.bat'
     - '**/*.txt'
-    - 'DISCLAIMER'
 
   comment: on-failure
