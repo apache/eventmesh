@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,6 +53,36 @@ public class EventMeshExtensionFactory {
 
     private EventMeshExtensionFactory() {
 
+    }
+
+    /**
+     * Get an instance of an extension plugin.
+     *
+     * @param extensionClass extension plugin class type
+     * @param <T>            the type of the plugin
+     * @return plugin instance
+     */
+    public static <T> List<T> getExtensions(Class<T> extensionClass) {
+        if (!extensionClass.isInterface() || !extensionClass.isAnnotationPresent(EventMeshSPI.class)) {
+            throw new ExtensionException(String.format("extensionClass:%s is invalided", extensionClass));
+        }
+        EventMeshSPI eventMeshSPIAnnotation = extensionClass.getAnnotation(EventMeshSPI.class);
+        ArrayList<T> postProcessors = new ArrayList<>();
+        for (ExtensionClassLoader extensionClassLoader : EXTENSION_CLASS_LOADERS) {
+            Map<String, Class<?>> extensionInstanceClassMap = extensionClassLoader.loadExtensionClass(extensionClass,
+                eventMeshSPIAnnotation.eventMeshExtensionType().getExtensionTypeName());
+            Collection<Class<?>> classes = extensionInstanceClassMap.values();
+            classes.forEach(clazz -> {
+                try {
+                    postProcessors.add((T) clazz.getDeclaredConstructor().newInstance());
+                    log.info("initialize extension instance success, extensionClass: {}, extensionInstanceName: {}",
+                        extensionClass, clazz);
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new ExtensionException("Extension initialize error", e);
+                }
+            });
+        }
+        return postProcessors;
     }
 
     /**
