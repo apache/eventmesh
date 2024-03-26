@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp.common;
+package org.apache.eventmesh.common;
 
 public class EventMeshCommon {
 
@@ -29,16 +29,7 @@ public class EventMeshCommon {
      */
     public static final int DEFAULT_TIME_OUT_MILLS = 20 * 1000;
 
-    /**
-     * USERAGENT for PUB
-     */
-    public static final String USER_AGENT_PURPOSE_PUB = "pub";
-
-    /**
-     * USERAGENT for SUB
-     */
-    public static final String USER_AGENT_PURPOSE_SUB = "sub";
-
     public static final String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
+
     public static final String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 }
