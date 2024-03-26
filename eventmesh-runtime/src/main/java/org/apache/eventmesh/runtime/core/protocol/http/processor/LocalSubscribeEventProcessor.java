@@ -155,32 +155,31 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
             return;
         }
 
-        synchronized (eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping()) {
-            ClientInfo clientInfo = getClientInfo(requestWrapper);
-            SubscriptionManager subscriptionManager = eventMeshHTTPServer.getSubscriptionManager();
-            subscriptionManager.registerClient(clientInfo, consumerGroup, subscriptionList, url);
-            subscriptionManager.updateSubscription(clientInfo, consumerGroup, url, subscriptionList);
+        ClientInfo clientInfo = getClientInfo(requestWrapper);
+        SubscriptionManager subscriptionManager = eventMeshHTTPServer.getSubscriptionManager();
+        subscriptionManager.registerClient(clientInfo, consumerGroup, subscriptionList, url);
+        subscriptionManager.updateSubscription(clientInfo, consumerGroup, url, subscriptionList);
 
-            final long startTime = System.currentTimeMillis();
-            try {
-                // subscription relationship change notification
-                eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
-                    eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
-                responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
-                responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
+        final long startTime = System.currentTimeMillis();
+        try {
+            // subscription relationship change notification
+            eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
+                eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().get(consumerGroup));
+            responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+            responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 
-                handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+            handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
-            } catch (Exception e) {
-                log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
-                    System.currentTimeMillis() - startTime, JsonUtils.toJSONString(subscriptionList), url, e);
+        } catch (Exception e) {
+            log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|url={}",
+                System.currentTimeMillis() - startTime, JsonUtils.toJSONString(subscriptionList), url, e);
 
-                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap, responseBodyMap, null);
-            }
-
-            // Update service metadata
-            eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap, responseBodyMap, null);
         }
+
+        // Update service metadata
+        eventMeshHTTPServer.getSubscriptionManager().updateMetaData();
+
 
     }
 
@@ -192,6 +191,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
     @Override
     public Executor executor() {
         return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
+
     }
 
     private ClientInfo getClientInfo(final HttpEventWrapper requestWrapper) {

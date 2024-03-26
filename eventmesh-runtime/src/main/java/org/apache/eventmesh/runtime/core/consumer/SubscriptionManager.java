@@ -28,14 +28,13 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,6 +55,10 @@ public class SubscriptionManager {
      */
     private final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>(64);
 
+    private final ConcurrentHashMap<String, Client> urlClientInfoMapping = new ConcurrentHashMap<>(64);
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     public SubscriptionManager(boolean isEventMeshServerMetaStorageEnable, MetaStorage metaStorage) {
         this.isEventMeshServerMetaStorageEnable = isEventMeshServerMetaStorageEnable;
         this.metaStorage = metaStorage;
@@ -71,82 +74,69 @@ public class SubscriptionManager {
 
     public void registerClient(final ClientInfo clientInfo, final String consumerGroup,
         final List<SubscriptionItem> subscriptionItems, final String url) {
-        for (final SubscriptionItem subscription : subscriptionItems) {
-            final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
-
-            List<Client> localClients = localClientInfoMapping.get(groupTopicKey);
-
-            if (localClients == null) {
-                localClientInfoMapping.putIfAbsent(groupTopicKey, new ArrayList<>());
-                localClients = localClientInfoMapping.get(groupTopicKey);
-            }
-
-            boolean isContains = false;
-            for (final Client localClient : localClients) {
-                // TODO: compare the whole Client would be better?
-                if (StringUtils.equals(localClient.getUrl(), url)) {
-                    isContains = true;
-                    localClient.setLastUpTime(new Date());
-                    break;
+        lock.lock();
+        try {
+            for (final SubscriptionItem subscription : subscriptionItems) {
+                final String groupTopicKey = consumerGroup + "@" + subscription.getTopic();
+                List<Client> localClients = localClientInfoMapping.computeIfAbsent(groupTopicKey, (groupTopicKeyInner) ->
+                    new ArrayList<>()
+                );
+                Client clientInner = urlClientInfoMapping.computeIfAbsent(url, urlInner -> {
+                    Client client = new Client();
+                    client.setEnv(clientInfo.getEnv());
+                    client.setIdc(clientInfo.getIdc());
+                    client.setSys(clientInfo.getSys());
+                    client.setIp(clientInfo.getIp());
+                    client.setPid(clientInfo.getPid());
+                    client.setConsumerGroup(consumerGroup);
+                    client.setTopic(subscription.getTopic());
+                    client.setUrl(url);
+                    return client;
+                });
+                clientInner.reNewLastUpTime();
+                if (!localClients.contains(clientInner)) {
+                    localClients.add(clientInner);
                 }
             }
-
-            if (!isContains) {
-                Client client = new Client();
-                client.setEnv(clientInfo.getEnv());
-                client.setIdc(clientInfo.getIdc());
-                client.setSys(clientInfo.getSys());
-                client.setIp(clientInfo.getIp());
-                client.setPid(clientInfo.getPid());
-                client.setConsumerGroup(consumerGroup);
-                client.setTopic(subscription.getTopic());
-                client.setUrl(url);
-                client.setLastUpTime(new Date());
-                localClients.add(client);
-            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public void updateSubscription(ClientInfo clientInfo, String consumerGroup,
         String url, List<SubscriptionItem> subscriptionList) {
-        for (final SubscriptionItem subscription : subscriptionList) {
-            final List<Client> groupTopicClients = localClientInfoMapping
-                .get(consumerGroup + "@" + subscription.getTopic());
+        lock.lock();
+        try {
+            for (final SubscriptionItem subscription : subscriptionList) {
+                final List<Client> groupTopicClients = localClientInfoMapping
+                    .get(consumerGroup + "@" + subscription.getTopic());
 
-            if (CollectionUtils.isEmpty(groupTopicClients)) {
-                log.error("group {} topic {} clients is empty", consumerGroup, subscription);
-            }
-
-            ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
-            if (consumerGroupConf == null) {
-                // new subscription
-                ConsumerGroupConf prev = localConsumerGroupMapping.putIfAbsent(consumerGroup, new ConsumerGroupConf(consumerGroup));
-                if (prev == null) {
-                    log.info("add new subscription, consumer group: {}", consumerGroup);
+                if (CollectionUtils.isEmpty(groupTopicClients)) {
+                    log.error("group {} topic {} clients is empty", consumerGroup, subscription);
                 }
-                consumerGroupConf = localConsumerGroupMapping.get(consumerGroup);
-            }
+                ConsumerGroupConf consumerGroupConf = localConsumerGroupMapping.computeIfAbsent(consumerGroup, (consumerGroupInner) ->
+                    new ConsumerGroupConf(consumerGroup)
+                );
 
-            ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf()
-                .get(subscription.getTopic());
-            if (consumerGroupTopicConf == null) {
-                consumerGroupConf.getConsumerGroupTopicConf().computeIfAbsent(subscription.getTopic(), (topic) -> {
-                    ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
-                    newTopicConf.setConsumerGroup(consumerGroup);
-                    newTopicConf.setTopic(topic);
-                    newTopicConf.setSubscriptionItem(subscription);
-                    log.info("add new {}", newTopicConf);
-                    return newTopicConf;
-                });
-                consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf().get(subscription.getTopic());
-            }
+                ConsumerGroupTopicConf consumerGroupTopicConf =
+                    consumerGroupConf.getConsumerGroupTopicConf().computeIfAbsent(subscription.getTopic(), (topicInner) -> {
+                        ConsumerGroupTopicConf newTopicConf = new ConsumerGroupTopicConf();
+                        newTopicConf.setConsumerGroup(consumerGroup);
+                        newTopicConf.setTopic(topicInner);
+                        newTopicConf.setSubscriptionItem(subscription);
+                        log.info("add new {}", newTopicConf);
+                        return newTopicConf;
+                    });
 
-            consumerGroupTopicConf.getUrls().add(url);
-            if (!consumerGroupTopicConf.getIdcUrls().containsKey(clientInfo.getIdc())) {
-                consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new ArrayList<>());
+                consumerGroupTopicConf.getUrls().add(url);
+                if (!consumerGroupTopicConf.getIdcUrls().containsKey(clientInfo.getIdc())) {
+                    consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new ArrayList<>());
+                }
+                // TODO: idcUrl list is not thread-safe
+                consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
             }
-            // TODO: idcUrl list is not thread-safe
-            consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
+        } finally {
+            lock.unlock();
         }
     }
 
