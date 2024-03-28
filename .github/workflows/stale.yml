@@ -17,7 +17,7 @@
 # under the License.
 #
 
-name: 'Close stale issues and PRs'
+name: 'Remind stale issues and PRs'
 
 on:
   schedule:
