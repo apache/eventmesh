@@ -79,7 +79,7 @@ public class EventMeshMQTTServer extends AbstractRemotingServer {
     protected final Map<MqttMessageType, MqttProcessor> processorTable =
         new ConcurrentHashMap<>(64);
 
-    private final transient AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
 
     public EventMeshMQTTServer(final EventMeshServer eventMeshServer, final EventMeshMQTTConfiguration eventMeshMQTTConfiguration) {
