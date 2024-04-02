@@ -303,6 +303,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
     }
 
+    @Data
     private static class SubscriptionInfo {
 
         private transient SubscriptionItem subscriptionItem;
@@ -313,26 +314,6 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             this.subscriptionItem = subscriptionItem;
             this.url = url;
             this.grpcType = grpcType;
-        }
-
-        public GrpcType getGrpcType() {
-            return grpcType;
-        }
-
-        public SubscriptionItem getSubscriptionItem() {
-            return subscriptionItem;
-        }
-
-        public void setSubscriptionItem(final SubscriptionItem subscriptionItem) {
-            this.subscriptionItem = subscriptionItem;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(final String url) {
-            this.url = url;
         }
     }
 }
