@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
@@ -49,7 +50,7 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
     }
 
     @Override
-    public Response publish(EventMeshMessage message) {
+    public Response publish(EventMeshMessage message) throws EventMeshException {
 
         if (null == message) {
             return null;
@@ -68,12 +69,12 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
             return parsedResponse;
         } catch (Exception e) {
             log.error("Error in publishing message {}", message, e);
+            throw new EventMeshException("Error in publishing message {}", e);
         }
-        return null;
     }
 
     @Override
-    public Response publish(List<EventMeshMessage> messages) {
+    public Response publish(List<EventMeshMessage> messages) throws EventMeshException {
 
         if (CollectionUtils.isEmpty(messages)) {
             return null;
@@ -90,12 +91,12 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
             return parsedResponse;
         } catch (Exception e) {
             log.error("Error in BatchPublish message {}", messages, e);
+            throw new EventMeshException("Error in BatchPublish message {}", e);
         }
-        return null;
     }
 
     @Override
-    public EventMeshMessage requestReply(EventMeshMessage message, long timeout) {
+    public EventMeshMessage requestReply(EventMeshMessage message, long timeout) throws EventMeshException {
         log.info("RequestReply message:{}", message);
 
         final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(message, clientConfig, PROTOCOL_TYPE);
@@ -105,7 +106,7 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
             return EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(reply, PROTOCOL_TYPE);
         } catch (Exception e) {
             log.error("Error in RequestReply message {}", message, e);
+            throw new EventMeshException("Error in RequestReply message {}", e);
         }
-        return null;
     }
 }
