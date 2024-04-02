@@ -17,23 +17,24 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICATION_JSON;
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
-
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,12 +45,13 @@ import lombok.extern.slf4j.Slf4j;
  * The implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#queryWebHookConfigByManufacturer WebHookConfigOperation}
  * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
  * <p>
- * For example, when {@code eventMesh.webHook.operationMode=file}
- * It calls the {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#queryWebHookConfigByManufacturer
+ * For example, when {@code eventMesh.webHook.operationMode=file} It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation
+ * #queryWebHookConfigByManufacturer
  * FileWebHookConfigOperation} method as implementation to retrieve the WebHook configuration from a file;
  * <p>
- * When {@code eventMesh.webHook.operationMode=nacos}
- * It calls the {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#queryWebHookConfigByManufacturer
+ * When {@code eventMesh.webHook.operationMode=nacos} It calls the {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation
+ * #queryWebHookConfigByManufacturer
  * NacosWebHookConfigOperation} method as implementation to retrieve the WebHook configuration from Nacos.
  * <p>
  * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#queryWebHookConfigByManufacturer
@@ -67,7 +69,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
     private final transient WebHookConfigOperation operation;
 
     /**
-     * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
+     * Constructs a new instance with the specified WebHook config operation.
      *
      * @param operation the WebHookConfigOperation implementation used to query the WebHook config
      */
@@ -78,33 +80,24 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
 
     }
 
-    /**
-     * Handles requests by retrieving a list of WebHook configurations.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        Objects.requireNonNull(httpExchange, "httpExchange can not be null");
-
-        httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-        NetUtils.sendSuccessResponseHeaders(httpExchange);
-
+    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         // Resolve to WebHookConfig
-        JsonNode node = JsonUtils.getJsonNode(NetUtils.parsePostBody(httpExchange));
-        Objects.requireNonNull(node, "JsonNode can not be null");
+        Body body = httpCommand.getBody();
+        Objects.requireNonNull(body, "body can not be null");
+        WebHookConfig webHookConfig = JsonUtils.mapToObject(body.toMap(), WebHookConfig.class);
+        Integer pageNum = Integer.valueOf(body.toMap().get("pageNum").toString());
+        Integer pageSize = Integer.valueOf(body.toMap().get("pageSize").toString());
 
-        WebHookConfig webHookConfig = JsonUtils.parseObject(node.toString(), WebHookConfig.class);
-        Integer pageNum = Integer.valueOf(node.get("pageNum").toString());
-        Integer pageSize = Integer.valueOf(node.get("pageSize").toString());
-
-        try (OutputStream out = httpExchange.getResponseBody()) {
-            // Retrieve the WebHookConfig list by manufacturer name
-            List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
-            out.write(Objects.requireNonNull(JsonUtils.toJSONString(result)).getBytes(Constants.DEFAULT_CHARSET));
-        } catch (Exception e) {
-            log.error("get WebHookConfigOperation implementation Failed.", e);
-        }
+        // Retrieve the WebHookConfig list by manufacturer name
+        List<WebHookConfig> listWebHookConfig = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
+        String result = JsonUtils.toJSONString(listWebHookConfig);
+        HttpResponse httpResponse =
+            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
+                HttpResponseStatus.OK);
+        write(ctx, httpResponse);
     }
 }

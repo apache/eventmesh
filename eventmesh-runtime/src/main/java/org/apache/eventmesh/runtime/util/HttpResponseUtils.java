@@ -47,6 +47,10 @@ public class HttpResponseUtils {
 
     private static ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
         byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
+        return createByteBuf(ctx, bytes);
+    }
+
+    private static ByteBuf createByteBuf(ChannelHandlerContext ctx, byte[] bytes) {
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
         byteBuf.writeBytes(bytes);
         return byteBuf;
@@ -65,6 +69,22 @@ public class HttpResponseUtils {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, headerValue);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, createByteBuf(ctx, body),
+            responseHeaders, responseHeaders);
+    }
+
+    public static HttpResponse getHttpResponse(byte[] bytes, ChannelHandlerContext ctx, AsciiString headerValue) {
+        return getHttpResponse(bytes, ctx, headerValue, HttpResponseStatus.OK);
+    }
+
+    public static HttpResponse getHttpResponse(byte[] bytes, ChannelHandlerContext ctx, AsciiString headerValue, HttpResponseStatus status) {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, headerValue);
+        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, createByteBuf(ctx, bytes),
+            responseHeaders, responseHeaders);
+    }
+
+    public static HttpResponse getHttpResponse(byte[] bytes, ChannelHandlerContext ctx, HttpHeaders responseHeaders, HttpResponseStatus status) {
+        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, createByteBuf(ctx, bytes),
             responseHeaders, responseHeaders);
     }
 

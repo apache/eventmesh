@@ -17,21 +17,13 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.apache.eventmesh.common.enums.HttpMethod;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.sun.net.httpserver.HttpExchange;
 
 public class NetUtilsTest {
 
@@ -58,25 +50,4 @@ public class NetUtilsTest {
         Assertions.assertEquals(localAddress + "|", result);
     }
 
-    @Test
-    public void testParsePostBody() throws Exception {
-
-        HttpExchange exchange = Mockito.mock(HttpExchange.class);
-        String expected = "mxsm";
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(expected.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(exchange.getRequestMethod()).thenReturn(HttpMethod.POST.name());
-        Mockito.when(exchange.getRequestBody()).thenReturn(inputStream);
-
-        String actual = NetUtils.parsePostBody(exchange);
-        Assertions.assertEquals(expected, actual);
-
-    }
-
-    @Test
-    public void testSendSuccessResponseHeaders() throws IOException {
-        HttpExchange exchange = Mockito.mock(HttpExchange.class);
-        NetUtils.sendSuccessResponseHeaders(exchange);
-        Mockito.verify(exchange, Mockito.times(1))
-            .sendResponseHeaders(Mockito.anyInt(), Mockito.anyLong());
-    }
 }
