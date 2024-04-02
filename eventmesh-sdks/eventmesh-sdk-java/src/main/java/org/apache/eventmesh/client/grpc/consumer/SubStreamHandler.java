@@ -96,6 +96,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
             @Override
             public void onError(final Throwable t) {
                 log.error("Received Server side error", t);
+                close();
             }
 
             @Override
@@ -145,6 +146,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
             }
         } catch (Exception e) {
             log.error("StreamObserver Error onNext", e);
+            close();
         }
     }
 
@@ -152,6 +154,7 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
         try {
             synchronized (sender) {
                 sender.onCompleted();
+                sender = null;
             }
         } catch (Exception e) {
             log.error("StreamObserver Error onComplete", e);
