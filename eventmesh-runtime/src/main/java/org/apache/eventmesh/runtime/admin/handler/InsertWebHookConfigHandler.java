@@ -19,39 +19,36 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.Map;
+import java.util.Objects;
 
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /webhook/insertWebHookConfig} endpoint
- * and adds a new WebHook configuration
- * according to the given {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig},
- * if there isn't an existing duplicate configuration already.
+ * This class handles the HTTP requests of {@code /webhook/insertWebHookConfig} endpoint and adds a new WebHook configuration according to the given
+ * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}, if there isn't an existing duplicate configuration already.
  * <p>
- * The implementation of
- * {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#insertWebHookConfig WebHookConfigOperation}
- * interface depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
+ * The implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#insertWebHookConfig WebHookConfigOperation} interface
+ * depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
  * <p>
  * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
- * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#insertWebHookConfig FileWebHookConfigOperation}
- * method as implementation to save the WebHook configuration as a file;
+ * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation#insertWebHookConfig
+ * FileWebHookConfigOperation} method as implementation to save the WebHook configuration as a file;
  * <p>
  * When {@code eventMesh.webHook.operationMode=nacos}, It calls the
- * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#insertWebHookConfig NacosWebHookConfigOperation}
- * method as implementation to save the WebHook configuration into Nacos.
+ * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#insertWebHookConfig
+ * NacosWebHookConfigOperation} method as implementation to save the WebHook configuration into Nacos.
  * <p>
- * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#insertWebHookConfig HookConfigOperationManager}
- * , another implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation}
- * interface, is not used for this endpoint.
+ * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#insertWebHookConfig HookConfigOperationManager} , another
+ * implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation} interface, is not used for this
+ * endpoint.
  *
  * @see AbstractHttpHandler
  */
@@ -64,7 +61,7 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
     private final WebHookConfigOperation operation;
 
     /**
-     * Constructs a new instance with the specified WebHook config operation and HTTP handler manager.
+     * Constructs a new instance with the specified WebHook config operation.
      *
      * @param operation the WebHookConfigOperation implementation used to insert the WebHook config
      */
@@ -76,24 +73,18 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
     /**
      * Handles requests by adding a WebHook configuration.
      *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
+     * @throws Exception if an I/O error occurs while handling the request
      */
+
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        NetUtils.sendSuccessResponseHeaders(httpExchange);
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Objects.requireNonNull(body, "body can not be null");
+        WebHookConfig webHookConfig = JsonUtils.mapToObject(body, WebHookConfig.class);
+        // Add the WebHookConfig if no existing duplicate configuration is found
+        Integer code = operation.insertWebHookConfig(webHookConfig); // operating result
+        String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
 
-        // Resolve to WebHookConfig
-        String requestBody = NetUtils.parsePostBody(httpExchange);
-        WebHookConfig webHookConfig = JsonUtils.parseObject(requestBody, WebHookConfig.class);
-
-        try (OutputStream out = httpExchange.getResponseBody()) {
-            // Add the WebHookConfig if no existing duplicate configuration is found
-            Integer code = operation.insertWebHookConfig(webHookConfig); // operating result
-            String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } catch (Exception e) {
-            log.error("get WebHookConfigOperation implementation Failed.", e);
-        }
     }
 }

@@ -28,22 +28,21 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/rejectClientByIpPort} endpoint,
- * which is used to reject a client connection
- * that matches the provided IP address and port.
+ * This class handles the HTTP requests of {@code /clientManage/rejectClientByIpPort} endpoint, which is used to reject a client connection that
+ * matches the provided IP address and port.
  * <p>
  * The request must specify the client's and target EventMesh node's IP and port.
  * <p>
@@ -66,73 +65,60 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
     private final EventMeshTCPServer eventMeshTCPServer;
 
     /**
-     * Constructs a new instance with the provided server instance and HTTP handler manager.
+     * Constructs a new instance with the provided server instance.
      *
-     * @param eventMeshTCPServer  the TCP server instance of EventMesh
+     * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
     public RejectClientByIpPortHandler(EventMeshTCPServer eventMeshTCPServer) {
         super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    /**
-     * Handles requests by rejecting matching clients.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         String result = "";
-        try (OutputStream out = httpExchange.getResponseBody()) {
-            String queryString = httpExchange.getRequestURI().getQuery();
-            Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            // Extract parameters from the query string
-            String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
-            String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
+        String queryString = URI.create(httpRequest.uri()).getQuery();
+        Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
+        // Extract parameters from the query string
+        String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
+        String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
 
-            // Check the validity of the parameters
-            if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                result = "params illegal!";
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
-            }
-            log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
-            // Retrieve the mapping between Sessions and their corresponding client address
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
-            try {
-                if (!sessionMap.isEmpty()) {
-                    // Iterate through the sessionMap to find matching sessions where the remote client address matches the given IP and port
-                    for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                        // Reject client connection for each matching session found
-                        if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(),
-                                entry.getValue(), clientSessionGroupMapping);
-                            // Add the remote client address to a list of successfully rejected addresses
-                            if (addr != null) {
-                                successRemoteAddrs.add(addr);
-                            }
+        // Check the validity of the parameters
+        if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
+            result = "params illegal!";
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            return;
+        }
+        log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
+        // Retrieve the mapping between Sessions and their corresponding client address
+        ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+        ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+        final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
+        try {
+            if (!sessionMap.isEmpty()) {
+                // Iterate through the sessionMap to find matching sessions where the remote client address matches the given IP and port
+                for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
+                    // Reject client connection for each matching session found
+                    if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
+                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(),
+                            entry.getValue(), clientSessionGroupMapping);
+                        // Add the remote client address to a list of successfully rejected addresses
+                        if (addr != null) {
+                            successRemoteAddrs.add(addr);
                         }
                     }
                 }
-            } catch (Exception e) {
-                log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
-                result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
-                    port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
             }
-            result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
-                NetUtils.addressToString(successRemoteAddrs));
-            NetUtils.sendSuccessResponseHeaders(httpExchange);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
-            log.error("rejectClientByIpPort fail...", e);
+            log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
+            result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
+                port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            return;
         }
+        result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
+            NetUtils.addressToString(successRemoteAddrs));
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
 
     }
 }

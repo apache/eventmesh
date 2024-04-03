@@ -18,23 +18,23 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Objects;
 
-import com.sun.net.httpserver.HttpExchange;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +56,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
     /**
-     * Constructs a new instance with the provided configurations and HTTP handler manager.
+     * Constructs a new instance with the provided configurations.
      *
      * @param eventMeshTCPConfiguration  the TCP configuration for EventMesh
      * @param eventMeshHTTPConfiguration the HTTP configuration for EventMesh
@@ -72,96 +72,34 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
     }
 
-    /**
-     * Handles the OPTIONS request first for {@code /configuration}.
-     * <p>
-     * This method adds CORS (Cross-Origin Resource Sharing) response headers to the {@link HttpExchange} object and sends a 200 status code.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
-    void preflight(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_METHODS, "*");
-        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_HEADERS, "*");
-        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
-        httpExchange.sendResponseHeaders(200, 0);
-        OutputStream out = httpExchange.getResponseBody();
-        out.close();
-    }
-
-    /**
-     * Handles the GET request for {@code /configuration}.
-     * <p>
-     * This method retrieves the EventMesh configuration information and returns it as a JSON response.
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
-    void get(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        httpExchange.getResponseHeaders().add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        try (OutputStream out = httpExchange.getResponseBody()) {
-            try {
-                GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                    eventMeshTCPConfiguration.getSysID(),
-                    eventMeshTCPConfiguration.getMetaStorageAddr(),
-                    eventMeshTCPConfiguration.getEventMeshEnv(),
-                    eventMeshTCPConfiguration.getEventMeshIDC(),
-                    eventMeshTCPConfiguration.getEventMeshCluster(),
-                    eventMeshTCPConfiguration.getEventMeshServerIp(),
-                    eventMeshTCPConfiguration.getEventMeshName(),
-                    eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
-                    eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-                    eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable(),
-                    // TCP Configuration
-                    eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
-                    // HTTP Configuration
-                    eventMeshHTTPConfiguration.getHttpServerPort(),
-                    eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
-                    // gRPC Configuration
-                    eventMeshGrpcConfiguration.getGrpcServerPort(),
-                    eventMeshGrpcConfiguration.isEventMeshServerUseTls());
-
-                String result = JsonUtils.toJSONString(getConfigurationResponse);
-                httpExchange.sendResponseHeaders(200, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-            } catch (Exception e) {
-                StringWriter writer = new StringWriter();
-                PrintWriter printWriter = new PrintWriter(writer);
-                e.printStackTrace(printWriter);
-                printWriter.flush();
-                String stackTrace = writer.toString();
-
-                Error error = new Error(e.toString(), stackTrace);
-                String result = JsonUtils.toJSONString(error);
-                httpExchange.sendResponseHeaders(500, Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET).length);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-            }
-        }
-    }
-
-    /**
-     * Handles the HTTP requests for {@code /configuration}.
-     * <p>
-     * It delegates the handling to {@code preflight()} or {@code get()} methods based on the request method type (OPTIONS or GET).
-     * <p>
-     * This method is an implementation of {@linkplain com.sun.net.httpserver.HttpHandler#handle(HttpExchange)  HttpHandler.handle()}
-     *
-     * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException if an I/O error occurs while handling the request
-     */
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        switch (HttpMethod.valueOf(httpExchange.getRequestMethod())) {
-            case OPTIONS:
-                preflight(httpExchange);
-                break;
-            case GET:
-                get(httpExchange);
-                break;
-            default: // do nothing
-                break;
-        }
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+            eventMeshTCPConfiguration.getSysID(),
+            eventMeshTCPConfiguration.getMetaStorageAddr(),
+            eventMeshTCPConfiguration.getEventMeshEnv(),
+            eventMeshTCPConfiguration.getEventMeshIDC(),
+            eventMeshTCPConfiguration.getEventMeshCluster(),
+            eventMeshTCPConfiguration.getEventMeshServerIp(),
+            eventMeshTCPConfiguration.getEventMeshName(),
+            eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
+            eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
+            eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable(),
+            // TCP Configuration
+            eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
+            // HTTP Configuration
+            eventMeshHTTPConfiguration.getHttpServerPort(),
+            eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
+            // gRPC Configuration
+            eventMeshGrpcConfiguration.getGrpcServerPort(),
+            eventMeshGrpcConfiguration.isEventMeshServerUseTls());
+        String result = JsonUtils.toJSONString(getConfigurationResponse);
+        HttpResponse httpResponse =
+            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
+                HttpResponseStatus.OK);
+        write(ctx, httpResponse);
     }
 }
