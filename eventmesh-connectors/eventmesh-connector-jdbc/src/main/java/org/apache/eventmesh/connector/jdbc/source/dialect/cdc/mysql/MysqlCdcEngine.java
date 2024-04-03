@@ -289,7 +289,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
      */
     private void eventMeshMysqlEventListener(Event event, MysqlJdbcContext context) {
 
-        if (null == event) {
+        if (event == null) {
             return;
         }
         final EventHeader eventHeader = event.getHeader();
@@ -366,7 +366,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             Event event = null;
             try {
                 event = eventQueue.poll(5, TimeUnit.SECONDS);
-                if (null == event) {
+                if (event == null) {
                     continue;
                 }
                 eventHandlers.getOrDefault(event.getHeader().getEventType(), ignore -> ignoreEvent(context, ignore)).accept(event);

@@ -51,7 +51,7 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
     @Override
     public Response publish(EventMeshMessage message) {
 
-        if (null == message) {
+        if (message == null) {
             return null;
         }
 

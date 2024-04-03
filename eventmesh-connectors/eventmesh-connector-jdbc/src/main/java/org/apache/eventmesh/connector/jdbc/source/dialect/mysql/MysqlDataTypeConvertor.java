@@ -116,7 +116,7 @@ public class MysqlDataTypeConvertor implements DataTypeConvertor<MysqlType> {
                 /**
                  *  @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-type.html">Mysql doc</a>
                  */
-                if (null == dataTypeProperties) {
+                if (dataTypeProperties == null) {
                     return BytesEventMeshDataType.INSTANCE;
                 }
                 Integer precision = (Integer) dataTypeProperties.get(MysqlDataTypeConvertor.PRECISION);

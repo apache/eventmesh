@@ -127,7 +127,7 @@ public class DingDingSinkConnector implements Sink {
                 orgGroupSendHeaders.xAcsDingtalkAccessToken = accessToken;
 
                 String templateTypeKey = record.getExtension(ConnectRecordExtensionKeys.DINGTALK_TEMPLATE_TYPE);
-                if (null == templateTypeKey || "null".equals(templateTypeKey)) {
+                if (templateTypeKey == null || "null".equals(templateTypeKey)) {
                     templateTypeKey = DingDingMessageTemplateType.PLAIN_TEXT.getTemplateType();
                 }
                 DingDingMessageTemplateType templateType = DingDingMessageTemplateType.of(templateTypeKey);

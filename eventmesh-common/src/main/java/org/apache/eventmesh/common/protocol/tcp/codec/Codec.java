@@ -132,7 +132,7 @@ public class Codec {
 
             try {
                 target = (ByteBuf) super.decode(ctx, in);
-                if (null == target) {
+                if (target == null) {
                     return null;
                 }
                 byte[] flagBytes = parseFlag(target);

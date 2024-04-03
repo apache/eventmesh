@@ -162,7 +162,7 @@ public class MysqlDatabaseDialect extends AbstractGeneralDatabaseDialect<MysqlJd
 
     @Override
     public boolean databaseExists(String databaseName) throws CatalogException {
-        if (null == databaseName || databaseName.trim().isEmpty()) {
+        if (databaseName == null || databaseName.trim().isEmpty()) {
             return false;
         }
         List<String> databases = listDatabases();

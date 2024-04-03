@@ -311,7 +311,7 @@ public class MysqlSnapshotEngine extends
         while (isRunning) {
             try {
                 Event event = eventQueue.poll(5, TimeUnit.SECONDS);
-                if (null == event) {
+                if (event == null) {
                     continue;
                 }
                 consumers.forEach(consumer -> consumer.accept(event));

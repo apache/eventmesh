@@ -236,7 +236,7 @@ public class EventMeshCloudEventBuilder {
     @SuppressWarnings("unchecked")
     public static <T> T buildMessageFromEventMeshCloudEvent(final CloudEvent cloudEvent, final EventMeshProtocolType protocolType) {
 
-        if (null == cloudEvent) {
+        if (cloudEvent == null) {
             return null;
         }
         final String seq = EventMeshCloudEventUtils.getSeqNum(cloudEvent);
@@ -251,7 +251,7 @@ public class EventMeshCloudEventBuilder {
 
                 });
         }
-        if (null == protocolType) {
+        if (protocolType == null) {
             return null;
         }
 

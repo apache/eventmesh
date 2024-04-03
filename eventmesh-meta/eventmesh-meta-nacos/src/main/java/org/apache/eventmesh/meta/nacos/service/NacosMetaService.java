@@ -109,7 +109,7 @@ public class NacosMetaService implements MetaService {
         eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
         for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-            if (null == commonConfiguration) {
+            if (commonConfiguration == null) {
                 continue;
             }
             if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
