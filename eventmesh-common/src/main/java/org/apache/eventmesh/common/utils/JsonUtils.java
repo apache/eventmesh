@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,6 +53,14 @@ public class JsonUtils {
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
+    public static <T> T mapToObject(Map<String, Object> map, Class<T> beanClass) {
+        if (map == null) {
+            return null;
+        }
+        Object obj = OBJECT_MAPPER.convertValue(map, beanClass);
+        return (T) obj;
+    }
+    
     /**
      * Serialize object to json string.
      *
