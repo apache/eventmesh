@@ -52,10 +52,6 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    protected void write(ChannelHandlerContext ctx, byte[] result, AsciiString headerValue, HttpResponseStatus httpResponseStatus) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, headerValue, httpResponseStatus)).addListener(ChannelFutureListener.CLOSE);
-    }
-
     protected void write401(ChannelHandlerContext ctx) {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED);
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
