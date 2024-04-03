@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -79,7 +78,7 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
             result = "params illegal!";
-            write(ctx, result);
+            writeText(ctx, result);
             return;
         }
 
@@ -88,6 +87,6 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
         String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
         result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
         log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
-        write(ctx, result);
+        writeText(ctx, result);
     }
 }

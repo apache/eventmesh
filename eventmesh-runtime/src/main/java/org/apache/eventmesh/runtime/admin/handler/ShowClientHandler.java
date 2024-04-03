@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -84,6 +83,6 @@ public class ShowClientHandler extends AbstractHttpHandler {
                 result.append(String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue())).append(newLine);
             }
         }
-        write(ctx, result.toString());
+        writeText(ctx, result.toString());
     }
 }

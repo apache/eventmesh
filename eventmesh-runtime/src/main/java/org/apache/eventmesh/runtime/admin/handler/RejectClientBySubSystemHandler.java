@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -94,7 +93,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(subSystem)) {
             result = "params illegal!";
-            write(ctx, result);
+            writeText(ctx, result);
             return;
         }
 
@@ -124,13 +123,13 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                     +
                     "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
                 subSystem, e.getMessage());
-            write(ctx, result);
+            writeText(ctx, result);
             return;
         }
         // Serialize the successfully rejected client addresses into output stream
         result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
             +
             "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
-        write(ctx, result);
+        writeText(ctx, result);
     }
 }

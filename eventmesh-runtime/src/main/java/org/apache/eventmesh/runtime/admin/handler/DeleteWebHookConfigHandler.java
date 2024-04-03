@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
@@ -76,6 +75,6 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
         // Delete the existing WebHookConfig
         Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
-        write(ctx, result);
+        writeText(ctx, result);
     }
 }

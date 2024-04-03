@@ -95,7 +95,5 @@ public class MetaHandler extends AbstractHttpHandler {
                     HttpResponseStatus.OK);
             write(ctx, httpResponse);
         }
-
     }
-
 }

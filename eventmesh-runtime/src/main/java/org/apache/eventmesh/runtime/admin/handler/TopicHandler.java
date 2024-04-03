@@ -86,7 +86,6 @@ public class TopicHandler extends AbstractHttpHandler {
             HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
                 HttpResponseStatus.OK);
         write(ctx, httpResponse);
-
     }
 
     @Override
@@ -100,7 +99,6 @@ public class TopicHandler extends AbstractHttpHandler {
         String topicName = Objects.requireNonNull(createTopicRequest).getName();
         admin.createTopic(topicName);
         writeSuccess(ctx);
-
     }
 
     @Override
@@ -114,7 +112,5 @@ public class TopicHandler extends AbstractHttpHandler {
         String topicName = Objects.requireNonNull(deleteTopicRequest).getName();
         admin.deleteTopic(topicName);
         writeSuccess(ctx);
-
     }
-
 }

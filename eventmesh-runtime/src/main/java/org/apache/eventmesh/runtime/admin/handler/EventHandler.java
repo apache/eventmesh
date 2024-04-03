@@ -79,8 +79,8 @@ public class EventHandler extends AbstractHttpHandler {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         String queryString = URI.create(httpRequest.uri()).getQuery();
-        if (queryString == null || "".equals(queryString)) {
-            write401(ctx);
+        if (queryString == null || queryString.isEmpty()) {
+            writeUnauthorized(ctx);
             return;
         }
         Map<String, String> queryMap = queryToMap(queryString);

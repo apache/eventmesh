@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -83,7 +82,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
         if (!StringUtils.isNumeric(subSystem)
             || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
             || !StringUtils.isNumeric(destEventMeshPort)) {
-            write(ctx, "params illegal!");
+            writeText(ctx, "params illegal!");
             return;
         }
         log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
@@ -111,12 +110,12 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
             log.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp"
                 + "={}|destEventMeshPort={}", subSystem, destEventMeshIp, destEventMeshPort, e);
 
-            write(ctx, String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
+            writeText(ctx, String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
                         + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                     sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage()));
             return;
         }
-        write(ctx, String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
+        writeText(ctx, String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
                     + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                 sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult));
     }

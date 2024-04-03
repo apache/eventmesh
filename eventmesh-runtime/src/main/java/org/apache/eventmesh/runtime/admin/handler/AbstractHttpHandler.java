@@ -44,16 +44,24 @@ import lombok.Data;
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
-    protected void write(ChannelHandlerContext ctx, String result) {
+    protected void writeText(ChannelHandlerContext ctx, String result) {
         ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result.getBytes(Constants.DEFAULT_CHARSET), ctx, HttpHeaderValues.TEXT_HTML))
             .addListener(ChannelFutureListener.CLOSE);
     }
 
+    protected void writeJson(ChannelHandlerContext ctx, String result) {
+        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result.getBytes(Constants.DEFAULT_CHARSET), ctx, HttpHeaderValues.APPLICATION_JSON))
+            .addListener(ChannelFutureListener.CLOSE);
+    }
+
+    /**
+     * Use {@link HttpResponseUtils#getHttpResponse} to build {@link HttpResponse} param.
+     */
     protected void write(ChannelHandlerContext ctx, HttpResponse response) {
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    protected void write401(ChannelHandlerContext ctx) {
+    protected void writeUnauthorized(ChannelHandlerContext ctx) {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED);
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
@@ -72,6 +80,30 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
+    @Override
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        switch (HttpMethod.valueOf(httpRequest.method().name())) {
+            case OPTIONS:
+                preflight(ctx);
+                break;
+            case GET:
+                get(httpRequest, ctx);
+                break;
+            case POST:
+                post(httpRequest, ctx);
+                break;
+            case PUT:
+                put(httpRequest, ctx);
+                break;
+            case DELETE:
+                delete(httpRequest, ctx);
+                break;
+            default:
+                // do nothing
+                break;
+        }
+    }
+
     protected void preflight(ChannelHandlerContext ctx) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
@@ -81,6 +113,32 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER,
             responseHeaders, responseHeaders);
         write(ctx, response);
+    }
+
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
+    }
+
+    /**
+     * Add new resource.
+     */
+    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
+    }
+
+    /**
+     * Update resource, should be idempotent.
+     */
+    protected void put(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
+    }
+
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
+    }
+
+    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
+        return HttpRequestUtil.parseHttpRequestBody(httpRequest, null, null);
     }
 
     /**
@@ -108,39 +166,6 @@ public abstract class AbstractHttpHandler implements HttpHandler {
             }
         }
         return result;
-    }
-
-    @Override
-    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        switch (HttpMethod.valueOf(httpRequest.method().name())) {
-            case OPTIONS:
-                preflight(ctx);
-                break;
-            case GET:
-                get(httpRequest, ctx);
-                break;
-            case POST:
-                post(httpRequest, ctx);
-                break;
-            case DELETE:
-                delete(httpRequest, ctx);
-                break;
-            default: // do nothing
-                break;
-        }
-    }
-
-    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-    }
-
-    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-    }
-
-    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-    }
-
-    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
-        return HttpRequestUtil.parseHttpRequestBody(httpRequest, null, null);
     }
 }
 

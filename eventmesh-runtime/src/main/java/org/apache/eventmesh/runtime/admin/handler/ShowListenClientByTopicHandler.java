@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -93,6 +92,6 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
                 }
             }
         }
-        write(ctx, result.toString());
+        writeText(ctx, result.toString());
     }
 }

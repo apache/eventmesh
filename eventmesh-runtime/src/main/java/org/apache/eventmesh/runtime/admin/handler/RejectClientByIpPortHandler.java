@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -86,7 +85,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
             result = "params illegal!";
-            write(ctx, result);
+            writeText(ctx, result);
             return;
         }
         log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
@@ -113,11 +112,11 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
             log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
             result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
                 port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
-            write(ctx, result);
+            writeText(ctx, result);
             return;
         }
         result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
             NetUtils.addressToString(successRemoteAddrs));
-        write(ctx, result);
+        writeText(ctx, result);
     }
 }
