@@ -18,10 +18,10 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.enums.HttpMethod;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,15 +31,23 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.AsciiString;
 
 import lombok.Data;
 
 @Data
 public abstract class AbstractHttpHandler implements org.apache.eventmesh.runtime.admin.handler.HttpHandler {
+
+    private  static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
 
     protected void write(ChannelHandlerContext ctx, byte[] result, AsciiString headerValue) {
         ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, headerValue)).addListener(ChannelFutureListener.CLOSE);
@@ -111,32 +119,57 @@ public abstract class AbstractHttpHandler implements org.apache.eventmesh.runtim
     }
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
-        switch (HttpMethod.valueOf(httpCommand.getHttpMethod())) {
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        switch (HttpMethod.valueOf(httpRequest.method().name())) {
             case OPTIONS:
                 preflight(ctx);
                 break;
             case GET:
-                get(httpCommand, ctx);
+                get(httpRequest, ctx);
                 break;
             case POST:
-                post(httpCommand, ctx);
+                post(httpRequest, ctx);
                 break;
             case DELETE:
-                delete(httpCommand, ctx);
+                delete(httpRequest, ctx);
                 break;
             default: // do nothing
                 break;
         }
     }
 
-    protected void post(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception{
+    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception{
     }
 
-    protected void delete(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception{
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception{
     }
 
-    protected void get(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception{
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception{
+    }
+
+    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
+        final long bodyDecodeStart = System.currentTimeMillis();
+        final Map<String, Object> httpRequestBody = new HashMap<>();
+
+        if (io.netty.handler.codec.http.HttpMethod.GET.equals(httpRequest.method())) {
+            new QueryStringDecoder(httpRequest.uri())
+                .parameters()
+                .forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
+        } else if (io.netty.handler.codec.http.HttpMethod.POST.equals(httpRequest.method())) {
+            decodeHttpRequestBody(httpRequest, httpRequestBody);
+        }
+        return httpRequestBody;
+    }
+
+    private void decodeHttpRequestBody(HttpRequest httpRequest, Map<String, Object> httpRequestBody) throws IOException {
+        final HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(DEFAULT_HTTP_DATA_FACTORY, httpRequest);
+        for (final InterfaceHttpData param : decoder.getBodyHttpDatas()) {
+            if (InterfaceHttpData.HttpDataType.Attribute == param.getHttpDataType()) {
+                final Attribute data = (Attribute) param;
+                httpRequestBody.put(data.getName(), data.getValue());
+            }
+        }
+        decoder.destroy();
     }
 
 

@@ -42,6 +42,7 @@ import io.netty.handler.codec.http.HttpVersion;
 
 import lombok.Data;
 
+@Deprecated
 @Data
 public class HttpCommand implements ProtocolTransportObject {
 
@@ -68,14 +69,6 @@ public class HttpCommand implements ProtocolTransportObject {
     public long resTime;
 
     public URI requestURI;
-
-    public URI getRequestURI() {
-        return requestURI;
-    }
-
-    public void setRequestURI(URI requestURI) {
-        this.requestURI = requestURI;
-    }
 
     public CmdType cmdType = CmdType.REQ;
 

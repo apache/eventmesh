@@ -18,17 +18,17 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
+import java.util.Map;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -78,10 +78,10 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
      */
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
-        Body body = httpCommand.getBody();
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
-        WebHookConfig webHookConfig = JsonUtils.mapToObject(body.toMap(), WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.mapToObject(body, WebHookConfig.class);
         // Add the WebHookConfig if no existing duplicate configuration is found
         Integer code = operation.insertWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";

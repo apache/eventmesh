@@ -18,8 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
@@ -31,12 +29,14 @@ import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -68,10 +68,10 @@ public class HTTPClientHandler extends AbstractHttpHandler {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    protected void delete(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
-        Body body = httpCommand.getBody();
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
         if (!Objects.isNull(body)) {
-            DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.mapToObject(body.toMap(), DeleteHTTPClientRequest.class);
+            DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.mapToObject(body, DeleteHTTPClientRequest.class);
             String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();
 
             for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
@@ -91,7 +91,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      *
      * @throws Exception if an I/O error occurs while handling the request
      */
-    protected void get(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         // Set the response headers
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);

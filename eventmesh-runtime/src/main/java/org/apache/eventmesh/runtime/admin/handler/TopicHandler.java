@@ -19,8 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
@@ -30,11 +28,13 @@ import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -76,7 +76,7 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void get(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
@@ -90,13 +90,13 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void post(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
-        Body body = httpCommand.getBody();
+    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        CreateTopicRequest createTopicRequest = JsonUtils.mapToObject(body.toMap(), CreateTopicRequest.class);
+        CreateTopicRequest createTopicRequest = JsonUtils.mapToObject(body, CreateTopicRequest.class);
         String topicName = Objects.requireNonNull(createTopicRequest).getName();
         admin.createTopic(topicName);
         writeSuccess(ctx);
@@ -104,13 +104,13 @@ public class TopicHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void delete(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
-        Body body = httpCommand.getBody();
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        DeleteTopicRequest deleteTopicRequest = JsonUtils.mapToObject(body.toMap(), DeleteTopicRequest.class);
+        DeleteTopicRequest deleteTopicRequest = JsonUtils.mapToObject(body, DeleteTopicRequest.class);
         String topicName = Objects.requireNonNull(deleteTopicRequest).getName();
         admin.deleteTopic(topicName);
         writeSuccess(ctx);

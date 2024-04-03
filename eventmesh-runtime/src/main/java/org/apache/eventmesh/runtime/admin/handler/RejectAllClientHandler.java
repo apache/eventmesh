@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -34,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,7 +65,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
     }
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         // Retrieve the mapping between Sessions and their corresponding client address
         final ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
         final ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();

@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -31,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +60,7 @@ public class ShowClientHandler extends AbstractHttpHandler {
     }
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         StringBuilder result = new StringBuilder();
         String newLine = System.getProperty("line.separator");
         log.info("showAllClient=================");

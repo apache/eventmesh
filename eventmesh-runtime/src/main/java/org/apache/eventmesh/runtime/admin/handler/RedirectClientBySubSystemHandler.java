@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -30,11 +29,13 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,8 +73,8 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
     }
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
-        final Map<String, String> queryStringInfo = NetUtils.formData2Dic(httpCommand.getRequestURI().getQuery());
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        final Map<String, String> queryStringInfo = NetUtils.formData2Dic(URI.create(httpRequest.uri()).getQuery());
         // Extract parameters from the query string
         final String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
         final String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);

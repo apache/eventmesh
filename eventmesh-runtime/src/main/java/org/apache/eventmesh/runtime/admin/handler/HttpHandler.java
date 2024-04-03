@@ -17,14 +17,13 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
 
 /**
  * Admin HttpHandler
  */
 public interface HttpHandler {
 
-    void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception;
+    void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception;
 }

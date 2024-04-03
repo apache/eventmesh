@@ -18,8 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
@@ -43,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -75,11 +74,11 @@ public class TCPClientHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void delete(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         // Parse the request body string into a DeleteTCPClientRequest object
-        Body body = httpCommand.getBody();
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
-        DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.mapToObject(body.toMap(), DeleteTCPClientRequest.class);
+        DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.mapToObject(body, DeleteTCPClientRequest.class);
         String host = Objects.requireNonNull(deleteTCPClientRequest).getHost();
         int port = deleteTCPClientRequest.getPort();
 
@@ -104,7 +103,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void get(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         // Set the response headers
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);

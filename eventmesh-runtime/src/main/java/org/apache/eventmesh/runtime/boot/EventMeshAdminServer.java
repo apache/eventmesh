@@ -18,24 +18,17 @@
 package org.apache.eventmesh.runtime.boot;
 
 import static org.apache.eventmesh.runtime.util.HttpResponseUtils.getHttpResponse;
-import static org.apache.eventmesh.runtime.util.Utils.parseHttpHeader;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AdminHandlerManager;
 import org.apache.eventmesh.runtime.admin.handler.HttpHandler;
 import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -115,8 +108,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
         Optional<HttpHandler> httpHandlerOpt = adminHandlerManager.getHttpHandler(uri.getPath());
         if (httpHandlerOpt.isPresent()) {
             try {
-                HttpCommand httpCommand = parseHttpRequest(httpRequest);
-                httpHandlerOpt.get().handle(httpCommand, ctx);
+                httpHandlerOpt.get().handle(httpRequest, ctx);
                 return;
             } catch (Exception e) {
                 StringWriter writer = new StringWriter();
@@ -134,33 +126,6 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
             ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
         }
     }
-
-    private HttpCommand parseHttpRequest(HttpRequest httpRequest) {
-        HttpCommand httpCommand = new HttpCommand();
-        httpCommand.setHttpMethod(httpRequest.method().name());
-        httpCommand.setHeader(new Header() {
-            @Override
-            public Map<String, Object> toMap() {
-                return parseHttpHeader(httpRequest);
-            }
-        });
-        httpCommand.setBody(new Body() {
-            @Override
-            public Map<String, Object> toMap() {
-                try {
-                    return EventMeshAdminServer.super.parseHttpRequestBody(httpRequest);
-                } catch (IOException ex) {
-                    log.error("parse HttpRequest Body error!", ex);
-                }
-                return Collections.emptySortedMap();
-            }
-        });
-        httpCommand.setHttpVersion(httpRequest.protocolVersion() == null ? ""
-            : httpRequest.protocolVersion().protocolName());
-        httpCommand.setRequestURI(URI.create(httpRequest.uri()));
-        return httpCommand;
-    }
-
 
     private class AdminServerInitializer extends ChannelInitializer<SocketChannel> {
 

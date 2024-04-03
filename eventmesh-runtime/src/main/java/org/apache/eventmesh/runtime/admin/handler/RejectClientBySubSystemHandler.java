@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
@@ -30,6 +29,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,9 +85,9 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
     }
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         String result;
-        String queryString = httpCommand.getRequestURI().getQuery();
+        String queryString = URI.create(httpRequest.uri()).getQuery();
         Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
         // Extract parameter from the query string
         String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);

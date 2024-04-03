@@ -18,8 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -28,11 +26,13 @@ import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -81,16 +81,16 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
     }
 
     @Override
-    public void handle(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         // Resolve to WebHookConfig
-        Body body = httpCommand.getBody();
+        Map<String, Object> body = parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
-        WebHookConfig webHookConfig = JsonUtils.mapToObject(body.toMap(), WebHookConfig.class);
-        Integer pageNum = Integer.valueOf(body.toMap().get("pageNum").toString());
-        Integer pageSize = Integer.valueOf(body.toMap().get("pageSize").toString());
+        WebHookConfig webHookConfig = JsonUtils.mapToObject(body, WebHookConfig.class);
+        Integer pageNum = Integer.valueOf(body.get("pageNum").toString());
+        Integer pageSize = Integer.valueOf(body.get("pageSize").toString());
 
         // Retrieve the WebHookConfig list by manufacturer name
         List<WebHookConfig> listWebHookConfig = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result

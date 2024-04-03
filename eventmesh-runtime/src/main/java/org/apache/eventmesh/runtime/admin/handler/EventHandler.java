@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,7 @@ import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,10 +75,10 @@ public class EventHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void get(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        String queryString = httpCommand.getRequestURI().getQuery();
+        String queryString = URI.create(httpRequest.uri()).getQuery();
         if (queryString == null || "".equals(queryString)) {
             write401(ctx);
             return;
@@ -99,10 +100,10 @@ public class EventHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void post(HttpCommand httpCommand, ChannelHandlerContext ctx) throws Exception {
+    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        String request = JsonUtils.toJSONString(httpCommand.getBody().toMap());
+        String request = JsonUtils.toJSONString(parseHttpRequestBody(httpRequest));
         byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
         CloudEvent event = Objects.requireNonNull(EventFormatProvider
             .getInstance()

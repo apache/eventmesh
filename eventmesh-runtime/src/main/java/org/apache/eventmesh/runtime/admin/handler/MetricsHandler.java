@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -35,6 +34,7 @@ import java.util.Objects;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -69,7 +69,7 @@ public class MetricsHandler extends AbstractHttpHandler {
     }
 
     @Override
-    protected void get(HttpCommand httpCommand, ChannelHandlerContext ctx) throws IOException {
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws IOException {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
