@@ -251,7 +251,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * @param httpRequest
      * @return
      */
-    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
+    private Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
         return HttpRequestUtil.parseHttpRequestBody(httpRequest, () -> System.currentTimeMillis(),
             (startTime) -> metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - startTime));
     }
