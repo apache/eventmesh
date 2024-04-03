@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
-import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -67,8 +66,6 @@ public class HttpCommand implements ProtocolTransportObject {
 
     // Command response time
     public long resTime;
-
-    public URI requestURI;
 
     public CmdType cmdType = CmdType.REQ;
 

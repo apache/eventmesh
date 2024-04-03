@@ -60,8 +60,7 @@ public class JsonUtils {
         Object obj = OBJECT_MAPPER.convertValue(map, beanClass);
         return (T) obj;
     }
-
-
+    
     /**
      * Serialize object to json string.
      *

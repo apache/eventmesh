@@ -20,14 +20,10 @@ package org.apache.eventmesh.runtime.boot;
 import static org.apache.eventmesh.runtime.util.HttpResponseUtils.getHttpResponse;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AdminHandlerManager;
 import org.apache.eventmesh.runtime.admin.handler.HttpHandler;
-import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
@@ -111,15 +107,10 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 httpHandlerOpt.get().handle(httpRequest, ctx);
                 return;
             } catch (Exception e) {
-                StringWriter writer = new StringWriter();
-                PrintWriter printWriter = new PrintWriter(writer);
-                e.printStackTrace(printWriter);
-                printWriter.flush();
-                String stackTrace = writer.toString();
-                Error error = new Error(e.toString(), stackTrace);
-                String result = JsonUtils.toJSONString(error);
+                log.error("admin server channelRead error", e);
                 ctx.writeAndFlush(
-                    getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, HttpHeaderValues.APPLICATION_JSON,
+                    getHttpResponse(Objects.requireNonNull(e.getMessage()).getBytes(Constants.DEFAULT_CHARSET),
+                        ctx, HttpHeaderValues.APPLICATION_JSON,
                         HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
             }
         } else {
