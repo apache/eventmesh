@@ -63,7 +63,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
 
     @Override
     public void init() throws Exception {
-        super.init("eventMesh-admin-http");
+        super.init("eventMesh-admin");
         adminHandlerManager.registerHttpHandler();
     }
 
@@ -92,7 +92,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 }
                 System.exit(-1);
             }
-        }, "EventMesh-http-server");
+        }, "EventMesh-admin-server");
         thread.setDaemon(true);
         thread.start();
         started.compareAndSet(false, true);
@@ -105,7 +105,6 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
         if (httpHandlerOpt.isPresent()) {
             try {
                 httpHandlerOpt.get().handle(httpRequest, ctx);
-                return;
             } catch (Exception e) {
                 log.error("admin server channelRead error", e);
                 ctx.writeAndFlush(
