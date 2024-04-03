@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +86,7 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
@@ -114,12 +113,12 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
             log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
             result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
                 port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
             NetUtils.addressToString(successRemoteAddrs));
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
 
     }
 }

@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +86,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             || StringUtils.isBlank(destEventMeshPort)
             || !StringUtils.isNumeric(destEventMeshPort)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
@@ -118,14 +117,14 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                     +
                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                 sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
                 +
                 "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
             sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
 
     }
 }

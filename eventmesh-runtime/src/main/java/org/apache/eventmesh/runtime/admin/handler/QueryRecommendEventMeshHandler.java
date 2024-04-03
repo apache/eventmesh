@@ -31,7 +31,6 @@ import java.net.URI;
 import java.util.Map;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +79,7 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
 
@@ -89,6 +88,6 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
         String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
         result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
         log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
     }
 }

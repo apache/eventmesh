@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +83,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
         if (!StringUtils.isNumeric(subSystem)
             || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
             || !StringUtils.isNumeric(destEventMeshPort)) {
-            write(ctx, "params illegal!".getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            write(ctx, "params illegal!".getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
@@ -115,12 +114,12 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
             write(ctx, String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
                         + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                     sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage())
-                .getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+                .getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         write(ctx, String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
                     + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                 sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
-            .getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            .getBytes(Constants.DEFAULT_CHARSET));
     }
 }

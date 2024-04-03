@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -87,11 +86,11 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
             log.error("clientManage rejectAllClient fail", e);
             write(ctx, String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
                     sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
-                .getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+                .getBytes(Constants.DEFAULT_CHARSET));
             return;
         }
         write(ctx, String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
                 NetUtils.addressToString(successRemoteAddrs))
-            .getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+            .getBytes(Constants.DEFAULT_CHARSET));
     }
 }

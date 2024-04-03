@@ -31,6 +31,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -43,8 +44,8 @@ import lombok.Data;
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
-    protected void write(ChannelHandlerContext ctx, byte[] result, AsciiString headerValue) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, headerValue)).addListener(ChannelFutureListener.CLOSE);
+    protected void write(ChannelHandlerContext ctx, byte[] result) {
+        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, HttpHeaderValues.TEXT_HTML)).addListener(ChannelFutureListener.CLOSE);
     }
 
     protected void write(ChannelHandlerContext ctx, HttpResponse response) {
@@ -142,7 +143,7 @@ public abstract class AbstractHttpHandler implements HttpHandler {
     }
 
     protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
-        return  HttpRequestUtil.parseHttpRequestBody(httpRequest, null, null);
+        return HttpRequestUtil.parseHttpRequestBody(httpRequest, null, null);
     }
 }
 

@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +76,7 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
         // Delete the existing WebHookConfig
         Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
 
     }
 }

@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +80,6 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
         // Update the existing WebHookConfig
         Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
     }
 }

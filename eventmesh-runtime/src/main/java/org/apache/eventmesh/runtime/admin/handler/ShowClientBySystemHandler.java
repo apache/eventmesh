@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +90,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler {
                 }
             }
         }
-        write(ctx, result.toString().getBytes(Constants.DEFAULT_CHARSET), HttpHeaderValues.TEXT_HTML);
+        write(ctx, result.toString().getBytes(Constants.DEFAULT_CHARSET));
 
     }
 
