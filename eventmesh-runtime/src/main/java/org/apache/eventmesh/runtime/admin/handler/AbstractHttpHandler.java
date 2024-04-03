@@ -132,13 +132,13 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         }
     }
 
-    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception{
+    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
     }
 
-    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception{
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
     }
 
-    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception{
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
     }
 
     protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
