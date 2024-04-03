@@ -23,7 +23,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventHttpHandler(path = "/client/tcp")
+@EventMeshHttpHandler(path = "/client/tcp")
 public class TCPClientHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;

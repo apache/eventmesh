@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface EventHttpHandler {
+public @interface EventMeshHttpHandler {
 
     /**
      * request path

@@ -21,7 +21,7 @@ import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventHttpHandler(path = "/meta")
+@EventMeshHttpHandler(path = "/meta")
 public class MetaHandler extends AbstractHttpHandler {
 
     private final MetaStorage eventMeshMetaStorage;

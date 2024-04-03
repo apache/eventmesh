@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventHttpHandler(path = "/clientManage/showListenClientByTopic")
+@EventMeshHttpHandler(path = "/clientManage/showListenClientByTopic")
 public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;

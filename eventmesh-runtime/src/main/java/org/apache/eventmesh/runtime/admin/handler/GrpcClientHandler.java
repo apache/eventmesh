@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.DeleteGrpcClientRequest;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventHttpHandler(path = "/client/grpc")
+@EventMeshHttpHandler(path = "/client/grpc")
 public class GrpcClientHandler extends AbstractHttpHandler {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;

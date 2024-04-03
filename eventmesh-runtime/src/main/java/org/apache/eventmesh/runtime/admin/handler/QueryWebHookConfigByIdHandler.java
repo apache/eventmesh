@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
@@ -68,7 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("restriction")
 @Slf4j
-@EventHttpHandler(path = "/webhook/queryWebHookConfigById")
+@EventMeshHttpHandler(path = "/webhook/queryWebHookConfigById")
 public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
 
     private final WebHookConfigOperation operation;

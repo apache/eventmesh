@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventHttpHandler(path = "/event")
+@EventMeshHttpHandler(path = "/event")
 public class EventHandler extends AbstractHttpHandler {
 
     private final MQAdminWrapper admin;

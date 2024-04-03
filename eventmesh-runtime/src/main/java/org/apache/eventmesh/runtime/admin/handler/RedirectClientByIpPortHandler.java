@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventHttpHandler(path = "/clientManage/redirectClientByIpPort")
+@EventMeshHttpHandler(path = "/clientManage/redirectClientByIpPort")
 public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;

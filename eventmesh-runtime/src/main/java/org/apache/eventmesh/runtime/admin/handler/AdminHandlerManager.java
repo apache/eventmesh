@@ -21,7 +21,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -87,8 +87,8 @@ public class AdminHandlerManager {
     }
 
     private void initHandler(HttpHandler httpHandler) {
-        EventHttpHandler eventHttpHandler = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
-        httpHandlerMap.putIfAbsent(eventHttpHandler.path(), httpHandler);
+        EventMeshHttpHandler eventMeshHttpHandler = httpHandler.getClass().getAnnotation(EventMeshHttpHandler.class);
+        httpHandlerMap.putIfAbsent(eventMeshHttpHandler.path(), httpHandler);
     }
 
     public Optional<HttpHandler> getHttpHandler(String path) {
