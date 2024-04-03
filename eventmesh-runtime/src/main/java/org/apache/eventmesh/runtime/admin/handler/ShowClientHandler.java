@@ -66,7 +66,7 @@ public class ShowClientHandler extends AbstractHttpHandler {
         ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
 
         // Store the subsystem and the corresponding client count.
-        HashMap<String, AtomicInteger> statMap = new HashMap<String, AtomicInteger>();
+        HashMap<String, AtomicInteger> statMap = new HashMap<>();
 
         Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
         if (!sessionMap.isEmpty()) {
@@ -84,6 +84,6 @@ public class ShowClientHandler extends AbstractHttpHandler {
                 result.append(String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue())).append(newLine);
             }
         }
-        write(ctx, result.toString().getBytes(Constants.DEFAULT_CHARSET));
+        write(ctx, result.toString());
     }
 }

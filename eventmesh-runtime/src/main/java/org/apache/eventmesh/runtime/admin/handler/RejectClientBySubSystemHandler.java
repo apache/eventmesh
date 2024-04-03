@@ -94,7 +94,7 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(subSystem)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
 
@@ -124,15 +124,13 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                     +
                     "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
                 subSystem, e.getMessage());
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         // Serialize the successfully rejected client addresses into output stream
         result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
             +
             "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
-
-
+        write(ctx, result);
     }
 }

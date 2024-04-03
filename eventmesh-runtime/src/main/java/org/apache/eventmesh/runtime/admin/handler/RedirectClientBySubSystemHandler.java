@@ -83,7 +83,7 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
         if (!StringUtils.isNumeric(subSystem)
             || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
             || !StringUtils.isNumeric(destEventMeshPort)) {
-            write(ctx, "params illegal!".getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, "params illegal!");
             return;
         }
         log.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
@@ -113,13 +113,11 @@ public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
 
             write(ctx, String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s "
                         + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage())
-                .getBytes(Constants.DEFAULT_CHARSET));
+                    sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage()));
             return;
         }
         write(ctx, String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
                     + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult)
-            .getBytes(Constants.DEFAULT_CHARSET));
+                sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult));
     }
 }

@@ -76,7 +76,6 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
         // Delete the existing WebHookConfig
         Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
-
+        write(ctx, result);
     }
 }

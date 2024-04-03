@@ -86,14 +86,14 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
         // Retrieve the mapping between Sessions and their corresponding client address
         ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
         ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-        final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
+        final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
         try {
             if (!sessionMap.isEmpty()) {
                 // Iterate through the sessionMap to find matching sessions where the remote client address matches the given IP and port
@@ -113,12 +113,11 @@ public class RejectClientByIpPortHandler extends AbstractHttpHandler {
             log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
             result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
                 port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
             NetUtils.addressToString(successRemoteAddrs));
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
-
+        write(ctx, result);
     }
 }

@@ -80,6 +80,6 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
         // Update the existing WebHookConfig
         Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+        write(ctx, result);
     }
 }

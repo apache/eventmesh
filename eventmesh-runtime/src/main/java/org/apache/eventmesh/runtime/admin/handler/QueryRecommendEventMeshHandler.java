@@ -79,7 +79,7 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
         // Check the validity of the parameters
         if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
 
@@ -88,6 +88,6 @@ public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
         String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
         result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
         log.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+        write(ctx, result);
     }
 }

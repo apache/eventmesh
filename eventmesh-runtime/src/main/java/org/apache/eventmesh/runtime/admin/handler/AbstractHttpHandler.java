@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.util.HttpRequestUtil;
@@ -37,15 +38,15 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.AsciiString;
 
 import lombok.Data;
 
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
-    protected void write(ChannelHandlerContext ctx, byte[] result) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, HttpHeaderValues.TEXT_HTML)).addListener(ChannelFutureListener.CLOSE);
+    protected void write(ChannelHandlerContext ctx, String result) {
+        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result.getBytes(Constants.DEFAULT_CHARSET), ctx, HttpHeaderValues.TEXT_HTML))
+            .addListener(ChannelFutureListener.CLOSE);
     }
 
     protected void write(ChannelHandlerContext ctx, HttpResponse response) {

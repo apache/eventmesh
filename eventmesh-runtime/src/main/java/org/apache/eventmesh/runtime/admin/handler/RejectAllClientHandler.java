@@ -85,12 +85,10 @@ public class RejectAllClientHandler extends AbstractHttpHandler {
         } catch (Exception e) {
             log.error("clientManage rejectAllClient fail", e);
             write(ctx, String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
-                    sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage())
-                .getBytes(Constants.DEFAULT_CHARSET));
+                    sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage()));
             return;
         }
-        write(ctx, String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
-                NetUtils.addressToString(successRemoteAddrs))
-            .getBytes(Constants.DEFAULT_CHARSET));
+        write(ctx, String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}",
+            sessionMap.size(), NetUtils.addressToString(successRemoteAddrs)));
     }
 }

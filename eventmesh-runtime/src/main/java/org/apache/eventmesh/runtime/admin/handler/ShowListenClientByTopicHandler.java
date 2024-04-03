@@ -93,7 +93,6 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
                 }
             }
         }
-        write(ctx, result.toString().getBytes(Constants.DEFAULT_CHARSET));
-
+        write(ctx, result.toString());
     }
 }

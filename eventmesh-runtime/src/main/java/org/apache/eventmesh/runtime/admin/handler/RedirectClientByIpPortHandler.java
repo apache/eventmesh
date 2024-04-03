@@ -88,7 +88,7 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
             || !StringUtils.isNumeric(destEventMeshPort)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         log.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip,
@@ -114,20 +114,17 @@ public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
             }
         } catch (Exception e) {
             log.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp"
-                +
-                "={}|destEventMeshPort={}", ip, port, destEventMeshIp, destEventMeshPort, e);
+                + "={}|destEventMeshPort={}", ip, port, destEventMeshIp, destEventMeshPort, e);
             result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
-                    +
-                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                 sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         // Serialize the result of redirection into output stream
         result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
-                +
-                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
             sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+        write(ctx, result);
     }
 }

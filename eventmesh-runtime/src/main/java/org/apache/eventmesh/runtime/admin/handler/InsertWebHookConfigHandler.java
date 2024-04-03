@@ -75,7 +75,6 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
      *
      * @throws Exception if an I/O error occurs while handling the request
      */
-
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         Map<String, Object> body = parseHttpRequestBody(httpRequest);
@@ -84,7 +83,6 @@ public class InsertWebHookConfigHandler extends AbstractHttpHandler {
         // Add the WebHookConfig if no existing duplicate configuration is found
         Integer code = operation.insertWebHookConfig(webHookConfig); // operating result
         String result = 1 == code ? "insertWebHookConfig Succeed!" : "insertWebHookConfig Failed!";
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
-
+        write(ctx, result);
     }
 }

@@ -83,10 +83,9 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
 
         // Check the validity of the parameters
         if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp)
-            || StringUtils.isBlank(destEventMeshPort)
-            || !StringUtils.isNumeric(destEventMeshPort)) {
+            || StringUtils.isBlank(destEventMeshPort) || !StringUtils.isNumeric(destEventMeshPort)) {
             result = "params illegal!";
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
@@ -111,20 +110,16 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
             }
         } catch (Exception e) {
             log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
-                +
-                "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
+                + "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
             result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
-                    +
-                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                    + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                 sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
-            write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
+            write(ctx, result);
             return;
         }
         result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
-                +
-                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
             sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
-        write(ctx, result.getBytes(Constants.DEFAULT_CHARSET));
-
+        write(ctx, result);
     }
 }
