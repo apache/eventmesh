@@ -41,7 +41,7 @@ import io.netty.util.AsciiString;
 import lombok.Data;
 
 @Data
-public abstract class AbstractHttpHandler implements org.apache.eventmesh.runtime.admin.handler.HttpHandler {
+public abstract class AbstractHttpHandler implements HttpHandler {
 
     protected void write(ChannelHandlerContext ctx, byte[] result, AsciiString headerValue) {
         ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, headerValue)).addListener(ChannelFutureListener.CLOSE);
