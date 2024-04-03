@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
@@ -116,9 +115,7 @@ public class MetricsHandler extends AbstractHttpHandler {
             tcpSummaryMetrics.getAllConnections(),
             tcpSummaryMetrics.getSubTopicNum());
         String result = JsonUtils.toJSONString(getMetricsResponse);
-        HttpResponse httpResponse =
-            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                HttpResponseStatus.OK);
+        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
         write(ctx, httpResponse);
     }
 }

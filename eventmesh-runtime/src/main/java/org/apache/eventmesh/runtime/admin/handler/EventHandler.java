@@ -80,7 +80,7 @@ public class EventHandler extends AbstractHttpHandler {
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         String queryString = URI.create(httpRequest.uri()).getQuery();
         if (queryString == null || queryString.isEmpty()) {
-            writeUnauthorized(ctx);
+            writeUnauthorized(ctx, "");
             return;
         }
         Map<String, String> queryMap = queryToMap(queryString);
@@ -109,6 +109,6 @@ public class EventHandler extends AbstractHttpHandler {
             .getInstance()
             .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
         admin.publish(event);
-        writeSuccess(ctx);
+        writeJson(ctx, "");
     }
 }

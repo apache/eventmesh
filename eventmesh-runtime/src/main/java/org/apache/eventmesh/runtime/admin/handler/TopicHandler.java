@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.admin.TopicProperties;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.CreateTopicRequest;
 import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
@@ -82,9 +81,7 @@ public class TopicHandler extends AbstractHttpHandler {
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         List<TopicProperties> topicList = admin.getTopic();
         String result = JsonUtils.toJSONString(topicList);
-        HttpResponse httpResponse =
-            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                HttpResponseStatus.OK);
+        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
         write(ctx, httpResponse);
     }
 
@@ -98,7 +95,7 @@ public class TopicHandler extends AbstractHttpHandler {
         CreateTopicRequest createTopicRequest = JsonUtils.mapToObject(body, CreateTopicRequest.class);
         String topicName = Objects.requireNonNull(createTopicRequest).getName();
         admin.createTopic(topicName);
-        writeSuccess(ctx);
+        writeJson(ctx, "");
     }
 
     @Override
@@ -111,6 +108,6 @@ public class TopicHandler extends AbstractHttpHandler {
         DeleteTopicRequest deleteTopicRequest = JsonUtils.mapToObject(body, DeleteTopicRequest.class);
         String topicName = Objects.requireNonNull(deleteTopicRequest).getName();
         admin.deleteTopic(topicName);
-        writeSuccess(ctx);
+        writeJson(ctx, "");
     }
 }

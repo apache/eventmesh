@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import static org.apache.eventmesh.runtime.util.HttpResponseUtils.getHttpResponse;
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.admin.handler.AdminHandlerManager;
 import org.apache.eventmesh.runtime.admin.handler.HttpHandler;
@@ -107,10 +105,8 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 httpHandlerOpt.get().handle(httpRequest, ctx);
             } catch (Exception e) {
                 log.error("admin server channelRead error", e);
-                ctx.writeAndFlush(
-                    getHttpResponse(Objects.requireNonNull(e.getMessage()).getBytes(Constants.DEFAULT_CHARSET),
-                        ctx, HttpHeaderValues.APPLICATION_JSON,
-                        HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
+                ctx.writeAndFlush(HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(e.getMessage()), ctx,
+                    HttpHeaderValues.APPLICATION_JSON, HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
             }
         } else {
             ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
@@ -118,7 +114,6 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
     }
 
     private class AdminServerInitializer extends ChannelInitializer<SocketChannel> {
-
 
         @Override
         protected void initChannel(final SocketChannel channel) {
@@ -132,11 +127,10 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                 new SimpleChannelInboundHandler<HttpRequest>() {
 
                     @Override
-                    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {
+                    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) {
                         parseHttpRequest(ctx, msg);
                     }
                 });
         }
     }
-
 }

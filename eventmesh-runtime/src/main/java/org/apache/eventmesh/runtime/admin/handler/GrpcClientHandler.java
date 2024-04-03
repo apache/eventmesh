@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.DeleteGrpcClientRequest;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
@@ -86,9 +85,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 }
             }
         }
-        DefaultHttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        writeSuccess(ctx, responseHeaders);
+        writeJson(ctx, "");
     }
 
     @Override
@@ -129,9 +126,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
         });
         // Convert getClientResponseList to JSON and send the response
         String result = JsonUtils.toJSONString(getClientResponseList);
-        HttpResponse httpResponse =
-            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                HttpResponseStatus.OK);
+        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
         write(ctx, httpResponse);
     }
 

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
@@ -98,8 +97,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
         }
 
         // Set the response headers and send a 200 status code empty response
-        writeSuccess(ctx);
-
+        writeJson(ctx, "");
     }
 
     @Override
@@ -140,9 +138,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
 
         // Convert getClientResponseList to JSON and send the response
         String result = JsonUtils.toJSONString(getClientResponseList);
-        HttpResponse httpResponse =
-            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                HttpResponseStatus.OK);
+        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
         write(ctx, httpResponse);
 
     }

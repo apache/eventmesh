@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
@@ -97,9 +96,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             eventMeshGrpcConfiguration.getGrpcServerPort(),
             eventMeshGrpcConfiguration.isEventMeshServerUseTls());
         String result = JsonUtils.toJSONString(getConfigurationResponse);
-        HttpResponse httpResponse =
-            HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                HttpResponseStatus.OK);
+        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
         write(ctx, httpResponse);
     }
 }

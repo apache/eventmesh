@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -95,9 +94,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
             // Retrieve the WebHookConfig by callback path
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
             String json = JsonUtils.toJSONString(result);
-            HttpResponse httpResponse =
-                HttpResponseUtils.getHttpResponse(Objects.requireNonNull(json).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                    HttpResponseStatus.OK);
+            HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(json), ctx, responseHeaders, HttpResponseStatus.OK);
             write(ctx, httpResponse);
         }
         throw new Exception();

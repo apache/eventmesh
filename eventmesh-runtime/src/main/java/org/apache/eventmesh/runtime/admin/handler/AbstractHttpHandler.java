@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.util.HttpRequestUtil;
@@ -32,6 +31,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
@@ -45,38 +45,30 @@ import lombok.Data;
 public abstract class AbstractHttpHandler implements HttpHandler {
 
     protected void writeText(ChannelHandlerContext ctx, String result) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result.getBytes(Constants.DEFAULT_CHARSET), ctx, HttpHeaderValues.TEXT_HTML))
-            .addListener(ChannelFutureListener.CLOSE);
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        write(ctx, HttpResponseUtils.buildHttpResponse(result, ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
     protected void writeJson(ChannelHandlerContext ctx, String result) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result.getBytes(Constants.DEFAULT_CHARSET), ctx, HttpHeaderValues.APPLICATION_JSON))
-            .addListener(ChannelFutureListener.CLOSE);
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        write(ctx, HttpResponseUtils.buildHttpResponse(result, ctx, responseHeaders, HttpResponseStatus.OK));
+    }
+
+    protected void writeUnauthorized(ChannelHandlerContext ctx, String result) {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        write(ctx, HttpResponseUtils.buildHttpResponse(result, ctx, responseHeaders, HttpResponseStatus.UNAUTHORIZED));
     }
 
     /**
-     * Use {@link HttpResponseUtils#getHttpResponse} to build {@link HttpResponse} param.
+     * Use {@link HttpResponseUtils#buildHttpResponse} to build {@link HttpResponse} param.
      */
     protected void write(ChannelHandlerContext ctx, HttpResponse response) {
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void writeUnauthorized(ChannelHandlerContext ctx) {
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED);
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void writeSuccess(ChannelHandlerContext ctx) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        DefaultFullHttpResponse response =
-            new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER, responseHeaders, responseHeaders);
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void writeSuccess(ChannelHandlerContext ctx, DefaultHttpHeaders responseHeaders) {
-        DefaultFullHttpResponse response =
-            new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER, responseHeaders, responseHeaders);
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
@@ -110,9 +102,7 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         responseHeaders.add(EventMeshConstants.HANDLER_METHODS, "*");
         responseHeaders.add(EventMeshConstants.HANDLER_HEADERS, "*");
         responseHeaders.add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER,
-            responseHeaders, responseHeaders);
-        write(ctx, response);
+        write(ctx, HttpResponseUtils.buildHttpResponse("", ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {

@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
@@ -83,16 +82,12 @@ public class MetaHandler extends AbstractHttpHandler {
             }
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
             String result = JsonUtils.toJSONString(getRegistryResponseList);
-            HttpResponse httpResponse =
-                HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                    HttpResponseStatus.OK);
+            HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
             write(ctx, httpResponse);
         } catch (NullPointerException e) {
             // registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
-            HttpResponse httpResponse =
-                HttpResponseUtils.getHttpResponse(Objects.requireNonNull(result).getBytes(Constants.DEFAULT_CHARSET), ctx, responseHeaders,
-                    HttpResponseStatus.OK);
+            HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
             write(ctx, httpResponse);
         }
     }
