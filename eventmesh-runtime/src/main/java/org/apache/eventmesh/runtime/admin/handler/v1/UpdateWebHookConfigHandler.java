@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.admin.handler.v1;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -73,7 +74,7 @@ public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         // Resolve to WebHookConfig
         WebHookConfig webHookConfig = JsonUtils.mapToObject(body, WebHookConfig.class);

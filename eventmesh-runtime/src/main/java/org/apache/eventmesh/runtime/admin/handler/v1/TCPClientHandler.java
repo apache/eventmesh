@@ -27,6 +27,7 @@ import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
     @Override
     protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         // Parse the request body string into a DeleteTCPClientRequest object
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         DeleteTCPClientRequest deleteTCPClientRequest = JsonUtils.mapToObject(body, DeleteTCPClientRequest.class);
         String host = Objects.requireNonNull(deleteTCPClientRequest).getHost();

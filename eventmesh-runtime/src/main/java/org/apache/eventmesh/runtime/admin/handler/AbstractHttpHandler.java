@@ -19,17 +19,10 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.enums.HttpMethod;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -37,7 +30,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 
 import lombok.Data;
 
@@ -125,37 +117,6 @@ public abstract class AbstractHttpHandler implements HttpHandler {
 
     protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         // Override this method in subclass
-    }
-
-    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
-        return HttpRequestUtil.parseHttpRequestBody(httpRequest, null, null);
-    }
-
-    /**
-     * Converts a query string to a map of key-value pairs.
-     * <p>
-     * This method takes a query string and parses it to create a map of key-value pairs, where each key and value are extracted from the query string
-     * separated by '='.
-     * <p>
-     * If the query string is null, an empty map is returned.
-     *
-     * @param query the query string to convert to a map
-     * @return a map containing the key-value pairs from the query string
-     */
-    protected Map<String, String> queryToMap(String query) {
-        if (query == null) {
-            return new HashMap<>();
-        }
-        Map<String, String> result = new HashMap<>();
-        for (String param : query.split("&")) {
-            String[] entry = param.split("=");
-            if (entry.length > 1) {
-                result.put(entry[0], entry[1]);
-            } else {
-                result.put(entry[0], "");
-            }
-        }
-        return result;
     }
 }
 

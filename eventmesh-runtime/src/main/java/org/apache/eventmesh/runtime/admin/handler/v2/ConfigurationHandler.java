@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -75,14 +76,36 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
     }
 
+    /**
+     * Parameters:
+     * <ul>
+     *     <li>
+     *         {@code format}: String; Optional, DefaultValue: {@code properties}, SelectableValue: {@code bean}.
+     *         <p>When {@code properties}, the field names are returned in Properties format;
+     *         <p>When {@code bean}, the field names themselves are used as json keys.
+     *     </li>
+     * </ul>
+     */
     @Override
-    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+    protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) {
+        String format = HttpRequestUtil.getQueryParam(httpRequest, "format", "properties");
+
+        Filter[] filters;
+        if (format.equals("properties")) {
+            filters = new Filter[] {new ConfigFieldFilter(), new IPAddressToStringFilter()};
+        } else if (format.equals("bean")) {
+            filters = new Filter[] {new IPAddressToStringFilter()};
+        } else {
+            log.warn("Invalid format param: {}", format);
+            writeJson(ctx, "Invalid format param: " + format);
+            return;
+        }
+
         GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
             eventMeshTCPConfiguration,
             eventMeshHTTPConfiguration,
             eventMeshGrpcConfiguration
         );
-        Filter[] filters = new Filter[] {new ConfigFieldFilter(), new IPAddressToStringFilter()};
         String result = JSON.toJSONString(getConfigurationResponse, filters);
         writeJson(ctx, result);
     }
@@ -131,6 +154,10 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         }
     }
 
+    /**
+     * {@link IPAddress} can't be serialized directly by FastJSON,
+     * so this filter converts {@link IPAddress} objects to their string representation.
+     */
     static class IPAddressToStringFilter implements ValueFilter {
         @Override
         public Object apply(Object object, String name, Object value) {

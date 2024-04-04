@@ -20,8 +20,7 @@ package org.apache.eventmesh.runtime.admin.handler.v1;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.util.HttpResponseUtils;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -30,11 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,7 +78,7 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         // Resolve to WebHookConfig
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         WebHookConfig webHookConfig = JsonUtils.mapToObject(body, WebHookConfig.class);
         Integer pageNum = Integer.valueOf(body.get("pageNum").toString());

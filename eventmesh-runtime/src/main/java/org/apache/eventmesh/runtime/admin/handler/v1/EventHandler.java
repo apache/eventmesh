@@ -22,6 +22,7 @@ import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -84,7 +85,7 @@ public class EventHandler extends AbstractHttpHandler {
             writeUnauthorized(ctx, "");
             return;
         }
-        Map<String, String> queryMap = queryToMap(queryString);
+        Map<String, String> queryMap = HttpRequestUtil.queryStringToMap(queryString);
         String topicName = queryMap.get("topicName");
         int offset = Integer.parseInt(queryMap.get("offset"));
         int length = Integer.parseInt(queryMap.get("length"));
@@ -104,7 +105,7 @@ public class EventHandler extends AbstractHttpHandler {
     protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        String request = JsonUtils.toJSONString(parseHttpRequestBody(httpRequest));
+        String request = JsonUtils.toJSONString(HttpRequestUtil.parseHttpRequestBody(httpRequest));
         byte[] rawRequest = request.getBytes(StandardCharsets.UTF_8);
         CloudEvent event = Objects.requireNonNull(EventFormatProvider
             .getInstance()

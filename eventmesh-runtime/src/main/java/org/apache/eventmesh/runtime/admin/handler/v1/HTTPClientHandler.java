@@ -25,6 +25,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
     }
 
     protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         if (!Objects.isNull(body)) {
             DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.mapToObject(body, DeleteHTTPClientRequest.class);
             String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();

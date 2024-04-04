@@ -25,7 +25,7 @@ import org.apache.eventmesh.runtime.admin.request.DeleteTopicRequest;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
-import org.apache.eventmesh.runtime.util.HttpResponseUtils;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -35,8 +35,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,7 +82,7 @@ public class TopicHandler extends AbstractHttpHandler {
 
     @Override
     protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
@@ -97,7 +95,7 @@ public class TopicHandler extends AbstractHttpHandler {
 
     @Override
     protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);

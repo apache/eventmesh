@@ -25,6 +25,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
 
     @Override
     protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        Map<String, Object> body = parseHttpRequestBody(httpRequest);
+        Map<String, Object> body = HttpRequestUtil.parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
         DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.mapToObject(body, DeleteGrpcClientRequest.class);
         String url = Objects.requireNonNull(deleteGrpcClientRequest).getUrl();
