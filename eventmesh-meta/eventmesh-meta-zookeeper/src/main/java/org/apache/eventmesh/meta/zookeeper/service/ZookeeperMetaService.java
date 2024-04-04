@@ -86,7 +86,7 @@ public class ZookeeperMetaService implements MetaService {
         eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
         for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-            if (null == commonConfiguration) {
+            if (commonConfiguration == null) {
                 continue;
             }
             if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
@@ -285,7 +285,7 @@ public class ZookeeperMetaService implements MetaService {
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
-            if (null == ipPort || ipPort.length < 2) {
+            if (ipPort == null || ipPort.length < 2) {
                 return false;
             }
             String ip = ipPort[0];

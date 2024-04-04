@@ -161,7 +161,7 @@ public class IPUtils {
     }
 
     public static String parseChannelRemoteAddr(final Channel channel) {
-        if (null == channel) {
+        if (channel == null) {
             return "";
         }
         SocketAddress remote = channel.remoteAddress();

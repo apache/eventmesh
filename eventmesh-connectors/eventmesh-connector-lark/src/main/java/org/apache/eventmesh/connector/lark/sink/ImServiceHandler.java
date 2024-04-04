@@ -230,7 +230,7 @@ public class ImServiceHandler {
             .uuid(UUID.randomUUID().toString());
 
         String templateTypeKey = connectRecord.getExtension(ConnectRecordExtensionKeys.TEMPLATE_TYPE_4_LARK);
-        if (null == templateTypeKey || "null".equals(templateTypeKey)) {
+        if (templateTypeKey == null || "null".equals(templateTypeKey)) {
             templateTypeKey = LarkMessageTemplateType.PLAIN_TEXT.getTemplateKey();
         }
         LarkMessageTemplateType templateType = LarkMessageTemplateType.of(templateTypeKey);

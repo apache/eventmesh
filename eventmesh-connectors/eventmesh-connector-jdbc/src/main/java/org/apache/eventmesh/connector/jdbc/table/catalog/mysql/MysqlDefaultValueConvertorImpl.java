@@ -60,7 +60,7 @@ public class MysqlDefaultValueConvertorImpl implements DefaultValueConvertor {
 
     @Override
     public Object parseDefaultValue(Column<?> column, String defaultValueExpression) {
-        if (null == defaultValueExpression) {
+        if (defaultValueExpression == null) {
             return null;
         }
         defaultValueExpression = defaultValueExpression.trim();
