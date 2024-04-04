@@ -69,9 +69,6 @@ public class MetricsHandler extends AbstractHttpHandler {
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws IOException {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
             httpSummaryMetrics.maxHTTPTPS(),
             httpSummaryMetrics.avgHTTPTPS(),
@@ -115,7 +112,6 @@ public class MetricsHandler extends AbstractHttpHandler {
             tcpSummaryMetrics.getAllConnections(),
             tcpSummaryMetrics.getSubTopicNum());
         String result = JsonUtils.toJSONString(getMetricsResponse);
-        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-        write(ctx, httpResponse);
+        writeJson(ctx, result);
     }
 }

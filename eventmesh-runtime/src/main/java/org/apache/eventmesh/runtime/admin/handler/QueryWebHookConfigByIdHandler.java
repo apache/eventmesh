@@ -84,9 +84,6 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
 
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         // Resolve to WebHookConfig
         Map<String, Object> body = parseHttpRequestBody(httpRequest);
         if (!Objects.isNull(body)) {
@@ -94,8 +91,7 @@ public class QueryWebHookConfigByIdHandler extends AbstractHttpHandler {
             // Retrieve the WebHookConfig by callback path
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
             String json = JsonUtils.toJSONString(result);
-            HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(json), ctx, responseHeaders, HttpResponseStatus.OK);
-            write(ctx, httpResponse);
+            writeJson(ctx, json);
         }
         throw new Exception();
     }

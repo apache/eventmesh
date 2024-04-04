@@ -76,13 +76,9 @@ public class TopicHandler extends AbstractHttpHandler {
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         List<TopicProperties> topicList = admin.getTopic();
         String result = JsonUtils.toJSONString(topicList);
-        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-        write(ctx, httpResponse);
+        writeJson(ctx, result);
     }
 
     @Override

@@ -91,11 +91,6 @@ public class HTTPClientHandler extends AbstractHttpHandler {
      * @throws Exception if an I/O error occurs while handling the request
      */
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        // Set the response headers
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-
         // Get the list of HTTP clients
         List<GetClientResponse> getClientResponseList = new ArrayList<>();
 
@@ -130,8 +125,6 @@ public class HTTPClientHandler extends AbstractHttpHandler {
 
         // Convert getClientResponseList to JSON and send the response
         String result = JsonUtils.toJSONString(getClientResponseList);
-        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-        write(ctx, httpResponse);
-
+        writeJson(ctx, result);
     }
 }

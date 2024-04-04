@@ -102,10 +102,6 @@ public class TCPClientHandler extends AbstractHttpHandler {
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        // Set the response headers
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         // Get the list of connected TCP clients
         ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
         Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
@@ -138,8 +134,6 @@ public class TCPClientHandler extends AbstractHttpHandler {
 
         // Convert getClientResponseList to JSON and send the response
         String result = JsonUtils.toJSONString(getClientResponseList);
-        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-        write(ctx, httpResponse);
-
+        writeJson(ctx, result);
     }
 }

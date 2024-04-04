@@ -81,9 +81,6 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
 
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         // Resolve to WebHookConfig
         Map<String, Object> body = parseHttpRequestBody(httpRequest);
         Objects.requireNonNull(body, "body can not be null");
@@ -94,7 +91,6 @@ public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler
         // Retrieve the WebHookConfig list by manufacturer name
         List<WebHookConfig> listWebHookConfig = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
         String result = JsonUtils.toJSONString(listWebHookConfig);
-        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-        write(ctx, httpResponse);
+        writeJson(ctx, result);
     }
 }

@@ -65,9 +65,6 @@ public class MetaHandler extends AbstractHttpHandler {
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws IOException {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         try {
             List<GetRegistryResponse> getRegistryResponseList = new ArrayList<>();
             List<EventMeshDataInfo> eventMeshDataInfos = eventMeshMetaStorage.findAllEventMeshInfo();
@@ -82,13 +79,11 @@ public class MetaHandler extends AbstractHttpHandler {
             }
             getRegistryResponseList.sort(Comparator.comparing(GetRegistryResponse::getEventMeshClusterName));
             String result = JsonUtils.toJSONString(getRegistryResponseList);
-            HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-            write(ctx, httpResponse);
+            writeJson(ctx, result);
         } catch (NullPointerException e) {
             // registry not initialized, return empty list
             String result = JsonUtils.toJSONString(new ArrayList<>());
-            HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-            write(ctx, httpResponse);
+            writeJson(ctx, result);
         }
     }
 }

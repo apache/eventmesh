@@ -73,9 +73,6 @@ public class ConfigurationHandler extends AbstractHttpHandler {
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.CONTENT_TYPE, EventMeshConstants.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
             eventMeshTCPConfiguration.getSysID(),
             eventMeshTCPConfiguration.getMetaStorageAddr(),
@@ -96,7 +93,6 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             eventMeshGrpcConfiguration.getGrpcServerPort(),
             eventMeshGrpcConfiguration.isEventMeshServerUseTls());
         String result = JsonUtils.toJSONString(getConfigurationResponse);
-        HttpResponse httpResponse = HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(result), ctx, responseHeaders, HttpResponseStatus.OK);
-        write(ctx, httpResponse);
+        writeJson(ctx, result);
     }
 }
