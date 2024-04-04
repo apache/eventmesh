@@ -66,7 +66,7 @@ public class ServiceUtils {
     }
 
     public static boolean validateCloudEventBatchAttributes(CloudEventBatch cloudEventBatch) {
-        if (null == cloudEventBatch || cloudEventBatch.getEventsCount() < 1) {
+        if (cloudEventBatch == null || cloudEventBatch.getEventsCount() < 1) {
             return false;
         }
         List<CloudEvent> eventsList = cloudEventBatch.getEventsList();
@@ -99,7 +99,7 @@ public class ServiceUtils {
     }
 
     public static boolean validateCloudEventBatchData(CloudEventBatch cloudEventBatch) {
-        if (null == cloudEventBatch || cloudEventBatch.getEventsCount() < 1) {
+        if (cloudEventBatch == null || cloudEventBatch.getEventsCount() < 1) {
             return false;
         }
         List<CloudEvent> eventsList = cloudEventBatch.getEventsList();
