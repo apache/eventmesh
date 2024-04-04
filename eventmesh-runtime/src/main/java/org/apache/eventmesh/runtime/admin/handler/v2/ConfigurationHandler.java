@@ -17,19 +17,23 @@
 
 package org.apache.eventmesh.runtime.admin.handler.v2;
 
+import inet.ipaddr.IPAddress;
+
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
+import org.apache.eventmesh.runtime.admin.response.v2.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.filter.ValueFilter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,11 +73,30 @@ public class ConfigurationHandler extends AbstractHttpHandler {
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        Map<String, Object> configurations = new HashMap<>();
-        configurations.put("tcpConfiguration", JSON.toJSON(eventMeshTCPConfiguration));
-        configurations.put("httpConfiguration", JSON.toJSON(eventMeshHTTPConfiguration)); // level too large : 2048 because of IPAddress
-        configurations.put("grpcConfiguration", JSON.toJSON(eventMeshGrpcConfiguration));
-        String result = JSON.toJSONString(configurations);
+        GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+            eventMeshTCPConfiguration,
+            eventMeshHTTPConfiguration,
+            eventMeshGrpcConfiguration
+        );
+        String result = JSON.toJSONString(getConfigurationResponse, new IPAddressToStringFilter());
         writeJson(ctx, result);
+    }
+
+    static class IPAddressToStringFilter implements ValueFilter {
+        @Override
+        public Object apply(Object object, String name, Object value) {
+            if (name.equals("eventMeshIpv4BlackList") || name.equals("eventMeshIpv6BlackList")) {
+                if (value instanceof List) {
+                    List<String> ipList = new ArrayList<>();
+                    for (Object o : (List<?>) value) {
+                        if (o instanceof IPAddress) {
+                            ipList.add(((IPAddress) o).toNormalizedString());
+                        }
+                    }
+                    return ipList;
+                }
+            }
+            return value;
+        }
     }
 }
