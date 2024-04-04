@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.handler;
+package org.apache.eventmesh.runtime.admin.handler.v1;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.admin.request.DeleteGrpcClientRequest;
+import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
+import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
 import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
-import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.util.ArrayList;
@@ -43,73 +43,75 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the {@code /client/grpc} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /grpc}.
+ * This class handles the {@code /client/http} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /http}.
  * <p>
- * It is responsible for managing operations on gRPC clients, including retrieving the information list of connected gRPC clients and deleting gRPC
+ * It is responsible for managing operations on HTTP clients, including retrieving the information list of connected HTTP clients and deleting HTTP
  * clients by disconnecting their connections based on the provided host and port.
  *
  * @see AbstractHttpHandler
  */
 
 @Slf4j
-@EventMeshHttpHandler(path = "/client/grpc")
-public class GrpcClientHandler extends AbstractHttpHandler {
+@EventMeshHttpHandler(path = "/client/http")
+public class HTTPClientHandler extends AbstractHttpHandler {
 
-    private final EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     /**
      * Constructs a new instance with the provided server instance.
      *
-     * @param eventMeshGrpcServer the gRPC server instance of EventMesh
+     * @param eventMeshHTTPServer the HTTP server instance of EventMesh
      */
-    public GrpcClientHandler(
-        EventMeshGrpcServer eventMeshGrpcServer) {
+    public HTTPClientHandler(
+        EventMeshHTTPServer eventMeshHTTPServer) {
         super();
-        this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    @Override
     protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         Map<String, Object> body = parseHttpRequestBody(httpRequest);
-        Objects.requireNonNull(body, "body can not be null");
-        DeleteGrpcClientRequest deleteGrpcClientRequest = JsonUtils.mapToObject(body, DeleteGrpcClientRequest.class);
-        String url = Objects.requireNonNull(deleteGrpcClientRequest).getUrl();
-        ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
-        Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
-        // Find the client that matches the url to be deleted
-        for (List<ConsumerGroupClient> clientList : clientTable.values()) {
-            for (ConsumerGroupClient client : clientList) {
-                if (Objects.equals(client.getUrl(), url)) {
-                    // Call the deregisterClient method to close the gRPC client stream and remove it
-                    consumerManager.deregisterClient(client);
-                }
+        if (!Objects.isNull(body)) {
+            DeleteHTTPClientRequest deleteHTTPClientRequest = JsonUtils.mapToObject(body, DeleteHTTPClientRequest.class);
+            String url = Objects.requireNonNull(deleteHTTPClientRequest).getUrl();
+
+            for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
+                // Find the client that matches the url to be deleted
+                clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
+            // Set the response headers and send a 200 status code empty response
+            writeJson(ctx, "");
         }
-        writeJson(ctx, "");
+
     }
 
-    @Override
+    /**
+     * Handles the GET request for {@code /client/http}.
+     * <p>
+     * This method retrieves the list of connected HTTP clients and returns it as a JSON response.
+     *
+     * @throws Exception if an I/O error occurs while handling the request
+     */
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        // Get the list of gRPC clients
+        // Get the list of HTTP clients
         List<GetClientResponse> getClientResponseList = new ArrayList<>();
 
-        ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
-        Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
-        for (List<ConsumerGroupClient> clientList : clientTable.values()) {
+        for (List<Client> clientList : eventMeshHTTPServer.getSubscriptionManager().getLocalClientInfoMapping().values()) {
             // Convert each Client object to GetClientResponse and add to getClientResponseList
-            for (ConsumerGroupClient client : clientList) {
+            for (Client client : clientList) {
                 GetClientResponse getClientResponse = new GetClientResponse(
-                    Optional.ofNullable(client.env).orElse(""),
-                    Optional.ofNullable(client.sys).orElse(""),
-                    Optional.ofNullable(client.url).orElse(""),
+                    Optional.ofNullable(client.getEnv()).orElse(""),
+                    Optional.ofNullable(client.getSys()).orElse(""),
+                    Optional.ofNullable(client.getUrl()).orElse(""),
                     "0",
-                    Optional.ofNullable(client.hostname).orElse(""),
+                    Optional.ofNullable(client.getHostname()).orElse(""),
                     0,
-                    Optional.ofNullable(client.apiVersion).orElse(""),
-                    Optional.ofNullable(client.idc).orElse(""),
-                    Optional.ofNullable(client.consumerGroup).orElse(""),
+                    Optional.ofNullable(client.getApiVersion()).orElse(""),
+                    Optional.ofNullable(client.getIdc()).orElse(""),
+                    Optional.ofNullable(client.getConsumerGroup()).orElse(""),
                     "",
-                    "gRPC");
+                    EventMeshConstants.PROTOCOL_HTTP.toUpperCase()
+
+                );
                 getClientResponseList.add(getClientResponse);
             }
         }
@@ -121,9 +123,9 @@ public class GrpcClientHandler extends AbstractHttpHandler {
             }
             return Integer.compare(rhs.getPort(), lhs.getPort());
         });
+
         // Convert getClientResponseList to JSON and send the response
         String result = JsonUtils.toJSONString(getClientResponseList);
         writeJson(ctx, result);
     }
-
 }

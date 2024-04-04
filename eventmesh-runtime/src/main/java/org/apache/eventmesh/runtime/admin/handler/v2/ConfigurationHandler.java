@@ -15,30 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.handler;
+package org.apache.eventmesh.runtime.admin.handler.v2;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.util.HttpResponseUtils;
-
-import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the {@code /configuration} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /}.
+ * This class handles the {@code /v2/configuration} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /}.
  * <p>
  * This handler is responsible for retrieving the current configuration information of the EventMesh node, including service name, service
  * environment, and listening ports for various protocols.
@@ -47,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventMeshHttpHandler(path = "/configuration")
+@EventMeshHttpHandler(path = "/v2/configuration")
 public class ConfigurationHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;

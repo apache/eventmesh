@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.handler;
+package org.apache.eventmesh.runtime.admin.handler.v1;
 
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -38,14 +39,15 @@ import io.netty.handler.codec.http.HttpRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/redirectClientByPath} endpoint, which is used to redirect matching clients to a target
- * EventMesh server node based on the provided client UserAgent path.
+ * This class handles the HTTP requests of {@code /clientManage/redirectClientByIpPort} endpoint, which is used to redirect matching clients to a
+ * target EventMesh server node based on the provided IP address and port.
  * <p>
- * The request must specify the client's path and target EventMesh node's IP and port.
+ * The request must specify the client's and target EventMesh node's IP and port.
  * <p>
  * Parameters:
  * <ul>
- *     <li>client's path: {@code path} | Example: {@code /data/app/umg_proxy}</li>
+ *     <li>client's IP: {@code ip}</li>
+ *     <li>client's port: {@code port}</li>
  *     <li>target EventMesh node's IP: {@code desteventmeshIp}</li>
  *     <li>target EventMesh node's port: {@code desteventmeshport}</li>
  * </ul>
@@ -55,8 +57,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@EventMeshHttpHandler(path = "/clientManage/redirectClientByPath")
-public class RedirectClientByPathHandler extends AbstractHttpHandler {
+@EventMeshHttpHandler(path = "/clientManage/redirectClientByIpPort")
+public class RedirectClientByIpPortHandler extends AbstractHttpHandler {
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
@@ -65,7 +67,7 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
      *
      * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public RedirectClientByPathHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public RedirectClientByIpPortHandler(EventMeshTCPServer eventMeshTCPServer) {
         super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
@@ -76,30 +78,33 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
         String queryString = URI.create(httpRequest.uri()).getQuery();
         Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
         // Extract parameters from the query string
-        String path = queryStringInfo.get(EventMeshConstants.MANAGE_PATH);
+        String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
+        String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
         String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
         String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
         // Check the validity of the parameters
-        if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp)
-            || StringUtils.isBlank(destEventMeshPort) || !StringUtils.isNumeric(destEventMeshPort)) {
+        if (StringUtils.isBlank(ip) || !StringUtils.isNumeric(port)
+            || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
+            || !StringUtils.isNumeric(destEventMeshPort)) {
             result = "params illegal!";
             writeText(ctx, result);
             return;
         }
-        log.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
-            destEventMeshIp, destEventMeshPort);
+        log.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip,
+            port, destEventMeshIp, destEventMeshPort);
         // Retrieve the mapping between Sessions and their corresponding client address
         ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
         ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
         StringBuilder redirectResult = new StringBuilder();
         try {
             if (!sessionMap.isEmpty()) {
-                // Iterate through the sessionMap to find matching sessions where the client's path matches the given param
+                // Iterate through the sessionMap to find matching sessions where the client's IP and port match the given ones
                 for (Session session : sessionMap.values()) {
                     // For each matching session found, redirect the client
                     // to the new EventMesh node specified by given EventMesh IP and port.
-                    if (session.getClient().getPath().contains(path)) {
+                    if (session.getClient().getHost().equals(ip) && String.valueOf(
+                        session.getClient().getPort()).equals(port)) {
                         redirectResult.append("|");
                         redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer.getTcpThreadPoolGroup(),
                             destEventMeshIp, Integer.parseInt(destEventMeshPort),
@@ -108,17 +113,18 @@ public class RedirectClientByPathHandler extends AbstractHttpHandler {
                 }
             }
         } catch (Exception e) {
-            log.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp"
-                + "={}|destEventMeshPort={}", path, destEventMeshIp, destEventMeshPort, e);
-            result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s "
+            log.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp"
+                + "={}|destEventMeshPort={}", ip, port, destEventMeshIp, destEventMeshPort, e);
+            result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
                     + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
+                sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e.getMessage());
             writeText(ctx, result);
             return;
         }
-        result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
+        // Serialize the result of redirection into output stream
+        result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
                 + "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-            sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
+            sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
         writeText(ctx, result);
     }
 }

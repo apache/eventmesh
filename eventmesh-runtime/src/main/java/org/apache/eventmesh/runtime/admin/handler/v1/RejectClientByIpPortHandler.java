@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.handler;
+package org.apache.eventmesh.runtime.admin.handler.v1;
 
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -30,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,75 +41,67 @@ import io.netty.handler.codec.http.HttpRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /clientManage/rejectClientBySubSystem} endpoint, which is used to reject a client connection that
- * matches the provided client subsystem id in a Data Communication Network (DCN).
+ * This class handles the HTTP requests of {@code /clientManage/rejectClientByIpPort} endpoint, which is used to reject a client connection that
+ * matches the provided IP address and port.
  * <p>
- * The request must specify the client's subsystem id.
+ * The request must specify the client's and target EventMesh node's IP and port.
  * <p>
  * Parameters:
  * <ul>
- *     <li>client's subsystem id: {@code subsystem} | Example: {@code 5023}</li>
+ *     <li>client's IP: {@code ip}</li>
+ *     <li>client's port: {@code port}</li>
+ *     <li>target EventMesh node's IP: {@code desteventmeshIp}</li>
+ *     <li>target EventMesh node's port: {@code desteventmeshport}</li>
  * </ul>
  * It uses the {@link EventMeshTcp2Client#serverGoodby2Client} method to close the matching client connection.
  *
  * @see AbstractHttpHandler
  */
 
-@EventMeshHttpHandler(path = "/clientManage/rejectClientBySubSystem")
 @Slf4j
-public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
+@EventMeshHttpHandler(path = "/clientManage/rejectClientByIpPort")
+public class RejectClientByIpPortHandler extends AbstractHttpHandler {
 
-    private final transient EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     /**
      * Constructs a new instance with the provided server instance.
      *
      * @param eventMeshTCPServer the TCP server instance of EventMesh
      */
-    public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public RejectClientByIpPortHandler(EventMeshTCPServer eventMeshTCPServer) {
         super();
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    private String printClients(Collection<InetSocketAddress> clients) {
-        if (clients == null || clients.isEmpty()) {
-            return "no session had been closed";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (InetSocketAddress addr : clients) {
-            sb.append(addr).append("|");
-        }
-        return sb.toString();
-    }
-
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        String result;
+        String result = "";
         String queryString = URI.create(httpRequest.uri()).getQuery();
         Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-        // Extract parameter from the query string
-        String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
+        // Extract parameters from the query string
+        String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
+        String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
 
         // Check the validity of the parameters
-        if (StringUtils.isBlank(subSystem)) {
+        if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
             result = "params illegal!";
             writeText(ctx, result);
             return;
         }
-
-        log.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
+        log.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
         // Retrieve the mapping between Sessions and their corresponding client address
         ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
         ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
         final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
         try {
             if (!sessionMap.isEmpty()) {
-                // Iterate through the sessionMap to find matching sessions where the client's subsystem id matches the given param
-                for (Session session : sessionMap.values()) {
+                // Iterate through the sessionMap to find matching sessions where the remote client address matches the given IP and port
+                for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                     // Reject client connection for each matching session found
-                    if (session.getClient().getSubsystem().equals(subSystem)) {
-                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(), session,
-                            clientSessionGroupMapping);
+                    if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
+                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer.getTcpThreadPoolGroup(),
+                            entry.getValue(), clientSessionGroupMapping);
                         // Add the remote client address to a list of successfully rejected addresses
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
@@ -118,18 +110,14 @@ public class RejectClientBySubSystemHandler extends AbstractHttpHandler {
                 }
             }
         } catch (Exception e) {
-            log.error("clientManage|rejectClientBySubSystem|fail|subSystemId={}", subSystem, e);
-            result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%s} , {"
-                    +
-                    "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs),
-                subSystem, e.getMessage());
+            log.error("clientManage|rejectClientByIpPort|fail|ip={}|port={}", ip, port, e);
+            result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
+                port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
             writeText(ctx, result);
             return;
         }
-        // Serialize the successfully rejected client addresses into output stream
-        result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
-            +
-            "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
+        result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
+            NetUtils.addressToString(successRemoteAddrs));
         writeText(ctx, result);
     }
 }

@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.handler;
+package org.apache.eventmesh.runtime.admin.handler.v1;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -31,20 +32,22 @@ import io.netty.handler.codec.http.HttpRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class handles the HTTP requests of {@code /webhook/deleteWebHookConfig} endpoint and deletes an existing WebHook configuration according to
+ * This class handles the HTTP requests of {@code /webhook/updateWebHookConfig} endpoint and updates an existing WebHook configuration according to
  * the given {@linkplain org.apache.eventmesh.webhook.api.WebHookConfig WebHookConfig}.
  * <p>
- * The implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#deleteWebHookConfig WebHookConfigOperation} interface
+ * The implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation#updateWebHookConfig WebHookConfigOperation} interface
  * depends on the {@code eventMesh.webHook.operationMode} configuration in {@code eventmesh.properties}.
  * <p>
  * For example, when {@code eventMesh.webHook.operationMode=file}, It calls the
  * {@linkplain org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation
- * #deleteWebHookConfig FileWebHookConfigOperation} method as implementation to delete the WebHook configuration file;
+ * #updateWebHookConfig
+ * FileWebHookConfigOperation} method as implementation to update the WebHook configuration in a file;
  * <p>
- * When {@code eventMesh.webHook.operationMode=nacos}, It calls the {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation
- * #deleteWebHookConfig NacosWebHookConfigOperation} method as implementation to delete the WebHook configuration from Nacos.
+ * When {@code eventMesh.webHook.operationMode=nacos}, It calls the
+ * {@linkplain org.apache.eventmesh.webhook.admin.NacosWebHookConfigOperation#updateWebHookConfig
+ * NacosWebHookConfigOperation} method as implementation to update the WebHook configuration in Nacos.
  * <p>
- * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#deleteWebHookConfig HookConfigOperationManager} , another
+ * The {@linkplain org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManager#updateWebHookConfig HookConfigOperationManager} , another
  * implementation of {@linkplain org.apache.eventmesh.webhook.api.WebHookConfigOperation WebHookConfigOperation} interface, is not used for this
  * endpoint.
  *
@@ -53,15 +56,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("restriction")
 @Slf4j
-@EventMeshHttpHandler(path = "/webhook/deleteWebHookConfig")
-public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
+@EventMeshHttpHandler(path = "/webhook/updateWebHookConfig")
+public class UpdateWebHookConfigHandler extends AbstractHttpHandler {
 
     private final WebHookConfigOperation operation;
 
     /**
-     * @param operation the WebHookConfigOperation implementation used to delete the WebHook config
+     * Constructs a new instance with the specified WebHook config operation.
+     *
+     * @param operation the WebHookConfigOperation implementation used to update the WebHook config
      */
-    public DeleteWebHookConfigHandler(WebHookConfigOperation operation) {
+    public UpdateWebHookConfigHandler(WebHookConfigOperation operation) {
         super();
         this.operation = operation;
     }
@@ -72,9 +77,9 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
         Objects.requireNonNull(body, "body can not be null");
         // Resolve to WebHookConfig
         WebHookConfig webHookConfig = JsonUtils.mapToObject(body, WebHookConfig.class);
-        // Delete the existing WebHookConfig
-        Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
-        String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
+        // Update the existing WebHookConfig
+        Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
+        String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
         writeText(ctx, result);
     }
 }
