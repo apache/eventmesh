@@ -18,7 +18,7 @@
 package org.apache.eventmesh.webhook.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import java.util.Properties;
 
@@ -28,13 +28,13 @@ import lombok.Data;
 @Config(prefix = "eventMesh.webHook")
 public class AdminConfiguration {
 
-    @ConfigFiled(field = "admin.start")
+    @ConfigField(field = "admin.start")
     private boolean adminStart = false;
 
-    @ConfigFiled(field = "operationMode")
+    @ConfigField(field = "operationMode")
     private String operationMode;
 
-    @ConfigFiled(field = "", reload = true)
+    @ConfigField(field = "", reload = true)
     private Properties operationProperties;
 
     public void reload() {
