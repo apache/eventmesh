@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler.v1;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
-import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
+import org.apache.eventmesh.runtime.admin.response.v1.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;

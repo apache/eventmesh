@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.response;
+package org.apache.eventmesh.runtime.admin.response.v1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

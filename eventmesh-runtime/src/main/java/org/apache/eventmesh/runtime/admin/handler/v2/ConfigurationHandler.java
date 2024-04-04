@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler.v2;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
-import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
+import org.apache.eventmesh.runtime.admin.response.v2.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -27,6 +27,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
+
+import com.alibaba.fastjson.JSON;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,25 +69,11 @@ public class ConfigurationHandler extends AbstractHttpHandler {
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
         GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-            eventMeshTCPConfiguration.getSysID(),
-            eventMeshTCPConfiguration.getMetaStorageAddr(),
-            eventMeshTCPConfiguration.getEventMeshEnv(),
-            eventMeshTCPConfiguration.getEventMeshIDC(),
-            eventMeshTCPConfiguration.getEventMeshCluster(),
-            eventMeshTCPConfiguration.getEventMeshServerIp(),
-            eventMeshTCPConfiguration.getEventMeshName(),
-            eventMeshTCPConfiguration.getEventMeshWebhookOrigin(),
-            eventMeshTCPConfiguration.isEventMeshServerSecurityEnable(),
-            eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable(),
-            // TCP Configuration
-            eventMeshTCPConfiguration.getEventMeshTcpServerPort(),
-            // HTTP Configuration
-            eventMeshHTTPConfiguration.getHttpServerPort(),
-            eventMeshHTTPConfiguration.isEventMeshServerUseTls(),
-            // gRPC Configuration
-            eventMeshGrpcConfiguration.getGrpcServerPort(),
-            eventMeshGrpcConfiguration.isEventMeshServerUseTls());
-        String result = JsonUtils.toJSONString(getConfigurationResponse);
+            eventMeshTCPConfiguration,
+            eventMeshHTTPConfiguration,
+            eventMeshGrpcConfiguration
+        );
+        String result = JSON.toJSONString(getConfigurationResponse);
         writeJson(ctx, result);
     }
 }

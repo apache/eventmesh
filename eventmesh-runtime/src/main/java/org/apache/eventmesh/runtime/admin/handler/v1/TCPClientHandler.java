@@ -21,14 +21,12 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.admin.request.DeleteTCPClientRequest;
-import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
+import org.apache.eventmesh.runtime.admin.response.v1.GetClientResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -39,11 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 

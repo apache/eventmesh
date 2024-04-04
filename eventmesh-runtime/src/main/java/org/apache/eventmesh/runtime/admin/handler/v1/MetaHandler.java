@@ -20,24 +20,17 @@ package org.apache.eventmesh.runtime.admin.handler.v1;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
-import org.apache.eventmesh.runtime.admin.response.GetRegistryResponse;
+import org.apache.eventmesh.runtime.admin.response.v1.GetRegistryResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
-import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 

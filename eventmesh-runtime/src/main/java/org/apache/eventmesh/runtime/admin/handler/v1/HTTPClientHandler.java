@@ -20,12 +20,11 @@ package org.apache.eventmesh.runtime.admin.handler.v1;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.admin.request.DeleteHTTPClientRequest;
-import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
+import org.apache.eventmesh.runtime.admin.response.v1.GetClientResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
-import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
