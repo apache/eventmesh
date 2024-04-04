@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.runtime.admin.handler.v2;
 
-import inet.ipaddr.IPAddress;
-
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigField;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.admin.response.v2.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
@@ -26,6 +27,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,17 +35,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.filter.Filter;
+import com.alibaba.fastjson2.filter.NameFilter;
 import com.alibaba.fastjson2.filter.ValueFilter;
 
 import lombok.extern.slf4j.Slf4j;
+
+import inet.ipaddr.IPAddress;
 
 /**
  * This class handles the {@code /v2/configuration} endpoint, corresponding to the {@code eventmesh-dashboard} path {@code /}.
  * <p>
  * This handler is responsible for retrieving the current configuration information of the EventMesh node, including service name, service
  * environment, and listening ports for various protocols.
- *
- * @see AbstractHttpHandler
  */
 
 @Slf4j
@@ -78,8 +82,53 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             eventMeshHTTPConfiguration,
             eventMeshGrpcConfiguration
         );
-        String result = JSON.toJSONString(getConfigurationResponse, new IPAddressToStringFilter());
+        Filter[] filters = new Filter[] {new ConfigFieldFilter(), new IPAddressToStringFilter()};
+        String result = JSON.toJSONString(getConfigurationResponse, filters);
         writeJson(ctx, result);
+    }
+
+    /**
+     * For each member of {@link EventMeshTCPConfiguration}, {@link EventMeshHTTPConfiguration}, and {@link EventMeshGrpcConfiguration},
+     * the value of the {@link ConfigField} annotation for each field is obtained through reflection,
+     * and then concatenated with the configuration prefix in the {@link Config} annotation to serve as the JSON key for this field.
+     * <p>
+     * When the {@code name} is a member that only exists in the superclass, it will be searched for in the {@link CommonConfiguration} class.
+     * <p>
+     * If a field does not have a {@link ConfigField} annotation or the value of the {@link ConfigField} annotation is empty,
+     * this field will be added to the JSON with the field name as the key, rather than in properties format.
+     */
+    static class ConfigFieldFilter implements NameFilter {
+        @Override
+        public String process(Object object, String name, Object value) {
+            try {
+                Field field = findFieldInClassHierarchy(object.getClass(), name);
+                if (field != null && field.isAnnotationPresent(ConfigField.class)) {
+                    ConfigField configField = field.getAnnotation(ConfigField.class);
+                    String fieldAnnotationValue = configField.field();
+                    if (!fieldAnnotationValue.isEmpty()) {
+                        Config config = object.getClass().getAnnotation(Config.class);
+                        String prefix = config.prefix();
+                        return prefix + "." + fieldAnnotationValue;
+                    }
+                }
+            } catch (NoSuchFieldException e) {
+                log.error("Failed to get field {} from object {}", name, object, e);
+            }
+            return name;
+        }
+
+        private Field findFieldInClassHierarchy(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                Class<?> superclass = clazz.getSuperclass();
+                if (superclass == null) {
+                    throw e;
+                } else {
+                    return findFieldInClassHierarchy(superclass, fieldName);
+                }
+            }
+        }
     }
 
     static class IPAddressToStringFilter implements ValueFilter {
