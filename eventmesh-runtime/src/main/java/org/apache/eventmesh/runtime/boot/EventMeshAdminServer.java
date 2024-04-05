@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.admin.handler.AdminHandlerManager;
 import org.apache.eventmesh.runtime.admin.handler.HttpHandler;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
