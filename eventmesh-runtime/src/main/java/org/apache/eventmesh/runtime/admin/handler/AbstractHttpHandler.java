@@ -44,30 +44,43 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         write(ctx, HttpResponseUtils.buildHttpResponse(text, ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
-    protected void writeJson(ChannelHandlerContext ctx, String json) {
+    /**
+     * Return given JSON String with given {@link HttpResponseStatus}.
+     */
+    protected void writeJson(ChannelHandlerContext ctx, String json, HttpResponseStatus status) {
         HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
-        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.OK));
+        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, status));
     }
 
+    /**
+     * Return given JSON String with status {@link HttpResponseStatus#OK}.
+     */
+    protected void writeJson(ChannelHandlerContext ctx, String json) {
+        writeJson(ctx, json, HttpResponseStatus.OK);
+    }
+
+    /**
+     * Serialize given data into the JSON String of {@link Result} and return with status {@link HttpResponseStatus#OK}.
+     */
     protected void writeSuccess(ChannelHandlerContext ctx, Object data) {
-        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
         Result<Object> result = Result.success(data);
         String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
-        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.OK));
+        writeJson(ctx, json);
     }
 
+    /**
+     * Wrap given message to {@link Result} and return with status {@link HttpResponseStatus#BAD_REQUEST}.
+     */
     protected void writeBadRequest(ChannelHandlerContext ctx, String message) {
-        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
         Result<String> result = new Result<>(message);
         String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
-        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.BAD_REQUEST));
+        writeJson(ctx, json, HttpResponseStatus.BAD_REQUEST);
     }
 
     protected void writeUnauthorized(ChannelHandlerContext ctx, String message) {
-        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
         Result<String> result = new Result<>(message);
         String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
-        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.UNAUTHORIZED));
+        writeJson(ctx, json, HttpResponseStatus.UNAUTHORIZED);
     }
 
     /**
