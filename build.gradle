@@ -172,7 +172,6 @@ configurations {
 
 dependencies {
     distOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    distOnly "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
     distOnly "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
 }
 
