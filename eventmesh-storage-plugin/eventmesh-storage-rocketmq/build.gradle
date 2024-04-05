@@ -16,19 +16,24 @@
  */
 
 List rocketmq = [
-        "org.apache.rocketmq:rocketmq-client",
-        "org.apache.rocketmq:rocketmq-broker",
-        "org.apache.rocketmq:rocketmq-common",
-        "org.apache.rocketmq:rocketmq-store",
-        "org.apache.rocketmq:rocketmq-namesrv",
-        "org.apache.rocketmq:rocketmq-tools",
-        "org.apache.rocketmq:rocketmq-remoting",
-        "org.apache.rocketmq:rocketmq-logging",
-        "org.apache.rocketmq:rocketmq-srvutil",
-        "org.apache.rocketmq:rocketmq-filter",
-        "org.apache.rocketmq:rocketmq-acl",
-        "org.apache.rocketmq:rocketmq-srvutil"
+        "org.apache.rocketmq:rocketmq-client:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-broker:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-common:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-store:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-namesrv:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-tools:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-remoting:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-logging:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-srvutil:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-filter:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-acl:${rocketmq_version}",
+        "org.apache.rocketmq:rocketmq-srvutil:${rocketmq_version}"
 ]
+
+configurations {
+    implementation.exclude group: "ch.qos.logback", module: "logback-classic"
+    implementation.exclude group: "ch.qos.logback", module: "logback-core"
+}
 
 dependencies {
     implementation project(":eventmesh-common")

@@ -20,7 +20,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'org.apache.zookeeper:zookeeper'
+    implementation('org.apache.zookeeper:zookeeper') {
+        exclude group: 'ch.qos.logback', module: 'logback-core'
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
     implementation 'org.apache.curator:curator-client'
     implementation 'org.apache.curator:curator-framework'
     implementation 'org.apache.curator:curator-recipes'

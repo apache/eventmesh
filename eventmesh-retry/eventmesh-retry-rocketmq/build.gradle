@@ -30,6 +30,11 @@ List rocketmq = [
         "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
 ]
 
+configurations {
+    implementation.exclude group: "ch.qos.logback", module: "logback-classic"
+    implementation.exclude group: "ch.qos.logback", module: "logback-core"
+}
+
 dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-rocketmq")
