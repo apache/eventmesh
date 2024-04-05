@@ -21,11 +21,11 @@ name: 'Remind stale issues and PRs'
 
 on:
   schedule:
-    - cron: '30 2 * * *'
+    - cron: '30 18 * * *'
 
 permissions:
   issues: write
-  pull-request: write
+  pull-requests: write
 
 jobs:
   stale:
