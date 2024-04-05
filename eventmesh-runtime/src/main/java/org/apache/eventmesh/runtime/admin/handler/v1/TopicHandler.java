@@ -90,7 +90,7 @@ public class TopicHandler extends AbstractHttpHandler {
         CreateTopicRequest createTopicRequest = JsonUtils.mapToObject(body, CreateTopicRequest.class);
         String topicName = Objects.requireNonNull(createTopicRequest).getName();
         admin.createTopic(topicName);
-        writeJson(ctx, "");
+        writeText(ctx, "");
     }
 
     @Override
@@ -103,6 +103,6 @@ public class TopicHandler extends AbstractHttpHandler {
         DeleteTopicRequest deleteTopicRequest = JsonUtils.mapToObject(body, DeleteTopicRequest.class);
         String topicName = Objects.requireNonNull(deleteTopicRequest).getName();
         admin.deleteTopic(topicName);
-        writeJson(ctx, "");
+        writeText(ctx, "");
     }
 }

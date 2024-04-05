@@ -18,43 +18,56 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.enums.HttpMethod;
+import org.apache.eventmesh.runtime.admin.response.Result;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
+
 import lombok.Data;
 
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
-    protected void writeText(ChannelHandlerContext ctx, String result) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        write(ctx, HttpResponseUtils.buildHttpResponse(result, ctx, responseHeaders, HttpResponseStatus.OK));
+    protected void writeText(ChannelHandlerContext ctx, String text) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.TEXT_HTML);
+        write(ctx, HttpResponseUtils.buildHttpResponse(text, ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
-    protected void writeJson(ChannelHandlerContext ctx, String result) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        write(ctx, HttpResponseUtils.buildHttpResponse(result, ctx, responseHeaders, HttpResponseStatus.OK));
+    protected void writeJson(ChannelHandlerContext ctx, String json) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
+        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
-    protected void writeUnauthorized(ChannelHandlerContext ctx, String result) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        write(ctx, HttpResponseUtils.buildHttpResponse(result, ctx, responseHeaders, HttpResponseStatus.UNAUTHORIZED));
+    protected void writeSuccess(ChannelHandlerContext ctx, Object data) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
+        Result<Object> result = Result.success(data);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.OK));
+    }
+
+    protected void writeBadRequest(ChannelHandlerContext ctx, String message) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
+        Result<String> result = new Result<>(message);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.BAD_REQUEST));
+    }
+
+    protected void writeUnauthorized(ChannelHandlerContext ctx, String message) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
+        Result<String> result = new Result<>(message);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, HttpResponseStatus.UNAUTHORIZED));
     }
 
     /**

@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -64,6 +65,13 @@ public class HttpResponseUtils {
 
     public static HttpResponse buildHttpResponse(String body, ChannelHandlerContext ctx, HttpHeaders responseHeaders, HttpResponseStatus status) {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, createByteBuf(ctx, body), responseHeaders, responseHeaders);
+    }
+
+    public static HttpHeaders buildDefaultHttpHeaders(AsciiString contentType) {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, contentType);
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        return responseHeaders;
     }
 
     private static ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {

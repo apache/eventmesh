@@ -93,7 +93,7 @@ public class TCPClientHandler extends AbstractHttpHandler {
         }
 
         // Set the response headers and send a 200 status code empty response
-        writeJson(ctx, "");
+        writeText(ctx, "");
     }
 
     @Override

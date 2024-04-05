@@ -75,7 +75,7 @@ public class HTTPClientHandler extends AbstractHttpHandler {
                 clientList.removeIf(client -> Objects.equals(client.getUrl(), url));
             }
             // Set the response headers and send a 200 status code empty response
-            writeJson(ctx, "");
+            writeText(ctx, "");
         }
 
     }

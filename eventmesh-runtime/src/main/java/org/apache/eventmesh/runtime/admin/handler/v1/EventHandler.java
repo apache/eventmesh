@@ -111,6 +111,6 @@ public class EventHandler extends AbstractHttpHandler {
             .getInstance()
             .resolveFormat(JsonFormat.CONTENT_TYPE)).deserialize(rawRequest);
         admin.publish(event);
-        writeJson(ctx, "");
+        writeText(ctx, "");
     }
 }

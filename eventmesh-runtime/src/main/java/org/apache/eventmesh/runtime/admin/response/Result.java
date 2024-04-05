@@ -17,22 +17,35 @@
 
 package org.apache.eventmesh.runtime.admin.response;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * A RESTful response DTO.
+ */
 
 @Data
-public class Error {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Result<T> {
+
+    private T data;
 
     private String message;
 
-    private String stackTrace;
-
-    @JsonCreator
-    public Error(@JsonProperty("message") String message, @JsonProperty("stackTrace") String stackTrace) {
-        super();
+    public Result(String message) {
         this.message = message;
-        this.stackTrace = stackTrace;
+    }
+
+    /**
+     * The request is valid and the result is wrapped in {@link Result}.
+     */
+    public static <T> Result<T> success() {
+        return new Result<>("Success");
+    }
+
+    public static <T> Result<T> success(T data) {
+        return new Result<>(data, "Success");
     }
 }

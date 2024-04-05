@@ -100,12 +100,18 @@ public class HttpRequestUtil {
         return result;
     }
 
+    /**
+     * Get the value of a query parameter in URI query string.
+     */
     public static String getQueryParam(HttpRequest httpRequest, String key, String defaultValue) {
         List<String> values = new QueryStringDecoder(httpRequest.uri()).parameters().get(key);
         return values != null ? values.get(0) : defaultValue;
     }
 
-    public static String getPostParam(HttpRequest httpRequest, String key) throws IOException {
+    /**
+     * Get the value of a query parameter in body.
+     */
+    public static String getBodyParam(HttpRequest httpRequest, String key) throws IOException {
         HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(httpRequest);
         Attribute attribute = (Attribute) decoder.getBodyHttpData(key);
         return attribute.getValue();

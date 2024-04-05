@@ -81,7 +81,7 @@ public class GrpcClientHandler extends AbstractHttpHandler {
                 }
             }
         }
-        writeJson(ctx, "");
+        writeText(ctx, "");
     }
 
     @Override

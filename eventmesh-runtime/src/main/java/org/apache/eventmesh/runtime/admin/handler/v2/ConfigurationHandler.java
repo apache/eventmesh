@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigField;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
+import org.apache.eventmesh.runtime.admin.response.Result;
 import org.apache.eventmesh.runtime.admin.response.v2.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
@@ -97,7 +98,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             filters = new Filter[] {new IPAddressToStringFilter()};
         } else {
             log.warn("Invalid format param: {}", format);
-            writeJson(ctx, "Invalid format param: " + format);
+            writeBadRequest(ctx, "Invalid format param: " + format);
             return;
         }
 
@@ -106,8 +107,8 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             eventMeshHTTPConfiguration,
             eventMeshGrpcConfiguration
         );
-        String result = JSON.toJSONString(getConfigurationResponse, filters);
-        writeJson(ctx, result);
+        String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters);
+        writeJson(ctx, json);
     }
 
     /**
