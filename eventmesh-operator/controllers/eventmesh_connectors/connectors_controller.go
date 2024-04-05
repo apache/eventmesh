@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	eventmeshoperatorv1 "github.com/apache/eventmesh/eventmesh-operator/api/v1"
+	"github.com/apache/eventmesh/eventmesh-operator/share"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -123,6 +124,15 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 		return reconcile.Result{}, err
 	}
 
+	for {
+		if share.IsEventMeshRuntimeInitialized {
+			break
+		} else {
+			r.Logger.Info("connector Waiting for runtime ready...")
+			time.Sleep(time.Duration(share.WaitForRuntimePodNameReadyInSecond) * time.Second)
+		}
+	}
+
 	connectorStatefulSet := r.getConnectorStatefulSet(connector)
 	// Check if the statefulSet already exists, if not create a new one
 	found := &appsv1.StatefulSet{}
@@ -192,7 +202,7 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 	}
 
 	r.Logger.Info("Successful reconciliation!")
-	return reconcile.Result{}, nil
+	return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
 }
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
@@ -217,6 +227,8 @@ func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperat
 					Labels: getLabels(),
 				},
 				Spec: corev1.PodSpec{
+					HostNetwork:        connector.Spec.HostNetwork,
+					DNSPolicy:          connector.Spec.DNSPolicy,
 					ServiceAccountName: connector.Spec.ServiceAccountName,
 					Affinity:           connector.Spec.Affinity,
 					Tolerations:        connector.Spec.Tolerations,
@@ -224,6 +236,7 @@ func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperat
 					PriorityClassName:  connector.Spec.PriorityClassName,
 					ImagePullSecrets:   connector.Spec.ImagePullSecrets,
 					Containers: []corev1.Container{{
+						Resources:       connector.Spec.ConnectorContainers[0].Resources,
 						Image:           connector.Spec.ConnectorContainers[0].Image,
 						Name:            connector.Spec.ConnectorContainers[0].Name,
 						SecurityContext: getConnectorContainerSecurityContext(connector),

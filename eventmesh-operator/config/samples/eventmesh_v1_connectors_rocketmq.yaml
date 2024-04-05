@@ -72,6 +72,8 @@ spec:
   size: 1
   # imagePullPolicy is the image pull policy
   imagePullPolicy: Always
+  # set DNS policy for the pod
+  # dnsPolicy: ClusterFirstWithHostNet
   # define the connector-rocketmq container.
   connectorContainers:
     - name: connector-rocketmq
@@ -81,6 +83,14 @@ spec:
       volumeMounts:
         - mountPath: "/data/app/eventmesh-connector-rocketmq/conf"
           name: connector-rocketmq-config
+      # resources describes the compute resource requirements and limits
+      resources:
+        requests:
+          memory: 512Mi
+          cpu: 250m
+        limits:
+          memory: 1024Mi
+          cpu: 1000m
   # configuration file settings to be mounted.
   volumes:
     - name: connector-rocketmq-config

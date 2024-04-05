@@ -70,12 +70,12 @@ public class SinkConnectorConfig {
 
         // validate receiveIdType
         if (!StringUtils.containsAny(receiveIdType, ReceiveIdTypeEnum.CHAT_ID.getValue(),
-                ReceiveIdTypeEnum.EMAIL.getValue(),
-                ReceiveIdTypeEnum.OPEN_ID.getValue(),
-                ReceiveIdTypeEnum.USER_ID.getValue(),
-                ReceiveIdTypeEnum.UNION_ID.getValue())) {
+            ReceiveIdTypeEnum.EMAIL.getValue(),
+            ReceiveIdTypeEnum.OPEN_ID.getValue(),
+            ReceiveIdTypeEnum.USER_ID.getValue(),
+            ReceiveIdTypeEnum.UNION_ID.getValue())) {
             throw new IllegalArgumentException(
-                    String.format("sinkConnectorConfig.receiveIdType=[%s], Invalid.", receiveIdType));
+                String.format("sinkConnectorConfig.receiveIdType=[%s], Invalid.", receiveIdType));
         }
     }
 }

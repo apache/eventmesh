@@ -149,6 +149,7 @@ public class WebhookFileListener {
                     key = service.take();
                 } catch (InterruptedException e) {
                     log.error("Interrupted", e);
+                    Thread.currentThread().interrupt();
                 }
 
                 assert key != null;

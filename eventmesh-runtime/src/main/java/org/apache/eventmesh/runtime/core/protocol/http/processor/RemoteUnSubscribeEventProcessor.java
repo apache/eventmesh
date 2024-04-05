@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -184,7 +185,12 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI()};
+        return new String[] {RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 
 }

@@ -109,7 +109,7 @@ public class NacosMetaService implements MetaService {
         eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
         for (String key : ConfigurationContextUtil.KEYS) {
             CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-            if (null == commonConfiguration) {
+            if (commonConfiguration == null) {
                 continue;
             }
             if (StringUtils.isBlank(commonConfiguration.getMetaStorageAddr())) {
@@ -231,7 +231,7 @@ public class NacosMetaService implements MetaService {
             throw new MetaException(e.getMessage());
         }
     }
-    
+
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
         return findEventMeshInfos(true, Collections.singletonList(clusterName));
@@ -315,6 +315,8 @@ public class NacosMetaService implements MetaService {
             }
             URI uri = uriBuilder.build();
             HttpGet httpGet = new HttpGet(uri);
+            httpGet.setHeader(NacosConstant.USERNAME, username);
+            httpGet.setHeader(NacosConstant.PASSWORD, password);
             try (CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet)) {
                 if (closeableHttpResponse.getStatusLine().getStatusCode() == 200) {
                     String response = EntityUtils.toString(closeableHttpResponse.getEntity(), StandardCharsets.UTF_8);

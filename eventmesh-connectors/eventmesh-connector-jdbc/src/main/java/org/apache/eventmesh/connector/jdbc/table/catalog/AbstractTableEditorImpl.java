@@ -174,11 +174,6 @@ public abstract class AbstractTableEditorImpl<TE extends TableEditor, Col extend
         return (TE) this;
     }
 
-    /**
-     * @param key
-     * @param value
-     * @return
-     */
     @Override
     @SuppressWarnings("unchecked")
     public TE withOption(String key, Object value) {

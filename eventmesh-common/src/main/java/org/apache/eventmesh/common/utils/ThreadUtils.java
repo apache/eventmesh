@@ -56,7 +56,7 @@ public class ThreadUtils {
     }
 
     public static void sleepWithThrowException(long timeout, TimeUnit timeUnit) throws InterruptedException {
-        if (null == timeUnit) {
+        if (timeUnit == null) {
             return;
         }
         timeUnit.sleep(timeout);

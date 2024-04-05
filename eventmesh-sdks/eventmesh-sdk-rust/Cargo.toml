@@ -22,6 +22,7 @@ edition = "2021"
 authors = [
     "mxsm <mxsm@apache.org>"
 ]
+msrv = "1.75.0"
 description = "Rust client for Apache EventMesh"
 license = "Apache-2.0"
 keywords = ["EventMesh", "SDK", "rust-client", "rust", "eventmesh-rust-sdk"]

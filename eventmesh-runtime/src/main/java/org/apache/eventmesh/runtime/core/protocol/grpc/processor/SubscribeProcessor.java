@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
@@ -73,7 +72,7 @@ public class SubscribeProcessor {
         try {
             doAclCheck(subscription);
         } catch (AclException e) {
-            LogUtils.warn(log, "CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            log.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
@@ -126,10 +125,10 @@ public class SubscribeProcessor {
 
         // restart consumer group if required
         if (requireRestart) {
-            LogUtils.info(log, "ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
             consumerManager.restartEventMeshConsumer(consumerGroup);
         } else {
-            LogUtils.warn(log, "EventMesh consumer [{}] didn't restart.", consumerGroup);
+            log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
         ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "subscribe success", emitter);
     }

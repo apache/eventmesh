@@ -23,7 +23,6 @@ classes
 package-lock.json
 node_modules
 .run
-*.log
 
 h2/db.mv.db
 

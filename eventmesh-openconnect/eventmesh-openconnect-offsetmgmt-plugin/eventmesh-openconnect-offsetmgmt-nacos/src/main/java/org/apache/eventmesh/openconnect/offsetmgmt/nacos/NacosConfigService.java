@@ -69,7 +69,7 @@ public class NacosConfigService implements OffsetManagementService {
 
     // merge the updated connectorRecord & recordOffset to memory store
     public void mergeOffset(ConnectorRecordPartition connectorRecordPartition, RecordOffset recordOffset) {
-        if (null == connectorRecordPartition || connectorRecordPartition.getPartition().isEmpty()) {
+        if (connectorRecordPartition == null || connectorRecordPartition.getPartition().isEmpty()) {
             return;
         }
         if (positionStore.getKVMap().containsKey(connectorRecordPartition)) {
@@ -172,7 +172,7 @@ public class NacosConfigService implements OffsetManagementService {
 
     @Override
     public void removePosition(List<ConnectorRecordPartition> partitions) {
-        if (null == partitions) {
+        if (partitions == null) {
             return;
         }
         for (ConnectorRecordPartition partition : partitions) {

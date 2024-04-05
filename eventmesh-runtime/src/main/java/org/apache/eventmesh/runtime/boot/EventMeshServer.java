@@ -25,9 +25,7 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
-import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
@@ -58,13 +56,21 @@ public class EventMeshServer {
 
     private final CommonConfiguration configuration;
 
-    private transient ClientManageController clientManageController;
+    //  private transient ClientManageController clientManageController;
 
     private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
 
     private static final String SERVER_STATE_MSG = "server state:{}";
 
     private static final ConfigService configService = ConfigService.getInstance();
+
+    private EventMeshAdminBootstrap adminBootstrap;
+
+    private EventMeshTCPServer eventMeshTCPServer = null;
+
+    private EventMeshGrpcServer eventMeshGrpcServer = null;
+
+    private EventMeshHTTPServer eventMeshHTTPServer = null;
 
     public EventMeshServer() {
 
@@ -114,12 +120,6 @@ public class EventMeshServer {
             trace.init();
         }
 
-        EventMeshTCPServer eventMeshTCPServer = null;
-
-        EventMeshGrpcServer eventMeshGrpcServer = null;
-
-        EventMeshHTTPServer eventMeshHTTPServer = null;
-
         // server init
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.init();
@@ -135,19 +135,18 @@ public class EventMeshServer {
         }
 
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
-
-            clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer, metaStorage);
-            clientManageController.setAdminWebHookConfigOperationManage(eventMeshTCPServer.getAdminWebHookConfigOperationManage());
+            adminBootstrap = new EventMeshAdminBootstrap(this);
+            adminBootstrap.init();
         }
 
         final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
-        LogUtils.info(log, "eventStore : {}", eventStore);
+        log.info("eventStore : {}", eventStore);
         producerTopicManager = new ProducerTopicManager(this);
         producerTopicManager.init();
         serviceState = ServiceState.INITED;
 
-        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
+        log.info(SERVER_STATE_MSG, serviceState);
     }
 
     public void start() throws Exception {
@@ -165,18 +164,18 @@ public class EventMeshServer {
             eventMeshBootstrap.start();
         }
 
-        if (Objects.nonNull(clientManageController)) {
-            clientManageController.start();
+        if (Objects.nonNull(adminBootstrap)) {
+            adminBootstrap.start();
         }
         producerTopicManager.start();
         serviceState = ServiceState.RUNNING;
-        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
+        log.info(SERVER_STATE_MSG, serviceState);
 
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPPING;
-        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
+        log.info(SERVER_STATE_MSG, serviceState);
 
         for (final EventMeshBootstrap eventMeshBootstrap : BOOTSTRAP_LIST) {
             eventMeshBootstrap.shutdown();
@@ -199,7 +198,7 @@ public class EventMeshServer {
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPPED;
 
-        LogUtils.info(log, SERVER_STATE_MSG, serviceState);
+        log.info(SERVER_STATE_MSG, serviceState);
     }
 
     public static Trace getTrace() {
@@ -228,5 +227,17 @@ public class EventMeshServer {
 
     public CommonConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public EventMeshTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
+    }
+
+    public EventMeshGrpcServer getEventMeshGrpcServer() {
+        return eventMeshGrpcServer;
+    }
+
+    public EventMeshHTTPServer getEventMeshHTTPServer() {
+        return eventMeshHTTPServer;
     }
 }

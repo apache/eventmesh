@@ -17,6 +17,8 @@
 
 import java.util.concurrent.TimeUnit
 
+
+
 buildscript {
     repositories {
         mavenLocal()
@@ -38,25 +40,13 @@ buildscript {
     }
 }
 
-//Remove doclint warnings that pollute javadoc logs when building with java8
-if(JavaVersion.current().isJava8()){
+// Remove doclint warnings that pollute javadoc logs when building
+if (JavaVersion.current().isJava8()) {
     allprojects {
-        tasks.withType(Javadoc){
-            options.addStringOption('xdoclint:none','-quiet')
+        tasks.withType(Javadoc) {
+            options.addStringOption('xdoclint:none', '-quiet')
         }
     }
-}
-
-def log4jVersion = '2.22.1'
-
-configurations {
-    distOnly
-}
-
-dependencies {
-    distOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    distOnly "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
-    distOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
 }
 
 allprojects {
@@ -172,6 +162,18 @@ allprojects {
     test {
         useJUnitPlatform()
     }
+}
+
+def log4jVersion = '2.22.1'
+
+configurations {
+    distOnly
+}
+
+dependencies {
+    distOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    distOnly "org.apache.logging.log4j:log4j-jul:${log4jVersion}"
+    distOnly "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
 }
 
 tasks.register('dist') {
@@ -459,7 +461,7 @@ subprojects {
                     licenses {
                         license {
                             name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
                     developers {
@@ -497,12 +499,10 @@ subprojects {
 
     def grpcVersion = '1.43.2'
     def springBootVersion = '2.7.10'
-    def rocketmq_version = '4.9.5'
 
     dependencyManagement {
         imports {
             mavenBom "org.apache.logging.log4j:log4j-bom:${log4jVersion}"
-            mavenBom 'org.springframework:spring-framework-bom:5.3.26'
         }
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
@@ -515,7 +515,7 @@ subprojects {
 
             dependency "com.google.guava:guava:31.0.1-jre"
 
-            dependency "org.slf4j:slf4j-api:1.7.30"
+            dependency "org.slf4j:slf4j-api:2.0.9"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -553,10 +553,10 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
             dependency "com.jayway.jsonpath:json-path:2.7.0"
 
+            // Exclude 'spring-boot-starter-logging' only once in the right artifact
             dependency("org.springframework.boot:spring-boot-starter:${springBootVersion}") {
                 exclude group: 'org.springframework.boot', name: 'spring-boot-starter-logging'
             }
-            dependency "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
             dependency "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
             dependency "io.openmessaging:registry-server:0.0.1"
 
@@ -605,23 +605,6 @@ subprojects {
             dependency "software.amazon.awssdk:s3:2.20.29"
             dependency "com.github.rholder:guava-retrying:2.0.0"
 
-            dependency "org.apache.rocketmq:rocketmq-acl:$rocketmq_version"
-            dependency("org.apache.rocketmq:rocketmq-broker:$rocketmq_version") {
-                exclude group: 'ch.qos.logback', name: 'logback-classic'
-            }
-            dependency "org.apache.rocketmq:rocketmq-client:$rocketmq_version"
-            dependency "org.apache.rocketmq:rocketmq-common:$rocketmq_version"
-            dependency "org.apache.rocketmq:rocketmq-filter:$rocketmq_version"
-            dependency "org.apache.rocketmq:rocketmq-logging:$rocketmq_version"
-            dependency("org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version") {
-                exclude group: 'ch.qos.logback', name: 'logback-classic'
-            }
-            dependency "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version"
-            dependency "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version"
-            dependency "org.apache.rocketmq:rocketmq-store:$rocketmq_version"
-            dependency("org.apache.rocketmq:rocketmq-tools:$rocketmq_version") {
-                exclude group: 'ch.qos.logback', name: 'logback-classic'
-            }
         }
     }
 }

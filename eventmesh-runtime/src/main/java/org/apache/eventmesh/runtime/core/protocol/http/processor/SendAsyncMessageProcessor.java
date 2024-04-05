@@ -31,7 +31,6 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
@@ -41,7 +40,6 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -53,6 +51,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -63,7 +62,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
 
-public class SendAsyncMessageProcessor implements HttpRequestProcessor {
+public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
 
     private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
@@ -90,7 +89,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         CMD_LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(
-            Integer.valueOf(request.getRequestCode())),
+                Integer.valueOf(request.getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
             remoteAddr, localAddress);
 
@@ -213,7 +212,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshHttpConfiguration.getEventMeshServerIp())
                 .build();
 
-            LogUtils.debug(MESSAGE_LOGGER, "msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
+            MESSAGE_LOGGER.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
         } catch (Exception e) {
             MESSAGE_LOGGER.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             completeResponse(request, asyncContext, sendMessageResponseHeader,
@@ -232,7 +231,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
             try {
-                LogUtils.debug(HTTP_LOGGER, "{}", httpCommand);
+                HTTP_LOGGER.debug("{}", httpCommand);
                 eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
 
                 summaryMetrics.recordHTTPReqResTimeCost(
@@ -305,6 +304,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             summaryMetrics.recordSendMsgFailed();
             summaryMetrics.recordSendMsgCost(endTime - startTime);
         }
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor();
     }
 
     private void spanWithException(CloudEvent event, String protocolVersion, EventMeshRetCode retCode) {

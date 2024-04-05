@@ -20,12 +20,11 @@ package org.apache.eventmesh.storage.standalone.admin;
 import static org.apache.eventmesh.storage.standalone.TestUtils.LENGTH;
 import static org.apache.eventmesh.storage.standalone.TestUtils.OFF_SET;
 import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
-import static org.apache.eventmesh.storage.standalone.TestUtils.TOPIC_DO_NOT_EXISTS;
-import static org.apache.eventmesh.storage.standalone.TestUtils.TOPIC_EXISTS;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultCloudEvent;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageContainer;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageEntity;
 
+import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
@@ -72,8 +71,9 @@ public class StandaloneAdminTest {
 
     @Test
     public void testGetTopic() throws Exception {
-        Assertions.assertNotNull(standaloneAdmin.getTopic());
-        Assertions.assertFalse(standaloneAdmin.getTopic().isEmpty());
+        List<TopicProperties> topicPropertiesList = standaloneAdmin.getTopic();
+        Assertions.assertNotNull(topicPropertiesList);
+        Assertions.assertFalse(topicPropertiesList.isEmpty());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class StandaloneAdminTest {
 
     @Test
     public void testGetEvent() throws Exception {
-        Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(TOPIC_EXISTS);
+        Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(Boolean.TRUE);
         Mockito.when(standaloneBroker.getMessage(TEST_TOPIC, OFF_SET)).thenReturn(createDefaultCloudEvent());
         List<CloudEvent> events = standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH);
         Assertions.assertNotNull(events);
@@ -99,7 +99,7 @@ public class StandaloneAdminTest {
 
     @Test
     public void testGetEvent_throwException() {
-        Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(TOPIC_DO_NOT_EXISTS);
+        Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(Boolean.FALSE);
         Exception exception = Assertions.assertThrows(Exception.class, () -> standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH));
         Assertions.assertEquals("The topic name doesn't exist in the message queue", exception.getMessage());
     }

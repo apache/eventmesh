@@ -23,7 +23,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -37,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @EventMeshTrace
 public class CreateTopicProcessor implements AsyncHttpProcessor {
 
-    private final Logger httpLogger = LoggerFactory.getLogger("http");
+    private static final Logger HTTP_LOGGER = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private final transient EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -67,7 +67,7 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
 
         HttpEventWrapper responseWrapper;
 
-        httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        HTTP_LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
             EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
@@ -94,7 +94,7 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
             Map<String, Object> responseBodyMap = new HashMap<>();
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + "topic is null");
-            httpLogger.warn("create topic fail, topic is null");
+            HTTP_LOGGER.warn("create topic fail, topic is null");
             responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
             responseWrapper.setHttpResponseStatus(HttpResponseStatus.BAD_REQUEST);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
@@ -112,19 +112,19 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
                 item = StringUtils.deleteWhitespace(item);
                 if (!HttpClientGroupMapping.getInstance().getLocalTopicSet().contains(item)) {
                     HttpClientGroupMapping.getInstance().getLocalTopicSet().add(item);
-                    httpLogger.info("create topic success, topic:{}", item);
+                    HTTP_LOGGER.info("create topic success, topic:{}", item);
                 }
             }
 
             final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
                 try {
-                    LogUtils.debug(httpLogger, "{}", httpEventWrapper);
+                    HTTP_LOGGER.debug("{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
                     eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());
                 } catch (Exception ex) {
                     // ignore
-                    httpLogger.warn("create topic, sendResponse fail,", ex);
+                    HTTP_LOGGER.warn("create topic, sendResponse fail,", ex);
                 }
             };
 
@@ -141,7 +141,7 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR, responseHeaderMap,
                 responseBodyMap, null);
             long endTime = System.currentTimeMillis();
-            httpLogger.warn(
+            HTTP_LOGGER.warn(
                 "create topic fail, eventMesh2client|cost={}ms|topic={}", endTime - startTime, topic, e);
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
@@ -150,6 +150,11 @@ public class CreateTopicProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.CREATE_TOPIC.getRequestURI()};
+        return new String[] {RequestURI.CREATE_TOPIC.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 }

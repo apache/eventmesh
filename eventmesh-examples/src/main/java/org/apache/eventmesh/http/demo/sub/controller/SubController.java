@@ -21,7 +21,6 @@ import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.http.demo.sub.service.SubService;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +55,7 @@ public class SubController {
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(final HttpServletRequest request) {
         final String content = request.getParameter("content");
-        LogUtils.info(log, "receive message: {}", content);
+        log.info("receive message: {}", content);
         @SuppressWarnings("unchecked")
         final Map<String, String> contentMap = JsonUtils.parseObject(content, HashMap.class);
         if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
@@ -66,7 +65,7 @@ public class SubController {
                 final CloudEventData eventData = event.getData();
                 if (eventData != null) {
                     final String data = new String(eventData.toBytes(), StandardCharsets.UTF_8);
-                    LogUtils.info(log, "receive data: {}", data);
+                    log.info("receive data: {}", data);
                 }
             }
         }

@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -384,7 +383,7 @@ public class ClientSessionGroupMapping {
                     long interval = System.currentTimeMillis() - tmp.getLastHeartbeatTime();
                     if (interval > eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshTcpSessionExpiredInMills()) {
                         try {
-                            LogUtils.warn(log, "clean expired session,client:{}", tmp.getClient());
+                            log.warn("clean expired session,client:{}", tmp.getClient());
                             closeSession(tmp.getContext());
                         } catch (Exception e) {
                             log.error("say goodbye to session error! {}", tmp, e);
