@@ -94,6 +94,7 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
                   .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
+    // Prevents the introduction of logging backends by mistake in sub-projects
     configurations {
         if (!"eventmesh-starter".equals(project.name)) {
             runtimeClasspath {
