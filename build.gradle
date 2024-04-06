@@ -178,8 +178,6 @@ dependencies {
 }
 
 tasks.register('dist') {
-    group = JavaBasePlugin.BUILD_TASK_NAME
-    description "Creates the distribution directory"
     def includedProjects =
             ["eventmesh-common",
              "eventmesh-meta:eventmesh-meta-api",
