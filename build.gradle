@@ -198,6 +198,7 @@ tasks.register('dist') {
     doLast {
         includedProjects.each {
             def project = findProject(it)
+            logger.lifecycle('Install module: module: {}', project.name)
             copy {
                 from project.jar.archivePath
                 into 'dist/apps'
@@ -252,45 +253,41 @@ task zip(type: Zip) {
 }
 
 tasks.register('installPlugin') {
-    doLast {
-        if (!new File("${rootDir}/dist").exists()) {
-            return
+    // Compute dependency and outputs eagerly
+    dependsOn('dist')
+    allprojects.forEach(subProject -> {
+        var props = subProject.properties
+        if (props.containsKey('pluginType') && props.containsKey('pluginName')) {
+            var pluginType = props.get('pluginType')
+            var pluginName = props.get('pluginName')
+            dependsOn("${subProject.path}:jar")
+            outputs.dir("dist/plugin/${pluginType}/${pluginName}")
         }
-        String[] libJars = java.util.Optional.ofNullable(new File("${rootDir}/dist/lib").list()).orElseGet(() -> new String[0])
-        getAllprojects().forEach(subProject -> {
-            var file = new File("${subProject.projectDir}/gradle.properties")
-            if (!file.exists()) {
-                return
-            }
-            var properties = new Properties()
-            properties.load(new FileInputStream(file))
-            var pluginType = properties.getProperty("pluginType")
-            var pluginName = properties.getProperty("pluginName")
-            if (pluginType == null || pluginName == null) {
-                return
-            }
-            var pluginFile = new File("${rootDir}/dist/plugin/${pluginType}/${pluginName}")
-            if (pluginFile.exists()) {
-                return
-            }
-            pluginFile.mkdirs()
-            println String.format(
-                    "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
-            )
-            copy {
-                from subProject.jar.archivePath
-                into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
-            }
-            copy {
-                from subProject.configurations.runtimeClasspath
-                into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
-                exclude(libJars)
-            }
-            copy {
-                from subProject.file('conf')
-                from subProject.sourceSets.main.resources.srcDirs
-                into "${rootDir}/dist/conf"
-                exclude 'META-INF'
+    })
+    doLast {
+        String[] libJars = file('dist/lib').list()
+        allprojects.forEach(subProject -> {
+            var properties = subProject.properties
+            var pluginType = properties.get('pluginType')
+            var pluginName = properties.get('pluginName')
+            if (pluginType != null || pluginName != null) {
+                logger.lifecycle('Install plugin: pluginType: {}, pluginInstanceName: {}, module: {}', pluginType,
+                        pluginName, subProject.name)
+                copy {
+                    from subProject.jar.archivePath
+                    into "dist/plugin/${pluginType}/${pluginName}"
+                }
+                copy {
+                    from subProject.configurations.runtimeClasspath
+                    into "dist/plugin/${pluginType}/${pluginName}"
+                    exclude(libJars)
+                }
+                copy {
+                    from subProject.file('conf')
+                    from subProject.sourceSets.main.resources.srcDirs
+                    into "dist/conf"
+                    exclude 'META-INF'
+                }
             }
         })
     }
