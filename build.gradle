@@ -296,15 +296,13 @@ tasks.register('installPlugin') {
     }
 }
 
-task printProjects() {
-    doLast {
-        getAllprojects().forEach(subProject -> {
-            if ("EventMesh".equals(subProject.getName())) {
-                return
-            }
-            println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
-        })
-    }
+tasks.register('printProjects') {
+    getAllprojects().forEach(subProject -> {
+        if ("EventMesh".equals(subProject.getName())) {
+            return
+        }
+        println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
+    })
 }
 
 subprojects {
