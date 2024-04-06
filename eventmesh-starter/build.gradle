@@ -17,4 +17,7 @@
 
 dependencies {
     implementation project(":eventmesh-runtime")
+    // Logging backend
+    runtimeOnly "org.apache.logging.log4j:log4j-core"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl"
 }

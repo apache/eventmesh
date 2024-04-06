@@ -95,27 +95,29 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
     configurations {
-        runtimeClasspath {
-            // Log4j API implementations
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-to-jul'
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
-            // SLF4J implementations
-            exclude group: 'ch.qos.logback', module: 'logback-classic'
-            exclude group: 'org.slf4j', module: 'slf4j-jdk14'
-            exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-            exclude group: 'org.slf4j', module: 'slf4j-nop'
-            exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-            exclude group: 'org.slf4j', module: 'slf4j-simple'
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
-            // JUL implementations
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-jul'
-            exclude group: 'org.slf4j', module: 'jul-to-slf4j'
-            // Log4j 1.x and replacements
-            exclude group: 'log4j', module: 'log4j'
-            exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
-            exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
+        if (!"eventmesh-starter".equals(project.name)) {
+            runtimeClasspath {
+                // Log4j API implementations
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-to-jul'
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+                // SLF4J implementations
+                exclude group: 'ch.qos.logback', module: 'logback-classic'
+                exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+                exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+                exclude group: 'org.slf4j', module: 'slf4j-nop'
+                exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+                exclude group: 'org.slf4j', module: 'slf4j-simple'
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+                // JUL implementations
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-jul'
+                exclude group: 'org.slf4j', module: 'jul-to-slf4j'
+                // Log4j 1.x and replacements
+                exclude group: 'log4j', module: 'log4j'
+                exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+                exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
+            }
         }
     }
 
