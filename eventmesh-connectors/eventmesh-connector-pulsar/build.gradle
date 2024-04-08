@@ -18,10 +18,10 @@
 dependencies {
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation("org.apache.pulsar:pulsar-client:$pulsar_version") {
+        // Remove logging backend implementations
         exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
         exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
     }
-
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

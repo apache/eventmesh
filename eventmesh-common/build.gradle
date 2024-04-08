@@ -30,6 +30,9 @@ dependencies {
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"
 
+    runtimeOnly "org.apache.logging.log4j:log4j-core"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl"
+
     implementation 'com.github.seancfoley:ipaddress'
 
     implementation "com.lmax:disruptor"

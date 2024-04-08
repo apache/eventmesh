@@ -94,34 +94,6 @@ allprojects {
                   .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
                   .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
-    // Prevents the introduction of logging backends by mistake in sub-projects
-    configurations {
-        if (!"eventmesh-starter".equals(project.name)) {
-            runtimeClasspath {
-                // Log4j API implementations
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-to-jul'
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
-                // SLF4J implementations
-                exclude group: 'ch.qos.logback', module: 'logback-classic'
-                exclude group: 'org.slf4j', module: 'slf4j-jdk14'
-                exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-                exclude group: 'org.slf4j', module: 'slf4j-nop'
-                exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-                exclude group: 'org.slf4j', module: 'slf4j-simple'
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
-                // JUL implementations
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-jul'
-                exclude group: 'org.slf4j', module: 'jul-to-slf4j'
-                // Log4j 1.x and replacements
-                exclude group: 'log4j', module: 'log4j'
-                exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
-                exclude group: 'org.apache.logging.log4j', module: 'log4j-1.2-api'
-            }
-        }
-    }
-
     dependencies {
         repositories {
             mavenLocal()
@@ -167,18 +139,10 @@ allprojects {
     }
 }
 
-def log4jVersion = '2.22.1'
-
-configurations {
-    distOnly
-}
-
-dependencies {
-    distOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    distOnly "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
-}
-
 tasks.register('dist') {
+    subprojects.forEach { subProject ->
+        dependsOn("${subProject.path}:jar")
+    }
     def includedProjects =
             ["eventmesh-common",
              "eventmesh-meta:eventmesh-meta-api",
@@ -194,7 +158,6 @@ tasks.register('dist') {
              "eventmesh-webhook:eventmesh-webhook-api",
              "eventmesh-webhook:eventmesh-webhook-admin",
              "eventmesh-webhook:eventmesh-webhook-receive"]
-    includedProjects.each { dependsOn("${it}:jar") }
     outputs.dirs('dist/apps', 'dist/bin', 'dist/conf', 'dist/lib', 'dist/licenses')
     doLast {
         includedProjects.each {
@@ -222,17 +185,13 @@ tasks.register('dist') {
             }
         }
         copy {
-            from configurations.distOnly
-            into 'dist/lib'
-        }
-        copy {
             from 'tools/third-party-licenses'
             into 'dist'
         }
     }
 }
 
-task tar(type: Tar) {
+tasks.register('tar', Tar) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
     archiveExtension.set('tar.gz')
@@ -243,7 +202,7 @@ task tar(type: Tar) {
     }
 }
 
-task zip(type: Zip) {
+tasks.register('zip', Zip) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
     archiveExtension.set('zip')
@@ -493,12 +452,9 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
-    def springBootVersion = '2.7.10'
+    def log4jVersion = '2.22.1'
 
     dependencyManagement {
-        imports {
-            mavenBom "org.apache.logging.log4j:log4j-bom:${log4jVersion}"
-        }
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.1"
@@ -511,6 +467,9 @@ subprojects {
             dependency "com.google.guava:guava:31.0.1-jre"
 
             dependency "org.slf4j:slf4j-api:2.0.9"
+            dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -548,11 +507,7 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
             dependency "com.jayway.jsonpath:json-path:2.7.0"
 
-            // Exclude 'spring-boot-starter-logging' only once in the right artifact
-            dependency("org.springframework.boot:spring-boot-starter:${springBootVersion}") {
-                exclude group: 'org.springframework.boot', name: 'spring-boot-starter-logging'
-            }
-            dependency "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+            dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "org.junit.jupiter:junit-jupiter:5.6.0"
@@ -583,10 +538,7 @@ subprojects {
 
             dependency "com.alibaba.nacos:nacos-client:2.2.1"
 
-            dependency('org.apache.zookeeper:zookeeper:3.7.1') {
-                exclude group: 'ch.qos.logback', name: 'logback-core'
-                exclude group: 'ch.qos.logback', name: 'logback-classic'
-            }
+            dependency 'org.apache.zookeeper:zookeeper:3.7.1'
             dependency 'org.apache.curator:curator-client:5.4.0'
             dependency 'org.apache.curator:curator-framework:5.4.0'
             dependency 'org.apache.curator:curator-recipes:5.4.0'
