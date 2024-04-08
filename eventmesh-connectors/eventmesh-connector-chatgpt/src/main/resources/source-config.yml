@@ -16,18 +16,37 @@
 #
 
 pubSubConfig:
-    meshAddress: 127.0.0.1:10000
-    subject: TopicTest
-    idc: FT
-    env: PRD
-    group: chatgptSource
-    appId: 5032
-    userName: chatgptSourceUser
-    passWord: chatgptPassWord
+  meshAddress: 127.0.0.1:10000
+  subject: TopicTest
+  idc: FT
+  env: PRD
+  group: chatgptSource
+  appId: 5032
+  userName: chatgptSourceUser
+  passWord: chatgptPassWord
 connectorConfig:
-    connectorName: chatgptSource
-    path: /chatgpt
-    port: 3756
-    idleTimeout: 999
-    openaiToken:
-    openaiModel: gpt-3.5-turbo
+  connectorName: chatgptSource
+  path: /chatgpt
+  port: 3756
+  idleTimeout: 999
+  proxyEnable: true
+
+# https://platform.openai.com/docs/api-reference/chat/create
+openaiConfig:
+  token:
+  model: gpt-3.5-turbo
+  timeout: 60
+  temperature: 1
+  maxTokens:
+  frequencyPenalty: 0
+  presencePenalty: 0
+  user: eventMesh
+  stop: []
+  logitBias: {
+
+  }
+
+openaiProxyConfig:
+  host: 127.0.0.1
+  port: 7890
+

@@ -18,9 +18,20 @@
 package org.apache.eventmesh.connector.chatgpt.source.connector;
 
 
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
+
+import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
+import static com.theokanning.openai.service.OpenAiService.defaultRetrofit;
+
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.utils.AssertUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.chatgpt.source.config.OpenaiConfig;
+import org.apache.eventmesh.connector.chatgpt.source.config.OpenaiProxyConfig;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
+import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -28,6 +39,8 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -50,13 +63,14 @@ import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.theokanning.openai.client.OpenAiApi;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest.ChatCompletionRequestBuilder;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -68,22 +82,13 @@ public class ChatGPTSourceConnector implements Source {
     private BlockingQueue<CloudEvent> queue;
     private HttpServer server;
     private OpenAiService openAiService;
-    private ExecutorService consumeExecutorService;
+    private final ExecutorService chatgptSourceExecutorService =
+        ThreadPoolFactory.createThreadPoolExecutor(
+            Runtime.getRuntime().availableProcessors() * 2,
+            Runtime.getRuntime().availableProcessors() * 2,
+            "ChatGPTSourceThread");
 
-    @Data
-    private static class ChatGPTBody {
-
-        String prompt;
-
-        String source;
-
-        String subject;
-
-        @JsonProperty("datacontenttype")
-        String dataContentType;
-
-        String type;
-    }
+    private String chatCompletionRequestTemplateStr;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -103,11 +108,68 @@ public class ChatGPTSourceConnector implements Source {
         doInit();
     }
 
-    private CloudEvent genGptConnectRecord(ChatGPTBody event) {
+    private void initOpenAi() {
+        OpenaiConfig openaiConfig = sourceConfig.getOpenaiConfig();
+        AssertUtils.isTrue(openaiConfig.getTimeout() > 0, "openaiTimeout must be >= 0");
+        boolean proxyEnable = sourceConfig.connectorConfig.isProxyEnable();
+        if (proxyEnable) {
+            OpenaiProxyConfig chatgptProxyConfig = sourceConfig.openaiProxyConfig;
+            if (chatgptProxyConfig.getHost() == null) {
+                throw new IllegalStateException("chatgpt proxy config 'host' cannot be null");
+            }
+            ObjectMapper mapper = defaultObjectMapper();
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(chatgptProxyConfig.getHost(), chatgptProxyConfig.getPort()));
+            OkHttpClient client = OpenAiService
+                .defaultClient(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout()))
+                .newBuilder()
+                .proxy(proxy)
+                .build();
+            Retrofit retrofit = defaultRetrofit(client, mapper);
+            OpenAiApi api = retrofit.create(OpenAiApi.class);
+            this.openAiService = new OpenAiService(api);
+        } else {
+            this.openAiService =
+                new OpenAiService(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout()));
+        }
+        ChatCompletionRequestBuilder builder = ChatCompletionRequest
+            .builder()
+            .model(openaiConfig.getModel());
+        AssertUtils.notNull(openaiConfig.getModel(), "model cannot be null");
+        builder = builder.model(openaiConfig.getModel());
+        if (openaiConfig.getUser() != null) {
+            builder = builder.user(openaiConfig.getUser());
+        }
+        if (openaiConfig.getPresencePenalty() != null) {
+            builder = builder.presencePenalty(openaiConfig.getPresencePenalty());
+        }
+        if (openaiConfig.getFrequencyPenalty() != null) {
+            builder = builder.frequencyPenalty(openaiConfig.getFrequencyPenalty());
+        }
+        if (openaiConfig.getMaxTokens() != null) {
+            builder = builder.maxTokens(openaiConfig.getMaxTokens());
+        }
+        if (openaiConfig.getTemperature() != null) {
+            builder = builder.temperature(openaiConfig.getTemperature());
+        }
+        if (openaiConfig.getLogitBias() != null && !openaiConfig.getLogitBias().isEmpty()) {
+            builder = builder.logitBias(openaiConfig.getLogitBias());
+        }
+        if (openaiConfig.getStop() != null && !openaiConfig.getStop().isEmpty()) {
+            builder = builder.stop(openaiConfig.getStop());
+        }
+        this.chatCompletionRequestTemplateStr = JsonUtils.toJSONString(builder.build());
+    }
+
+    public ChatCompletionRequest newChatCompletionRequest(List<ChatMessage> chatMessages) {
+        ChatCompletionRequest request = JsonUtils.parseObject(chatCompletionRequestTemplateStr, ChatCompletionRequest.class);
+        request.setMessages(chatMessages);
+        return request;
+    }
+
+    private CloudEvent genGptConnectRecord(ChatGPTRequestDTO event) {
         List<ChatMessage> chatMessages = new ArrayList<>();
         chatMessages.add(new ChatMessage(ChatMessageRole.USER.value(), event.getPrompt()));
-        ChatCompletionRequest req =
-            ChatCompletionRequest.builder().messages(chatMessages).model(sourceConfig.connectorConfig.getOpenaiModel()).build();
+        ChatCompletionRequest req = newChatCompletionRequest(chatMessages);
         StringBuilder gptData = new StringBuilder();
 
         try {
@@ -117,64 +179,40 @@ public class ChatGPTSourceConnector implements Source {
             log.error("Failed to generate GPT connection record: {}", e.getMessage());
         }
 
-        return CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSource(URI.create(event.getSource()))
-            .withType(event.getType())
-            .withTime(ZonedDateTime.now().toOffsetDateTime())
-            .withData(gptData.toString().getBytes())
-            .withSubject(event.getSubject())
-            .withDataContentType(event.getDataContentType())
-            .build();
+        return CloudEventBuilder.v1().withId(UUID.randomUUID().toString()).withSource(URI.create(event.getSource())).withType(event.getType())
+            .withTime(ZonedDateTime.now().toOffsetDateTime()).withData(gptData.toString().getBytes()).withSubject(event.getSubject())
+            .withDataContentType(event.getDataContentType()).build();
     }
 
-    /**
-     *     use proxy:
-     *     ObjectMapper mapper = defaultObjectMapper();
-     *     Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 7890));
-     *     OkHttpClient client =
-     *         OpenAiService.defaultClient(sourceConfig.connectorConfig.getOpenaiToken(), Duration.ofSeconds(60L)).newBuilder().proxy(proxy).build();
-     *     Retrofit retrofit = defaultRetrofit(client, mapper);
-     *     OpenAiApi api = retrofit.create(OpenAiApi.class);
-     *     this.openAiService = new OpenAiService(api);
-     */
     @SuppressWarnings("checkstyle:WhitespaceAround")
     private void doInit() {
-
-        this.openAiService = new OpenAiService(sourceConfig.connectorConfig.getOpenaiToken(), Duration.ofSeconds(60L));
+        initOpenAi();
         this.queue = new LinkedBlockingQueue<>(1024);
-        this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "ChatGPTSourceThread");
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
-        router.route()
-            .path(this.sourceConfig.connectorConfig.getPath()).method(HttpMethod.POST)
-            .handler(BodyHandler.create())
-            .handler(ctx -> {
-                try {
-                    RequestBody body = ctx.body();
-                    ChatGPTBody bodyObject = body.asPojo(ChatGPTBody.class);
-                    if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getPrompt() == null) {
-                        throw new IllegalStateException("Attributes 'subject', 'datacontenttype', and 'prompt' cannot be null");
-                    }
-                    consumeExecutorService.execute(() -> {
-                        try {
-                            CloudEvent cloudEvent = genGptConnectRecord(bodyObject);
-                            queue.add(cloudEvent);
-                            log.info("[ChatGPTSourceConnector] Succeed to convert payload into CloudEvent.");
-                            ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
-                        } catch (Exception e) {
-                            log.error("[ChatGPTSourceConnector]Error processing request: {}", e.getMessage(), e);
-                            ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
-                        }
-                    });
-                } catch (Exception e) {
-                    log.error("[ChatGPTSourceConnector] Malformed request. StatusCode={}", HttpResponseStatus.BAD_REQUEST.code(), e);
-                    ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+        router.route().path(this.sourceConfig.connectorConfig.getPath()).method(HttpMethod.POST).handler(BodyHandler.create()).handler(ctx -> {
+            try {
+                RequestBody body = ctx.body();
+                ChatGPTRequestDTO bodyObject = body.asPojo(ChatGPTRequestDTO.class);
+                if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getPrompt() == null) {
+                    throw new IllegalStateException("Attributes 'subject', 'datacontenttype', and 'prompt' cannot be null");
                 }
-            });
+                chatgptSourceExecutorService.execute(() -> {
+                    try {
+                        CloudEvent cloudEvent = genGptConnectRecord(bodyObject);
+                        queue.add(cloudEvent);
+                        log.info("[ChatGPTSourceConnector] Succeed to convert payload into CloudEvent.");
+                        ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
+                    } catch (Exception e) {
+                        log.error("[ChatGPTSourceConnector] Error processing request: {}", e.getMessage(), e);
+                        ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                    }
+                });
+            } catch (Exception e) {
+                log.error("[ChatGPTSourceConnector] Malformed request. StatusCode={}", HttpResponseStatus.BAD_REQUEST.code(), e);
+                ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+            }
+        });
         this.server = vertx.createHttpServer(new HttpServerOptions().setPort(this.sourceConfig.connectorConfig.getPort())
             .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())).requestHandler(router);
     }

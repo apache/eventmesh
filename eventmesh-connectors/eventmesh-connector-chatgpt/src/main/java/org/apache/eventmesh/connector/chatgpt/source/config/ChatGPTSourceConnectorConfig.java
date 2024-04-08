@@ -30,8 +30,6 @@ public class ChatGPTSourceConnectorConfig {
 
     private int idleTimeout;
 
-    private String openaiToken;
-
-    private String openaiModel;
+    private boolean proxyEnable;
 
 }

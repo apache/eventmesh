@@ -27,4 +27,9 @@ import lombok.EqualsAndHashCode;
 public class ChatGPTSourceConfig extends SourceConfig {
 
     public ChatGPTSourceConnectorConfig connectorConfig;
+
+    public OpenaiProxyConfig openaiProxyConfig;
+
+    public OpenaiConfig openaiConfig;
+
 }
