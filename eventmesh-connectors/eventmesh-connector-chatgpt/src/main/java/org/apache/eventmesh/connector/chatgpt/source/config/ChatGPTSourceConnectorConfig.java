@@ -32,4 +32,6 @@ public class ChatGPTSourceConnectorConfig {
 
     private boolean proxyEnable;
 
+    private String parsePromptFileName;
+
 }

@@ -30,6 +30,7 @@ connectorConfig:
     port: 3756
     idleTimeout: 999
     proxyEnable: true
+    parsePromptFileName: prompt
 
 # https://platform.openai.com/docs/api-reference/chat/create
 openaiConfig:

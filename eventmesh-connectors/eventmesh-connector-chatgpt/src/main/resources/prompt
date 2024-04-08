@@ -4,17 +4,17 @@ For the following text, extract the following information:
 
 Create a CloudEvents-formatted JSON object with the following fields:
 - specversion: Set to "1.0" (the current CloudEvents specification version)
-- type: Set to \\\ {type} \\\
-- source: Set to \\\ {source} \\\
-- id: Set to \\\ {id} \\\ (Generate a unique identifier for the event (e.g., "A234-1234-1234"))
-- time: Set to \\\ {time} \\\ (the current timestamp in ISO 8601 format. e.g:"2023-03-25T12:34:56.789Z")
-- datacontenttype: Set to \\\ {datacontenttype} \\\
+- type: Set to \\\ ${type} \\\
+- source: Set to \\\ ${source} \\\
+- id: Set to \\\ ${id} \\\ (Generate a unique identifier for the event.)
+- time: Set to \\\ ${time} \\\
+- datacontenttype: Set to \\\ ${datacontenttype} \\\ (e.g.,application/json)
 - data: Set to the input text provided by the user
-\\\
-{fields}
-\\\
+    \\\
+    ${fields}
+    \\\
 
-text: \\\ {text} \\\
+text: \\\ ${text} \\\
 
 If any of the fields marked as \\\ {} \\\ are null or empty, use a default value.
 

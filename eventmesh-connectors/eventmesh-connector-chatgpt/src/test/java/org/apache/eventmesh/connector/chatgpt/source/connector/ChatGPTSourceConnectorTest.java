@@ -77,7 +77,7 @@ class ChatGPTSourceConnectorTest {
         event.type = "com.example.someevent";
         event.source = "/mycontext";
         event.datacontenttype = "text/plain";
-        event.prompt = expectedMessage;
+        event.text = expectedMessage;
         invalidPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
         HttpResponse resp = httpClient.execute(invalidPost);
         Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, resp.getStatusLine().getStatusCode());
@@ -91,7 +91,8 @@ class ChatGPTSourceConnectorTest {
         event.source = "/mycontext";
         event.subject = "test";
         event.datacontenttype = "text/plain";
-        event.prompt = expectedMessage;
+        event.text = expectedMessage;
+        event.requestType = "CHAT";
         httpPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
 
         return httpClient.execute(httpPost);
@@ -105,10 +106,11 @@ class ChatGPTSourceConnectorTest {
 
     class TestEvent {
 
+        public String requestType;
         public String type;
         public String source;
         public String subject;
         public String datacontenttype;
-        public String prompt;
+        public String text;
     }
 }

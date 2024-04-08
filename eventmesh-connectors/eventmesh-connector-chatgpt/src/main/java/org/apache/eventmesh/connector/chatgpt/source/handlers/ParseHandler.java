@@ -15,32 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.chatgpt.source.dto;
+package org.apache.eventmesh.connector.chatgpt.source.handlers;
 
-import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
+import org.apache.eventmesh.connector.chatgpt.source.managers.OpenaiManager;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.cloudevents.CloudEvent;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ChatGPTRequestDTO {
+public class ParseHandler {
 
-    private ChatGPTRequestType requestType;
+    private final OpenaiManager openaiManager;
 
-    private String source;
+    private final String promptTemplate;
 
-    private String subject;
+    public ParseHandler(OpenaiManager openaiManager, String promptTemplate) {
+        this.openaiManager = openaiManager;
+        this.promptTemplate = promptTemplate;
+    }
 
-    @JsonProperty("datacontenttype")
-    private String dataContentType;
+    public CloudEvent invoke(ChatGPTRequestDTO event) {
+        // todo use StringSubstitutor event and promptTemplate translate to final prompt
 
-    private String type;
-
-    private String text;
+        return null;
+    }
 
 }

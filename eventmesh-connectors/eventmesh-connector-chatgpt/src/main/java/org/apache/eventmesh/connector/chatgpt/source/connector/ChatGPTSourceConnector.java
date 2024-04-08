@@ -17,21 +17,14 @@
 
 package org.apache.eventmesh.connector.chatgpt.source.connector;
 
-
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-
-import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
-import static com.theokanning.openai.service.OpenAiService.defaultRetrofit;
-
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.AssertUtils;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.connector.chatgpt.source.config.OpenaiConfig;
-import org.apache.eventmesh.connector.chatgpt.source.config.OpenaiProxyConfig;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
 import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
+import org.apache.eventmesh.connector.chatgpt.source.handlers.ChatHandler;
+import org.apache.eventmesh.connector.chatgpt.source.handlers.ParseHandler;
+import org.apache.eventmesh.connector.chatgpt.source.managers.OpenaiManager;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -39,21 +32,20 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URI;
-import java.time.Duration;
-import java.time.ZonedDateTime;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -62,14 +54,6 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.theokanning.openai.client.OpenAiApi;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest.ChatCompletionRequestBuilder;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.ChatMessageRole;
-import com.theokanning.openai.service.OpenAiService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,14 +65,16 @@ public class ChatGPTSourceConnector implements Source {
     private ChatGPTSourceConfig sourceConfig;
     private BlockingQueue<CloudEvent> queue;
     private HttpServer server;
-    private OpenAiService openAiService;
     private final ExecutorService chatgptSourceExecutorService =
         ThreadPoolFactory.createThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors() * 2,
             Runtime.getRuntime().availableProcessors() * 2,
             "ChatGPTSourceThread");
 
-    private String chatCompletionRequestTemplateStr;
+    private OpenaiManager openaiManager;
+    private String parsePromptTemplateStr;
+    private ChatHandler chatHandler;
+    private ParseHandler parseHandler;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -108,85 +94,26 @@ public class ChatGPTSourceConnector implements Source {
         doInit();
     }
 
-    private void initOpenAi() {
-        OpenaiConfig openaiConfig = sourceConfig.getOpenaiConfig();
-        AssertUtils.isTrue(openaiConfig.getTimeout() > 0, "openaiTimeout must be >= 0");
-        boolean proxyEnable = sourceConfig.connectorConfig.isProxyEnable();
-        if (proxyEnable) {
-            OpenaiProxyConfig chatgptProxyConfig = sourceConfig.openaiProxyConfig;
-            if (chatgptProxyConfig.getHost() == null) {
-                throw new IllegalStateException("chatgpt proxy config 'host' cannot be null");
-            }
-            ObjectMapper mapper = defaultObjectMapper();
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(chatgptProxyConfig.getHost(), chatgptProxyConfig.getPort()));
-            OkHttpClient client = OpenAiService
-                .defaultClient(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout()))
-                .newBuilder()
-                .proxy(proxy)
-                .build();
-            Retrofit retrofit = defaultRetrofit(client, mapper);
-            OpenAiApi api = retrofit.create(OpenAiApi.class);
-            this.openAiService = new OpenAiService(api);
-        } else {
-            this.openAiService =
-                new OpenAiService(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout()));
-        }
-        ChatCompletionRequestBuilder builder = ChatCompletionRequest
-            .builder()
-            .model(openaiConfig.getModel());
-        AssertUtils.notNull(openaiConfig.getModel(), "model cannot be null");
-        builder = builder.model(openaiConfig.getModel());
-        if (openaiConfig.getUser() != null) {
-            builder = builder.user(openaiConfig.getUser());
-        }
-        if (openaiConfig.getPresencePenalty() != null) {
-            builder = builder.presencePenalty(openaiConfig.getPresencePenalty());
-        }
-        if (openaiConfig.getFrequencyPenalty() != null) {
-            builder = builder.frequencyPenalty(openaiConfig.getFrequencyPenalty());
-        }
-        if (openaiConfig.getMaxTokens() != null) {
-            builder = builder.maxTokens(openaiConfig.getMaxTokens());
-        }
-        if (openaiConfig.getTemperature() != null) {
-            builder = builder.temperature(openaiConfig.getTemperature());
-        }
-        if (openaiConfig.getLogitBias() != null && !openaiConfig.getLogitBias().isEmpty()) {
-            builder = builder.logitBias(openaiConfig.getLogitBias());
-        }
-        if (openaiConfig.getStop() != null && !openaiConfig.getStop().isEmpty()) {
-            builder = builder.stop(openaiConfig.getStop());
-        }
-        this.chatCompletionRequestTemplateStr = JsonUtils.toJSONString(builder.build());
-    }
-
-    public ChatCompletionRequest newChatCompletionRequest(List<ChatMessage> chatMessages) {
-        ChatCompletionRequest request = JsonUtils.parseObject(chatCompletionRequestTemplateStr, ChatCompletionRequest.class);
-        request.setMessages(chatMessages);
-        return request;
-    }
-
-    private CloudEvent genGptConnectRecord(ChatGPTRequestDTO event) {
-        List<ChatMessage> chatMessages = new ArrayList<>();
-        chatMessages.add(new ChatMessage(ChatMessageRole.USER.value(), event.getPrompt()));
-        ChatCompletionRequest req = newChatCompletionRequest(chatMessages);
-        StringBuilder gptData = new StringBuilder();
-
+    public void initParsePrompt() {
+        String parsePromptFileName = sourceConfig.getConnectorConfig().getParsePromptFileName();
+        URL resource = this.getClass().getClassLoader().getResource(parsePromptFileName);
+        AssertUtils.notNull(resource, String.format("cannot find file %s", parsePromptFileName));
         try {
-            openAiService.createChatCompletion(req).getChoices()
-                .forEach(chatCompletionChoice -> gptData.append(chatCompletionChoice.getMessage().getContent()));
-        } catch (Exception e) {
-            log.error("Failed to generate GPT connection record: {}", e.getMessage());
+            this.parsePromptTemplateStr = new String(Files.readAllBytes(Paths.get(resource.toURI())));
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("The file path is invalid", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to read file", e);
         }
-
-        return CloudEventBuilder.v1().withId(UUID.randomUUID().toString()).withSource(URI.create(event.getSource())).withType(event.getType())
-            .withTime(ZonedDateTime.now().toOffsetDateTime()).withData(gptData.toString().getBytes()).withSubject(event.getSubject())
-            .withDataContentType(event.getDataContentType()).build();
     }
+
 
     @SuppressWarnings("checkstyle:WhitespaceAround")
     private void doInit() {
-        initOpenAi();
+        initParsePrompt();
+        this.openaiManager = new OpenaiManager(sourceConfig);
+        this.chatHandler = new ChatHandler(this.openaiManager);
+        this.parseHandler = new ParseHandler(openaiManager, parsePromptTemplateStr);
         this.queue = new LinkedBlockingQueue<>(1024);
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
@@ -194,12 +121,22 @@ public class ChatGPTSourceConnector implements Source {
             try {
                 RequestBody body = ctx.body();
                 ChatGPTRequestDTO bodyObject = body.asPojo(ChatGPTRequestDTO.class);
-                if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getPrompt() == null) {
+                if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getText() == null) {
                     throw new IllegalStateException("Attributes 'subject', 'datacontenttype', and 'prompt' cannot be null");
                 }
                 chatgptSourceExecutorService.execute(() -> {
                     try {
-                        CloudEvent cloudEvent = genGptConnectRecord(bodyObject);
+                        CloudEvent cloudEvent;
+                        switch (bodyObject.getRequestType()) {
+                            case CHAT:
+                                cloudEvent = chatHandler.invoke(bodyObject);
+                                break;
+                            case PARSE:
+                                cloudEvent = parseHandler.invoke(bodyObject);
+                                break;
+                            default:
+                                throw new IllegalStateException("the request type is illegal");
+                        }
                         queue.add(cloudEvent);
                         log.info("[ChatGPTSourceConnector] Succeed to convert payload into CloudEvent.");
                         ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();

@@ -15,32 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.chatgpt.source.dto;
+package org.apache.eventmesh.connector.chatgpt.source.enums;
 
-import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+public enum ChatGPTRequestType {
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ChatGPTRequestDTO {
-
-    private ChatGPTRequestType requestType;
-
-    private String source;
-
-    private String subject;
-
-    @JsonProperty("datacontenttype")
-    private String dataContentType;
-
-    private String type;
-
-    private String text;
+    CHAT, PARSE;
 
 }
