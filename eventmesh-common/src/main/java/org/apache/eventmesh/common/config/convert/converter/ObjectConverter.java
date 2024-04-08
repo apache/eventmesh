@@ -18,7 +18,7 @@
 package org.apache.eventmesh.common.config.convert.converter;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 import org.apache.eventmesh.common.config.ConfigInfo;
 import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
@@ -110,18 +110,18 @@ public class ObjectConverter implements ConvertValue<Object> {
                 field.setAccessible(true);
 
                 ConvertInfo convertInfo = this.convertInfo;
-                ConfigFiled configFiled = field.getAnnotation(ConfigFiled.class);
-                if (Objects.isNull(configFiled)) {
+                ConfigField configField = field.getAnnotation(ConfigField.class);
+                if (Objects.isNull(configField)) {
                     continue;
                 }
 
-                String key = this.buildKey(configFiled);
-                needReload = this.checkNeedReload(needReload, configFiled);
+                String key = this.buildKey(configField);
+                needReload = this.checkNeedReload(needReload, configField);
 
                 ConvertValue<?> convertValue = ConverterMap.getFieldConverter(field);
-                Object fieldValue = convertValue.processFieldValue(convertInfo, key, configFiled);
+                Object fieldValue = convertValue.processFieldValue(convertInfo, key, configField);
 
-                if (!checkFieldValueBefore(configFiled, key, convertValue, fieldValue)) {
+                if (!checkFieldValueBefore(configField, key, convertValue, fieldValue)) {
                     continue;
                 }
                 convertInfo.setValue(fieldValue);
@@ -129,7 +129,7 @@ public class ObjectConverter implements ConvertValue<Object> {
                 convertInfo.setKey(key);
                 Object convertedValue = convertValue.convert(convertInfo);
 
-                if (!checkFieldValueAfter(configFiled, key, convertedValue)) {
+                if (!checkFieldValueAfter(configField, key, convertedValue)) {
                     continue;
                 }
                 field.set(object, convertedValue);
@@ -155,16 +155,16 @@ public class ObjectConverter implements ConvertValue<Object> {
         }
     }
 
-    private boolean checkFieldValueAfter(ConfigFiled configFiled, String key, Object convertedValue) {
+    private boolean checkFieldValueAfter(ConfigField configField, String key, Object convertedValue) {
         if (Objects.isNull(convertedValue)) {
-            if (configFiled.notNull()) {
+            if (configField.notNull()) {
                 throw new RuntimeException(key + " can not be null!");
             }
 
             return false;
         }
 
-        if (configFiled.beNumber()) {
+        if (configField.beNumber()) {
             if (!StringUtils.isNumeric(String.valueOf(convertedValue))) {
                 throw new RuntimeException(key + " must be number!");
             }
@@ -173,9 +173,9 @@ public class ObjectConverter implements ConvertValue<Object> {
         return true;
     }
 
-    private boolean checkFieldValueBefore(ConfigFiled configFiled, String key, ConvertValue<?> convertValue, Object fieldValue) {
+    private boolean checkFieldValueBefore(ConfigField configField, String key, ConvertValue<?> convertValue, Object fieldValue) {
         if (Objects.isNull(fieldValue) && !convertValue.canHandleNullValue()) {
-            if (configFiled.notNull()) {
+            if (configField.notNull()) {
                 throw new RuntimeException(key + " can not be null!");
             }
 
@@ -185,8 +185,8 @@ public class ObjectConverter implements ConvertValue<Object> {
         return true;
     }
 
-    private boolean checkNeedReload(boolean needReload, ConfigFiled configFiled) {
-        if (!needReload && configFiled != null && configFiled.reload()) {
+    private boolean checkNeedReload(boolean needReload, ConfigField configField) {
+        if (!needReload && configField != null && configField.reload()) {
             needReload = Boolean.TRUE;
         }
 
@@ -201,14 +201,14 @@ public class ObjectConverter implements ConvertValue<Object> {
         return needReload;
     }
 
-    private String buildKey(ConfigFiled configFiled) {
+    private String buildKey(ConfigField configField) {
         String key;
         StringBuilder keyPrefix = new StringBuilder(Objects.isNull(prefix) ? "" : prefix);
 
-        if (configFiled == null || configFiled.field().isEmpty() && keyPrefix.length() > 0) {
+        if (configField == null || configField.field().isEmpty() && keyPrefix.length() > 0) {
             key = keyPrefix.deleteCharAt(keyPrefix.length() - 1).toString();
         } else {
-            key = keyPrefix.append(configFiled.field()).toString();
+            key = keyPrefix.append(configField.field()).toString();
         }
 
         return key;

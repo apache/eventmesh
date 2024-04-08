@@ -67,8 +67,6 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
         final ChannelHandlerContext ctx = handlerSpecific.getCtx();
         final HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
-        HttpEventWrapper responseWrapper;
-
         HTTP_LOGGER.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
             EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
@@ -91,6 +89,8 @@ public class DeleteTopicProcessor implements AsyncHttpProcessor {
         Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
             new TypeReference<HashMap<String, Object>>() {
             });
+
+        HttpEventWrapper responseWrapper;
 
         if (requestBodyMap.get("topic") == null || StringUtils.isBlank(requestBodyMap.get("topic").toString())) {
             Map<String, Object> responseBodyMap = new HashMap<>();

@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.configuration;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,105 +32,105 @@ import lombok.NoArgsConstructor;
 @Config(prefix = "eventMesh.server")
 public class EventMeshTCPConfiguration extends CommonConfiguration {
 
-    @ConfigFiled(field = "tcp.port")
+    @ConfigField(field = "tcp.port")
     private int eventMeshTcpServerPort = 10000;
 
-    @ConfigFiled(field = "tcp.allIdleSeconds")
+    @ConfigField(field = "tcp.allIdleSeconds")
     private int eventMeshTcpIdleAllSeconds = 60;
 
-    @ConfigFiled(field = "tcp.writerIdleSeconds")
+    @ConfigField(field = "tcp.writerIdleSeconds")
     private int eventMeshTcpIdleWriteSeconds = 60;
 
-    @ConfigFiled(field = "tcp.readerIdleSeconds")
+    @ConfigField(field = "tcp.readerIdleSeconds")
     private int eventMeshTcpIdleReadSeconds = 60;
 
-    @ConfigFiled(field = "tcp.msgReqnumPerSecond")
+    @ConfigField(field = "tcp.msgReqnumPerSecond")
     private Integer eventMeshTcpMsgReqnumPerSecond = 15000;
 
     /**
      * TCP Server allows max client num
      */
-    @ConfigFiled(field = "tcp.clientMaxNum")
+    @ConfigField(field = "tcp.clientMaxNum")
     private int eventMeshTcpClientMaxNum = 10000;
 
     // ======================================= New add config =================================
 
-    @ConfigFiled(field = "global.scheduler")
+    @ConfigField(field = "global.scheduler")
     private int eventMeshTcpGlobalScheduler = 5;
 
-    @ConfigFiled(field = "tcp.taskHandleExecutorPoolSize")
+    @ConfigField(field = "tcp.taskHandleExecutorPoolSize")
     private int eventMeshTcpTaskHandleExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
 
-    @ConfigFiled(field = "tcp.sendExecutorPoolSize")
+    @ConfigField(field = "tcp.sendExecutorPoolSize")
     private int eventMeshTcpMsgSendExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
 
-    @ConfigFiled(field = "tcp.replyExecutorPoolSize")
+    @ConfigField(field = "tcp.replyExecutorPoolSize")
     private int eventMeshTcpMsgReplyExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
 
-    @ConfigFiled(field = "tcp.ackExecutorPoolSize")
+    @ConfigField(field = "tcp.ackExecutorPoolSize")
     private int eventMeshTcpMsgAckExecutorPoolSize = 2 * Runtime.getRuntime().availableProcessors();
 
-    @ConfigFiled(field = "tcp.taskHandleExecutorQueueSize")
+    @ConfigField(field = "tcp.taskHandleExecutorQueueSize")
     private int eventMeshTcpTaskHandleExecutorQueueSize = 10000;
 
-    @ConfigFiled(field = "tcp.sendExecutorQueueSize")
+    @ConfigField(field = "tcp.sendExecutorQueueSize")
     private int eventMeshTcpMsgSendExecutorQueueSize = 10000;
 
-    @ConfigFiled(field = "tcp.replyExecutorQueueSize")
+    @ConfigField(field = "tcp.replyExecutorQueueSize")
     private int eventMeshTcpMsgReplyExecutorQueueSize = 10000;
 
-    @ConfigFiled(field = "tcp.ackExecutorQueueSize")
+    @ConfigField(field = "tcp.ackExecutorQueueSize")
     private int eventMeshTcpMsgAckExecutorQueueSize = 10000;
 
-    @ConfigFiled(field = "tcp.msgDownStreamExecutorPoolSize")
+    @ConfigField(field = "tcp.msgDownStreamExecutorPoolSize")
     private int eventMeshTcpMsgDownStreamExecutorPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 8);
 
-    @ConfigFiled(field = "session.expiredInMills")
+    @ConfigField(field = "session.expiredInMills")
     private int eventMeshTcpSessionExpiredInMills = 60000;
 
-    @ConfigFiled(field = "session.upstreamBufferSize")
+    @ConfigField(field = "session.upstreamBufferSize")
     private int eventMeshTcpSessionUpstreamBufferSize = 100;
 
-    @ConfigFiled(field = "retry.async.pushRetryTimes")
+    @ConfigField(field = "retry.async.pushRetryTimes")
     private int eventMeshTcpMsgAsyncRetryTimes = 3;
 
-    @ConfigFiled(field = "retry.sync.pushRetryTimes")
+    @ConfigField(field = "retry.sync.pushRetryTimes")
     private int eventMeshTcpMsgSyncRetryTimes = 1;
 
-    @ConfigFiled(field = "retry.sync.pushRetryDelayInMills")
+    @ConfigField(field = "retry.sync.pushRetryDelayInMills")
     private int eventMeshTcpMsgRetrySyncDelayInMills = 500;
 
-    @ConfigFiled(field = "retry.async.pushRetryDelayInMills")
+    @ConfigField(field = "retry.async.pushRetryDelayInMills")
     private int eventMeshTcpMsgRetryAsyncDelayInMills = 500;
 
-    @ConfigFiled(field = "retry.pushRetryQueueSize")
+    @ConfigField(field = "retry.pushRetryQueueSize")
     private int eventMeshTcpMsgRetryQueueSize = 10000;
 
-    @ConfigFiled(field = "tcp.RebalanceIntervalInMills")
+    @ConfigField(field = "tcp.RebalanceIntervalInMills")
     private Integer eventMeshTcpRebalanceIntervalInMills = 30 * 1000;
 
-    @ConfigFiled(field = "admin.http.port")
+    @ConfigField(field = "admin.http.port")
     private int eventMeshServerAdminPort = 10106;
 
-    @ConfigFiled(field = "tcp.sendBack.enabled")
+    @ConfigField(field = "tcp.sendBack.enabled")
     private boolean eventMeshTcpSendBackEnabled = Boolean.TRUE;
 
-    @ConfigFiled(field = "tcp.SendBackMaxTimes")
+    @ConfigField(field = "tcp.SendBackMaxTimes")
     private int eventMeshTcpSendBackMaxTimes = 3;
 
-    @ConfigFiled(field = "tcp.pushFailIsolateTimeInMills")
+    @ConfigField(field = "tcp.pushFailIsolateTimeInMills")
     private int eventMeshTcpPushFailIsolateTimeInMills = 30 * 1000;
 
-    @ConfigFiled(field = "gracefulShutdown.sleepIntervalInMills")
+    @ConfigField(field = "gracefulShutdown.sleepIntervalInMills")
     private int gracefulShutdownSleepIntervalInMills = 1000;
 
-    @ConfigFiled(field = "rebalanceRedirect.sleepIntervalInM")
+    @ConfigField(field = "rebalanceRedirect.sleepIntervalInM")
     private int sleepIntervalInRebalanceRedirectMills = 200;
 
-    @ConfigFiled(field = "maxEventSize")
+    @ConfigField(field = "maxEventSize")
     private int eventMeshEventSize = 1000;
 
-    @ConfigFiled(field = "maxEventBatchSize")
+    @ConfigField(field = "maxEventBatchSize")
     private int eventMeshEventBatchSize = 10;
 
     private final TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2_000);

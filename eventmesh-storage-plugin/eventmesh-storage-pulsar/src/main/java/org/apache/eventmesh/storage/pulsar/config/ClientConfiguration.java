@@ -18,7 +18,7 @@
 package org.apache.eventmesh.storage.pulsar.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,19 +28,19 @@ import lombok.Setter;
 @Config(prefix = "eventMesh.server.pulsar", path = "classPath://pulsar-client.properties")
 public class ClientConfiguration {
 
-    @ConfigFiled(field = "service")
+    @ConfigField(field = "service")
     private String serviceAddr;
 
-    @ConfigFiled(field = "authPlugin")
+    @ConfigField(field = "authPlugin")
     private String authPlugin;
 
-    @ConfigFiled(field = "authParams")
+    @ConfigField(field = "authParams")
     private String authParams;
 
     /*
      * the full format of topic needs a prefix, but the prefix cannot be passed in the url when the topic is carried
      *
      */
-    @ConfigFiled(field = "topicPrefix")
+    @ConfigField(field = "topicPrefix")
     private String topicPrefix;
 }
