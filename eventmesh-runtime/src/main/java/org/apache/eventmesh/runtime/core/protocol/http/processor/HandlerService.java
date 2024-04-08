@@ -328,14 +328,6 @@ public class HandlerService {
             HandlerService.this.sendResponse(ctx, this.request, this.response);
         }
 
-        public void setResponseJsonBody(String body) {
-            this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
-        }
-
-        public void setResponseTextBody(String body) {
-            this.sendResponse(HttpResponseUtils.setResponseTextBody(body, ctx));
-        }
-
         public void sendResponse(HttpResponse response) {
             this.response = response;
             this.postHandler(ConnectionType.PERSISTENT);

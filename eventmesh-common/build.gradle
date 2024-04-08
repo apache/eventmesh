@@ -30,6 +30,8 @@ dependencies {
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"
 
+    api "com.alibaba.fastjson2:fastjson2"
+
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j2-impl"
