@@ -18,7 +18,7 @@
 package org.apache.eventmesh.meta.zookeeper.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,38 +28,38 @@ import lombok.NoArgsConstructor;
 @Config(prefix = "eventMesh.registry.zookeeper")
 public class ZKRegistryConfiguration {
 
-    @ConfigFiled(field = "scheme")
+    @ConfigField(field = "scheme")
     private String scheme;
 
-    @ConfigFiled(field = "auth")
+    @ConfigField(field = "auth")
     private String auth;
 
-    @ConfigFiled(field = "connectionTimeoutMs")
+    @ConfigField(field = "connectionTimeoutMs")
     private Integer connectionTimeoutMs = 5000;
 
-    @ConfigFiled(field = "sessionTimeoutMs")
+    @ConfigField(field = "sessionTimeoutMs")
     private Integer sessionTimeoutMs = 40000;
 
     // Fully qualified name of RetryPolicy implementation
-    @ConfigFiled(field = "retryPolicy.class")
+    @ConfigField(field = "retryPolicy.class")
     private String retryPolicyClass;
 
-    @ConfigFiled(field = "retryPolicy.baseSleepTimeMs")
+    @ConfigField(field = "retryPolicy.baseSleepTimeMs")
     private Integer baseSleepTimeMs = 1000;
 
-    @ConfigFiled(field = "retryPolicy.maxRetries")
+    @ConfigField(field = "retryPolicy.maxRetries")
     private Integer maxRetries = 5;
 
-    @ConfigFiled(field = "retryPolicy.maxSleepTimeMs")
+    @ConfigField(field = "retryPolicy.maxSleepTimeMs")
     private Integer maxSleepTimeMs = 5000;
 
-    @ConfigFiled(field = "retryPolicy.retryIntervalMs")
+    @ConfigField(field = "retryPolicy.retryIntervalMs")
     private Integer retryIntervalTimeMs = 1000;
 
-    @ConfigFiled(field = "retryPolicy.nTimes")
+    @ConfigField(field = "retryPolicy.nTimes")
     private Integer retryNTimes = 10;
 
-    @ConfigFiled(field = "retryPolicy.sleepMsBetweenRetries")
+    @ConfigField(field = "retryPolicy.sleepMsBetweenRetries")
     private Integer sleepMsBetweenRetries = 1000;
 
 }

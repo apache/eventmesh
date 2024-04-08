@@ -18,99 +18,76 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.enums.HttpMethod;
+import org.apache.eventmesh.runtime.admin.response.Result;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.AsciiString;
+
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 
 import lombok.Data;
 
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
-    protected void write(ChannelHandlerContext ctx, byte[] result) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, HttpHeaderValues.TEXT_HTML)).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void write(ChannelHandlerContext ctx, HttpResponse response) {
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void write(ChannelHandlerContext ctx, byte[] result, AsciiString headerValue, HttpResponseStatus httpResponseStatus) {
-        ctx.writeAndFlush(HttpResponseUtils.getHttpResponse(result, ctx, headerValue, httpResponseStatus)).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void write401(ChannelHandlerContext ctx) {
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED);
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void writeSuccess(ChannelHandlerContext ctx) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        DefaultFullHttpResponse response =
-            new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER, responseHeaders, responseHeaders);
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void writeSuccess(ChannelHandlerContext ctx, DefaultHttpHeaders responseHeaders) {
-        DefaultFullHttpResponse response =
-            new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER, responseHeaders, responseHeaders);
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    protected void preflight(ChannelHandlerContext ctx) {
-        HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
-        responseHeaders.add(EventMeshConstants.HANDLER_METHODS, "*");
-        responseHeaders.add(EventMeshConstants.HANDLER_HEADERS, "*");
-        responseHeaders.add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.EMPTY_BUFFER,
-            responseHeaders, responseHeaders);
-        write(ctx, response);
+    protected void writeText(ChannelHandlerContext ctx, String text) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.TEXT_HTML);
+        write(ctx, HttpResponseUtils.buildHttpResponse(text, ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
     /**
-     * Converts a query string to a map of key-value pairs.
-     * <p>
-     * This method takes a query string and parses it to create a map of key-value pairs, where each key and value are extracted from the query string
-     * separated by '='.
-     * <p>
-     * If the query string is null, an empty map is returned.
-     *
-     * @param query the query string to convert to a map
-     * @return a map containing the key-value pairs from the query string
+     * Return given JSON String with given {@link HttpResponseStatus}.
      */
-    protected Map<String, String> queryToMap(String query) {
-        if (query == null) {
-            return new HashMap<>();
-        }
-        Map<String, String> result = new HashMap<>();
-        for (String param : query.split("&")) {
-            String[] entry = param.split("=");
-            if (entry.length > 1) {
-                result.put(entry[0], entry[1]);
-            } else {
-                result.put(entry[0], "");
-            }
-        }
-        return result;
+    protected void writeJson(ChannelHandlerContext ctx, String json, HttpResponseStatus status) {
+        HttpHeaders responseHeaders = HttpResponseUtils.buildDefaultHttpHeaders(HttpHeaderValues.APPLICATION_JSON);
+        write(ctx, HttpResponseUtils.buildHttpResponse(json, ctx, responseHeaders, status));
+    }
+
+    /**
+     * Return given JSON String with status {@link HttpResponseStatus#OK}.
+     */
+    protected void writeJson(ChannelHandlerContext ctx, String json) {
+        writeJson(ctx, json, HttpResponseStatus.OK);
+    }
+
+    /**
+     * Serialize given data into the JSON String of {@link Result} and return with status {@link HttpResponseStatus#OK}.
+     */
+    protected void writeSuccess(ChannelHandlerContext ctx, Object data) {
+        Result<Object> result = Result.success(data);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        writeJson(ctx, json);
+    }
+
+    /**
+     * Wrap given message to {@link Result} and return with status {@link HttpResponseStatus#BAD_REQUEST}.
+     */
+    protected void writeBadRequest(ChannelHandlerContext ctx, String message) {
+        Result<String> result = new Result<>(message);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        writeJson(ctx, json, HttpResponseStatus.BAD_REQUEST);
+    }
+
+    protected void writeUnauthorized(ChannelHandlerContext ctx, String message) {
+        Result<String> result = new Result<>(message);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        writeJson(ctx, json, HttpResponseStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Use {@link HttpResponseUtils#buildHttpResponse} to build {@link HttpResponse} param.
+     */
+    protected void write(ChannelHandlerContext ctx, HttpResponse response) {
+        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override
@@ -125,25 +102,47 @@ public abstract class AbstractHttpHandler implements HttpHandler {
             case POST:
                 post(httpRequest, ctx);
                 break;
+            case PUT:
+                put(httpRequest, ctx);
+                break;
             case DELETE:
                 delete(httpRequest, ctx);
                 break;
-            default: // do nothing
+            default:
+                // do nothing
                 break;
         }
     }
 
-    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-    }
-
-    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+    protected void preflight(ChannelHandlerContext ctx) {
+        HttpHeaders responseHeaders = new DefaultHttpHeaders();
+        responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
+        responseHeaders.add(EventMeshConstants.HANDLER_METHODS, "*");
+        responseHeaders.add(EventMeshConstants.HANDLER_HEADERS, "*");
+        responseHeaders.add(EventMeshConstants.HANDLER_AGE, EventMeshConstants.MAX_AGE);
+        write(ctx, HttpResponseUtils.buildHttpResponse("", ctx, responseHeaders, HttpResponseStatus.OK));
     }
 
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
     }
 
-    protected Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
-        return HttpRequestUtil.parseHttpRequestBody(httpRequest, null, null);
+    /**
+     * Add new resource.
+     */
+    protected void post(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
+    }
+
+    /**
+     * Update resource, should be idempotent.
+     */
+    protected void put(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
+    }
+
+    protected void delete(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
+        // Override this method in subclass
     }
 }
 
