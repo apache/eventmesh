@@ -18,6 +18,19 @@
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+
+    /*
+     * TODO: This is a shaded artifact that contains 20 MiB of external libraries. It could probably be replaced by:
+     *
+     *     implementation "org.apache.pulsar:pulsar-client-api:$pulsar_version"
+     *     runtimeOnly "org.apache.pulsar:pulsar-client-original:$pulsar_version"
+     *
+     * The exclusions can be removed after an upgrade of the transitive:
+     *
+     *     "org.apache.bookkeeper:bookkeeper"
+     *
+     * dependency to 4.15.4 or higher (used by Pulsar 2.11.2 or higher).
+     */
     implementation('org.apache.pulsar:pulsar-client:2.10.1')  {
         // Remove logging backend implementations
         exclude group: 'org.apache.logging.log4j', module: 'log4j-core'

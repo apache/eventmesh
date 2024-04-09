@@ -31,6 +31,10 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation rocketmq
+    /*
+     * The exclusions can be remove after this issue is fixed:
+     * https://github.com/apache/rocketmq/issues/5347
+     */
     implementation("org.apache.rocketmq:rocketmq-broker:$rocketmq_version") {
         // Remove logging backend implementations
         exclude group: 'ch.qos.logback', module: 'logback-classic'

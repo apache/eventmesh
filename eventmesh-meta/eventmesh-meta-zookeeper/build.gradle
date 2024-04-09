@@ -20,6 +20,11 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    /*
+     * The exclusion can be removed once ZOOKEEPER-4820 has been fixed.
+     *
+     * See https://github.com/apache/zookeeper/pull/2155
+     */
     implementation('org.apache.zookeeper:zookeeper') {
         exclude group: 'ch.qos.logback', module: 'logback-core'
         exclude group: 'ch.qos.logback', module: 'logback-classic'
