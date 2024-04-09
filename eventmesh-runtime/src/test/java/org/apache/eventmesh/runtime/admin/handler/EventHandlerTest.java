@@ -77,7 +77,7 @@ public class EventHandlerTest {
     EventMeshTCPServer eventMeshTCPServer;
 
     @Spy
-    EventHandler eventHandler = new EventHandler(storagePlugin);;
+    EventHandler eventHandler = new EventHandler(storagePlugin);
 
     @Mock
     MQAdminWrapper mockAdmin;
@@ -91,7 +91,7 @@ public class EventHandlerTest {
         adminHandlerManager = new AdminHandlerManager(eventMeshServer);
         Field admin = EventHandler.class.getDeclaredField("admin");
         admin.setAccessible(true);
-        admin.set(eventHandler,mockAdmin);
+        admin.set(eventHandler, mockAdmin);
         embeddedChannel = new EmbeddedChannel(
             new HttpRequestDecoder(),
             new HttpResponseEncoder(),
@@ -101,7 +101,7 @@ public class EventHandlerTest {
                 protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {
                     String uriStr = msg.uri();
                     URI uri = URI.create(uriStr);
-                    adminHandlerManager.getHttpHandler(uri.getPath()).get().handle(msg,ctx);
+                    adminHandlerManager.getHttpHandler(uri.getPath()).get().handle(msg, ctx);
                 }
             });
         adminHandlerManager.initHandler(eventHandler);
@@ -109,20 +109,21 @@ public class EventHandlerTest {
 
     @Test
     public void testGet() throws Exception {
-        when(mockAdmin.getEvent(anyString(),anyInt(),anyInt())).thenReturn(result);
+        when(mockAdmin.getEvent(anyString(), anyInt(), anyInt())).thenReturn(result);
         FullHttpRequest httpRequest = new DefaultFullHttpRequest(
             HttpVersion.HTTP_1_1, HttpMethod.GET, "/event?topicName=123&offset=0&length=1");
-         embeddedChannel.writeInbound(httpRequest);
+        embeddedChannel.writeInbound(httpRequest);
         boolean finish = embeddedChannel.finish();
         assertTrue(finish);
-        ByteBuf byteBuf = null ;
-        ByteArrayOutputStream bOutput = new ByteArrayOutputStream(1024);
-        while((byteBuf = embeddedChannel.readOutbound())!=null) {
+        ByteBuf byteBuf = null;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+        while ((byteBuf = embeddedChannel.readOutbound()) != null) {
             byte[] data = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(data);
-            bOutput.write(data);
-        };
-        String response = new String(bOutput.toByteArray(),"UTF-8");
+            byteArrayOutputStream.write(data);
+        }
+        ;
+        String response = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
         String responseBody = response.split("\\r?\\n\\r?\\n")[1];
         JsonNode jsonNode = new ObjectMapper().readTree(responseBody);
         assertTrue(jsonNode.get(0).asText().contains("mockData"));
@@ -131,13 +132,15 @@ public class EventHandlerTest {
     @Test
     public void testPost() throws IOException {
         FullHttpRequest httpRequest = new DefaultFullHttpRequest(
-            HttpVersion.HTTP_1_1, HttpMethod.POST, "/event", Unpooled.copiedBuffer("specversion=1.0&id=cd7c0d63-6c7c-4300-9f4e-ceb51f46b1b1&source=/&type=cloudevents&datacontenttype=application/cloudevents+json&subject=test&ttl=4000".getBytes()));
+            HttpVersion.HTTP_1_1, HttpMethod.POST, "/event", Unpooled.copiedBuffer(
+            ("specversion=1.0&id=cd7c0d63-6c7c-4300-9f4e-ceb51f46b1b1&source"
+                + "=/&type=cloudevents&datacontenttype=application/cloudevents+json&subject=test&ttl=4000").getBytes()));
         embeddedChannel.writeInbound(httpRequest);
         ByteBuf byteBuf = embeddedChannel.readOutbound();
         byte[] data = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(data);
-        String response = new String(data,"UTF-8");
+        String response = new String(data, "UTF-8");
         String[] requestMessage = response.split("\r\n");
-        assertEquals("HTTP/1.1 200 OK",requestMessage[0].toString());
+        assertEquals("HTTP/1.1 200 OK", requestMessage[0].toString());
     }
 }
