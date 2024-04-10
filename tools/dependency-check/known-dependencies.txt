@@ -136,6 +136,7 @@ jaxb-api-2.3.1.jar
 jaxb-core-2.3.0.jar
 jaxb-impl-2.3.0.jar
 jaxb-runtime-2.3.1.jar
+jaxen-1.1.6.jar
 jboss-logging-3.4.1.Final.jar
 jboss-logging-3.4.3.Final.jar
 jboss-marshalling-2.0.11.Final.jar
@@ -290,6 +291,7 @@ protobuf-java-util-3.17.2.jar
 protobuf-java-util-3.21.5.jar
 protobuf-java-util-3.5.1.jar
 protocol-core-2.20.29.jar
+pull-parser-2.jar
 pulsar-client-2.10.1.jar
 pulsar-client-2.11.1.jar
 pulsar-client-admin-api-2.10.1.jar
@@ -300,6 +302,7 @@ reactive-streams-1.0.3.jar
 reactor-core-3.4.13.jar
 redisson-3.17.3.jar
 regions-2.20.29.jar
+relaxngDatatype-20020414.jar
 retrofit-2.9.0.jar
 rocketmq-acl-4.9.5.jar
 rocketmq-broker-4.9.5.jar
@@ -339,6 +342,7 @@ spring-core-5.3.20.jar
 spring-expression-5.3.15.jar
 spring-jcl-5.3.20.jar
 spring-messaging-5.3.20.jar
+stax-api-1.0-2.jar
 stax-ex-1.8.jar
 tea-1.2.7.jar
 tea-openapi-0.2.8.jar
@@ -356,6 +360,8 @@ vertx-core-4.4.6.jar
 vertx-web-4.4.6.jar
 vertx-web-client-4.0.0.jar
 vertx-web-common-4.4.6.jar
+xpp3-1.1.4c.jar
+xsdlib-2013.6.1.jar
 zipkin-2.23.2.jar
 zipkin-reporter-2.16.3.jar
 zipkin-sender-okhttp3-2.16.3.jar
