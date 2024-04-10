@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.chatgpt.source.dto;
 import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
