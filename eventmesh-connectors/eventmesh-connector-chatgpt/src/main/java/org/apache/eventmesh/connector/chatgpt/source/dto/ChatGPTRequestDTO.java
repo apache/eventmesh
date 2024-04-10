@@ -19,6 +19,11 @@ package org.apache.eventmesh.connector.chatgpt.source.dto;
 
 import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
 
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +35,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatGPTRequestDTO {
 
-    private ChatGPTRequestType requestType;
+    private String requestType = ChatGPTRequestType.CHAT.name();
 
     private String source;
 
@@ -43,4 +48,15 @@ public class ChatGPTRequestDTO {
 
     private String text;
 
+    private String fields;
+
+    @JsonInclude
+    private String id = UUID.randomUUID().toString();
+
+    @JsonInclude
+    private String time = ZonedDateTime.now().toOffsetDateTime().toString();
+
+    public String getFields() {
+        return fields.replace(";", "\n");
+    }
 }

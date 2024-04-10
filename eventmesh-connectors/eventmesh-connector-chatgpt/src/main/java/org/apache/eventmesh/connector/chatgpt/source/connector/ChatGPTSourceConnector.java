@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
 import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
+import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
 import org.apache.eventmesh.connector.chatgpt.source.handlers.ChatHandler;
 import org.apache.eventmesh.connector.chatgpt.source.handlers.ParseHandler;
 import org.apache.eventmesh.connector.chatgpt.source.managers.OpenaiManager;
@@ -53,6 +54,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 import lombok.extern.slf4j.Slf4j;
@@ -121,37 +123,58 @@ public class ChatGPTSourceConnector implements Source {
             try {
                 RequestBody body = ctx.body();
                 ChatGPTRequestDTO bodyObject = body.asPojo(ChatGPTRequestDTO.class);
-                if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getText() == null) {
-                    throw new IllegalStateException("Attributes 'subject', 'datacontenttype', and 'prompt' cannot be null");
-                }
-                chatgptSourceExecutorService.execute(() -> {
-                    try {
-                        CloudEvent cloudEvent;
-                        switch (bodyObject.getRequestType()) {
-                            case CHAT:
-                                cloudEvent = chatHandler.invoke(bodyObject);
-                                break;
-                            case PARSE:
-                                cloudEvent = parseHandler.invoke(bodyObject);
-                                break;
-                            default:
-                                throw new IllegalStateException("the request type is illegal");
-                        }
-                        queue.add(cloudEvent);
-                        log.info("[ChatGPTSourceConnector] Succeed to convert payload into CloudEvent.");
-                        ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
-                    } catch (Exception e) {
-                        log.error("[ChatGPTSourceConnector] Error processing request: {}", e.getMessage(), e);
-                        ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
-                    }
-                });
+                validateRequestDTO(bodyObject);
+                handleRequest(bodyObject, ctx);
             } catch (Exception e) {
-                log.error("[ChatGPTSourceConnector] Malformed request. StatusCode={}", HttpResponseStatus.BAD_REQUEST.code(), e);
-                ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+                handleError(e, ctx);
             }
         });
         this.server = vertx.createHttpServer(new HttpServerOptions().setPort(this.sourceConfig.connectorConfig.getPort())
             .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())).requestHandler(router);
+    }
+
+
+    private void validateRequestDTO(ChatGPTRequestDTO bodyObject) {
+        if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getText() == null) {
+            throw new IllegalArgumentException("Attributes 'subject', 'datacontenttype', and 'prompt' cannot be null");
+        }
+    }
+
+    private void handleRequest(ChatGPTRequestDTO bodyObject, RoutingContext ctx) {
+        chatgptSourceExecutorService.execute(() -> {
+            try {
+                ChatGPTRequestType chatgptRequestType = ChatGPTRequestType.valueOf(bodyObject.getRequestType());
+                CloudEvent cloudEvent = invokeHandler(chatgptRequestType, bodyObject);
+                queue.add(cloudEvent);
+                log.info("[ChatGPTSourceConnector] Succeed to convert payload into CloudEvent.");
+                ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
+            } catch (IllegalArgumentException e) {
+                log.error("[ChatGPTSourceConnector] the request type is illegal: {}", e.getMessage(), e);
+                ctx.response()
+                    .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+                    .setStatusMessage(String.format("request type '%s' is not supported", bodyObject.getRequestType()))
+                    .end();
+            } catch (Exception e) {
+                log.error("[ChatGPTSourceConnector] Error processing request: {}", e.getMessage(), e);
+                ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+            }
+        });
+    }
+
+    private CloudEvent invokeHandler(ChatGPTRequestType chatgptRequestType, ChatGPTRequestDTO bodyObject) {
+        switch (chatgptRequestType) {
+            case CHAT:
+                return chatHandler.invoke(bodyObject);
+            case PARSE:
+                return parseHandler.invoke(bodyObject);
+            default:
+                throw new IllegalStateException("the request type is illegal");
+        }
+    }
+
+    private void handleError(Exception e, RoutingContext ctx) {
+        log.error("[ChatGPTSourceConnector] Malformed request.", e);
+        ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
     }
 
     @Override

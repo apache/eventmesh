@@ -53,21 +53,14 @@ public class ChatHandler  {
         List<ChatMessage> chatMessages = new ArrayList<>();
         chatMessages.add(new ChatMessage(ChatMessageRole.USER.value(), event.getText()));
         ChatCompletionRequest req = openaiManager.newChatCompletionRequest(chatMessages);
-        StringBuilder gptData = new StringBuilder();
-
-        try {
-            openaiManager.getOpenAiService().createChatCompletion(req).getChoices()
-                .forEach(chatCompletionChoice -> gptData.append(chatCompletionChoice.getMessage().getContent()));
-        } catch (Exception e) {
-            log.error("Failed to generate GPT connection record: {}", e.getMessage());
-        }
+        String chatResult = openaiManager.getResult(req);
 
         return CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
             .withSource(URI.create(event.getSource()))
             .withType(event.getType())
             .withTime(ZonedDateTime.now().toOffsetDateTime())
-            .withData(gptData.toString().getBytes())
+            .withData(chatResult.getBytes())
             .withSubject(event.getSubject())
             .withDataContentType(event.getDataContentType())
             .build();

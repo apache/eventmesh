@@ -46,6 +46,8 @@ class ChatGPTSourceConnectorTest {
     private String uri;
     private final String expectedMessage = "Hello, can you tell me a story.";
 
+    private final String expectedParseMessage = "User 13356288979 from Tianjin store placed an order with order number 11221122";
+
     @BeforeEach
     void setUp() throws Exception {
         connector = new ChatGPTSourceConnector();
@@ -64,12 +66,20 @@ class ChatGPTSourceConnectorTest {
         final int batchSize = 10;
 
         for (int i = 0; i < batchSize; i++) {
-            HttpResponse resp = mockStructuredRequest();
+            HttpResponse resp = mockStructuredChatRequest();
             Assertions.assertEquals(resp.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
         }
 
         List<ConnectRecord> res = connector.poll();
         Assertions.assertEquals(batchSize, res.size());
+
+        for (int i = 0; i < batchSize; i++) {
+            HttpResponse resp = mockStructuredParseRequest();
+            Assertions.assertEquals(resp.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+        }
+
+        List<ConnectRecord> res1 = connector.poll();
+        Assertions.assertEquals(batchSize, res1.size());
 
         // test invalid requests
         HttpPost invalidPost = new HttpPost(uri);
@@ -84,7 +94,7 @@ class ChatGPTSourceConnectorTest {
     }
 
 
-    HttpResponse mockStructuredRequest() throws Exception {
+    HttpResponse mockStructuredChatRequest() throws Exception {
         HttpPost httpPost = new HttpPost(uri);
         TestEvent event = new TestEvent();
         event.type = "com.example.someevent";
@@ -93,6 +103,22 @@ class ChatGPTSourceConnectorTest {
         event.datacontenttype = "text/plain";
         event.text = expectedMessage;
         event.requestType = "CHAT";
+        httpPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
+
+        return httpClient.execute(httpPost);
+    }
+
+
+    HttpResponse mockStructuredParseRequest() throws Exception {
+        HttpPost httpPost = new HttpPost(uri);
+        TestEvent event = new TestEvent();
+        event.type = "com.example.someevent";
+        event.source = "/mycontext";
+        event.subject = "test";
+        event.datacontenttype = "application/json";
+        event.text = expectedParseMessage;
+        event.requestType = "PARSE1";
+        event.fields = "orderNo:this is order number;address:this is a address;phone:this is phone number";
         httpPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
 
         return httpClient.execute(httpPost);
@@ -112,5 +138,6 @@ class ChatGPTSourceConnectorTest {
         public String subject;
         public String datacontenttype;
         public String text;
+        public String fields;
     }
 }
