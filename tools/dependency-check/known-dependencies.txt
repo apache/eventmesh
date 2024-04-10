@@ -357,3 +357,6 @@ zookeeper-3.7.1.jar
 zookeeper-jute-3.7.1.jar
 zstd-jni-1.5.0-2.jar
 zstd-jni-1.5.2-2.jar
+service-0.18.2.jar
+client-0.18.2.jar
+api-0.18.2.jar

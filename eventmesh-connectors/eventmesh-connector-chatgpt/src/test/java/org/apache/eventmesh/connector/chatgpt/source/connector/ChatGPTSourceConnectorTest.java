@@ -20,9 +20,11 @@ package org.apache.eventmesh.connector.chatgpt.source.connector;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConnectorConfig;
+import org.apache.eventmesh.connector.chatgpt.source.config.OpenaiConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
@@ -37,8 +39,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 class ChatGPTSourceConnectorTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("ChatGPTSourceConnectorTest");
 
     private ChatGPTSourceConnector connector;
     private ChatGPTSourceConnectorConfig config;
@@ -48,9 +55,23 @@ class ChatGPTSourceConnectorTest {
 
     private final String expectedParseMessage = "User 13356288979 from Tianjin store placed an order with order number 11221122";
 
+
+    public boolean checkOpenAi() throws Exception {
+        ChatGPTSourceConfig sourceConfig = (ChatGPTSourceConfig) ConfigUtil.parse(connector.configClass());
+        OpenaiConfig openaiConfig = sourceConfig.getOpenaiConfig();
+        if (StringUtils.isBlank(openaiConfig.getToken())) {
+            return false;
+        }
+        return true;
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         connector = new ChatGPTSourceConnector();
+        if (!checkOpenAi()) {
+            LOGGER.error("please set openai token in the config");
+            return;
+        }
         ChatGPTSourceConfig sourceConfig = (ChatGPTSourceConfig) ConfigUtil.parse(connector.configClass());
         config = sourceConfig.getConnectorConfig();
         connector.init(sourceConfig);
@@ -63,6 +84,13 @@ class ChatGPTSourceConnectorTest {
 
     @Test
     void testPoll() throws Exception {
+        ChatGPTSourceConfig sourceConfig = (ChatGPTSourceConfig) ConfigUtil.parse(connector.configClass());
+        OpenaiConfig openaiConfig = sourceConfig.getOpenaiConfig();
+        if (StringUtils.isBlank(openaiConfig.getToken())) {
+            LOGGER.error("please set openai token in the config");
+            return;
+        }
+
         final int batchSize = 10;
 
         for (int i = 0; i < batchSize; i++) {
@@ -125,8 +153,15 @@ class ChatGPTSourceConnectorTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        connector.stop();
-        httpClient.close();
+        if (!checkOpenAi()) {
+            return;
+        }
+        if (connector != null) {
+            connector.stop();
+        }
+        if (httpClient != null) {
+            httpClient.close();
+        }
     }
 
     class TestEvent {
