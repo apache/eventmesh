@@ -82,12 +82,12 @@ class ChatGPTSourceConnectorTest {
         Assertions.assertEquals(batchSize, res1.size());
 
         // test invalid requests
-        HttpPost invalidPost = new HttpPost(uri);
         TestEvent event = new TestEvent();
         event.type = "com.example.someevent";
         event.source = "/mycontext";
         event.datacontenttype = "text/plain";
         event.text = expectedMessage;
+        HttpPost invalidPost = new HttpPost(uri);
         invalidPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
         HttpResponse resp = httpClient.execute(invalidPost);
         Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, resp.getStatusLine().getStatusCode());
@@ -95,7 +95,6 @@ class ChatGPTSourceConnectorTest {
 
 
     HttpResponse mockStructuredChatRequest() throws Exception {
-        HttpPost httpPost = new HttpPost(uri);
         TestEvent event = new TestEvent();
         event.type = "com.example.someevent";
         event.source = "/mycontext";
@@ -103,6 +102,7 @@ class ChatGPTSourceConnectorTest {
         event.datacontenttype = "text/plain";
         event.text = expectedMessage;
         event.requestType = "CHAT";
+        HttpPost httpPost = new HttpPost(uri);
         httpPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
 
         return httpClient.execute(httpPost);
@@ -110,17 +110,16 @@ class ChatGPTSourceConnectorTest {
 
 
     HttpResponse mockStructuredParseRequest() throws Exception {
-        HttpPost httpPost = new HttpPost(uri);
         TestEvent event = new TestEvent();
         event.type = "com.example.someevent";
         event.source = "/mycontext";
         event.subject = "test";
         event.datacontenttype = "application/json";
         event.text = expectedParseMessage;
-        event.requestType = "PARSE1";
+        event.requestType = "PARSE";
         event.fields = "orderNo:this is order number;address:this is a address;phone:this is phone number";
+        HttpPost httpPost = new HttpPost(uri);
         httpPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
-
         return httpClient.execute(httpPost);
     }
 

@@ -33,12 +33,13 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
+import org.apache.commons.lang3.StringUtils;
 
+
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -67,11 +68,8 @@ public class ChatGPTSourceConnector implements Source {
     private ChatGPTSourceConfig sourceConfig;
     private BlockingQueue<CloudEvent> queue;
     private HttpServer server;
-    private final ExecutorService chatgptSourceExecutorService =
-        ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "ChatGPTSourceThread");
+    private final ExecutorService chatgptSourceExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
+        Runtime.getRuntime().availableProcessors() * 2, Runtime.getRuntime().availableProcessors() * 2, "ChatGPTSourceThread");
 
     private OpenaiManager openaiManager;
     private String parsePromptTemplateStr;
@@ -98,12 +96,18 @@ public class ChatGPTSourceConnector implements Source {
 
     public void initParsePrompt() {
         String parsePromptFileName = sourceConfig.getConnectorConfig().getParsePromptFileName();
-        URL resource = this.getClass().getClassLoader().getResource(parsePromptFileName);
+        URL resource = Thread.currentThread().getContextClassLoader().getResource(parsePromptFileName);
         AssertUtils.notNull(resource, String.format("cannot find file %s", parsePromptFileName));
-        try {
-            this.parsePromptTemplateStr = new String(Files.readAllBytes(Paths.get(resource.toURI())));
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException("The file path is invalid", e);
+        String filePath = resource.getPath();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (!line.startsWith("#") && StringUtils.isNotBlank(line)) {
+                    builder.append(line).append("\n");
+                }
+            }
+            this.parsePromptTemplateStr = builder.toString();
         } catch (IOException e) {
             throw new IllegalStateException("Unable to read file", e);
         }
@@ -150,10 +154,8 @@ public class ChatGPTSourceConnector implements Source {
                 ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
             } catch (IllegalArgumentException e) {
                 log.error("[ChatGPTSourceConnector] the request type is illegal: {}", e.getMessage(), e);
-                ctx.response()
-                    .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
-                    .setStatusMessage(String.format("request type '%s' is not supported", bodyObject.getRequestType()))
-                    .end();
+                ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+                    .setStatusMessage(String.format("request type '%s' is not supported", bodyObject.getRequestType())).end();
             } catch (Exception e) {
                 log.error("[ChatGPTSourceConnector] Error processing request: {}", e.getMessage(), e);
                 ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();

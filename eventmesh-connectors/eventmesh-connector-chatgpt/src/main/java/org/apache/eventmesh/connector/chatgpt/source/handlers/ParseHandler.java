@@ -107,10 +107,7 @@ public class ParseHandler {
     }
 
     public Method getGetter(Field field, Class<?> clazz) throws NoSuchMethodException {
-        boolean isBooleanField = false;
-        if (boolean.class.isAssignableFrom(field.getType()) || Boolean.class.isAssignableFrom(field.getType())) {
-            isBooleanField = true;
-        }
+        boolean isBooleanField = boolean.class.isAssignableFrom(field.getType()) || Boolean.class.isAssignableFrom(field.getType());
         String handledFieldName = upperFirst(field.getName());
         String methodName;
         if (isBooleanField) {
