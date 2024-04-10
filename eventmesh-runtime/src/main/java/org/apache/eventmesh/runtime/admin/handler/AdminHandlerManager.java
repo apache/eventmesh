@@ -117,7 +117,7 @@ public class AdminHandlerManager {
             eventMeshGrpcServer.getEventMeshGrpcConfiguration()));
     }
 
-    public void initHandler(HttpHandler httpHandler) {
+    private void initHandler(HttpHandler httpHandler) {
         EventMeshHttpHandler eventMeshHttpHandler = httpHandler.getClass().getAnnotation(EventMeshHttpHandler.class);
         httpHandlerMap.putIfAbsent(eventMeshHttpHandler.path(), httpHandler);
     }

@@ -22,7 +22,6 @@ package org.apache.eventmesh.runtime.core.protocol.http.async;
  *
  * @param <T>
  */
-@FunctionalInterface
 public interface CompleteHandler<T> {
 
     void onResponse(T t);
