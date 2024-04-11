@@ -213,8 +213,6 @@ tasks.register('zip', Zip) {
 }
 
 tasks.register('installPlugin') {
-    // Compute dependency and outputs eagerly
-    dependsOn('dist')
     var pluginProjects = subprojects.findAll {
         it.file('gradle.properties').exists()
                 && it.properties.containsKey('pluginType')
@@ -228,7 +226,7 @@ tasks.register('installPlugin') {
                 outputs.dir("dist/plugin/${pluginType}/${pluginName}")
             })
     doLast {
-        String[] libJars = file('dist/lib').list()
+        String[] libJars = java.util.Optional.ofNullable(file('dist/lib').list()).orElse(new String[0])
         pluginProjects.forEach(subProject -> {
             var pluginType = subProject.properties.get('pluginType')
             var pluginName = subProject.properties.get('pluginName')
