@@ -96,6 +96,7 @@ jobs:
 
       - name: Check third party dependencies
         run: |
-          ./gradlew clean dist -x spotlessJava -x test -x checkstyleMain -x javaDoc && ./gradlew installPlugin && ./gradlew tar && sh tools/dependency-check/check-dependencies.sh && echo "Thirty party dependencies check success"
+          ./gradlew clean dist -x spotlessJava -x test -x checkstyleMain -x javaDoc && ./gradlew installPlugin && ./gradlew tar
+          bash tools/dependency-check/check-dependencies.sh
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
