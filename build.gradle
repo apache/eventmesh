@@ -158,7 +158,6 @@ tasks.register('dist') {
              "eventmesh-webhook:eventmesh-webhook-api",
              "eventmesh-webhook:eventmesh-webhook-admin",
              "eventmesh-webhook:eventmesh-webhook-receive"]
-    outputs.dirs('dist/apps', 'dist/bin', 'dist/conf', 'dist/lib', 'dist/licenses')
     doLast {
         includedProjects.each {
             def subProject = findProject(it)
