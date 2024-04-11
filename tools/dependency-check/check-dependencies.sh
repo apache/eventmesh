@@ -45,6 +45,7 @@ grep -wvf "$self_modules_txt" "$all_dependencies_txt" | sort | uniq > "$third_pa
 
 # Only keep the artifact name
 sed -i 's/-[0-9].*\.jar//g' "$third_party_dependencies_txt"
+sort -u -o "$third_party_dependencies_txt" "$third_party_dependencies_txt"
 
 # If the check is success it will return 0
 sort "$known_third_party_dependencies_txt" | diff - "$third_party_dependencies_txt"
