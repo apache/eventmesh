@@ -180,7 +180,7 @@ tasks.register('dist') {
             copy {
                 from subProject.configurations.runtimeClasspath
                 into rootProject.file('dist/lib')
-                exclude 'eventmesh*'
+                exclude 'eventmesh-*'
             }
         }
         copy {
