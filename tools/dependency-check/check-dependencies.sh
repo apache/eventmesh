@@ -1,4 +1,4 @@
-#!/usr/bin bash
+#!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -34,14 +34,14 @@ self_modules_txt='tools/dependency-check/self-modules.txt'
 # store all third part dependencies
 third_party_dependencies_txt='tools/dependency-check/third-party-dependencies.txt'
 
-mkdir $decompress_conf || true
+mkdir -p $decompress_conf
 tar -zxf build/eventmesh*.tar.gz -C $decompress_conf
 
 ./gradlew printProjects | grep '.jar' > "$self_modules_txt"
 
-find "$decompress_conf" -name "*.jar" -exec basename {} \; | uniq | sort > "$all_dependencies_txt"
+find "$decompress_conf" -name "*.jar" -exec basename {} \; | sort | uniq > "$all_dependencies_txt"
 
-grep -wvf "$self_modules_txt" "$all_dependencies_txt" | uniq | sort > "$third_party_dependencies_txt"
+grep -wvf "$self_modules_txt" "$all_dependencies_txt" | sort | uniq > "$third_party_dependencies_txt"
 
 # If the check is success it will return 0
 sort "$known_third_party_dependencies_txt" | diff - "$third_party_dependencies_txt"
