@@ -161,32 +161,32 @@ tasks.register('dist') {
     outputs.dirs('dist/apps', 'dist/bin', 'dist/conf', 'dist/lib', 'dist/licenses')
     doLast {
         includedProjects.each {
-            def project = findProject(it)
-            logger.lifecycle('Install module: module: {}', project.name)
+            def subProject = findProject(it)
+            logger.lifecycle('Install module: module: {}', subProject.name)
             copy {
-                from project.jar.archivePath
-                into 'dist/apps'
+                from subProject.jar.archivePath
+                into rootProject.file('dist/apps')
             }
             copy {
-                from project.file('bin')
-                into 'dist/bin'
+                from subProject.file('bin')
+                into rootProject.file('dist/bin')
             }
             copy {
-                from project.file('conf')
-                from project.sourceSets.main.resources.srcDirs
-                into 'dist/conf'
+                from subProject.file('conf')
+                from subProject.sourceSets.main.resources.srcDirs
+                into rootProject.file('dist/conf')
                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                 exclude 'META-INF'
             }
             copy {
-                from project.configurations.runtimeClasspath
-                into 'dist/lib'
+                from subProject.configurations.runtimeClasspath
+                into rootProject.file('dist/lib')
                 exclude 'eventmesh*'
             }
         }
         copy {
             from 'tools/third-party-licenses'
-            into 'dist'
+            into rootProject.file('dist')
         }
     }
 }
@@ -234,17 +234,17 @@ tasks.register('installPlugin') {
                     pluginName, subProject.name)
             copy {
                 from subProject.jar.archivePath
-                into "dist/plugin/${pluginType}/${pluginName}"
+                into rootProject.file("dist/plugin/${pluginType}/${pluginName}")
             }
             copy {
                 from subProject.configurations.runtimeClasspath
-                into "dist/plugin/${pluginType}/${pluginName}"
+                into rootProject.file("dist/plugin/${pluginType}/${pluginName}")
                 exclude(libJars)
             }
             copy {
                 from subProject.file('conf')
                 from subProject.sourceSets.main.resources.srcDirs
-                into "dist/conf"
+                into rootProject.file("dist/conf")
                 exclude 'META-INF'
             }
         })
