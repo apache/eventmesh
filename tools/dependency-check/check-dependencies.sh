@@ -43,6 +43,9 @@ find "$decompress_conf" -name "*.jar" -exec basename {} \; | sort | uniq > "$all
 
 grep -wvf "$self_modules_txt" "$all_dependencies_txt" | sort | uniq > "$third_party_dependencies_txt"
 
+# Only keep the artifact name
+sed -i 's/-[0-9].*\.jar//g' "$third_party_dependencies_txt"
+
 # If the check is success it will return 0
 sort "$known_third_party_dependencies_txt" | diff - "$third_party_dependencies_txt"
 
