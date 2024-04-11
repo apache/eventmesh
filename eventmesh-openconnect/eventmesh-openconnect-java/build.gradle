@@ -26,10 +26,8 @@ dependencies {
     api project (":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api")
     implementation project (":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos")
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
+    implementation project(":eventmesh-common")
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    testRuntimeOnly "org.apache.logging.log4j:log4j-core"
-    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl"
 }
