@@ -222,7 +222,6 @@ tasks.register('installPlugin') {
                 var pluginType = subProject.properties.get('pluginType')
                 var pluginName = subProject.properties.get('pluginName')
                 dependsOn("${subProject.path}:jar")
-                outputs.dir("dist/plugin/${pluginType}/${pluginName}")
             })
     doLast {
         String[] libJars = java.util.Optional.ofNullable(file('dist/lib').list()).orElse(new String[0])
