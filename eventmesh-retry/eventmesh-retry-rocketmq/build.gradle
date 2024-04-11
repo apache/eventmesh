@@ -16,36 +16,31 @@
  */
 
 List rocketmq = [
-        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
         "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version"
+        "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
 ]
 
 dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-rocketmq")
-    implementation rocketmq
     /*
-     * The exclusions can be remove after this issue is fixed:
+     * The exclusions can be removed after this issue is fixed:
      * https://github.com/apache/rocketmq/issues/5347
      */
-    implementation("org.apache.rocketmq:rocketmq-broker:$rocketmq_version") {
-        // Remove logging backend implementations
-        exclude group: 'ch.qos.logback', module: 'logback-classic'
-    }
-    implementation("org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version") {
-        // Remove logging backend implementations
-        exclude group: 'ch.qos.logback', module: 'logback-classic'
-    }
-    implementation("org.apache.rocketmq:rocketmq-tools:$rocketmq_version") {
-        // Remove logging backend implementations
-        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    rocketmq.each {
+        implementation(it) {
+            exclude group: 'ch.qos.logback', module: 'logback-classic'
+        }
     }
     implementation project(":eventmesh-retry:eventmesh-retry-api")
     implementation project(":eventmesh-common")
