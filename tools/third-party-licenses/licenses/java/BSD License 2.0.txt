@@ -1,1 +1,0 @@
-https://raw.githubusercontent.com/jaxen-xpath/jaxen/master/LICENSE.txt

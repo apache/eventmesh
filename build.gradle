@@ -211,6 +211,10 @@ task printProjects() {
     })
 }
 
+cyclonedxBom {
+    includeConfigs = ["runtimeClasspath"]
+}
+
 // TODO depend 'dist' on 'generateDistLicense'
 tasks.register('generateDistLicense') {
     dependsOn('cyclonedxBom')
@@ -218,11 +222,11 @@ tasks.register('generateDistLicense') {
         def bomFile = file('build/reports/bom.json')
         def bom = new JsonSlurper().parseText(bomFile.text)
 
-        def thirdPartyLicensesDir = new File('tools/third-party-licenses/licenses/java/')
-        if (thirdPartyLicensesDir.exists()) {
-            thirdPartyLicensesDir.eachFile { it.delete() }
+        def licensesDir = new File('tools/third-party-licenses/licenses/java/')
+        if (licensesDir.exists()) {
+            licensesDir.eachFile { it.delete() }
         } else {
-            thirdPartyLicensesDir.mkdirs()
+            licensesDir.mkdirs()
         }
 
         def projectLicenseText = file('LICENSE').text
@@ -261,7 +265,7 @@ tasks.register('generateDistLicense') {
             }
         }
         thirdPartyArtifacts.each { artifact ->
-            def artifactLicenseFile = new File(thirdPartyLicensesDir, "${artifact.license}.txt")
+            def artifactLicenseFile = new File(licensesDir, "${artifact.license}.txt")
             if (artifact.licenseContent != null) {
                 artifactLicenseFile.text = artifact.licenseContent
             } else {
