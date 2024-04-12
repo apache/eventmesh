@@ -38,6 +38,7 @@ buildscript {
 
 plugins {
     id 'org.cyclonedx.bom' version '1.8.2'
+    id 'com.github.jk1.dependency-license-report' version '2.6'
 }
 
 // Remove doclint warnings that pollute javadoc logs when building
@@ -222,6 +223,7 @@ tasks.register('generateDistLicense') {
         def bomFile = file('build/reports/bom.json')
         def bom = new JsonSlurper().parseText(bomFile.text)
 
+        def distLicenseFile = new File('tools/third-party-licenses/LICENSE')
         def licensesDir = new File('tools/third-party-licenses/licenses/java/')
         if (licensesDir.exists()) {
             licensesDir.eachFile { it.delete() }
@@ -274,8 +276,31 @@ tasks.register('generateDistLicense') {
 
             distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. For details see: licenses/${artifact.license}.txt\n"
         }
-        def distLicenseFile = new File('tools/third-party-licenses/LICENSE')
         distLicenseFile.text = distLicenseText
+    }
+}
+
+// TODO depend 'dist' on 'generateDistNotice'
+tasks.register('generateDistNotice') {
+    dependsOn('generateLicenseReport')
+    doLast {
+        def reportsDir = new File('build/reports/dependency-license')
+        def projectNoticeText = file('NOTICE').text
+
+        def distNoticeFile = new File('tools/third-party-licenses/NOTICE')
+
+        def distNoticeText = projectNoticeText
+        reportsDir.eachDir { dir ->
+            dir.eachFileRecurse (groovy.io.FileType.FILES) { file ->
+                if (file.name.length() >= 6 && file.name.substring(0, 6).equalsIgnoreCase("NOTICE")) {
+                    def artifactName = dir.name.replace(".jar", "")
+                    distNoticeText += "\n=======================================================================\n\n" +
+                            "${artifactName} NOTICE\n" + "\n=======================================================================\n\n"
+                    distNoticeText += file.text
+                }
+            }
+        }
+        distNoticeFile.text = distNoticeText
     }
 }
 
