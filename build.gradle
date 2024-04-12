@@ -17,8 +17,6 @@
 
 import java.util.concurrent.TimeUnit
 
-
-
 buildscript {
     repositories {
         mavenLocal()
@@ -35,9 +33,12 @@ buildscript {
     dependencies {
         classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
-        classpath "com.github.jk1:gradle-license-report:1.17"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
     }
+}
+
+plugins {
+    id 'org.cyclonedx.bom' version '1.8.2'
 }
 
 // Remove doclint warnings that pollute javadoc logs when building
