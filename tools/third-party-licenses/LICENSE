@@ -313,7 +313,7 @@ httpclient 4.5.13 licensed under 'Apache-2.0'. For details see: licenses/Apache-
 httpcore 4.4.13 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 httpcore-nio 4.4.6 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 httpmime 4.5.13 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-icu4j 72.1 licensed under 'Unicode-ICU License'. For details see: licenses/Unicode-ICU License.txt
+icu4j 72.1 licensed under 'Unicode/ICU License'. For details see: licenses/Unicode-ICU License.txt
 ini4j 0.5.4 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 ipaddress 5.3.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 istack-commons-runtime 3.0.7 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt

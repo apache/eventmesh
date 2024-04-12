@@ -250,7 +250,7 @@ tasks.register('generateDistLicense') {
                                 artifact.put("licenseContent", new String(artifactLicense.license.text.content.decodeBase64()))
                             }
                         } else {
-                            artifact.put("license", artifactLicense.license.name.replaceAll("/", "-"))
+                            artifact.put("license", artifactLicense.license.name)
                             artifact.put("licenseContent", artifactLicense.license.url)
                         }
                         thirdPartyArtifacts.add(artifact)
@@ -271,7 +271,8 @@ tasks.register('generateDistLicense') {
                 "This distribution contains the following third-party:\n\n"
         thirdPartyArtifacts.each { artifact ->
             // Write licenses
-            def artifactLicenseFile = new File(licensesDir, "${artifact.license}.txt")
+            def artifactLicenseFilename = artifact.license.replaceAll("/", "-") + ".txt"
+            def artifactLicenseFile = new File(licensesDir, artifactLicenseFilename)
             if (artifact.licenseContent != null) {
                 artifactLicenseFile.text = artifact.licenseContent
             } else {
@@ -279,7 +280,7 @@ tasks.register('generateDistLicense') {
             }
 
             // Assemble LICENSE
-            distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. For details see: licenses/${artifact.license}.txt\n"
+            distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. For details see: licenses/${artifactLicenseFilename}\n"
         }
         distLicenseFile.text = distLicenseText
     }
