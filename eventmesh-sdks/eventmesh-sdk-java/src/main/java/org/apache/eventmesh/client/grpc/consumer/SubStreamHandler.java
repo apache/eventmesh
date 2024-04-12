@@ -162,7 +162,6 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
         try {
             synchronized (sender) {
                 sender.onCompleted();
-                sender = null;
             }
         } catch (Exception e) {
             log.error("StreamObserver Error onComplete", e);
