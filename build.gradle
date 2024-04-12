@@ -218,8 +218,6 @@ tasks.register('generateDistLicense') {
         def bomFile = file('build/reports/bom.json')
         def bom = new JsonSlurper().parseText(bomFile.text)
 
-        def projectLicenseText = file('LICENSE').text
-
         def thirdPartyLicensesDir = new File('tools/third-party-licenses/licenses/java/')
         if (thirdPartyLicensesDir.exists()) {
             thirdPartyLicensesDir.eachFile { it.delete() }
@@ -227,6 +225,7 @@ tasks.register('generateDistLicense') {
             thirdPartyLicensesDir.mkdirs()
         }
 
+        def projectLicenseText = file('LICENSE').text
         def distLicenseText = projectLicenseText + "\n=======================================================================\n" +
                 "This distribution contains the following third-party:\n\n"
 
@@ -252,7 +251,15 @@ tasks.register('generateDistLicense') {
                 }
             }
         }
-        thirdPartyArtifacts = thirdPartyArtifacts.sort { a, b -> a.name <=> b.name }
+
+        thirdPartyArtifacts.sort { a, b ->
+            def nameComparison = a.name <=> b.name
+            if (nameComparison == 0) {
+                return a.version <=> b.version
+            } else {
+                return nameComparison
+            }
+        }
         thirdPartyArtifacts.each { artifact ->
             def artifactLicenseFile = new File(thirdPartyLicensesDir, "${artifact.license}.txt")
             if (artifact.licenseContent != null) {
