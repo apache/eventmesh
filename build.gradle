@@ -16,6 +16,7 @@
  */
 
 import java.util.concurrent.TimeUnit
+import groovy.json.JsonSlurper
 
 buildscript {
     repositories {
@@ -208,6 +209,63 @@ task printProjects() {
         }
         println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
     })
+}
+
+// TODO depend 'dist' on 'generateDistLicense'
+tasks.register('generateDistLicense') {
+    dependsOn('cyclonedxBom')
+    doLast {
+        def bomFile = file('build/reports/bom.json')
+        def bom = new JsonSlurper().parseText(bomFile.text)
+
+        def projectLicenseText = file('LICENSE').text
+
+        def thirdPartyLicensesDir = new File('tools/third-party-licenses/licenses/java/')
+        if (thirdPartyLicensesDir.exists()) {
+            thirdPartyLicensesDir.eachFile { it.delete() }
+        } else {
+            thirdPartyLicensesDir.mkdirs()
+        }
+
+        def distLicenseText = projectLicenseText + "\n=======================================================================\n" +
+                "This distribution contains the following third-party:\n\n"
+
+        List<Map<String, String>> thirdPartyArtifacts = new ArrayList<Map<String, String>>()
+        bom.components.each { component ->
+            if (!component.group.startsWith('org.apache.eventmesh')) {
+                component.licenses.each { artifactLicense ->
+                    if (artifactLicense.license != null) {
+                        Map<String, String> artifact = new HashMap<String, String>()
+                        artifact.put("name", component.name)
+                        artifact.put("version", component.version)
+                        if (artifactLicense.license.id != null) {
+                            artifact.put("license", artifactLicense.license.id)
+                            if (artifactLicense.license.text != null) {
+                                artifact.put("licenseContent", new String(artifactLicense.license.text.content.decodeBase64()))
+                            }
+                        } else {
+                            artifact.put("license", artifactLicense.license.name.replaceAll("/", "-"))
+                            artifact.put("licenseContent", artifactLicense.license.url)
+                        }
+                        thirdPartyArtifacts.add(artifact)
+                    }
+                }
+            }
+        }
+        thirdPartyArtifacts = thirdPartyArtifacts.sort { a, b -> a.name <=> b.name }
+        thirdPartyArtifacts.each { artifact ->
+            def artifactLicenseFile = new File(thirdPartyLicensesDir, "${artifact.license}.txt")
+            if (artifact.licenseContent != null) {
+                artifactLicenseFile.text = artifact.licenseContent
+            } else {
+                artifactLicenseFile.text = "No license content provided by the artifact."
+            }
+
+            distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. For details see: licenses/${artifact.license}.txt\n"
+        }
+        def distLicenseFile = new File('tools/third-party-licenses/LICENSE')
+        distLicenseFile.text = distLicenseText
+    }
 }
 
 subprojects {
