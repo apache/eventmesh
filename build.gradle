@@ -218,25 +218,26 @@ cyclonedxBom {
 
 // TODO depend 'dist' on 'generateDistLicense'
 tasks.register('generateDistLicense') {
-    dependsOn('cyclonedxBom')
+    dependsOn('cyclonedxBom') // Task from 'org.cyclonedx.bom' plugin
     doLast {
+        // Inputs
         def bomFile = file('build/reports/bom.json')
         def bom = new JsonSlurper().parseText(bomFile.text)
+        def projectLicenseText = file('LICENSE').text
 
-        def distLicenseFile = new File('tools/third-party-licenses/LICENSE')
-        def licensesDir = new File('tools/third-party-licenses/licenses/java/')
+        // Outputs
+        def distLicenseFile = file('tools/third-party-licenses/LICENSE')
+        def licensesDir = file('tools/third-party-licenses/licenses/java/')
         if (licensesDir.exists()) {
             licensesDir.eachFile { it.delete() }
         } else {
             licensesDir.mkdirs()
         }
 
-        def projectLicenseText = file('LICENSE').text
-        def distLicenseText = projectLicenseText + "\n=======================================================================\n" +
-                "This distribution contains the following third-party:\n\n"
-
         List<Map<String, String>> thirdPartyArtifacts = new ArrayList<Map<String, String>>()
+        // Parse BOM
         bom.components.each { component ->
+            // Exclude project modules
             if (!component.group.startsWith('org.apache.eventmesh')) {
                 component.licenses.each { artifactLicense ->
                     if (artifactLicense.license != null) {
@@ -257,7 +258,6 @@ tasks.register('generateDistLicense') {
                 }
             }
         }
-
         thirdPartyArtifacts.sort { a, b ->
             def nameComparison = a.name <=> b.name
             if (nameComparison == 0) {
@@ -266,7 +266,11 @@ tasks.register('generateDistLicense') {
                 return nameComparison
             }
         }
+
+        def distLicenseText = projectLicenseText + "\n=======================================================================\n" +
+                "This distribution contains the following third-party:\n\n"
         thirdPartyArtifacts.each { artifact ->
+            // Write licenses
             def artifactLicenseFile = new File(licensesDir, "${artifact.license}.txt")
             if (artifact.licenseContent != null) {
                 artifactLicenseFile.text = artifact.licenseContent
@@ -274,6 +278,7 @@ tasks.register('generateDistLicense') {
                 artifactLicenseFile.text = "No license content provided by the artifact."
             }
 
+            // Assemble LICENSE
             distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. For details see: licenses/${artifact.license}.txt\n"
         }
         distLicenseFile.text = distLicenseText
@@ -282,16 +287,19 @@ tasks.register('generateDistLicense') {
 
 // TODO depend 'dist' on 'generateDistNotice'
 tasks.register('generateDistNotice') {
-    dependsOn('generateLicenseReport')
+    dependsOn('generateLicenseReport') // Task from 'com.github.jk1.dependency-license-report' plugin
     doLast {
-        def reportsDir = new File('build/reports/dependency-license')
+        // Inputs
+        def reportsDir = file('build/reports/dependency-license/')
         def projectNoticeText = file('NOTICE').text
 
-        def distNoticeFile = new File('tools/third-party-licenses/NOTICE')
+        // Outputs
+        def distNoticeFile = file('tools/third-party-licenses/NOTICE')
 
         def distNoticeText = projectNoticeText
         reportsDir.eachDir { dir ->
             dir.eachFileRecurse (groovy.io.FileType.FILES) { file ->
+                // Find NOTICE files
                 if (file.name.length() >= 6 && file.name.substring(0, 6).equalsIgnoreCase("NOTICE")) {
                     def artifactName = dir.name.replace(".jar", "")
                     distNoticeText += "\n=======================================================================\n\n" +
