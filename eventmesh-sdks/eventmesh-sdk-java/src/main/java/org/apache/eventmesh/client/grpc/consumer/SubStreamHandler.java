@@ -130,12 +130,15 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
     }
 
     public void close() {
-        if (this.sender != null) {
-            senderOnComplete();
+        synchronized (sender) {
+            if (latch.getCount() == 0) {
+                return;
+            }
+            if (this.sender != null) {
+                senderOnComplete();
+            }
+            latch.countDown();
         }
-
-        latch.countDown();
-
         log.info("SubStreamHandler closed.");
     }
 
