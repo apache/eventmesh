@@ -40,6 +40,8 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
     private final transient CountDownLatch latch = new CountDownLatch(1);
 
+    private volatile boolean isClosed = false;
+
     private final transient ConsumerServiceStub consumerAsyncClient;
 
     private final transient EventMeshGrpcClientConfig clientConfig;
@@ -131,13 +133,14 @@ public class SubStreamHandler<T> extends Thread implements Serializable {
 
     public void close() {
         synchronized (sender) {
-            if (latch.getCount() == 0) {
+            if (isClosed) {
                 return;
             }
             if (this.sender != null) {
                 senderOnComplete();
             }
             latch.countDown();
+            isClosed = true;
         }
         log.info("SubStreamHandler closed.");
     }
