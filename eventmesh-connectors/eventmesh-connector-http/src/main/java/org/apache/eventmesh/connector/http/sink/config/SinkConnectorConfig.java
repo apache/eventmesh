@@ -24,7 +24,11 @@ public class SinkConnectorConfig {
 
     private String connectorName;
 
-    private String address;
+    private String host;
+
+    private int port;
 
     private String path;
+
+    private int idleTimeout;
 }

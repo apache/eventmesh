@@ -20,11 +20,13 @@ pubSubConfig:
   subject: TopicTest
   idc: FT
   env: PRD
-  group: httpSource
+  group: httpSink
   appId: 5032
-  userName: httpSourceUser
+  userName: httpSinkUser
   passWord: httpPassWord
 connectorConfig:
   connectorName: httpSink
-  address: "http://127.0.0.1:8080"
-  path: "/test"
+  host: 127.0.0.1
+  port: 8987
+  path: /test
+  idleTimeout: 5

@@ -25,32 +25,25 @@ import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 @Slf4j
 public class HttpSinkConnector implements Sink {
 
-    private OkHttpClient okHttpClient;
-
     private HttpSinkConfig httpSinkConfig;
 
-    private String messageSendUrl;
+    private WebClient webClient;
 
     private volatile boolean isRunning = false;
 
@@ -75,13 +68,13 @@ public class HttpSinkConnector implements Sink {
 
     @SneakyThrows
     private void doInit() {
-        this.messageSendUrl = this.httpSinkConfig.getConnectorConfig().getAddress() + this.httpSinkConfig.getConnectorConfig().getPath();
-        this.okHttpClient = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
-            .build();
+        final Vertx vertx = Vertx.vertx();
+        // TODO Add more configurations
+        WebClientOptions options = new WebClientOptions()
+            .setDefaultHost(this.httpSinkConfig.connectorConfig.getHost())
+            .setDefaultPort(this.httpSinkConfig.connectorConfig.getPort())
+            .setIdleTimeout(this.httpSinkConfig.connectorConfig.getIdleTimeout());
+        this.webClient = WebClient.create(vertx, options);
     }
 
     @Override
@@ -96,7 +89,7 @@ public class HttpSinkConnector implements Sink {
 
     @Override
     public String name() {
-        return this.httpSinkConfig.getConnectorConfig().getConnectorName();
+        return this.httpSinkConfig.connectorConfig.getConnectorName();
     }
 
     @Override
@@ -117,36 +110,25 @@ public class HttpSinkConnector implements Sink {
                     continue;
                 }
             } catch (Exception e) {
-                log.error("Failed to sink message via HTTP.", e);
+                log.error("Failed to sink message via HTTP. ", e);
             }
             sendMessage(sinkRecord);
         }
     }
 
-    @SneakyThrows
     private void sendMessage(ConnectRecord record) {
-        // Construct HTTP request
-        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-        String data = new String((byte[]) record.getData(), StandardCharsets.UTF_8);
-        RequestBody body = RequestBody.create(mediaType, data);
-        Request request = new Request.Builder()
-            .url(this.messageSendUrl)
-            .post(body)
-            .build();
-
-        // Send HTTP request
-        Response response = okHttpClient.newCall(request).execute();
-
-        // Verify HTTP response
-        if (!response.isSuccessful()) {
-            log.error("server response: {}", ToStringBuilder.reflectionToString(response));
-            throw new IOException("Unexpected code " + response.code());
-        }
-        ResponseBody responseBody = response.body();
-        if (responseBody == null) {
-            throw new IOException("Response body is null.");
-        }
-        // TODO Define the response result template
+        this.webClient.post(this.httpSinkConfig.connectorConfig.getPath())
+            .putHeader("Content-Type", "application/json ; charset=utf-8")
+            .sendBuffer(Buffer.buffer((byte[]) record.getData()))
+            .onSuccess(res -> {
+                if (res.statusCode() != 200) {
+                    log.error("[HttpSinkConnector] Failed to send message via HTTP. Response: {}", res);
+                }
+            })
+            .onFailure(event -> {
+                // This function is accessed only when an error occurs at the network level
+                log.error("[HttpSinkConnector] Failed to send message via HTTP. Exception: {}", event.getMessage());
+            });
     }
 
 }
