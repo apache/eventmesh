@@ -20,6 +20,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation 'io.cloudevents:cloudevents-http-vertx:2.3.0'
     implementation 'io.vertx:vertx-web:4.4.6'
+    implementation 'com.squareup.okhttp3:okhttp'
 
     testImplementation "org.apache.httpcomponents:httpclient"
     compileOnly 'org.projectlombok:lombok'

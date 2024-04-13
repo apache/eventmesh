@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.http.server;
 
 import org.apache.eventmesh.connector.http.config.HttpServerConfig;
+import org.apache.eventmesh.connector.http.sink.connector.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.source.connector.HttpSourceConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
@@ -33,7 +34,8 @@ public class HttpConnectServer {
         }
 
         if (serverConfig.isSinkEnable()) {
-            // TODO support sink connector
+            Application httpSinkApp = new Application();
+            httpSinkApp.run(HttpSinkConnector.class);
         }
     }
 
