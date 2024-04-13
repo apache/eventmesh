@@ -89,22 +89,37 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      *         <p>When {@code properties}, the field names are returned in Properties format;
      *         <p>When {@code bean}, the field names themselves are used as json keys.
      *     </li>
+     *     <li>
+     *         {@code configs}: String; Optional, DefaultValue: {@code exclusive}, SelectableValue: {@code all}.
+     *         <p>When {@code exclusive}, protocol-specific configurations will only contain protocol-exclusive fields
+     *         and won't contain any {@link CommonConfiguration} fields;
+     *         <p>When {@code all}, protocol-specific configurations will contain all fields, including those in {@link CommonConfiguration}.
+     *     </li>
      * </ul>
      */
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) {
         String format = HttpRequestUtil.getQueryParam(httpRequest, "format", "properties");
+        String configs = HttpRequestUtil.getQueryParam(httpRequest, "configs", "exclusive");
 
-        Filter[] filters;
-        if (format.equals("properties")) { // TODO add a param for SuperClassFieldFilter
-            filters = new Filter[] {new SuperClassFieldFilter(), new IPAddressToStringFilter(), new ConfigFieldFilter()};
-        } else if (format.equals("bean")) {
-            filters = new Filter[] {new SuperClassFieldFilter(), new IPAddressToStringFilter()};
-        } else {
-            log.warn("Invalid format param: {}", format);
-            writeBadRequest(ctx, "Invalid format param: " + format);
-            return;
+        List<Filter> filters = new ArrayList<>();
+        switch (configs) {
+            case "exclusive":
+                filters.add(new SuperClassFieldFilter());
+                break;
+            case "all": break;
+            default:
+                throw new IllegalArgumentException("Invalid param 'configs': " + configs);
         }
+        switch (format) {
+            case "properties":
+                filters.add(new ConfigFieldFilter());
+                break;
+            case "bean": break;
+            default:
+                throw new IllegalArgumentException("Invalid param 'format': " + format);
+        }
+        filters.add(new IPAddressToStringFilter());
 
         GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
             commonConfiguration,
@@ -113,7 +128,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             eventMeshGrpcConfiguration,
             "v1.10.0-release" // TODO get version number after merging https://github.com/apache/eventmesh/pull/4055
         );
-        String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters);
+        String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters.toArray(new Filter[0]));
         writeJson(ctx, json);
     }
 

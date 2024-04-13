@@ -35,7 +35,9 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
@@ -92,25 +94,31 @@ public abstract class AbstractHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        switch (HttpMethod.valueOf(httpRequest.method().name())) {
-            case OPTIONS:
-                preflight(ctx);
-                break;
-            case GET:
-                get(httpRequest, ctx);
-                break;
-            case POST:
-                post(httpRequest, ctx);
-                break;
-            case PUT:
-                put(httpRequest, ctx);
-                break;
-            case DELETE:
-                delete(httpRequest, ctx);
-                break;
-            default:
-                // do nothing
-                break;
+        try {
+            switch (HttpMethod.valueOf(httpRequest.method().name())) {
+                case OPTIONS:
+                    preflight(ctx);
+                    break;
+                case GET:
+                    get(httpRequest, ctx);
+                    break;
+                case POST:
+                    post(httpRequest, ctx);
+                    break;
+                case PUT:
+                    put(httpRequest, ctx);
+                    break;
+                case DELETE:
+                    delete(httpRequest, ctx);
+                    break;
+                default: // do nothing
+            }
+        } catch (IllegalArgumentException e) {
+            StackTraceElement element = e.getStackTrace()[0];
+            String className = element.getClassName();
+            String handlerName = className.substring(className.lastIndexOf(".") + 1);
+            log.warn("Admin handler {}:{} - {}", handlerName, element.getLineNumber(), e.getMessage());
+            writeBadRequest(ctx, e.getMessage());
         }
     }
 
