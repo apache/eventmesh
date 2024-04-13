@@ -21,8 +21,8 @@ import org.apache.eventmesh.common.config.ConfigService;
 
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ReceiveConfigurationTest {
 
@@ -33,19 +33,19 @@ public class ReceiveConfigurationTest {
         configService.setRootConfig("classPath://eventmesh.properties");
 
         Properties rootConfig = ConfigService.getInstance().getRootConfig();
-        Assert.assertEquals("DEFAULT", rootConfig.get("eventMesh.server.idc"));
+        Assertions.assertEquals("DEFAULT", rootConfig.get("eventMesh.server.idc"));
 
         ReceiveConfiguration config = configService.buildConfigInstance(ReceiveConfiguration.class);
         assertReceiveConfiguration(config);
     }
 
     private void assertReceiveConfiguration(ReceiveConfiguration config) {
-        Assert.assertEquals("nacos", config.getOperationMode());
+        Assertions.assertEquals("nacos", config.getOperationMode());
 
         Properties properties = new Properties();
         properties.put("serverAddr", "127.0.0.1:8848");
-        Assert.assertEquals(properties, config.getOperationProperties());
-        Assert.assertEquals("standalone", config.getStoragePluginType());
-        Assert.assertEquals(".", config.getFilePath());
+        Assertions.assertEquals(properties, config.getOperationProperties());
+        Assertions.assertEquals("standalone", config.getStoragePluginType());
+        Assertions.assertEquals(".", config.getFilePath());
     }
 }

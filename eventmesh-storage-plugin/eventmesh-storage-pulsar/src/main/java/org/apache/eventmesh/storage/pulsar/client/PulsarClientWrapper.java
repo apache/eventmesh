@@ -51,7 +51,7 @@ public class PulsarClientWrapper {
     private final PulsarClient pulsarClient;
     private final Map<String, Producer<byte[]>> producerMap = new HashMap<>();
 
-    public PulsarClientWrapper(ClientConfiguration config, Properties properties)  {
+    public PulsarClientWrapper(ClientConfiguration config, Properties properties) {
         this.config = config;
         String token = properties.getProperty(Constants.PRODUCER_TOKEN);
         try {
@@ -63,19 +63,17 @@ public class PulsarClientWrapper {
                     "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
                 clientBuilder.authentication(
                     config.getAuthPlugin(),
-                    config.getAuthParams()
-                );
+                    config.getAuthParams());
             }
             if (StringUtils.isNotBlank(token)) {
                 clientBuilder.authentication(
-                    AuthenticationFactory.token(token)
-                );
+                    AuthenticationFactory.token(token));
             }
 
             this.pulsarClient = clientBuilder.build();
         } catch (PulsarClientException ex) {
             throw new StorageRuntimeException(
-              String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
+                String.format("Failed to connect pulsar cluster %s with exception: %s", config.getServiceAddr(), ex.getMessage()));
         }
     }
 
@@ -89,7 +87,7 @@ public class PulsarClientWrapper {
                 .create();
         } catch (PulsarClientException ex) {
             throw new StorageRuntimeException(
-              String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
+                String.format("Failed to create pulsar producer for %s with exception: %s", topic, ex.getMessage()));
         }
     }
 

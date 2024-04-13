@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.42.2'
+def grpcVersion = '1.43.2'
 
 dependencies {
     api "com.google.guava:guava"
@@ -25,9 +25,14 @@ dependencies {
     api "org.apache.commons:commons-text"
     api "org.apache.commons:commons-lang3"
 
+    api "com.jayway.jsonpath:json-path"
+
+    api "io.cloudevents:cloudevents-core"
+    api "io.cloudevents:cloudevents-json-jackson"
+
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    implementation "org.apache.logging.log4j:log4j-slf4j2-impl"
 
     implementation 'com.github.seancfoley:ipaddress'
 
@@ -36,6 +41,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind"
     api "com.fasterxml.jackson.core:jackson-core"
     api "com.fasterxml.jackson.core:jackson-annotations"
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     implementation "org.apache.httpcomponents:httpclient"
 
@@ -45,7 +51,7 @@ dependencies {
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
 
-    implementation "com.github.stefanbirkner:system-rules"
+    testImplementation "org.junit-pioneer:junit-pioneer"
     implementation "org.yaml:snakeyaml"
 
     compileOnly 'org.projectlombok:lombok'
@@ -61,7 +67,7 @@ dependencies {
     testImplementation "org.slf4j:slf4j-api"
     testImplementation "org.apache.logging.log4j:log4j-api"
     testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j2-impl"
 
     testImplementation "com.lmax:disruptor"
 
@@ -76,6 +82,5 @@ dependencies {
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.mockito:mockito-junit-jupiter"
 }

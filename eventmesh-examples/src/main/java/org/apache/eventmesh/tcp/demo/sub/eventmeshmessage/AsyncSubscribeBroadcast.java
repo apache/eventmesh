@@ -67,9 +67,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive broadcast msg: {}", msg);
-        }
+        log.info("receive broadcast msg: {}", msg);
         return Optional.empty();
     }
 

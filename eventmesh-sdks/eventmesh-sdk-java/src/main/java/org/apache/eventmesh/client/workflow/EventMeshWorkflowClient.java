@@ -57,9 +57,7 @@ public class EventMeshWorkflowClient {
     public ExecuteResponse execute(final ExecuteRequest request) throws Exception {
         final WorkflowGrpc.WorkflowBlockingStub workflowClient = getWorkflowClient();
         final ExecuteResponse response = workflowClient.execute(request);
-        if (log.isInfoEnabled()) {
-            log.info("received response:{}", response);
-        }
+        log.info("received response:{}", response);
         return response;
     }
 }

@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
@@ -39,8 +40,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -50,7 +54,6 @@ import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-
 
 import lombok.Getter;
 import lombok.Setter;
@@ -117,6 +120,10 @@ public class Session {
     @Getter
     protected SessionState sessionState = SessionState.CREATED;
 
+    @Setter
+    @Getter
+    private String sessionId = UUID.randomUUID().toString();
+
     public void notifyHeartbeat(long heartbeatTime) throws Exception {
         this.lastHeartbeatTime = heartbeatTime;
     }
@@ -174,6 +181,7 @@ public class Session {
 
             context.writeAndFlush(pkg).addListener(
                 new ChannelFutureListener() {
+
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if (!future.isSuccess()) {
@@ -186,8 +194,7 @@ public class Session {
                                 .incrementAndGet();
                         }
                     }
-                }
-            );
+                });
         } catch (Exception e) {
             log.error("exception while write2Client", e);
         }
@@ -195,25 +202,17 @@ public class Session {
 
     @Override
     public String toString() {
-        return "Session{"
-            +
-            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-            +
-            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-            +
-            ",client=" + client
-            +
-            ",sessionState=" + sessionState
-            +
-            ",sessionContext=" + sessionContext
-            +
-            ",pusher=" + pusher
-            +
-            ",sender=" + sender
-            +
-            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-            +
-            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+        Map<String, Object> sessionJson = new HashMap<>();
+        sessionJson.put("sysId", Objects.requireNonNull(clientGroupWrapper.get()).getSysId());
+        sessionJson.put("remoteAddr", RemotingHelper.parseSocketAddressAddr(remoteAddress));
+        sessionJson.put("client", client);
+        sessionJson.put("sessionState", sessionState);
+        sessionJson.put("sessionContext", sessionContext);
+        sessionJson.put("pusher", pusher);
+        sessionJson.put("sender", sender);
+        sessionJson.put("createTime", DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT));
+        sessionJson.put("lastHeartbeatTime", DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT));
+        return JsonUtils.toJSONString(sessionJson);
     }
 
     @Override
@@ -231,14 +230,14 @@ public class Session {
         if (!Objects.equals(context, session.context)) {
             return false;
         }
-        
+
         return Objects.equals(sessionState, session.sessionState);
 
     }
 
     @Override
     public int hashCode() {
-        int result = 1001;   //primeNumber
+        int result = 1001; // primeNumber
         if (null != client) {
             result += 31 * result + Objects.hash(client);
         }

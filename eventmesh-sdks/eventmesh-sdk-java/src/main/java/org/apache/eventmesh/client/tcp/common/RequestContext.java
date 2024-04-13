@@ -72,12 +72,9 @@ public class RequestContext {
 
     public static RequestContext context(final Object key, final Package request) throws Exception {
         final RequestContext context = new RequestContext(key, request);
-        if (log.isInfoEnabled()) {
-            log.info("_RequestContext|create|key={}", key);
-        }
+        log.info("_RequestContext|create|key={}", key);
         return context;
     }
-
 
     public static Object key(final Package request) {
         return request.getHeader().getSeq();

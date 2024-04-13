@@ -71,7 +71,7 @@ public class ObjectConverter implements ConvertValue<Object> {
             this.setValue();
 
             Class<?> superclass = convertInfo.getClazz();
-            for (; ; ) {
+            for (;;) {
                 superclass = superclass.getSuperclass();
                 if (Objects.equals(superclass, Object.class) || Objects.isNull(superclass)) {
                     break;

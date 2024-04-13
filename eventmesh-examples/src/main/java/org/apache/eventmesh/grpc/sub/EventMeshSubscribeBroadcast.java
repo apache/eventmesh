@@ -61,9 +61,7 @@ public class EventMeshSubscribeBroadcast extends GrpcAbstractDemo implements Rec
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive async broadcast msg: {}", msg);
-        }
+        log.info("receive async broadcast msg: {}", msg);
         return Optional.empty();
     }
 

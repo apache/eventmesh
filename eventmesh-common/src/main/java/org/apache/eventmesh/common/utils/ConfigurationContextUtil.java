@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.common.utils;
 
+import static org.apache.eventmesh.common.Constants.GRPC;
+import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.common.Constants.TCP;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
 import java.util.List;
@@ -32,12 +36,7 @@ public class ConfigurationContextUtil {
 
     private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
 
-    public static final String HTTP = "HTTP";
-    public static final String TCP = "TCP";
-    public static final String GRPC = "GRPC";
-
     public static final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC);
-
 
     /**
      * Save http, tcp, grpc configuration at startup for global use.
@@ -61,7 +60,6 @@ public class ConfigurationContextUtil {
     public static CommonConfiguration get(String key) {
         return CONFIGURATION_MAP.get(key);
     }
-
 
     /**
      * Removes all of the mappings from this map.

@@ -32,7 +32,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -129,7 +128,7 @@ public class Trace {
             return span;
         }
 
-        //add trace info
+        // add trace info
         for (String entry : cloudEvent.getExtensionNames()) {
             span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : cloudEvent.getExtension(entry).toString());
         }

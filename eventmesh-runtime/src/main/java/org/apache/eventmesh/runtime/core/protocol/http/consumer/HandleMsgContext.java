@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.protocol.consumer.HandleMessageContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -33,13 +34,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import io.cloudevents.CloudEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HandleMsgContext {
+public class HandleMsgContext implements HandleMessageContext {
+
+    public static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private String msgRandomNo;
 
@@ -205,9 +210,9 @@ public class HandleMsgContext {
 
     public void finish() {
         if (Objects.nonNull(eventMeshConsumer) && Objects.nonNull(context) && Objects.nonNull(event)) {
-            if (log.isDebugEnabled()) {
-                log.debug("messageAcked|topic={}|event={}", topic, event);
-            }
+            MESSAGE_LOGGER.info("messageAcked|group={}|topic={}|bizSeq={}|uniqId={}|msgRandomNo={}|queueId={}|queueOffset={}",
+                consumerGroup, topic, bizSeqNo, uniqueId, msgRandomNo, event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_ID),
+                event.getExtension(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
             eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Collections.singletonList(event), context);
         }
     }

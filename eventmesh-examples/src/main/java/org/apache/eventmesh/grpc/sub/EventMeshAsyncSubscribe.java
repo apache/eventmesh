@@ -60,9 +60,7 @@ public class EventMeshAsyncSubscribe extends GrpcAbstractDemo implements Receive
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive async msg: {}", msg);
-        }
+        log.info("receive async msg: {}", msg);
         return Optional.empty();
     }
 

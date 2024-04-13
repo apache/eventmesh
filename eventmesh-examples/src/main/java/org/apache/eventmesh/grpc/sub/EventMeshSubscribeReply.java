@@ -60,9 +60,7 @@ public class EventMeshSubscribeReply extends GrpcAbstractDemo implements Receive
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive request-reply msg: {}", msg);
-        }
+        log.info("receive request-reply msg: {}", msg);
         if (msg != null) {
             return Optional.of(msg);
         } else {

@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -66,10 +65,7 @@ public class SyncRequestInstance {
                 .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
-            if (log.isDebugEnabled()) {
-                log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(),
-                    System.currentTimeMillis() - startTime);
-            }
+            log.debug("sendmsg: {}, return: {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
         } catch (Exception e) {
             log.warn("send msg failed", e);
         }

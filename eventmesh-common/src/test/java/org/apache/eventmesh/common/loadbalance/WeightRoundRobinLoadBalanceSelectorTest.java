@@ -22,20 +22,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 public class WeightRoundRobinLoadBalanceSelectorTest {
 
     private WeightRoundRobinLoadBalanceSelector<String> weightRoundRobinLoadBalanceSelector;
 
-    @Before
+    @BeforeEach
     public void before() {
         List<Weight<String>> weightList = new ArrayList<>();
         weightList.add(new Weight<>("A", 10));
@@ -54,12 +52,12 @@ public class WeightRoundRobinLoadBalanceSelectorTest {
         addressToNum.forEach((key, value) -> {
             log.info("{}: {}", key, value);
         });
-        Assert.assertTrue(addressToNum.get("B") > addressToNum.get("A"));
-        Assert.assertTrue(addressToNum.get("C") > addressToNum.get("B"));
+        Assertions.assertTrue(addressToNum.get("B") > addressToNum.get("A"));
+        Assertions.assertTrue(addressToNum.get("C") > addressToNum.get("B"));
     }
 
     @Test
     public void testGetType() {
-        Assert.assertEquals(LoadBalanceType.WEIGHT_ROUND_ROBIN, weightRoundRobinLoadBalanceSelector.getType());
+        Assertions.assertEquals(LoadBalanceType.WEIGHT_ROUND_ROBIN, weightRoundRobinLoadBalanceSelector.getType());
     }
 }

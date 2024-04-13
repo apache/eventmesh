@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
 import java.util.Date;
@@ -42,7 +43,7 @@ public class ConsumerGroupClient {
 
     public String url;
 
-    private EventEmitter<SimpleMessage> eventEmitter;
+    private EventEmitter<CloudEvent> eventEmitter;
 
     private final SubscriptionMode subscriptionMode;
 
@@ -62,7 +63,7 @@ public class ConsumerGroupClient {
         this.url = url;
     }
 
-    public void setEventEmitter(EventEmitter<SimpleMessage> emitter) {
+    public void setEventEmitter(EventEmitter<CloudEvent> emitter) {
         this.eventEmitter = emitter;
     }
 
@@ -86,4 +87,3 @@ public class ConsumerGroupClient {
             + ",lastUpTime=" + lastUpTime + "}";
     }
 }
-

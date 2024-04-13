@@ -14,7 +14,73 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
+[package]
+name = "eventmesh"
+version = "1.9.0"
+edition = "2021"
+authors = [
+    "mxsm <mxsm@apache.org>"
+]
+msrv = "1.75.0"
+description = "Rust client for Apache EventMesh"
+license = "Apache-2.0"
+keywords = ["EventMesh", "SDK", "rust-client", "rust", "eventmesh-rust-sdk"]
+readme = "./README.md"
+homepage = "https://github.com/apache/eventmesh"
+repository = "https://github.com/apache/eventmesh"
 
-[workspace]
-members = ["eventmesh", "examples"]
-resolver = "2"
+[features]
+default = ["grpc", "eventmesh_message"]
+full = ["grpc", "eventmesh_message","cloud_events"]
+eventmesh_message = []
+cloud_events = []
+tls = []
+grpc = []
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+# common
+anyhow = "1.0"
+
+#Rust grpc
+tonic = "0.10"
+prost = "0.12"
+prost-types = "0.12"
+
+#tokio
+tokio = { version = "1.32.0", features = ["full"] }
+
+#serde
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+#log
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+#cloudEvents
+cloudevents-sdk = "0.7.0"
+
+# tools crate
+thiserror = "1.0"
+bytes = "1"
+rand = "0.8"
+uuid = { version = "1.4.1", features = ["v4"] }
+local-ip-address = "0.5.6"
+futures = "0.3"
+log = "0.4.20"
+chrono = "0.4"
+
+[build-dependencies]
+tonic-build = "0.10"
+
+[[example]]
+name = "producer_example"
+path = "examples/grpc/producer_example.rs"
+required-features = ["grpc", "eventmesh_message","cloud_events"]
+
+[[example]]
+name = "consumer_example"
+path = "examples/grpc/consumer_example.rs"
+required-features = ["grpc", "eventmesh_message"]

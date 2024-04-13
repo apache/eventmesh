@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.http.demo;
 
+import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
+
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -41,7 +42,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class HttpAbstractDemo {
-
 
     protected static EventMeshHttpClientConfig initEventMeshHttpClientConfig(final String groupName)
         throws IOException {
@@ -76,7 +76,7 @@ public class HttpAbstractDemo {
             .withSubject(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
             .withSource(URI.create("/"))
             .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withType(CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(JsonUtils.toJSONString(content).getBytes(StandardCharsets.UTF_8))
             .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4_000))
             .build();

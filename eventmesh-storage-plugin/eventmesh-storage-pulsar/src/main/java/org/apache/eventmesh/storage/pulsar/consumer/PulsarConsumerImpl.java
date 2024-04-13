@@ -53,7 +53,6 @@ import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 @Config(field = "clientConfiguration")
 public class PulsarConsumerImpl implements Consumer {
@@ -84,19 +83,17 @@ public class PulsarConsumerImpl implements Consumer {
                     "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
                 clientBuilder.authentication(
                     clientConfiguration.getAuthPlugin(),
-                    clientConfiguration.getAuthParams()
-                );
+                    clientConfiguration.getAuthParams());
             }
             if (StringUtils.isNotBlank(token)) {
                 clientBuilder.authentication(
-                    AuthenticationFactory.token(token)
-                );
+                    AuthenticationFactory.token(token));
             }
 
             this.pulsarClient = clientBuilder.build();
         } catch (Exception ex) {
             throw new StorageRuntimeException(
-              String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
+                String.format("Failed to connect pulsar with exception: %s", ex.getMessage()));
         }
     }
 
@@ -114,6 +111,7 @@ public class PulsarConsumerImpl implements Consumer {
         }
 
         EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+
             @Override
             public void commit(EventMeshAction action) {
                 log.debug("message action: {} for topic: {}", action.name(), subTopic);
@@ -132,7 +130,7 @@ public class PulsarConsumerImpl implements Consumer {
             .messageListener(
                 (MessageListener<byte[]>) (ackConsumer, msg) -> {
                     EventFormat eventFormat = Objects.requireNonNull(
-                            EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE));
+                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE));
                     CloudEvent cloudEvent = eventFormat.deserialize(msg.getData());
                     eventListener.consume(cloudEvent, consumeContext);
                     try {
@@ -143,7 +141,8 @@ public class PulsarConsumerImpl implements Consumer {
                     } catch (EventDeserializationException ex) {
                         log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
                     }
-                }).subscribe();
+                })
+            .subscribe();
 
         consumerMap.putIfAbsent(consumerKey, consumer);
 

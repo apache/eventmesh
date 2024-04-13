@@ -61,9 +61,7 @@ public class CloudEventsAsyncSubscribe extends GrpcAbstractDemo implements Recei
 
     @Override
     public Optional<CloudEvent> handle(final CloudEvent msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive async msg: {}", msg);
-        }
+        log.info("receive async msg: {}", msg);
         return Optional.empty();
     }
 

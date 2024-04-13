@@ -79,9 +79,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
-            if (log.isInfoEnabled()) {
-                log.info("{}|rr|send|type={}|msg={}", CLIENTNO, msg, msg);
-            }
+            log.info("{}|rr|send|type={}|msg={}", CLIENTNO, msg, msg);
             return io(msg, timeout);
         } catch (Exception e) {
             throw new EventMeshException("rr error", e);
@@ -151,10 +149,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                    responseMessage ->
-                        ctx.writeAndFlush(
-                            MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
-                );
+                    responseMessage -> ctx.writeAndFlush(
+                        MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

@@ -23,20 +23,16 @@
 (If this PR fixes a GitHub issue, please add `Fixes #<XXX>` or `Closes #<XXX>`.)
 -->
 
-Fixes #<XXXX>.
+Fixes #issue_id
 
 ### Motivation
 
 *Explain the content here.*
 *Explain why you want to make the changes and what problem you're trying to solve.*
 
-
-
 ### Modifications
 
 *Describe the modifications you've done.*
-
-
 
 ### Documentation
 

@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.TypeUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,12 +41,11 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
-
 public class AuthTokenUtils {
 
     public static void authTokenByPublicKey(AclProperties aclProperties) {
 
-        String token =  aclProperties.getToken();
+        String token = aclProperties.getToken();
         if (StringUtils.isNotBlank(token)) {
             if (!authAccess(aclProperties)) {
                 throw new AclException("group:" + aclProperties.getExtendedField("group ") + " has no auth to access the topic:"
@@ -87,9 +87,7 @@ public class AuthTokenUtils {
             }
 
         } else {
-              {
-                throw new AclException("invalid token!");
-              }
+            throw new AclException("invalid token!");
         }
     }
 
@@ -131,9 +129,7 @@ public class AuthTokenUtils {
                 throw new AclException("invalid token!", e);
             }
         } else {
-              {
-                throw new AclException("invalid token!");
-              }
+            throw new AclException("invalid token!");
         }
     }
 
@@ -141,14 +137,15 @@ public class AuthTokenUtils {
 
         String topic = aclProperties.getTopic();
 
-        Set<String> groupTopics = (Set<String>) aclProperties.getExtendedField("topics");
+        Object topics = aclProperties.getExtendedField("topics");
 
-        if (groupTopics.contains(topic)) {
-            return true;
-        } else {
+        if (!(topics instanceof Set)) {
             return false;
         }
 
+        Set<String> groupTopics = TypeUtils.castSet(topics, String.class);
+
+        return groupTopics.contains(topic);
     }
 
 }

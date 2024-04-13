@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.spi;
 
+import org.apache.eventmesh.spi.example.TestAnotherSingletonExtension;
 import org.apache.eventmesh.spi.example.TestPrototypeExtension;
 import org.apache.eventmesh.spi.example.TestSingletonExtension;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EventMeshExtensionFactoryTest {
 
@@ -29,35 +30,26 @@ public class EventMeshExtensionFactoryTest {
     public void testGetSingletonExtension() {
         TestSingletonExtension extensionA = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         TestSingletonExtension extensionB = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
-        Assert.assertSame(extensionA, extensionB);
+        Assertions.assertSame(extensionA, extensionB);
+
+        TestAnotherSingletonExtension singletonExtension = EventMeshExtensionFactory.getExtension(TestAnotherSingletonExtension.class,
+            "singletonExtension");
+        Assertions.assertNotNull(singletonExtension);
+        TestSingletonExtension singletonExtension1 = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
+        Assertions.assertNotNull(singletonExtension1);
+
     }
 
     @Test
     public void testGetPrototypeExtension() {
         TestPrototypeExtension prototypeExtensionA = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
         TestPrototypeExtension prototypeExtensionB = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
-        Assert.assertNotSame(prototypeExtensionA, prototypeExtensionB);
+        Assertions.assertNotSame(prototypeExtensionA, prototypeExtensionB);
     }
 
     @Test
     public void testGetExtension() {
-        ExtensionException exception = null;
-        try {
-            EventMeshExtensionFactory.getExtension(null, "eventmesh");
-        } catch (Exception ex) {
-            if (ex instanceof ExtensionException) {
-                exception = (ExtensionException) ex;
-            }
-        }
-        Assert.assertNotNull(exception);
-        exception = null;
-        try {
-            EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null);
-        } catch (Exception ex) {
-            if (ex instanceof ExtensionException) {
-                exception = (ExtensionException) ex;
-            }
-        }
-        Assert.assertNotNull(exception);
+        Assertions.assertThrows(ExtensionException.class, () -> EventMeshExtensionFactory.getExtension(null, "eventmesh"));
+        Assertions.assertThrows(ExtensionException.class, () -> EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, null));
     }
 }

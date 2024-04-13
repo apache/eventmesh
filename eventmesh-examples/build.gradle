@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.42.2'
+def grpcVersion = '1.43.2'
 
 configurations {
     implementation.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
@@ -25,6 +25,7 @@ dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    implementation project(":eventmesh-connectors:eventmesh-connector-spring")
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'io.netty:netty-all'
     implementation "io.cloudevents:cloudevents-core"

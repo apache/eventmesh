@@ -33,10 +33,10 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -47,7 +47,7 @@ public class UnitTest extends AbstractRedisServer {
 
     private RedisConsumer redisConsumer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         redisProducer = new RedisProducer();
         redisProducer.init(new Properties());
@@ -58,7 +58,7 @@ public class UnitTest extends AbstractRedisServer {
         redisConsumer.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         redisProducer.shutdown();
         redisConsumer.shutdown();
@@ -71,10 +71,9 @@ public class UnitTest extends AbstractRedisServer {
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
 
         redisConsumer.registerEventListener((cloudEvent, context) -> {
-                downLatch.countDown();
-                context.commit(EventMeshAction.CommitMessage);
-            }
-        );
+            downLatch.countDown();
+            context.commit(EventMeshAction.CommitMessage);
+        });
 
         final String topic = RedisConsumerTest.class.getSimpleName();
 
@@ -95,16 +94,14 @@ public class UnitTest extends AbstractRedisServer {
 
                 @Override
                 public void onSuccess(SendResult sendResult) {
-
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
-
                 }
             });
         }
 
-        Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
+        Assertions.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
     }
 }

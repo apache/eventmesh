@@ -18,13 +18,14 @@
 package org.apache.eventmesh.client.grpc.producer;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
+import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -54,16 +55,17 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
             return null;
         }
 
-        if (log.isDebugEnabled()) {
-            log.info("Publish message: {}", message.toString());
-        }
-        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(message, clientConfig, PROTOCOL_TYPE);
+        log.debug("Publish message: {}", message);
+        CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(message, clientConfig, PROTOCOL_TYPE);
         try {
-            Response response = publisherClient.publish(simpleMessage);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
-            return response;
+            CloudEvent response = publisherClient.publish(cloudEvent);
+            Response parsedResponse = Response.builder()
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
+            log.info("Received response:{}", parsedResponse);
+            return parsedResponse;
         } catch (Exception e) {
             log.error("Error in publishing message {}", message, e);
         }
@@ -76,46 +78,33 @@ public class EventMeshMessageProducer implements GrpcProducer<EventMeshMessage> 
         if (CollectionUtils.isEmpty(messages)) {
             return null;
         }
-        BatchMessage batchMessage = EventMeshClientUtil.buildBatchMessages(messages, clientConfig, PROTOCOL_TYPE);
+        CloudEventBatch cloudEventBatch = EventMeshCloudEventBuilder.buildEventMeshCloudEventBatch(messages, clientConfig, PROTOCOL_TYPE);
         try {
-            Response response = publisherClient.batchPublish(batchMessage);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
-            return response;
+            CloudEvent response = publisherClient.batchPublish(cloudEventBatch);
+            Response parsedResponse = Response.builder()
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
+            log.info("Received response:{}", parsedResponse);
+            return parsedResponse;
         } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Error in BatchPublish message {}", messages, e);
-            }
+            log.error("Error in BatchPublish message {}", messages, e);
         }
         return null;
     }
 
     @Override
     public EventMeshMessage requestReply(EventMeshMessage message, long timeout) {
-        if (log.isInfoEnabled()) {
-            log.info("RequestReply message:{}", message);
-        }
+        log.info("RequestReply message:{}", message);
 
-        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(message, clientConfig, PROTOCOL_TYPE);
+        final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventMeshCloudEvent(message, clientConfig, PROTOCOL_TYPE);
         try {
-            SimpleMessage reply = publisherClient.withDeadlineAfter(timeout, TimeUnit.MILLISECONDS)
-                .requestReply(simpleMessage);
-            if (log.isInfoEnabled()) {
-                log.info("Received reply message:{}", reply);
-            }
-
-            final Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
-            if (msg instanceof EventMeshMessage) {
-                return (EventMeshMessage) msg;
-            } else {
-                return null;
-            }
+            final CloudEvent reply = publisherClient.withDeadlineAfter(timeout, TimeUnit.MILLISECONDS).requestReply(cloudEvent);
+            log.info("Received reply message:{}", reply);
+            return EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent(reply, PROTOCOL_TYPE);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (log.isErrorEnabled()) {
-                log.error("Error in RequestReply message {}", message, e);
-            }
+            log.error("Error in RequestReply message {}", message, e);
         }
         return null;
     }

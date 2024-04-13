@@ -21,35 +21,39 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
+import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.enums.EventMeshDataContentType;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
+import org.apache.eventmesh.common.protocol.HeartbeatItem;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEventAttributeValue;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.ConsumerServiceGrpc.ConsumerServiceStub;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.HeartbeatServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.ClientType;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
+import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
-import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
-import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc;
-import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import io.grpc.ManagedChannel;
@@ -62,72 +66,67 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 public class EventMeshGrpcConsumer implements AutoCloseable {
 
-    private static final transient String SDK_STREAM_URL = "grpc_stream";
-    private transient ManagedChannel channel;
-    private final transient EventMeshGrpcClientConfig clientConfig;
+    private static final String SDK_STREAM_URL = "grpc_stream";
+    private ManagedChannel channel;
+    private final EventMeshGrpcClientConfig clientConfig;
 
-    private final transient Map<String, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
+    private final Map<String /* topic */, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
 
-    private final transient ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
-        Runtime.getRuntime().availableProcessors(),
+    private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
         new EventMeshThreadFactory("GRPCClientScheduler", true));
 
-    private transient ConsumerServiceBlockingStub consumerClient;
-    private transient ConsumerServiceStub consumerAsyncClient;
-    private transient HeartbeatServiceBlockingStub heartbeatClient;
+    private ConsumerServiceBlockingStub consumerClient;
+    private ConsumerServiceStub consumerAsyncClient;
+    private HeartbeatServiceBlockingStub heartbeatClient;
 
-    private transient ReceiveMsgHook<?> listener;
-    private transient SubStreamHandler<?> subStreamHandler;
+    private ReceiveMsgHook<?> listener;
+    private SubStreamHandler<?> subStreamHandler;
 
     public EventMeshGrpcConsumer(final EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
     }
 
     public void init() {
-        channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
-            .usePlaintext().build();
-
-        consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
-        consumerAsyncClient = ConsumerServiceGrpc.newStub(channel);
-        heartbeatClient = HeartbeatServiceGrpc.newBlockingStub(channel);
-
+        this.channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort()).usePlaintext()
+            .build();
+        this.consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
+        this.consumerAsyncClient = ConsumerServiceGrpc.newStub(channel);
+        this.heartbeatClient = HeartbeatServiceGrpc.newBlockingStub(channel);
         heartBeat();
     }
 
+    /**
+     * Subscribes to an event at a specified URL(Webhook).
+     *
+     * @param subscriptionItems The list of subscription items.
+     * @param url               The URL to subscribe to.
+     * @return A response containing information about the subscription result.
+     */
     public Response subscribe(final List<SubscriptionItem> subscriptionItems, final String url) {
-        if (log.isInfoEnabled()) {
-            log.info("Create subscription: {} , url: {}", subscriptionItems, url);
-        }
+        log.info("Create subscription: {} , url: {}", subscriptionItems, url);
 
-        addSubscription(subscriptionItems, url);
+        addSubscription(subscriptionItems, url, GrpcType.WEBHOOK);
 
-        Subscription subscription = buildSubscription(subscriptionItems, url);
-        try {
-            Response response = consumerClient.subscribe(subscription);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
-            return response;
-        } catch (Exception e) {
-            log.error("Error in subscribe.", e);
-        }
-        return null;
+        return subscribeWebhook(subscriptionItems, url);
     }
 
+    /**
+     * Subscribes to a streaming.
+     *
+     * @param subscriptionItems The list of subscription items for streaming.
+     */
     public void subscribe(final List<SubscriptionItem> subscriptionItems) {
-        if (log.isInfoEnabled()) {
-            log.info("Create streaming subscription: {}", subscriptionItems);
-        }
+        log.info("Create streaming subscription: {}", subscriptionItems);
 
         if (listener == null) {
             log.error("Error in subscriber, no Event Listener is registered.");
             return;
         }
 
-        addSubscription(subscriptionItems, SDK_STREAM_URL);
+        addSubscription(subscriptionItems, SDK_STREAM_URL, GrpcType.STREAM);
 
-        final Subscription subscription = buildSubscription(subscriptionItems, null);
-
+        CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, null,
+            subscriptionItems);
         synchronized (this) {
             if (subStreamHandler == null) {
                 subStreamHandler = new SubStreamHandler<>(consumerAsyncClient, clientConfig, listener);
@@ -137,34 +136,49 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         subStreamHandler.sendSubscription(subscription);
     }
 
-    private void addSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
+    private Response subscribeWebhook(List<SubscriptionItem> subscriptionItems, String url) {
+        final CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
+            url, subscriptionItems);
+        try {
+            CloudEvent response = consumerClient.subscribe(subscription);
+            log.info("Received response:{}", response);
+            return Response.builder()
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
+        } catch (Exception e) {
+            log.error("Error in subscribe.", e);
+        }
+        return null;
+    }
+
+    private void addSubscription(final List<SubscriptionItem> subscriptionItems, final String url, final GrpcType grpcType) {
         for (SubscriptionItem item : subscriptionItems) {
-            subscriptionMap.putIfAbsent(item.getTopic(), new SubscriptionInfo(item, url));
+            subscriptionMap.putIfAbsent(item.getTopic(), new SubscriptionInfo(item, url, grpcType));
         }
     }
 
     private void removeSubscription(final List<SubscriptionItem> subscriptionItems) {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
-        subscriptionItems.forEach(item -> {
-            subscriptionMap.remove(item.getTopic());
-        });
+        subscriptionItems.forEach(item -> subscriptionMap.remove(item.getTopic()));
     }
 
     public Response unsubscribe(final List<SubscriptionItem> subscriptionItems, final String url) {
-        if (log.isInfoEnabled()) {
-            log.info("Removing subscription: {}, url:{}", subscriptionItems, url);
-        }
+        log.info("Removing subscription: {}, url:{}", subscriptionItems, url);
 
         removeSubscription(subscriptionItems);
 
-        Subscription subscription = buildSubscription(subscriptionItems, url);
-
+        final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, url,
+            subscriptionItems);
         try {
-            Response response = consumerClient.unsubscribe(subscription);
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
-            return response;
+            final CloudEvent response = consumerClient.unsubscribe(cloudEvent);
+            log.info("Received response:{}", response);
+            return Response.builder()
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
         } catch (Exception e) {
             log.error("Error in unsubscribe.", e);
         }
@@ -173,20 +187,21 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     public Response unsubscribe(final List<SubscriptionItem> subscriptionItems) {
         Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
-        if (log.isInfoEnabled()) {
-            log.info("Removing subscription stream: {}", subscriptionItems);
-        }
+        log.info("Removing subscription stream: {}", subscriptionItems);
 
         removeSubscription(subscriptionItems);
 
-        Subscription subscription = buildSubscription(subscriptionItems, null);
+        final CloudEvent cloudEvent = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE, null,
+            subscriptionItems);
 
         try {
-            Response response = consumerClient.unsubscribe(subscription);
-
-            if (log.isInfoEnabled()) {
-                log.info("Received response:{}", response);
-            }
+            final CloudEvent response = consumerClient.unsubscribe(cloudEvent);
+            Response parsedResponse = Response.builder()
+                .respCode(EventMeshCloudEventUtils.getResponseCode(response))
+                .respMsg(EventMeshCloudEventUtils.getResponseMessage(response))
+                .respTime(EventMeshCloudEventUtils.getResponseTime(response))
+                .build();
+            log.info("Received response:{}", parsedResponse);
 
             // there is no stream subscriptions, stop the subscription stream handler
             synchronized (this) {
@@ -194,54 +209,11 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                     subStreamHandler.close();
                 }
             }
-            return response;
+            return parsedResponse;
         } catch (Exception e) {
             log.error("Error in unsubscribe.", e);
         }
         return null;
-    }
-
-    public Subscription buildSubscription(final List<SubscriptionItem> subscriptionItems, final String url) {
-        Objects.requireNonNull(subscriptionItems, "subscriptionItems can not be null");
-
-        final Subscription.Builder builder = Subscription.newBuilder()
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE))
-            .setConsumerGroup(clientConfig.getConsumerGroup());
-
-        if (StringUtils.isNotEmpty(url)) {
-            builder.setUrl(url);
-        }
-
-        Set<SubscriptionItem> subscriptionItemSet = new HashSet<>();
-        subscriptionItemSet.addAll(subscriptionItems);
-
-        for (SubscriptionItem subscriptionItem : subscriptionItemSet) {
-            Subscription.SubscriptionItem.SubscriptionMode mode;
-            if (SubscriptionMode.CLUSTERING == subscriptionItem.getMode()) {
-                mode = Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING;
-            } else if (SubscriptionMode.BROADCASTING == subscriptionItem.getMode()) {
-                mode = Subscription.SubscriptionItem.SubscriptionMode.BROADCASTING;
-            } else {
-                mode = Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED;
-            }
-
-            Subscription.SubscriptionItem.SubscriptionType type;
-            if (SubscriptionType.ASYNC == subscriptionItem.getType()) {
-                type = Subscription.SubscriptionItem.SubscriptionType.ASYNC;
-            } else if (SubscriptionType.SYNC == subscriptionItem.getType()) {
-                type = Subscription.SubscriptionItem.SubscriptionType.SYNC;
-            } else {
-                type = Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED;
-            }
-            final Subscription.SubscriptionItem item = Subscription.SubscriptionItem.newBuilder()
-                .setTopic(subscriptionItem.getTopic())
-                .setMode(mode)
-                .setType(type)
-                .build();
-            builder.addSubscriptionItems(item);
-        }
-
-        return builder.build();
     }
 
     public synchronized void registerListener(final ReceiveMsgHook<?> listener) {
@@ -251,35 +223,32 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     private void heartBeat() {
-        final RequestHeader header = EventMeshClientUtil.buildHeader(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE);
+        final Map<String, CloudEventAttributeValue> attributeValueMap = EventMeshCloudEventBuilder.buildCommonCloudEventAttributes(clientConfig,
+            EventMeshProtocolType.EVENT_MESH_MESSAGE);
 
         scheduler.scheduleAtFixedRate(() -> {
             if (MapUtils.isEmpty(subscriptionMap)) {
                 return;
             }
-
-            final Heartbeat.Builder heartbeatBuilder = Heartbeat.newBuilder()
-                .setHeader(header)
-                .setConsumerGroup(clientConfig.getConsumerGroup())
-                .setClientType(Heartbeat.ClientType.SUB);
-
-            subscriptionMap.forEach((topic, subscriptionInfo) -> {
-                Heartbeat.HeartbeatItem heartbeatItem = Heartbeat.HeartbeatItem
-                    .newBuilder()
-                    .setTopic(topic)
-                    .setUrl(subscriptionInfo.getUrl())
-                    .build();
-                heartbeatBuilder.addHeartbeatItems(heartbeatItem);
-            });
-
-            Heartbeat heartbeat = heartbeatBuilder.build();
+            Map<String, CloudEventAttributeValue> ext = new HashMap<>(attributeValueMap);
+            ext.put(ProtocolKey.CONSUMERGROUP, CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getConsumerGroup()).build());
+            ext.put(ProtocolKey.CLIENT_TYPE, CloudEventAttributeValue.newBuilder().setCeInteger(ClientType.SUB.getType()).build());
+            ext.put(ProtocolKey.DATA_CONTENT_TYPE,
+                CloudEventAttributeValue.newBuilder().setCeString(EventMeshDataContentType.JSON.getCode()).build());
+            final CloudEvent.Builder heartbeatBuilder = CloudEvent.newBuilder().putAllAttributes(ext);
+            List<HeartbeatItem> heartbeatItems = subscriptionMap.entrySet().stream()
+                .map(entry -> HeartbeatItem.builder().topic(entry.getKey()).url(entry.getValue().getUrl()).build()).collect(toList());
+            CloudEvent heartbeat = heartbeatBuilder.setTextData(JsonUtils.toJSONString(heartbeatItems)).build();
 
             try {
-                final Response response = heartbeatClient.heartbeat(heartbeat);
-                if (log.isDebugEnabled()) {
-                    log.debug("Grpc Consumer Heartbeat response: {}", response);
-                }
-
+                CloudEvent cloudEventResp = heartbeatClient.heartbeat(heartbeat);
+                assert cloudEventResp != null;
+                Response response = Response.builder()
+                    .respCode(EventMeshCloudEventUtils.getResponseCode(cloudEventResp))
+                    .respMsg(EventMeshCloudEventUtils.getResponseMessage(cloudEventResp))
+                    .respTime(EventMeshCloudEventUtils.getResponseTime(cloudEventResp))
+                    .build();
+                log.debug("Grpc Consumer Heartbeat cloudEvent: {}", response);
                 if (StatusCode.CLIENT_RESUBSCRIBE.getRetCode().equals(response.getRespCode())) {
                     resubscribe();
                 }
@@ -288,24 +257,34 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
         }, 10_000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
-        if (log.isInfoEnabled()) {
-            log.info("Grpc Consumer Heartbeat started.");
-        }
+        log.info("Grpc Consumer Heartbeat started.");
     }
 
     private void resubscribe() {
         if (subscriptionMap.isEmpty()) {
             return;
         }
-
-        final Map<String, List<SubscriptionItem>> subscriptionGroup =
-            subscriptionMap.values().stream()
-                .collect(Collectors.groupingBy(SubscriptionInfo::getUrl,
-                    mapping(SubscriptionInfo::getSubscriptionItem, toList())));
+        final Collection<SubscriptionInfo> values = subscriptionMap.values();
+        final AtomicBoolean isStreamSub = new AtomicBoolean(false);
+        for (SubscriptionInfo info : values) {
+            if (info.grpcType == GrpcType.STREAM) {
+                isStreamSub.compareAndSet(false, true);
+                break;
+            }
+        }
+        final Map<String, List<SubscriptionItem>> subscriptionGroup = values.stream()
+            .collect(Collectors.groupingBy(SubscriptionInfo::getUrl, mapping(SubscriptionInfo::getSubscriptionItem, toList())));
 
         subscriptionGroup.forEach((url, items) -> {
-            Subscription subscription = buildSubscription(items, url);
-            subStreamHandler.sendSubscription(subscription);
+            if (isStreamSub.get()) {
+                CloudEvent subscription = EventMeshCloudEventBuilder.buildEventSubscription(clientConfig, EventMeshProtocolType.EVENT_MESH_MESSAGE,
+                    url,
+                    items);
+                subStreamHandler.sendSubscription(subscription);
+            } else {
+                subscribeWebhook(items, url);
+            }
+
         });
     }
 
@@ -328,10 +307,16 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         private transient SubscriptionItem subscriptionItem;
         private transient String url;
+        private GrpcType grpcType;
 
-        SubscriptionInfo(final SubscriptionItem subscriptionItem, final String url) {
+        SubscriptionInfo(final SubscriptionItem subscriptionItem, final String url, final GrpcType grpcType) {
             this.subscriptionItem = subscriptionItem;
             this.url = url;
+            this.grpcType = grpcType;
+        }
+
+        public GrpcType getGrpcType() {
+            return grpcType;
         }
 
         public SubscriptionItem getSubscriptionItem() {

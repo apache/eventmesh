@@ -25,21 +25,20 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PushContext {
 
-    private SessionPusher sessionPusher;
+    private final SessionPusher sessionPusher;
 
-    public AtomicLong deliveredMsgsCount = new AtomicLong(0);
+    public final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
-    public AtomicLong deliverFailMsgsCount = new AtomicLong(0);
+    public final AtomicLong deliverFailMsgsCount = new AtomicLong(0);
 
-    private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = new ConcurrentHashMap<String, DownStreamMsgContext>();
+    private final ConcurrentHashMap<String /* seq */, DownStreamMsgContext> unAckMsg = new ConcurrentHashMap<>();
 
-    private long createTime = System.currentTimeMillis();
+    private final long createTime = System.currentTimeMillis();
 
     public PushContext(SessionPusher sessionPusher) {
         this.sessionPusher = sessionPusher;
@@ -61,7 +60,6 @@ public class PushContext {
     public int getTotalUnackMsgs() {
         return unAckMsg.size();
     }
-
 
     public ConcurrentHashMap<String, DownStreamMsgContext> getUnAckMsg() {
         return unAckMsg;

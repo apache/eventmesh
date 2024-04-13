@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RabbitmqConsumerHandler implements Runnable {
 
-
     private final Channel channel;
     private final ConfigurationHolder configurationHolder;
     private final AtomicBoolean stop = new AtomicBoolean(false);
@@ -55,6 +54,7 @@ public class RabbitmqConsumerHandler implements Runnable {
                     RabbitmqCloudEvent rabbitmqCloudEvent = RabbitmqCloudEvent.getFromByteArray(response.getBody());
                     CloudEvent cloudEvent = rabbitmqCloudEvent.convertToCloudEvent();
                     final EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+
                         @Override
                         public void commit(EventMeshAction action) {
                             log.info("[RabbitmqConsumerHandler] Rabbitmq consumer context commit.");

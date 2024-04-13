@@ -66,13 +66,11 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
     }
 
     public EventMeshHttpConsumer(final EventMeshHttpClientConfig eventMeshHttpClientConfig,
-        final ThreadPoolExecutor customExecutor)
-        throws EventMeshException {
+        final ThreadPoolExecutor customExecutor) throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
             () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
-                eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume")
-        );
+                eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume"));
         this.scheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
             new EventMeshThreadFactory("HTTPClientScheduler", true));
     }
@@ -114,11 +112,10 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem
-                    -> {
+                final List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem -> {
                     final HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
-                    heartbeatEntity.topic = subscriptionItem.getTopic();
-                    heartbeatEntity.url = subscribeUrl;
+                    heartbeatEntity.setTopic(subscriptionItem.getTopic());
+                    heartbeatEntity.setUrl(subscribeUrl);
                     return heartbeatEntity;
                 }).collect(Collectors.toList());
 
@@ -169,9 +166,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     @Override
     public void close() throws EventMeshException {
-        if (log.isInfoEnabled()) {
-            log.info("LiteConsumer shutdown begin.");
-        }
+        log.info("LiteConsumer shutdown begin.");
         super.close();
 
         if (consumeExecutor != null) {
@@ -179,20 +174,18 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         }
         scheduler.shutdown();
 
-        if (log.isInfoEnabled()) {
-            log.info("LiteConsumer shutdown end.");
-        }
+        log.info("LiteConsumer shutdown end.");
     }
 
     private RequestParam buildCommonRequestParam() {
         return new RequestParam(HttpMethod.POST)
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV.getKey(), eventMeshHttpClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC.getKey(), eventMeshHttpClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP.getKey(), eventMeshHttpClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID.getKey(), eventMeshHttpClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS.getKey(), eventMeshHttpClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME.getKey(), eventMeshHttpClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD.getKey(), eventMeshHttpClientConfig.getPassword())
             // add protocol version?
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)

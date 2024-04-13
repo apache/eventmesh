@@ -25,7 +25,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.trace.pinpoint.common.PinpointConstants;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -139,8 +139,7 @@ public final class PinpointSpanExporter implements SpanExporter {
             agentName,
             applicationName,
             ServiceType.UNDEFINED.getCode(),
-            agentStartTime
-        );
+            agentStartTime);
 
         this.agentInfoSender = createAgentInfoSender();
         this.agentInfoSender.start();
@@ -176,15 +175,13 @@ public final class PinpointSpanExporter implements SpanExporter {
             JvmGcType.UNKNOWN);
 
         final ServerMetaDataRegistryService serverMetaDataRegistryService = new DefaultServerMetaDataRegistryService(
-            Collections.emptyList()
-        );
-        serverMetaDataRegistryService.setServerName(PinpointConstants.SERVICE_NAME);
+            Collections.emptyList());
+        serverMetaDataRegistryService.setServerName(EventMeshTraceConstants.SERVICE_NAME);
 
         final AgentInfoFactory agentInfoFactory = new AgentInfoFactory(
             agentInformationProvider.createAgentInformation(),
             serverMetaDataRegistryService,
-            jvmInformation
-        );
+            jvmInformation);
 
         return new AgentInfoSender.Builder(agentGrpcDataSender, agentInfoFactory).build();
     }
@@ -196,14 +193,12 @@ public final class PinpointSpanExporter implements SpanExporter {
             new GrpcSpanMessageConverter(
                 agentId,
                 ServiceType.STAND_ALONE.getCode(),
-                new GrpcSpanProcessorV2()
-            );
+                new GrpcSpanProcessorV2());
 
         final StreamState streamState =
             new SimpleStreamState(
                 grpcTransportConfig.getSpanClientOption().getLimitCount(),
-                grpcTransportConfig.getSpanClientOption().getLimitTime()
-            );
+                grpcTransportConfig.getSpanClientOption().getLimitTime());
 
         return new SpanGrpcDataSender(
             grpcTransportConfig.getSpanCollectorIp(),
@@ -212,8 +207,7 @@ public final class PinpointSpanExporter implements SpanExporter {
             messageConverter,
             reconnectExecutor,
             spanChannelFactory,
-            streamState
-        );
+            streamState);
     }
 
     private ChannelFactory createAgentChannelFactory() {
@@ -360,8 +354,7 @@ public final class PinpointSpanExporter implements SpanExporter {
     private static long hex32StringToLong(final String hex32String) {
         final CharSequence charSequence = new StringBuilder().append(hex32String);
         return OtelEncodingUtils.isValidBase16String(charSequence)
-            ?
-            OtelEncodingUtils.longFromBase16String(charSequence, 0)
+            ? OtelEncodingUtils.longFromBase16String(charSequence, 0)
                 & OtelEncodingUtils.longFromBase16String(charSequence, 16)
             : hex32String.hashCode();
     }

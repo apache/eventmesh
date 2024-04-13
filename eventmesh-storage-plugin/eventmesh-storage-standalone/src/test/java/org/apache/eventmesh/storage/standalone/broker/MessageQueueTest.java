@@ -24,9 +24,9 @@ import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MessageQueueTest {
 
@@ -36,79 +36,79 @@ public class MessageQueueTest {
     private static final int WRONG_OFFSET = 4;
     private MessageQueue messageQueue;
 
-    @Before
+    @BeforeEach
     public void setUp() throws InterruptedException {
         initMessageQueue();
     }
 
     @Test
     public void testPut() {
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testTake() throws InterruptedException {
         MessageEntity takeMessage = messageQueue.take();
-        Assert.assertNotNull(takeMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assertions.assertNotNull(takeMessage);
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testPeek() {
         MessageEntity peekMessage = messageQueue.peek();
-        Assert.assertNotNull(peekMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assertions.assertNotNull(peekMessage);
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testGetHead() {
         MessageEntity headMessage = messageQueue.getHead();
-        Assert.assertNotNull(headMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assertions.assertNotNull(headMessage);
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testGetTail() {
         MessageEntity tailMessage = messageQueue.getHead();
-        Assert.assertNotNull(tailMessage);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
+        Assertions.assertNotNull(tailMessage);
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
     }
 
     @Test
     public void testGetByOffset() {
         MessageEntity offSetMessageEntity = messageQueue.getByOffset(DEFAULT_OFFSET);
-        Assert.assertNotNull(offSetMessageEntity);
-        Assert.assertTrue(Arrays.stream(messageQueue.items).findAny().isPresent());
-        Assert.assertEquals(DEFAULT_OFFSET, offSetMessageEntity.getOffset());
+        Assertions.assertNotNull(offSetMessageEntity);
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).findAny().isPresent());
+        Assertions.assertEquals(DEFAULT_OFFSET, offSetMessageEntity.getOffset());
     }
 
     @Test
     public void testGetByOffset_whenOffSetIsWrong_thenReturnsNull() {
         MessageEntity offSetMessageEntity = messageQueue.getByOffset(WRONG_OFFSET);
-        Assert.assertNull(offSetMessageEntity);
+        Assertions.assertNull(offSetMessageEntity);
     }
 
     @Test
     public void testRemoveHead() {
         messageQueue.removeHead();
-        Assert.assertTrue(Arrays.stream(messageQueue.items).anyMatch(Objects::isNull));
+        Assertions.assertTrue(Arrays.stream(messageQueue.getItems()).anyMatch(Objects::isNull));
     }
 
     @Test
     public void testGetSize() {
-        Assert.assertEquals(ITEMS_COUNT, messageQueue.getSize());
+        Assertions.assertEquals(ITEMS_COUNT, messageQueue.getSize());
     }
 
     @Test
     public void testGetTakeIndex() throws InterruptedException {
         MessageEntity takeIndexMessageEntity = messageQueue.take();
-        Assert.assertNotNull(takeIndexMessageEntity);
-        Assert.assertEquals(1, messageQueue.getPutIndex());
+        Assertions.assertNotNull(takeIndexMessageEntity);
+        Assertions.assertEquals(1, messageQueue.getPutIndex());
     }
 
     @Test
     public void testGetPutIndex() {
-        Assert.assertEquals(1, messageQueue.getPutIndex());
+        Assertions.assertEquals(1, messageQueue.getPutIndex());
     }
 
     private void initMessageQueue() throws InterruptedException {

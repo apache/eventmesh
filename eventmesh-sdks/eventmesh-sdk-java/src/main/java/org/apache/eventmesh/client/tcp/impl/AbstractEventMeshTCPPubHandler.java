@@ -52,7 +52,7 @@ public abstract class AbstractEventMeshTCPPubHandler<ProtocolMessage> extends Si
                 sendResponse(MessageUtils.responseToClientAck(msg));
                 break;
             case SERVER_GOODBYE_REQUEST:
-                //TODO
+                // TODO
                 break;
             default:
                 break;

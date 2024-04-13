@@ -25,7 +25,9 @@ import java.util.Objects;
  */
 public class TopicMetadata implements Serializable {
 
-    private String topicName;
+    private static final long serialVersionUID = -9011507202771676415L;
+
+    private final String topicName;
 
     public TopicMetadata(String topicName) {
         this.topicName = topicName;

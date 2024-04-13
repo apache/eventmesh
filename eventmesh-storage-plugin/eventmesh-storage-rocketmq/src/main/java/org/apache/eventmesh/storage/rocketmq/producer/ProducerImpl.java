@@ -68,7 +68,6 @@ public class ProducerImpl extends AbstractProducer {
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 
-
     public SendResult send(CloudEvent cloudEvent) {
         this.checkProducerServiceState(rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
@@ -88,7 +87,6 @@ public class ProducerImpl extends AbstractProducer {
         }
     }
 
-
     public void sendOneway(CloudEvent cloudEvent) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
@@ -101,7 +99,6 @@ public class ProducerImpl extends AbstractProducer {
             throw this.checkProducerException(msg.getTopic(), MessageClientIDSetter.getUniqID(msg), e);
         }
     }
-
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
@@ -157,6 +154,7 @@ public class ProducerImpl extends AbstractProducer {
 
     private RequestCallback rrCallbackConvert(final Message message, final RequestReplyCallback rrCallback) {
         return new RequestCallback() {
+
             @Override
             public void onSuccess(org.apache.rocketmq.common.message.Message message) {
                 // clean the message property to lowercase
@@ -186,8 +184,9 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     private org.apache.rocketmq.client.producer.SendCallback sendCallbackConvert(final Message message,
-                                                                                 final SendCallback sendCallback) {
+        final SendCallback sendCallback) {
         return new org.apache.rocketmq.client.producer.SendCallback() {
+
             @Override
             public void onSuccess(org.apache.rocketmq.client.producer.SendResult sendResult) {
                 sendCallback.onSuccess(CloudEventUtils.convertSendResult(sendResult));

@@ -61,23 +61,121 @@ Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以�
 - [EventMesh-catalog](https://github.com/apache/eventmesh-catalog): 使用 AsyncAPI 进行事件模式管理的目录服务。
 - [EventMesh-go](https://github.com/apache/eventmesh-go): EventMesh 运行时的 Go 语言实现。
 
-## 快速开始
+## 快速入门
 
-指南:
+本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[Docker](#在-docker-中运行-eventmesh-runtime)、[K8s](#在-kubernetes-中运行-eventmesh-runtime)部署EventMesh的步骤:
 
-[第1步: 部署EventMesh Store](https://eventmesh.apache.org/docs/instruction/store)
+本节指南按照默认配置启动 EventMesh，如果您需要更加详细的 EventMesh 部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/introduction)。
 
-[第2步: 启动EventMesh Runtime](https://eventmesh.apache.org/docs/instruction/runtime)
+### 部署 Event Store
 
-[第3步: 运行示例](https://eventmesh.apache.org/docs/instruction/demo)
+> EventMesh 支持[多种事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`，不依赖其他事件存储作为层。
 
-另外，如果您更喜欢使用Docker，则我们还为您提供了Docker版本的指南：
+### 在本地运行 EventMesh Runtime
 
-[第1步: 使用Docker部署EventMesh Store](https://eventmesh.apache.org/docs/instruction/store-with-docker)
+#### 1. 下载 EventMesh
 
-[第2步: 使用Docker启动EventMesh Runtime](https://eventmesh.apache.org/docs/instruction/runtime-with-docker)
+从 [EventMesh Download](https://eventmesh.apache.org/download/) 页面下载最新版本的 Binary Distribution 发行版并解压：
 
-[第3步: 运行示例](https://eventmesh.apache.org/docs/instruction/demo)
+```shell
+wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
+tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
+cd apache-eventmesh-1.10.0
+```
+
+#### 2. 运行 EventMesh
+
+执行 `start.sh` 脚本启动 EventMesh Runtime 服务器。
+
+```shell
+bash bin/start.sh
+```
+
+查看输出日志:
+
+```shell
+tail -n 50 -f logs/eventmesh.out
+```
+
+当日志输出 `server state:RUNNING`，则代表 EventMesh Runtime 启动成功了。
+
+停止:
+
+```shell
+bash bin/stop.sh
+```
+
+脚本打印 `shutdown server ok!` 时，代表 EventMesh Runtime 已停止。
+
+### 在 Docker 中运行 EventMesh Runtime
+
+#### 1. 获取 EventMesh 镜像
+
+使用下面的命令行下载最新版本的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)：
+
+```shell
+sudo docker pull apache/eventmesh:latest
+```
+
+#### 2. 运行 EventMesh
+
+使用以下命令启动 EventMesh 容器：
+
+```shell
+sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
+```
+
+进入容器：
+
+```shell
+sudo docker exec -it eventmesh /bin/bash
+```
+
+查看日志：
+
+```shell
+cd logs
+tail -n 50 -f eventmesh.out
+```
+
+### 在 Kubernetes 中运行 EventMesh Runtime
+
+#### 1. 部署 Operator
+
+运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy` 即可):
+
+```shell
+$ cd eventmesh-operator && make deploy
+```
+
+运行 `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh` 查看部署的 EventMesh-Operator 状态以及 CRD 信息.
+
+```shell
+$ kubectl get pods
+NAME                                  READY   STATUS    RESTARTS   AGE
+eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
+
+$ kubectl get crd | grep eventmesh-operator.eventmesh
+connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
+runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
+```
+
+#### 2. 部署 EventMesh Runtime
+
+运行以下命令部署 runtime、connector-rocketmq (删除部署, 只需将 `create` 替换为 `delete` 即可)：
+
+```shell
+$ make create
+```
+
+运行 `kubectl get pods` 查看部署是否成功.
+
+```shell
+NAME                                  READY   STATUS    RESTARTS   AGE
+connector-rocketmq-0                  1/1     Running   0          9s
+eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
+eventmesh-runtime-0-a-0               1/1     Running   0          15s
+```
 
 ## 贡献
 
@@ -110,8 +208,8 @@ Apache EventMesh 的开源协议遵循 [Apache License, Version 2.0](http://www.
 
 ## Community
 
-| 微信小助手                                              | 微信公众号                                             | Slack                                                        |
-| ------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| 微信小助手                                                   | 微信公众号                                                  | Slack                                                                                                   |
+|---------------------------------------------------------|--------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
 | <img src="resources/wechat-assistant.jpg" width="128"/> | <img src="resources/wechat-official.jpg" width="128"/> | [加入 Slack ](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1t1816dli-I0t3OE~IpdYWrZbIWhMbXg) |
 
 双周会议 : [#Tencent meeting](https://meeting.tencent.com/dm/wes6Erb9ioVV) : 346-6926-0133
@@ -120,10 +218,10 @@ Apache EventMesh 的开源协议遵循 [Apache License, Version 2.0](http://www.
 
 ### 邮件名单
 
-| 名称    | 描述                              | 订阅                                                  | 取消订阅                                                    | 邮件列表存档                                                 |
-| ------- | --------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| 用户    | 用户支持与用户问题                | [订阅](mailto:users-subscribe@eventmesh.apache.org)   | [取消订阅](mailto:users-unsubscribe@eventmesh.apache.org)   | [邮件存档](https://lists.apache.org/list.html?users@eventmesh.apache.org) |
-| 开发    | 开发相关 (设计文档， Issues等等.) | [订阅](mailto:dev-subscribe@eventmesh.apache.org)     | [取消订阅](mailto:dev-unsubscribe@eventmesh.apache.org)     | [邮件存档](https://lists.apache.org/list.html?dev@eventmesh.apache.org) |
-| Commits | 所有与仓库相关的 commits 信息通知 | [订阅](mailto:commits-subscribe@eventmesh.apache.org) | [取消订阅](mailto:commits-unsubscribe@eventmesh.apache.org) | [邮件存档](https://lists.apache.org/list.html?commits@eventmesh.apache.org) |
-| Issues  | Issues 或者 PR 提交和代码Review   | [订阅](mailto:issues-subscribe@eventmesh.apache.org)  | [取消订阅](mailto:issues-unsubscribe@eventmesh.apache.org)  | [邮件存档](https://lists.apache.org/list.html?issues@eventmesh.apache.org) |
+| 名称      | 描述                       | 订阅                                                  | 取消订阅                                                    | 邮件列表存档                                                                  |
+|---------|--------------------------|-----------------------------------------------------|---------------------------------------------------------|-------------------------------------------------------------------------|
+| 用户      | 用户支持与用户问题                | [订阅](mailto:users-subscribe@eventmesh.apache.org)   | [取消订阅](mailto:users-unsubscribe@eventmesh.apache.org)   | [邮件存档](https://lists.apache.org/list.html?users@eventmesh.apache.org)   |
+| 开发      | 开发相关 (设计文档， Issues等等.)   | [订阅](mailto:dev-subscribe@eventmesh.apache.org)     | [取消订阅](mailto:dev-unsubscribe@eventmesh.apache.org)     | [邮件存档](https://lists.apache.org/list.html?dev@eventmesh.apache.org)     |
+| Commits | 所有与仓库相关的 commits 信息通知    | [订阅](mailto:commits-subscribe@eventmesh.apache.org) | [取消订阅](mailto:commits-unsubscribe@eventmesh.apache.org) | [邮件存档](https://lists.apache.org/list.html?commits@eventmesh.apache.org) |
+| Issues  | Issues 或者 PR 提交和代码Review | [订阅](mailto:issues-subscribe@eventmesh.apache.org)  | [取消订阅](mailto:issues-unsubscribe@eventmesh.apache.org)  | [邮件存档](https://lists.apache.org/list.html?issues@eventmesh.apache.org)  |
 

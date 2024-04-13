@@ -66,9 +66,7 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
 
     @Override
     public Optional<EventMeshMessage> handle(final EventMeshMessage msg) {
-        if (log.isInfoEnabled()) {
-            log.info("receive sync rr msg: {}", msg);
-        }
+        log.info("receive sync rr msg: {}", msg);
         return Optional.ofNullable(msg);
     }
 

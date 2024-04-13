@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit
 
 buildscript {
     repositories {
+        mavenLocal()
+        mavenCentral()
         maven {
             url "https://maven.aliyun.com/repository/public"
         }
@@ -34,14 +36,15 @@ buildscript {
         classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
         classpath "com.github.jk1:gradle-license-report:1.17"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
     }
 }
 
-//Remove doclint warnings that pollute javadoc logs when building with java8
-if(JavaVersion.current().isJava8()){
+// Remove doclint warnings that pollute javadoc logs when building
+if (JavaVersion.current().isJava8()) {
     allprojects {
-        tasks.withType(Javadoc){
-            options.addStringOption('xdoclint:none','-quiet')
+        tasks.withType(Javadoc) {
+            options.addStringOption('xdoclint:none', '-quiet')
         }
     }
 }
@@ -59,6 +62,7 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
+    apply plugin: 'com.diffplug.spotless'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -84,15 +88,54 @@ allprojects {
         configDirectory = file("${rootDir}/style")
     }
 
-    checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
+    checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
+                  .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
+                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
+                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
+                  .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
     dependencies {
         repositories {
+            mavenLocal()
+            mavenCentral()
             maven {
                 url "https://maven.aliyun.com/repository/public"
             }
         }
-        testImplementation "junit:junit:4.13.2"
+        testImplementation "org.junit.jupiter:junit-jupiter:5.6.0"
+    }
+
+    spotless {
+        enforceCheck false
+        java {
+            target project.fileTree(project.projectDir) {
+                include 'src/*/java/**/*.java'
+                exclude '**/org/apache/eventmesh/**/protos**'
+                exclude '**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**'
+                exclude '**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**'
+                exclude '**/org/apache/eventmesh/connector/jdbc/antlr**'
+                exclude '**/org/apache/eventmesh/common/protocol/grpc**'
+                exclude '**/org/apache/eventmesh/connector/jdbc/source/dialect/snapshot/AbstractSnapshotEngine.java'
+            }
+            importOrder ('\\#org.apache.eventmesh','\\#org.apache','\\#java','\\#javax','\\#org','\\#io','\\#net','\\#junit','\\#com','\\#lombok',
+                    'org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
+            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
+            eclipse().configFile("${rootDir}/style/task/eventmesh-spotless-formatter.xml")
+            removeUnusedImports()
+        }
+    }
+
+    afterEvaluate {
+        tasks.forEach {task ->
+            if (task.name.contains("spotlessJava")) {
+                task.dependsOn(compileJava, javadoc, compileTestJava, test, processResources, processTestResources)
+            }
+        }
+        spotlessJava.dependsOn(subprojects.collect {it.tasks["spotlessJava"] })
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 
@@ -242,6 +285,9 @@ subprojects {
         rulesMinimumPriority = 5
         ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
         ignoreFailures = true
+        pmdMain {
+            excludes = ["**/org/apache/eventmesh/connector/jdbc/antlr4/autogeneration/**"]
+        }
     }
 
     jar {
@@ -265,14 +311,12 @@ subprojects {
             new File("${projectDir}/dist/lib").mkdirs()
             new File("${projectDir}/dist/licenses").mkdirs()
         }
-        Set<String> rootProject = ["eventmesh-admin",
-                                   "eventmesh-admin-rocketmq",
-                                   "eventmesh-common",
-                                   "eventmesh-connector-api",
+        Set<String> rootProject = ["eventmesh-common",
                                    "eventmesh-storage-api",
                                    "eventmesh-metrics-api",
-                                   "eventmesh-registry-api",
+                                   "eventmesh-meta-api",
                                    "eventmesh-trace-api",
+                                   "eventmesh-retry-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
                                    "eventmesh-protocol-api",
@@ -280,8 +324,7 @@ subprojects {
                                    "eventmesh-spi",
                                    "eventmesh-webhook-api",
                                    "eventmesh-webhook-admin",
-                                   "eventmesh-webhook-receive"
-                                   ]
+                                   "eventmesh-webhook-receive"]
         doLast {
             copy {
                 into("${projectDir}/dist/apps")
@@ -334,6 +377,7 @@ subprojects {
     javadoc {
         source = sourceSets.main.java
         destinationDir = reporting.file("javadoc")
+        options.encoding = "UTF-8"
     }
 
     task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
@@ -361,9 +405,9 @@ subprojects {
     }
 
     repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
+        maven { url "https://maven.aliyun.com/repository/public" }
     }
 
     configurations.all {
@@ -392,7 +436,7 @@ subprojects {
                     licenses {
                         license {
                             name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
                     developers {
@@ -429,6 +473,7 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
+    def log4jVersion = '2.22.1'
 
     dependencyManagement {
         dependencies {
@@ -438,12 +483,15 @@ subprojects {
 
             dependency "commons-io:commons-io:2.11.0"
 
+            dependency "commons-validator:commons-validator:1.7"
+
             dependency "com.google.guava:guava:31.0.1-jre"
 
-            dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.17.1"
-            dependency "org.apache.logging.log4j:log4j-core:2.17.1"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
+            dependency "org.slf4j:slf4j-api:2.0.9"
+            dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}" // used with SLF4J 1.7.x or older for third-party dependencies
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -451,6 +499,9 @@ subprojects {
             dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
             dependency "com.fasterxml.jackson.core:jackson-annotations:2.13.0"
             dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0"
+            dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0"
+
+            dependency "com.squareup.okhttp3:okhttp:3.14.9"
 
             dependency "org.asynchttpclient:async-http-client:2.12.0"
             dependency "org.apache.httpcomponents:httpclient:4.5.13"
@@ -476,22 +527,24 @@ subprojects {
 
             dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
+            dependency "com.jayway.jsonpath:json-path:2.7.0"
 
             dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
             dependency "io.openmessaging:registry-server:0.0.1"
 
-            dependency "junit:junit:4.13.2"
-            dependency "com.github.stefanbirkner:system-rules:1.16.1"
+            dependency "org.junit.jupiter:junit-jupiter:5.6.0"
+            dependency "org.junit-pioneer:junit-pioneer:1.9.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
             dependency "org.mockito:mockito-core:3.8.0"
             dependency "org.mockito:mockito-inline:3.8.0"
-            dependency "org.powermock:powermock-module-junit4:2.0.2"
-            dependency "org.powermock:powermock-api-mockito2:2.0.9"
+            dependency "org.mockito:mockito-junit-jupiter:3.8.0"
 
-            dependency "io.cloudevents:cloudevents-core:2.2.0"
-            dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+            dependency "io.cloudevents:cloudevents-core:2.4.2"
+            dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
+            dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
 
+            dependency "io.grpc:grpc-core:${grpcVersion}"
             dependency "io.grpc:grpc-protobuf:${grpcVersion}"
             dependency "io.grpc:grpc-stub:${grpcVersion}"
             dependency "io.grpc:grpc-netty:${grpcVersion}"
@@ -517,6 +570,10 @@ subprojects {
             dependency "com.github.seancfoley:ipaddress:5.3.3"
             dependency "javax.annotation:javax.annotation-api:1.3.2"
             dependency "com.alibaba:fastjson:1.2.83"
+
+            dependency "software.amazon.awssdk:s3:2.20.29"
+            dependency "com.github.rholder:guava-retrying:2.0.0"
+
         }
     }
 }

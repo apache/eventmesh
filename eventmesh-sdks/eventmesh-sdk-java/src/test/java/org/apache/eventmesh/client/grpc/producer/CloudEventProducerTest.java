@@ -21,60 +21,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.PublisherServiceGrpc.PublisherServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.common.Response;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import io.cloudevents.core.v1.CloudEventV1;
-
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({PublisherServiceBlockingStub.class, Response.class})
-@PowerMockIgnore({"javax.management.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CloudEventProducerTest {
 
     private CloudEventProducer cloudEventProducer;
     @Mock
     private PublisherServiceBlockingStub blockingStub;
-    @Mock
-    private Response mockResponse;
 
-    @Before
+    @Mock
+    private CloudEvent mockCloudEvent;
+
+    @BeforeEach
     public void setUp() throws Exception {
         cloudEventProducer = new CloudEventProducer(EventMeshGrpcClientConfig.builder().build(), blockingStub);
-        when(blockingStub.batchPublish(Mockito.isA(BatchMessage.class))).thenReturn(mockResponse);
-        when(blockingStub.publish(Mockito.isA(SimpleMessage.class))).thenReturn(mockResponse);
-    }
-
-    @Test
-    public void testEnhanceCloudEvent() {
-        MockCloudEvent mockCloudEvent = new MockCloudEvent();
-        Object enhanceCloudEvent;
-        try {
-            enhanceCloudEvent = Whitebox.invokeMethod(cloudEventProducer, "enhanceCloudEvent", mockCloudEvent,
-                null);
-        } catch (Exception e) {
-            enhanceCloudEvent = null;
-        }
-        assertThat(enhanceCloudEvent).isNotNull().isInstanceOf(CloudEventV1.class)
-            .hasFieldOrPropertyWithValue("id", mockCloudEvent.getId())
-            .hasFieldOrPropertyWithValue("source", mockCloudEvent.getSource())
-            .hasFieldOrPropertyWithValue("type", mockCloudEvent.getType())
-            .hasFieldOrPropertyWithValue("dataschema", mockCloudEvent.getDataSchema())
-            .hasFieldOrPropertyWithValue("subject", mockCloudEvent.getSubject())
-            .hasFieldOrPropertyWithValue("data", mockCloudEvent.getData());
+        when(blockingStub.batchPublish(Mockito.isA(CloudEventBatch.class))).thenReturn(mockCloudEvent);
+        when(blockingStub.publish(Mockito.isA(CloudEvent.class))).thenReturn(mockCloudEvent);
     }
 
     @Test
@@ -84,11 +62,11 @@ public class CloudEventProducerTest {
 
     @Test
     public void testPublishMulti() {
-        assertThat(cloudEventProducer.publish(Collections.singletonList(new MockCloudEvent()))).isEqualTo(mockResponse);
+        assertThat(cloudEventProducer.publish(Collections.singletonList(new MockCloudEvent()))).isEqualTo(Response.builder().build());
     }
 
     @Test
     public void testPublishSingle() {
-        assertThat(cloudEventProducer.publish(new MockCloudEvent())).isEqualTo(mockResponse);
+        assertThat(cloudEventProducer.publish(new MockCloudEvent())).isEqualTo(Response.builder().build());
     }
 }

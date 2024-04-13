@@ -35,7 +35,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -106,8 +105,8 @@ public class Codec {
                 in.readBytes(versionBytes);
                 if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
                     String errorMsg = String.format("invalid magic flag or "
-                            +
-                            "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8),
+                        +
+                        "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8),
                         new String(versionBytes, UTF8), ctx.channel().remoteAddress());
                     throw new Exception(errorMsg);
                 }
