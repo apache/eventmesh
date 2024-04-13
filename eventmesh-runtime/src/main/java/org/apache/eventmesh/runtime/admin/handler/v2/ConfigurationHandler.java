@@ -39,6 +39,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.filter.Filter;
 import com.alibaba.fastjson2.filter.NameFilter;
+import com.alibaba.fastjson2.filter.PropertyFilter;
 import com.alibaba.fastjson2.filter.ValueFilter;
 
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,7 @@ import inet.ipaddr.IPAddress;
 @EventMeshHttpHandler(path = "/v2/configuration")
 public class ConfigurationHandler extends AbstractHttpHandler {
 
+    private final CommonConfiguration commonConfiguration;
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
@@ -68,10 +70,12 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      * @param eventMeshGrpcConfiguration the gRPC configuration for EventMesh
      */
     public ConfigurationHandler(
+        CommonConfiguration commonConfiguration,
         EventMeshTCPConfiguration eventMeshTCPConfiguration,
         EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
         EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         super();
+        this.commonConfiguration = commonConfiguration;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
@@ -92,10 +96,10 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         String format = HttpRequestUtil.getQueryParam(httpRequest, "format", "properties");
 
         Filter[] filters;
-        if (format.equals("properties")) {
-            filters = new Filter[] {new ConfigFieldFilter(), new IPAddressToStringFilter()};
+        if (format.equals("properties")) { // TODO add a param for SuperClassFieldFilter
+            filters = new Filter[] {new SuperClassFieldFilter(), new IPAddressToStringFilter(), new ConfigFieldFilter()};
         } else if (format.equals("bean")) {
-            filters = new Filter[] {new IPAddressToStringFilter()};
+            filters = new Filter[] {new SuperClassFieldFilter(), new IPAddressToStringFilter()};
         } else {
             log.warn("Invalid format param: {}", format);
             writeBadRequest(ctx, "Invalid format param: " + format);
@@ -103,16 +107,18 @@ public class ConfigurationHandler extends AbstractHttpHandler {
         }
 
         GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+            commonConfiguration,
             eventMeshTCPConfiguration,
             eventMeshHTTPConfiguration,
-            eventMeshGrpcConfiguration
+            eventMeshGrpcConfiguration,
+            "v1.10.0-release" // TODO get version number after merging https://github.com/apache/eventmesh/pull/4055
         );
         String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters);
         writeJson(ctx, json);
     }
 
     /**
-     * For each member of {@link EventMeshTCPConfiguration}, {@link EventMeshHTTPConfiguration}, and {@link EventMeshGrpcConfiguration},
+     * For each member of configuration classes,
      * the value of the {@link ConfigField} annotation for each field is obtained through reflection,
      * and then concatenated with the configuration prefix in the {@link Config} annotation to serve as the JSON key for this field.
      * <p>
@@ -150,6 +156,39 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     throw e;
                 } else {
                     return findFieldInClassHierarchy(superclass, fieldName);
+                }
+            }
+        }
+    }
+
+    /**
+     * For each member of {@link EventMeshTCPConfiguration}, {@link EventMeshHTTPConfiguration}, and {@link EventMeshGrpcConfiguration},
+     * if the {@code name} is a member that exists in {@link CommonConfiguration} class, it will be skipped.
+     */
+    static class SuperClassFieldFilter implements PropertyFilter {
+        @Override
+        public boolean apply(Object object, String name, Object value) {
+            try {
+                Field field = findFieldInClassNonHierarchy(object.getClass(), name);
+                return field != null;
+            } catch (NoSuchFieldException e) {
+                log.error("Failed to get field {} from object {}", name, object, e);
+                return true;
+            }
+        }
+
+        /**
+         * If a field of a subclass exists in the superclass, return null, causing FastJSON to skip this field.
+         */
+        private Field findFieldInClassNonHierarchy(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                Class<?> superclass = clazz.getSuperclass();
+                if (superclass == null) {
+                    throw e;
+                } else {
+                    return null;
                 }
             }
         }
