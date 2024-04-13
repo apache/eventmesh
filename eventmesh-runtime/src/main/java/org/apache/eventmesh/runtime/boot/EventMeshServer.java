@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import static org.apache.eventmesh.common.Constants.GRPC;
 import static org.apache.eventmesh.common.Constants.HTTP;
+import static org.apache.eventmesh.common.Constants.MQTT;
 import static org.apache.eventmesh.common.Constants.TCP;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
@@ -72,6 +73,8 @@ public class EventMeshServer {
 
     private EventMeshHTTPServer eventMeshHTTPServer = null;
 
+    private EventMeshMQTTServer eventMeshMQTTServer = null;
+
     public EventMeshServer() {
 
         // Initialize configuration
@@ -96,6 +99,9 @@ public class EventMeshServer {
                     break;
                 case GRPC:
                     BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
+                    break;
+                case MQTT:
+                    BOOTSTRAP_LIST.add(new EventMeshMqttBootstrap(this));
                     break;
                 default:
                     // nothing to do
@@ -131,6 +137,9 @@ public class EventMeshServer {
             }
             if (eventMeshBootstrap instanceof EventMeshGrpcBootstrap) {
                 eventMeshGrpcServer = ((EventMeshGrpcBootstrap) eventMeshBootstrap).getEventMeshGrpcServer();
+            }
+            if (eventMeshBootstrap instanceof EventMeshMQTTServer) {
+                eventMeshMQTTServer = ((EventMeshMqttBootstrap) eventMeshBootstrap).getEventMeshMQTTServer();
             }
         }
 
@@ -239,5 +248,9 @@ public class EventMeshServer {
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {
         return eventMeshHTTPServer;
+    }
+
+    public EventMeshMQTTServer getEventMeshMQTTServer() {
+        return eventMeshMQTTServer;
     }
 }

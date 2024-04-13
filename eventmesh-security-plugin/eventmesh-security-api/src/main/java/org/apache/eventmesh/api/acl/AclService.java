@@ -41,4 +41,7 @@ public interface AclService {
 
     void doAclCheckInReceive(AclProperties aclProperties) throws AclException;
 
+    default boolean doAclCheckUserNameAndPassword(String username, String password) throws AclException {
+        return true;
+    }
 }
