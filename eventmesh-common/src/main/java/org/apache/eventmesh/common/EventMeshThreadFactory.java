@@ -67,12 +67,12 @@ public class EventMeshThreadFactory implements ThreadFactory {
     public Thread newThread(@Nonnull final Runnable runnable) {
 
         StringBuilder threadName = new StringBuilder(threadNamePrefix);
-        if (null != threadIndex) {
+        if (threadIndex != null) {
             threadName.append("-").append(threadIndex.incrementAndGet());
         }
         Thread thread = new Thread(runnable, threadName.toString());
         thread.setDaemon(daemon);
-        if (null != priority) {
+        if (priority != null) {
             thread.setPriority(priority);
         }
 
