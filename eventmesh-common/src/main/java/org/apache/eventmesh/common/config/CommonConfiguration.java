@@ -85,11 +85,8 @@ public class CommonConfiguration {
     @ConfigField(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";
 
-    @ConfigField(field = "connector.plugin.type", notEmpty = true)
-    private String eventMeshConnectorPluginType = "rocketmq";
-
     @ConfigField(field = "storage.plugin.type", notEmpty = true)
-    private String eventMeshStoragePluginType = "rocketmq";
+    private String eventMeshStoragePluginType = "standalone";
 
     @ConfigField(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
