@@ -35,11 +35,13 @@ data:
     eventMesh.server.cluster=COMMON
     eventMesh.server.name=EVENTMESH-runtime
     eventMesh.sysid=0000
+    eventMesh.server.tcp.port=10000
     eventMesh.server.http.port=10105
     eventMesh.server.grpc.port=10205
+    # HTTP Admin Server
+    eventMesh.server.admin.http.port=10106
     ########################## eventMesh tcp configuration ############################
     eventMesh.server.tcp.enabled=true
-    eventMesh.server.tcp.port=10000
     eventMesh.server.tcp.readerIdleSeconds=120
     eventMesh.server.tcp.writerIdleSeconds=120
     eventMesh.server.tcp.allIdleSeconds=120
@@ -84,9 +86,6 @@ data:
     #ip address blacklist
     eventMesh.server.blacklist.ipv4=0.0.0.0/8,127.0.0.0/8,169.254.0.0/16,255.255.255.255/32
     eventMesh.server.blacklist.ipv6=::/128,::1/128,ff00::/8
-
-    #connector plugin
-    eventMesh.connector.plugin.type=standalone
 
     #storage plugin
     eventMesh.storage.plugin.type=standalone
