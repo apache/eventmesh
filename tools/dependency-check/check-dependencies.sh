@@ -53,8 +53,8 @@ sort "$known_third_party_dependencies_txt" | diff - "$third_party_dependencies_t
 compareCode=$?
 if [ $compareCode -eq 0 ]
 then
-  echo "Dependency check success"
+  echo "Dependency check success."
 else
-  echo "Dependency check failed. Please check if you add known dependencies"
+  echo "Dependency check failed. Please add new dependencies to known-dependencies.txt."
   exit $compareCode
 fi
