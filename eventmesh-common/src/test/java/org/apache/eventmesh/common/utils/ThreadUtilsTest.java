@@ -20,7 +20,8 @@ public class ThreadUtilsTest {
 
         long duration = endTime - startTime;
 
-        assertTrue(duration >= min && duration <= max + 10, "The pause duration should be within the specified bounds, allowing a small margin for timing inaccuracies.");
+        assertTrue(duration >= min && duration <= max + 10,
+            "The pause duration should be within the specified bounds, allowing a small margin for timing inaccuracies.");
     }
 
     @Test
