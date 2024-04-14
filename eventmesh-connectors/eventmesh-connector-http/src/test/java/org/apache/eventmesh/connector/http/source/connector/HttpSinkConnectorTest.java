@@ -1,0 +1,90 @@
+package org.apache.eventmesh.connector.http.source.connector;
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockserver.model.HttpRequest.request;
+
+import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
+import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.connector.http.sink.connector.HttpSinkConnector;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
+
+import io.vertx.core.http.HttpMethod;
+
+public class HttpSinkConnectorTest {
+
+    private HttpSinkConnector sinkConnector;
+    private SinkConnectorConfig sinkConnectorConfig;
+
+    private ClientAndServer mockServer;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        sinkConnector = new HttpSinkConnector();
+        HttpSinkConfig sinkConfig = (HttpSinkConfig) ConfigUtil.parse(sinkConnector.configClass());
+        sinkConnectorConfig = sinkConfig.connectorConfig;
+        sinkConnector.init(sinkConfig);
+        sinkConnector.start();
+        mockServer = ClientAndServer.startClientAndServer(sinkConnectorConfig.getPort());
+    }
+
+    @AfterEach
+    public void stopMockServer() throws Exception {
+        sinkConnector.stop();
+        mockServer.close();
+    }
+
+    @Test
+    void testPut() throws InterruptedException {
+        new MockServerClient(sinkConnectorConfig.getHost(), sinkConnectorConfig.getPort())
+            .when(
+                request()
+                    .withMethod("POST")
+                    .withPath(sinkConnectorConfig.getPath())
+            )
+            .respond(
+                HttpResponse.response()
+                    .withStatusCode(200)
+            );
+
+        final int times = 10;
+        List<ConnectRecord> connectRecords = new ArrayList<>();
+        for (int i = 0; i < times; i++) {
+            RecordPartition partition = new RecordPartition();
+            RecordOffset offset = new RecordOffset();
+            long timestamp = System.currentTimeMillis();
+            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+                timestamp, "test-http " + i);
+            connectRecords.add(connectRecord);
+        }
+
+        sinkConnector.put(connectRecords);
+        // Sleeps for 3 seconds, waiting for the webClient to finish sending all requests
+        Thread.sleep(3000);
+
+        HttpRequest[] allRequests = mockServer.retrieveRecordedRequests(null);
+        // Determine the total number of requests
+        assertEquals(times, allRequests.length);
+
+        for (int i = 0; i < times; i++) {
+            HttpRequest actualRequest = allRequests[0];
+            // Determine the request method
+            assertEquals(HttpMethod.POST.name(), actualRequest.getMethod().getValue());
+        }
+    }
+
+}
