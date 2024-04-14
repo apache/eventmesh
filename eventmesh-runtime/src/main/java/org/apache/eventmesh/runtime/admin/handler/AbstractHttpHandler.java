@@ -85,6 +85,12 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         writeJson(ctx, json, HttpResponseStatus.UNAUTHORIZED);
     }
 
+    protected void writeInternalServerError(ChannelHandlerContext ctx, String message) {
+        Result<String> result = new Result<>(message);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        writeJson(ctx, json, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+    }
+
     /**
      * Use {@link HttpResponseUtils#buildHttpResponse} to build {@link HttpResponse} param.
      */
@@ -113,12 +119,17 @@ public abstract class AbstractHttpHandler implements HttpHandler {
                     break;
                 default: // do nothing
             }
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             StackTraceElement element = e.getStackTrace()[0];
             String className = element.getClassName();
             String handlerName = className.substring(className.lastIndexOf(".") + 1);
-            log.warn("Admin handler {}:{} - {}", handlerName, element.getLineNumber(), e.getMessage());
-            writeBadRequest(ctx, e.getMessage());
+            if (e instanceof IllegalArgumentException) {
+                log.warn("Admin endpoint {}:{} - {}", handlerName, element.getLineNumber(), e.getMessage());
+                writeBadRequest(ctx, e.getMessage());
+            } else {
+                log.error("Admin endpoint {}:{} - {}", handlerName, element.getLineNumber(), e.getMessage(), e);
+                writeInternalServerError(ctx, e.getMessage());
+            }
         }
     }
 
