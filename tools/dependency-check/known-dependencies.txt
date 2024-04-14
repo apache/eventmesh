@@ -347,6 +347,7 @@ vertx-auth-common-4.4.6.jar
 vertx-bridge-common-4.4.6.jar
 vertx-core-4.4.6.jar
 vertx-web-4.4.6.jar
+vertx-web-client-4.4.6.jar
 vertx-web-client-4.0.0.jar
 vertx-web-common-4.4.6.jar
 xpp3-1.1.4c.jar
