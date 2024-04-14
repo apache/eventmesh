@@ -81,7 +81,7 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
                 try {
                     HTTP_LOGGER.debug("{}", httpEventWrapper);
                     eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
-                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPReqResTimeCost(
+                    eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - requestWrapper.getReqTime());
                 } catch (Exception ex) {
                     HTTP_LOGGER.warn("query subscription, sendResponse fail", ex);
@@ -106,8 +106,8 @@ public class QuerySubscriptionProcessor implements AsyncHttpProcessor {
                 responseBodyMap, null);
             long endTime = System.currentTimeMillis();
             HTTP_LOGGER.warn("query subscription fail,eventMesh2client|cost={}ms", endTime - startTime, e);
-            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgFailed();
-            eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+            eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsgFailed();
+            eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsgCost(endTime - startTime);
         }
     }
 

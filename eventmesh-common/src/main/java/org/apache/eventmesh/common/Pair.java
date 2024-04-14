@@ -15,15 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.utils;
+package org.apache.eventmesh.common;
 
-/**
- * Constants in metrics-prometheus module
- */
-public class PrometheusExporterConstants {
+public class Pair<Left, Right> {
 
-    public static final String METRICS_GRPC_PREFIX = "eventmesh.grpc.";
+    private Left left;
 
-    public static final String METRICS_TCP_PREFIX = "eventmesh.tcp.";
+    private Right right;
 
+    public Pair(Left left, Right right) {
+        this.left = left;
+        this.right = right;
+    }
+
+    public Left getLeft() {
+        return left;
+    }
+
+    public void setLeft(Left left) {
+        this.left = left;
+    }
+
+    public Right getRight() {
+        return right;
+    }
+
+    public void setRight(Right right) {
+        this.right = right;
+    }
 }

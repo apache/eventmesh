@@ -66,7 +66,7 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
 
             SendMessageContext sendMessageContext = new SendMessageContext(seqNum, event, eventMeshProducer, eventMeshGrpcServer);
 
-            eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
+            eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
             long startTime = System.currentTimeMillis();
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
