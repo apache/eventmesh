@@ -30,5 +30,7 @@ public class SinkConnectorConfig {
 
     private String path;
 
+    private boolean ssl;
+
     private int idleTimeout;
 }

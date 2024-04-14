@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.http.sink.connector;
 
-
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -33,7 +32,6 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +44,6 @@ public class HttpSinkConnector implements Sink {
     private WebClient webClient;
 
     private volatile boolean isRunning = false;
-
 
     @Override
     public Class<? extends Config> configClass() {
@@ -73,6 +70,7 @@ public class HttpSinkConnector implements Sink {
         WebClientOptions options = new WebClientOptions()
             .setDefaultHost(this.httpSinkConfig.connectorConfig.getHost())
             .setDefaultPort(this.httpSinkConfig.connectorConfig.getPort())
+            .setSsl(this.httpSinkConfig.connectorConfig.isSsl())
             .setIdleTimeout(this.httpSinkConfig.connectorConfig.getIdleTimeout());
         this.webClient = WebClient.create(vertx, options);
     }
