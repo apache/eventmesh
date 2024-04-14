@@ -71,8 +71,6 @@ data:
     eventMesh.server.retry.async.pushRetryDelayInMills=500
     eventMesh.server.retry.sync.pushRetryDelayInMills=500
     eventMesh.server.retry.pushRetryQueueSize=10000
-    #auto-ack
-    #eventMesh.server.defibus.client.comsumeTimeoutInMin=5
 
     #sleep interval between closing client of different group in server graceful shutdown
     eventMesh.server.gracefulShutdown.sleepIntervalInMills=1000

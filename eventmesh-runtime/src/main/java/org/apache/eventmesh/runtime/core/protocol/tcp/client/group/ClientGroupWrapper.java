@@ -289,7 +289,6 @@ public class ClientGroupWrapper {
             .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE,
                 eventMeshTCPConfiguration.getEventMeshCluster()));
 
-        // TODO for defibus
         keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.getEventMeshIDC());
 
         mqProducerWrapper.init(keyValue);
