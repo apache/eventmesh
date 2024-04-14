@@ -28,8 +28,8 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import java.util.List;
 import java.util.Objects;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
@@ -95,6 +95,7 @@ public class HttpSinkConnector implements Sink {
     @Override
     public void stop() throws Exception {
         this.isRunning = false;
+        this.webClient.close();
     }
 
     public boolean isRunning() {
@@ -109,26 +110,27 @@ public class HttpSinkConnector implements Sink {
                     log.warn("ConnectRecord data is null, ignore.");
                     continue;
                 }
+                sendMessage(sinkRecord);
             } catch (Exception e) {
                 log.error("Failed to sink message via HTTP. ", e);
             }
-            sendMessage(sinkRecord);
         }
     }
 
     private void sendMessage(ConnectRecord record) {
         this.webClient.post(this.httpSinkConfig.connectorConfig.getPath())
-            .putHeader("Content-Type", "application/json ; charset=utf-8")
-            .sendBuffer(Buffer.buffer((byte[]) record.getData()))
-            .onSuccess(res -> {
-                if (res.statusCode() != 200) {
-                    log.error("[HttpSinkConnector] Failed to send message via HTTP. Response: {}", res);
+            .putHeader("Content-Type", "application/json; charset=utf-8")
+            .sendJson(record, ar -> {
+                if (ar.succeeded()) {
+                    if (ar.result().statusCode() != HttpResponseStatus.OK.code()) {
+                        log.error("[HttpSinkConnector] Failed to send message via HTTP. Response: {}", ar.result());
+                    } else {
+                        log.info("[HttpSinkConnector] Successfully send message via HTTP. ");
+                    }
+                } else {
+                    // This function is accessed only when an error occurs at the network level
+                    log.error("[HttpSinkConnector] Failed to send message via HTTP. Exception: {}", ar.cause().getMessage());
                 }
-            })
-            .onFailure(event -> {
-                // This function is accessed only when an error occurs at the network level
-                log.error("[HttpSinkConnector] Failed to send message via HTTP. Exception: {}", event.getMessage());
             });
     }
-
 }
