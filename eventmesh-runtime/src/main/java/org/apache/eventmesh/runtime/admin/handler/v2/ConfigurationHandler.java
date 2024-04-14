@@ -188,8 +188,8 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                 return field != null;
             } catch (NoSuchFieldException e) {
                 log.error("Failed to get field {} from object {}", name, object, e);
-                return true;
             }
+            return true;
         }
 
         /**
