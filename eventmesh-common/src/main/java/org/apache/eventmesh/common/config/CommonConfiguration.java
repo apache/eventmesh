@@ -67,12 +67,6 @@ public class CommonConfiguration {
     @ConfigField(field = "metaStorage.plugin.password")
     private String eventMeshMetaStoragePluginPassword = "";
 
-    @ConfigField(field = "metaStorage.plugin.metaStorageIntervalInMills")
-    private Integer eventMeshMetaStorageIntervalInMills = 10 * 1000;
-
-    @ConfigField(field = "metaStorage.plugin.fetchMetaStorageAddrIntervalInMills")
-    private Integer eventMeshFetchMetaStorageAddrInterval = 10 * 1000;
-
     @ConfigField(field = "metaStorage.plugin.enabled")
     private boolean eventMeshServerMetaStorageEnable = false;
 

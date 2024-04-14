@@ -54,9 +54,6 @@ public class CommonConfigurationTest {
         Assertions.assertEquals("username-succeed!!!", config.getEventMeshMetaStoragePluginUsername());
         Assertions.assertEquals("password-succeed!!!", config.getEventMeshMetaStoragePluginPassword());
 
-        Assertions.assertEquals(Integer.valueOf(816), config.getEventMeshMetaStorageIntervalInMills());
-        Assertions.assertEquals(Integer.valueOf(1816), config.getEventMeshFetchMetaStorageAddrInterval());
-
         List<String> list = new ArrayList<>();
         list.add("metrics-succeed1!!!");
         list.add("metrics-succeed2!!!");
