@@ -25,3 +25,4 @@ jobs:
             GPL-1.0-only, GPL-2.0-only, GPL-3.0-only, AGPL-3.0-only, LGPL-2.0-only, LGPL-2.1-only, LGPL-3.0-only,
             QPL-1.0, Sleepycat, SSPL-1.0, CPOL-1.02,
             BSD-4-Clause, BSD-4-Clause-UC, NPL-1.0, NPL-1.1, JSON
+          allow-dependencies-licenses: 'pkg:maven/com.rabbitmq/amqp-client'
