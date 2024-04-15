@@ -105,7 +105,7 @@ public class EventMeshMetricsManager {
      * Initializes the EventMeshMetricsManager by registering the metrics with the metrics registries.
      */
     public void init() {
-        GeneralMetricsManager.registerMetrics(metricsRegistries);
+        MetricsUtils.registerMetrics(metricsRegistries);
         // Register metrics
         metricsRegistries.stream().forEach(metricsRegistry -> metricsRegistry.register(metrics));
     }

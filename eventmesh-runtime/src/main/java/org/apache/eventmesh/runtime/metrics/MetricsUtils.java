@@ -34,7 +34,7 @@ import lombok.experimental.UtilityClass;
  * Managing general metrics.
  */
 @UtilityClass
-public class GeneralMetricsManager {
+public class MetricsUtils {
 
     private static Attributes EMPTY_ATTRIBUTES = Attributes.builder().build();
 

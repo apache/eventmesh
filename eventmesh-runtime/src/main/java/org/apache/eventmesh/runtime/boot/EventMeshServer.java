@@ -152,20 +152,17 @@ public class EventMeshServer {
 
         if (Objects.nonNull(eventMeshTCPServer)) {
             MetricsManager metricsManager = eventMeshTCPServer.getEventMeshTcpMetricsManager();
-            this.eventMeshMetricsManager.addMetricManager(metricsManager);
-            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+            addMetricsManagerAndMetrics(metricsManager);
         }
 
         if (Objects.nonNull(eventMeshGrpcServer)) {
             MetricsManager metricsManager = eventMeshGrpcServer.getEventMeshGrpcMetricsManager();
-            this.eventMeshMetricsManager.addMetricManager(metricsManager);
-            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+            addMetricsManagerAndMetrics(metricsManager);
         }
 
         if (Objects.nonNull(eventMeshHTTPServer)) {
             MetricsManager metricsManager = eventMeshHTTPServer.getEventMeshHttpMetricsManager();
-            this.eventMeshMetricsManager.addMetricManager(metricsManager);
-            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+            addMetricsManagerAndMetrics(metricsManager);
         }
 
         if (Objects.nonNull(eventMeshMetricsManager)) {
@@ -186,6 +183,13 @@ public class EventMeshServer {
         serviceState = ServiceState.INITED;
 
         log.info(SERVER_STATE_MSG, serviceState);
+    }
+
+    private void addMetricsManagerAndMetrics(MetricsManager metricsManager) {
+        if (Objects.nonNull(metricsManager)) {
+            this.eventMeshMetricsManager.addMetricManager(metricsManager);
+            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+        }
     }
 
     public void start() throws Exception {

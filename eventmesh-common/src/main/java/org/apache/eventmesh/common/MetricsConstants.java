@@ -18,7 +18,7 @@
 package org.apache.eventmesh.common;
 
 
-public abstract class MetricsConstants {
+public class MetricsConstants {
 
     private MetricsConstants() {
 

@@ -22,10 +22,6 @@ import org.apache.eventmesh.metrics.api.model.Metric;
 import java.util.List;
 
 /**
- * metric manager interface
- */
-
-/**
  * MetricsManager is an interface for managing metrics.
  */
 public interface MetricsManager {
