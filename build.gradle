@@ -231,6 +231,9 @@ subprojects {
         delete 'dist'
     }
 
+    // Print all dependencies trees, useful for finding artifacts
+    tasks.register('printAllDependencyTrees', DependencyReportTask) {}
+
     jacoco {
         toolVersion = "0.8.6"
     }
