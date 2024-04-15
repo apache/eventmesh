@@ -18,7 +18,7 @@ jobs:
           # Incompatible licenses addressed here: https://www.apache.org/legal/resolved.html
           # Special notice for GPL licenses: https://www.apache.org/licenses/GPL-compatibility.html
           # Find SPDX identifiers here: https://spdx.org/licenses/
-          deny-licenses: |
+          deny-licenses: >
             MS-LPL, BUSL-1.1,
             CC-BY-NC-1.0, CC-BY-NC-2.0, CC-BY-NC-2.5, CC-BY-NC-3.0, CC-BY-NC-4.0,
             GPL-1.0, GPL-2.0, GPL-3.0, AGPL-3.0, LGPL-2.0, LGPL-2.1, LGPL-3.0,
@@ -26,6 +26,7 @@ jobs:
             QPL-1.0, Sleepycat, SSPL-1.0, CPOL-1.02,
             BSD-4-Clause, BSD-4-Clause-UC, NPL-1.0, NPL-1.1, JSON
           # Artifacts with multiple licenses, where at least one license is compatible with Apache 2.0, are allowed.
-          allow-dependencies-licenses: |
-            'pkg:maven/com.rabbitmq/amqp-client, pkg:maven/ch.qos.logback/logback-classic, pkg:maven/ch.qos.logback/logback-core,
-            pkg:maven/javax.xml.stream/stax-api'
+          allow-dependencies-licenses: >
+            pkg:maven/com.rabbitmq/amqp-client,
+            pkg:maven/ch.qos.logback/logback-classic, pkg:maven/ch.qos.logback/logback-core,
+            pkg:maven/javax.xml.stream/stax-api
