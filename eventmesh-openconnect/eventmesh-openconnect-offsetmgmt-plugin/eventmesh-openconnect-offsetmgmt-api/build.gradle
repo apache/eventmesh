@@ -21,12 +21,10 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation project(":eventmesh-common")
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation "org.mockito:mockito-core"
-
-    testRuntimeOnly "org.apache.logging.log4j:log4j-core"
-    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl"
 }

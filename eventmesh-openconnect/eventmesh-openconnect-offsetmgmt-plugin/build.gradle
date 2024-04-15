@@ -23,11 +23,9 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
 
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    testRuntimeOnly "org.apache.logging.log4j:log4j-core"
-    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl"
 }
