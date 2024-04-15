@@ -52,7 +52,7 @@ public class HttpRequestUtil {
         } else if (io.netty.handler.codec.http.HttpMethod.POST.equals(httpRequest.method())) {
             decodeHttpRequestBody(httpRequest, httpRequestBody);
         }
-        if (Objects.isNull(t)) {
+        if (!Objects.isNull(end)) {
             end.accept(t);
         }
         return httpRequestBody;
