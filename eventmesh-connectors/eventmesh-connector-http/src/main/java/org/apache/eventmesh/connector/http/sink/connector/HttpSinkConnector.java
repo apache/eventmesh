@@ -110,7 +110,7 @@ public class HttpSinkConnector implements Sink {
                 }
                 sendMessage(sinkRecord);
             } catch (Exception e) {
-                log.error("Failed to sink message via HTTP. ", e);
+                log.error("Failed to sink message via HTTP. Exception: ", e);
             }
         }
     }
@@ -120,14 +120,14 @@ public class HttpSinkConnector implements Sink {
             .putHeader("Content-Type", "application/json; charset=utf-8")
             .sendJson(record, ar -> {
                 if (ar.succeeded()) {
+                    log.info("[HttpSinkConnector] Successfully send message via HTTP. Record: timestamp={}, offset={}", record.getTimestamp(),
+                        record.getPosition().getOffset());
                     if (ar.result().statusCode() != HttpResponseStatus.OK.code()) {
-                        log.error("[HttpSinkConnector] Failed to send message via HTTP. Response: {}", ar.result());
-                    } else {
-                        log.info("[HttpSinkConnector] Successfully send message via HTTP. ");
+                        log.error("[HttpSinkConnector] Unexpected response received. StatusCode: {}", ar.result().statusCode());
                     }
                 } else {
-                    // This function is accessed only when an error occurs at the network level
-                    log.error("[HttpSinkConnector] Failed to send message via HTTP. Exception: {}", ar.cause().getMessage());
+                    // This branch is only entered if an error occurs at the network layer
+                    log.error("[HttpSinkConnector] Failed to send message via HTTP. Exception: ", ar.cause());
                 }
             });
     }
