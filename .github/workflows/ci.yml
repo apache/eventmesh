@@ -80,23 +80,3 @@ jobs:
 
       - name: Upload coverage report to codecov.io
         run: bash <(curl -s https://codecov.io/bash) || echo 'Failed to upload coverage report!'
-
-#  license-check:
-#    name: License Check
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#
-#      - name: Check Dependencies' License
-#        uses: apache/skywalking-eyes/dependency@main
-#        with:
-#          log: debug
-#
-#      - name: Check third party dependencies
-#        run: |
-#          ./gradlew clean dist -x spotlessJava -x test -x checkstyleMain -x javaDoc && ./gradlew installPlugin && ./gradlew tar
-#          bash tools/dependency-check/check-dependencies.sh
-#        env:
-#          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
