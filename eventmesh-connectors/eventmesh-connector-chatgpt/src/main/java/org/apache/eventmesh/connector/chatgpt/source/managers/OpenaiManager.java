@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.chatgpt.source.managers;
 
+import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 import static com.theokanning.openai.service.OpenAiService.defaultRetrofit;
 
@@ -85,8 +86,7 @@ public class OpenaiManager {
             }
             ObjectMapper mapper = defaultObjectMapper();
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(chatgptProxyConfig.getHost(), chatgptProxyConfig.getPort()));
-            OkHttpClient client =
-                OpenAiService.defaultClient(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout())).newBuilder().proxy(proxy).build();
+            OkHttpClient client = defaultClient(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout())).newBuilder().proxy(proxy).build();
             Retrofit retrofit = defaultRetrofit(client, mapper);
             OpenAiApi api = retrofit.create(OpenAiApi.class);
             this.openAiService = new OpenAiService(api);

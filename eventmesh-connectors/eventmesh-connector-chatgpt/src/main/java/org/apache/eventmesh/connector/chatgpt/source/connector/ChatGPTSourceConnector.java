@@ -96,7 +96,10 @@ public class ChatGPTSourceConnector implements Source {
     public void initParsePrompt() {
         String parsePromptFileName = sourceConfig.getConnectorConfig().getParsePromptFileName();
         URL resource = Thread.currentThread().getContextClassLoader().getResource(parsePromptFileName);
-        AssertUtils.notNull(resource, String.format("cannot find file %s", parsePromptFileName));
+        if (resource == null) {
+            log.warn("cannot find prompt file {} in resources", parsePromptFileName);
+            return;
+        }
         String filePath = resource.getPath();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             StringBuilder builder = new StringBuilder();
@@ -118,7 +121,9 @@ public class ChatGPTSourceConnector implements Source {
         initParsePrompt();
         this.openaiManager = new OpenaiManager(sourceConfig);
         this.chatHandler = new ChatHandler(this.openaiManager);
-        this.parseHandler = new ParseHandler(openaiManager, parsePromptTemplateStr);
+        if (StringUtils.isNotEmpty(parsePromptTemplateStr)) {
+            this.parseHandler = new ParseHandler(openaiManager, parsePromptTemplateStr);
+        }
         this.queue = new LinkedBlockingQueue<>(1024);
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
@@ -139,7 +144,7 @@ public class ChatGPTSourceConnector implements Source {
 
     private void validateRequestDTO(ChatGPTRequestDTO bodyObject) {
         if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getText() == null) {
-            throw new IllegalArgumentException("Attributes 'subject', 'datacontenttype', and 'prompt' cannot be null");
+            throw new IllegalArgumentException("Attributes 'subject', 'datacontenttype', and 'text' cannot be null");
         }
     }
 
@@ -167,6 +172,10 @@ public class ChatGPTSourceConnector implements Source {
             case CHAT:
                 return chatHandler.invoke(bodyObject);
             case PARSE:
+                if (StringUtils.isBlank(parsePromptTemplateStr)) {
+                    throw new IllegalStateException(
+                        "the request type of PARSE must be configured with the correct parsePromptFileName in source-config.yml");
+                }
                 return parseHandler.invoke(bodyObject);
             default:
                 throw new IllegalStateException("the request type is illegal");

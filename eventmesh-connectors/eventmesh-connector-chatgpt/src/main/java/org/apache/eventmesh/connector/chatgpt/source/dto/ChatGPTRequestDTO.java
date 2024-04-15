@@ -36,14 +36,14 @@ public class ChatGPTRequestDTO {
 
     private String requestType = ChatGPTRequestType.CHAT.name();
 
-    private String source;
+    private String source = "/";
 
-    private String subject;
+    private String subject = "chatGPT";
 
     @JsonProperty("datacontenttype")
-    private String dataContentType;
+    private String dataContentType = "application/json";
 
-    private String type;
+    private String type = "cloudevents";
 
     private String text;
 
