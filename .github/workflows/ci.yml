@@ -89,8 +89,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Check license header
-        uses: apache/skywalking-eyes@main
+      - name: Check Dependencies' License
+        uses: apache/skywalking-eyes/dependency@0.6.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

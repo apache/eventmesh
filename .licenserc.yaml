@@ -46,3 +46,7 @@ header:
     - '**/*.txt'
 
   comment: on-failure
+
+  dependency:
+    files:
+      - build.gradle
