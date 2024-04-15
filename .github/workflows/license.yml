@@ -15,12 +15,12 @@ jobs:
         with:
           vulnerability-check: false
           license-check: true
-          # Compatible/Incompatible licenses addressed here: https://www.apache.org/legal/resolved.html
+          # Incompatible licenses addressed here: https://www.apache.org/legal/resolved.html
           # Special notice for GPL licenses: https://www.apache.org/licenses/GPL-compatibility.html
           # Find SPDX identifiers here: https://spdx.org/licenses/
           deny-licenses: |
-            MS-LPL, ASL, RSAL, BUSL-1.1,
-            CC-BY-NC-1.0, CC-BY-NC-2.0, CC-BY-NC-2.5, CC-BY-NC-3.0, CC-BY-NC-4.0
+            MS-LPL, BUSL-1.1,
+            CC-BY-NC-1.0, CC-BY-NC-2.0, CC-BY-NC-2.5, CC-BY-NC-3.0, CC-BY-NC-4.0,
             GPL-1.0, GPL-2.0, GPL-3.0, AGPL-3.0, LGPL-2.0, LGPL-2.1, LGPL-3.0,
             GPL-1.0-only, GPL-2.0-only, GPL-3.0-only, AGPL-3.0-only, LGPL-2.0-only, LGPL-2.1-only, LGPL-3.0-only,
             QPL-1.0, Sleepycat, SSPL-1.0, CPOL-1.02,
