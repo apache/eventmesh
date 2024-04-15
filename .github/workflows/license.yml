@@ -1,0 +1,24 @@
+name: 'Dependency Review'
+on: [pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v4
+        with:
+          vulnerability-check: true
+          fail-on-severity: critical
+          license-check: true
+          # MX4J, DOM4J, Eclipse Distribution License 1.0, Cup Parser Generator
+#          allow-licenses: |
+#            Apache-2.0, Apache-1.1, PHP-3.01,
+#            BSD-2-Clause, BSD-3-Clause, PostgreSQL, BSD-3-Clause-LBNL,
+#            MIT, X11, ISC, SMLNJ, MIT-0
+#            ICU,
