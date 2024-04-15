@@ -146,7 +146,7 @@ public abstract class AbstractGeneralDatabaseDialect<JC extends JdbcConnection, 
     @Override
     public String getTypeName(Dialect hibernateDialect, Column<?> column) {
         Type type = this.getType(column);
-        if (null != type) {
+        if (type != null) {
             return type.getTypeName(column);
         }
         Long length = Optional.ofNullable(column.getColumnLength()).orElse(0L);
