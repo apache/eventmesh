@@ -157,7 +157,7 @@ public class EventMeshCloudEventBuilder {
             CloudEventAttributeValue.newBuilder().setCeString(Constants.PROTOCOL_DESC_GRPC_CLOUD_EVENT).build());
         attributeValueMap.put(ProtocolKey.PRODUCERGROUP,
             CloudEventAttributeValue.newBuilder().setCeString(clientConfig.getProducerGroup()).build());
-        if (null != message.getTopic()) {
+        if (message.getTopic() != null) {
             attributeValueMap.put(ProtocolKey.SUBJECT, CloudEventAttributeValue.newBuilder().setCeString(message.getTopic()).build());
         }
         attributeValueMap.put(ProtocolKey.DATA_CONTENT_TYPE, CloudEventAttributeValue.newBuilder().setCeString("text/plain").build());

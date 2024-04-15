@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.storage.StorageResource;
@@ -139,13 +138,10 @@ public class EventMeshServer {
             adminBootstrap.init();
         }
 
-        final String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
-
-        log.info("eventStore : {}", eventStore);
         producerTopicManager = new ProducerTopicManager(this);
         producerTopicManager.init();
-        serviceState = ServiceState.INITED;
 
+        serviceState = ServiceState.INITED;
         log.info(SERVER_STATE_MSG, serviceState);
     }
 
