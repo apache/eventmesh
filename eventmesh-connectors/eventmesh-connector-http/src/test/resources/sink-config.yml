@@ -30,6 +30,7 @@ connectorConfig:
   port: 8987
   path: /test
   ssl: false
-  idleTimeout: 5
+  idleTimeout: 5000
   webhookConfig:
     activate: false
+    port: 7898

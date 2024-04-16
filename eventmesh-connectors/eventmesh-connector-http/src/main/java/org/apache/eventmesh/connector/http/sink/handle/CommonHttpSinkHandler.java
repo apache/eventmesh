@@ -76,10 +76,12 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
                     log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
                     // Determine whether the status code is 200
                     if (ar.result().statusCode() != HttpResponseStatus.OK.code()) {
-                        log.error("Unexpected response received. Record: timestamp={}, offset={}. Response: statusCode={}",
+                        log.error("Unexpected response received. Record: timestamp={}, offset={}. Response: code={} header={}, body={}",
                             timestamp,
                             offset,
-                            ar.result().statusCode()
+                            ar.result().statusCode(),
+                            ar.result().headers(),
+                            ar.result().bodyAsString()
                         );
                     }
                 } else {
