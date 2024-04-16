@@ -49,7 +49,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     private final HttpWebhookConfig webhookConfig;
 
     // store the callback data
-    private final BlockingQueue<Object> callbackQueue;
+    private final BlockingQueue<JSONObject> callbackQueue;
 
     // receive/export callback data
     private HttpServer callbackServer;
@@ -83,20 +83,28 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             .path(this.webhookConfig.getCallbackPath())
             .method(HttpMethod.POST)
             .produces("application/json")
-            .handler(ctx -> {
-                JSONObject callbackData = JSON.parseObject(ctx.body().asString());
-                // store callback data
-                if (!this.callbackQueue.offer(callbackData)) {
-                    log.error("Callback data is full, discard the data. Data: {}", callbackData);
+            .handler(ctx -> ctx.request().body().onComplete(ar -> {
+                if (ar.succeeded()) {
+                    JSONObject callbackData = JSON.parseObject(ar.result().toString());
+                    // store callback data
+                    if (!this.callbackQueue.offer(callbackData)) {
+                        log.error("Callback data is full, discard the data. Data: {}", callbackData);
+                    } else {
+                        log.debug("Succeed to store callback data. Data: {}", callbackData);
+                    }
+                    // response 200 OK
+                    ctx.response()
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
+                        .setStatusCode(HttpResponseStatus.OK.code())
+                        .end();
                 } else {
-                    log.debug("Succeed to store callback data. Data: {}", callbackData);
+                    log.error("Failed to parse callback data. ", ar.cause());
+                    ctx.response()
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
+                        .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+                        .end();
                 }
-                // response 200 OK
-                ctx.response()
-                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
-                    .setStatusCode(HttpResponseStatus.OK.code())
-                    .end();
-            });
+            }));
 
         // add export handler
         router.route()
@@ -105,13 +113,13 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             .produces("application/json")
             .handler(ctx -> {
                 // get callback data
-                Object callbackData = this.callbackQueue.poll();
+                JSONObject callbackData = this.callbackQueue.poll();
 
                 if (callbackData != null) {
                     ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                         .setStatusCode(HttpResponseStatus.OK.code())
-                        .end(JSON.toJSONString(callbackData));
+                        .end(callbackData.toString());
                     log.debug("Succeed to export callback data. Data: {}", callbackData);
                 } else {
                     ctx.response()
