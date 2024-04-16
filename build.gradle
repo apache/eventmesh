@@ -226,8 +226,8 @@ tasks.register('generateDistLicense') {
         def projectLicenseText = file('LICENSE').text
 
         // Outputs
-        def distLicenseFile = file('tools/third-party-licenses/LICENSE')
-        def licensesDir = file('tools/third-party-licenses/licenses/java/')
+        def distLicenseFile = file('tools/dist-license/LICENSE')
+        def licensesDir = file('tools/dist-license/licenses/java/')
         if (licensesDir.exists()) {
             licensesDir.eachFile { it.delete() }
         } else {
@@ -295,7 +295,7 @@ tasks.register('generateDistNotice') {
         def projectNoticeText = file('NOTICE').text
 
         // Outputs
-        def distNoticeFile = file('tools/third-party-licenses/NOTICE')
+        def distNoticeFile = file('tools/dist-license/NOTICE')
 
         def distNoticeText = projectNoticeText
         reportsDir.eachDir { dir ->
@@ -470,7 +470,7 @@ subprojects {
             }
             copy {
                 into "${rootDir}/dist"
-                from "${rootDir}/tools/third-party-licenses"
+                from "${rootDir}/tools/dist-license"
             }
         }
     }
