@@ -22,23 +22,13 @@ permissions:
   contents: read
 
 jobs:
-  license-check:
-    name: License Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Check license header
-        uses: apache/skywalking-eyes@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   dependency-review:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v4
+      - name: 'Check license header'
+        uses: apache/skywalking-eyes@main
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
         with:
