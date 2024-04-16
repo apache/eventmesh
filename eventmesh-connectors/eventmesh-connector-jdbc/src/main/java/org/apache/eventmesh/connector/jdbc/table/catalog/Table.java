@@ -48,7 +48,7 @@ public class Table {
         this.primaryKey = primaryKey;
         this.uniqueKeys = uniqueKeys;
         this.comment = comment;
-        if (null != options) {
+        if (options != null) {
             this.options.putAll(options);
         }
     }
