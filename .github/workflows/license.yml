@@ -26,6 +26,7 @@ jobs:
             QPL-1.0, Sleepycat, SSPL-1.0, CPOL-1.02,
             BSD-4-Clause, BSD-4-Clause-UC, NPL-1.0, NPL-1.1, JSON
           # Artifacts with multiple licenses, where at least one license is compatible with Apache 2.0, are allowed.
+          # TODO This attribute can be removed after https://github.com/actions/dependency-review-action/issues/670 is resolved.
           allow-dependencies-licenses: >
             pkg:maven/com.rabbitmq/amqp-client,
             pkg:maven/ch.qos.logback/logback-classic, pkg:maven/ch.qos.logback/logback-core,
