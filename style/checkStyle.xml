@@ -14,7 +14,6 @@
   ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
-  ~
   -->
 
 <!DOCTYPE module PUBLIC
@@ -24,7 +23,7 @@
 
   <property name="charset" value="UTF-8"/>
   <property name="severity" value="warning"/>
-  <property name="fileExtensions" value="java, gradle, rs, properties, env, yaml, yml, toml, sh, c, h, go, mod"/>
+  <property name="fileExtensions" value="java, gradle, rs, properties, env, yaml, yml, toml, sh, xml"/>
   <module name="SuppressWarningsFilter" />
   <module name="Header">
     <property name="headerFile" value="${config_loc}/checkstyle-header-java.txt"/>
@@ -36,6 +35,7 @@
   </module>
   <module name="Header">
     <property name="headerFile" value="${config_loc}/checkstyle-header-shell.txt"/>
+    <property name="ignoreLines" value="1"/>
     <property name="fileExtensions" value="sh"/>
   </module>
   <module name="Header">
@@ -67,6 +67,7 @@
 
   <module name="BeforeExecutionExclusionFileFilter">
     <property name="fileNamePattern" value="./eventmesh-runtime/conf/sChat2.jks$"/>
+    <property name="fileNamePattern" value="checkStyle\.xml$"/>
   </module>
 
   <module name="FileTabCharacter">
