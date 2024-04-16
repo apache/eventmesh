@@ -119,7 +119,7 @@ allprojects {
             }
             importOrder ('\\#org.apache.eventmesh','\\#org.apache','\\#java','\\#javax','\\#org','\\#io','\\#net','\\#junit','\\#com','\\#lombok',
                     'org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
-            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
+            licenseHeaderFile rootProject.file('style/checkstyle-header-java.txt')
             eclipse().configFile("${rootDir}/style/task/eventmesh-spotless-formatter.xml")
             removeUnusedImports()
         }

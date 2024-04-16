@@ -24,19 +24,28 @@
 
   <property name="charset" value="UTF-8"/>
   <property name="severity" value="warning"/>
-  <property name="fileExtensions" value="java, properties, xml, gradle, env, sh"/>
+  <property name="fileExtensions" value="java, gradle, rs, properties, env, yaml, yml, toml, sh, c, h, go, mod"/>
   <module name="SuppressWarningsFilter" />
   <module name="Header">
-    <property name="headerFile" value="${config_loc}/checkstyle-header1.txt"/>
-    <property name="fileExtensions" value="java, gradle"/>
+    <property name="headerFile" value="${config_loc}/checkstyle-header-java.txt"/>
+    <property name="fileExtensions" value="java, gradle, rs"/>
   </module>
   <module name="Header">
-    <property name="headerFile" value="${config_loc}/checkstyle-header2.txt"/>
-    <property name="fileExtensions" value="properties, env"/>
+    <property name="headerFile" value="${config_loc}/checkstyle-header-yaml.txt"/>
+    <property name="fileExtensions" value="properties, env, yaml, yml, toml"/>
   </module>
   <module name="Header">
-    <property name="headerFile" value="${config_loc}/checkstyle-header3.txt"/>
+    <property name="headerFile" value="${config_loc}/checkstyle-header-shell.txt"/>
     <property name="fileExtensions" value="sh"/>
+  </module>
+  <module name="Header">
+    <property name="headerFile" value="${config_loc}/checkstyle-header-c.txt"/>
+    <property name="fileExtensions" value="c, h, go, mod"/>
+  </module>
+  <module name="Header">
+    <property name="headerFile" value="${config_loc}/checkstyle-header-xml.txt"/>
+    <property name="ignoreLines" value="1"/>
+    <property name="fileExtensions" value="xml"/>
   </module>
   <module name="RegexpSingleline">
     <property name="format" value="System\..+\.println"/>
