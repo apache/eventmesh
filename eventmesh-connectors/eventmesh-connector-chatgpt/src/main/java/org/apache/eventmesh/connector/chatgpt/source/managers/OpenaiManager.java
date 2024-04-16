@@ -54,6 +54,8 @@ public class OpenaiManager {
 
     private String chatCompletionRequestTemplateStr;
 
+    private static final int DEFAULT_TIMEOUT = 30;
+
     public OpenaiManager(ChatGPTSourceConfig sourceConfig) {
         initOpenAi(sourceConfig);
     }
@@ -77,7 +79,11 @@ public class OpenaiManager {
 
     private void initOpenAi(ChatGPTSourceConfig sourceConfig) {
         OpenaiConfig openaiConfig = sourceConfig.getOpenaiConfig();
-        AssertUtils.isTrue(openaiConfig.getTimeout() > 0, "openaiTimeout must be >= 0");
+        if (openaiConfig.getTimeout() <= 0) {
+            log.warn("openaiTimeout must be > 0, your config value is {}, openaiTimeout will be reset {}", openaiConfig.getTimeout(),
+                DEFAULT_TIMEOUT);
+            openaiConfig.setTimeout(DEFAULT_TIMEOUT);
+        }
         boolean proxyEnable = sourceConfig.connectorConfig.isProxyEnable();
         if (proxyEnable) {
             OpenaiProxyConfig chatgptProxyConfig = sourceConfig.openaiProxyConfig;
@@ -86,7 +92,8 @@ public class OpenaiManager {
             }
             ObjectMapper mapper = defaultObjectMapper();
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(chatgptProxyConfig.getHost(), chatgptProxyConfig.getPort()));
-            OkHttpClient client = defaultClient(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout())).newBuilder().proxy(proxy).build();
+            OkHttpClient client =
+                defaultClient(openaiConfig.getToken(), Duration.ofSeconds(openaiConfig.getTimeout())).newBuilder().proxy(proxy).build();
             Retrofit retrofit = defaultRetrofit(client, mapper);
             OpenAiApi api = retrofit.create(OpenAiApi.class);
             this.openAiService = new OpenAiService(api);

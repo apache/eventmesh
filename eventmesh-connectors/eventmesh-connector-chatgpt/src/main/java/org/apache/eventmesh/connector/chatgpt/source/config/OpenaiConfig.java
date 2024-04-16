@@ -28,7 +28,7 @@ public class OpenaiConfig {
 
     private String token;
     private String model;
-    private long timeout;
+    private long timeout = 30;
     private Double temperature;
     private Integer maxTokens;
     private Boolean logprob;
@@ -36,7 +36,7 @@ public class OpenaiConfig {
     private Map<String, Integer> logitBias;
     private Double frequencyPenalty;
     private Double presencePenalty;
-    private String user;
+    private String user = "eventMesh";
     private List<String> stop;
 
 }

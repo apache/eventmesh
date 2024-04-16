@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.chatgpt.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
 import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
 import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
