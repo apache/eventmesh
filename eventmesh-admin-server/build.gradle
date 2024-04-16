@@ -1,10 +1,14 @@
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+	implementation project(":eventmesh-common")
+	implementation project(':eventmesh-meta:eventmesh-meta-api')
+	implementation project(":eventmesh-meta:eventmesh-meta-nacos")
+	implementation "org.springframework.boot:spring-boot-starter-web:$spring_boot_version"
+	implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:$mybatis_starter_version"
+	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
+	implementation group: 'com.alibaba', name: 'druid-spring-boot-starter', version:"$druid_starter_version"
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+	testImplementation "org.springframework.boot:spring-boot-starter-test:$spring_boot_version"
+	testImplementation "org.mybatis.spring.boot:mybatis-spring-boot-starter-test:$mybatis_starter_version"
 }
 
