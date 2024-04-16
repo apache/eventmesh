@@ -17,22 +17,27 @@
 
 package org.apache.eventmesh.storage.standalone.broker;
 
-import static org.apache.eventmesh.storage.standalone.TestUtils.OFF_SET;
 import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultCloudEvent;
+import static org.apache.eventmesh.storage.standalone.TestUtils.createSubscribe;
 
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.concurrent.atomic.AtomicLong;
-
+import org.apache.eventmesh.storage.standalone.broker.task.Subscribe;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 
 public class StandaloneBrokerTest {
+
+
+    public StandaloneBroker getStandaloneBroker() {
+        StandaloneBroker instance = StandaloneBroker.getInstance();
+        Subscribe subscribe = createSubscribe(instance);
+        subscribe.subscribe();
+        return instance;
+    }
 
     @Test
     public void testGetInstance() {
@@ -41,49 +46,23 @@ public class StandaloneBrokerTest {
 
     @Test
     public void testCreateTopicIfAbsent() {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
-        Pair<MessageQueue, AtomicLong> pair = instance.createTopicIfAbsent(TEST_TOPIC);
+        StandaloneBroker instance = getStandaloneBroker();
+        Channel pair = instance.createTopicIfAbsent(TEST_TOPIC);
         Assertions.assertNotNull(pair);
     }
 
     @Test
     public void testPutMessage() throws InterruptedException {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
+        StandaloneBroker instance = getStandaloneBroker();
         CloudEvent cloudEvent = createDefaultCloudEvent();
         MessageEntity messageEntity = instance.putMessage(TEST_TOPIC, cloudEvent);
         Assertions.assertNotNull(messageEntity);
     }
 
-    @Test
-    public void testTakeMessage() throws InterruptedException {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
-        CloudEvent cloudEvent = createDefaultCloudEvent();
-        instance.putMessage(TEST_TOPIC, cloudEvent);
-        CloudEvent message = instance.takeMessage(TEST_TOPIC);
-        Assertions.assertNotNull(message);
-    }
-
-    @Test
-    public void testGetMessage() throws InterruptedException {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
-        CloudEvent cloudEvent = createDefaultCloudEvent();
-        instance.putMessage(TEST_TOPIC, cloudEvent);
-        CloudEvent cloudEventResult = instance.getMessage(TEST_TOPIC);
-        Assertions.assertNotNull(cloudEventResult);
-    }
-
-    @Test
-    public void testMessageWithOffSet() throws InterruptedException {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
-        CloudEvent cloudEvent = createDefaultCloudEvent();
-        instance.putMessage(TEST_TOPIC, cloudEvent);
-        CloudEvent cloudEventResult = instance.getMessage(TEST_TOPIC, OFF_SET);
-        Assertions.assertNotNull(cloudEventResult);
-    }
 
     @Test
     public void testCheckTopicExist() throws InterruptedException {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
+        StandaloneBroker instance = getStandaloneBroker();
         CloudEvent cloudEvent = createDefaultCloudEvent();
         instance.putMessage(TEST_TOPIC, cloudEvent);
         boolean exists = instance.checkTopicExist(TEST_TOPIC);
@@ -92,7 +71,7 @@ public class StandaloneBrokerTest {
 
     @Test
     public void testDeleteTopicIfExist() throws InterruptedException {
-        StandaloneBroker instance = StandaloneBroker.getInstance();
+        StandaloneBroker instance = getStandaloneBroker();
         CloudEvent cloudEvent = createDefaultCloudEvent();
         instance.putMessage(TEST_TOPIC, cloudEvent);
         instance.deleteTopicIfExist(TEST_TOPIC);

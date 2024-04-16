@@ -86,8 +86,6 @@ public class StandaloneConsumer implements Consumer {
 
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-        cloudEvents.forEach(cloudEvent -> standaloneBroker.updateOffset(
-            new TopicMetadata(cloudEvent.getSubject()), Objects.requireNonNull((Long) cloudEvent.getExtension("offset"))));
 
     }
 
@@ -99,9 +97,8 @@ public class StandaloneConsumer implements Consumer {
         synchronized (subscribeTable) {
             standaloneBroker.createTopicIfAbsent(topic);
             Subscribe subscribe = new Subscribe(topic, standaloneBroker, listener);
-            SubscribeTask subScribeTask = new SubscribeTask(subscribe);
+            subscribe.subscribe();
             subscribeTable.put(topic, subscribe);
-            consumeExecutorService.execute(subScribeTask);
         }
     }
 

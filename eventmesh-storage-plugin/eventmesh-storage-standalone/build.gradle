@@ -18,6 +18,7 @@
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    implementation "com.lmax:disruptor"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

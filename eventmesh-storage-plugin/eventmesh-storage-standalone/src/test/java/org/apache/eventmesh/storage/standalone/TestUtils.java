@@ -17,7 +17,10 @@
 
 package org.apache.eventmesh.storage.standalone;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.eventmesh.storage.standalone.broker.Channel;
 import org.apache.eventmesh.storage.standalone.broker.MessageQueue;
+import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 
@@ -28,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.eventmesh.storage.standalone.broker.task.Subscribe;
 
 public class TestUtils {
 
@@ -36,11 +40,16 @@ public class TestUtils {
     public static final int LENGTH = 5;
     public static final int EXCEEDED_MESSAGE_STORE_WINDOW = 60 * 60 * 1000 + 1000;
 
-    public static ConcurrentHashMap<TopicMetadata, MessageQueue> createDefaultMessageContainer() {
-        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = new ConcurrentHashMap<>(1);
-        messageContainer.put(new TopicMetadata(TEST_TOPIC), new MessageQueue());
-        return messageContainer;
+    public static Pair<ConcurrentHashMap<TopicMetadata, Channel>, ConcurrentHashMap<TopicMetadata, Subscribe>> createDefaultMessageContainer(StandaloneBroker broker) {
+        ConcurrentHashMap<TopicMetadata, Channel> messageContainer = new ConcurrentHashMap<>(1);
+        ConcurrentHashMap<TopicMetadata, Subscribe> subscribeContainer = new ConcurrentHashMap<>(1);
+
+        Subscribe subscribe = createSubscribe(broker);
+        subscribe.subscribe();
+        subscribeContainer.put(new TopicMetadata(TEST_TOPIC), subscribe);
+        return Pair.of(messageContainer, subscribeContainer);
     }
+
 
     public static ConcurrentHashMap<TopicMetadata, MessageQueue> createMessageContainer(TopicMetadata topicMetadata, MessageEntity messageEntity)
         throws InterruptedException {
@@ -78,5 +87,17 @@ public class TestUtils {
             cloudEvent,
             offSet,
             currentTimeMillis);
+    }
+
+
+    public static Subscribe createSubscribe(StandaloneBroker standaloneBroker){
+        return new Subscribe(TEST_TOPIC, standaloneBroker, (cloudEvent, context) -> {
+        });
+    }
+
+    public static Subscribe createSubscribe(StandaloneBroker standaloneBroker, List<CloudEvent> cloudEvents){
+        return new Subscribe(TEST_TOPIC, standaloneBroker, (cloudEvent, context) -> {
+            cloudEvents.add(cloudEvent);
+        });
     }
 }

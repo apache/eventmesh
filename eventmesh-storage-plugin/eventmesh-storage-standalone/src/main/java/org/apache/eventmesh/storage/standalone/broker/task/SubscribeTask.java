@@ -34,18 +34,18 @@ public class SubscribeTask implements Runnable {
 
     @Override
     public void run() {
-        while (subscribe.isRunning()) {
-            subscribe.subscribe();
-            try {
-                ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                log.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
-                    subscribe.getTopicName(),
-                    subscribe.getOffset() == null ? null : subscribe.getOffset().get(),
-                    Thread.currentThread().getName(), e);
-                Thread.currentThread().interrupt();
-            }
-        }
+//        while (subscribe.isRunning()) {
+//            subscribe.subscribe();
+//            try {
+//                ThreadUtils.sleepWithThrowException(1, TimeUnit.SECONDS);
+//            } catch (InterruptedException e) {
+//                log.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
+//                    subscribe.getTopicName(),
+//                    subscribe.getOffset() == null ? null : subscribe.getOffset().get(),
+//                    Thread.currentThread().getName(), e);
+//                Thread.currentThread().interrupt();
+//            }
+//        }
     }
 
 }

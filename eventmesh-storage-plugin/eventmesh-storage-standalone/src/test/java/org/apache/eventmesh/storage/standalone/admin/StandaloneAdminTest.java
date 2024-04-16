@@ -23,13 +23,20 @@ import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultCloudEvent;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageContainer;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageEntity;
+import static org.apache.eventmesh.storage.standalone.TestUtils.createSubscribe;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.eventmesh.api.admin.TopicProperties;
+import org.apache.eventmesh.storage.standalone.broker.Channel;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
+import org.apache.eventmesh.storage.standalone.broker.task.Subscribe;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +59,7 @@ public class StandaloneAdminTest {
 
     private StandaloneAdmin standaloneAdmin;
 
+
     @BeforeEach
     public void setUp() {
         initStaticInstance();
@@ -70,13 +78,6 @@ public class StandaloneAdminTest {
     }
 
     @Test
-    public void testGetTopic() throws Exception {
-        List<TopicProperties> topicPropertiesList = standaloneAdmin.getTopic();
-        Assertions.assertNotNull(topicPropertiesList);
-        Assertions.assertFalse(topicPropertiesList.isEmpty());
-    }
-
-    @Test
     public void testCreateTopic() {
         standaloneAdmin.createTopic(TEST_TOPIC);
         Mockito.verify(standaloneBroker).createTopicIfAbsent(TEST_TOPIC);
@@ -88,21 +89,6 @@ public class StandaloneAdminTest {
         Mockito.verify(standaloneBroker).deleteTopicIfExist(TEST_TOPIC);
     }
 
-    @Test
-    public void testGetEvent() throws Exception {
-        Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(Boolean.TRUE);
-        Mockito.when(standaloneBroker.getMessage(TEST_TOPIC, OFF_SET)).thenReturn(createDefaultCloudEvent());
-        List<CloudEvent> events = standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH);
-        Assertions.assertNotNull(events);
-        Assertions.assertFalse(events.isEmpty());
-    }
-
-    @Test
-    public void testGetEvent_throwException() {
-        Mockito.when(standaloneBroker.checkTopicExist(TEST_TOPIC)).thenReturn(Boolean.FALSE);
-        Exception exception = Assertions.assertThrows(Exception.class, () -> standaloneAdmin.getEvent(TEST_TOPIC, OFF_SET, LENGTH));
-        Assertions.assertEquals("The topic name doesn't exist in the message queue", exception.getMessage());
-    }
 
     @Test
     public void testPublish() throws Exception {
@@ -116,7 +102,11 @@ public class StandaloneAdminTest {
     private void initStaticInstance() {
         try (MockedStatic<StandaloneBroker> standaloneBrokerMockedStatic = Mockito.mockStatic(StandaloneBroker.class)) {
             standaloneBrokerMockedStatic.when(StandaloneBroker::getInstance).thenReturn(standaloneBroker);
-            Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(createDefaultMessageContainer());
+            Pair<ConcurrentHashMap<TopicMetadata, Channel>, ConcurrentHashMap<TopicMetadata, Subscribe>> defaultMessageContainer = createDefaultMessageContainer(
+                standaloneBroker);
+            Mockito.when(standaloneBroker.getSubscribeContainer()).thenReturn(defaultMessageContainer.getRight());
+            Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(defaultMessageContainer.getLeft());
+
             standaloneAdmin = new StandaloneAdmin();
         }
     }

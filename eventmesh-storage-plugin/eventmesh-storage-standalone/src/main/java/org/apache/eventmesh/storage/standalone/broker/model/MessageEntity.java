@@ -20,7 +20,9 @@ package org.apache.eventmesh.storage.standalone.broker.model;
 import java.io.Serializable;
 
 import io.cloudevents.CloudEvent;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public class MessageEntity implements Serializable {
 
     private static final long serialVersionUID = 6646148767540524786L;
@@ -38,6 +40,11 @@ public class MessageEntity implements Serializable {
         this.message = message;
         this.offset = offset;
         this.createTimeMills = currentTimeMills;
+    }
+
+    public MessageEntity(TopicMetadata topicMetadata, CloudEvent message) {
+        this.topicMetadata = topicMetadata;
+        this.message = message;
     }
 
     public TopicMetadata getTopicMetadata() {

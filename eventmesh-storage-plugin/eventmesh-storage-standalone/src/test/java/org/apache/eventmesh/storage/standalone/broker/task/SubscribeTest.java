@@ -48,12 +48,9 @@ public class SubscribeTest {
 
     @Test
     public void testSubscribe() {
-        CloudEvent cloudEvent = createDefaultCloudEvent();
-        Mockito.when(standaloneBroker.getMessage(anyString())).thenReturn(cloudEvent);
-        Mockito.when(standaloneBroker.getMessage(anyString(), anyLong())).thenReturn(cloudEvent);
         subscribe = new Subscribe(TEST_TOPIC, standaloneBroker, eventListener);
         subscribe.subscribe();
-        Mockito.verify(eventListener).consume(any(CloudEvent.class), any(EventMeshAsyncConsumeContext.class));
+        Mockito.verify(standaloneBroker).subscribed(anyString(), any(Subscribe.class));
     }
 
     @Test
