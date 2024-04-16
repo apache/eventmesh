@@ -20,7 +20,6 @@ package org.apache.eventmesh.storage.standalone.admin;
 import org.apache.eventmesh.api.admin.AbstractAdmin;
 import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.storage.standalone.broker.Channel;
-import org.apache.eventmesh.storage.standalone.broker.MessageQueue;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 

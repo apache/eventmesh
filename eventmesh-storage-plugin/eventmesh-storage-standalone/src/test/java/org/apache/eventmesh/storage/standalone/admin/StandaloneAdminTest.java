@@ -17,26 +17,21 @@
 
 package org.apache.eventmesh.storage.standalone.admin;
 
-import static org.apache.eventmesh.storage.standalone.TestUtils.LENGTH;
-import static org.apache.eventmesh.storage.standalone.TestUtils.OFF_SET;
 import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultCloudEvent;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageContainer;
 import static org.apache.eventmesh.storage.standalone.TestUtils.createDefaultMessageEntity;
-import static org.apache.eventmesh.storage.standalone.TestUtils.createSubscribe;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.storage.standalone.broker.Channel;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.storage.standalone.broker.task.Subscribe;
+
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,10 +97,10 @@ public class StandaloneAdminTest {
     private void initStaticInstance() {
         try (MockedStatic<StandaloneBroker> standaloneBrokerMockedStatic = Mockito.mockStatic(StandaloneBroker.class)) {
             standaloneBrokerMockedStatic.when(StandaloneBroker::getInstance).thenReturn(standaloneBroker);
-            Pair<ConcurrentHashMap<TopicMetadata, Channel>, ConcurrentHashMap<TopicMetadata, Subscribe>> defaultMessageContainer = createDefaultMessageContainer(
-                standaloneBroker);
-            Mockito.when(standaloneBroker.getSubscribeContainer()).thenReturn(defaultMessageContainer.getRight());
-            Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(defaultMessageContainer.getLeft());
+            Pair<ConcurrentHashMap<TopicMetadata, Channel>, ConcurrentHashMap<TopicMetadata, Subscribe>> pair =
+                createDefaultMessageContainer(standaloneBroker);
+            Mockito.when(standaloneBroker.getSubscribeContainer()).thenReturn(pair.getRight());
+            Mockito.when(standaloneBroker.getMessageContainer()).thenReturn(pair.getLeft());
 
             standaloneAdmin = new StandaloneAdmin();
         }

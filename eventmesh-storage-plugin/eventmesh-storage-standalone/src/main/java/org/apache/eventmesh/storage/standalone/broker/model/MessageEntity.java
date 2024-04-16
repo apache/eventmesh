@@ -20,6 +20,7 @@ package org.apache.eventmesh.storage.standalone.broker.model;
 import java.io.Serializable;
 
 import io.cloudevents.CloudEvent;
+
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
