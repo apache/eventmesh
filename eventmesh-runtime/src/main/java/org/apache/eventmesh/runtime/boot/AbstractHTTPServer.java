@@ -451,11 +451,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-            if (null != cause) {
+            if (cause != null) {
                 log.error("", cause);
             }
 
-            if (null != ctx) {
+            if (ctx != null) {
                 ctx.close();
             }
         }

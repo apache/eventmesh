@@ -99,6 +99,8 @@ public class EventHandler extends AbstractHttpHandler {
                 .serialize(event);
             eventJsonList.add(new String(serializedEvent, StandardCharsets.UTF_8));
         }
+        String result = JsonUtils.toJSONString(eventJsonList);
+        writeJson(ctx, result);
     }
 
     @Override

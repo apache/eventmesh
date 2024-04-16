@@ -392,7 +392,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             EventMeshGtidSet purgedServerEventMeshGtidSet = new EventMeshGtidSet(purgedServerGtid);
 
             EventMeshGtidSet filteredEventMeshGtidSet = filterGtidSet(context, executedEventMeshGtidSet, purgedServerEventMeshGtidSet);
-            if (null != filteredEventMeshGtidSet) {
+            if (filteredEventMeshGtidSet != null) {
                 client.setGtidSet(filteredEventMeshGtidSet.toString());
                 this.context.completedGtidSet(filteredEventMeshGtidSet.toString());
                 localGtidSet = new com.github.shyiko.mysql.binlog.GtidSet(filteredEventMeshGtidSet.toString());
@@ -645,7 +645,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             schema.addKeys(tableSchema.getPrimaryKey().getColumnNames());
             Pair<Serializable[], BitSet> beforePair = Optional.ofNullable(pair.getLeft()).orElse(new Pair<>());
             Serializable[] beforeRows = beforePair.getLeft();
-            if (null != beforeRows && beforeRows.length != 0) {
+            if (beforeRows != null && beforeRows.length != 0) {
                 BitSet includedColumns = beforePair.getRight();
                 Map<String, Object> beforeValues = new HashMap<>(beforeRows.length);
                 for (int index = 0; index < columnsSize; ++index) {
@@ -663,7 +663,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
 
             Pair<Serializable[], BitSet> afterPair = Optional.ofNullable(pair.getRight()).orElse(new Pair<>());
             Serializable[] afterRows = afterPair.getLeft();
-            if (null != afterRows && afterRows.length != 0) {
+            if (afterRows != null && afterRows.length != 0) {
                 BitSet includedColumns = afterPair.getRight();
                 Map<String, Object> afterValues = new HashMap<>(afterRows.length);
                 for (int index = 0; index < columnsSize; ++index) {
