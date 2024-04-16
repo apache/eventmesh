@@ -31,3 +31,5 @@ connectorConfig:
   path: /test
   ssl: false
   idleTimeout: 5
+  webhookConfig:
+    activate: false

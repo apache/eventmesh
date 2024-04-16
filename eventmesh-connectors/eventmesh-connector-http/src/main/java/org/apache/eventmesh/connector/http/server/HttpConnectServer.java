@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.http.server;
 
 import org.apache.eventmesh.connector.http.config.HttpServerConfig;
-import org.apache.eventmesh.connector.http.sink.connector.HttpSinkConnector;
+import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.source.connector.HttpSourceConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;

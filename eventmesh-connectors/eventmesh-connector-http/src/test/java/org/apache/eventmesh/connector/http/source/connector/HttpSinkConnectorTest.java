@@ -21,9 +21,9 @@ package org.apache.eventmesh.connector.http.source.connector;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockserver.model.HttpRequest.request;
 
+import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
-import org.apache.eventmesh.connector.http.sink.connector.HttpSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
@@ -77,7 +77,6 @@ public class HttpSinkConnectorTest {
                 HttpResponse.response()
                     .withStatusCode(200)
             );
-
         final int times = 10;
         List<ConnectRecord> connectRecords = new ArrayList<>();
         for (int i = 0; i < times; i++) {
@@ -98,7 +97,7 @@ public class HttpSinkConnectorTest {
         assertEquals(times, allRequests.length);
 
         for (int i = 0; i < times; i++) {
-            HttpRequest actualRequest = allRequests[0];
+            HttpRequest actualRequest = allRequests[i];
             // Determine the request method
             assertEquals(HttpMethod.POST.name(), actualRequest.getMethod().getValue());
         }

@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.connector;
+package org.apache.eventmesh.connector.http.sink;
 
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
+import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handle.HttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handle.WebhookHttpSinkHandler;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -26,11 +29,6 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.List;
 import java.util.Objects;
-
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Vertx;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +39,7 @@ public class HttpSinkConnector implements Sink {
 
     private HttpSinkConfig httpSinkConfig;
 
-    private WebClient webClient;
-
-    private volatile boolean isRunning = false;
+    private HttpSinkHandler sinkHandler;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -52,7 +48,7 @@ public class HttpSinkConnector implements Sink {
 
     @Override
     public void init(Config config) throws Exception {
-        httpSinkConfig = (HttpSinkConfig) config;
+        this.httpSinkConfig = (HttpSinkConfig) config;
         doInit();
     }
 
@@ -65,19 +61,17 @@ public class HttpSinkConnector implements Sink {
 
     @SneakyThrows
     private void doInit() {
-        final Vertx vertx = Vertx.vertx();
-        // TODO Add more configurations
-        WebClientOptions options = new WebClientOptions()
-            .setDefaultHost(this.httpSinkConfig.connectorConfig.getHost())
-            .setDefaultPort(this.httpSinkConfig.connectorConfig.getPort())
-            .setSsl(this.httpSinkConfig.connectorConfig.isSsl())
-            .setIdleTimeout(this.httpSinkConfig.connectorConfig.getIdleTimeout());
-        this.webClient = WebClient.create(vertx, options);
+        // Create different handlers for different configurations
+        if (this.httpSinkConfig.connectorConfig.getWebhookConfig().isActivate()) {
+            this.sinkHandler = new WebhookHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+        } else {
+            this.sinkHandler = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+        }
     }
 
     @Override
     public void start() throws Exception {
-        this.isRunning = true;
+        this.sinkHandler.start();
     }
 
     @Override
@@ -92,12 +86,7 @@ public class HttpSinkConnector implements Sink {
 
     @Override
     public void stop() throws Exception {
-        this.isRunning = false;
-        this.webClient.close();
-    }
-
-    public boolean isRunning() {
-        return isRunning;
+        this.sinkHandler.stop();
     }
 
     @Override
@@ -108,27 +97,11 @@ public class HttpSinkConnector implements Sink {
                     log.warn("ConnectRecord data is null, ignore.");
                     continue;
                 }
-                sendMessage(sinkRecord);
+                // Handle the ConnectRecord
+                this.sinkHandler.handle(sinkRecord);
             } catch (Exception e) {
-                log.error("Failed to sink message via HTTP. Exception: ", e);
+                log.error("Failed to sink message via HTTP. ", e);
             }
         }
-    }
-
-    private void sendMessage(ConnectRecord record) {
-        this.webClient.post(this.httpSinkConfig.connectorConfig.getPath())
-            .putHeader("Content-Type", "application/json; charset=utf-8")
-            .sendJson(record, ar -> {
-                if (ar.succeeded()) {
-                    log.info("[HttpSinkConnector] Successfully send message via HTTP. Record: timestamp={}, offset={}", record.getTimestamp(),
-                        record.getPosition().getOffset());
-                    if (ar.result().statusCode() != HttpResponseStatus.OK.code()) {
-                        log.error("[HttpSinkConnector] Unexpected response received. StatusCode: {}", ar.result().statusCode());
-                    }
-                } else {
-                    // This branch is only entered if an error occurs at the network layer
-                    log.error("[HttpSinkConnector] Failed to send message via HTTP. Exception: ", ar.cause());
-                }
-            });
     }
 }

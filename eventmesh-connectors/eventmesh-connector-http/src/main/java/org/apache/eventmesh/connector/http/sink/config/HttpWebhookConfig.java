@@ -19,21 +19,21 @@ package org.apache.eventmesh.connector.http.sink.config;
 
 import lombok.Data;
 
+
 @Data
-public class SinkConnectorConfig {
+public class HttpWebhookConfig {
 
-    private String connectorName;
+    private boolean activate = false;
 
-    private String host;
+    // Path to receive callback data
+    private String callbackPath = "/callback";
+
+    // Path to display/export callback data
+    private String exportPath = "/export";
 
     private int port;
-
-    private String path;
-
-    private boolean ssl = false;
 
     // timeunit: ms
     private int idleTimeout = 5000;
 
-    private HttpWebhookConfig webhookConfig = new HttpWebhookConfig();
 }

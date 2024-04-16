@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.connector.http.sink.handle;
 
-import lombok.Data;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-@Data
-public class SinkConnectorConfig {
+/**
+ * Any class that needs to process ConnectRecord via HTTP needs to implement this interface.
+ */
+public interface HttpSinkHandler {
 
-    private String connectorName;
+    /**
+     * start the handler
+     */
+    void start();
 
-    private String host;
+    /**
+     * Handle the ConnectRecord.
+     *
+     * @param record the ConnectRecord to handle
+     */
+    void handle(ConnectRecord record);
 
-    private int port;
-
-    private String path;
-
-    private boolean ssl = false;
-
-    // timeunit: ms
-    private int idleTimeout = 5000;
-
-    private HttpWebhookConfig webhookConfig = new HttpWebhookConfig();
+    /**
+     * stop the handler
+     */
+    void stop();
 }
