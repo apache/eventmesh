@@ -31,6 +31,9 @@ import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -47,6 +50,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.ssl.SslHandler;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +65,7 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
     private AdminHandlerManager adminHandlerManager;
 
     @Getter
-    private ThreadPoolExecutor adminExecutor;
+    private ThreadPoolExecutor adminMetricsExecutor;
 
     public EventMeshAdminServer(final EventMeshServer eventMeshServer, final EventMeshAdminConfiguration eventMeshAdminConfiguration) {
         super(eventMeshAdminConfiguration.getEventMeshServerAdminPort(),
@@ -86,8 +90,9 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
             try {
                 bootstrap.group(this.getBossGroup(), this.getIoGroup())
                     .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                    .childHandler(new AdminServerInitializer())
-                    .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+                    .childHandler(new AdminServerInitializer(
+                        this.isUseTLS() ? SSLContextFactory.getSslContext(eventMeshAdminConfiguration) : null, this.isUseTLS()))
+                    .childOption(ChannelOption.AUTO_CLOSE, Boolean.TRUE);
 
                 log.info("AdminHttpServer[port={}] started.", this.getPort());
 
@@ -110,23 +115,37 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
         started.compareAndSet(false, true);
     }
 
+    private void initThreadPool() {
+        adminMetricsExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+            eventMeshAdminConfiguration.getEventMeshServerAdminThreadNum(),
+            eventMeshAdminConfiguration.getEventMeshServerAdminThreadNum(),
+            new LinkedBlockingQueue<>(50), "eventMesh-admin-metrics", true);
+    }
+
     private void registerAdminRequestProcessor() {
         final AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor);
     }
 
-    private void initThreadPool() {
-        adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-            eventMeshAdminConfiguration.getEventMeshServerAdminThreadNum(),
-            eventMeshAdminConfiguration.getEventMeshServerAdminThreadNum(),
-            new LinkedBlockingQueue<>(50), "eventMesh-runtime-admin", true);
-    }
-
     private class AdminServerInitializer extends ChannelInitializer<SocketChannel> {
+
+        private final transient SSLContext sslContext;
+        private final transient boolean useTLS;
+
+        public AdminServerInitializer(final SSLContext sslContext, final boolean useTLS) {
+            this.sslContext = sslContext;
+            this.useTLS = useTLS;
+        }
 
         @Override
         protected void initChannel(final SocketChannel channel) {
             final ChannelPipeline pipeline = channel.pipeline();
+
+            if (sslContext != null && useTLS) {
+                final SSLEngine sslEngine = sslContext.createSSLEngine();
+                sslEngine.setUseClientMode(false);
+                pipeline.addFirst(getWorkerGroup(), "ssl", new SslHandler(sslEngine));
+            }
 
             pipeline.addLast(getWorkerGroup(),
                 new HttpRequestDecoder(),

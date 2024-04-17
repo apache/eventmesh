@@ -202,8 +202,8 @@ public class EventMeshServer {
         }
         producerTopicManager.shutdown();
         ConfigurationContextUtil.clear();
-        serviceState = ServiceState.STOPPED;
 
+        serviceState = ServiceState.STOPPED;
         log.info(SERVER_STATE_MSG, serviceState);
     }
 }

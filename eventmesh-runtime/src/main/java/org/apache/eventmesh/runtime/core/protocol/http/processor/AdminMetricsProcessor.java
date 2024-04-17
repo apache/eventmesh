@@ -39,6 +39,6 @@ public class AdminMetricsProcessor extends AbstractHttpRequestProcessor {
 
     @Override
     public Executor executor() {
-        return eventMeshAdminServer.getAdminExecutor();
+        return eventMeshAdminServer.getAdminMetricsExecutor();
     }
 }

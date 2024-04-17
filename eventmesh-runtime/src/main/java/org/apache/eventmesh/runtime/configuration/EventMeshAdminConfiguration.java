@@ -45,13 +45,13 @@ public class EventMeshAdminConfiguration extends EventMeshHTTPConfiguration {
     private boolean eventMeshServerUseTls = false;
 
     @ConfigField(field = "admin.ssl.protocol")
-    private String eventMeshServerSSLProtocol = "TLSv1.1";
+    private String eventMeshServerSSLProtocol = "TLSv1.3";
 
     @ConfigField(field = "admin.ssl.cer")
-    private String eventMeshServerSSLCer = "sChat2.jks";
+    private String eventMeshServerSSLCer = "eventmesh-admin-server.jks";
 
     @ConfigField(field = "admin.ssl.pass")
-    private String eventMeshServerSSLPass = "sNetty";
+    private String eventMeshServerSSLPass = "eventmesh-admin-server";
 
     @ConfigField(field = "admin.blacklist.ipv4")
     private List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();

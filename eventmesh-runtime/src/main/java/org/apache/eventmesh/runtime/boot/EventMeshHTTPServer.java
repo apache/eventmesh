@@ -67,6 +67,7 @@ import org.assertj.core.util.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.RateLimiter;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -74,6 +75,7 @@ import lombok.extern.slf4j.Slf4j;
  * Add multiple managers to the underlying server
  */
 @Slf4j
+@Getter
 public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private final EventMeshServer eventMeshServer;
@@ -293,62 +295,4 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         this.getHandlerService().register(webHookProcessor, super.getHttpThreadPoolGroup().getWebhookExecutor());
     }
-
-    public SubscriptionManager getSubscriptionManager() {
-        return subscriptionManager;
-    }
-
-    public ConsumerManager getConsumerManager() {
-        return consumerManager;
-    }
-
-    public ProducerManager getProducerManager() {
-        return producerManager;
-    }
-
-    public EventMeshHTTPConfiguration getEventMeshHttpConfiguration() {
-        return eventMeshHttpConfiguration;
-    }
-
-    public EventBus getEventBus() {
-        return eventBus;
-    }
-
-    public HttpRetryer getHttpRetryer() {
-        return httpRetryer;
-    }
-
-    public Acl getAcl() {
-        return acl;
-    }
-
-    public EventMeshServer getEventMeshServer() {
-        return eventMeshServer;
-    }
-
-    public RateLimiter getMsgRateLimiter() {
-        return msgRateLimiter;
-    }
-
-    public RateLimiter getBatchRateLimiter() {
-        return batchRateLimiter;
-    }
-
-    public FilterEngine getFilterEngine() {
-        return filterEngine;
-    }
-
-    public TransformerEngine getTransformerEngine() {
-        return transformerEngine;
-    }
-
-    public MetaStorage getMetaStorage() {
-        return metaStorage;
-    }
-
-    public HTTPClientPool getHttpClientPool() {
-        return httpClientPool;
-    }
-
-
 }

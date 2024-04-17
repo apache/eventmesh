@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.EventLoopGroup;
@@ -31,22 +30,32 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * The most basic server
  */
 @Slf4j
+@Getter
 public abstract class AbstractRemotingServer implements RemotingServer {
 
     private static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
     private static final int DEFAULT_SLEEP_SECONDS = 30;
 
+    @Setter
     private EventLoopGroup bossGroup;
+
+    @Setter
     private EventLoopGroup ioGroup;
+
+    @Setter
     private EventExecutorGroup workerGroup;
+
     protected ProducerManager producerManager;
 
+    @Setter
     private int port;
 
     protected void buildBossGroup(final String threadPrefix) {
@@ -75,10 +84,6 @@ public abstract class AbstractRemotingServer implements RemotingServer {
         producerManager.init();
     }
 
-    public ProducerManager getProducerManager() {
-        return producerManager;
-    }
-
     public void init(final String threadPrefix) throws Exception {
         buildBossGroup(threadPrefix);
         buildIOGroup(threadPrefix);
@@ -94,16 +99,16 @@ public abstract class AbstractRemotingServer implements RemotingServer {
             bossGroup.shutdownGracefully();
             log.info("shutdown bossGroup");
         }
-        if (Objects.isNull(producerManager)) {
+        if (producerManager != null) {
             producerManager.shutdown();
         }
+
         ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
             log.info("shutdown ioGroup");
         }
-
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
 
@@ -113,37 +118,5 @@ public abstract class AbstractRemotingServer implements RemotingServer {
 
     protected boolean useEpoll() {
         return SystemUtils.isLinuxPlatform() && Epoll.isAvailable();
-    }
-
-    public EventLoopGroup getBossGroup() {
-        return bossGroup;
-    }
-
-    public void setBossGroup(final EventLoopGroup bossGroup) {
-        this.bossGroup = bossGroup;
-    }
-
-    public EventLoopGroup getIoGroup() {
-        return ioGroup;
-    }
-
-    public void setIoGroup(final EventLoopGroup ioGroup) {
-        this.ioGroup = ioGroup;
-    }
-
-    public EventExecutorGroup getWorkerGroup() {
-        return workerGroup;
-    }
-
-    public void setWorkerGroup(final EventExecutorGroup workerGroup) {
-        this.workerGroup = workerGroup;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(final int port) {
-        this.port = port;
     }
 }

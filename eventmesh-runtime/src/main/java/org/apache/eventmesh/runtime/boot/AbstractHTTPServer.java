@@ -110,6 +110,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     protected final transient AtomicBoolean started = new AtomicBoolean(false);
 
+    @Getter
     private final transient boolean useTLS;
 
     @Getter

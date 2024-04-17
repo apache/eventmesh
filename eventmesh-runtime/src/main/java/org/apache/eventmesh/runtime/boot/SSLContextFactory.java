@@ -40,23 +40,16 @@ import javax.net.ssl.SSLContext;
 
 public class SSLContextFactory {
 
-    private static String protocol = "TLSv1.1";
-
-    private static String fileName;
-
-    private static String password;
-
     public static SSLContext getSslContext(final EventMeshHTTPConfiguration eventMeshHttpConfiguration)
-        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
-        UnrecoverableKeyException, KeyManagementException {
+        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException, KeyManagementException {
+
+        String protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
+        String fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
+        String password = eventMeshHttpConfiguration.getEventMeshServerSSLPass();
         SSLContext sslContext;
 
-        try (InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
-            + File.separator
-            + fileName), StandardOpenOption.READ)) {
-            protocol = eventMeshHttpConfiguration.getEventMeshServerSSLProtocol();
-            fileName = eventMeshHttpConfiguration.getEventMeshServerSSLCer();
-            password = eventMeshHttpConfiguration.getEventMeshServerSSLPass();
+        try (InputStream inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator + fileName),
+            StandardOpenOption.READ)) {
 
             char[] filePass = StringUtils.isNotBlank(password) ? password.toCharArray() : new char[0];
             final KeyStore keyStore = KeyStore.getInstance("JKS");
