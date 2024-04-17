@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rocketmq.source.connector;
 
 import org.apache.eventmesh.connector.rocketmq.source.config.RocketMQSourceConfig;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -60,7 +61,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RocketMQSourceConnector implements Source {
+public class RocketMQSourceConnector implements Source, ConnectorCreateService<Source> {
 
     private RocketMQSourceConfig sourceConfig;
 
@@ -300,5 +301,10 @@ public class RocketMQSourceConnector implements Source {
         }
         commitOffset.add(new AtomicLong(nextBeginOffset));
         prepareCommitOffset.put(mq, commitOffset);
+    }
+
+    @Override
+    public Source create() {
+        return new RocketMQSourceConnector();
     }
 }

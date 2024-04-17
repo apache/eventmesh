@@ -14,4 +14,10 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+
+    implementation "io.grpc:grpc-core"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
 }
