@@ -31,7 +31,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macOS-latest ]
         java: [ 8, 11 ]
-        language: ['java']
+        language: [ 'java' ]
     runs-on: ${{ matrix.os }}
 
     steps:

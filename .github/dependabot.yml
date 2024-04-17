@@ -19,12 +19,20 @@ version: 2
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 15
     schedule:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
+  - package-ecosystem: "gomod"
+    directory: "eventmesh-sdks/eventmesh-sdk-go"
+    schedule:
+      interval: "monthly"
+    ignore:
+      - dependency-name: "*"
+        # Disabled temporarily since the Go SDK is not integrated with CI
+        update-types: [ "version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
