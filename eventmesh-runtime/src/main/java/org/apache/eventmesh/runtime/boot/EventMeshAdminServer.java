@@ -17,13 +17,19 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.runtime.admin.handler.AdminHandlerManager;
 import org.apache.eventmesh.runtime.admin.handler.HttpHandler;
+import org.apache.eventmesh.runtime.configuration.EventMeshAdminConfiguration;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFutureListener;
@@ -42,25 +48,35 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshAdminServer extends AbstractHTTPServer {
 
+    private final EventMeshAdminConfiguration eventMeshAdminConfiguration;
+
     private HttpConnectionHandler httpConnectionHandler = new HttpConnectionHandler();
 
     private AdminHandlerManager adminHandlerManager;
 
-    public EventMeshAdminServer(EventMeshServer eventMeshServer) {
-        super(eventMeshServer.getEventMeshHTTPServer().getEventMeshHttpConfiguration().getEventMeshServerAdminPort(),
-                false, eventMeshServer.getEventMeshHTTPServer().getEventMeshHttpConfiguration());
+    @Getter
+    private ThreadPoolExecutor adminExecutor;
+
+    public EventMeshAdminServer(final EventMeshServer eventMeshServer, final EventMeshAdminConfiguration eventMeshAdminConfiguration) {
+        super(eventMeshAdminConfiguration.getEventMeshServerAdminPort(),
+            eventMeshAdminConfiguration.isEventMeshServerUseTls(),
+            eventMeshAdminConfiguration);
+        this.eventMeshAdminConfiguration = eventMeshAdminConfiguration;
         adminHandlerManager = new AdminHandlerManager(eventMeshServer);
     }
 
     @Override
     public void init() throws Exception {
         super.init("eventMesh-admin");
+        initThreadPool();
         adminHandlerManager.registerHttpHandler();
+        registerAdminRequestProcessor();
     }
 
     @Override
@@ -94,21 +110,16 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
         started.compareAndSet(false, true);
     }
 
-    public void parseHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-        String uriStr = httpRequest.uri();
-        URI uri = URI.create(uriStr);
-        Optional<HttpHandler> httpHandlerOpt = adminHandlerManager.getHttpHandler(uri.getPath());
-        if (httpHandlerOpt.isPresent()) {
-            try {
-                httpHandlerOpt.get().handle(httpRequest, ctx);
-            } catch (Exception e) {
-                log.error("admin server channelRead error", e);
-                ctx.writeAndFlush(HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(e.getMessage()), ctx,
-                    HttpHeaderValues.APPLICATION_JSON, HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
-            }
-        } else {
-            ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
-        }
+    private void registerAdminRequestProcessor() {
+        final AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
+        registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor);
+    }
+
+    private void initThreadPool() {
+        adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
+            eventMeshAdminConfiguration.getEventMeshServerAdminThreadNum(),
+            eventMeshAdminConfiguration.getEventMeshServerAdminThreadNum(),
+            new LinkedBlockingQueue<>(50), "eventMesh-runtime-admin", true);
     }
 
     private class AdminServerInitializer extends ChannelInitializer<SocketChannel> {
@@ -129,6 +140,23 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                         parseHttpRequest(ctx, msg);
                     }
                 });
+        }
+
+        private void parseHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+            String uriStr = httpRequest.uri();
+            URI uri = URI.create(uriStr);
+            Optional<HttpHandler> httpHandlerOpt = adminHandlerManager.getHttpHandler(uri.getPath());
+            if (httpHandlerOpt.isPresent()) {
+                try {
+                    httpHandlerOpt.get().handle(httpRequest, ctx);
+                } catch (Exception e) {
+                    log.error("admin server channelRead error", e);
+                    ctx.writeAndFlush(HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(e.getMessage()), ctx,
+                        HttpHeaderValues.APPLICATION_JSON, HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
+                }
+            } else {
+                ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
+            }
         }
     }
 }

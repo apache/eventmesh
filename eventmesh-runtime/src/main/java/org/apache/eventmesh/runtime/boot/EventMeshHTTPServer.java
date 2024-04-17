@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumer.SubscriptionManager;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageV2Processor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.CreateTopicProcessor;
@@ -95,7 +94,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private transient RateLimiter batchRateLimiter;
 
     public EventMeshHTTPServer(final EventMeshServer eventMeshServer, final EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-
         super(eventMeshHttpConfiguration.getHttpServerPort(),
             eventMeshHttpConfiguration.isEventMeshServerUseTls(),
             eventMeshHttpConfiguration);
@@ -103,7 +101,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.metaStorage = eventMeshServer.getMetaStorage();
         this.acl = eventMeshServer.getAcl();
-
     }
 
     public void init() throws Exception {
@@ -250,9 +247,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         final SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
         this.getHandlerService().register(sendAsyncRemoteEventProcessor);
-
-        final AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
-        registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor);
 
         final HeartBeatProcessor heartProcessor = new HeartBeatProcessor(this);
         registerProcessor(RequestCode.HEARTBEAT.getRequestCode(), heartProcessor);

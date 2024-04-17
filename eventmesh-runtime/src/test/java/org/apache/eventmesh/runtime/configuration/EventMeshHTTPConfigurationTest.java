@@ -46,7 +46,6 @@ public class EventMeshHTTPConfigurationTest {
 
     private void assertHTTPConfig(EventMeshHTTPConfiguration config) throws AddressStringException {
         Assertions.assertEquals(1816, config.getHttpServerPort());
-        Assertions.assertEquals(1817, config.getEventMeshServerAdminPort());
         Assertions.assertEquals(Boolean.FALSE, config.isEventMeshServerBatchMsgBatchEnabled());
         Assertions.assertEquals(2816, config.getEventMeshServerBatchMsgThreadNum());
         Assertions.assertEquals(3816, config.getEventMeshServerSendMsgThreadNum());

@@ -36,23 +36,32 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshServer {
 
+    @Getter
     private final Acl acl;
 
+    @Getter
+    @Setter
     private MetaStorage metaStorage;
 
+    @Getter
     private static Trace trace;
 
     private final StorageResource storageResource;
 
+    @Getter
     private ServiceState serviceState;
 
+    @Getter
     private ProducerTopicManager producerTopicManager;
 
+    @Getter
     private final CommonConfiguration configuration;
 
     //  private transient ClientManageController clientManageController;
@@ -63,13 +72,17 @@ public class EventMeshServer {
 
     private static final ConfigService configService = ConfigService.getInstance();
 
-    private EventMeshAdminBootstrap adminBootstrap;
-
+    @Getter
     private EventMeshTCPServer eventMeshTCPServer = null;
 
+    @Getter
+    private EventMeshHTTPServer eventMeshHTTPServer = null;
+
+    @Getter
     private EventMeshGrpcServer eventMeshGrpcServer = null;
 
-    private EventMeshHTTPServer eventMeshHTTPServer = null;
+    @Getter
+    private EventMeshAdminServer eventMeshAdminServer = null;
 
     public EventMeshServer() {
 
@@ -96,8 +109,7 @@ public class EventMeshServer {
                 case GRPC:
                     BOOTSTRAP_LIST.add(new EventMeshGrpcBootstrap(this));
                     break;
-                default:
-                    // nothing to do
+                default: // nothing to do
             }
         }
 
@@ -105,6 +117,9 @@ public class EventMeshServer {
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
+
+        // HTTP Admin Server always enabled
+        BOOTSTRAP_LIST.add(new EventMeshAdminBootstrap(this));
     }
 
     public void init() throws Exception {
@@ -131,11 +146,9 @@ public class EventMeshServer {
             if (eventMeshBootstrap instanceof EventMeshGrpcBootstrap) {
                 eventMeshGrpcServer = ((EventMeshGrpcBootstrap) eventMeshBootstrap).getEventMeshGrpcServer();
             }
-        }
-
-        if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
-            adminBootstrap = new EventMeshAdminBootstrap(this);
-            adminBootstrap.init();
+            if (eventMeshBootstrap instanceof EventMeshAdminBootstrap) {
+                eventMeshAdminServer = ((EventMeshAdminBootstrap) eventMeshBootstrap).getEventMeshAdminServer();
+            }
         }
 
         producerTopicManager = new ProducerTopicManager(this);
@@ -160,13 +173,10 @@ public class EventMeshServer {
             eventMeshBootstrap.start();
         }
 
-        if (Objects.nonNull(adminBootstrap)) {
-            adminBootstrap.start();
-        }
         producerTopicManager.start();
+
         serviceState = ServiceState.RUNNING;
         log.info(SERVER_STATE_MSG, serviceState);
-
     }
 
     public void shutdown() throws Exception {
@@ -195,45 +205,5 @@ public class EventMeshServer {
         serviceState = ServiceState.STOPPED;
 
         log.info(SERVER_STATE_MSG, serviceState);
-    }
-
-    public static Trace getTrace() {
-        return trace;
-    }
-
-    public ServiceState getServiceState() {
-        return serviceState;
-    }
-
-    public MetaStorage getMetaStorage() {
-        return metaStorage;
-    }
-
-    public void setMetaStorage(final MetaStorage metaStorage) {
-        this.metaStorage = metaStorage;
-    }
-
-    public Acl getAcl() {
-        return acl;
-    }
-
-    public ProducerTopicManager getProducerTopicManager() {
-        return producerTopicManager;
-    }
-
-    public CommonConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public EventMeshTCPServer getEventMeshTCPServer() {
-        return eventMeshTCPServer;
-    }
-
-    public EventMeshGrpcServer getEventMeshGrpcServer() {
-        return eventMeshGrpcServer;
-    }
-
-    public EventMeshHTTPServer getEventMeshHTTPServer() {
-        return eventMeshHTTPServer;
     }
 }
