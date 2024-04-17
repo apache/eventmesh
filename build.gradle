@@ -221,7 +221,7 @@ tasks.register('generateDistLicense') {
     dependsOn('cyclonedxBom') // Task from 'org.cyclonedx.bom' plugin
     doLast {
         // Inputs
-        def bomFile = file('build/reports/bom.json')
+        def bomFile = file("$buildDir/reports/bom.json")
         def bom = new JsonSlurper().parseText(bomFile.text)
         def projectLicenseText = file('LICENSE').text
 
@@ -268,7 +268,7 @@ tasks.register('generateDistLicense') {
         }
 
         def distLicenseText = projectLicenseText + "\n=======================================================================\n" +
-                "This distribution contains the following third-party:\n\n"
+                "This distribution contains the following third-party artifacts:\n\n"
         thirdPartyArtifacts.each { artifact ->
             // Write licenses
             def artifactLicenseFilename = artifact.license.replaceAll("/", "-") + ".txt"
@@ -277,10 +277,12 @@ tasks.register('generateDistLicense') {
                 artifactLicenseFile.text = artifact.licenseContent
             } else {
                 artifactLicenseFile.text = "No license content provided by the artifact."
+                logger.warn("No '${artifact.license}' license content provided by ${artifact.name} ${artifact.version}. Please add manually.")
             }
 
             // Assemble LICENSE
-            distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. For details see: licenses/${artifactLicenseFilename}\n"
+            distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. " +
+                    "For details see: licenses/${artifactLicenseFilename}\n"
         }
         distLicenseFile.text = distLicenseText
     }
@@ -291,7 +293,7 @@ tasks.register('generateDistNotice') {
     dependsOn('generateLicenseReport') // Task from 'com.github.jk1.dependency-license-report' plugin
     doLast {
         // Inputs
-        def reportsDir = file('build/reports/dependency-license/')
+        def reportsDir = file("$buildDir/reports/dependency-license/")
         def projectNoticeText = file('NOTICE').text
 
         // Outputs
