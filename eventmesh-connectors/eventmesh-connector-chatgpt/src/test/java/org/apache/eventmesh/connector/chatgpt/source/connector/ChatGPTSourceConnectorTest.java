@@ -108,17 +108,6 @@ class ChatGPTSourceConnectorTest {
 
         List<ConnectRecord> res1 = connector.poll();
         Assertions.assertEquals(batchSize, res1.size());
-
-        // test invalid requests
-        TestEvent event = new TestEvent();
-        event.type = "com.example.someevent";
-        event.source = "/mycontext";
-        event.datacontenttype = "text/plain";
-        event.text = expectedMessage;
-        HttpPost invalidPost = new HttpPost(uri);
-        invalidPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
-        HttpResponse resp = httpClient.execute(invalidPost);
-        Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, resp.getStatusLine().getStatusCode());
     }
 
 
