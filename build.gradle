@@ -54,9 +54,7 @@ allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
     apply plugin: "idea"
-    apply plugin: "project-reports"
     apply plugin: "maven-publish"
-    apply plugin: "com.github.spotbugs"
     apply plugin: "project-reports"
     apply plugin: "jacoco"
     apply plugin: "pmd"
@@ -64,6 +62,7 @@ allprojects {
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: "com.github.spotbugs"
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -124,7 +123,6 @@ allprojects {
             removeUnusedImports()
         }
     }
-
     afterEvaluate {
         tasks.forEach {task ->
             if (task.name.contains("spotlessJava")) {
@@ -323,7 +321,6 @@ subprojects {
         main {
             java.srcDirs = ['src/main/java']
         }
-
         test {
             java.srcDirs = ['src/test/java']
         }
@@ -360,7 +357,6 @@ subprojects {
     }
 
     spotbugsMain {
-
         reports {
             xml.required = false
             html {
