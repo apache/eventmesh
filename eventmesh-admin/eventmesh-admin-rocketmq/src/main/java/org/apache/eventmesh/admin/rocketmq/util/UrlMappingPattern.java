@@ -65,7 +65,7 @@ public class UrlMappingPattern {
         if (matcher.matches()) {
             return extractParameters(matcher);
         }
-        return null;
+        return Collections.emptyMap();
     }
 
     public boolean matches(String url) {
