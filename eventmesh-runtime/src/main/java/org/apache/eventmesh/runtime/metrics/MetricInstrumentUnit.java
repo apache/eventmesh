@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.metrics;
 
 
-public abstract class MetricInstrumentUnit {
+public class MetricInstrumentUnit {
 
     private MetricInstrumentUnit() {
 
