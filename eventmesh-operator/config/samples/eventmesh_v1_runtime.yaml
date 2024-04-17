@@ -41,7 +41,6 @@ data:
     # HTTP Admin Server
     eventMesh.server.admin.http.port=10106
     ########################## eventMesh tcp configuration ############################
-    eventMesh.server.tcp.enabled=true
     eventMesh.server.tcp.readerIdleSeconds=120
     eventMesh.server.tcp.writerIdleSeconds=120
     eventMesh.server.tcp.allIdleSeconds=120

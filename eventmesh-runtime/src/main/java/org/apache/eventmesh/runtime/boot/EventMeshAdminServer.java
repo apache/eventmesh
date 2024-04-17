@@ -52,11 +52,10 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
     private AdminHandlerManager adminHandlerManager;
 
     public EventMeshAdminServer(EventMeshServer eventMeshServer) {
-        super(eventMeshServer.getEventMeshTCPServer().getEventMeshTCPConfiguration().getEventMeshServerAdminPort(), false,
-            eventMeshServer.getEventMeshHTTPServer().getEventMeshHttpConfiguration());
+        super(eventMeshServer.getEventMeshHTTPServer().getEventMeshHttpConfiguration().getEventMeshServerAdminPort(),
+                false, eventMeshServer.getEventMeshHTTPServer().getEventMeshHttpConfiguration());
         adminHandlerManager = new AdminHandlerManager(eventMeshServer);
     }
-
 
     @Override
     public void init() throws Exception {

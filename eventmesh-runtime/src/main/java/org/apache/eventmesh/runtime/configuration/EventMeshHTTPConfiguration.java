@@ -39,6 +39,9 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     @ConfigField(field = "http.port", notNull = true, beNumber = true)
     private int httpServerPort = 10105;
 
+    @ConfigField(field = "admin.http.port")
+    private int eventMeshServerAdminPort = 10106;
+
     @ConfigField(field = "batchmsg.batch.enabled")
     private boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;
 

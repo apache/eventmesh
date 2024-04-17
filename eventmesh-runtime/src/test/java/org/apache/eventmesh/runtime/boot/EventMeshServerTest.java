@@ -77,7 +77,6 @@ public class EventMeshServerTest {
         Assertions.assertEquals(15816, config.getEventMeshTcpMsgRetryAsyncDelayInMills());
         Assertions.assertEquals(16816, config.getEventMeshTcpMsgRetryQueueSize());
         Assertions.assertEquals(Integer.valueOf(17816), config.getEventMeshTcpRebalanceIntervalInMills());
-        Assertions.assertEquals(18816, config.getEventMeshServerAdminPort());
         Assertions.assertEquals(Boolean.TRUE, config.isEventMeshTcpSendBackEnabled());
         Assertions.assertEquals(3, config.getEventMeshTcpSendBackMaxTimes());
         Assertions.assertEquals(21816, config.getEventMeshTcpPushFailIsolateTimeInMills());
