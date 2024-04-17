@@ -15,25 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.connector.http.sink.data;
+
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import lombok.Data;
 
-
+/**
+ * a special ConnectRecord for HttpSinkConnector
+ */
 @Data
-public class HttpWebhookConfig {
+public class HttpConnectRecord {
 
-    private boolean activate = false;
+    private String type;
 
-    // Path to receive callback data
-    private String callbackPath = "/callback";
+    private String timestamp;
 
-    // Path to display/export callback data
-    private String exportPath = "/export";
-
-    private int port;
-
-    // timeunit: ms
-    private int idleTimeout = 5000;
+    private ConnectRecord data;
 
 }

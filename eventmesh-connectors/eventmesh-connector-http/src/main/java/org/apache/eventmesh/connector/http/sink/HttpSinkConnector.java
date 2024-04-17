@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.http.sink;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
 import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.HttpSinkHandler;
-import org.apache.eventmesh.connector.http.sink.handle.WebhookHttpSinkHandler;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -30,6 +29,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import java.util.List;
 import java.util.Objects;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +39,7 @@ public class HttpSinkConnector implements Sink {
 
     private HttpSinkConfig httpSinkConfig;
 
+    @Getter
     private HttpSinkHandler sinkHandler;
 
     @Override
@@ -61,12 +62,7 @@ public class HttpSinkConnector implements Sink {
 
     @SneakyThrows
     private void doInit() {
-        // Create different handlers for different configurations
-        if (this.httpSinkConfig.connectorConfig.getWebhookConfig().isActivate()) {
-            this.sinkHandler = new WebhookHttpSinkHandler(this.httpSinkConfig.connectorConfig);
-        } else {
-            this.sinkHandler = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
-        }
+        this.sinkHandler = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
     }
 
     @Override

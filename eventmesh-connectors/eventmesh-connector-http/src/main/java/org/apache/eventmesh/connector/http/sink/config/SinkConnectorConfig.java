@@ -30,10 +30,42 @@ public class SinkConnectorConfig {
 
     private String path;
 
-    private boolean ssl = false;
+    // whether the connector is HTTPS connector
+    private boolean ssl;
+
+    // whether the connector is a webhook connector
+    private boolean webhook;
 
     // timeunit: ms
-    private int idleTimeout = 5000;
+    private int connectionTimeout;
 
-    private HttpWebhookConfig webhookConfig = new HttpWebhookConfig();
+    // timeunit: ms
+    private int idleTimeout;
+
+
+    /**
+     * Fill in default values for fields that have no set values
+     *
+     * @param config SinkConnectorConfig
+     */
+    public static void fillDefault(SinkConnectorConfig config) {
+        // Common HttpSinkHandler default values
+        final int commonHttpIdleTimeout = 5000;
+        final int commonHttpConnectionTimeout = 5000;
+
+        // Webhook HttpSinkHandler default values
+        final int webhookHttpIdleTimeout = 10000;
+        final int webhookHttpConnectionTimeout = 15000;
+
+        // Set default values for idleTimeout
+        if (config.getIdleTimeout() == 0) {
+            int idleTimeout = config.isWebhook() ? webhookHttpIdleTimeout : commonHttpIdleTimeout;
+            config.setIdleTimeout(idleTimeout);
+        }
+        // Set default values for connectionTimeout
+        if (config.getConnectionTimeout() == 0) {
+            int connectionTimeout = config.isWebhook() ? webhookHttpConnectionTimeout : commonHttpConnectionTimeout;
+            config.setConnectionTimeout(connectionTimeout);
+        }
+    }
 }

@@ -23,27 +23,14 @@ import static org.mockserver.model.HttpRequest.request;
 
 import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
+import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +42,6 @@ import org.mockserver.model.HttpResponse;
 
 import io.vertx.core.http.HttpMethod;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 
 public class HttpSinkConnectorTest {
@@ -83,12 +69,14 @@ public class HttpSinkConnectorTest {
 
     @Test
     void testPut() throws Exception {
-        // Set the webhook to false
-        this.sinkConfig.connectorConfig.getWebhookConfig().setActivate(false);
         this.sinkConnector.init(this.sinkConfig);
         this.sinkConnector.start();
 
         // Mock the response
+        JSONObject responseBody = new JSONObject();
+        responseBody.put("code", 0);
+        responseBody.put("message", "success");
+        responseBody.put("data", new JSONObject());
         new MockServerClient(this.sinkConfig.connectorConfig.getHost(), this.sinkConfig.connectorConfig.getPort())
             .when(
                 request()
@@ -98,6 +86,7 @@ public class HttpSinkConnectorTest {
             .respond(
                 HttpResponse.response()
                     .withStatusCode(200)
+                    .withBody(responseBody.toJSONString())
             );
 
         // Create a list of ConnectRecord
@@ -125,61 +114,15 @@ public class HttpSinkConnectorTest {
             // Determine the request method
             assertEquals(HttpMethod.POST.name(), actualRequest.getMethod().getValue());
         }
+
+        CommonHttpSinkHandler sinkHandler = (CommonHttpSinkHandler) sinkConnector.getSinkHandler();
+        Object[] allReceivedData = sinkHandler.getAllReceivedData();
+        for (int i = 0; i < times; i++) {
+            JSONObject o = (JSONObject) allReceivedData[i];
+            // Determine the response body
+            assertEquals(responseBody, o);
+        }
+
         mockServer.close();
     }
-
-    @Test
-    void testCallback() throws Exception {
-        // Set the webhook to true
-        this.sinkConfig.connectorConfig.getWebhookConfig().setActivate(true);
-        this.sinkConnector.init(this.sinkConfig);
-        this.sinkConnector.start();
-        // Create a HttpClient
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        // Mock some requests
-        HttpWebhookConfig webhookConfig = this.sinkConfig.connectorConfig.getWebhookConfig();
-
-        URI callbackUri = new URIBuilder().setScheme("http").setHost(this.sinkConfig.connectorConfig.getHost()).setPort(webhookConfig.getPort())
-            .setPath(webhookConfig.getCallbackPath()).build();
-
-        final int times = 10;
-        List<String> values = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
-            HttpPost post = mockRequest(callbackUri);
-            // Execute the request
-            CloseableHttpResponse response = httpClient.execute(post);
-            int statusCode = response.getStatusLine().getStatusCode();
-            // Determine the response status code
-            assertEquals(200, statusCode);
-            JSONObject jsonObject = JSON.parseObject(EntityUtils.toString(post.getEntity()));
-            values.add(jsonObject.getString("key"));
-        }
-
-        // get the callback data
-        URI exportUri = new URIBuilder().setScheme("http").setHost(this.sinkConfig.connectorConfig.getHost()).setPort(webhookConfig.getPort())
-            .setPath(webhookConfig.getExportPath()).build();
-
-        HttpGet httpGet = new HttpGet(exportUri);
-        // Execute the request
-        for (int i = 0; i < times; i++) {
-            CloseableHttpResponse response = httpClient.execute(httpGet);
-            // Determine the response status code
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            JSONObject jsonObject = JSON.parseObject(EntityUtils.toString(response.getEntity()));
-            // Determine the response data
-            assertEquals(values.get(i), jsonObject.getString("key"));
-        }
-        httpClient.close();
-    }
-
-    HttpPost mockRequest(URI uri) throws UnsupportedEncodingException {
-        HttpPost post = new HttpPost(uri);
-        String value = String.valueOf(UUID.randomUUID());
-        JSONObject json = new JSONObject();
-        json.put("key", value);
-        post.setEntity(new StringEntity(json.toJSONString()));
-        post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        return post;
-    }
-
 }

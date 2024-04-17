@@ -18,20 +18,30 @@
 package org.apache.eventmesh.connector.http.sink.handle;
 
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Common HttpSinkHandler to handle ConnectRecord over HTTP/HTTPS
+ * Common HttpSinkHandler to handle ConnectRecord
  */
 @Slf4j
 public class CommonHttpSinkHandler implements HttpSinkHandler {
@@ -40,9 +50,47 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
 
     private WebClient webClient;
 
+    private final String type;
+
+    // store the received data, when webhook is enabled
+    private final BlockingQueue<JSONObject> receivedDataQueue;
+
     public CommonHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
+        SinkConnectorConfig.fillDefault(sinkConnectorConfig);
         this.connectorConfig = sinkConnectorConfig;
+        this.receivedDataQueue = this.connectorConfig.isWebhook() ? new LinkedBlockingQueue<>() : null;
+        type = String.format("%s.%s.%s",
+            sinkConnectorConfig.getConnectorName(),
+            sinkConnectorConfig.isSsl() ? "https" : "http",
+            sinkConnectorConfig.isWebhook() ? "webhook" : "common");
     }
+
+    /**
+     * Get the oldest data in the queue
+     *
+     * @return received data
+     */
+    public Object getReceivedData() {
+        if (!this.connectorConfig.isWebhook()) {
+            return null;
+        }
+        return this.receivedDataQueue.poll();
+    }
+
+    /**
+     * Get all received data
+     *
+     * @return all received data
+     */
+    public Object[] getAllReceivedData() {
+        if (!connectorConfig.isWebhook() || receivedDataQueue.isEmpty()) {
+            return new Object[0];
+        }
+        Object[] arr = receivedDataQueue.toArray();
+        receivedDataQueue.clear();
+        return arr;
+    }
+
 
     @Override
     public void start() {
@@ -58,7 +106,8 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             .setDefaultPort(this.connectorConfig.getPort())
             .setSsl(this.connectorConfig.isSsl())
             .setIdleTimeout(this.connectorConfig.getIdleTimeout())
-            .setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+            .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
+            .setConnectTimeout(this.connectorConfig.getConnectionTimeout());
 
         this.webClient = WebClient.create(vertx, options);
     }
@@ -66,30 +115,76 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
 
     @Override
     public void handle(ConnectRecord record) {
+        // create headers
+        MultiMap headers = HttpHeaders.headers();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8");
+        headers.add(HttpHeaderNames.USER_AGENT, "EventMesh-Sink-Connector");
+
+        // convert ConnectRecord to HttpConnectRecord
+        HttpConnectRecord httpConnectRecord = convertToHttpConnectRecord(record);
+
+        // send the request
         this.webClient.post(this.connectorConfig.getPath())
-            .putHeader("Content-Type", "application/json; charset=utf-8")
-            .sendJson(record)
-            .onComplete(ar -> {
+            .putHeaders(headers)
+            .sendJson(httpConnectRecord)
+            .onSuccess(res -> {
                 Long timestamp = record.getTimestamp();
                 Map<String, ?> offset = record.getPosition().getOffset().getOffset();
-                if (ar.succeeded()) {
-                    log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
-                    // Determine whether the status code is 200
-                    if (ar.result().statusCode() != HttpResponseStatus.OK.code()) {
-                        log.error("Unexpected response received. Record: timestamp={}, offset={}. Response: code={} header={}, body={}",
-                            timestamp,
-                            offset,
-                            ar.result().statusCode(),
-                            ar.result().headers(),
-                            ar.result().bodyAsString()
-                        );
+                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
+                // Determine whether the status code is 200
+                if (res.statusCode() == HttpResponseStatus.OK.code()) {
+                    // store the received data, when webhook is enabled
+                    if (this.connectorConfig.isWebhook()) {
+                        String dataStr = res.body().toString();
+                        if (dataStr.isEmpty()) {
+                            log.warn("Received data is empty.");
+                            return;
+                        }
+                        JSONObject receivedData = JSON.parseObject(dataStr);
+                        if (receivedDataQueue.size() == Integer.MAX_VALUE) {
+                            // if the queue is full, remove the oldest element
+                            JSONObject removedData = receivedDataQueue.poll();
+                            log.info("The queue is full, remove the oldest element: {}", removedData);
+                        }
+                        boolean b = receivedDataQueue.offer(receivedData);
+                        if (b) {
+                            log.info("Successfully put the received data into the queue: {}", receivedData);
+                        } else {
+                            log.error("Failed to put the received data into the queue: {}", receivedData);
+                        }
                     }
                 } else {
-                    // This branch is only entered if an error occurs at the network layer
-                    log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, offset, ar.cause());
+                    log.error("Unexpected response received. Record: timestamp={}, offset={}. Response: code={} header={}, body={}",
+                        timestamp,
+                        offset,
+                        res.statusCode(),
+                        res.headers(),
+                        res.body().toString()
+                    );
                 }
+            })
+            .onFailure(err -> {
+                Long timestamp = record.getTimestamp();
+                Map<String, ?> offset = record.getPosition().getOffset().getOffset();
+                log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, offset, err);
             });
     }
+
+    /**
+     * Convert ConnectRecord to HttpConnectRecord
+     *
+     * @param record the ConnectRecord to convert
+     * @return the converted HttpConnectRecord
+     */
+    private HttpConnectRecord convertToHttpConnectRecord(ConnectRecord record) {
+        HttpConnectRecord httpConnectRecord = new HttpConnectRecord();
+        httpConnectRecord.setType(this.type);
+        LocalDateTime currentTime = LocalDateTime.now();
+        httpConnectRecord.setTimestamp(currentTime.toString());
+        httpConnectRecord.setData(record);
+        return httpConnectRecord;
+    }
+
 
     @Override
     public void stop() {
