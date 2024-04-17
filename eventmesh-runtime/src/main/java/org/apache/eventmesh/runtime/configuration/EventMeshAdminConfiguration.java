@@ -48,13 +48,13 @@ public class EventMeshAdminConfiguration extends EventMeshHTTPConfiguration {
     private String eventMeshServerSSLProtocol = "TLSv1.3";
 
     @ConfigField(field = "admin.ssl.cer")
-    private String eventMeshServerSSLCer = "eventmesh-admin-server.jks";
+    private String eventMeshServerSSLCer = "admin-server.jks";
 
     @ConfigField(field = "admin.ssl.pass")
     private String eventMeshServerSSLPass = "eventmesh-admin-server";
 
     @ConfigField(field = "admin.blacklist.ipv4")
-    private List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
+    private List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList(); // TODO implement after merging #4835
 
     @ConfigField(field = "admin.blacklist.ipv6")
     private List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
