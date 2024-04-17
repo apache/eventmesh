@@ -28,24 +28,22 @@ connectorConfig:
   connectorName: chatgptSource
   path: /chatgpt
   port: 3756
-  idleTimeout: 999
-  proxyEnable: true
+  idleTimeout: 30
+  proxyEnable: false
   parsePromptFileName: prompt
 
 # https://platform.openai.com/docs/api-reference/chat/create
 openaiConfig:
   token:
   model: gpt-3.5-turbo
-  timeout: 60
+  timeout: 30
   temperature: 1
   maxTokens:
   frequencyPenalty: 0
   presencePenalty: 0
   user: eventMesh
   stop: []
-  logitBias: {
-
-  }
+  logitBias: {}
 
 openaiProxyConfig:
   host: 127.0.0.1

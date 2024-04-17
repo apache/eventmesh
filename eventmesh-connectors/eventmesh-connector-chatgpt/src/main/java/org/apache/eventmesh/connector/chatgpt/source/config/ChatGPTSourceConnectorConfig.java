@@ -22,16 +22,16 @@ import lombok.Data;
 @Data
 public class ChatGPTSourceConnectorConfig {
 
-    private String connectorName;
+    private String connectorName = "chatgptSource";
 
-    private String path;
+    private String path = "/chatgpt";
 
-    private int port;
+    private int port = 3756;
 
-    private int idleTimeout;
+    private int idleTimeout = 30;
 
-    private boolean proxyEnable;
+    private boolean proxyEnable = false;
 
-    private String parsePromptFileName;
+    private String parsePromptFileName = "prompt";
 
 }

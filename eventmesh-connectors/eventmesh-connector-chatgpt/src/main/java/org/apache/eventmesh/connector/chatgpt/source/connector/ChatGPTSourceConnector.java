@@ -66,13 +66,16 @@ public class ChatGPTSourceConnector implements Source {
     private ChatGPTSourceConfig sourceConfig;
     private BlockingQueue<CloudEvent> queue;
     private HttpServer server;
-    private final ExecutorService chatgptSourceExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-        Runtime.getRuntime().availableProcessors() * 2, Runtime.getRuntime().availableProcessors() * 2, "ChatGPTSourceThread");
+    private final ExecutorService chatgptSourceExecutorService =
+        ThreadPoolFactory.createThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2, Runtime.getRuntime().availableProcessors() * 2,
+            "ChatGPTSourceThread");
 
     private OpenaiManager openaiManager;
     private String parsePromptTemplateStr;
     private ChatHandler chatHandler;
     private ParseHandler parseHandler;
+    private static final int DEFAULT_TIMEOUT = 30;
+
 
     @Override
     public Class<? extends Config> configClass() {
@@ -136,6 +139,11 @@ public class ChatGPTSourceConnector implements Source {
                 handleError(e, ctx);
             }
         });
+        if (sourceConfig.connectorConfig.getIdleTimeout() <= 0) {
+            log.warn("idleTimeout must be > 0, your config value is {}, idleTimeout will be reset {}", sourceConfig.connectorConfig.getIdleTimeout(),
+                DEFAULT_TIMEOUT);
+            sourceConfig.connectorConfig.setIdleTimeout(DEFAULT_TIMEOUT);
+        }
         this.server = vertx.createHttpServer(new HttpServerOptions().setPort(this.sourceConfig.connectorConfig.getPort())
             .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())).requestHandler(router);
     }
