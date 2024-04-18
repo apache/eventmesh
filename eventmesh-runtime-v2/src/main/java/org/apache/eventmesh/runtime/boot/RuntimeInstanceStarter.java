@@ -12,6 +12,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
+import com.google.protobuf.Any;
+import com.google.protobuf.StringValue;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,22 +26,18 @@ public class RuntimeInstanceStarter {
         // TODO:添加shutDownHook
 
         try {
-            ConfigService.getInstance()
-                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
-                .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
-
             EventMeshServer server = new EventMeshServer();
             BannerUtil.generateBanner();
             server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    log.info("eventMesh shutting down hook begin.");
+                    log.info("runtime shutting down hook begin.");
                     long start = System.currentTimeMillis();
                     server.shutdown();
                     long end = System.currentTimeMillis();
 
-                    log.info("eventMesh shutdown cost {}ms", end - start);
+                    log.info("runtime shutdown cost {}ms", end - start);
                 } catch (Exception e) {
                     log.error("exception when shutdown.", e);
                 }
@@ -60,27 +59,28 @@ public class RuntimeInstanceStarter {
         StreamObserver<Payload> responseObserver = new StreamObserver<Payload>() {
             @Override
             public void onNext(Payload response) {
-                System.out.println("Received response: " + response.getBody());
+                log.info("runtime receive message: {} ", response);
             }
 
             @Override
             public void onError(Throwable t) {
-                System.out.println("Error: " + t.getMessage());
+                log.error("runtime receive error message: {}", t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("Stream completed");
+                log.info("runtime finished receive message and completed");
             }
         };
 
         // 创建一个请求观察者
         StreamObserver<Payload> requestObserver = stub.invokeBiStream(responseObserver);
-
+        StringValue stringValue = StringValue.newBuilder().setValue("test").build();
+        Any test = Any.pack(stringValue);
         // 发送请求
         for (int i = 0; i < 10; i++) {
             Payload request = Payload.newBuilder()
-                .setBody("t")
+                .setBody(test)
                 .build();
             requestObserver.onNext(request);
         }
