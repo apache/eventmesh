@@ -67,12 +67,6 @@ public class CommonConfiguration {
     @ConfigField(field = "metaStorage.plugin.password")
     private String eventMeshMetaStoragePluginPassword = "";
 
-    @ConfigField(field = "metaStorage.plugin.metaStorageIntervalInMills")
-    private Integer eventMeshMetaStorageIntervalInMills = 10 * 1000;
-
-    @ConfigField(field = "metaStorage.plugin.fetchMetaStorageAddrIntervalInMills")
-    private Integer eventMeshFetchMetaStorageAddrInterval = 10 * 1000;
-
     @ConfigField(field = "metaStorage.plugin.enabled")
     private boolean eventMeshServerMetaStorageEnable = false;
 
@@ -85,11 +79,8 @@ public class CommonConfiguration {
     @ConfigField(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";
 
-    @ConfigField(field = "connector.plugin.type", notEmpty = true)
-    private String eventMeshConnectorPluginType = "rocketmq";
-
     @ConfigField(field = "storage.plugin.type", notEmpty = true)
-    private String eventMeshStoragePluginType = "rocketmq";
+    private String eventMeshStoragePluginType = "standalone";
 
     @ConfigField(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
