@@ -46,8 +46,6 @@ jobs:
             BSD-4-Clause, BSD-4-Clause-UC, NPL-1.0, NPL-1.1, JSON
           # Artifacts with multiple licenses, where at least one license is compatible with Apache 2.0, are allowed.
           # TODO This attribute can be removed after https://github.com/actions/dependency-review-action/issues/670 is resolved.
-          # TODO logback can be removed after merging https://github.com/apache/eventmesh/pull/4719
           allow-dependencies-licenses: >
             pkg:maven/com.rabbitmq/amqp-client,
-            pkg:maven/ch.qos.logback/logback-classic, pkg:maven/ch.qos.logback/logback-core,
             pkg:maven/javax.xml.stream/stax-api
