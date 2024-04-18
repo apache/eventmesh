@@ -31,5 +31,8 @@ connectorConfig:
   path: /test
   ssl: false
   webhook: true
-  idleTimeout: 5000   # timeunit: ms
-  connectionTimeout: 5000   # timeunit: ms
+  keepAlive: true
+  keepAliveTimeout: 60000
+  idleTimeout: 15000   # timeunit: ms, recommended scope: common(5s - 10s), webhook(15s - 60s)
+  connectionTimeout: 5000   # timeunit: ms, recommended scope: 5 - 10s
+  maxConnectionPoolSize: 10

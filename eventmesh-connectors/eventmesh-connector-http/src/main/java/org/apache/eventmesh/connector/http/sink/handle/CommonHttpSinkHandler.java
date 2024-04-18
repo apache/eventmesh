@@ -56,7 +56,7 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
     private final BlockingQueue<JSONObject> receivedDataQueue;
 
     public CommonHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
-        SinkConnectorConfig.fillDefault(sinkConnectorConfig);
+        SinkConnectorConfig.populateFieldsWithDefaults(sinkConnectorConfig);
         this.connectorConfig = sinkConnectorConfig;
         this.receivedDataQueue = this.connectorConfig.isWebhook() ? new LinkedBlockingQueue<>() : null;
         type = String.format("%s.%s.%s",
@@ -100,15 +100,16 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
 
     private void doInitWebClient() {
         final Vertx vertx = Vertx.vertx();
-        // TODO add more configurations
         WebClientOptions options = new WebClientOptions()
             .setDefaultHost(this.connectorConfig.getHost())
             .setDefaultPort(this.connectorConfig.getPort())
             .setSsl(this.connectorConfig.isSsl())
+            .setKeepAlive(this.connectorConfig.isKeepAlive())
+            .setKeepAliveTimeout(this.connectorConfig.getKeepAliveTimeout() / 1000)
             .setIdleTimeout(this.connectorConfig.getIdleTimeout())
             .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
-            .setConnectTimeout(this.connectorConfig.getConnectionTimeout());
-
+            .setConnectTimeout(this.connectorConfig.getConnectionTimeout())
+            .setMaxPoolSize(this.connectorConfig.getMaxConnectionPoolSize());
         this.webClient = WebClient.create(vertx, options);
     }
 
@@ -116,9 +117,8 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
     @Override
     public void handle(ConnectRecord record) {
         // create headers
-        MultiMap headers = HttpHeaders.headers();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8");
-        headers.add(HttpHeaderNames.USER_AGENT, "EventMesh-Sink-Connector");
+        MultiMap headers = HttpHeaders.headers()
+            .set(HttpHeaderNames.ACCEPT, "application/json; charset=utf-8");
 
         // convert ConnectRecord to HttpConnectRecord
         HttpConnectRecord httpConnectRecord = convertToHttpConnectRecord(record);

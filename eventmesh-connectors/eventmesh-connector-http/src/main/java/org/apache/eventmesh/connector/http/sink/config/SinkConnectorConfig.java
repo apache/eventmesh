@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.http.sink.config;
 
+import io.vertx.core.http.HttpClientOptions;
+
 import lombok.Data;
 
 @Data
@@ -36,36 +38,40 @@ public class SinkConnectorConfig {
     // whether the connector is a webhook connector
     private boolean webhook;
 
-    // timeunit: ms
-    private int connectionTimeout;
+    // keepAlive, default true
+    private boolean keepAlive = HttpClientOptions.DEFAULT_KEEP_ALIVE;
 
-    // timeunit: ms
+    // timeunit: ms, default 60000ms
+    private int keepAliveTimeout = HttpClientOptions.DEFAULT_KEEP_ALIVE_TIMEOUT * 1000; // Keep units consistent
+
+    // timeunit: ms, default 5000ms, recommended scope: 5000ms - 10000ms
+    private int connectionTimeout = 5000;
+
+    // timeunit: ms, default 5000ms
     private int idleTimeout;
+
+    // maximum number of HTTP/1 connections a client will pool, default 5
+    private int maxConnectionPoolSize = HttpClientOptions.DEFAULT_MAX_POOL_SIZE;
 
 
     /**
-     * Fill in default values for fields that have no set values
+     * Fill default values if absent (When there are multiple default values for a field)
      *
      * @param config SinkConnectorConfig
      */
-    public static void fillDefault(SinkConnectorConfig config) {
-        // Common HttpSinkHandler default values
+    public static void populateFieldsWithDefaults(SinkConnectorConfig config) {
+        /*
+         * set default values for idleTimeout
+         * recommended scope: common(5s - 10s), webhook(15s - 30s)
+         */
         final int commonHttpIdleTimeout = 5000;
-        final int commonHttpConnectionTimeout = 5000;
-
-        // Webhook HttpSinkHandler default values
-        final int webhookHttpIdleTimeout = 10000;
-        final int webhookHttpConnectionTimeout = 15000;
+        final int webhookHttpIdleTimeout = 15000;
 
         // Set default values for idleTimeout
         if (config.getIdleTimeout() == 0) {
             int idleTimeout = config.isWebhook() ? webhookHttpIdleTimeout : commonHttpIdleTimeout;
             config.setIdleTimeout(idleTimeout);
         }
-        // Set default values for connectionTimeout
-        if (config.getConnectionTimeout() == 0) {
-            int connectionTimeout = config.isWebhook() ? webhookHttpConnectionTimeout : commonHttpConnectionTimeout;
-            config.setConnectionTimeout(connectionTimeout);
-        }
+
     }
 }

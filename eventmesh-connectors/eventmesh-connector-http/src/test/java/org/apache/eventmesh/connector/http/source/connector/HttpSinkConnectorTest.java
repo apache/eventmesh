@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.http.source.connector;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockserver.model.HttpRequest.request;
 
@@ -31,6 +30,8 @@ import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,8 @@ import org.mockserver.client.MockServerClient;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
+import org.mockserver.model.MediaType;
+import org.mockserver.verify.VerificationTimes;
 
 import io.vertx.core.http.HttpMethod;
 
@@ -50,33 +53,19 @@ public class HttpSinkConnectorTest {
 
     private HttpSinkConfig sinkConfig;
 
-
     private ClientAndServer mockServer;
 
     @BeforeEach
     void before() throws Exception {
+        // init sinkConnector
         this.sinkConnector = new HttpSinkConnector();
         this.sinkConfig = (HttpSinkConfig) ConfigUtil.parse(sinkConnector.configClass());
-
-        // start mockServer
-        mockServer = ClientAndServer.startClientAndServer(this.sinkConfig.connectorConfig.getPort());
-    }
-
-    @AfterEach
-    void after() throws Exception {
-        this.sinkConnector.stop();
-    }
-
-    @Test
-    void testPut() throws Exception {
         this.sinkConnector.init(this.sinkConfig);
         this.sinkConnector.start();
 
-        // Mock the response
-        JSONObject responseBody = new JSONObject();
-        responseBody.put("code", 0);
-        responseBody.put("message", "success");
-        responseBody.put("data", new JSONObject());
+        // start mockServer
+        mockServer = ClientAndServer.startClientAndServer(this.sinkConfig.connectorConfig.getPort());
+        // mockServer response
         new MockServerClient(this.sinkConfig.connectorConfig.getHost(), this.sinkConfig.connectorConfig.getPort())
             .when(
                 request()
@@ -85,44 +74,63 @@ public class HttpSinkConnectorTest {
             )
             .respond(
                 HttpResponse.response()
+                    .withContentType(MediaType.APPLICATION_JSON)
                     .withStatusCode(200)
-                    .withBody(responseBody.toJSONString())
+                    .withBody(new JSONObject()
+                        .fluentPut("code", 0)
+                        .fluentPut("message", "success")
+                        .toJSONString()
+                    )
+                    .withDelay(TimeUnit.SECONDS, 10)
             );
+    }
 
+    @AfterEach
+    void after() throws Exception {
+        this.sinkConnector.stop();
+        this.mockServer.close();
+    }
+
+    @Test
+    void testPut() throws Exception {
         // Create a list of ConnectRecord
         final int times = 10;
         List<ConnectRecord> connectRecords = new ArrayList<>();
         for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            long timestamp = System.currentTimeMillis();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                timestamp, "test-http " + i);
-            connectRecords.add(connectRecord);
+            ConnectRecord record = createConnectRecord();
+            connectRecords.add(record);
         }
-
+        // Put ConnectRecord
         sinkConnector.put(connectRecords);
-        // Sleeps for 3 seconds, waiting for the webClient to finish sending all requests
-        Thread.sleep(3000);
 
-        HttpRequest[] allRequests = mockServer.retrieveRecordedRequests(null);
-        // Determine the total number of requests
-        assertEquals(times, allRequests.length);
+        // sleep 15s
+        Thread.sleep(15000);
 
-        for (int i = 0; i < times; i++) {
-            HttpRequest actualRequest = allRequests[i];
-            // Determine the request method
-            assertEquals(HttpMethod.POST.name(), actualRequest.getMethod().getValue());
-        }
+        // verify request
+        new MockServerClient(this.sinkConfig.connectorConfig.getHost(), this.sinkConfig.connectorConfig.getPort())
+            .verify(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.POST.name())
+                    .withPath(this.sinkConfig.connectorConfig.getPath()),
+                VerificationTimes.exactly(times)
+            );
 
+        // verify data
         CommonHttpSinkHandler sinkHandler = (CommonHttpSinkHandler) sinkConnector.getSinkHandler();
-        Object[] allReceivedData = sinkHandler.getAllReceivedData();
-        for (int i = 0; i < times; i++) {
-            JSONObject o = (JSONObject) allReceivedData[i];
-            // Determine the response body
-            assertEquals(responseBody, o);
+        Object[] receivedDataArr = sinkHandler.getAllReceivedData();
+        assertEquals(times, receivedDataArr.length);
+        for (Object receivedData : receivedDataArr) {
+            JSONObject receivedDataJson = (JSONObject) receivedData;
+            assertEquals(0, receivedDataJson.getInteger("code"));
+            assertEquals("success", receivedDataJson.getString("message"));
         }
 
-        mockServer.close();
+    }
+
+    private ConnectRecord createConnectRecord() {
+        RecordPartition partition = new RecordPartition();
+        RecordOffset offset = new RecordOffset();
+        long timestamp = System.currentTimeMillis();
+        return new ConnectRecord(partition, offset, timestamp, UUID.randomUUID().toString());
     }
 }
