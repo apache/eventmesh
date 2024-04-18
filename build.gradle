@@ -141,6 +141,7 @@ tasks.register('dist') {
     subprojects.forEach { subProject ->
         dependsOn("${subProject.path}:jar")
     }
+    dependsOn('generateDistLicense', 'generateDistNotice')
     def includedProjects =
             ["eventmesh-common",
              "eventmesh-meta:eventmesh-meta-api",
@@ -254,7 +255,6 @@ cyclonedxBom {
     includeConfigs = ["runtimeClasspath"]
 }
 
-// TODO depend 'dist' on 'generateDistLicense'
 tasks.register('generateDistLicense') {
     dependsOn('cyclonedxBom') // Task from 'org.cyclonedx.bom' plugin
     doLast {
@@ -326,7 +326,6 @@ tasks.register('generateDistLicense') {
     }
 }
 
-// TODO depend 'dist' on 'generateDistNotice'
 tasks.register('generateDistNotice') {
     dependsOn('generateLicenseReport') // Task from 'com.github.jk1.dependency-license-report' plugin
     doLast {
@@ -370,6 +369,9 @@ subprojects {
         delete 'build'
         delete 'dist'
     }
+
+    // Print all dependencies trees, useful for finding artifacts
+    tasks.register('printAllDependencyTrees', DependencyReportTask) {}
 
     jacoco {
         toolVersion = "0.8.6"

@@ -1027,19 +1027,6 @@ ResolverUtil.java
 Copyright 2005-2006 Tim Fennell
 =======================================================================
 
-log4j-slf4j-impl-2.22.1 NOTICE
-
-=======================================================================
-
-Apache Log4j SLF4J Binding
-Copyright 1999-2023 The Apache Software Foundation
-
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/).
-
-=======================================================================
-
 log4j-slf4j2-impl-2.22.1 NOTICE
 
 =======================================================================
@@ -2079,18 +2066,6 @@ spring-boot-starter-json-2.7.10 NOTICE
 
 Spring Boot 2.7.10
 Copyright (c) 2012-2023 VMware, Inc.
-
-This product is licensed to you under the Apache License, Version 2.0
-(the "License"). You may not use this product except in compliance with
-the License.
-=======================================================================
-
-spring-boot-starter-logging-2.5.9 NOTICE
-
-=======================================================================
-
-Spring Boot 2.5.9
-Copyright (c) 2012-2022 Pivotal, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with

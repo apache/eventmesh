@@ -367,17 +367,11 @@ json-path 2.7.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.
 json-smart 2.4.7 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 json-utils 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jsr305 3.0.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-jul-to-slf4j 1.7.33 licensed under 'MIT'. For details see: licenses/MIT.txt
 kafka-clients 3.0.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 listenablefuture 9999.0-empty-to-avoid-conflict-with-guava licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 log4j-api 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 log4j-core 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-log4j-slf4j-impl 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 log4j-slf4j2-impl 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-logback-classic 1.2.10 licensed under 'EPL-1.0'. For details see: licenses/EPL-1.0.txt
-logback-classic 1.2.10 licensed under 'GNU Lesser General Public License'. For details see: licenses/GNU Lesser General Public License.txt
-logback-core 1.2.10 licensed under 'EPL-1.0'. For details see: licenses/EPL-1.0.txt
-logback-core 1.2.10 licensed under 'GNU Lesser General Public License'. For details see: licenses/GNU Lesser General Public License.txt
 lz4-java 1.7.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 lz4-java 1.8.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 metrics-annotation 4.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -388,7 +382,6 @@ metrics-spi 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apach
 mongodb-driver 3.12.11 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 mongodb-driver-core 3.12.11 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 mysql-binlog-connector-java 0.28.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-mysql-connector-j 8.0.32 licensed under 'The GNU General Public License, v2 with Universal FOSS Exception, v1.0'. For details see: licenses/The GNU General Public License, v2 with Universal FOSS Exception, v1.0.txt
 nacos-auth-plugin 2.2.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 nacos-client 2.2.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 nacos-encryption-plugin 2.2.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -544,7 +537,6 @@ spring-boot-autoconfigure 2.7.10 licensed under 'Apache-2.0'. For details see: l
 spring-boot-starter 2.5.9 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 spring-boot-starter 2.7.10 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 spring-boot-starter-json 2.7.10 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-spring-boot-starter-logging 2.5.9 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 spring-boot-starter-tomcat 2.7.10 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 spring-boot-starter-validation 2.5.9 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 spring-boot-starter-web 2.7.10 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
