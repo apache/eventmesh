@@ -24,7 +24,8 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: [ "version-update:semver-major" ]
+        # Skip patch updates temporarily to reduce PR noise
+        update-types: [ "version-update:semver-major", "version-update:semver-patch" ]
   - package-ecosystem: "gomod"
     directory: "eventmesh-sdks/eventmesh-sdk-go"
     schedule:
