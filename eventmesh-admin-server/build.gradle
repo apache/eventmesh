@@ -1,0 +1,16 @@
+dependencies {
+	implementation project(":eventmesh-spi")
+	implementation project(":eventmesh-common")
+	implementation "com.alibaba.nacos:nacos-client"
+	implementation ("org.springframework.boot:spring-boot-starter-web") {
+		exclude group: "org.springframework.boot" ,module: "spring-boot-starter-tomcat"
+	}
+	implementation 'org.springframework.boot:spring-boot-starter-jetty'
+
+	implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter"
+	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
+	implementation "com.alibaba:druid-spring-boot-starter"
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+}
+
