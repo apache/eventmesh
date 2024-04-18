@@ -112,8 +112,7 @@ public class HttpSinkConnectorTest {
                 HttpRequest.request()
                     .withMethod(HttpMethod.POST.name())
                     .withPath(this.sinkConfig.connectorConfig.getPath()),
-                VerificationTimes.exactly(times)
-            );
+                VerificationTimes.exactly(times));
 
         // verify data
         CommonHttpSinkHandler sinkHandler = (CommonHttpSinkHandler) sinkConnector.getSinkHandler();

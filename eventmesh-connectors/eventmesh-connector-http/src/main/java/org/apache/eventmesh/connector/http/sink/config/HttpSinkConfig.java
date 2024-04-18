@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.http.sink.config;
 
-
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
 import lombok.Data;
