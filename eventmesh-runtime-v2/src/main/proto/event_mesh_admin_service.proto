@@ -20,6 +20,6 @@ service AdminBiStreamService {
 }
 
 service AdminService {
-  rpc invokeBiStream(Payload) returns (Payload){}
+  rpc invoke(Payload) returns (Payload){}
 }
 
