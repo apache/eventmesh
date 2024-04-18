@@ -154,15 +154,11 @@ json-path-2.7.0.jar
 json-smart-2.4.7.jar
 json-utils-2.20.29.jar
 jsr305-3.0.2.jar
-jul-to-slf4j-1.7.33.jar
 kafka-clients-3.0.0.jar
 listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
 log4j-api-2.22.1.jar
 log4j-core-2.22.1.jar
-log4j-slf4j-impl-2.22.1.jar
 log4j-slf4j2-impl-2.22.1.jar
-logback-classic-1.2.10.jar
-logback-core-1.2.10.jar
 lz4-java-1.7.1.jar
 lz4-java-1.8.0.jar
 metrics-annotation-4.1.0.jar
@@ -325,7 +321,6 @@ spring-beans-5.3.20.jar
 spring-boot-2.5.9.jar
 spring-boot-autoconfigure-2.5.9.jar
 spring-boot-starter-2.5.9.jar
-spring-boot-starter-logging-2.5.9.jar
 spring-boot-starter-validation-2.5.9.jar
 spring-context-5.3.15.jar
 spring-core-5.3.20.jar

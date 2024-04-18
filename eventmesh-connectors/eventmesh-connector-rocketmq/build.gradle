@@ -34,7 +34,16 @@ List rocketmq = [
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
-    implementation rocketmq
+    /*
+     * The exclusions can be removed after this issue is fixed:
+     * https://github.com/apache/rocketmq/issues/5347
+     */
+    rocketmq.each {
+        implementation(it) {
+            exclude group: 'ch.qos.logback', module: 'logback-classic'
+        }
+    }
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-core"
