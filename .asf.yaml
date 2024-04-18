@@ -17,7 +17,7 @@
 
 github:
   description: EventMesh is a new generation serverless event middleware for building distributed event-driven applications.
-  homepage: https://eventmesh.apache.org/
+  homepage: https://eventmesh.apache.org
   labels:
     - pubsub
     - event-mesh
