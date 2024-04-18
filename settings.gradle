@@ -127,4 +127,4 @@ include 'eventmesh-retry'
 include 'eventmesh-retry:eventmesh-retry-api'
 include 'eventmesh-retry:eventmesh-retry-rocketmq'
 include 'eventmesh-runtime-v2'
-
+include 'eventmesh-admin-server'
