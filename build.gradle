@@ -529,7 +529,7 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
             dependency "com.jayway.jsonpath:json-path:2.7.0"
 
-            dependency "org.springframework.boot:spring-boot-starter-web:2.7.10"
+            dependency "org.springframework.boot:spring-boot-starter-web:2.7.12"
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "org.junit.jupiter:junit-jupiter:5.6.0"
@@ -574,9 +574,12 @@ subprojects {
             dependency "software.amazon.awssdk:s3:2.20.29"
             dependency "com.github.rholder:guava-retrying:2.0.0"
 
-            dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2"
+            dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.1"
             dependency "com.alibaba:druid-spring-boot-starter:1.2.22"
             dependency "org.springframework.boot:spring-boot-starter-jetty:2.7.10"
+
+            dependency "com.mysql:mysql-connector-j:8.0.33"
+
         }
     }
 }
