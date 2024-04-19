@@ -17,12 +17,25 @@
 
 package org.apache.eventmesh.metrics.api.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.util.function.Supplier;
 
-@Data
-@AllArgsConstructor
-public class RetrySummaryMetrics {
+public class ObservableLongGaugeMetric extends AbstractObservableLongMetric {
 
-    private long pendingRetryTimeouts;
+    public ObservableLongGaugeMetric(InstrumentFurther further, String metricName, Supplier<Long> supplier) {
+        super(further, metricName, supplier);
+    }
+
+    public ObservableLongGaugeMetric(String metricName) {
+        super(null, metricName);
+    }
+
+    public ObservableLongGaugeMetric() {
+        super(null, null);
+    }
+
+    @Override
+    public InstrumentType getInstrumentType() {
+        return InstrumentType.OBSERVABLE_LONG_GAUGE;
+    }
+
 }

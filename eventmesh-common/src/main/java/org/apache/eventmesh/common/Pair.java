@@ -15,31 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.common;
+package org.apache.eventmesh.common;
 
-public class Pair<T1, T2> {
+public class Pair<Left, Right> {
 
-    private T1 object1;
-    private T2 object2;
+    private Left left;
 
-    public Pair(T1 object1, T2 object2) {
-        this.object1 = object1;
-        this.object2 = object2;
+    private Right right;
+
+    public Pair(Left left, Right right) {
+        this.left = left;
+        this.right = right;
     }
 
-    public T1 getObject1() {
-        return object1;
+    public Left getLeft() {
+        return left;
     }
 
-    public void setObject1(T1 object1) {
-        this.object1 = object1;
+    public void setLeft(Left left) {
+        this.left = left;
     }
 
-    public T2 getObject2() {
-        return object2;
+    public Right getRight() {
+        return right;
     }
 
-    public void setObject2(T2 object2) {
-        this.object2 = object2;
+    public void setRight(Right right) {
+        this.right = right;
     }
 }

@@ -18,13 +18,13 @@
 package org.apache.eventmesh.runtime.admin.handler.v1;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
-import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.admin.response.v1.GetMetricsResponse;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
+import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
+import org.apache.eventmesh.runtime.metrics.tcp.TcpMetrics;
 
 import java.io.IOException;
 
@@ -45,8 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 @EventMeshHttpHandler(path = "/metrics")
 public class MetricsHandler extends AbstractHttpHandler {
 
-    private final HttpSummaryMetrics httpSummaryMetrics;
-    private final TcpSummaryMetrics tcpSummaryMetrics;
+    private final HttpMetrics httpMetrics;
+    private final TcpMetrics tcpMetrics;
 
     /**
      * Constructs a new instance with the provided EventMesh server instance.
@@ -57,54 +57,56 @@ public class MetricsHandler extends AbstractHttpHandler {
     public MetricsHandler(EventMeshHTTPServer eventMeshHTTPServer,
         EventMeshTCPServer eventMeshTcpServer) {
         super();
-        this.httpSummaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
-        this.tcpSummaryMetrics = eventMeshTcpServer.getEventMeshTcpMonitor().getTcpSummaryMetrics();
+        this.httpMetrics = eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics();
+        this.tcpMetrics = eventMeshTcpServer.getEventMeshTcpMetricsManager().getTcpMetrics();
     }
 
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) throws IOException {
         GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
-            httpSummaryMetrics.maxHTTPTPS(),
-            httpSummaryMetrics.avgHTTPTPS(),
-            httpSummaryMetrics.maxHTTPCost(),
-            httpSummaryMetrics.avgHTTPCost(),
-            httpSummaryMetrics.avgHTTPBodyDecodeCost(),
-            httpSummaryMetrics.getHttpDiscard(),
-            httpSummaryMetrics.maxSendBatchMsgTPS(),
-            httpSummaryMetrics.avgSendBatchMsgTPS(),
-            httpSummaryMetrics.getSendBatchMsgNumSum(),
-            httpSummaryMetrics.getSendBatchMsgFailNumSum(),
-            httpSummaryMetrics.getSendBatchMsgFailRate(),
-            httpSummaryMetrics.getSendBatchMsgDiscardNumSum(),
-            httpSummaryMetrics.maxSendMsgTPS(),
-            httpSummaryMetrics.avgSendMsgTPS(),
-            httpSummaryMetrics.getSendMsgNumSum(),
-            httpSummaryMetrics.getSendMsgFailNumSum(),
-            httpSummaryMetrics.getSendMsgFailRate(),
-            httpSummaryMetrics.getReplyMsgNumSum(),
-            httpSummaryMetrics.getReplyMsgFailNumSum(),
-            httpSummaryMetrics.maxPushMsgTPS(),
-            httpSummaryMetrics.avgPushMsgTPS(),
-            httpSummaryMetrics.getHttpPushMsgNumSum(),
-            httpSummaryMetrics.getHttpPushFailNumSum(),
-            httpSummaryMetrics.getHttpPushMsgFailRate(),
-            httpSummaryMetrics.maxHTTPPushLatency(),
-            httpSummaryMetrics.avgHTTPPushLatency(),
-            httpSummaryMetrics.getBatchMsgQueueSize(),
-            httpSummaryMetrics.getSendMsgQueueSize(),
-            httpSummaryMetrics.getPushMsgQueueSize(),
-            httpSummaryMetrics.getHttpRetryQueueSize(),
-            httpSummaryMetrics.avgBatchSendMsgCost(),
-            httpSummaryMetrics.avgSendMsgCost(),
-            httpSummaryMetrics.avgReplyMsgCost(),
-            tcpSummaryMetrics.getRetrySize(),
-            tcpSummaryMetrics.getClient2eventMeshTPS(),
-            tcpSummaryMetrics.getEventMesh2mqTPS(),
-            tcpSummaryMetrics.getMq2eventMeshTPS(),
-            tcpSummaryMetrics.getEventMesh2clientTPS(),
-            tcpSummaryMetrics.getAllTPS(),
-            tcpSummaryMetrics.getAllConnections(),
-            tcpSummaryMetrics.getSubTopicNum());
+            httpMetrics.maxHTTPTPS(),
+            httpMetrics.avgHTTPTPS(),
+            httpMetrics.maxHTTPCost(),
+            httpMetrics.avgHTTPCost(),
+            httpMetrics.avgHTTPBodyDecodeCost(),
+            httpMetrics.getHttpDiscard(),
+            httpMetrics.maxSendBatchMsgTPS(),
+            httpMetrics.avgSendBatchMsgTPS(),
+            httpMetrics.getSendBatchMsgNumSum(),
+            httpMetrics.getSendBatchMsgFailNumSum(),
+            httpMetrics.getSendBatchMsgFailRate(),
+            httpMetrics.getSendBatchMsgDiscardNumSum(),
+            httpMetrics.maxSendMsgTPS(),
+            httpMetrics.avgSendMsgTPS(),
+            httpMetrics.getSendMsgNumSum(),
+            httpMetrics.getSendMsgFailNumSum(),
+            httpMetrics.getSendMsgFailRate(),
+            httpMetrics.getReplyMsgNumSum(),
+            httpMetrics.getReplyMsgFailNumSum(),
+            httpMetrics.maxPushMsgTPS(),
+            httpMetrics.avgPushMsgTPS(),
+            httpMetrics.getHttpPushMsgNumSum(),
+            httpMetrics.getHttpPushFailNumSum(),
+            httpMetrics.getHttpPushMsgFailRate(),
+            httpMetrics.maxHTTPPushLatency(),
+            httpMetrics.avgHTTPPushLatency(),
+            httpMetrics.getBatchMsgQueueSize(),
+            httpMetrics.getSendMsgQueueSize(),
+            httpMetrics.getPushMsgQueueSize(),
+            httpMetrics.getHttpRetryQueueSize(),
+            httpMetrics.avgBatchSendMsgCost(),
+            httpMetrics.avgSendMsgCost(),
+            httpMetrics.avgReplyMsgCost(),
+
+            tcpMetrics.getRetrySize(),
+            tcpMetrics.getClient2eventMeshTPS(),
+            tcpMetrics.getEventMesh2mqTPS(),
+            tcpMetrics.getMq2eventMeshTPS(),
+            tcpMetrics.getEventMesh2clientTPS(),
+            tcpMetrics.getAllTPS(),
+            tcpMetrics.getAllConnections(),
+            tcpMetrics.getSubTopicNum()
+        );
         String result = JsonUtils.toJSONString(getMetricsResponse);
         writeJson(ctx, result);
     }

@@ -61,7 +61,7 @@ public class PublishCloudEventsProcessor extends AbstractPublishCloudEventProces
 
         SendMessageContext sendMessageContext = new SendMessageContext(seqNum, cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
-        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
+        eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
@@ -71,7 +71,7 @@ public class PublishCloudEventsProcessor extends AbstractPublishCloudEventProces
                 long endTime = System.currentTimeMillis();
                 log.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId);
-                eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
+                eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToClient(EventMeshCloudEventUtils.getIp(message));
             }
 
             @Override

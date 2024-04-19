@@ -25,16 +25,23 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
+import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
+import org.apache.eventmesh.runtime.metrics.EventMeshMetricsManager;
+import org.apache.eventmesh.runtime.metrics.MetricsManager;
 import org.apache.eventmesh.runtime.storage.StorageResource;
 import org.apache.eventmesh.runtime.trace.Trace;
+
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,6 +78,8 @@ public class EventMeshServer {
 
     private EventMeshHTTPServer eventMeshHTTPServer = null;
 
+    private EventMeshMetricsManager eventMeshMetricsManager;
+
     public EventMeshServer() {
 
         // Initialize configuration
@@ -105,6 +114,13 @@ public class EventMeshServer {
         if (BOOTSTRAP_LIST.isEmpty()) {
             BOOTSTRAP_LIST.add(new EventMeshTcpBootstrap(this));
         }
+
+        List<String> metricsPluginTypes = configuration.getEventMeshMetricsPluginType();
+        if (CollectionUtils.isNotEmpty(metricsPluginTypes)) {
+            List<MetricsRegistry> metricsRegistries = metricsPluginTypes.stream().map(metric -> MetricsPluginFactory.getMetricsRegistry(metric))
+                .collect(Collectors.toList());
+            eventMeshMetricsManager = new EventMeshMetricsManager(metricsRegistries);
+        }
     }
 
     public void init() throws Exception {
@@ -133,6 +149,26 @@ public class EventMeshServer {
             }
         }
 
+        if (Objects.nonNull(eventMeshTCPServer)) {
+            MetricsManager metricsManager = eventMeshTCPServer.getEventMeshTcpMetricsManager();
+            addMetricsManagerAndMetrics(metricsManager);
+        }
+
+        if (Objects.nonNull(eventMeshGrpcServer)) {
+            MetricsManager metricsManager = eventMeshGrpcServer.getEventMeshGrpcMetricsManager();
+            addMetricsManagerAndMetrics(metricsManager);
+        }
+
+        if (Objects.nonNull(eventMeshHTTPServer)) {
+            MetricsManager metricsManager = eventMeshHTTPServer.getEventMeshHttpMetricsManager();
+            addMetricsManagerAndMetrics(metricsManager);
+        }
+
+        if (Objects.nonNull(eventMeshMetricsManager)) {
+            eventMeshMetricsManager.init();
+        }
+
+
         if (Objects.nonNull(eventMeshTCPServer) && Objects.nonNull(eventMeshHTTPServer) && Objects.nonNull(eventMeshGrpcServer)) {
             adminBootstrap = new EventMeshAdminBootstrap(this);
             adminBootstrap.init();
@@ -143,6 +179,13 @@ public class EventMeshServer {
 
         serviceState = ServiceState.INITED;
         log.info(SERVER_STATE_MSG, serviceState);
+    }
+
+    private void addMetricsManagerAndMetrics(MetricsManager metricsManager) {
+        if (Objects.nonNull(metricsManager)) {
+            this.eventMeshMetricsManager.addMetricManager(metricsManager);
+            this.eventMeshMetricsManager.addMetrics(metricsManager.getMetrics());
+        }
     }
 
     public void start() throws Exception {
