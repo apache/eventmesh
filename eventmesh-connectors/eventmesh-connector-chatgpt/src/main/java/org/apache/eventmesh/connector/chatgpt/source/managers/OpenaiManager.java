@@ -54,7 +54,7 @@ public class OpenaiManager {
 
     private String chatCompletionRequestTemplateStr;
 
-    private static final int DEFAULT_TIMEOUT = 30;
+    private static final int DEFAULT_TIMEOUT = 0;
 
     public OpenaiManager(ChatGPTSourceConfig sourceConfig) {
         initOpenAi(sourceConfig);
@@ -79,8 +79,8 @@ public class OpenaiManager {
 
     private void initOpenAi(ChatGPTSourceConfig sourceConfig) {
         OpenaiConfig openaiConfig = sourceConfig.getOpenaiConfig();
-        if (openaiConfig.getTimeout() <= 0) {
-            log.warn("openaiTimeout must be > 0, your config value is {}, openaiTimeout will be reset {}", openaiConfig.getTimeout(),
+        if (openaiConfig.getTimeout() < 0) {
+            log.warn("openaiTimeout must be >= 0, your config value is {}, openaiTimeout will be reset {}", openaiConfig.getTimeout(),
                 DEFAULT_TIMEOUT);
             openaiConfig.setTimeout(DEFAULT_TIMEOUT);
         }

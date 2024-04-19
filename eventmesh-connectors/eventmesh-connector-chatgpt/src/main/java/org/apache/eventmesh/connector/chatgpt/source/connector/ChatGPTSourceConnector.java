@@ -74,7 +74,10 @@ public class ChatGPTSourceConnector implements Source {
     private String parsePromptTemplateStr;
     private ChatHandler chatHandler;
     private ParseHandler parseHandler;
-    private static final int DEFAULT_TIMEOUT = 30;
+    private static final int DEFAULT_TIMEOUT = 0;
+
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String TEXT_PLAIN = "text/plain";
 
 
     @Override
@@ -139,8 +142,8 @@ public class ChatGPTSourceConnector implements Source {
                 handleError(e, ctx);
             }
         });
-        if (sourceConfig.connectorConfig.getIdleTimeout() <= 0) {
-            log.warn("idleTimeout must be > 0, your config value is {}, idleTimeout will be reset {}", sourceConfig.connectorConfig.getIdleTimeout(),
+        if (sourceConfig.connectorConfig.getIdleTimeout() < 0) {
+            log.warn("idleTimeout must be >= 0, your config value is {}, idleTimeout will be reset {}", sourceConfig.connectorConfig.getIdleTimeout(),
                 DEFAULT_TIMEOUT);
             sourceConfig.connectorConfig.setIdleTimeout(DEFAULT_TIMEOUT);
         }
@@ -150,8 +153,8 @@ public class ChatGPTSourceConnector implements Source {
 
 
     private void validateRequestDTO(ChatGPTRequestDTO bodyObject) {
-        if (bodyObject.getSubject() == null || bodyObject.getDataContentType() == null || bodyObject.getText() == null) {
-            throw new IllegalArgumentException("Attributes 'subject', 'datacontenttype', and 'text' cannot be null");
+        if (bodyObject.getSubject() == null || bodyObject.getText() == null) {
+            throw new IllegalArgumentException("Attributes 'subject', and 'text' cannot be null");
         }
     }
 
@@ -177,11 +180,20 @@ public class ChatGPTSourceConnector implements Source {
     private CloudEvent invokeHandler(ChatGPTRequestType chatgptRequestType, ChatGPTRequestDTO bodyObject) {
         switch (chatgptRequestType) {
             case CHAT:
+                if (StringUtils.isBlank(bodyObject.getDataContentType())) {
+                    bodyObject.setDataContentType(TEXT_PLAIN);
+                }
                 return chatHandler.invoke(bodyObject);
             case PARSE:
                 if (StringUtils.isBlank(parsePromptTemplateStr)) {
                     throw new IllegalStateException(
                         "the request type of PARSE must be configured with the correct parsePromptFileName in source-config.yml");
+                }
+                if (StringUtils.isBlank(bodyObject.getFields())) {
+                    throw new IllegalStateException("Attributes 'fields' cannot be null in PARSE");
+                }
+                if (StringUtils.isBlank(bodyObject.getDataContentType())) {
+                    bodyObject.setDataContentType(APPLICATION_JSON);
                 }
                 return parseHandler.invoke(bodyObject);
             default:

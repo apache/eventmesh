@@ -28,7 +28,7 @@ public class ChatGPTSourceConnectorConfig {
 
     private int port = 3756;
 
-    private int idleTimeout = 30;
+    private int idleTimeout = 0;
 
     private boolean proxyEnable = false;
 
