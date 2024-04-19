@@ -5,5 +5,5 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/eventmesh/admin")
-public class ServerController {
+public class HttpServer {
 }

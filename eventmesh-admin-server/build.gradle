@@ -3,14 +3,23 @@ dependencies {
 	implementation project(":eventmesh-common")
 	implementation "com.alibaba.nacos:nacos-client"
 	implementation ("org.springframework.boot:spring-boot-starter-web") {
-		exclude group: "org.springframework.boot" ,module: "spring-boot-starter-tomcat"
+		exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
 	}
 	implementation 'org.springframework.boot:spring-boot-starter-jetty'
+	implementation "io.grpc:grpc-core"
+	implementation "io.grpc:grpc-protobuf"
+	implementation "io.grpc:grpc-stub"
+
 
 	implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter"
 	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
 	implementation "com.alibaba:druid-spring-boot-starter"
+	runtimeOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+}
+
+configurations.implementation  {
+	exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
 }
 
