@@ -16,7 +16,7 @@ public class AdminServer implements Admin {
         this.registerInfo = registerInfo;
     }
 
-    public static final String ConfigurationKey = "admin-server";
+
     @Override
     public boolean createOrUpdateTask(Task task) {
         return false;

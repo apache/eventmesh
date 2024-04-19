@@ -1,23 +1,31 @@
-package com.apache.eventmesh.admin.server.registry;
+package org.apache.eventmesh.registry.nacos;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.Event;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
-import com.apache.eventmesh.admin.server.AdminException;
-import com.apache.eventmesh.admin.server.AdminServer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.registry.QueryInstances;
+import org.apache.eventmesh.registry.RegisterServerInfo;
+import org.apache.eventmesh.registry.RegistryListener;
+import org.apache.eventmesh.registry.RegistryService;
+import org.apache.eventmesh.registry.exception.RegistryException;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,7 +35,7 @@ import java.util.stream.Collectors;
 public class NacosDiscoveryService implements RegistryService {
     private final AtomicBoolean initFlag = new AtomicBoolean(false);
 
-    private EventMeshAdminServerConfiguration adminConf;
+    private CommonConfiguration configuration;
 
     private NacosRegistryConfiguration nacosConf;
 
@@ -39,19 +47,17 @@ public class NacosDiscoveryService implements RegistryService {
     private static final String GROUP_NAME = "admin";
 
     @Override
-    public void init() throws AdminException {
+    public void init() throws RegistryException {
         if (!initFlag.compareAndSet(false, true)) {
             return;
         }
-        CommonConfiguration configuration = ConfigurationContextUtil.get(AdminServer.ConfigurationKey);
-        if (!(configuration instanceof EventMeshAdminServerConfiguration)) {
-            throw new AdminException("registry config instance is null or not match type");
+        configuration = ConfigurationContextUtil.get(RegistryService.ConfigurationKey);
+        if (configuration == null ) {
+            throw new RegistryException("registry config instance is null");
         }
-
-        adminConf = (EventMeshAdminServerConfiguration)configuration;
-        NacosRegistryConfiguration nacosConf = ConfigService.getInstance().buildConfigInstance(NacosRegistryConfiguration.class);
-        if (nacosConf != null) {
-            this.nacosConf = nacosConf;
+        nacosConf = ConfigService.getInstance().buildConfigInstance(NacosRegistryConfiguration.class);
+        if (nacosConf == null) {
+            log.info("nacos registry configuration is null");
         }
         Properties properties = buildProperties();
         // registry
@@ -59,15 +65,15 @@ public class NacosDiscoveryService implements RegistryService {
             this.namingService = NacosFactory.createNamingService(properties);
         } catch (NacosException e) {
             log.error("[NacosRegistryService][start] error", e);
-            throw new AdminException(e.getMessage());
+            throw new RegistryException(e.getMessage());
         }
     }
 
     private Properties buildProperties() {
         Properties properties = new Properties();
-        properties.setProperty(PropertyKeyConst.SERVER_ADDR, adminConf.getRegistryCenterAddr());
-        properties.setProperty(PropertyKeyConst.USERNAME, adminConf.getEventMeshRegistryPluginUsername());
-        properties.setProperty(PropertyKeyConst.PASSWORD, adminConf.getEventMeshRegistryPluginPassword());
+        properties.setProperty(PropertyKeyConst.SERVER_ADDR, configuration.getRegistryAddr());
+        properties.setProperty(PropertyKeyConst.USERNAME, configuration.getEventMeshRegistryPluginUsername());
+        properties.setProperty(PropertyKeyConst.PASSWORD, configuration.getEventMeshRegistryPluginPassword());
         if (nacosConf == null) {
             return properties;
         }
@@ -99,7 +105,7 @@ public class NacosDiscoveryService implements RegistryService {
     }
 
     @Override
-    public void shutdown() throws AdminException {
+    public void shutdown() throws RegistryException {
         if (this.namingService != null) {
             try {
                 namingService.shutDown();
@@ -161,14 +167,20 @@ public class NacosDiscoveryService implements RegistryService {
     }
 
     @Override
-    public boolean register(EventMeshAdminServerRegisterInfo eventMeshRegisterInfo) throws AdminException {
+    public List<RegisterServerInfo> selectInstances(QueryInstances serverInfo) {
+        return null;
+    }
+
+    @Override
+    public boolean register(RegisterServerInfo eventMeshRegisterInfo) throws RegistryException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getAddress().split(":");
             if (ipPort.length < 2) {
                 return false;
             }
+            ServiceInfo serviceInfo = ServiceInfo.fromKey(eventMeshRegisterInfo.getServiceName());
             Instance instance = new Instance();
-            instance.setClusterName(eventMeshRegisterInfo.getEventMeshClusterName());
+            instance.setClusterName(serviceInfo.getClusters());
             instance.setEnabled(true);
             instance.setEphemeral(true);
             instance.setHealthy(true);
@@ -185,7 +197,7 @@ public class NacosDiscoveryService implements RegistryService {
     }
 
     @Override
-    public boolean unRegister(EventMeshAdminServerRegisterInfo eventMeshRegisterInfo) throws AdminException {
+    public boolean unRegister(RegisterServerInfo eventMeshRegisterInfo) throws RegistryException {
         try {
             namingService.registerInstance(eventMeshRegisterInfo.getEventMeshName(), GROUP_NAME, new Instance());
             return true;

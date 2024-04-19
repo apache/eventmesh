@@ -1,10 +1,11 @@
-package com.apache.eventmesh.admin.server.registry;
+package org.apache.eventmesh.registry;
 
-import com.apache.eventmesh.admin.server.AdminException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.registry.exception.RegistryException;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,7 +35,7 @@ public class Registry implements RegistryService {
     }
 
     @Override
-    public void init() throws AdminException {
+    public void init() throws RegistryException {
         if (initFlag.compareAndSet(false, true)) {
             return;
         }
@@ -42,7 +43,7 @@ public class Registry implements RegistryService {
     }
 
     @Override
-    public void shutdown() throws AdminException {
+    public void shutdown() throws RegistryException {
         if (shutdownFlag.compareAndSet(false, true)) {
             this.registryService.shutdown();
         }
@@ -59,12 +60,17 @@ public class Registry implements RegistryService {
     }
 
     @Override
-    public boolean register(EventMeshAdminServerRegisterInfo eventMeshRegisterInfo) throws AdminException {
-        return this.registryService.register(eventMeshRegisterInfo);
+    public List<RegisterServerInfo> selectInstances(QueryInstances serverInfo) {
+        return this.registryService.selectInstances(serverInfo);
     }
 
     @Override
-    public boolean unRegister(EventMeshAdminServerRegisterInfo eventMeshUnRegisterInfo) throws AdminException {
-        return this.registryService.unRegister(eventMeshUnRegisterInfo);
+    public boolean register(RegisterServerInfo registerInfo) throws RegistryException {
+        return this.registryService.register(registerInfo);
+    }
+
+    @Override
+    public boolean unRegister(RegisterServerInfo unRegisterInfo) throws RegistryException {
+        return this.registryService.unRegister(unRegisterInfo);
     }
 }
