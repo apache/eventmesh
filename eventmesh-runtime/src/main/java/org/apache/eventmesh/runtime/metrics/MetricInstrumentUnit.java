@@ -15,15 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.utils;
+package org.apache.eventmesh.runtime.metrics;
 
-/**
- * Constants in metrics-prometheus module
- */
-public class PrometheusExporterConstants {
 
-    public static final String METRICS_GRPC_PREFIX = "eventmesh.grpc.";
+public class MetricInstrumentUnit {
 
-    public static final String METRICS_TCP_PREFIX = "eventmesh.tcp.";
+    private MetricInstrumentUnit() {
+
+    }
+
+    public static final String SINGLETON = "1";
+
+    public static final String TPS = "tps";
+
+    public static final String MILLISECONDS = "ms";
+
+    public static final String PERCENT = "%";
 
 }
