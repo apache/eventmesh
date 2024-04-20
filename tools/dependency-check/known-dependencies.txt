@@ -161,7 +161,6 @@ json-smart-2.4.7.jar
 json-utils-2.20.29.jar
 jsr305-3.0.2.jar
 jtokkit-0.5.1.jar
-jul-to-slf4j-1.7.33.jar
 kafka-clients-3.0.0.jar
 listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
 log4j-api-2.22.1.jar
