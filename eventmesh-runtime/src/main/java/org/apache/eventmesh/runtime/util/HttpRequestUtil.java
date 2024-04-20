@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.util;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -51,10 +52,14 @@ public class HttpRequestUtil {
         } else if (io.netty.handler.codec.http.HttpMethod.POST.equals(httpRequest.method())) {
             decodeHttpRequestBody(httpRequest, httpRequestBody);
         }
-        if (Objects.isNull(t)) {
+        if (!Objects.isNull(end)) {
             end.accept(t);
         }
         return httpRequestBody;
+    }
+
+    public static Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
+        return parseHttpRequestBody(httpRequest, null, null);
     }
 
     private static void decodeHttpRequestBody(HttpRequest httpRequest, Map<String, Object> httpRequestBody) throws IOException {
@@ -68,4 +73,47 @@ public class HttpRequestUtil {
         decoder.destroy();
     }
 
+    /**
+     * Converts a query string to a map of key-value pairs.
+     * <p>
+     * This method takes a query string and parses it to create a map of key-value pairs, where each key and value are extracted from the query string
+     * separated by '='.
+     * <p>
+     * If the query string is null, an empty map is returned.
+     *
+     * @param queryString the query string to convert to a map
+     * @return a map containing the key-value pairs from the query string
+     */
+    public static Map<String, String> queryStringToMap(String queryString) {
+        if (queryString == null) {
+            return new HashMap<>();
+        }
+        Map<String, String> result = new HashMap<>();
+        for (String param : queryString.split("&")) {
+            String[] entry = param.split("=");
+            if (entry.length > 1) {
+                result.put(entry[0], entry[1]);
+            } else {
+                result.put(entry[0], "");
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get the value of a query parameter in URI query string.
+     */
+    public static String getQueryParam(HttpRequest httpRequest, String key, String defaultValue) {
+        List<String> values = new QueryStringDecoder(httpRequest.uri()).parameters().get(key);
+        return values != null ? values.get(0) : defaultValue;
+    }
+
+    /**
+     * Get the value of a query parameter in body.
+     */
+    public static String getBodyParam(HttpRequest httpRequest, String key) throws IOException {
+        HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(httpRequest);
+        Attribute attribute = (Attribute) decoder.getBodyHttpData(key);
+        return attribute.getValue();
+    }
 }

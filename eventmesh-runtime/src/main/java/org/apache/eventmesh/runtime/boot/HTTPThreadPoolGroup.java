@@ -73,7 +73,7 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
             new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerClientManageBlockQSize()),
             "eventMesh-clientManage", true);
 
-        // The runtimeAdminExecutor here is for the runtime.admin package and has nothing to do with the eventmesh-admin module.
+        // The runtimeAdminExecutor here is for the runtime.admin package.
         runtimeAdminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
             eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
             eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
@@ -82,8 +82,7 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
-            new LinkedBlockingQueue<>(100),
-            "eventMesh-replyMsg", true);
+            new LinkedBlockingQueue<>(100), "eventMesh-replyMsg", true);
 
         webhookExecutor = ThreadPoolFactory.createThreadPoolExecutor(
             eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),

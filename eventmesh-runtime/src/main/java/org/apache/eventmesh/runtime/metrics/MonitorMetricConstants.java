@@ -33,8 +33,10 @@ public class MonitorMetricConstants {
 
     public static final String RETRY_QUEUE_SIZE = "retryQueueSize";
 
+
     public static final String QUEUE_SIZE = "queueSize";
     public static final String POOL_SIZE = "poolSize";
     public static final String ACTIVE_COUNT = "activeCount";
     public static final String COMPLETED_TASK = "completedTask";
+
 }
