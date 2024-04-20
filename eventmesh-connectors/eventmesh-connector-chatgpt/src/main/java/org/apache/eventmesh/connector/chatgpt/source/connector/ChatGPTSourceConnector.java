@@ -153,8 +153,8 @@ public class ChatGPTSourceConnector implements Source {
 
 
     private void validateRequestDTO(ChatGPTRequestDTO bodyObject) {
-        if (bodyObject.getSubject() == null || bodyObject.getText() == null) {
-            throw new IllegalArgumentException("Attributes 'subject', and 'text' cannot be null");
+        if (StringUtils.isBlank(bodyObject.getText())) {
+            throw new IllegalArgumentException("Attributes 'text' cannot be null");
         }
     }
 
