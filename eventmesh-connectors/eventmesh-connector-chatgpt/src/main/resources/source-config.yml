@@ -1,0 +1,51 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+pubSubConfig:
+  meshAddress: 127.0.0.1:10000
+  subject: TopicTest
+  idc: FT
+  env: PRD
+  group: chatgptSource
+  appId: 5032
+  userName: chatgptSourceUser
+  passWord: chatgptPassWord
+connectorConfig:
+  connectorName: chatgptSource
+  path: /chatgpt
+  port: 3756
+  idleTimeout: 0
+  proxyEnable: false
+  parsePromptFileName: prompt
+
+# https://platform.openai.com/docs/api-reference/chat/create
+openaiConfig:
+  token:
+  model: gpt-3.5-turbo
+  timeout: 0
+  temperature: 1
+  maxTokens:
+  frequencyPenalty: 0
+  presencePenalty: 0
+  user: eventMesh
+  stop: []
+  logitBias: {}
+
+openaiProxyConfig:
+  host: 127.0.0.1
+  port: 7890
+

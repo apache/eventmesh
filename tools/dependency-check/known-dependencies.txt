@@ -1,6 +1,7 @@
 FastInfoset-1.2.15.jar
 ST4-4.3.4.jar
 accessors-smart-2.4.7.jar
+adapter-rxjava2-2.9.0.jar
 alibabacloud-gateway-spi-0.0.1.jar
 amqp-client-5.16.0.jar
 animal-sniffer-annotations-1.19.jar
@@ -12,6 +13,7 @@ antlr4-4.13.0.jar
 antlr4-runtime-4.13.0.jar
 aopalliance-1.0.jar
 apache-client-2.20.29.jar
+api-0.18.2.jar
 arns-2.20.29.jar
 asm-9.1.jar
 asm-9.2.jar
@@ -43,7 +45,9 @@ byte-buddy-1.11.0.jar
 byte-buddy-1.12.18.jar
 cache-api-1.1.1.jar
 checker-qual-3.12.0.jar
+classgraph-4.8.21.jar
 classmate-1.5.1.jar
+client-0.18.2.jar
 cloudevents-api-2.4.2.jar
 cloudevents-core-2.4.2.jar
 cloudevents-http-vertx-2.3.0.jar
@@ -63,6 +67,7 @@ commons-logging-1.2.jar
 commons-text-1.9.jar
 commons-validator-1.7.jar
 consul-api-1.4.5.jar
+converter-jackson-2.9.0.jar
 credentials-java-0.2.4.jar
 crt-core-2.20.29.jar
 curator-client-5.4.0.jar
@@ -155,6 +160,7 @@ json-path-2.7.0.jar
 json-smart-2.4.7.jar
 json-utils-2.20.29.jar
 jsr305-3.0.2.jar
+jtokkit-0.5.1.jar
 kafka-clients-3.0.0.jar
 listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
 log4j-api-2.22.1.jar
@@ -162,6 +168,7 @@ log4j-core-2.22.1.jar
 log4j-slf4j2-impl-2.22.1.jar
 lz4-java-1.7.1.jar
 lz4-java-1.8.0.jar
+mbknor-jackson-jsonschema_2.12-1.0.34.jar
 metrics-annotation-4.1.0.jar
 metrics-core-4.1.0.jar
 metrics-healthchecks-4.1.0.jar
@@ -306,6 +313,7 @@ reactor-core-3.4.13.jar
 redisson-3.17.3.jar
 regions-2.20.29.jar
 relaxngDatatype-20020414.jar
+retrofit-2.9.0.jar
 rocketmq-acl-4.9.5.jar
 rocketmq-broker-4.9.5.jar
 rocketmq-client-4.9.5.jar
@@ -317,9 +325,12 @@ rocketmq-remoting-4.9.5.jar
 rocketmq-srvutil-4.9.5.jar
 rocketmq-store-4.9.5.jar
 rocketmq-tools-4.9.5.jar
+rxjava-2.0.0.jar
 rxjava-3.0.12.jar
 s3-2.20.29.jar
+scala-library-2.12.8.jar
 sdk-core-2.20.29.jar
+service-0.18.2.jar
 simpleclient-0.12.0.jar
 simpleclient_tracer_common-0.12.0.jar
 simpleclient_tracer_otel-0.12.0.jar
@@ -352,6 +363,7 @@ tomcat-embed-el-9.0.56.jar
 txw2-2.3.1.jar
 utils-2.20.29.jar
 validation-api-1.1.0.Final.jar
+validation-api-2.0.1.Final.jar
 vertx-auth-common-4.4.6.jar
 vertx-bridge-common-4.4.6.jar
 vertx-core-4.4.6.jar
