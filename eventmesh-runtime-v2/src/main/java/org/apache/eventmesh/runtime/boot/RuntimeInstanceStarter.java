@@ -1,6 +1,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
 import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc;
 import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc.AdminBiStreamServiceStub;
 import org.apache.eventmesh.runtime.rpc.Payload;
@@ -26,15 +27,17 @@ public class RuntimeInstanceStarter {
         // TODO:添加shutDownHook
 
         try {
-            EventMeshServer server = new EventMeshServer();
+            RuntimeInstanceConfig runtimeInstanceConfig = ConfigService.getInstance().buildConfigInstance(RuntimeInstanceConfig.class);
+            RuntimeInstance runtimeInstance = new RuntimeInstance(runtimeInstanceConfig);
             BannerUtil.generateBanner();
-            server.init();
-            server.start();
+            runtimeInstance.init();
+            runtimeInstance.start();
+
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     log.info("runtime shutting down hook begin.");
                     long start = System.currentTimeMillis();
-                    server.shutdown();
+                    runtimeInstance.shutdown();
                     long end = System.currentTimeMillis();
 
                     log.info("runtime shutdown cost {}ms", end - start);
@@ -43,56 +46,9 @@ public class RuntimeInstanceStarter {
                 }
             }));
         } catch (Throwable e) {
-            log.error("EventMesh start fail.", e);
+            log.error("runtime start fail.", e);
             System.exit(-1);
         }
-
-        // 创建gRPC通道
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
-            .usePlaintext()
-            .build();
-
-        // 创建gRPC客户端存根
-        AdminBiStreamServiceStub stub = AdminBiStreamServiceGrpc.newStub(channel);
-
-        // 创建一个响应观察者
-        StreamObserver<Payload> responseObserver = new StreamObserver<Payload>() {
-            @Override
-            public void onNext(Payload response) {
-                log.info("runtime receive message: {} ", response);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                log.error("runtime receive error message: {}", t.getMessage());
-            }
-
-            @Override
-            public void onCompleted() {
-                log.info("runtime finished receive message and completed");
-            }
-        };
-
-        // 创建一个请求观察者
-        StreamObserver<Payload> requestObserver = stub.invokeBiStream(responseObserver);
-        StringValue stringValue = StringValue.newBuilder().setValue("test").build();
-        Any test = Any.pack(stringValue);
-        // 发送请求
-        for (int i = 0; i < 10; i++) {
-            Payload request = Payload.newBuilder()
-                .setBody(test)
-                .build();
-            requestObserver.onNext(request);
-        }
-
-        // 完成请求流
-        requestObserver.onCompleted();
-
-        // 等待响应
-        Thread.sleep(10000);
-
-        // 关闭通道
-        channel.shutdown();
 
     }
 }

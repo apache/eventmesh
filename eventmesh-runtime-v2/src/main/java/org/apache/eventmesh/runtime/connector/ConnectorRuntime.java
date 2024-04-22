@@ -60,7 +60,7 @@ public class ConnectorRuntime implements Runtime {
         SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
         SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
         sourceConnectorContext.setSourceConfig(sourceConfig);
-        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
+//        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
 
         sourceConnector.init(sourceConnectorContext);
 
@@ -89,7 +89,7 @@ public class ConnectorRuntime implements Runtime {
                     startSourceConnector();
                 } catch (Exception e) {
                     log.error("source connector [{}] start fail", sourceConnector.name(), e);
-                    this.stop();
+//                    this.stop();
                 }
             });
 
