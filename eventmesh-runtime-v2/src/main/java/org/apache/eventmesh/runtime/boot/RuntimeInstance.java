@@ -42,7 +42,7 @@ public class RuntimeInstance {
 
     public RuntimeInstance(RuntimeInstanceConfig runtimeInstanceConfig) {
         this.runtimeInstanceConfig = runtimeInstanceConfig;
-        this.metaStorage = MetaStorage.getInstance(runtimeInstanceConfig.getMetaStoragePluginType());
+        this.metaStorage = MetaStorage.getInstance(runtimeInstanceConfig.getRegistryPluginType());
     }
 
     public void init () {

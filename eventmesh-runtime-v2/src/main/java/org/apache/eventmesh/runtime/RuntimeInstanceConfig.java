@@ -7,12 +7,14 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Config
+@Config(path = "classPath://runtime.yaml")
 public class RuntimeInstanceConfig {
 
-        private String metaServerAddr;
+        private String registryServerAddr;
 
-        private String metaStoragePluginType;
+        private String registryPluginType;
+
+        private String storagePluginType;
 
         private String runtimeInstanceId;
 

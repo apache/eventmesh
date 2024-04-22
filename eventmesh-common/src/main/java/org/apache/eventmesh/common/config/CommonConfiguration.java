@@ -103,16 +103,16 @@ public class CommonConfiguration {
     @ConfigField(field = "server.retry.plugin.type")
     private String eventMeshRetryPluginType = Constants.DEFAULT;
 
-    @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
+    @ConfigField(field = "registry.plugin.server-addr", notEmpty = true)
     private String registryAddr = "";
 
-    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
+    @ConfigField(field = "registry.plugin.type", notEmpty = true)
     private String eventMeshRegistryPluginType = "nacos";
 
-    @ConfigFiled(field = "registry.plugin.username")
+    @ConfigField(field = "registry.plugin.username")
     private String eventMeshRegistryPluginUsername = "";
 
-    @ConfigFiled(field = "registry.plugin.password")
+    @ConfigField(field = "registry.plugin.password")
     private String eventMeshRegistryPluginPassword = "";
 
     public void reload() {
