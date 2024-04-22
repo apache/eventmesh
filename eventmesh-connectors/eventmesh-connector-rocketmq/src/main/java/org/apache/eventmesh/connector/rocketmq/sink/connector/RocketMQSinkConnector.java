@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rocketmq.sink.connector;
 
 import org.apache.eventmesh.connector.rocketmq.sink.config.RocketMQSinkConfig;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -34,7 +35,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RocketMQSinkConnector implements Sink {
+public class RocketMQSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     private RocketMQSinkConfig sinkConfig;
 
@@ -107,5 +108,10 @@ public class RocketMQSinkConnector implements Sink {
             MessageAccessor.putProperty(message, key, connectRecord.getExtension(key));
         }
         return message;
+    }
+
+    @Override
+    public Sink create() {
+        return new RocketMQSinkConnector();
     }
 }

@@ -1,0 +1,25 @@
+syntax="proto3";
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files=true;
+
+message Metadata {
+    string type = 3;
+    map<string, string> headers = 7;
+}
+
+
+message Payload {
+    Metadata metadata = 2;
+    google.protobuf.Any body = 3;
+}
+
+service AdminBiStreamService {
+  rpc invokeBiStream(stream Payload) returns (stream Payload){}
+}
+
+service AdminService {
+  rpc invoke(Payload) returns (Payload){}
+}
+

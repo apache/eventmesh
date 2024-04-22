@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+group 'org.apache.eventmesh'
+version '1.10.0-release'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-meta:eventmesh-meta-api")
+    implementation project(":eventmesh-meta:eventmesh-meta-nacos")
+
+    implementation "io.grpc:grpc-core"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
+}

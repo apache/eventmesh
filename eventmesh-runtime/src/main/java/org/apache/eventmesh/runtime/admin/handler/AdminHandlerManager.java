@@ -17,11 +17,35 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.admin.handler.v1.ConfigurationHandlerV1;
+import org.apache.eventmesh.runtime.admin.handler.v1.DeleteWebHookConfigHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.EventHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.GrpcClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.HTTPClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.InsertWebHookConfigHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.MetaHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.MetricsHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.QueryRecommendEventMeshHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.QueryWebHookConfigByIdHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.QueryWebHookConfigByManufacturerHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.RedirectClientByIpPortHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.RedirectClientByPathHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.RedirectClientBySubSystemHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.RejectAllClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.RejectClientByIpPortHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.RejectClientBySubSystemHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.ShowClientBySystemHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.ShowClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.ShowListenClientByTopicHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.TCPClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.TopicHandler;
+import org.apache.eventmesh.runtime.admin.handler.v1.UpdateWebHookConfigHandler;
+import org.apache.eventmesh.runtime.admin.handler.v2.ConfigurationHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -55,6 +79,7 @@ public class AdminHandlerManager {
     }
 
     public void registerHttpHandler() {
+        // v1 endpoints
         initHandler(new ShowClientHandler(eventMeshTCPServer));
         initHandler(new ShowClientBySystemHandler(eventMeshTCPServer));
         initHandler(new RejectAllClientHandler(eventMeshTCPServer));
@@ -68,7 +93,7 @@ public class AdminHandlerManager {
         initHandler(new TCPClientHandler(eventMeshTCPServer));
         initHandler(new HTTPClientHandler(eventMeshHTTPServer));
         initHandler(new GrpcClientHandler(eventMeshGrpcServer));
-        initHandler(new ConfigurationHandler(
+        initHandler(new ConfigurationHandlerV1(
             eventMeshTCPServer.getEventMeshTCPConfiguration(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration()));
@@ -84,11 +109,17 @@ public class AdminHandlerManager {
             initHandler(new QueryWebHookConfigByIdHandler(webHookConfigOperation));
             initHandler(new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation));
         }
+
+        // v2 endpoints
+        initHandler(new ConfigurationHandler(
+            eventMeshTCPServer.getEventMeshTCPConfiguration(),
+            eventMeshHTTPServer.getEventMeshHttpConfiguration(),
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration()));
     }
 
     private void initHandler(HttpHandler httpHandler) {
-        EventHttpHandler eventHttpHandler = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
-        httpHandlerMap.putIfAbsent(eventHttpHandler.path(), httpHandler);
+        EventMeshHttpHandler eventMeshHttpHandler = httpHandler.getClass().getAnnotation(EventMeshHttpHandler.class);
+        httpHandlerMap.putIfAbsent(eventMeshHttpHandler.path(), httpHandler);
     }
 
     public Optional<HttpHandler> getHttpHandler(String path) {

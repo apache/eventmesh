@@ -251,7 +251,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     error_prone_annotations 2.7.1: https://github.com/google/error-prone, Apache 2.0
     failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
     listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
-    fastjson 1.2.83: https://github.com/alibaba/fastjson, Apache 2.0
+    fastjson2 2.0.48: https://github.com/alibaba/fastjson2, Apache 2.0
     guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
     gateway-dingtalk 1.0.2: https://github.com/aliyun/alibabacloud-gateway, Apache 2.0
     guice 4.2.2: https://github.com/google/guice, Apache 2.0

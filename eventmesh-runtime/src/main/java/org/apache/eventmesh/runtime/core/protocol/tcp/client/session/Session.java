@@ -238,15 +238,15 @@ public class Session {
     @Override
     public int hashCode() {
         int result = 1001; // primeNumber
-        if (null != client) {
+        if (client != null) {
             result += 31 * result + Objects.hash(client);
         }
 
-        if (null != context) {
+        if (context != null) {
             result += 31 * result + Objects.hash(context);
         }
 
-        if (null != sessionState) {
+        if (sessionState != null) {
             result += 31 * result + Objects.hash(sessionState);
         }
         return result;

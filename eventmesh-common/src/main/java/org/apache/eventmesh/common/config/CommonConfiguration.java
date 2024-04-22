@@ -34,94 +34,85 @@ import static org.apache.eventmesh.common.Constants.HTTP;
 @Config(prefix = "eventMesh")
 public class CommonConfiguration {
 
-    @ConfigFiled(field = "sysid", beNumber = true, notEmpty = true)
+    @ConfigField(field = "sysid", beNumber = true, notEmpty = true)
     private String sysID = "5477";
 
-    @ConfigFiled(field = "server.env", notEmpty = true)
+    @ConfigField(field = "server.env", notEmpty = true)
     private String eventMeshEnv = "P";
 
-    @ConfigFiled(field = "server.idc", notEmpty = true)
+    @ConfigField(field = "server.idc", notEmpty = true)
     private String eventMeshIDC = "FT";
 
-    @ConfigFiled(field = "server.name", notEmpty = true)
+    @ConfigField(field = "server.name", notEmpty = true)
     private String eventMeshName = "";
 
-    @ConfigFiled(field = "server.cluster", notEmpty = true)
+    @ConfigField(field = "server.cluster", notEmpty = true)
     private String eventMeshCluster = "LS";
 
-    @ConfigFiled(field = "server.hostIp", reload = true)
+    @ConfigField(field = "server.hostIp", reload = true)
     private String eventMeshServerIp = null;
 
-    @ConfigFiled(field = "metaStorage.plugin.server-addr", notEmpty = true)
+    @ConfigField(field = "metaStorage.plugin.server-addr", notEmpty = true)
     private String metaStorageAddr = "";
 
-    @ConfigFiled(field = "metaStorage.plugin.type", notEmpty = true)
+    @ConfigField(field = "metaStorage.plugin.type", notEmpty = true)
     private String eventMeshMetaStoragePluginType = "nacos";
 
-    @ConfigFiled(field = "metaStorage.plugin.username")
+    @ConfigField(field = "metaStorage.plugin.username")
     private String eventMeshMetaStoragePluginUsername = "";
 
-    @ConfigFiled(field = "metaStorage.plugin.password")
+    @ConfigField(field = "metaStorage.plugin.password")
     private String eventMeshMetaStoragePluginPassword = "";
 
-    @ConfigFiled(field = "metaStorage.plugin.metaStorageIntervalInMills")
-    private Integer eventMeshMetaStorageIntervalInMills = 10 * 1000;
-
-    @ConfigFiled(field = "metaStorage.plugin.fetchMetaStorageAddrIntervalInMills")
-    private Integer eventMeshFetchMetaStorageAddrInterval = 10 * 1000;
-
-    @ConfigFiled(field = "metaStorage.plugin.enabled")
+    @ConfigField(field = "metaStorage.plugin.enabled")
     private boolean eventMeshServerMetaStorageEnable = false;
 
-    @ConfigFiled(field = "trace.plugin", notEmpty = true)
+    @ConfigField(field = "trace.plugin", notEmpty = true)
     private String eventMeshTracePluginType;
 
-    @ConfigFiled(field = "metrics.plugin", notEmpty = true)
+    @ConfigField(field = "metrics.plugin", notEmpty = true)
     private List<String> eventMeshMetricsPluginType;
 
-    @ConfigFiled(field = "security.plugin.type", notEmpty = true)
+    @ConfigField(field = "security.plugin.type", notEmpty = true)
     private String eventMeshSecurityPluginType = "security";
 
-    @ConfigFiled(field = "connector.plugin.type", notEmpty = true)
-    private String eventMeshConnectorPluginType = "rocketmq";
+    @ConfigField(field = "storage.plugin.type", notEmpty = true)
+    private String eventMeshStoragePluginType = "standalone";
 
-    @ConfigFiled(field = "storage.plugin.type", notEmpty = true)
-    private String eventMeshStoragePluginType = "rocketmq";
-
-    @ConfigFiled(field = "security.validation.type.token", notEmpty = true)
+    @ConfigField(field = "security.validation.type.token", notEmpty = true)
     private boolean eventMeshSecurityValidateTypeToken = false;
 
-    @ConfigFiled(field = "server.trace.enabled")
+    @ConfigField(field = "server.trace.enabled")
     private boolean eventMeshServerTraceEnable = false;
 
-    @ConfigFiled(field = "server.security.enabled")
+    @ConfigField(field = "server.security.enabled")
     private boolean eventMeshServerSecurityEnable = false;
 
-    @ConfigFiled(field = "security.publickey")
+    @ConfigField(field = "security.publickey")
     private String eventMeshSecurityPublickey = "";
 
-    @ConfigFiled(field = "server.provide.protocols", reload = true)
+    @ConfigField(field = "server.provide.protocols", reload = true)
     private List<String> eventMeshProvideServerProtocols;
 
-    @ConfigFiled(reload = true)
+    @ConfigField(reload = true)
     private String eventMeshWebhookOrigin;
 
-    @ConfigFiled(reload = true)
+    @ConfigField(reload = true)
     private String meshGroup;
 
-    @ConfigFiled(field = "server.retry.plugin.type")
+    @ConfigField(field = "server.retry.plugin.type")
     private String eventMeshRetryPluginType = Constants.DEFAULT;
 
-    @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
+    @ConfigField(field = "registry.plugin.server-addr", notEmpty = true)
     private String registryAddr = "";
 
-    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
+    @ConfigField(field = "registry.plugin.type", notEmpty = true)
     private String eventMeshRegistryPluginType = "nacos";
 
-    @ConfigFiled(field = "registry.plugin.username")
+    @ConfigField(field = "registry.plugin.username")
     private String eventMeshRegistryPluginUsername = "";
 
-    @ConfigFiled(field = "registry.plugin.password")
+    @ConfigField(field = "registry.plugin.password")
     private String eventMeshRegistryPluginPassword = "";
 
     public void reload() {

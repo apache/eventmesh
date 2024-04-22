@@ -313,12 +313,12 @@ public class ImServiceHandler {
 
     private boolean needAtAll(ConnectRecord connectRecord) {
         String atAll = connectRecord.getExtension(ConnectRecordExtensionKeys.AT_ALL_4_LARK);
-        return null != atAll && !"null".equals(atAll) && Boolean.parseBoolean(atAll);
+        return atAll != null && !"null".equals(atAll) && Boolean.parseBoolean(atAll);
     }
 
     private String needAtUser(ConnectRecord connectRecord) {
         String atUsers = connectRecord.getExtension(ConnectRecordExtensionKeys.AT_USERS_4_LARK);
-        return null != atUsers && !"null".equals(atUsers) ? atUsers : "";
+        return atUsers != null && !"null".equals(atUsers) ? atUsers : "";
     }
 
     /**

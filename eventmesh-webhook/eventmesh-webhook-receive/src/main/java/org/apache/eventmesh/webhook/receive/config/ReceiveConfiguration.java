@@ -18,7 +18,7 @@
 package org.apache.eventmesh.webhook.receive.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import java.util.Properties;
 
@@ -28,16 +28,16 @@ import lombok.Data;
 @Config(prefix = "eventMesh.webHook")
 public class ReceiveConfiguration {
 
-    @ConfigFiled(field = "producer.storage")
+    @ConfigField(field = "producer.storage")
     private String storagePluginType;
 
-    @ConfigFiled(field = "operationMode")
+    @ConfigField(field = "operationMode")
     private String operationMode;
 
-    @ConfigFiled(field = "fileMode.filePath")
+    @ConfigField(field = "fileMode.filePath")
     private String filePath;
 
-    @ConfigFiled(field = "", reload = true)
+    @ConfigField(field = "", reload = true)
     private Properties operationProperties;
 
     public void reload() {

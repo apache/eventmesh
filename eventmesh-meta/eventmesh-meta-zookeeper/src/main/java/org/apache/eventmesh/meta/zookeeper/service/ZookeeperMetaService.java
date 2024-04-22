@@ -175,7 +175,7 @@ public class ZookeeperMetaService implements MetaService {
         if (!startStatus.compareAndSet(true, false)) {
             return;
         }
-        if (null != zkClient) {
+        if (zkClient != null) {
             zkClient.close();
         }
         log.info("ZookeeperRegistryService closed");
