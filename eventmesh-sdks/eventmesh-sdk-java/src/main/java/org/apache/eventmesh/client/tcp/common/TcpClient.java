@@ -60,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class TcpClient implements Closeable {
 
-    protected static transient int CLIENTNO = 0;
+    protected static int CLIENTNO = 0;
 
     static {
         try {
@@ -123,12 +123,15 @@ public abstract class TcpClient implements Closeable {
     @Override
     public void close() {
         try {
+
+            goodbye();
+
             channel.disconnect().sync();
-            workers.shutdownGracefully();
+            workers.shutdownGracefully().sync();
             if (heartTask != null) {
                 heartTask.cancel(false);
             }
-            goodbye();
+
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
