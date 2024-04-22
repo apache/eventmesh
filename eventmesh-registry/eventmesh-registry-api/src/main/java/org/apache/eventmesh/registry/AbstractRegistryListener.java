@@ -1,4 +1,4 @@
-package com.apache.eventmesh.admin.server.registry;
+package org.apache.eventmesh.registry;
 
 public abstract class AbstractRegistryListener<T> implements RegistryListener {
     protected abstract boolean checkType(Object data);

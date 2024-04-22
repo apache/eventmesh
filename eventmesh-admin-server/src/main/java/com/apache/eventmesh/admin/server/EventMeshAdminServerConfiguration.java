@@ -1,4 +1,4 @@
-package com.apache.eventmesh.admin.server.registry;
+package com.apache.eventmesh.admin.server;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

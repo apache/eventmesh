@@ -1,6 +1,8 @@
 dependencies {
 	implementation project(":eventmesh-spi")
 	implementation project(":eventmesh-common")
+	implementation project(":eventmesh-registry:eventmesh-registry-api")
+	implementation project(":eventmesh-registry:eventmesh-registry-nacos")
 	implementation "com.alibaba.nacos:nacos-client"
 	implementation ("org.springframework.boot:spring-boot-starter-web") {
 		exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"

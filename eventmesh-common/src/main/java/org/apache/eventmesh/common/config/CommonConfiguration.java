@@ -17,20 +17,17 @@
 
 package org.apache.eventmesh.common.config;
 
-import static org.apache.eventmesh.common.Constants.HTTP;
-
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
-
-import org.apache.commons.collections4.CollectionUtils;
+import org.assertj.core.util.Strings;
 
 import java.util.Collections;
 import java.util.List;
 
-import org.assertj.core.util.Strings;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.apache.eventmesh.common.Constants.HTTP;
 
 @Data
 @NoArgsConstructor
@@ -105,6 +102,18 @@ public class CommonConfiguration {
 
     @ConfigField(field = "server.retry.plugin.type")
     private String eventMeshRetryPluginType = Constants.DEFAULT;
+
+    @ConfigFiled(field = "registry.plugin.server-addr", notEmpty = true)
+    private String registryAddr = "";
+
+    @ConfigFiled(field = "registry.plugin.type", notEmpty = true)
+    private String eventMeshRegistryPluginType = "nacos";
+
+    @ConfigFiled(field = "registry.plugin.username")
+    private String eventMeshRegistryPluginUsername = "";
+
+    @ConfigFiled(field = "registry.plugin.password")
+    private String eventMeshRegistryPluginPassword = "";
 
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
