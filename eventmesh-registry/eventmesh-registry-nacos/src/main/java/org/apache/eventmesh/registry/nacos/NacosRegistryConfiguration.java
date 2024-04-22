@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.apache.eventmesh.admin.server.registry;
+package org.apache.eventmesh.registry.nacos;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;

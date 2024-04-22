@@ -1,0 +1,8 @@
+dependencies {
+    implementation "com.alibaba.nacos:nacos-client"
+    implementation project(":eventmesh-registry:eventmesh-registry-api")
+    implementation project(":eventmesh-common")
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
