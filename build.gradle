@@ -15,8 +15,23 @@
  * limitations under the License.
  */
 
-import java.util.concurrent.TimeUnit
+
+
+
+
 import groovy.json.JsonSlurper
+import org.apache.commons.io.IOUtils
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 
 buildscript {
     repositories {
@@ -33,6 +48,9 @@ buildscript {
         classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
+
+        classpath "org.apache.httpcomponents:httpclient:4.5.13"
+        classpath "commons-io:commons-io:2.11.0"
     }
 }
 
@@ -313,9 +331,15 @@ tasks.register('generateDistLicense') {
             def artifactLicenseFile = new File(licensesDir, artifactLicenseFilename)
             if (artifact.licenseContent != null) {
                 artifactLicenseFile.text = artifact.licenseContent
+                if (isURL(artifact.licenseContent)) {
+                    def licenseUrlFilename = artifact.licenseContent.substring(artifact.licenseContent.lastIndexOf("/") + 1)
+                    def downloadedLicenseFilename = artifact.license.replaceAll("/", "-") + "-downloaded-" + licenseUrlFilename
+                    def downloadedLicenseFile = new File(licensesDir, downloadedLicenseFilename)
+                    downloadFileFromURL(artifact.licenseContent, downloadedLicenseFile.path)
+                }
             } else {
                 artifactLicenseFile.text = "No license content provided by the artifact."
-                logger.warn("No '${artifact.license}' license content provided by ${artifact.name} ${artifact.version}. Please add manually.")
+                logger.error("No '${artifact.license}' license content provided by ${artifact.name} ${artifact.version}. Please add manually.")
             }
 
             // Assemble LICENSE
@@ -324,6 +348,59 @@ tasks.register('generateDistLicense') {
         }
         distLicenseFile.text = distLicenseText
     }
+}
+
+static boolean isURL(String urlString) {
+    if (!urlString.startsWith("http")) {
+        return false
+    }
+    try {
+        new URL(urlString)
+        return true
+    } catch (MalformedURLException e) {
+        return false
+    }
+}
+
+void downloadFileFromURL(String urlString, String destinationPath) throws Exception {
+    int timeout = 5 * 1000
+    RequestConfig config = RequestConfig.custom()
+            .setConnectTimeout(timeout)
+            .setConnectionRequestTimeout(timeout)
+            .setSocketTimeout(timeout)
+            .build()
+
+    CloseableHttpClient httpClient = HttpClients.custom()
+            .setDefaultRequestConfig(config)
+            .build()
+
+    HttpGet httpGet = new HttpGet(urlString)
+    CloseableHttpResponse response
+    try {
+        response = httpClient.execute(httpGet)
+    } catch (Exception e) {
+        logger.error("Failed to download " + urlString + " : " + e.getMessage())
+        return
+    }
+
+    if (response.getStatusLine().getStatusCode() == 200) {
+        try (InputStream is = response.getEntity().getContent()) {
+            String respContent = IOUtils.toString(is, StandardCharsets.UTF_8)
+            if (respContent.startsWith("../")) {
+                // Follow GitHub symlink
+                URL baseUrl = new URL(urlString);
+                URL absoluteUrl = new URL(baseUrl, respContent);
+                downloadFileFromURL(absoluteUrl.toString(), destinationPath);
+            } else {
+                Files.write(Paths.get(destinationPath), respContent.getBytes(StandardCharsets.UTF_8))
+            }
+        }
+    } else {
+        logger.error("Failed to download " + urlString + " : " + response.getStatusLine())
+    }
+
+    EntityUtils.consume(response.getEntity())
+    response.close()
 }
 
 tasks.register('generateDistNotice') {
