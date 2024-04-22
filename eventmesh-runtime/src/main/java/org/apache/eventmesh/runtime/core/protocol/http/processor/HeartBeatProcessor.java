@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -157,14 +156,13 @@ public class HeartBeatProcessor extends AbstractHttpRequestProcessor {
         }
 
         final long startTime = System.currentTimeMillis();
-        HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
         try {
             final CompleteHandler<HttpCommand> handler = httpCommand -> {
                 try {
                     log.debug("{}", httpCommand);
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    summaryMetrics.recordHTTPReqResTimeCost(
-                        System.currentTimeMillis() - request.getReqTime());
+                    eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordHTTPReqResTimeCost(
+                        System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {
                     // ignore
                 }
@@ -178,8 +176,8 @@ public class HeartBeatProcessor extends AbstractHttpRequestProcessor {
                 HeartbeatResponseBody.class);
             final long elapsedTime = System.currentTimeMillis() - startTime;
             log.error("message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost={}ms", elapsedTime, e);
-            summaryMetrics.recordSendMsgFailed();
-            summaryMetrics.recordSendMsgCost(elapsedTime);
+            eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsgFailed();
+            eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsgCost(elapsedTime);
         }
 
     }

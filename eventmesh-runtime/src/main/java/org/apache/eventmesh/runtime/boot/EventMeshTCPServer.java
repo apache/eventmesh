@@ -44,7 +44,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 
 import java.util.List;
@@ -105,8 +105,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         clientSessionGroupMapping.init();
         super.setClientSessionGroupMapping(clientSessionGroupMapping);
 
-        super.setEventMeshTcpMonitor(new EventMeshTcpMonitor(this, metricsRegistries));
-        super.getEventMeshTcpMonitor().init();
+        super.setEventMeshTcpMetricsManager(new EventMeshTcpMetricsManager(this, metricsRegistries));
 
         if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this, new EventMeshRebalanceImpl(this));
@@ -124,7 +123,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     @Override
     public void start() throws Exception {
         super.start();
-        super.getEventMeshTcpMonitor().start();
+        super.getEventMeshTcpMetricsManager().start();
 
         clientSessionGroupMapping.start();
         tcpRetryer.start();
@@ -141,7 +140,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     public void shutdown() throws Exception {
         super.shutdown();
 
-        super.getEventMeshTcpMonitor().shutdown();
+        super.getEventMeshTcpMetricsManager().shutdown();
 
         clientSessionGroupMapping.shutdown();
         ThreadUtils.sleep(40, TimeUnit.SECONDS);
@@ -285,4 +284,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     public TcpRetryer getTcpRetryer() {
         return tcpRetryer;
     }
+
+
 }

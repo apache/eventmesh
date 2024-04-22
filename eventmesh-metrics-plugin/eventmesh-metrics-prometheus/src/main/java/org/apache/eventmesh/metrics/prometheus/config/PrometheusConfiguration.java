@@ -28,4 +28,7 @@ public class PrometheusConfiguration {
 
     @ConfigField(field = "port")
     private int eventMeshPrometheusPort = 19090;
+
+    @ConfigField(field = "export.host")
+    private String eventMeshPrometheusExportHost = "0.0.0.0";
 }
