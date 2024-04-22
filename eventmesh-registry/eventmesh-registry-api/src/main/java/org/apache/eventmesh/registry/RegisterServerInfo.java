@@ -2,11 +2,12 @@ package org.apache.eventmesh.registry;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
+@ToString
 public class RegisterServerInfo {
     // different implementations will have different formats
     @Getter

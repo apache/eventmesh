@@ -1,7 +1,4 @@
-package com.apache.eventmesh.admin.server.web.generated;
-
-import org.apache.eventmesh.common.grpc.EventMeshAdminService;
-import org.apache.eventmesh.common.grpc.Payload;
+package org.apache.eventmesh.common.protocol.grpc.adminserver;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 

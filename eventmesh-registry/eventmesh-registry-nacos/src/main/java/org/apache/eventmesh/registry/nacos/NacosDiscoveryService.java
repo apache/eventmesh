@@ -7,8 +7,10 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
+import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
@@ -167,8 +169,30 @@ public class NacosDiscoveryService implements RegistryService {
     }
 
     @Override
-    public List<RegisterServerInfo> selectInstances(QueryInstances serverInfo) {
-        return null;
+    public List<RegisterServerInfo> selectInstances(QueryInstances queryInstances) {
+        ArrayList<RegisterServerInfo> list = new ArrayList<>();
+        try {
+            ServiceInfo serviceInfo = ServiceInfo.fromKey(queryInstances.getServiceName());
+            ArrayList<String> clusters = new ArrayList<>();
+            if (StringUtils.isNotBlank(serviceInfo.getClusters())) {
+                clusters.addAll(Arrays.asList(serviceInfo.getClusters().split(",")));
+            }
+            List<Instance> instances = namingService.selectInstances(serviceInfo.getName(), serviceInfo.getGroupName(), clusters, queryInstances.isHealth());
+            if (instances != null) {
+                instances.forEach(x -> {
+                    RegisterServerInfo instanceInfo = new RegisterServerInfo();
+                    instanceInfo.setMetadata(x.getMetadata());
+                    instanceInfo.setHealth(x.isHealthy());
+                    instanceInfo.setAddress(x.getIp() + ":" + x.getPort());
+                    instanceInfo.setServiceName(ServiceInfo.getKey(NamingUtils.getGroupedName(x.getServiceName(), serviceInfo.getGroupName()), x.getClusterName()));
+                    list.add(instanceInfo);
+                });
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("select instance by query {} from nacos fail", queryInstances, e);
+            return list;
+        }
     }
 
     @Override
@@ -183,15 +207,15 @@ public class NacosDiscoveryService implements RegistryService {
             instance.setClusterName(serviceInfo.getClusters());
             instance.setEnabled(true);
             instance.setEphemeral(true);
-            instance.setHealthy(true);
+            instance.setHealthy(eventMeshRegisterInfo.isHealth());
             instance.setWeight(1.0);
             instance.setIp(ipPort[0]);
             instance.setPort(Integer.parseInt(ipPort[1]));
             instance.setMetadata(eventMeshRegisterInfo.getMetadata());
-            namingService.registerInstance(eventMeshRegisterInfo.getEventMeshName(), GROUP_NAME, instance);
+            namingService.registerInstance(serviceInfo.getName(), serviceInfo.getGroupName(), instance);
             return true;
         } catch (Exception e) {
-            log.error("register instance service {} group {} cluster {} fail", eventMeshRegisterInfo.getEventMeshName(), GROUP_NAME, eventMeshRegisterInfo.getEventMeshClusterName(), e);
+            log.error("register instance service {} fail", eventMeshRegisterInfo, e);
             return false;
         }
     }
@@ -199,10 +223,15 @@ public class NacosDiscoveryService implements RegistryService {
     @Override
     public boolean unRegister(RegisterServerInfo eventMeshRegisterInfo) throws RegistryException {
         try {
-            namingService.registerInstance(eventMeshRegisterInfo.getEventMeshName(), GROUP_NAME, new Instance());
+            String[] ipPort = eventMeshRegisterInfo.getAddress().split(":");
+            if (ipPort.length < 2) {
+                return false;
+            }
+            ServiceInfo serviceInfo = ServiceInfo.fromKey(eventMeshRegisterInfo.getServiceName());
+            namingService.deregisterInstance(serviceInfo.getName(), serviceInfo.getGroupName(), ipPort[0], Integer.parseInt(ipPort[1]), serviceInfo.getClusters());
             return true;
         } catch (Exception e) {
-            log.error("register instance service {} group {} cluster {} fail", eventMeshRegisterInfo.getEventMeshName(), GROUP_NAME, eventMeshRegisterInfo.getEventMeshClusterName(), e);
+            log.error("unregister instance service {} fail", eventMeshRegisterInfo, e);
             return false;
         }
     }

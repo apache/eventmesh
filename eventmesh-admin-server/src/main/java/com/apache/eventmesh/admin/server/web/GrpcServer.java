@@ -1,7 +1,7 @@
 package com.apache.eventmesh.admin.server.web;
 
 import com.apache.eventmesh.admin.server.ComponentLifeCycle;
-import com.apache.eventmesh.admin.server.web.generated.AdminBiStreamServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminBiStreamServiceGrpc;
 import org.springframework.stereotype.Controller;
 
 @Controller
