@@ -32,7 +32,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
 import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.TraceUtils;
@@ -100,7 +100,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     @Getter
     @Setter
-    private HTTPMetricsServer metrics;
+    private EventMeshHttpMetricsManager eventMeshHttpMetricsManager;
 
     private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
 
@@ -266,7 +266,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      */
     private Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
         return HttpRequestUtil.parseHttpRequestBody(httpRequest, () -> System.currentTimeMillis(),
-            (startTime) -> metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - startTime));
+            (startTime) -> eventMeshHttpMetricsManager.getHttpMetrics().recordDecodeTimeCost(System.currentTimeMillis() - startTime));
     }
 
     @Sharable
@@ -305,7 +305,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     TraceUtils.finishSpanWithException(span, headerMap, errorStatus.reasonPhrase(), null);
                     return;
                 }
-                metrics.getSummaryMetrics().recordHTTPRequest();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPRequest();
 
                 // process http
                 final HttpCommand requestCommand = new HttpCommand();
@@ -416,8 +416,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     }
 
                     log.debug("{}", asyncContext.getResponse());
-                    metrics.getSummaryMetrics()
-                        .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                    eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
                 } catch (Exception e) {
@@ -436,8 +435,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
             } catch (RejectedExecutionException re) {
                 asyncContext.onComplete(request.createHttpCommandResponse(EventMeshRetCode.OVERLOAD));
-                metrics.getSummaryMetrics().recordHTTPDiscard();
-                metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPDiscard();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
 

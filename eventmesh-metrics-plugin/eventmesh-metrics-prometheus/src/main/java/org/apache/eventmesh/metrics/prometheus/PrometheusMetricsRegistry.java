@@ -19,20 +19,14 @@ package org.apache.eventmesh.metrics.prometheus;
 
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
-import org.apache.eventmesh.metrics.api.model.GrpcSummaryMetrics;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.Metric;
-import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.metrics.prometheus.config.PrometheusConfiguration;
-import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusGrpcExporter;
-import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusHttpExporter;
-import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusTcpExporter;
 
-import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.opentelemetry.exporter.prometheus.PrometheusCollector;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.prometheus.client.exporter.HTTPServer;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Config(field = "prometheusConfiguration")
 public class PrometheusMetricsRegistry implements MetricsRegistry {
 
-    private volatile HTTPServer prometheusHttpServer;
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
+    private OpenTelemetry openTelemetry;
 
     /**
      * Unified configuration class corresponding to prometheus.properties
@@ -49,48 +45,37 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
 
     @Override
     public void start() {
-        if (prometheusHttpServer == null) {
-            synchronized (PrometheusMetricsRegistry.class) {
-                if (prometheusHttpServer == null) {
-                    SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-                    PrometheusCollector
-                        .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
-                    int port = prometheusConfiguration.getEventMeshPrometheusPort();
-                    try {
-                        // Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
-                        prometheusHttpServer = new HTTPServer(port, true);
-                    } catch (IOException e) {
-                        log.error("failed to start prometheus server, port: {} due to {}", port, e.getMessage());
-                    }
-                }
+
+        if (!started.compareAndSet(false, true)) {
+            return;
+        }
+
+        try {
+            this.prometheusConfiguration = Objects.requireNonNull(this.prometheusConfiguration, "prometheusConfiguration can't be null!");
+            String eventMeshPrometheusExportHost = prometheusConfiguration.getEventMeshPrometheusExportHost();
+            int eventMeshPrometheusPort = prometheusConfiguration.getEventMeshPrometheusPort();
+            this.openTelemetry = OpenTelemetryPrometheusManager.initOpenTelemetry(eventMeshPrometheusExportHost, eventMeshPrometheusPort);
+            PrometheusMetricsRegistryManager.createMetric(this.openTelemetry);
+        } catch (Exception e) {
+            log.error("failed to start prometheus export, Host: {}:{} due to {}", prometheusConfiguration.getEventMeshPrometheusExportHost(),
+                prometheusConfiguration.getEventMeshPrometheusPort(), e.getMessage());
+        }
+    }
+
+    @Override
+    public void showdown() {
+        if (this.openTelemetry instanceof OpenTelemetrySdk) {
+
+            try (OpenTelemetrySdk ignored = (OpenTelemetrySdk) this.openTelemetry) {
+                //OpenTelemetrySdk will call close auto
             }
         }
 
     }
 
     @Override
-    public void showdown() {
-        if (prometheusHttpServer != null) {
-            prometheusHttpServer.stop();
-        }
-    }
-
-    @Override
     public void register(Metric metric) {
-        if (metric == null) {
-            throw new IllegalArgumentException("Metric cannot be null");
-        }
-        if (metric instanceof HttpSummaryMetrics) {
-            PrometheusHttpExporter.export("apache-eventmesh", (HttpSummaryMetrics) metric);
-        }
-
-        if (metric instanceof TcpSummaryMetrics) {
-            PrometheusTcpExporter.export("apache-eventmesh", (TcpSummaryMetrics) metric);
-        }
-
-        if (metric instanceof GrpcSummaryMetrics) {
-            PrometheusGrpcExporter.export("apache-eventmesh", (GrpcSummaryMetrics) metric);
-        }
+        PrometheusMetricsRegistryManager.registerMetric(metric);
     }
 
     @Override

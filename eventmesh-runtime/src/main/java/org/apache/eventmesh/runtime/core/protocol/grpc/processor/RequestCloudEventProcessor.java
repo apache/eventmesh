@@ -60,14 +60,14 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
 
         SendMessageContext sendMessageContext = new SendMessageContext(seqNum, cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
-        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
+        eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
 
             @Override
             public void onSuccess(io.cloudevents.CloudEvent event) {
                 try {
-                    eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromQueue();
+                    eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordReceiveMsgFromQueue();
                     EventMeshCloudEventWrapper wrapper = (EventMeshCloudEventWrapper) grpcCommandProtocolAdaptor.fromCloudEvent(event);
 
                     emitter.onNext(wrapper.getMessage());
@@ -76,7 +76,7 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
                     long endTime = System.currentTimeMillis();
                     log.info("message|eventmesh2client|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId);
-                    eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
+                    eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToClient(EventMeshCloudEventUtils.getIp(wrapper.getMessage()));
                 } catch (Exception e) {
                     ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2),
                         emitter);

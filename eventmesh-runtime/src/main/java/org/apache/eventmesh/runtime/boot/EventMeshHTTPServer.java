@@ -54,7 +54,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -120,7 +120,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         httpRetryer = new HttpRetryer(this);
 
-        super.setMetrics(new HTTPMetricsServer(this, metricsRegistries));
+        super.setEventMeshHttpMetricsManager(new EventMeshHttpMetricsManager(this, metricsRegistries));
         subscriptionManager = new SubscriptionManager(eventMeshHttpConfiguration.isEventMeshServerMetaStorageEnable(), metaStorage);
 
         consumerManager = new ConsumerManager(this);
@@ -134,7 +134,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         transformerEngine = new TransformerEngine(metaStorage, producerManager, consumerManager);
 
         super.setHandlerService(new HandlerService());
-        super.getHandlerService().setMetrics(this.getMetrics());
+        super.getHandlerService().setMetrics(this.getEventMeshHttpMetricsManager());
 
         // get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.getEventMeshTracePluginType())
@@ -151,7 +151,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     @Override
     public void start() throws Exception {
         super.start();
-        this.getMetrics().start();
+        this.getEventMeshHttpMetricsManager().start();
 
         consumerManager.start();
         producerManager.start();
@@ -172,7 +172,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         super.shutdown();
 
-        this.getMetrics().shutdown();
+        this.getEventMeshHttpMetricsManager().shutdown();
 
         filterEngine.shutdown();
 
