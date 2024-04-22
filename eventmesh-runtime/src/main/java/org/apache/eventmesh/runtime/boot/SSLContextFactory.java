@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.runtime.configuration.EventMeshAdminConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
@@ -40,6 +41,9 @@ import javax.net.ssl.SSLContext;
 
 public class SSLContextFactory {
 
+    /**
+     * {@link EventMeshAdminConfiguration} will be parsed into {@link EventMeshHTTPConfiguration}.
+     */
     public static SSLContext getSslContext(final EventMeshHTTPConfiguration eventMeshHttpConfiguration)
         throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException, KeyManagementException {
 
