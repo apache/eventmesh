@@ -166,7 +166,7 @@ public class CreateTableParserListener extends TableBaseParserListener {
     @Override
     public void enterTableOptionAutoIncrement(TableOptionAutoIncrementContext ctx) {
         DecimalLiteralContext decimalLiteralContext = ctx.decimalLiteral();
-        if (null != decimalLiteralContext) {
+        if (decimalLiteralContext != null) {
             String autoIncrementNumber = Antlr4Utils.getText(decimalLiteralContext);
             this.tableEditor.withOption(MysqlTableOptions.AUTO_INCREMENT, autoIncrementNumber);
         }

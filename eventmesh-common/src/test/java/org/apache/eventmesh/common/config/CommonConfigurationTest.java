@@ -45,7 +45,6 @@ public class CommonConfigurationTest {
         Assertions.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
         Assertions.assertEquals("name-succeed!!!", config.getEventMeshName());
         Assertions.assertEquals("816", config.getSysID());
-        // Assertions.assertEquals("connector-succeed!!!", config.getEventMeshConnectorPluginType());
         Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
         Assertions.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
@@ -54,9 +53,6 @@ public class CommonConfigurationTest {
         Assertions.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
         Assertions.assertEquals("username-succeed!!!", config.getEventMeshMetaStoragePluginUsername());
         Assertions.assertEquals("password-succeed!!!", config.getEventMeshMetaStoragePluginPassword());
-
-        Assertions.assertEquals(Integer.valueOf(816), config.getEventMeshMetaStorageIntervalInMills());
-        Assertions.assertEquals(Integer.valueOf(1816), config.getEventMeshFetchMetaStorageAddrInterval());
 
         List<String> list = new ArrayList<>();
         list.add("metrics-succeed1!!!");

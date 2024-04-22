@@ -31,7 +31,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v8
         with:
           days-before-issue-stale: 90
           days-before-pr-stale: 60
@@ -47,3 +47,4 @@ jobs:
           exempt-issue-labels: 'pinned,discussion,help wanted,WIP,weopen-star,GLCC,summer of code'
           exempt-pr-labels: 'help wanted,dependencies'
           exempt-all-milestones: true # Exempt all issues/PRs with milestones from stale
+          operations-per-run: 30

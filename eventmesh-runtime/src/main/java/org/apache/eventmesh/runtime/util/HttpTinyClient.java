@@ -80,7 +80,7 @@ public class HttpTinyClient {
     }
 
     private static void setHeaders(HttpURLConnection conn, Collection<String> headers, String encoding) {
-        if (null != headers) {
+        if (headers != null) {
             for (Iterator<String> iter = headers.iterator(); iter.hasNext();) {
                 conn.addRequestProperty(iter.next(), iter.next());
             }
@@ -116,7 +116,7 @@ public class HttpTinyClient {
 
             return new HttpResult(respCode, resp);
         } finally {
-            if (null != conn) {
+            if (conn != null) {
                 conn.disconnect();
             }
         }

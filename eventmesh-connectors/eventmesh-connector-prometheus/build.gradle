@@ -19,7 +19,7 @@ dependencies {
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation 'org.apache.httpcomponents:httpclient'
     implementation 'com.github.rholder:guava-retrying'
-    implementation 'com.alibaba:fastjson'
+    implementation 'com.alibaba.fastjson2:fastjson2'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

@@ -26,7 +26,7 @@ dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
 
-    implementation 'com.alibaba:fastjson'
+    implementation 'com.alibaba.fastjson2:fastjson2'
     implementation 'com.google.guava:guava'
     implementation 'com.squareup.okhttp3:okhttp'
 

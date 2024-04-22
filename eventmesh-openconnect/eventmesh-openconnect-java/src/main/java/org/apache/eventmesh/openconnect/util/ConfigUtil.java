@@ -25,6 +25,7 @@ import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,6 +66,11 @@ public class ConfigUtil {
             throw new FileNotFoundException(filePathName);
         }
         return objectMapper.readValue(url, c);
+    }
+
+    public static <T> T parse(Map<String, Object> map, Class<T> c) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.convertValue(map, c);
     }
 
     private static Config parseSourceConfig(Class<? extends Config> c) throws Exception {

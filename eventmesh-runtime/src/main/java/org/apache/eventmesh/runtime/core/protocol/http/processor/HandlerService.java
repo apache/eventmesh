@@ -278,7 +278,6 @@ public class HandlerService {
             }
             ProcessorWrapper processorWrapper = HandlerService.this.httpProcessorMap.get(processorKey);
             try {
-                this.preHandler();
                 if (processorWrapper.httpProcessor instanceof AsyncHttpProcessor) {
                     // set actual async request
                     HttpEventWrapper httpEventWrapper = parseHttpRequest(request);
@@ -289,16 +288,22 @@ public class HandlerService {
                 response = processorWrapper.httpProcessor.handler(request);
 
                 if (processorWrapper.httpProcessor instanceof ShortHttpProcessor) {
-                    this.postHandler(ConnectionType.SHORT_LIVED);
+                    this.postHandlerWithTimeCostRecord(ConnectionType.SHORT_LIVED);
                     return;
                 }
-                this.postHandler(ConnectionType.PERSISTENT);
+                this.postHandlerWithTimeCostRecord(ConnectionType.PERSISTENT);
             } catch (Throwable e) {
                 exception = e;
                 // todo: according exception to generate response
                 this.response = HttpResponseUtils.createInternalServerError();
                 this.error();
             }
+        }
+
+        private void postHandlerWithTimeCostRecord(ConnectionType type) {
+            metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
+            HTTP_LOGGER.debug("{}", response);
+            postHandler(type);
         }
 
         private void postHandler(ConnectionType type) {
@@ -315,10 +320,6 @@ public class HandlerService {
             }
         }
 
-        private void preHandler() {
-            metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
-            HTTP_LOGGER.debug("{}", response);
-        }
 
         private void error() {
             log.error(this.exception.getMessage(), this.exception);
@@ -326,14 +327,6 @@ public class HandlerService {
             metrics.getSummaryMetrics().recordHTTPDiscard();
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
             HandlerService.this.sendResponse(ctx, this.request, this.response);
-        }
-
-        public void setResponseJsonBody(String body) {
-            this.sendResponse(HttpResponseUtils.setResponseJsonBody(body, ctx));
-        }
-
-        public void setResponseTextBody(String body) {
-            this.sendResponse(HttpResponseUtils.setResponseTextBody(body, ctx));
         }
 
         public void sendResponse(HttpResponse response) {

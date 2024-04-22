@@ -24,7 +24,7 @@ public class SystemUtilsTest {
 
     @Test
     public void isLinuxPlatform() {
-        if (null != SystemUtils.OS_NAME && SystemUtils.OS_NAME.toLowerCase().contains("linux")) {
+        if (SystemUtils.OS_NAME != null && SystemUtils.OS_NAME.toLowerCase().contains("linux")) {
             Assertions.assertTrue(SystemUtils.isLinuxPlatform());
             Assertions.assertFalse(SystemUtils.isWindowsPlatform());
         }
@@ -32,7 +32,7 @@ public class SystemUtilsTest {
 
     @Test
     public void isWindowsPlatform() {
-        if (null != SystemUtils.OS_NAME && SystemUtils.OS_NAME.toLowerCase().contains("windows")) {
+        if (SystemUtils.OS_NAME != null && SystemUtils.OS_NAME.toLowerCase().contains("windows")) {
             Assertions.assertFalse(SystemUtils.isLinuxPlatform());
             Assertions.assertTrue(SystemUtils.isWindowsPlatform());
         }
