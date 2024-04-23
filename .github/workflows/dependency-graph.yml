@@ -32,6 +32,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download and submit dependency graph
-        uses: gradle/actions/dependency-submission@v3
+        uses: gradle/actions/setup-gradle@v3
         with:
           dependency-graph: download-and-submit # Download saved dependency-graph and submit

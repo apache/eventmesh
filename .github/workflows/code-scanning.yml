@@ -51,9 +51,12 @@ jobs:
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
           languages: ${{ matrix.language }}
 
+      # Pre Submit dependency graph
       - name: Setup Gradle
         if: matrix.language == 'java'
         uses: gradle/actions/setup-gradle@v3
+        with:
+          dependency-graph: generate-and-upload
 
       - name: Set up JDK 11
         if: matrix.language == 'java'
@@ -61,13 +64,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 11
-
-      # Pre Submit dependency graph
-      - name: Generate and save dependency graph
-        if: matrix.language == 'java'
-        uses: gradle/actions/dependency-submission@v3
-        with:
-          dependency-graph: generate-and-upload
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
