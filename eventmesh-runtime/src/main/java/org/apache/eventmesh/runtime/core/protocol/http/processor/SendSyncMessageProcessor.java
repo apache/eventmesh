@@ -73,7 +73,6 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
     public void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
         throws Exception {
 
-        HttpCommand responseEventMeshCommand;
         HttpCommand request = asyncContext.getRequest();
         final String localAddress = IPUtils.getLocalAddress();
         final String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
