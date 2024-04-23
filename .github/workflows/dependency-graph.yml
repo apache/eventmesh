@@ -31,7 +31,16 @@ jobs:
   submit-dependency-graph:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 11
+
       - name: Download and submit dependency graph
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/gradle-build-action@v2
         with:
           dependency-graph: download-and-submit # Download saved dependency-graph and submit
