@@ -30,9 +30,10 @@ dependencies {
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"
 
-    implementation "org.apache.logging.log4j:log4j-api"
-    implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    api "com.alibaba.fastjson2:fastjson2"
+
+    runtimeOnly "org.apache.logging.log4j:log4j-core"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl"
 
     implementation 'com.github.seancfoley:ipaddress'
 
@@ -67,7 +68,7 @@ dependencies {
     testImplementation "org.slf4j:slf4j-api"
     testImplementation "org.apache.logging.log4j:log4j-api"
     testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j2-impl"
 
     testImplementation "com.lmax:disruptor"
 

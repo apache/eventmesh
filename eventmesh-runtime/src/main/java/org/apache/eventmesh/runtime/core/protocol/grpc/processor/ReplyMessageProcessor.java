@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReplyMessageProcessor {
 
-    private final Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
+    private static final Logger ACL_LOGGER = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -77,7 +77,7 @@ public class ReplyMessageProcessor {
         try {
             doAclCheck(message);
         } catch (Exception e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION,RequestReplyMessageProcessor reply failed", e);
+            ACL_LOGGER.warn("CLIENT HAS NO PERMISSION,RequestReplyMessageProcessor reply failed", e);
             ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
@@ -109,7 +109,7 @@ public class ReplyMessageProcessor {
 
         SendMessageContext sendMessageContext = new SendMessageContext(seqNum, cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
-        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
+        eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.reply(sendMessageContext, new SendCallback() {
 

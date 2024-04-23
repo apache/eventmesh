@@ -18,9 +18,9 @@
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc;
 
 import org.apache.eventmesh.common.ThreadWrapper;
-import org.apache.eventmesh.connector.jdbc.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.JdbcContext;
 import org.apache.eventmesh.connector.jdbc.ddl.DdlParser;
+import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;

@@ -18,11 +18,11 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.EventLoopGroup;
@@ -49,7 +49,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
 
     private int port;
 
-    private void buildBossGroup(final String threadPrefix) {
+    protected void buildBossGroup(final String threadPrefix) {
         if (useEpoll()) {
             bossGroup = new EpollEventLoopGroup(1, new EventMeshThreadFactory(threadPrefix + "NettyEpoll-Boss", true));
         } else {
@@ -83,7 +83,6 @@ public abstract class AbstractRemotingServer implements RemotingServer {
         buildBossGroup(threadPrefix);
         buildIOGroup(threadPrefix);
         buildWorkerGroup(threadPrefix);
-        initProducerManager();
     }
 
     public void start() throws Exception {
@@ -93,21 +92,22 @@ public abstract class AbstractRemotingServer implements RemotingServer {
     public void shutdown() throws Exception {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
-            LogUtils.info(log, "shutdown bossGroup");
+            log.info("shutdown bossGroup");
         }
-        producerManager.shutdown();
-
+        if (Objects.isNull(producerManager)) {
+            producerManager.shutdown();
+        }
         ThreadUtils.randomPause(TimeUnit.SECONDS.toMillis(DEFAULT_SLEEP_SECONDS));
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
-            LogUtils.info(log, "shutdown ioGroup");
+            log.info("shutdown ioGroup");
         }
 
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
 
-            LogUtils.info(log, "shutdown workerGroup");
+            log.info("shutdown workerGroup");
         }
     }
 

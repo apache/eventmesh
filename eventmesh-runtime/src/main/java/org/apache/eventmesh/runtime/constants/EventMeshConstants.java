@@ -21,10 +21,6 @@ import org.apache.eventmesh.common.Constants;
 
 public class EventMeshConstants {
 
-    public static final String EVENT_STORE_PROPERTIES = "eventstore";
-
-    public static final String EVENT_STORE_ENV = "EVENT_STORE";
-
     public static final String PROTOCOL_HTTP = "http";
 
     public static final String PROTOCOL_TCP = "tcp";
@@ -152,6 +148,9 @@ public class EventMeshConstants {
     public static final String MESSAGE = "message";
     public static final String CMD = "cmd";
     public static final String ACL = "acl";
+    public static final String BATCH_MSG = "batchMessage";
+    public static final String TCP_MONITOR = "tcpMonitor";
+    public static final String APP_MONITOR = "appMonitor";
     public static final String MSG_TYPE = "msgtype";
     public static final String PERSISTENT = "persistent";
     public static final String HANDLER_ORIGIN = "Access-Control-Allow-Origin";

@@ -40,11 +40,11 @@ buildscript {
     }
 }
 
-//Remove doclint warnings that pollute javadoc logs when building with java8
-if(JavaVersion.current().isJava8()){
+// Remove doclint warnings that pollute javadoc logs when building
+if (JavaVersion.current().isJava8()) {
     allprojects {
-        tasks.withType(Javadoc){
-            options.addStringOption('xdoclint:none','-quiet')
+        tasks.withType(Javadoc) {
+            options.addStringOption('xdoclint:none', '-quiet')
         }
     }
 }
@@ -139,7 +139,58 @@ allprojects {
     }
 }
 
-task tar(type: Tar) {
+tasks.register('dist') {
+    subprojects.forEach { subProject ->
+        dependsOn("${subProject.path}:jar")
+    }
+    def includedProjects =
+            ["eventmesh-common",
+             "eventmesh-meta:eventmesh-meta-api",
+             "eventmesh-metrics-plugin:eventmesh-metrics-api",
+             "eventmesh-protocol-plugin:eventmesh-protocol-api",
+             "eventmesh-retry:eventmesh-retry-api",
+             "eventmesh-runtime",
+             "eventmesh-security-plugin:eventmesh-security-api",
+             "eventmesh-spi",
+             "eventmesh-starter",
+             "eventmesh-storage-plugin:eventmesh-storage-api",
+             "eventmesh-trace-plugin:eventmesh-trace-api",
+             "eventmesh-webhook:eventmesh-webhook-api",
+             "eventmesh-webhook:eventmesh-webhook-admin",
+             "eventmesh-webhook:eventmesh-webhook-receive"]
+    doLast {
+        includedProjects.each {
+            def subProject = findProject(it)
+            logger.lifecycle('Install module: module: {}', subProject.name)
+            copy {
+                from subProject.jar.archivePath
+                into rootProject.file('dist/apps')
+            }
+            copy {
+                from subProject.file('bin')
+                into rootProject.file('dist/bin')
+            }
+            copy {
+                from subProject.file('conf')
+                from subProject.sourceSets.main.resources.srcDirs
+                into rootProject.file('dist/conf')
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                exclude 'META-INF'
+            }
+            copy {
+                from subProject.configurations.runtimeClasspath
+                into rootProject.file('dist/lib')
+                exclude 'eventmesh-*'
+            }
+        }
+        copy {
+            from 'tools/third-party-licenses'
+            into rootProject.file('dist')
+        }
+    }
+}
+
+tasks.register('tar', Tar) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
     archiveExtension.set('tar.gz')
@@ -150,7 +201,7 @@ task tar(type: Tar) {
     }
 }
 
-task zip(type: Zip) {
+tasks.register('zip', Zip) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
     archiveExtension.set('zip')
@@ -160,50 +211,39 @@ task zip(type: Zip) {
     }
 }
 
-task installPlugin() {
-    if (!new File("${rootDir}/dist").exists()) {
-        return
+tasks.register('installPlugin') {
+    var pluginProjects = subprojects.findAll {
+        it.file('gradle.properties').exists()
+                && it.properties.containsKey('pluginType')
+                && it.properties.containsKey('pluginName')
     }
-    String[] libJars = java.util.Optional.ofNullable(new File("${rootDir}/dist/lib").list()).orElseGet(() -> new String[0])
-    getAllprojects().forEach(subProject -> {
-        var file = new File("${subProject.projectDir}/gradle.properties")
-        if (!file.exists()) {
-            return
-        }
-        var properties = new Properties()
-        properties.load(new FileInputStream(file))
-        var pluginType = properties.getProperty("pluginType")
-        var pluginName = properties.getProperty("pluginName")
-        if (pluginType == null || pluginName == null) {
-            return
-        }
-        var pluginFile = new File("${rootDir}/dist/plugin/${pluginType}/${pluginName}")
-        if (pluginFile.exists()) {
-            return
-        }
-        pluginFile.mkdirs()
-        println String.format(
-                "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
-        )
-
-        copy {
-            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
-            from "${subProject.getProjectDir()}/dist/apps"
-        }
-        copy {
-            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
-            from "${subProject.getProjectDir()}/dist/lib/"
-            exclude(libJars)
-        }
-        copy {
-            into "${rootDir}/dist/conf"
-            from "${subProject.getProjectDir()}/dist/conf"
-            exclude 'META-INF'
-        }
-    })
+    doLast {
+        String[] libJars = java.util.Optional.ofNullable(file('dist/lib').list()).orElse(new String[0])
+        pluginProjects.forEach(subProject -> {
+            var pluginType = subProject.properties.get('pluginType')
+            var pluginName = subProject.properties.get('pluginName')
+            logger.lifecycle('Install plugin: pluginType: {}, pluginInstanceName: {}, module: {}', pluginType,
+                    pluginName, subProject.name)
+            copy {
+                from subProject.jar.archivePath
+                into rootProject.file("dist/plugin/${pluginType}/${pluginName}")
+            }
+            copy {
+                from subProject.configurations.runtimeClasspath
+                into rootProject.file("dist/plugin/${pluginType}/${pluginName}")
+                exclude(libJars)
+            }
+            copy {
+                from subProject.file('conf')
+                from subProject.sourceSets.main.resources.srcDirs
+                into rootProject.file("dist/conf")
+                exclude 'META-INF'
+            }
+        })
+    }
 }
 
-task printProjects() {
+tasks.register('printProjects') {
     getAllprojects().forEach(subProject -> {
         if ("EventMesh".equals(subProject.getName())) {
             return
@@ -300,77 +340,6 @@ subprojects {
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
-        }
-    }
-
-    task dist(dependsOn: ['jar']) {
-        doFirst {
-            new File("${projectDir}/dist/bin").mkdirs()
-            new File("${projectDir}/dist/apps").mkdirs()
-            new File("${projectDir}/dist/conf").mkdirs()
-            new File("${projectDir}/dist/lib").mkdirs()
-            new File("${projectDir}/dist/licenses").mkdirs()
-        }
-        Set<String> rootProject = ["eventmesh-common",
-                                   "eventmesh-storage-api",
-                                   "eventmesh-metrics-api",
-                                   "eventmesh-meta-api",
-                                   "eventmesh-trace-api",
-                                   "eventmesh-retry-api",
-                                   "eventmesh-runtime",
-                                   "eventmesh-security-api",
-                                   "eventmesh-protocol-api",
-                                   "eventmesh-starter",
-                                   "eventmesh-spi",
-                                   "eventmesh-webhook-api",
-                                   "eventmesh-webhook-admin",
-                                   "eventmesh-webhook-receive"]
-        doLast {
-            copy {
-                into("${projectDir}/dist/apps")
-                from project.jar.getArchivePath()
-            }
-            copy {
-                into("${projectDir}/dist/lib")
-                from project.configurations.runtimeClasspath
-            }
-            copy {
-                into("${projectDir}/dist/bin")
-                from 'bin'
-            }
-            copy {
-                into("${projectDir}/dist/conf")
-                from 'conf', sourceSets.main.resources.srcDirs
-                setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-                exclude 'META-INF'
-            }
-            if (rootProject.contains(project.name)) {
-                new File("${rootDir}/dist/apps").mkdirs()
-                new File("${rootDir}/dist/lib").mkdirs()
-                new File("${rootDir}/dist/bin").mkdirs()
-                new File("${rootDir}/dist/conf").mkdirs()
-                copy {
-                    into("${rootDir}/dist/apps")
-                    from "${projectDir}/dist/apps"
-                }
-                copy {
-                    into "${rootDir}/dist/lib"
-                    from "${projectDir}/dist/lib"
-                    exclude "eventmesh-*"
-                }
-                copy {
-                    into "${rootDir}/dist/bin"
-                    from "${projectDir}/dist/bin"
-                }
-                copy {
-                    into "${rootDir}/dist/conf"
-                    from "${projectDir}/dist/conf"
-                }
-            }
-            copy {
-                into "${rootDir}/dist"
-                from "${rootDir}/tools/third-party-licenses"
-            }
         }
     }
 
@@ -473,6 +442,7 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
+    def log4jVersion = '2.22.1'
 
     dependencyManagement {
         dependencies {
@@ -486,10 +456,10 @@ subprojects {
 
             dependency "com.google.guava:guava:31.0.1-jre"
 
-            dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.17.1"
-            dependency "org.apache.logging.log4j:log4j-core:2.17.1"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
+            dependency "org.slf4j:slf4j-api:2.0.9"
+            dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+            dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -511,15 +481,13 @@ subprojects {
             dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
             dependency "io.dropwizard.metrics:metrics-json:4.1.0"
 
-            dependency 'io.opentelemetry:opentelemetry-api:1.3.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk:1.3.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.3.0-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
-            dependency 'io.prometheus:simpleclient:0.8.1'
-            dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
-            dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.3.0'
-            dependency 'io.opentelemetry:opentelemetry-semconv:1.3.0-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-jaeger:1.4.0'
+            dependency 'io.opentelemetry:opentelemetry-api:1.36.0'
+            dependency 'io.opentelemetry:opentelemetry-sdk:1.36.0'
+            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.36.0'
+            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.36.0-alpha'
+            dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.36.0'
+            dependency 'io.opentelemetry:opentelemetry-semconv:1.30.1-alpha'
+            dependency 'io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1'
 
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
@@ -567,7 +535,7 @@ subprojects {
             dependency "org.projectlombok:lombok:1.18.22"
             dependency "com.github.seancfoley:ipaddress:5.3.3"
             dependency "javax.annotation:javax.annotation-api:1.3.2"
-            dependency "com.alibaba:fastjson:1.2.83"
+            dependency "com.alibaba.fastjson2:fastjson2:2.0.48"
 
             dependency "software.amazon.awssdk:s3:2.20.29"
             dependency "com.github.rholder:guava-retrying:2.0.0"

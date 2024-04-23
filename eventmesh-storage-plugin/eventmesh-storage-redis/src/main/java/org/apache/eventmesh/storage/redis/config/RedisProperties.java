@@ -18,7 +18,7 @@
 package org.apache.eventmesh.storage.redis.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import java.util.Properties;
 
@@ -31,31 +31,31 @@ public class RedisProperties {
     /**
      * The redis server configuration to be used.
      */
-    @ConfigFiled(field = "serverType")
+    @ConfigField(field = "serverType")
     private ServerType serverType = ServerType.SINGLE;
 
     /**
      * The master server name used by Redis Sentinel servers and master change monitoring task.
      */
-    @ConfigFiled(field = "serverMasterName")
+    @ConfigField(field = "serverMasterName")
     private String serverMasterName = "master";
 
     /**
      * The address of the redis server following format -- host1:port1,host2:port2,……
      */
-    @ConfigFiled(field = "serverAddress")
+    @ConfigField(field = "serverAddress")
     private String serverAddress;
 
     /**
      * The password for redis authentication.
      */
-    @ConfigFiled(field = "serverPassword")
+    @ConfigField(field = "serverPassword")
     private String serverPassword;
 
     /**
      * The redisson options, redisson properties prefix is `eventMesh.server.redis.redisson`
      */
-    @ConfigFiled(field = "redisson")
+    @ConfigField(field = "redisson")
     private Properties redissonProperties;
 
     public enum ServerType {

@@ -52,4 +52,44 @@ public class JdbcStringUtilsTest {
         assertTrue(JdbcStringUtils.isWrapped('\"'));
         assertFalse(JdbcStringUtils.isWrapped('A'));
     }
+
+    @Test
+    public void testCompareVersion() {
+        // Test case 1: versionX is less than versionY
+        String versionX1 = "1.0.0";
+        String versionY1 = "1.1.0";
+        int expected1 = -1;
+        int result1 = JdbcStringUtils.compareVersion(versionX1, versionY1);
+        assertEquals(expected1, result1);
+
+        // Test case 2: versionX is equal to versionY
+        String versionX2 = "1.2.3";
+        String versionY2 = "1.2.3";
+        int expected2 = 0;
+        int result2 = JdbcStringUtils.compareVersion(versionX2, versionY2);
+        assertEquals(expected2, result2);
+
+        // Test case 3: versionX is greater than versionY
+        String versionX3 = "2.0.0";
+        String versionY3 = "1.2.3";
+        int expected3 = 1;
+        int result3 = JdbcStringUtils.compareVersion(versionX3, versionY3);
+        assertEquals(expected3, result3);
+
+        assertEquals(0, JdbcStringUtils.compareVersion("1.0", "1.0"));
+        assertEquals(1, JdbcStringUtils.compareVersion("1.1", "1.0"));
+        assertEquals(-1, JdbcStringUtils.compareVersion("1.0", "1.1"));
+        assertEquals(1, JdbcStringUtils.compareVersion("1.10", "1.9"));
+        assertEquals(-1, JdbcStringUtils.compareVersion("1.9", "1.10"));
+        assertEquals(0, JdbcStringUtils.compareVersion("1.0.0", "1"));
+        assertEquals(0, JdbcStringUtils.compareVersion("1.0.0.0", "1.0"));
+        assertEquals(0, JdbcStringUtils.compareVersion("1.0.0.0", "1"));
+        assertEquals(-1, JdbcStringUtils.compareVersion("1.0.0.0", "1.1"));
+        assertEquals(1, JdbcStringUtils.compareVersion("1.1", "1.0.0.0"));
+        try {
+            assertEquals(0, JdbcStringUtils.compareVersion("1.1", "1.a"));
+        } catch (Exception e) {
+            assertTrue(e instanceof NumberFormatException);
+        }
+    }
 }

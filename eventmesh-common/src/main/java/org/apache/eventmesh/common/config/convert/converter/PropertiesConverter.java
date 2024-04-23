@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.config.convert.converter;
 
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
@@ -41,7 +41,7 @@ public class PropertiesConverter implements ConvertValue<Properties> {
     }
 
     @Override
-    public Object processFieldValue(ConvertInfo convertInfo, String prefix, ConfigFiled configFiled) {
+    public Object processFieldValue(ConvertInfo convertInfo, String prefix, ConfigField configField) {
         Properties properties = convertInfo.getProperties();
 
         if (StringUtils.isBlank(prefix)) {

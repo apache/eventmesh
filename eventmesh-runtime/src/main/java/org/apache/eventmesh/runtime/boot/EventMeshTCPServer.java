@@ -24,7 +24,6 @@ import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
@@ -45,7 +44,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMeshRebalanceService;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 
 import java.util.List;
@@ -89,7 +88,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     }
 
     public void init() throws Exception {
-        LogUtils.info(log, "==================EventMeshTCPServer Initialing==================");
+        log.info("==================EventMeshTCPServer Initialing==================");
         super.init();
 
         rateLimiter = RateLimiter.create(eventMeshTCPConfiguration.getEventMeshTcpMsgReqnumPerSecond());
@@ -106,8 +105,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
         clientSessionGroupMapping.init();
         super.setClientSessionGroupMapping(clientSessionGroupMapping);
 
-        super.setEventMeshTcpMonitor(new EventMeshTcpMonitor(this, metricsRegistries));
-        super.getEventMeshTcpMonitor().init();
+        super.setEventMeshTcpMetricsManager(new EventMeshTcpMetricsManager(this, metricsRegistries));
 
         if (eventMeshTCPConfiguration.isEventMeshServerMetaStorageEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this, new EventMeshRebalanceImpl(this));
@@ -119,13 +117,13 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
         registerTCPRequestProcessor();
 
-        LogUtils.info(log, "--------------------------EventMeshTCPServer Inited");
+        log.info("--------------------------EventMeshTCPServer Inited");
     }
 
     @Override
     public void start() throws Exception {
         super.start();
-        super.getEventMeshTcpMonitor().start();
+        super.getEventMeshTcpMetricsManager().start();
 
         clientSessionGroupMapping.start();
         tcpRetryer.start();
@@ -135,14 +133,14 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             eventMeshRebalanceService.start();
         }
 
-        LogUtils.info(log, "--------------------------EventMeshTCPServer Started");
+        log.info("--------------------------EventMeshTCPServer Started");
     }
 
     @Override
     public void shutdown() throws Exception {
         super.shutdown();
 
-        super.getEventMeshTcpMonitor().shutdown();
+        super.getEventMeshTcpMetricsManager().shutdown();
 
         clientSessionGroupMapping.shutdown();
         ThreadUtils.sleep(40, TimeUnit.SECONDS);
@@ -154,7 +152,7 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             this.unRegister();
         }
 
-        LogUtils.info(log, "--------------------------EventMeshTCPServer Shutdown");
+        log.info("--------------------------EventMeshTCPServer Shutdown");
     }
 
     /**
@@ -286,4 +284,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     public TcpRetryer getTcpRetryer() {
         return tcpRetryer;
     }
+
+
 }

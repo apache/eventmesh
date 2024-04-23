@@ -29,7 +29,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.filter.pattern.Pattern;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -219,20 +218,19 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
             eventMeshHttpConfiguration.getEventMeshWebhookOrigin(), urlAuthType);
 
-        eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordPushMsg();
+        eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordPushMsg();
 
         this.lastPushTime = System.currentTimeMillis();
 
         addToWaitingMap(this);
 
-        LogUtils.info(CMD_LOGGER, "cmd={}|eventMesh2client|from={}|to={}", requestCode,
-            localAddress, currPushUrl);
+        CMD_LOGGER.info("cmd={}|eventMesh2client|from={}|to={}", requestCode, localAddress, currPushUrl);
 
         try {
             eventMeshHTTPServer.getHttpClientPool().getClient().execute(builder, response -> {
                 removeWaitingMap(AsyncHTTPPushRequest.this);
                 long cost = System.currentTimeMillis() - lastPushTime;
-                eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHTTPPushTimeCost(cost);
+                eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordHTTPPushTimeCost(cost);
 
                 if (processResponseStatus(response.getStatusLine().getStatusCode(), response)) {
                     // this is successful response, process response payload
@@ -267,11 +265,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                         default: // do nothing
                     }
                 } else {
-                    eventMeshHTTPServer.getMetrics().getSummaryMetrics().recordHttpPushMsgFailed();
-                    LogUtils.info(MESSAGE_LOGGER, "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}",
-                        currPushUrl, handleMsgContext.getTopic(),
-                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordHttpPushMsgFailed();
+                    MESSAGE_LOGGER.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}",
+                        currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                     if (isComplete()) {
                         handleMsgContext.finish();
@@ -281,16 +277,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             });
 
             if (MESSAGE_LOGGER.isDebugEnabled()) {
-                MESSAGE_LOGGER.debug("message|eventMesh2client|url={}|topic={}|event={}", currPushUrl,
-                    handleMsgContext.getTopic(),
-                    handleMsgContext.getEvent());
+                MESSAGE_LOGGER.debug("message|eventMesh2client|url={}|topic={}|event={}",
+                    currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getEvent());
             } else {
-                if (MESSAGE_LOGGER.isInfoEnabled()) {
-                    MESSAGE_LOGGER
-                        .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                            currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
-                }
+                MESSAGE_LOGGER.info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                    currPushUrl, handleMsgContext.getTopic(), handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
             }
         } catch (IOException e) {
             MESSAGE_LOGGER.error("push2client err", e);
@@ -365,12 +356,12 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             return ClientRetCode.FAIL;
         } catch (NumberFormatException e) {
-            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+            MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}",
+                currPushUrl, handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         } catch (Exception e) {
-            LogUtils.warn(MESSAGE_LOGGER, "url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+            MESSAGE_LOGGER.warn("url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}",
+                currPushUrl, handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         }
     }

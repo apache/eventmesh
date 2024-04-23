@@ -19,7 +19,7 @@ package org.apache.eventmesh.connector.jdbc.source;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.apache.eventmesh.connector.jdbc.source.dialect.DatabaseDialectFactory;
+import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialectFactory;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.CdcEngineFactory;
 import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.SnapshotEngineFactory;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;

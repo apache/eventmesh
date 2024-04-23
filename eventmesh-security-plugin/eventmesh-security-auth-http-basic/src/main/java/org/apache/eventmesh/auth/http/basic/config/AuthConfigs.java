@@ -18,7 +18,7 @@
 package org.apache.eventmesh.auth.http.basic.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import lombok.Data;
 
@@ -26,9 +26,9 @@ import lombok.Data;
 @Config(prefix = "auth", path = "classPath://auth-http-basic.properties")
 public class AuthConfigs {
 
-    @ConfigFiled(field = "username")
+    @ConfigField(field = "username")
     private String username;
 
-    @ConfigFiled(field = "password")
+    @ConfigField(field = "password")
     public String password;
 }

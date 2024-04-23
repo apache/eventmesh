@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	eventmeshoperatorv1 "github.com/apache/eventmesh/eventmesh-operator/api/v1"
+	"github.com/apache/eventmesh/eventmesh-operator/share"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -90,12 +91,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtime/finalizers,verbs=update
+//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtimes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtimes/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=eventmesh-operator.eventmesh,resources=runtimes/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=pods/exec,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="apps",resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="apps",resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -231,8 +233,24 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 		r.Logger.Error(err, "Not found eventmesh runtime pods")
 	}
 
+	runningEventMeshRuntimeNum := getRunningRuntimeNum(podList.Items)
+	if runningEventMeshRuntimeNum == eventMeshRuntime.Spec.Size {
+		share.IsEventMeshRuntimeInitialized = true
+	}
+
 	r.Logger.Info("Successful reconciliation!")
-	return reconcile.Result{}, nil
+
+	return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
+}
+
+func getRunningRuntimeNum(pods []corev1.Pod) int {
+	var num = 0
+	for _, pod := range pods {
+		if reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
+			num++
+		}
+	}
+	return num
 }
 
 func getRuntimePodNames(pods []corev1.Pod) []string {
@@ -273,13 +291,14 @@ func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshope
 					Labels: label,
 				},
 				Spec: corev1.PodSpec{
-					DNSPolicy:         corev1.DNSClusterFirstWithHostNet,
+					DNSPolicy:         runtime.Spec.RuntimePodTemplate.Template.Spec.DNSPolicy,
 					Affinity:          runtime.Spec.RuntimePodTemplate.Template.Spec.Affinity,
 					Tolerations:       runtime.Spec.RuntimePodTemplate.Template.Spec.Tolerations,
 					NodeSelector:      runtime.Spec.RuntimePodTemplate.Template.Spec.NodeSelector,
 					PriorityClassName: runtime.Spec.RuntimePodTemplate.Template.Spec.PriorityClassName,
 					HostNetwork:       runtime.Spec.RuntimePodTemplate.Template.Spec.HostNetwork,
 					Containers: []corev1.Container{{
+						Resources:       runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Resources,
 						Image:           runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Image,
 						Name:            runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Name,
 						SecurityContext: getContainerSecurityContext(runtime),

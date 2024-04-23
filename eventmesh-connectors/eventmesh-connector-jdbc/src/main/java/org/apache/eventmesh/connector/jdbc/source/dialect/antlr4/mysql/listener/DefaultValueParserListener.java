@@ -83,7 +83,7 @@ public class DefaultValueParserListener extends MySqlParserBaseListener {
                 if (stringLiteralContext.COLLATE() == null) {
                     columnEditor.defaultValueExpression(sign + unquote(stringLiteralContext.getText()));
                 } else {
-                    columnEditor.collate(sign + unquote(stringLiteralContext.STRING_LITERAL(0).getText()));
+                    columnEditor.collation(sign + unquote(stringLiteralContext.STRING_LITERAL(0).getText()));
                 }
             } else if (ctx.constant().decimalLiteral() != null) {
                 columnEditor.defaultValueExpression(sign + ctx.constant().decimalLiteral().getText());
@@ -117,14 +117,14 @@ public class DefaultValueParserListener extends MySqlParserBaseListener {
              *     ;
              */
             List<CurrentTimestampContext> currentTimestampContexts = ctx.currentTimestamp();
-            if (currentTimestampContexts.size() > 1 || (ctx.ON() == null && ctx.UPDATE() == null)) {
+            if (currentTimestampContexts.size() > 1 && (ctx.ON() != null && ctx.UPDATE() != null)) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(currentTimestampContexts.get(0).getText()).append(" ").append(ctx.ON().getText()).append(" ").append(ctx.UPDATE())
+                    .append(" ").append(currentTimestampContexts.get(1).getText());
+                columnEditor.defaultValueExpression(builder.toString());
+            } else if (currentTimestampContexts.size() == 1) {
                 CurrentTimestampContext currentTimestampContext = currentTimestampContexts.get(0);
-                //
-                if (currentTimestampContext.CURRENT_TIMESTAMP() != null || currentTimestampContext.NOW() != null) {
-                    columnEditor.defaultValueExpression("1970-01-01 00:00:00");
-                } else {
-                    columnEditor.defaultValueExpression(currentTimestampContext.getText());
-                }
+                columnEditor.defaultValueExpression(currentTimestampContext.getText());
             }
         } else if (ctx.expression() != null) {
             // e.g. CREATE TABLE t2 (b BLOB DEFAULT ('abc'));

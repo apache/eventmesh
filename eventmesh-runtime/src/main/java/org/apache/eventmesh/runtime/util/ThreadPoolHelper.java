@@ -34,7 +34,7 @@ public class ThreadPoolHelper {
         log.info("The ThreadPool's state==================");
         log.info("Shutdown | Terminating | Terminated: {} | {} | {}", threadPool.isShutdown(), threadPool.isTerminating(), threadPool.isTerminated());
         log.info("Active Threads: " + threadPool.getActiveCount());
-        log.info("Completed Tasks / Tasks: {} / {}" + threadPool.getCompletedTaskCount(), threadPool.getTaskCount());
+        log.info("Completed Tasks / Tasks: {} / {}", threadPool.getCompletedTaskCount(), threadPool.getTaskCount());
         log.info("Queue Size: " + threadPool.getQueue().size());
         log.info("Core Pool Size: " + threadPool.getCorePoolSize());
         log.info("Maximum Pool Size: " + threadPool.getMaximumPoolSize());

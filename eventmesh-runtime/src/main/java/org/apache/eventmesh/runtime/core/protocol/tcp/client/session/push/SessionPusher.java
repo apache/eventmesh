@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -53,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SessionPusher {
 
-    private final Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
+    private static final Logger MESSAGE_LOGGER = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
     private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
@@ -105,15 +106,12 @@ public class SessionPusher {
             pkg = (Package) protocolAdaptor.fromCloudEvent(downStreamMsgContext.event);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
             pkg.getHeader().putProperty(Constants.PROTOCOL_TYPE, protocolType);
-            messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, pkg, session.getClient());
+            MESSAGE_LOGGER.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, pkg, session.getClient());
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), downStreamMsgContext.seq));
         } finally {
-            Objects.requireNonNull(session.getClientGroupWrapper().get())
-                .getEventMeshTcpMonitor()
-                .getTcpSummaryMetrics()
-                .getEventMesh2clientMsgNum()
-                .incrementAndGet();
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMetricsManager()
+                .eventMesh2clientMsgNumIncrement(IPUtils.parseChannelRemoteAddr(downStreamMsgContext.getSession().getContext().channel()));
 
             // TODO uploadTrace
             String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();

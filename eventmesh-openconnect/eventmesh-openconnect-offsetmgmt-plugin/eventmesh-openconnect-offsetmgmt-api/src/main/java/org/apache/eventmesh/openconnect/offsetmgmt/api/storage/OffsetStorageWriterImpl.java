@@ -53,9 +53,12 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
     }
 
     @Override
-    public void writeOffset(RecordPartition partition, RecordOffset position) {
-        ConnectorRecordPartition extendRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartition());
-        data.put(extendRecordPartition, position);
+    public void writeOffset(RecordPartition partition, RecordOffset offset) {
+        ConnectorRecordPartition extendRecordPartition;
+        if (partition != null) {
+            extendRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartition());
+            data.put(extendRecordPartition, offset);
+        }
     }
 
     /**
@@ -81,7 +84,8 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
      */
     public synchronized boolean beginFlush() {
         if (isFlushing()) {
-            throw new RuntimeException("OffsetStorageWriter is already flushing");
+            log.warn("OffsetStorageWriter is already flushing");
+            return false;
         }
         if (data.isEmpty()) {
             return false;

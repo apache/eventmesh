@@ -35,7 +35,7 @@ public class HttpTinyClient {
     public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues,
         String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
-        url += (null == encodedContent) ? "" : ("?" + encodedContent);
+        url += (encodedContent == null) ? "" : ("?" + encodedContent);
 
         HttpURLConnection conn = null;
         try {
@@ -65,7 +65,7 @@ public class HttpTinyClient {
     private static String encodingParams(Collection<String> paramValues, String encoding)
         throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
-        if (null == paramValues) {
+        if (paramValues == null) {
             return null;
         }
 
@@ -80,7 +80,7 @@ public class HttpTinyClient {
     }
 
     private static void setHeaders(HttpURLConnection conn, Collection<String> headers, String encoding) {
-        if (null != headers) {
+        if (headers != null) {
             for (Iterator<String> iter = headers.iterator(); iter.hasNext();) {
                 conn.addRequestProperty(iter.next(), iter.next());
             }
@@ -116,7 +116,7 @@ public class HttpTinyClient {
 
             return new HttpResult(respCode, resp);
         } finally {
-            if (null != conn) {
+            if (conn != null) {
                 conn.disconnect();
             }
         }

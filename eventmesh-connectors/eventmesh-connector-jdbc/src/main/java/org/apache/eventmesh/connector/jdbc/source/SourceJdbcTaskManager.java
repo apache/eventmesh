@@ -64,7 +64,7 @@ public class SourceJdbcTaskManager extends AbstractJdbcTaskManager<SourceEventMe
     }
 
     private void doHandleEvent(Event event) {
-        if (null == event) {
+        if (event == null) {
             return;
         }
         JdbcConnectData jdbcConnectData = event.getJdbcConnectData();

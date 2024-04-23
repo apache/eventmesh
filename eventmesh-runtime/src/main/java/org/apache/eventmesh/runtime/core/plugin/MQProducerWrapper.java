@@ -91,5 +91,4 @@ public class MQProducerWrapper extends MQWrapper {
     public Producer getMeshMQProducer() {
         return meshMQProducer;
     }
-
 }

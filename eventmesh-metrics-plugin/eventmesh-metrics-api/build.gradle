@@ -19,6 +19,7 @@ dependencies {
     api project(":eventmesh-spi")
     implementation project(":eventmesh-common")
 
+    implementation 'io.opentelemetry:opentelemetry-api'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -27,4 +28,6 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-inline"
 }
+

@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id 'com.gradle.enterprise' version '3.15.1'
+    id 'com.gradle.enterprise' version '3.16.1'
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.12.1'
 }
 
@@ -77,6 +77,7 @@ include 'eventmesh-connectors:eventmesh-connector-wecom'
 include 'eventmesh-connectors:eventmesh-connector-slack'
 include 'eventmesh-connectors:eventmesh-connector-wechat'
 include 'eventmesh-connectors:eventmesh-connector-http'
+include 'eventmesh-connectors:eventmesh-connector-chatgpt'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'

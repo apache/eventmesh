@@ -25,11 +25,13 @@ import org.apache.eventmesh.connector.jdbc.table.catalog.Table;
 import java.util.List;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
 /**
  * Represents changes in a catalog, such as schema or table modifications.
  */
+@Data
+@NoArgsConstructor
 public class CatalogChanges {
 
     /**
@@ -52,10 +54,10 @@ public class CatalogChanges {
     // The table associated with the changes
     private Table table;
     // The list of columns affected by the changes
-    private List<? extends Column> columns;
+    private List<? extends Column<?>> columns;
 
     private CatalogChanges(String type, String operationType, CatalogSchema catalog, Table table,
-        List<? extends Column> columns) {
+        List<? extends Column<?>> columns) {
         this.type = type;
         this.operationType = operationType;
         this.catalog = catalog;
@@ -81,7 +83,7 @@ public class CatalogChanges {
         private String operationType;
         private CatalogSchema catalog;
         private Table table;
-        private List<? extends Column> columns;
+        private List<? extends Column<?>> columns;
 
         /**
          * Sets the operation type for the change.
@@ -123,7 +125,7 @@ public class CatalogChanges {
          * @param columns The list of Column instances.
          * @return The Builder instance.
          */
-        public Builder columns(List<? extends Column> columns) {
+        public Builder columns(List<? extends Column<?>> columns) {
             this.columns = columns;
             return this;
         }

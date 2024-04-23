@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.jdbc.table.catalog;
 import org.apache.eventmesh.connector.jdbc.table.type.EventMeshDataType;
 
 import java.sql.JDBCType;
+import java.util.List;
 
 public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col extends Column> implements ColumnEditor<CE, Col> {
 
@@ -36,7 +37,7 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
     /**
      * Length of the column
      */
-    private Integer columnLength;
+    private Long columnLength;
 
     /**
      * Decimal point of the column
@@ -67,6 +68,19 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
     private boolean optional;
 
     private int order;
+
+    private String charsetName;
+
+    /**
+     * Indicates if the column is auto incremented. For example: MySQL
+     */
+    private Boolean autoIncremented;
+
+    private Boolean generated;
+
+    private List<String> enumValues;
+
+    private Options options;
 
     public AbstractColumnEditorImpl(String name) {
         this.name = name;
@@ -132,7 +146,7 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
      */
     @SuppressWarnings("unchecked")
     @Override
-    public CE withEventMeshType(EventMeshDataType<?> eventMeshType) {
+    public CE withEventMeshType(EventMeshDataType eventMeshType) {
         this.eventMeshDataType = eventMeshType;
         return (CE) this;
     }
@@ -158,7 +172,7 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
      */
     @SuppressWarnings("unchecked")
     @Override
-    public CE length(int length) {
+    public CE length(long length) {
         this.columnLength = length;
         return (CE) this;
     }
@@ -241,11 +255,47 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
         return (CE) this;
     }
 
-    public EventMeshDataType<?> ofEventMeshDataType() {
+    @SuppressWarnings("unchecked")
+    @Override
+    public CE charsetName(String charsetName) {
+        this.charsetName = charsetName;
+        return (CE) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public CE enumValues(List<String> enumValues) {
+        this.enumValues = enumValues;
+        return (CE) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public CE withOption(String key, Object value) {
+        if (options == null) {
+            this.options = new Options();
+        }
+        this.options.put(key, value);
+        return (CE) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public CE withOptions(Options options) {
+        if (options != null) {
+            if (this.options == null) {
+                this.options = new Options();
+            }
+            this.options.putAll(options);
+        }
+        return (CE) this;
+    }
+
+    public EventMeshDataType ofEventMeshDataType() {
         return eventMeshDataType;
     }
 
-    public Integer ofColumnLength() {
+    public Long ofColumnLength() {
         return columnLength;
     }
 
@@ -283,5 +333,17 @@ public abstract class AbstractColumnEditorImpl<CE extends ColumnEditor, Col exte
 
     public int ofOrder() {
         return this.order;
+    }
+
+    public String ofCharsetName() {
+        return this.charsetName;
+    }
+
+    public List<String> ofEnumValues() {
+        return this.enumValues;
+    }
+
+    public Options ofOptions() {
+        return this.options;
     }
 }

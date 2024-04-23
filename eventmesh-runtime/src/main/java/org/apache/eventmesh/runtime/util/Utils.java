@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.util;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
@@ -72,7 +73,7 @@ public class Utils {
 
                         if (session != null) {
                             Objects.requireNonNull(session.getClientGroupWrapper().get())
-                                .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
+                                .getEventMeshTcpMetricsManager().eventMesh2clientMsgNumIncrement(IPUtils.parseChannelRemoteAddr(ctx.channel()));
                         }
                     }
                 });

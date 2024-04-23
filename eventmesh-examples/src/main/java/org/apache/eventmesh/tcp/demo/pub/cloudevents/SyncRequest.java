@@ -24,7 +24,6 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.LogUtils;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
@@ -61,12 +60,12 @@ public class SyncRequest {
 
             final CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
 
-            LogUtils.info(log, "begin send rr msg: {}", event);
+            log.info("begin send rr msg: {}", event);
 
             final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
             final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
-            if (null == eventFormat) {
+            if (eventFormat == null) {
                 log.error("eventFormat is null. end the process");
                 return;
             }
@@ -76,13 +75,13 @@ public class SyncRequest {
 
             // check-NPE CloudEventData
             final CloudEventData cloudEventData = replyEvent.getData();
-            if (null == cloudEventData) {
+            if (cloudEventData == null) {
                 log.error("replyEvent.data is null. end the process");
                 return;
             }
 
             final String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-            LogUtils.info(log, "receive rr reply: {}|{}", response, content);
+            log.info("receive rr reply: {}|{}", response, content);
 
         } catch (Exception e) {
             log.error("SyncRequest failed", e);
