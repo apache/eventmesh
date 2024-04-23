@@ -34,7 +34,7 @@ jobs:
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
         with:
-          # Post 'Submit dependency graph'
+          # Post Submit dependency graph
           retry-on-snapshot-warnings: true
           retry-on-snapshot-warnings-timeout: 600
           vulnerability-check: false

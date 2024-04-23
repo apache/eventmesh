@@ -15,15 +15,18 @@
 # limitations under the License.
 #
 
-name: "CodeQL"
+name: 'Code Scanning'
 
 on:
   push:
-    branches: [ '**' ]
+    branches:
+      - '**'
+      - '!dependabot/**'
   pull_request:
     branches: [ '**' ]
 
 permissions:
+  security-events: write
   contents: read
 
 jobs:
@@ -40,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.
@@ -49,28 +52,29 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
         if: matrix.language == 'java'
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Set up JDK 11
+        if: matrix.language == 'java'
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 11
-        if: matrix.language == 'java'
 
-      # Submit dependency graph Step 1
+      # Pre Submit dependency graph
       - name: Generate and save dependency graph
+        if: matrix.language == 'java'
         uses: gradle/actions/dependency-submission@v3
         with:
           dependency-graph: generate-and-upload
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
+        if: matrix.language == 'java'
         run: ./gradlew clean assemble compileTestJava --no-build-cache --parallel --daemon
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
-        if: matrix.language == 'java'
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3

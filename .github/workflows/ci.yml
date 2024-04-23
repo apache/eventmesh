@@ -19,7 +19,9 @@ name: "Continuous Integration"
 
 on:
   push:
-    branches: [ '**' ]
+    branches:
+      - '**'
+      - '!dependabot/**'
   pull_request:
     branches: [ '**' ]
 
