@@ -16,11 +16,11 @@
 #
 
 # https://github.com/gradle/actions/blob/main/docs/dependency-submission.md#usage-with-pull-requests-from-public-forked-repositories
-name: Download and submit dependency graph
+name: Submit dependency graph
 
 on:
   workflow_run:
-    workflows: [ 'Generate and save dependency graph' ]
+    workflows: [ 'CodeQL' ]
     types: [ completed ]
 
 permissions:
