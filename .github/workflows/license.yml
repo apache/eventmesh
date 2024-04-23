@@ -19,7 +19,7 @@ name: 'License Check'
 on: [ pull_request ]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   dependency-review:
@@ -27,13 +27,16 @@ jobs:
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v4
+
       - name: 'Check license header'
         uses: apache/skywalking-eyes@main
-      - name: 'Generate and submit dependency graph'
-        uses: gradle/actions/dependency-submission@v3
+
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
         with:
+          # Post 'Submit dependency graph'
+          retry-on-snapshot-warnings: true
+          retry-on-snapshot-warnings-timeout: 600
           vulnerability-check: false
           license-check: true
           # Incompatible licenses addressed here: https://www.apache.org/legal/resolved.html

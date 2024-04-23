@@ -56,6 +56,12 @@ jobs:
           java-version: 11
         if: matrix.language == 'java'
 
+      # Submit dependency graph Step 1
+      - name: Generate and save dependency graph
+        uses: gradle/actions/dependency-submission@v3
+        with:
+          dependency-graph: generate-and-upload
+
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
         run: ./gradlew clean assemble compileTestJava --no-build-cache --parallel --daemon
