@@ -16,10 +16,10 @@
 #
 
 name: 'License Check'
-on: [pull_request]
+on: [ pull_request ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   dependency-review:
@@ -29,6 +29,8 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Check license header'
         uses: apache/skywalking-eyes@main
+      - name: 'Generate and submit dependency graph'
+        uses: gradle/actions/dependency-submission@v3
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
         with:
