@@ -63,7 +63,8 @@ jobs:
         if: matrix.language == 'java'
         uses: gradle/gradle-build-action@v2
         with:
-          dependency-graph: generate-and-upload
+          dependency-graph: 'generate-and-upload'
+          dependency-graph-continue-on-failure: false
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build

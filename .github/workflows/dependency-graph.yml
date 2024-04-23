@@ -44,3 +44,4 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           dependency-graph: download-and-submit # Download saved dependency-graph and submit
+          dependency-graph-continue-on-failure: false
