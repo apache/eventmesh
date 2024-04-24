@@ -66,11 +66,12 @@ jobs:
           dependency-graph: generate-and-upload
           cache-disabled: true
 
-      # https://github.com/gradle/gradle-build-action/tree/release/v2?tab=readme-ov-file#filtering-which-gradle-configurations-contribute-to-the-dependency-graph
       - name: Build
         if: matrix.language == 'java'
         run: ./gradlew clean assemble compileTestJava --parallel --daemon
         env:
+          # TODO exclude compileOnly after https://github.com/gradle/actions/issues/198 is resolved
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: '[Ii]mplementation.*|[Rr]untime.*|[Cc]ompile.*|[Aa]pi.*'
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
       - name: Perform CodeQL analysis
