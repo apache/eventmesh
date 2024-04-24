@@ -16,12 +16,12 @@
 #
 
 # https://github.com/gradle/actions/blob/main/docs/dependency-submission.md#usage-with-pull-requests-from-public-forked-repositories
-# 'Pre Submit dependency graph' in the 'Continuous Integration' workflow and 'Post Submit dependency graph' in the 'License Check' workflow
+# 'Pre Submit dependency graph' in the 'Code Scanning' workflow and 'Post Submit dependency graph' in the 'License Check' workflow
 name: Submit dependency graph
 
 on:
   workflow_run:
-    workflows: [ 'Continuous Integration' ]
+    workflows: [ 'Code Scanning' ]
     types: [ completed ]
 
 permissions:
