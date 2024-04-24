@@ -527,7 +527,7 @@ subprojects {
             dependency "org.yaml:snakeyaml:1.30"
             dependency "org.javassist:javassist:3.24.0-GA"
 
-            dependency "com.alibaba.nacos:nacos-client:2.2.1"
+            dependency "com.alibaba.nacos:nacos-client:2.2.3"
 
             dependency 'org.apache.zookeeper:zookeeper:3.7.1'
             dependency 'org.apache.curator:curator-client:5.4.0'
