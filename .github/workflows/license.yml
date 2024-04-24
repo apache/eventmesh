@@ -36,6 +36,7 @@ jobs:
         with:
           # Post Submit dependency graph
           retry-on-snapshot-warnings: true
+          # TODO Can be reduced to 15min after https://github.com/actions/dependency-review-action/issues/632 is resolved.
           retry-on-snapshot-warnings-timeout: 3600
           vulnerability-check: false
           license-check: true

@@ -41,6 +41,7 @@ jobs:
           java-version: 11
 
       - name: Download and submit dependency graph
+        # TODO Can be upgraded to v3 after https://github.com/gradle/actions/issues/196 is resolved.
         uses: gradle/actions/dependency-submission@v3.3.0
         with:
           dependency-graph: download-and-submit # Download saved dependency-graph and submit
