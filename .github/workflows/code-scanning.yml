@@ -61,9 +61,9 @@ jobs:
       # Pre Submit dependency graph
       - name: Setup Gradle
         if: matrix.language == 'java'
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
-          dependency-graph: generate
+          dependency-graph: generate-and-upload
           cache-disabled: true
 
       # https://github.com/gradle/gradle-build-action/tree/release/v2?tab=readme-ov-file#filtering-which-gradle-configurations-contribute-to-the-dependency-graph

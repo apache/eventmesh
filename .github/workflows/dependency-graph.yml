@@ -41,6 +41,6 @@ jobs:
           java-version: 11
 
       - name: Download and submit dependency graph
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/dependency-submission@v3.3.0
         with:
           dependency-graph: download-and-submit # Download saved dependency-graph and submit
