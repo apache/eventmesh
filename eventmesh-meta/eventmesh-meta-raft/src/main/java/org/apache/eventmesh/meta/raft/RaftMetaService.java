@@ -19,10 +19,12 @@ package org.apache.eventmesh.meta.raft;
 
 import org.apache.eventmesh.api.exception.MetaException;
 import org.apache.eventmesh.api.meta.MetaServiceListener;
+import org.apache.eventmesh.api.meta.config.EventMeshMetaConfig;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.meta.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.meta.raft.config.RaftMetaStorageConfiguration;
 import org.apache.eventmesh.meta.raft.consts.MetaRaftConstants;
 import org.apache.eventmesh.meta.raft.rpc.MetaServerHelper;
@@ -32,9 +34,17 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,6 +69,8 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
+    private ConcurrentMap<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
+
     private final AtomicBoolean initStatus = new AtomicBoolean(false);
 
     private final AtomicBoolean startStatus = new AtomicBoolean(false);
@@ -73,13 +85,15 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
 
     private PeerId leader;
 
-    private Thread refreshThread;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+
 
     @Override
     public void init() throws MetaException {
         if (!initStatus.compareAndSet(false, true)) {
             return;
         }
+        eventMeshRegisterInfoMap = new ConcurrentHashMap<>(ConfigurationContextUtil.KEYS.size());
         ConfigService configService = ConfigService.getInstance();
         configuration = configService.buildConfigInstance(RaftMetaStorageConfiguration.class);
     }
@@ -91,7 +105,7 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
         final String serverIdStr = configuration.getSelfIpAndPort();
         final String initConfStr = configuration.getMembersIpAndPort();
         final NodeOptions nodeOptions = new NodeOptions();
-        nodeOptions.setElectionTimeoutMs(configuration.getElectionTimeoutMs());
+        nodeOptions.setElectionTimeoutMs(configuration.getElectionTimeoutMs() * 1000);
         nodeOptions.setDisableCli(false);
         nodeOptions.setSnapshotIntervalSecs(configuration.getSnapshotIntervalSecs());
         final PeerId serverId = new PeerId();
@@ -118,17 +132,29 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
         RouteTable.getInstance().updateConfiguration(MetaRaftConstants.GROUP, conf);
         cliService = RaftServiceFactory.createAndInitCliService(new CliOptions());
         cliClientService = (CliClientServiceImpl) ((CliServiceImpl) this.cliService).getCliClientService();
-        refreshThread = new Thread(() -> {
+        while (true) {
+            try {
+                refreshleader();
+                if (this.leader != null) {
+                    break;
+                }
+            } catch (Exception e) {
+                log.warn("fail to get leader node");
+                try {
+                    Thread.sleep(3000L);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
             try {
                 RaftMetaService.this.refreshleader();
-                Thread.sleep(configuration.getRefreshLeaderInterval());
             } catch (Exception e) {
                 log.error("fail to Refresh Leader", e);
             }
-        });
-        refreshThread.setName("[Raft-refresh-leader-Thread]");
-        refreshThread.setDaemon(true);
-        refreshThread.start();
+        }, configuration.getRefreshLeaderInterval(), configuration.getRefreshLeaderInterval(), TimeUnit.SECONDS);
+
         startStatus.compareAndSet(false, true);
     }
 
@@ -145,6 +171,7 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
         if (!startStatus.compareAndSet(true, false)) {
             return;
         }
+        scheduledExecutorService.shutdown();
         MetaServerHelper.shutDown();
         if (cliService != null) {
             cliService.shutdown();
@@ -156,78 +183,178 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
 
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws MetaException {
-        return null;
+        List<EventMeshDataInfo> listEventMeshDataInfo = new ArrayList<>();
+        RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.GET).build();
+        boolean result = false;
+        try {
+            CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
+            RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
+            if (requestResponse != null) {
+                result = requestResponse.getSuccess();
+                if (result) {
+                    Map<String, String> infoMap = requestResponse.getInfoMap();
+                    for (Entry<String, String> entry : infoMap.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        if (key.startsWith("eventMeshInfo@@")) {
+                            if (Objects.isNull(clusterName)) {
+                                if (!key.endsWith("@@" + clusterName)) {
+                                    continue;
+                                }
+                            }
+                            EventMeshDataInfo eventMeshDataInfo = objectMapper.readValue(value, EventMeshDataInfo.class);
+                            listEventMeshDataInfo.add(eventMeshDataInfo);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new MetaException("fail to get meta data ", e);
+        }
+        return listEventMeshDataInfo;
     }
 
     @Override
     public List<EventMeshDataInfo> findAllEventMeshInfo() throws MetaException {
-        return null;
+        return findEventMeshInfoByCluster(null);
     }
 
     @Override
     public void registerMetadata(Map<String, String> metadataMap) {
-
+        for (Map.Entry<String, EventMeshRegisterInfo> eventMeshRegisterInfo : eventMeshRegisterInfoMap.entrySet()) {
+            EventMeshRegisterInfo registerInfo = eventMeshRegisterInfo.getValue();
+            registerInfo.setMetadata(metadataMap);
+            this.register(registerInfo);
+        }
     }
 
     @Override
     public Map<String, String> getMetaData(String key, boolean fuzzyEnabled) {
-        return null;
+        Map<String, String> resultMap = new HashMap<>();
+        RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.GET).build();
+        boolean result = false;
+        try {
+            CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
+            RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
+            if (requestResponse != null) {
+                result = requestResponse.getSuccess();
+                if (result) {
+                    Map<String, String> infoMap = requestResponse.getInfoMap();
+                    resultMap.putAll(infoMap);
+                }
+            }
+        } catch (Exception e) {
+            throw new MetaException("fail to get meta data ", e);
+        }
+        if (fuzzyEnabled) {
+            // todo
+        } else {
+            Map<String, String> finalResult = new HashMap<>();
+            finalResult.put(key, resultMap.get(key));
+            return finalResult;
+        }
+
+        return resultMap;
     }
 
     @Override
     public void getMetaDataWithListener(MetaServiceListener metaServiceListener, String key) {
-
+        //todo
     }
 
     @Override
     public void updateMetaData(Map<String, String> metadataMap) {
+        String protocol = metadataMap.get(EventMeshMetaConfig.EVENT_MESH_PROTO);
+        String reftDataId = "Raft" + "@@" + protocol;
+        boolean result = false;
+        try {
+            RequestResponse req =
+                RequestResponse.newBuilder().setValue(MetaRaftConstants.PUT).putInfo(reftDataId, objectMapper.writeValueAsString(metadataMap))
+                    .build();
+            CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
+            RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
+            if (requestResponse != null) {
+                result = requestResponse.getSuccess();
+            }
+        } catch (Exception e) {
+            throw new MetaException("fail to serialize ", e);
+        }
+        if (!result) {
+            throw new MetaException("fail to updateMetaData ");
+        }
 
     }
 
     @Override
     public void removeMetaData(String key) {
+        RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.DELETE).putInfo(key, StringUtils.EMPTY).build();
+
+        try {
+            CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
+            RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
+            if (requestResponse != null) {
+                boolean result = requestResponse.getSuccess();
+                if (result) {
+                    throw new MetaException("fail to remove MetaData");
+                }
+            }
+        } catch (Exception e) {
+            throw new MetaException("fail to remove MetaData", e);
+        }
 
     }
 
     @Override
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
-        //key= IP@@PORT@@CLUSTER_NAME
+        //key= eventMeshInfo@@eventMeshName@@IP@@PORT@@protocolType@@CLUSTER_NAME
+        String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
+        String protocolType = eventMeshRegisterInfo.getProtocolType();
         String[] ipAndPort = eventMeshRegisterInfo.getEndPoint().split(":");
         String clusterName = eventMeshRegisterInfo.getEventMeshClusterName();
-        String key = ipAndPort[0] + "@@" + ipAndPort[1] + "@@" + clusterName;
+        String key = "eventMeshInfo" + "@@" + eventMeshName + "@@" + ipAndPort[0] + "@@" + ipAndPort[1] + "@@" + protocolType + "@@" + clusterName;
         InfoInner infoInner = new InfoInner(eventMeshRegisterInfo);
         String registerInfo = null;
+        boolean result = false;
         try {
             registerInfo = objectMapper.writeValueAsString(infoInner);
             RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.PUT).putInfo(key, registerInfo).build();
             CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
             RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
             if (requestResponse != null) {
-                return requestResponse.getSuccess();
+                result = requestResponse.getSuccess();
             }
         } catch (Exception e) {
             throw new MetaException("fail to serialize ", e);
         }
-        return false;
+        if (result) {
+            eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
+        }
+        return result;
     }
 
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException {
-        //key= IP@@PORT@@CLUSTER_NAME
+        //key= eventMeshInfo@@eventMeshName@@IP@@PORT@@protocolType@@CLUSTER_NAME
+        String eventMeshName = eventMeshUnRegisterInfo.getEventMeshName();
+        String protocolType = eventMeshUnRegisterInfo.getProtocolType();
         String[] ipAndPort = eventMeshUnRegisterInfo.getEndPoint().split(":");
         String clusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
-        String key = ipAndPort[0] + "@@" + ipAndPort[1] + "@@" + clusterName;
+        String key = "eventMeshInfo" + "@@" + eventMeshName + "@@" + ipAndPort[0] + "@@" + ipAndPort[1] + "@@" + protocolType + "@@" + clusterName;
         RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.DELETE).putInfo(key, StringUtils.EMPTY).build();
+        boolean result = false;
         try {
             CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
             RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
             if (requestResponse != null) {
-                return requestResponse.getSuccess();
+                result = requestResponse.getSuccess();
             }
         } catch (Exception e) {
             throw new MetaException(e.getMessage(), e);
         }
-        return false;
+        if (result) {
+            eventMeshRegisterInfoMap.remove(eventMeshName);
+        }
+        return result;
     }
 
     @Data
