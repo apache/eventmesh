@@ -23,7 +23,9 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -55,7 +57,6 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -86,9 +87,11 @@ public class SourceWorker implements ConnectorWorker {
 
     private volatile RecordOffsetManagement.CommittableOffsets committableOffsets;
 
-    private final ExecutorService pollService = Executors.newSingleThreadExecutor();
+    private final ExecutorService pollService =
+        ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-pollService");
 
-    private final ExecutorService startService = Executors.newSingleThreadExecutor();
+    private final ExecutorService startService =
+        ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-startService");
 
     private final BlockingQueue<ConnectRecord> queue;
     private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
@@ -196,7 +199,7 @@ public class SourceWorker implements ConnectorWorker {
             while (retryTimes < MAX_RETRY_TIMES) {
                 try {
                     Package sendResult = eventMeshTCPClient.publish(event, 3000);
-                    if (sendResult.getHeader().getCode() == 0) {
+                    if (sendResult.getHeader().getCode() == OPStatus.SUCCESS.getCode()) {
                         // publish success
                         // commit record
                         this.source.commit(connectRecord);
@@ -276,7 +279,6 @@ public class SourceWorker implements ConnectorWorker {
         try {
             source.stop();
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("source destroy error", e);
         }
         log.info("pollService stopping");
@@ -330,7 +332,7 @@ public class SourceWorker implements ConnectorWorker {
             log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
             if (committableOffsets.hasPending()) {
                 log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
-                    + "The source partition with the most pending messages is {}, with {} pending messages",
+                        + "The source partition with the most pending messages is {}, with {} pending messages",
                     this,
                     committableOffsets.numUncommittableMessages(),
                     committableOffsets.numDeques(),
@@ -338,7 +340,7 @@ public class SourceWorker implements ConnectorWorker {
                     committableOffsets.largestDequeSize());
             } else {
                 log.debug("{} There are currently no pending messages for this offset commit; "
-                    + "all messages dispatched to the task's producer since the last commit have been acknowledged",
+                        + "all messages dispatched to the task's producer since the last commit have been acknowledged",
                     this);
             }
         }

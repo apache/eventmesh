@@ -58,10 +58,11 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
     @Override
     public void subscribe(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
+        String clientIp = EventMeshCloudEventUtils.getIp(request);
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "subscribe", EventMeshConstants.PROTOCOL_GRPC,
             EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
-        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
+        eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordReceiveMsgFromClient(clientIp);
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
         subscribeThreadPoolExecutor.submit(() -> {
@@ -86,6 +87,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             public void onNext(CloudEvent subscription) {
                 final String subMessageType = Optional.ofNullable(subscription.getAttributesMap().get(ProtocolKey.SUB_MESSAGE_TYPE))
                     .orElse(CloudEventAttributeValue.newBuilder().build()).getCeString();
+                String clientId = EventMeshCloudEventUtils.getIp(subscription);
                 if (StringUtils.equals(subMessageType, ProtocolKey.SUB_REPLY_MESSAGE)) {
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "reply-to-server", EventMeshConstants.PROTOCOL_GRPC,
                         EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
@@ -94,7 +96,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                     log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
                         EventMeshCloudEventUtils.getIp(subscription), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
 
-                    eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
+                    eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordReceiveMsgFromClient(clientId);
                     handleSubscriptionStream(subscription, emitter);
                 }
             }
@@ -139,9 +141,10 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
     @Override
     public void unsubscribe(CloudEvent request, StreamObserver<CloudEvent> responseObserver) {
+        String clientIp = EventMeshCloudEventUtils.getIp(request);
         log.info("cmd={}|{}|client2eventMesh|from={}|to={}", "unsubscribe", EventMeshConstants.PROTOCOL_GRPC,
             EventMeshCloudEventUtils.getIp(request), eventMeshGrpcServer.getEventMeshGrpcConfiguration().getEventMeshIp());
-        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
+        eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordReceiveMsgFromClient(clientIp);
 
         EventEmitter<CloudEvent> emitter = new EventEmitter<>(responseObserver);
         subscribeThreadPoolExecutor.submit(() -> {

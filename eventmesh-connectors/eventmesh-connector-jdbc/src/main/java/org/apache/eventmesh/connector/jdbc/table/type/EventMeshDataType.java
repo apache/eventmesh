@@ -17,22 +17,26 @@
 
 package org.apache.eventmesh.connector.jdbc.table.type;
 
+import org.apache.eventmesh.connector.jdbc.type.Type;
+
 /**
- * Defines Event Mesh data type with methods to get the type class and SQL type of the data.
+ * An interface representing a data type used in an EventMesh.
+ *
+ * @param <T> The type of the data.
  */
-public interface EventMeshDataType<T> {
+public interface EventMeshDataType<T> extends Type {
 
     /**
-     * Gets the type class of the data.
+     * Gets the class representing the type of the data.
      *
-     * @return the type class of the data.
+     * @return The class representing the type of the data.
      */
     Class<T> getTypeClass();
 
     /**
      * Gets the SQL type of the data.
      *
-     * @return the SQL type of the data.
+     * @return The SQL type of the data.
      */
     SQLType getSQLType();
 
@@ -41,7 +45,5 @@ public interface EventMeshDataType<T> {
      *
      * @return The name of the data type.
      */
-    default String getName() {
-        return EventMeshTypeNameConverter.ofName(this);
-    }
+    String getName();
 }

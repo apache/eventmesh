@@ -1,0 +1,50 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+name: 'Remind stale issues and PRs'
+
+on:
+  schedule:
+    - cron: '30 18 * * *'
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v8
+        with:
+          days-before-issue-stale: 90
+          days-before-pr-stale: 60
+          days-before-close: -1 # Never close an issue or PR
+          stale-issue-message: |
+            It has been 90 days since the last activity on this issue. Apache EventMesh values the voices of the community. Please don't hesitate to share your latest insights on this matter at any time, as the community is more than willing to engage in discussions regarding the development and optimization directions of this feature.
+            
+            If you feel that your issue has been resolved, please feel free to close it. Should you have any additional information to share, you are welcome to reopen this issue.
+          stale-pr-message: |
+            It has been 60 days since the last activity on this pull request. I am reaching out here to gently remind you that the Apache EventMesh community values every pull request, and please feel free to get in touch with the reviewers at any time. They are available to assist you in advancing the progress of your pull request and offering the latest feedback.
+            
+            If you encounter any challenges during development, seeking support within the community is encouraged. We sincerely appreciate your contributions to Apache EventMesh.
+          exempt-issue-labels: 'pinned,discussion,help wanted,WIP,weopen-star,GLCC,summer of code'
+          exempt-pr-labels: 'help wanted,dependencies'
+          exempt-all-milestones: true # Exempt all issues/PRs with milestones from stale
+          operations-per-run: 300

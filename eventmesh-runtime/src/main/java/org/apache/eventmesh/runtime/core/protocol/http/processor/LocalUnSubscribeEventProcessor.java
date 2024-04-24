@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
@@ -193,6 +194,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                 } catch (Exception e) {
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                         + "|topic={}|url={}", System.currentTimeMillis() - startTime, JsonUtils.toJSONString(unSubTopicList), unSubscribeUrl, e);
+
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                         responseBodyMap, null);
                 }
@@ -212,8 +214,10 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
                     eventMeshHTTPServer.getSubscriptionManager().getLocalConsumerGroupMapping().keySet()
                         .removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
+
                     log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms"
                         + "|topic={}|url={}", System.currentTimeMillis() - startTime, JsonUtils.toJSONString(unSubTopicList), unSubscribeUrl, e);
+
                     handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
                         responseBodyMap, null);
                 }
@@ -226,7 +230,12 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI()};
+        return new String[] {RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 
     private void registerClient(final HttpEventWrapper requestWrapper, final String consumerGroup, final List<String> topicList, final String url) {

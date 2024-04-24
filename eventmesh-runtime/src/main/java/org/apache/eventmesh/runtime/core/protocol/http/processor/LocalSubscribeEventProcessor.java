@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
@@ -185,7 +186,12 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{RequestURI.SUBSCRIBE_LOCAL.getRequestURI()};
+        return new String[] {RequestURI.SUBSCRIBE_LOCAL.getRequestURI()};
+    }
+
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getClientManageExecutor();
     }
 
     private ClientInfo getClientInfo(final HttpEventWrapper requestWrapper) {

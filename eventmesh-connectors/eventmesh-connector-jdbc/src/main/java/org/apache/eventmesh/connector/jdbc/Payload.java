@@ -19,53 +19,157 @@ package org.apache.eventmesh.connector.jdbc;
 
 import org.apache.eventmesh.connector.jdbc.source.SourceMateData;
 
-import java.util.HashMap;
+import lombok.Getter;
+import lombok.Setter;
 
-public final class Payload extends HashMap<String, Object> {
-
-    public static final String AFTER_FIELD = "after";
-
-    public static final String BEFORE_FIELD = "before";
-
-    public static final String SOURCE = "source";
-
-    public static final String DDL = "ddl";
+/**
+ * Payload class representing the data associated with a JDBC connection.
+ */
+public final class Payload {
 
     /**
-     * Constructs an empty <code>HashMap</code> with the default initial capacity (16) and the default load factor (0.75).
+     * Field name for the 'after' payload.
+     */
+    public static final String AFTER_FIELD = "after";
+
+    /**
+     * Field name for the 'before' payload.
+     */
+    public static final String BEFORE_FIELD = "before";
+
+    /**
+     * Field name for the 'source' payload.
+     */
+    public static final String SOURCE = "source";
+
+    /**
+     * Field name for the 'payload.before' payload.
+     */
+    public static final String PAYLOAD_BEFORE = "payload.before";
+
+    /**
+     * Field name for the 'payload.after' payload.
+     */
+    public static final String PAYLOAD_AFTER = "payload.after";
+
+    @Getter
+    @Setter
+    private SourceMateData source;
+
+    // Source connector's original DDL script
+    @Getter
+    @Setter
+    private String ddl;
+
+    @Getter
+    @Setter
+    private CatalogChanges catalogChanges;
+
+    @Getter
+    @Setter
+    private DataChanges dataChanges;
+
+    @Getter
+    @Setter
+    private long timestamp;
+
+    /**
+     * Constructs an empty Payload with the default initial capacity (16) and the default load factor (0.75).
      */
     public Payload() {
-        this.put("timestamp", System.currentTimeMillis());
+        this.timestamp = System.currentTimeMillis();
     }
 
-    public Payload withSource(SourceMateData source) {
-        this.put(SOURCE, source);
+    /**
+     * Sets the 'source' field in the payload.
+     *
+     * @param source The SourceMateData to set.
+     * @return The Payload instance.
+     */
+    public <S extends SourceMateData> Payload withSource(S source) {
+        this.source = source;
         return this;
     }
 
+    /**
+     * Sets the 'ddl' field in the payload.
+     *
+     * @param ddl The DDL string to set.
+     * @return The Payload instance.
+     */
     public Payload withDdl(String ddl) {
-        this.put(DDL, ddl);
+        this.ddl = ddl;
         return this;
     }
 
+    /**
+     * Sets the 'catalogChanges' field in the payload.
+     *
+     * @param catalogChanges The CatalogChanges to set.
+     * @return The Payload instance.
+     */
     public Payload withCatalogChanges(CatalogChanges catalogChanges) {
-        this.put("catalogChanges", catalogChanges);
+        this.catalogChanges = catalogChanges;
         return this;
     }
 
+    /**
+     * Sets the 'dataChanges' field in the payload.
+     *
+     * @param dataChanges The DataChanges to set.
+     * @return The Payload instance.
+     */
     public Payload withDataChanges(DataChanges dataChanges) {
-        this.put("dataChanges", dataChanges);
+        this.dataChanges = dataChanges;
         return this;
     }
 
+    /**
+     * Retrieves the 'source' field from the payload.
+     *
+     * @return The SourceMateData.
+     */
     public SourceMateData ofSourceMateData() {
-        return (SourceMateData) super.get(SOURCE);
+        return getSource();
     }
 
+    /**
+     * Retrieves the 'catalogChanges' field from the payload.
+     *
+     * @return The CatalogChanges.
+     */
+    public CatalogChanges ofCatalogChanges() {
+        return getCatalogChanges();
+    }
+
+    /**
+     * Retrieves the 'dataChanges' field from the payload.
+     *
+     * @return The DataChanges.
+     */
+    public DataChanges ofDataChanges() {
+        return getDataChanges();
+    }
+
+    /**
+     * Retrieves the 'ddl' field from the payload.
+     *
+     * @return The DDL string.
+     */
+    public String ofDdl() {
+        return getDdl();
+    }
+
+    /**
+     * Builder class for constructing Payload instances.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Builder class for constructing Payload instances.
+     */
     public static class Builder {
 
         private final Payload payload;
@@ -74,19 +178,24 @@ public final class Payload extends HashMap<String, Object> {
             payload = new Payload();
         }
 
-        public Builder put(String key, Object value) {
-            payload.put(key, value);
-            return this;
-        }
-
+        /**
+         * Sets the 'source' field in the payload.
+         *
+         * @param source The SourceMateData to set.
+         * @return The Builder instance.
+         */
         public Builder withSource(SourceMateData source) {
-            payload.put(SOURCE, source);
+            payload.withSource(source);
             return this;
         }
 
+        /**
+         * Builds the Payload instance.
+         *
+         * @return The constructed Payload.
+         */
         public Payload build() {
             return payload;
         }
     }
-
 }

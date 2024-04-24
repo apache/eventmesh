@@ -51,6 +51,7 @@ public final class CatalogTableSet {
             return;
         }
         tableSchemaMap.putTableSchema(tableSchema);
+        tableIdSet.addTableId(tableSchema.getTableId());
     }
 
     public TableSchema getTableSchema(TableId tableId) {
@@ -63,6 +64,10 @@ public final class CatalogTableSet {
 
         public TableIdSet() {
             values = new HashSet<>(32);
+        }
+
+        public void addTableId(TableId tableId) {
+            values.add(tableId);
         }
 
         public void removeDatabase(String catalogName, String schemaName) {

@@ -23,6 +23,10 @@ data:
   rocketmq.properties: |
     #######################rocketmq-client##################
     eventMesh.server.rocketmq.namesrvAddr=127.0.0.1:9876;127.0.0.1:9876
+    eventMesh.server.rocketmq.cluster=DefaultCluster
+    eventMesh.server.rocketmq.accessKey=********
+    eventMesh.server.rocketmq.secretKey=********
+
   eventmesh.properties: |
     ###############################EVNETMESH-runtime ENV#################################
     eventMesh.server.idc=DEFAULT
@@ -31,11 +35,13 @@ data:
     eventMesh.server.cluster=COMMON
     eventMesh.server.name=EVENTMESH-runtime
     eventMesh.sysid=0000
+    eventMesh.server.tcp.port=10000
     eventMesh.server.http.port=10105
     eventMesh.server.grpc.port=10205
+    # HTTP Admin Server
+    eventMesh.server.admin.http.port=10106
     ########################## eventMesh tcp configuration ############################
     eventMesh.server.tcp.enabled=true
-    eventMesh.server.tcp.port=10000
     eventMesh.server.tcp.readerIdleSeconds=120
     eventMesh.server.tcp.writerIdleSeconds=120
     eventMesh.server.tcp.allIdleSeconds=120
@@ -65,13 +71,6 @@ data:
     eventMesh.server.retry.async.pushRetryDelayInMills=500
     eventMesh.server.retry.sync.pushRetryDelayInMills=500
     eventMesh.server.retry.pushRetryQueueSize=10000
-    #admin
-    eventMesh.server.admin.http.port=10106
-    #metaStorage
-    eventMesh.server.metaStorage.metaStorageIntervalInMills=10000
-    eventMesh.server.metaStorage.fetchMetaStorageAddrIntervalInMills=20000
-    #auto-ack
-    #eventMesh.server.defibus.client.comsumeTimeoutInMin=5
 
     #sleep interval between closing client of different group in server graceful shutdown
     eventMesh.server.gracefulShutdown.sleepIntervalInMills=1000
@@ -80,9 +79,6 @@ data:
     #ip address blacklist
     eventMesh.server.blacklist.ipv4=0.0.0.0/8,127.0.0.0/8,169.254.0.0/16,255.255.255.255/32
     eventMesh.server.blacklist.ipv6=::/128,::1/128,ff00::/8
-
-    #connector plugin
-    eventMesh.connector.plugin.type=standalone
 
     #storage plugin
     eventMesh.storage.plugin.type=standalone
@@ -254,7 +250,16 @@ spec:
   runtimePodTemplate:
     template:
       spec:
-        # hostNetwork: true
+        # Host networking requested for this pod. Use the host's network namespace.
+        # If this option is set, the ports that will be used must be specified.
+        # Default to false.
+        hostNetwork: false
+        # Defaults to "ClusterFirst"
+        # Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+        # DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy.
+        # To have DNS options set along with hostNetwork, you have to specify DNS policy
+        # explicitly to 'ClusterFirstWithHostNet'.
+        dnsPolicy: ClusterFirstWithHostNet
         # define the runtime container.
         containers:
         - name: eventmesh-runtime
@@ -271,6 +276,14 @@ spec:
               name: runtime-config
           # imagePullPolicy is the image pull policy
           imagePullPolicy: Always
+          # resources describes the compute resource requirements and limits
+          resources:
+            requests:
+              memory: 2048Mi
+              cpu: 2000m
+            limits:
+              memory: 8192Mi
+              cpu: 8000m
         # configuration file settings to be mounted.
         volumes:
           - name: runtime-config

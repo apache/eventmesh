@@ -18,7 +18,7 @@
 package org.apache.eventmesh.storage.kafka.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,75 +32,75 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClientConfiguration {
 
-    @ConfigFiled(field = "namesrvAddr", notEmpty = true)
+    @ConfigField(field = "namesrvAddr", notEmpty = true)
     @Builder.Default
     private String namesrvAddr = "";
 
-    @ConfigFiled(field = "username")
+    @ConfigField(field = "username")
     @Builder.Default
     private String clientUserName = "username";
 
-    @ConfigFiled(field = "password")
+    @ConfigField(field = "password")
     @Builder.Default
     private String clientPass = "password";
 
-    @ConfigFiled(field = "num.partitions")
+    @ConfigField(field = "num.partitions")
     @Builder.Default
     private int partitions = 1;
 
-    @ConfigFiled(field = "num.replicationFactors")
+    @ConfigField(field = "num.replicationFactors")
     @Builder.Default
     private short replicationFactors = 1;
 
-    @ConfigFiled(field = "client.consumeThreadMin")
+    @ConfigField(field = "client.consumeThreadMin")
     @Builder.Default
     private Integer consumeThreadMin = 2;
 
-    @ConfigFiled(field = "client.consumeThreadMax")
+    @ConfigField(field = "client.consumeThreadMax")
     @Builder.Default
     private Integer consumeThreadMax = 2;
 
-    @ConfigFiled(field = "client.consumeThreadPoolQueueSize")
+    @ConfigField(field = "client.consumeThreadPoolQueueSize")
     @Builder.Default
     private Integer consumeQueueSize = 10000;
 
-    @ConfigFiled(field = "client.pullBatchSize")
+    @ConfigField(field = "client.pullBatchSize")
     @Builder.Default
     private Integer pullBatchSize = 32;
 
-    @ConfigFiled(field = "client.ackwindow")
+    @ConfigField(field = "client.ackwindow")
     @Builder.Default
     private Integer ackWindow = 1000;
 
-    @ConfigFiled(field = "client.pubwindow")
+    @ConfigField(field = "client.pubwindow")
     @Builder.Default
     private Integer pubWindow = 100;
 
-    @ConfigFiled(field = "client.comsumeTimeoutInMin")
+    @ConfigField(field = "client.comsumeTimeoutInMin")
     @Builder.Default
     private long consumeTimeout = 0L;
 
-    @ConfigFiled(field = "client.pollNameServerInterval")
+    @ConfigField(field = "client.pollNameServerInterval")
     @Builder.Default
     private Integer pollNameServerInterval = 10 * 1000;
 
-    @ConfigFiled(field = "client.heartbeatBrokerInterval")
+    @ConfigField(field = "client.heartbeatBrokerInterval")
     @Builder.Default
     private Integer heartbeatBrokerInterval = 30 * 1000;
 
-    @ConfigFiled(field = "client.rebalanceInterval")
+    @ConfigField(field = "client.rebalanceInterval")
     @Builder.Default
     private Integer rebalanceInterval = 20 * 1000;
 
-    @ConfigFiled(field = "cluster")
+    @ConfigField(field = "cluster")
     @Builder.Default
     private String clusterName = "";
 
-    @ConfigFiled(field = "accessKey")
+    @ConfigField(field = "accessKey")
     @Builder.Default
     private String accessKey = "";
 
-    @ConfigFiled(field = "secretKey")
+    @ConfigField(field = "secretKey")
     @Builder.Default
     private String secretKey = "";
 }
