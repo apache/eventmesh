@@ -41,5 +41,7 @@ public interface MetaRaftConstants {
 
     int GET = 2;
 
-    int RESPONSE = 3;
+    int DELETE = 3;
+
+    int RESPONSE = 4;
 }

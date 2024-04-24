@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.meta.raft;
 
+import static org.apache.eventmesh.meta.raft.EventOperation.DELETE;
 import static org.apache.eventmesh.meta.raft.EventOperation.GET;
 import static org.apache.eventmesh.meta.raft.EventOperation.PUT;
 
@@ -89,6 +90,12 @@ public class MetaStateMachine extends StateMachineAdapter {
                     case PUT:
                         Map<String, String> tempTable = eventOperation.getData();
                         contentTable.putAll(tempTable);
+                        break;
+                    case DELETE:
+                        Map<String, String> tempTable2 = eventOperation.getData();
+                        tempTable2.forEach((key, value) -> {
+                            contentTable.remove(key);
+                        });
                         break;
                     default:
                         break;

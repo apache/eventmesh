@@ -28,10 +28,14 @@ import org.apache.eventmesh.meta.raft.consts.MetaRaftConstants;
 import org.apache.eventmesh.meta.raft.rpc.MetaServerHelper;
 import org.apache.eventmesh.meta.raft.rpc.RequestResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,11 +49,15 @@ import com.alipay.sofa.jraft.error.RemotingException;
 import com.alipay.sofa.jraft.option.CliOptions;
 import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaService {
+
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     private final AtomicBoolean initStatus = new AtomicBoolean(false);
 
@@ -183,12 +191,53 @@ public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaServic
 
     @Override
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws MetaException {
+        //key= IP@@PORT@@CLUSTER_NAME
+        String[] ipAndPort = eventMeshRegisterInfo.getEndPoint().split(":");
+        String clusterName = eventMeshRegisterInfo.getEventMeshClusterName();
+        String key = ipAndPort[0] + "@@" + ipAndPort[1] + "@@" + clusterName;
+        InfoInner infoInner = new InfoInner(eventMeshRegisterInfo);
+        String registerInfo = null;
+        try {
+            registerInfo = objectMapper.writeValueAsString(infoInner);
+            RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.PUT).putInfo(key, registerInfo).build();
+            CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
+            RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
+            if (requestResponse != null) {
+                return requestResponse.getSuccess();
+            }
+        } catch (Exception e) {
+            throw new MetaException("fail to serialize ", e);
+        }
         return false;
     }
 
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws MetaException {
+        //key= IP@@PORT@@CLUSTER_NAME
+        String[] ipAndPort = eventMeshUnRegisterInfo.getEndPoint().split(":");
+        String clusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
+        String key = ipAndPort[0] + "@@" + ipAndPort[1] + "@@" + clusterName;
+        RequestResponse req = RequestResponse.newBuilder().setValue(MetaRaftConstants.DELETE).putInfo(key, StringUtils.EMPTY).build();
+        try {
+            CompletableFuture<RequestResponse> future = commit(req, EventClosure.createDefaultEventClosure());
+            RequestResponse requestResponse = future.get(3000, TimeUnit.MILLISECONDS);
+            if (requestResponse != null) {
+                return requestResponse.getSuccess();
+            }
+        } catch (Exception e) {
+            throw new MetaException(e.getMessage(), e);
+        }
         return false;
+    }
+
+    @Data
+    class InfoInner implements Serializable {
+
+        EventMeshRegisterInfo eventMeshRegisterInfo;
+
+        public InfoInner(EventMeshRegisterInfo eventMeshRegisterInfo) {
+            this.eventMeshRegisterInfo = eventMeshRegisterInfo;
+        }
     }
 
     public CompletableFuture<RequestResponse> commit(RequestResponse requestResponse, EventClosure eventClosure)

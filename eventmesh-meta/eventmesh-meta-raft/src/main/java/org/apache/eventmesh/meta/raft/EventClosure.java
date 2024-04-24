@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import com.alipay.sofa.jraft.Closure;
+import com.alipay.sofa.jraft.Status;
 
 
 public abstract class EventClosure implements Closure {
@@ -34,6 +35,15 @@ public abstract class EventClosure implements Closure {
 
     private EventOperation eventOperation;
 
+    public static EventClosure createDefaultEventClosure() {
+        return new EventClosure() {
+
+            @Override
+            public void run(Status status) {
+
+            }
+        };
+    }
 
     public void setFuture(CompletableFuture<RequestResponse> future) {
         this.future = future;

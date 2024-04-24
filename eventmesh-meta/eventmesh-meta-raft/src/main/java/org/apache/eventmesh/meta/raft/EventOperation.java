@@ -32,6 +32,8 @@ public class EventOperation implements Serializable {
 
     public static final byte GET = 0x02;
 
+    public static final byte DELETE = 0x03;
+
     private byte op;
     private Map<String, String> data;
 
@@ -40,6 +42,9 @@ public class EventOperation implements Serializable {
             return new EventOperation(PUT, response.getInfoMap());
         } else if (response.getValue() == MetaRaftConstants.GET) {
             return new EventOperation(GET, response.getInfoMap());
+        } else if (response.getValue() == MetaRaftConstants.DELETE) {
+            return new EventOperation(DELETE, response.getInfoMap());
+
         }
         return null;
     }

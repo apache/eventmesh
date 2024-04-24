@@ -56,7 +56,6 @@ public class MetaServiceImpl implements MetaService {
             this.server.getNode().apply(task);
         } catch (CodecException e) {
             String errorMsg = "Fail to encode EventOperation";
-            e.printStackTrace(System.err);
             closure.failure(errorMsg, StringUtils.EMPTY);
             closure.run(new Status(RaftError.EINTERNAL, errorMsg));
         }
