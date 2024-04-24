@@ -44,7 +44,7 @@ jobs:
             It has been 60 days since the last activity on this pull request. I am reaching out here to gently remind you that the Apache EventMesh community values every pull request, and please feel free to get in touch with the reviewers at any time. They are available to assist you in advancing the progress of your pull request and offering the latest feedback.
             
             If you encounter any challenges during development, seeking support within the community is encouraged. We sincerely appreciate your contributions to Apache EventMesh.
-          exempt-issue-labels: 'pinned,discussion,help wanted,WIP,weopen-star,GLCC,summer of code'
+          exempt-issue-labels: 'pinned,discussion,help wanted,WIP,weopen-star,GLCC,GSoC'
           exempt-pr-labels: 'help wanted,dependencies'
           exempt-all-milestones: true # Exempt all issues/PRs with milestones from stale
           operations-per-run: 300
