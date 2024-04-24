@@ -36,7 +36,7 @@ jobs:
         with:
           # Post Submit dependency graph
           retry-on-snapshot-warnings: true
-          retry-on-snapshot-warnings-timeout: 600
+          retry-on-snapshot-warnings-timeout: 720
           vulnerability-check: false
           license-check: true
           # Incompatible licenses addressed here: https://www.apache.org/legal/resolved.html
