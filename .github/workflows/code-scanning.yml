@@ -64,13 +64,13 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           dependency-graph: generate
+          cache-disabled: true
 
       # https://github.com/gradle/gradle-build-action/tree/release/v2?tab=readme-ov-file#filtering-which-gradle-configurations-contribute-to-the-dependency-graph
       - name: Build
         if: matrix.language == 'java'
-        run: ./gradlew clean assemble compileTestJava --no-build-cache --parallel --daemon
+        run: ./gradlew clean assemble compileTestJava --parallel --daemon
         env:
-          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: runtimeClasspath
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
       - name: Perform CodeQL analysis
