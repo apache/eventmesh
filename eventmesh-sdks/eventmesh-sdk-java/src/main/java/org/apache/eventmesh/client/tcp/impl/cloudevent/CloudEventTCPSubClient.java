@@ -135,7 +135,6 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     @Override
     public void close() {
         try {
-            goodbye();
             super.close();
         } catch (Exception ex) {
             log.error("exception occurred when close", ex);
