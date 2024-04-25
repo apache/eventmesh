@@ -64,16 +64,6 @@ jobs:
         with:
           cache-disabled: true
 
-      # Pre Submit dependency graph
-      - name: Generate and upload dependency graph
-        if: matrix.language == 'java'
-        # TODO Can be upgraded to v3 after https://github.com/gradle/actions/issues/196 is resolved.
-        uses: gradle/actions/dependency-submission@v3.3.0
-        with:
-          dependency-graph: generate-and-upload
-        env:
-          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: '[rR]untimeClasspath'
-
       - name: Build
         if: matrix.language == 'java'
         run: ./gradlew clean assemble compileTestJava --parallel --daemon
