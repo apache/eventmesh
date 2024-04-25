@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-
-
-
-
 import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.config.RequestConfig
@@ -339,7 +335,7 @@ tasks.register('generateDistLicense') {
                 }
             } else {
                 artifactLicenseFile.text = "No license content provided by the artifact."
-                logger.error("No '${artifact.license}' license content provided by ${artifact.name} ${artifact.version}. Please add manually.")
+                logger.warn("No '${artifact.license}' license content provided by ${artifact.name} ${artifact.version}. Please add manually.")
             }
 
             // Assemble LICENSE
