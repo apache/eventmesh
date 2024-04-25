@@ -203,27 +203,6 @@ tasks.register('dist') {
     }
 }
 
-tasks.register('tar', Tar) {
-    archiveBaseName.set(project.name)
-    archiveVersion.set(project.version.toString())
-    archiveExtension.set('tar.gz')
-    compression = Compression.GZIP
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
-    }
-}
-
-tasks.register('zip', Zip) {
-    archiveBaseName.set(project.name)
-    archiveVersion.set(project.version.toString())
-    archiveExtension.set('zip')
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
-    }
-}
-
 tasks.register('installPlugin') {
     var pluginProjects = subprojects.findAll {
         it.file('gradle.properties').exists()
@@ -253,6 +232,27 @@ tasks.register('installPlugin') {
                 exclude 'META-INF'
             }
         })
+    }
+}
+
+tasks.register('tar', Tar) {
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('tar.gz')
+    compression = Compression.GZIP
+    destinationDirectory = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
+tasks.register('zip', Zip) {
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('zip')
+    destinationDirectory = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
     }
 }
 
@@ -646,7 +646,6 @@ subprojects {
                     username apacheUserName
                     password apachePassWord
                 }
-
             }
         }
     }
