@@ -55,15 +55,6 @@ plugins {
     id 'com.github.jk1.dependency-license-report' version '2.6'
 }
 
-// Remove doclint warnings that pollute javadoc logs when building
-if (JavaVersion.current().isJava8()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            options.addStringOption('xdoclint:none', '-quiet')
-        }
-    }
-}
-
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -148,6 +139,15 @@ allprojects {
 
     test {
         useJUnitPlatform()
+    }
+
+    // Remove doclint warnings that pollute javadoc logs when building
+    if (JavaVersion.current().isJava8()) {
+        tasks.withType(Javadoc).tap {
+            configureEach {
+                options.addStringOption('xdoclint:none', '-quiet')
+            }
+        }
     }
 }
 
@@ -563,12 +563,13 @@ subprojects {
         options.encoding = "UTF-8"
     }
 
-    task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
+    tasks.register('packageJavadoc', Jar) {
+        dependsOn('javadoc')
         from project.javadoc.destinationDir
         archiveClassifier.set('javadoc')
     }
 
-    task packageSources(type: Jar) {
+    tasks.register('packageSources', Jar) {
         from project.sourceSets.main.allSource
         archiveClassifier.set('sources')
     }
@@ -580,7 +581,7 @@ subprojects {
     }
 
     if (!Boolean.valueOf(signEnabled)) {
-        tasks.whenTaskAdded { task ->
+        tasks.configureEach { task ->
             if (task.name.contains("sign")) {
                 task.enabled = false
             }
@@ -592,7 +593,7 @@ subprojects {
         maven { url "https://maven.aliyun.com/repository/public" }
     }
 
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
         resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
     }
