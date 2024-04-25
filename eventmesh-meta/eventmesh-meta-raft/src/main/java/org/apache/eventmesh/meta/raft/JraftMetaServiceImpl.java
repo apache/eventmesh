@@ -29,20 +29,20 @@ import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.entity.Task;
 import com.alipay.sofa.jraft.error.RaftError;
 
-public class MetaServiceImpl implements MetaService {
-    
+public class JraftMetaServiceImpl implements JraftMetaService {
+
     JraftServer server;
-    
-    
-    public MetaServiceImpl(JraftServer server) {
+
+
+    public JraftMetaServiceImpl(JraftServer server) {
         this.server = server;
     }
-    
+
     @Override
     public void handle(RequestResponse request, EventClosure closure) {
         applyOperation(EventOperation.createOpreation(request), closure);
     }
-    
+
     public void applyOperation(EventOperation opreation, EventClosure closure) {
         if (!isLeader()) {
             handlerNotLeaderError(closure);
@@ -60,17 +60,17 @@ public class MetaServiceImpl implements MetaService {
             closure.run(new Status(RaftError.EINTERNAL, errorMsg));
         }
     }
-    
-    
+
+
     private String getRedirect() {
         return this.server.redirect().getRedirect();
     }
-    
+
     private boolean isLeader() {
         return this.server.getFsm().isLeader();
     }
-    
-    
+
+
     private void handlerNotLeaderError(final EventClosure closure) {
         closure.failure("Not leader.", getRedirect());
         closure.run(new Status(RaftError.EPERM, "Not leader"));

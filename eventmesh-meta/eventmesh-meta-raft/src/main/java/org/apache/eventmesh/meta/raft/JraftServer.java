@@ -46,7 +46,7 @@ public class JraftServer {
         return fsm;
     }
 
-    private   MetaServiceImpl metaImpl;
+    private JraftMetaServiceImpl metaImpl;
     
     public JraftServer(final String dataPath, final String groupId, final PeerId serverId,
             final NodeOptions nodeOptions) throws IOException {
@@ -57,7 +57,7 @@ public class JraftServer {
         MetaServerHelper.initGRpc();
         MetaServerHelper.setRpcServer(rpcServer);
         // register business processor
-        metaImpl = new MetaServiceImpl(this);
+        metaImpl = new JraftMetaServiceImpl(this);
         rpcServer.registerProcessor(new RequestProcessor(metaImpl));
         nodeOptions.setFsm(this.fsm);
         // set storage path (log,meta,snapshot)
@@ -85,7 +85,7 @@ public class JraftServer {
         return builder.build();
     }
 
-    public MetaServiceImpl getMetaImpl() {
+    public JraftMetaServiceImpl getMetaImpl() {
         return metaImpl;
     }
 

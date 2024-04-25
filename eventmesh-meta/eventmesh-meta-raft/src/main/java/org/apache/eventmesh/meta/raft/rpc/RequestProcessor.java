@@ -18,7 +18,7 @@
 package org.apache.eventmesh.meta.raft.rpc;
 
 import org.apache.eventmesh.meta.raft.EventClosure;
-import org.apache.eventmesh.meta.raft.MetaService;
+import org.apache.eventmesh.meta.raft.JraftMetaService;
 
 import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.rpc.RpcContext;
@@ -27,9 +27,9 @@ import com.alipay.sofa.jraft.rpc.RpcProcessor;
 
 public class RequestProcessor implements RpcProcessor<RequestResponse> {
 
-    private final MetaService metaService;
+    private final JraftMetaService metaService;
 
-    public RequestProcessor(MetaService metaService) {
+    public RequestProcessor(JraftMetaService metaService) {
         super();
         this.metaService = metaService;
     }

@@ -16,15 +16,10 @@
  */
 
 plugins {
-    id 'java'
     id 'com.google.protobuf' version '0.8.17'
 }
 
-repositories {
-    mavenCentral()
-}
-
-def grpcVersion = '1.43.2' // CURRENT_GRPC_VERSION
+def grpcVersion = '1.50.2' // CURRENT_GRPC_VERSION
 def protobufVersion = '3.21.5'
 def protocVersion = protobufVersion
 

@@ -23,7 +23,7 @@ import org.apache.eventmesh.meta.raft.rpc.RequestResponse;
 /**
  * MetaService.
  */
-public interface MetaService {
+public interface JraftMetaService {
 
     void handle(RequestResponse request, EventClosure closure);
 }

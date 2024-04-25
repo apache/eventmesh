@@ -18,6 +18,7 @@
 package org.apache.eventmesh.meta.raft;
 
 import org.apache.eventmesh.api.exception.MetaException;
+import org.apache.eventmesh.api.meta.MetaService;
 import org.apache.eventmesh.api.meta.MetaServiceListener;
 import org.apache.eventmesh.api.meta.config.EventMeshMetaConfig;
 import org.apache.eventmesh.api.meta.dto.EventMeshDataInfo;
@@ -65,7 +66,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RaftMetaService implements org.apache.eventmesh.api.meta.MetaService {
+public class RaftMetaService implements MetaService {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
