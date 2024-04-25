@@ -432,7 +432,9 @@ tasks.register('checkDeniedLicense') {
         }
 
         if (hasFailed) {
-            throw new GradleException("Task failed due to incompatible licenses found. Please remove these dependencies or add exemptions.")
+            throw new GradleException("Check failed due to incompatible licenses found. Please remove these dependencies or add exemptions.")
+        } else {
+            logger.lifecycle("Check passed, no incompatible licenses found.")
         }
     }
 }
