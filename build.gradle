@@ -273,7 +273,7 @@ tasks.register('generateDistLicense') {
     dependsOn('cyclonedxBom') // Task from 'org.cyclonedx.bom' plugin
     doLast {
         // Inputs
-        def bomFile = file("$buildDir/reports/bom.json")
+        def bomFile = file("build/reports/bom.json")
         def bom = new JsonSlurper().parseText(bomFile.text)
         def projectLicenseText = file('LICENSE').text
 
@@ -443,7 +443,7 @@ tasks.register('generateDistNotice') {
     dependsOn('generateLicenseReport') // Task from 'com.github.jk1.dependency-license-report' plugin
     doLast {
         // Inputs
-        def reportsDir = file("$buildDir/reports/dependency-license/")
+        def reportsDir = file("build/reports/dependency-license/")
         def projectNoticeText = file('NOTICE').text
 
         // Outputs
@@ -503,7 +503,7 @@ subprojects {
         showProgress = true
         showStackTraces = true
         effort = 'default'
-        reportsDir = file("$buildDir/reports/spotbugs")
+        reportsDir = file("build/reports/spotbugs")
         projectName = rootProject.name
         release = version
         extraArgs = ['-nested:false']
@@ -516,7 +516,7 @@ subprojects {
             xml.required = false
             html {
                 required = true
-                outputLocation = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+                outputLocation = file("build/reports/spotbugs/main/spotbugs.html")
                 stylesheet = 'fancy-hist.xsl'
             }
         }
@@ -527,7 +527,7 @@ subprojects {
             xml.enabled = false
             html {
                 enabled = true
-                destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+                destination = file("build/reports/spotbugs/test/spotbugs.html")
                 stylesheet = 'fancy-hist.xsl'
             }
         }
