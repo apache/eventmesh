@@ -360,22 +360,15 @@ static boolean isURL(String urlString) {
 
 void downloadFileFromURL(String urlString, String destinationPath) throws Exception {
     int timeout = 5 * 1000
-    RequestConfig config = RequestConfig.custom()
-            .setConnectTimeout(timeout)
-            .setConnectionRequestTimeout(timeout)
-            .setSocketTimeout(timeout)
-            .build()
-
-    CloseableHttpClient httpClient = HttpClients.custom()
-            .setDefaultRequestConfig(config)
-            .build()
+    RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout).setConnectionRequestTimeout(timeout).setSocketTimeout(timeout).build()
+    CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(config).build()
 
     HttpGet httpGet = new HttpGet(urlString)
     CloseableHttpResponse response
     try {
         response = httpClient.execute(httpGet)
     } catch (Exception e) {
-        logger.error("Failed to download " + urlString + " : " + e.getMessage())
+        logger.error("Error when downloading " + urlString + " : " + e.getMessage() + ". Please check network connection or add license content manually.")
         return
     }
 
@@ -392,7 +385,7 @@ void downloadFileFromURL(String urlString, String destinationPath) throws Except
             }
         }
     } else {
-        logger.error("Failed to download " + urlString + " : " + response.getStatusLine())
+        logger.warn("Failed to download " + urlString + " : " + response.getStatusLine() + ". Please add license content manually.")
     }
 
     EntityUtils.consume(response.getEntity())
