@@ -17,27 +17,57 @@
 
 package org.apache.eventmesh.connector.http.sink.handle;
 
+import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.net.URI;
+
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpResponse;
+
 /**
- * Any class that needs to process ConnectRecord via HTTP needs to implement this interface.
+ * Interface for handling ConnectRecords via HTTP or HTTPS. Classes implementing this interface are responsible for processing ConnectRecords by
+ * sending them over HTTP or HTTPS, with additional support for handling multiple requests and asynchronous processing.
+ *
+ * <p>Any class that needs to process ConnectRecords via HTTP or HTTPS should implement this interface.
+ * Implementing classes must provide implementations for the {@link #start()}, {@link #multiHandle(ConnectRecord)},
+ * {@link #handle(URI, HttpConnectRecord)}, and {@link #stop()} methods.</p>
+ *
+ * <p>Implementing classes should ensure thread safety and handle HTTP/HTTPS communication efficiently.
+ * The {@link #start()} method initializes any necessary resources for HTTP/HTTPS communication.
+ * The {@link #multiHandle(ConnectRecord)} method processes a ConnectRecord multiple times by sending it over HTTP or HTTPS.
+ * The {@link #handle(URI, HttpConnectRecord)} method processes a single ConnectRecord by sending it over HTTP or HTTPS to the specified URL.
+ * The {@link #stop()} method releases any resources used for HTTP/HTTPS communication.</p>
+ *
+ * <p>It's recommended to handle exceptions gracefully within the {@link #handle(URI, HttpConnectRecord)} method
+ * to prevent message loss or processing interruptions.</p>
  */
 public interface HttpSinkHandler {
 
     /**
-     * start the handler
+     * Initializes the HTTP/HTTPS handler. This method should be called before using the handler.
      */
     void start();
 
     /**
-     * Handle the ConnectRecord.
+     * Processes the ConnectRecord multiple times.
      *
      * @param record the ConnectRecord to handle
      */
-    void handle(ConnectRecord record);
+    void multiHandle(ConnectRecord record);
 
     /**
-     * stop the handler
+     * Processes the ConnectRecord once.
+     *
+     * @param url               the URL to send the ConnectRecord to
+     * @param httpConnectRecord the ConnectRecord to handle
+     */
+    Future<HttpResponse<Buffer>> handle(URI url, HttpConnectRecord httpConnectRecord);
+
+    /**
+     * Cleans up and releases resources used by the HTTP/HTTPS handler. This method should be called when the handler is no longer needed.
      */
     void stop();
 }
+

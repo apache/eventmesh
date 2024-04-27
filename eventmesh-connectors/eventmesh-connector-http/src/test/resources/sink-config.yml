@@ -26,13 +26,20 @@ pubSubConfig:
   passWord: httpPassWord
 connectorConfig:
   connectorName: httpSink
-  host: 127.0.0.1
-  port: 8987
-  path: /test
+  urls:
+    - http://127.0.0.1:8987/test
   ssl: false
-  webhook: true
   keepAlive: true
   keepAliveTimeout: 60000
   idleTimeout: 15000   # timeunit: ms, recommended scope: common(5s - 10s), webhook(15s - 60s)
   connectionTimeout: 5000   # timeunit: ms, recommended scope: 5 - 10s
   maxConnectionPoolSize: 10
+  retryConfig:
+    maxAttempts: 3
+    interval: 1000
+    retryAll: true
+  webhookConfig:
+    activate: true
+    exportPath: /export
+    port: 8988
+    idleTimeout: 5000

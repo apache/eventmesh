@@ -15,40 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.data;
+package org.apache.eventmesh.connector.http.sink.config;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
-import java.time.LocalDateTime;
-
-import lombok.Builder;
 import lombok.Data;
 
-/**
- * a special ConnectRecord for HttpSinkConnector
- */
 @Data
-@Builder
-public class HttpConnectRecord {
+public class HttpRetryConfig {
+    // maximum number of attempts to retry, default 3, if set to 0 or 1, no retry
+    private int maxAttempts = 3;
 
-    private String type;
+    // retry interval, default 2000ms
+    private int interval = 2000;
 
-    private String timestamp;
-
-    private ConnectRecord data;
-
-    /**
-     * Convert ConnectRecord to HttpConnectRecord
-     *
-     * @param record the ConnectRecord to convert
-     * @return the converted HttpConnectRecord
-     */
-    public static HttpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
-        return HttpConnectRecord.builder()
-            .type(type)
-            .timestamp(LocalDateTime.now().toString())
-            .data(record)
-            .build();
-    }
-
+    // Default value is false, indicating that only requests with network-level errors will be retried.
+    // If set to true, all failed requests will be retried, including network-level errors and non-2xx responses.
+    private boolean retryAll = false;
 }

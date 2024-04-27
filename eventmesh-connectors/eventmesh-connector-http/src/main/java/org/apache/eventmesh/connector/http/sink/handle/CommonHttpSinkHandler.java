@@ -19,91 +19,77 @@ package org.apache.eventmesh.connector.http.sink.handle;
 
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
+import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import java.time.LocalDateTime;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Common HttpSinkHandler to handle ConnectRecord
+ * Common HTTP/HTTPS Sink Handler implementation to handle ConnectRecords by sending them over HTTP or HTTPS to configured URLs.
+ *
+ * <p>This handler initializes a WebClient for making HTTP requests based on the provided SinkConnectorConfig.
+ * It handles processing ConnectRecords by converting them to HttpConnectRecord and sending them asynchronously to each configured URL using the
+ * WebClient.</p>
+ *
+ * <p>The handler uses Vert.x's WebClient to perform HTTP/HTTPS requests. It initializes the WebClient in the {@link #start()}
+ * method and closes it in the {@link #stop()} method to manage resources efficiently.</p>
+ *
+ * <p>Each ConnectRecord is processed and sent to all configured URLs concurrently using asynchronous HTTP requests.</p>
  */
 @Slf4j
+@Getter
 public class CommonHttpSinkHandler implements HttpSinkHandler {
 
     private final SinkConnectorConfig connectorConfig;
 
+    private final List<URI> urls;
+
     private WebClient webClient;
 
-    private final String type;
-
-    // store the received data, when webhook is enabled
-    private final BlockingQueue<JSONObject> receivedDataQueue;
 
     public CommonHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
-        SinkConnectorConfig.populateFieldsWithDefaults(sinkConnectorConfig);
         this.connectorConfig = sinkConnectorConfig;
-        this.receivedDataQueue = this.connectorConfig.isWebhook() ? new LinkedBlockingQueue<>() : null;
-        type = String.format("%s.%s.%s",
-            sinkConnectorConfig.getConnectorName(),
-            sinkConnectorConfig.isSsl() ? "https" : "http",
-            sinkConnectorConfig.isWebhook() ? "webhook" : "common");
+        // Initialize URLs
+        String[] urlStrings = sinkConnectorConfig.getUrls();
+        this.urls = Arrays.stream(urlStrings)
+            .map(URI::create)
+            .collect(Collectors.toList());
     }
 
     /**
-     * Get the oldest data in the queue
-     *
-     * @return received data
+     * Initializes the WebClient for making HTTP requests based on the provided SinkConnectorConfig.
      */
-    public Object getReceivedData() {
-        if (!this.connectorConfig.isWebhook()) {
-            return null;
-        }
-        return this.receivedDataQueue.poll();
-    }
-
-    /**
-     * Get all received data
-     *
-     * @return all received data
-     */
-    public Object[] getAllReceivedData() {
-        if (!connectorConfig.isWebhook() || receivedDataQueue.isEmpty()) {
-            return new Object[0];
-        }
-        Object[] arr = receivedDataQueue.toArray();
-        receivedDataQueue.clear();
-        return arr;
-    }
-
-
     @Override
     public void start() {
         // Create WebClient
         doInitWebClient();
     }
 
+    /**
+     * Initializes the WebClient with the provided configuration options.
+     */
     private void doInitWebClient() {
         final Vertx vertx = Vertx.vertx();
         WebClientOptions options = new WebClientOptions()
-            .setDefaultHost(this.connectorConfig.getHost())
-            .setDefaultPort(this.connectorConfig.getPort())
-            .setSsl(this.connectorConfig.isSsl())
             .setKeepAlive(this.connectorConfig.isKeepAlive())
             .setKeepAliveTimeout(this.connectorConfig.getKeepAliveTimeout() / 1000)
             .setIdleTimeout(this.connectorConfig.getIdleTimeout())
@@ -114,78 +100,70 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
     }
 
 
+    /**
+     * Handles a ConnectRecord by sending it asynchronously to all configured URLs.
+     *
+     * @param record the ConnectRecord to handle
+     */
     @Override
-    public void handle(ConnectRecord record) {
-        // create headers
-        MultiMap headers = HttpHeaders.headers()
-            .set(HttpHeaderNames.ACCEPT, "application/json; charset=utf-8");
-
-        // convert ConnectRecord to HttpConnectRecord
-        HttpConnectRecord httpConnectRecord = convertToHttpConnectRecord(record);
-
-        // send the request
-        this.webClient.post(this.connectorConfig.getPath())
-            .putHeaders(headers)
-            .sendJson(httpConnectRecord)
-            .onSuccess(res -> {
-                Long timestamp = record.getTimestamp();
-                Map<String, ?> offset = record.getPosition().getOffset().getOffset();
-                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
-                // Determine whether the status code is 200
-                if (res.statusCode() == HttpResponseStatus.OK.code()) {
-                    // store the received data, when webhook is enabled
-                    if (this.connectorConfig.isWebhook()) {
-                        String dataStr = res.body().toString();
-                        if (dataStr.isEmpty()) {
-                            log.warn("Received data is empty.");
-                            return;
-                        }
-                        JSONObject receivedData = JSON.parseObject(dataStr);
-                        if (receivedDataQueue.size() == Integer.MAX_VALUE) {
-                            // if the queue is full, remove the oldest element
-                            JSONObject removedData = receivedDataQueue.poll();
-                            log.info("The queue is full, remove the oldest element: {}", removedData);
-                        }
-                        boolean b = receivedDataQueue.offer(receivedData);
-                        if (b) {
-                            log.info("Successfully put the received data into the queue: {}", receivedData);
-                        } else {
-                            log.error("Failed to put the received data into the queue: {}", receivedData);
-                        }
-                    }
-                } else {
-                    log.error("Unexpected response received. Record: timestamp={}, offset={}. Response: code={} header={}, body={}",
-                        timestamp,
-                        offset,
-                        res.statusCode(),
-                        res.headers(),
-                        res.body().toString()
-                    );
-                }
-            })
-            .onFailure(err -> {
-                Long timestamp = record.getTimestamp();
-                Map<String, ?> offset = record.getPosition().getOffset().getOffset();
-                log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, offset, err);
-            });
+    public void multiHandle(ConnectRecord record) {
+        for (URI url : this.urls) {
+            // convert ConnectRecord to HttpConnectRecord
+            String type = String.format("%s.%s.%s", connectorConfig.getConnectorName(), url.getScheme(), "common");
+            HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
+            handle(url, httpConnectRecord);
+        }
     }
+
 
     /**
-     * Convert ConnectRecord to HttpConnectRecord
+     * Sends the HttpConnectRecord to the specified URL using WebClient.
      *
-     * @param record the ConnectRecord to convert
-     * @return the converted HttpConnectRecord
+     * @param url               the URL to send the HttpConnectRecord
+     * @param httpConnectRecord the HttpConnectRecord to send
+     * @return the Future of the HTTP request
      */
-    private HttpConnectRecord convertToHttpConnectRecord(ConnectRecord record) {
-        HttpConnectRecord httpConnectRecord = new HttpConnectRecord();
-        httpConnectRecord.setType(this.type);
-        LocalDateTime currentTime = LocalDateTime.now();
-        httpConnectRecord.setTimestamp(currentTime.toString());
-        httpConnectRecord.setData(record);
-        return httpConnectRecord;
+    @Override
+    public Future<HttpResponse<Buffer>> handle(URI url, HttpConnectRecord httpConnectRecord) {
+        // create headers
+        MultiMap headers = HttpHeaders.headers()
+            .set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8")
+            .set(HttpHeaderNames.ACCEPT, "application/json; charset=utf-8");
+
+        // get timestamp and offset
+        Long timestamp = httpConnectRecord.getData().getTimestamp();
+        Map<String, ?> offset = httpConnectRecord.getData().getPosition().getOffset().getOffset();
+
+        // send the request
+        return this.webClient.post(url.getPath())
+            .host(url.getHost())
+            .port(url.getPort() == -1 ? (Objects.equals(url.getScheme(), "https") ? 443 : 80) : url.getPort())
+            .putHeaders(headers)
+            .ssl(Objects.equals(url.getScheme(), "https"))
+            .sendJson(httpConnectRecord)
+            .onSuccess(res -> {
+                if (log.isDebugEnabled()) {
+                    log.debug("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
+                } else {
+                    log.info("Request sent successfully.");
+                }
+                // log the response
+                if (HttpUtils.is2xxSuccessful(res.statusCode())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Received successful response: statusCode={}, responseBody={}", res.statusCode(), res.bodyAsString());
+                    }
+                } else {
+                    log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp, offset);
+                }
+
+            })
+            .onFailure(err -> log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, offset, err));
     }
 
 
+    /**
+     * Cleans up and releases resources used by the HTTP/HTTPS handler.
+     */
     @Override
     public void stop() {
         if (this.webClient != null) {
@@ -194,4 +172,6 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             log.warn("WebClient is null, ignore.");
         }
     }
+
+
 }

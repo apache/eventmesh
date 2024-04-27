@@ -26,17 +26,7 @@ public class SinkConnectorConfig {
 
     private String connectorName;
 
-    private String host;
-
-    private int port;
-
-    private String path;
-
-    // whether the connector is HTTPS connector
-    private boolean ssl;
-
-    // whether the connector is a webhook connector
-    private boolean webhook;
+    private String[] urls;
 
     // keepAlive, default true
     private boolean keepAlive = HttpClientOptions.DEFAULT_KEEP_ALIVE;
@@ -52,6 +42,12 @@ public class SinkConnectorConfig {
 
     // maximum number of HTTP/1 connections a client will pool, default 5
     private int maxConnectionPoolSize = HttpClientOptions.DEFAULT_MAX_POOL_SIZE;
+
+    // retry config
+    private HttpRetryConfig retryConfig = new HttpRetryConfig();
+
+    // webhook config
+    private HttpWebhookConfig webhookConfig = new HttpWebhookConfig();
 
 
     /**
@@ -69,7 +65,7 @@ public class SinkConnectorConfig {
 
         // Set default values for idleTimeout
         if (config.getIdleTimeout() == 0) {
-            int idleTimeout = config.isWebhook() ? webhookHttpIdleTimeout : commonHttpIdleTimeout;
+            int idleTimeout = config.webhookConfig.isActivate() ? webhookHttpIdleTimeout : commonHttpIdleTimeout;
             config.setIdleTimeout(idleTimeout);
         }
 

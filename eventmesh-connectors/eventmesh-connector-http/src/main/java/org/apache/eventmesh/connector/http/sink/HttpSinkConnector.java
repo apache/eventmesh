@@ -18,8 +18,11 @@
 package org.apache.eventmesh.connector.http.sink;
 
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
+import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.HttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handle.RetryHttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handle.WebhookHttpSinkHandler;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -61,7 +64,23 @@ public class HttpSinkConnector implements Sink {
 
     @SneakyThrows
     private void doInit() {
-        this.sinkHandler = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+        // Fill default values if absent
+        SinkConnectorConfig.populateFieldsWithDefaults(this.httpSinkConfig.connectorConfig);
+        // Create different handlers for different configurations
+        HttpSinkHandler sinkHandler0;
+        if (this.httpSinkConfig.connectorConfig.getWebhookConfig().isActivate()) {
+            sinkHandler0 = new WebhookHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+        } else {
+            sinkHandler0 = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+        }
+
+        if (this.httpSinkConfig.connectorConfig.getRetryConfig().getMaxAttempts() > 1) {
+            // Wrap the sink handler with a retry handler
+            this.sinkHandler = new RetryHttpSinkHandler(this.httpSinkConfig.connectorConfig, sinkHandler0);
+        } else {
+            // Use the original sink handler
+            this.sinkHandler = sinkHandler0;
+        }
     }
 
     @Override
@@ -93,7 +112,7 @@ public class HttpSinkConnector implements Sink {
                     continue;
                 }
                 // Handle the ConnectRecord
-                this.sinkHandler.handle(sinkRecord);
+                this.sinkHandler.multiHandle(sinkRecord);
             } catch (Exception e) {
                 log.error("Failed to sink message via HTTP. ", e);
             }

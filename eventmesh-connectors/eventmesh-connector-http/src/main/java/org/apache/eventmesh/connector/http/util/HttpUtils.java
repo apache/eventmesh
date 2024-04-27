@@ -15,40 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.data;
+package org.apache.eventmesh.connector.http.util;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
-import java.time.LocalDateTime;
-
-import lombok.Builder;
-import lombok.Data;
-
-/**
- * a special ConnectRecord for HttpSinkConnector
- */
-@Data
-@Builder
-public class HttpConnectRecord {
-
-    private String type;
-
-    private String timestamp;
-
-    private ConnectRecord data;
+public class HttpUtils {
 
     /**
-     * Convert ConnectRecord to HttpConnectRecord
+     * Checks if the status code represents a successful response (2xx).
      *
-     * @param record the ConnectRecord to convert
-     * @return the converted HttpConnectRecord
+     * @param statusCode the HTTP status code to check
+     * @return true if the status code is 2xx, false otherwise
      */
-    public static HttpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
-        return HttpConnectRecord.builder()
-            .type(type)
-            .timestamp(LocalDateTime.now().toString())
-            .data(record)
-            .build();
+    public static boolean is2xxSuccessful(int statusCode) {
+        int seriesCode = statusCode / 100;
+        return seriesCode == 2;
     }
-
 }

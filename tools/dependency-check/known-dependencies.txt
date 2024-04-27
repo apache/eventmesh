@@ -297,6 +297,8 @@ reactor-core-3.4.13.jar
 redisson-3.17.3.jar
 regions-2.20.29.jar
 relaxngDatatype-20020414.jar
+resilience4j-retry-1.7.1.jar
+resilience4j-core-1.7.1.jar
 rocketmq-acl-4.9.5.jar
 rocketmq-broker-4.9.5.jar
 rocketmq-client-4.9.5.jar

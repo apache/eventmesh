@@ -17,21 +17,26 @@
 
 package org.apache.eventmesh.connector.http.source.connector;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockserver.model.HttpRequest.request;
 
 import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +50,7 @@ import org.mockserver.verify.VerificationTimes;
 
 import io.vertx.core.http.HttpMethod;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 
 public class HttpSinkConnectorTest {
@@ -53,7 +59,10 @@ public class HttpSinkConnectorTest {
 
     private HttpSinkConfig sinkConfig;
 
+    private URI severUri;
+
     private ClientAndServer mockServer;
+
 
     @BeforeEach
     void before() throws Exception {
@@ -63,25 +72,29 @@ public class HttpSinkConnectorTest {
         this.sinkConnector.init(this.sinkConfig);
         this.sinkConnector.start();
 
+        this.severUri = URI.create(sinkConfig.connectorConfig.getUrls()[0]);
         // start mockServer
-        mockServer = ClientAndServer.startClientAndServer(this.sinkConfig.connectorConfig.getPort());
+        mockServer = ClientAndServer.startClientAndServer(severUri.getPort());
         // mockServer response
-        new MockServerClient(this.sinkConfig.connectorConfig.getHost(), this.sinkConfig.connectorConfig.getPort())
+        new MockServerClient(severUri.getHost(), severUri.getPort())
             .when(
                 request()
                     .withMethod("POST")
-                    .withPath(this.sinkConfig.connectorConfig.getPath())
+                    .withPath(severUri.getPath())
             )
             .respond(
-                HttpResponse.response()
-                    .withContentType(MediaType.APPLICATION_JSON)
-                    .withStatusCode(200)
-                    .withBody(new JSONObject()
-                        .fluentPut("code", 0)
-                        .fluentPut("message", "success")
-                        .toJSONString()
-                    )
-                    .withDelay(TimeUnit.SECONDS, 10)
+                httpRequest -> {
+                    JSONObject requestBody = JSON.parseObject(httpRequest.getBodyAsString());
+                    return HttpResponse.response()
+                        .withContentType(MediaType.APPLICATION_JSON)
+                        .withStatusCode(200)
+                        .withBody(new JSONObject()
+                            .fluentPut("code", 0)
+                            .fluentPut("message", "success")
+                            .fluentPut("data", requestBody.getJSONObject("data").get("data"))
+                            .toJSONString()
+                        ); // .withDelay(TimeUnit.SECONDS, 10);
+                }
             );
     }
 
@@ -103,25 +116,29 @@ public class HttpSinkConnectorTest {
         // Put ConnectRecord
         sinkConnector.put(connectRecords);
 
-        // sleep 15s
-        Thread.sleep(15000);
+        // sleep 5s
+        Thread.sleep(5000);
 
         // verify request
-        new MockServerClient(this.sinkConfig.connectorConfig.getHost(), this.sinkConfig.connectorConfig.getPort())
+        new MockServerClient(severUri.getHost(), severUri.getPort())
             .verify(
                 HttpRequest.request()
                     .withMethod(HttpMethod.POST.name())
-                    .withPath(this.sinkConfig.connectorConfig.getPath()),
+                    .withPath(severUri.getPath()),
                 VerificationTimes.exactly(times));
 
-        // verify data
-        CommonHttpSinkHandler sinkHandler = (CommonHttpSinkHandler) sinkConnector.getSinkHandler();
-        Object[] receivedDataArr = sinkHandler.getAllReceivedData();
-        assertEquals(times, receivedDataArr.length);
-        for (Object receivedData : receivedDataArr) {
-            JSONObject receivedDataJson = (JSONObject) receivedData;
-            assertEquals(0, receivedDataJson.getInteger("code"));
-            assertEquals("success", receivedDataJson.getString("message"));
+        // verify response
+        HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
+        String url = "http://" + severUri.getHost() + ":" + webhookConfig.getPort() + webhookConfig.getExportPath();
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        for (int i = 0; i < times; i++) {
+            HttpGet httpGet = new HttpGet(url);
+            httpGet.setHeader("Content-Type", "application/json");
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+            assert response.getEntity() != null;
+            String responseBody = EntityUtils.toString(response.getEntity());
+            JSONObject jsonObject = JSON.parseObject(responseBody);
+            assert jsonObject.get("data") != null;
         }
 
     }
