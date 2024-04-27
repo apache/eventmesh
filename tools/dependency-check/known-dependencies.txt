@@ -345,6 +345,8 @@ tomcat-embed-el-9.0.56.jar
 txw2-2.3.1.jar
 utils-2.20.29.jar
 validation-api-1.1.0.Final.jar
+vavr-0.10.2.jar
+vavr-match-0.10.2.jar
 vertx-auth-common-4.4.6.jar
 vertx-bridge-common-4.4.6.jar
 vertx-core-4.4.6.jar

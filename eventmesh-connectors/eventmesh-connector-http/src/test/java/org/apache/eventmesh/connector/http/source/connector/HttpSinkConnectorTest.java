@@ -140,7 +140,7 @@ public class HttpSinkConnectorTest {
             JSONObject jsonObject = JSON.parseObject(responseBody);
             assert jsonObject.get("data") != null;
         }
-
+        httpClient.close();
     }
 
     private ConnectRecord createConnectRecord() {
