@@ -30,5 +30,8 @@ public class HttpWebhookConfig {
     private int port;
 
     // timeunit: ms
-    private int idleTimeout = 5000;
+    private int serverIdleTimeout = 5000;
+
+    // max size of the storage queue
+    private int maxStorageSize = 5000;
 }

@@ -77,6 +77,7 @@ endpoint-util-0.0.7.jar
 endpoints-spi-2.20.29.jar
 error_prone_annotations-2.9.0.jar
 eventstream-1.0.1.jar
+failsafe-3.3.2.jar
 failureaccess-1.0.1.jar
 fastjson-1.2.69_noneautotype.jar
 fastjson2-2.0.48.jar
@@ -297,8 +298,6 @@ reactor-core-3.4.13.jar
 redisson-3.17.3.jar
 regions-2.20.29.jar
 relaxngDatatype-20020414.jar
-resilience4j-retry-1.7.1.jar
-resilience4j-core-1.7.1.jar
 rocketmq-acl-4.9.5.jar
 rocketmq-broker-4.9.5.jar
 rocketmq-client-4.9.5.jar
@@ -345,8 +344,6 @@ tomcat-embed-el-9.0.56.jar
 txw2-2.3.1.jar
 utils-2.20.29.jar
 validation-api-1.1.0.Final.jar
-vavr-0.10.2.jar
-vavr-match-0.10.2.jar
 vertx-auth-common-4.4.6.jar
 vertx-bridge-common-4.4.6.jar
 vertx-core-4.4.6.jar

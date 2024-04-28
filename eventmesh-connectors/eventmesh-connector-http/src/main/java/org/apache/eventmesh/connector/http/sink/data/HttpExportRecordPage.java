@@ -15,19 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.connector.http.sink.data;
 
+import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Represents a page of HTTP export records.
+ */
 @Data
-public class HttpRetryConfig {
-    // maximum number of retries, default 3, minimum 0
-    private int maxRetries = 3;
+@AllArgsConstructor
+public class HttpExportRecordPage {
 
-    // retry interval, default 2000ms
-    private int interval = 2000;
+    private int pageNum;
 
-    // Default value is false, indicating that only requests with network-level errors will be retried.
-    // If set to true, all failed requests will be retried, including network-level errors and non-2xx responses.
-    private boolean retryOnNonSuccess = false;
+    private int pageSize;
+
+    private List<HttpExportRecord> pageItems;
+
 }

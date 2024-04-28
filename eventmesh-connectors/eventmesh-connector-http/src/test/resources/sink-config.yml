@@ -35,11 +35,12 @@ connectorConfig:
   connectionTimeout: 5000   # timeunit: ms, recommended scope: 5 - 10s
   maxConnectionPoolSize: 10
   retryConfig:
-    maxAttempts: 3
+    maxRetries: 2
     interval: 1000
-    retryAll: true
+    retryOnNonSuccess: true
   webhookConfig:
     activate: true
     exportPath: /export
     port: 8988
-    idleTimeout: 5000
+    serverIdleTimeout: 5000
+    maxStorageSize: 5000

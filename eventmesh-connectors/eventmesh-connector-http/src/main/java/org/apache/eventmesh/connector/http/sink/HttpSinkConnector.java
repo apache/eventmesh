@@ -67,19 +67,22 @@ public class HttpSinkConnector implements Sink {
         // Fill default values if absent
         SinkConnectorConfig.populateFieldsWithDefaults(this.httpSinkConfig.connectorConfig);
         // Create different handlers for different configurations
-        HttpSinkHandler sinkHandler0;
+        HttpSinkHandler nonRetryHandler;
         if (this.httpSinkConfig.connectorConfig.getWebhookConfig().isActivate()) {
-            sinkHandler0 = new WebhookHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+            nonRetryHandler = new WebhookHttpSinkHandler(this.httpSinkConfig.connectorConfig);
         } else {
-            sinkHandler0 = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
+            nonRetryHandler = new CommonHttpSinkHandler(this.httpSinkConfig.connectorConfig);
         }
 
-        if (this.httpSinkConfig.connectorConfig.getRetryConfig().getMaxAttempts() > 1) {
-            // Wrap the sink handler with a retry handler
-            this.sinkHandler = new RetryHttpSinkHandler(this.httpSinkConfig.connectorConfig, sinkHandler0);
-        } else {
+        int maxRetries = this.httpSinkConfig.connectorConfig.getRetryConfig().getMaxRetries();
+        if (maxRetries < 0) {
+            throw new IllegalArgumentException("Max retries must be greater than or equal to 0.");
+        } else if (maxRetries == 0) {
             // Use the original sink handler
-            this.sinkHandler = sinkHandler0;
+            this.sinkHandler = nonRetryHandler;
+        } else {
+            // Wrap the sink handler with a retry handler
+            this.sinkHandler = new RetryHttpSinkHandler(this.httpSinkConfig.connectorConfig, nonRetryHandler);
         }
     }
 
@@ -112,7 +115,7 @@ public class HttpSinkConnector implements Sink {
                     continue;
                 }
                 // Handle the ConnectRecord
-                this.sinkHandler.multiHandle(sinkRecord);
+                this.sinkHandler.handle(sinkRecord);
             } catch (Exception e) {
                 log.error("Failed to sink message via HTTP. ", e);
             }

@@ -99,32 +99,32 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
         this.webClient = WebClient.create(vertx, options);
     }
 
-
     /**
-     * Handles a ConnectRecord by sending it asynchronously to all configured URLs.
+     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
      *
-     * @param record the ConnectRecord to handle
+     * @param record the ConnectRecord to process
      */
     @Override
-    public void multiHandle(ConnectRecord record) {
+    public void handle(ConnectRecord record) {
         for (URI url : this.urls) {
             // convert ConnectRecord to HttpConnectRecord
             String type = String.format("%s.%s.%s", connectorConfig.getConnectorName(), url.getScheme(), "common");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-            handle(url, httpConnectRecord);
+            deliver(url, httpConnectRecord);
         }
     }
 
 
     /**
-     * Sends the HttpConnectRecord to the specified URL using WebClient.
+     * Processes HttpConnectRecord on specified URL while returning its own processing logic.
+     * This method sends the HttpConnectRecord to the specified URL using the WebClient.
      *
-     * @param url               the URL to send the HttpConnectRecord
-     * @param httpConnectRecord the HttpConnectRecord to send
-     * @return the Future of the HTTP request
+     * @param url               URI to which the HttpConnectRecord should be sent
+     * @param httpConnectRecord HttpConnectRecord to process
+     * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> handle(URI url, HttpConnectRecord httpConnectRecord) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord) {
         // create headers
         MultiMap headers = HttpHeaders.headers()
             .set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8")
@@ -142,18 +142,22 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             .ssl(Objects.equals(url.getScheme(), "https"))
             .sendJson(httpConnectRecord)
             .onSuccess(res -> {
-                if (log.isDebugEnabled()) {
-                    log.debug("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
-                } else {
-                    log.info("Request sent successfully.");
-                }
+                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
                 // log the response
                 if (HttpUtils.is2xxSuccessful(res.statusCode())) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Received successful response: statusCode={}, responseBody={}", res.statusCode(), res.bodyAsString());
+                        log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
+                            res.statusCode(), timestamp, offset, res.bodyAsString());
+                    } else {
+                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp, offset);
                     }
                 } else {
-                    log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp, offset);
+                    if (log.isDebugEnabled()) {
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
+                            res.statusCode(), timestamp, offset, res.bodyAsString());
+                    } else {
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp, offset);
+                    }
                 }
 
             })

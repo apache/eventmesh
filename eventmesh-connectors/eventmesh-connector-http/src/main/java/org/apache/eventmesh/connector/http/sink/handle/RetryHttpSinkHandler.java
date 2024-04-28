@@ -20,35 +20,40 @@ package org.apache.eventmesh.connector.http.sink.handle;
 import org.apache.eventmesh.connector.http.sink.config.HttpRetryConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata.HttpExportMetadataBuilder;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.ConnectException;
 import java.net.URI;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
-import io.github.resilience4j.retry.RetryRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.RetryPolicyBuilder;
+import dev.failsafe.event.ExecutionEvent;
+
+
 @Slf4j
 public class RetryHttpSinkHandler implements HttpSinkHandler {
 
     private final SinkConnectorConfig connectorConfig;
 
-    private Retry retry;
-
-    private ScheduledExecutorService scheduler;
+    // Retry policy builder
+    private RetryPolicyBuilder<HttpResponse<Buffer>> retryPolicyBuilder;
 
     private final List<URI> urls;
 
@@ -71,28 +76,12 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
 
     private void initRetry() {
         HttpRetryConfig httpRetryConfig = this.connectorConfig.getRetryConfig();
-        // Create a custom RetryConfig
-        RetryConfig retryConfig = RetryConfig.<HttpResponse<Buffer>>custom()
-            .maxAttempts(httpRetryConfig.getMaxAttempts())
-            .waitDuration(Duration.ofMillis(httpRetryConfig.getInterval()))
-            .retryOnException(throwable -> throwable instanceof ConnectException)
-            .retryOnResult(response -> httpRetryConfig.isRetryAll() && !HttpUtils.is2xxSuccessful(response.statusCode()))
-            .failAfterMaxAttempts(true)
-            .build();
 
-        // Create a RetryRegistry with a custom global configuration
-        RetryRegistry retryRegistry = RetryRegistry.of(retryConfig);
-
-        // Get or create a Retry from the registry
-        this.retry = retryRegistry.retry("retryHttpSinkHandler");
-
-        // Create a ScheduledExecutorService with the number of threads equal to the maximum connection pool size
-        this.scheduler = Executors.newScheduledThreadPool(this.connectorConfig.getMaxConnectionPoolSize());
-
-        // register event listeners
-        retry.getEventPublisher()
-            .onSuccess(event -> log.info(event.toString()))
-            .onError(event -> log.error(event.toString()));
+        this.retryPolicyBuilder = RetryPolicy.<HttpResponse<Buffer>>builder()
+            .handleIf(e -> e instanceof ConnectException)
+            .handleResultIf(response -> httpRetryConfig.isRetryOnNonSuccess() && !HttpUtils.is2xxSuccessful(response.statusCode()))
+            .withMaxRetries(httpRetryConfig.getMaxRetries())
+            .withDelay(Duration.ofMillis(httpRetryConfig.getInterval()));
     }
 
 
@@ -104,13 +93,14 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
         sinkHandler.start();
     }
 
+
     /**
-     * Handles the ConnectRecord by sending it to all configured URLs using the WebClient.
+     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
      *
-     * @param record the ConnectRecord to handle
+     * @param record the ConnectRecord to process
      */
     @Override
-    public void multiHandle(ConnectRecord record) {
+    public void handle(ConnectRecord record) {
         for (URI url : this.urls) {
             // convert ConnectRecord to HttpConnectRecord
             String type = String.format("%s.%s.%s",
@@ -118,23 +108,100 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                 this.connectorConfig.getWebhookConfig().isActivate() ? "webhook" : "common");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
             // handle the HttpConnectRecord
-            handle(url, httpConnectRecord);
+            deliver(url, httpConnectRecord);
         }
     }
 
+
     /**
-     * Handles the HttpConnectRecord by sending it to the specified URL using the WebClient. If the request fails, it will be retried according to the
-     * RetryConfig.
+     * Processes HttpConnectRecord on specified URL while returning its own processing logic This method provides the retry power to process the
+     * HttpConnectRecord
      *
-     * @param url               the URL to send the HttpConnectRecord to
-     * @param httpConnectRecord the HttpConnectRecord to send
-     * @return a Future representing the result of the HTTP request
+     * @param url               URI to which the HttpConnectRecord should be sent
+     * @param httpConnectRecord HttpConnectRecord to process
+     * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> handle(URI url, HttpConnectRecord httpConnectRecord) {
-        this.retry.executeCompletionStage(scheduler, () ->
-            this.sinkHandler.handle(url, httpConnectRecord).toCompletionStage());
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord) {
+        // Only webhook mode needs to use the firstTryId
+        String firstTryId = UUID.randomUUID().toString();
+
+        // Build the retry policy
+        RetryPolicy<HttpResponse<Buffer>> retryPolicy = retryPolicyBuilder
+            .onSuccess(e -> {
+                if (connectorConfig.getWebhookConfig().isActivate()) {
+                    // convert the result to an HttpExportRecord
+                    HttpExportRecord exportRecord = covertToExportRecord(e, e.getResult(), e.getException(), url, firstTryId);
+                    // add the data to the queue
+                    ((WebhookHttpSinkHandler) sinkHandler).addDataToQueue(exportRecord);
+                }
+            })
+            .onRetry(e -> {
+                if (log.isDebugEnabled()) {
+                    log.warn("Retrying the request to {} for the {} time. HttpConnectRecord= {}", url, e.getAttemptCount(), httpConnectRecord);
+                } else {
+                    log.warn("Retrying the request to {} for the {} time.", url, e.getAttemptCount());
+                }
+                if (connectorConfig.getWebhookConfig().isActivate()) {
+                    HttpExportRecord exportRecord = covertToExportRecord(e, e.getLastResult(), e.getLastException(), url, firstTryId);
+                    ((WebhookHttpSinkHandler) sinkHandler).addDataToQueue(exportRecord);
+                }
+            })
+            .onFailure(e -> {
+                if (log.isDebugEnabled()) {
+                    log.error("Failed to send the request to {} after {} attempts. HttpConnectRecord= {}", url, e.getAttemptCount(),
+                        httpConnectRecord, e.getException());
+                } else {
+                    log.error("Failed to send the request to {} after {} attempts.", url, e.getAttemptCount(), e.getException());
+                }
+                if (connectorConfig.getWebhookConfig().isActivate()) {
+                    HttpExportRecord exportRecord = covertToExportRecord(e, e.getResult(), e.getException(), url, firstTryId);
+                    ((WebhookHttpSinkHandler) sinkHandler).addDataToQueue(exportRecord);
+                }
+            }).build();
+
+        // Handle the HttpConnectRecord with retry
+        Failsafe.with(retryPolicy)
+            .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord).toCompletionStage());
+
         return null;
+    }
+
+    /**
+     * Converts the ExecutionCompletedEvent to an HttpExportRecord.
+     *
+     * @param event      the ExecutionCompletedEvent to convert
+     * @param response   the response of the request, may be null
+     * @param e          the exception thrown during the request, may be null
+     * @param url        the URL the request was sent to
+     * @param firstTryId the UUID of the first try
+     * @return the converted HttpExportRecord
+     */
+    private HttpExportRecord covertToExportRecord(ExecutionEvent event, HttpResponse<Buffer> response, Throwable e, URI url, String firstTryId) {
+        HttpExportMetadataBuilder builder = HttpExportMetadata.builder()
+            .url(url.toString())
+            .receivedTime(LocalDateTime.now())
+            .retryNum(event.getAttemptCount() - 1);
+
+        if (event.getAttemptCount() == 1) {
+            builder.retriedBy(null)
+                .uuid(firstTryId);
+        } else {
+            builder.retriedBy(firstTryId)
+                .uuid(UUID.randomUUID().toString());
+        }
+
+        if (response != null) {
+            // record the response
+            builder.code(response.statusCode())
+                .message(response.statusMessage());
+        } else {
+            // record the exception
+            builder.code(-1)
+                .message(e.getMessage());
+        }
+
+        return new HttpExportRecord(builder.build(), response == null ? null : response.bodyAsString());
     }
 
     /**
@@ -143,7 +210,5 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
     @Override
     public void stop() {
         sinkHandler.stop();
-        // Shutdown the scheduler
-        scheduler.shutdown();
     }
 }

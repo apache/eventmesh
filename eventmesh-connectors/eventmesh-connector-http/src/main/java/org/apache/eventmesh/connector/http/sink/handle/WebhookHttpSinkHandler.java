@@ -17,21 +17,32 @@
 
 package org.apache.eventmesh.connector.http.sink.handle;
 
-
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
-import org.apache.eventmesh.connector.http.util.HttpUtils;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata.HttpExportMetadataBuilder;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
+import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.URI;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
@@ -42,8 +53,10 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.handler.LoggerHandler;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -53,6 +66,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
 
+    private final SinkConnectorConfig sinkConnectorConfig;
+
     // the configuration for webhook
     private final HttpWebhookConfig webhookConfig;
 
@@ -60,12 +75,21 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     private HttpServer exportServer;
 
     // store the received data, when webhook is enabled
-    private final BlockingQueue<Object> receivedDataQueue;
+    private final ConcurrentLinkedQueue<HttpExportRecord> receivedDataQueue;
+
+    // the maximum queue size
+    private final int maxQueueSize;
+
+    // the current queue size
+    private final AtomicInteger currentQueueSize;
 
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
+        this.sinkConnectorConfig = sinkConnectorConfig;
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
-        this.receivedDataQueue = new LinkedBlockingQueue<>();
+        this.maxQueueSize = this.webhookConfig.getMaxStorageSize();
+        this.currentQueueSize = new AtomicInteger(0);
+        this.receivedDataQueue = new ConcurrentLinkedQueue<>();
         // init the export server
         doInitExportServer();
     }
@@ -84,33 +108,74 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             .method(HttpMethod.GET)
             .produces("application/json")
             .handler(ctx -> {
-                // get received data
-                Object data = this.receivedDataQueue.poll();
-                if (data != null) {
+                // Validate the request parameters
+                MultiMap params = ctx.request().params();
+                String pageNumStr = params.get(ParamEnum.PAGE_NUM.getValue());
+                String pageSizeStr = params.get(ParamEnum.PAGE_SIZE.getValue());
+                String type = params.get(ParamEnum.TYPE.getValue());
 
-                    // export the received data
+                // 1. type must be "poll" or "peek" or null
+                // 2. if type is "peek", pageNum must be greater than 0
+                // 3. pageSize must be greater than 0
+                if ((type != null && !Objects.equals(type, TypeEnum.PEEK.getValue()) && !Objects.equals(type, TypeEnum.POLL.getValue()))
+                    || (Objects.equals(type, TypeEnum.PEEK.getValue()) && (StringUtils.isBlank(pageNumStr) || Integer.parseInt(pageNumStr) < 1))
+                    || (StringUtils.isBlank(pageSizeStr) || Integer.parseInt(pageSizeStr) < 1)) {
+
+                    // Return 400 Bad Request if the request parameters are invalid
                     ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
-                        .setStatusCode(HttpResponseStatus.OK.code())
-                        .send(JSONObject.of("data", data).toJSONString());
-                    if (log.isDebugEnabled()) {
-                        log.debug("Succeed to export callback data. Data: {}", data);
-                    } else {
-                        log.info("Succeed to export callback data.");
-                    }
-                } else {
-                    // no data to export
+                        .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+                        .end();
+                    log.info("Invalid request parameters. pageNum: {}, pageSize: {}, type: {}", pageNumStr, pageSizeStr, type);
+                    return;
+                }
+
+                // Parse the request parameters
+                if (type == null) {
+                    type = TypeEnum.PEEK.getValue();
+                }
+                int pageNum = StringUtils.isBlank(pageNumStr) ? 1 : Integer.parseInt(pageNumStr);
+                int pageSize = Integer.parseInt(pageSizeStr);
+
+                if (currentQueueSize.get() == 0) {
                     ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                         .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
                         .end();
                     log.info("No callback data to export.");
+                    return;
+                }
+
+                // Get the received data
+                List<HttpExportRecord> exportRecords;
+                if (Objects.equals(type, TypeEnum.POLL.getValue())) {
+                    // If the type is poll, only the first page of data is exported and removed
+                    exportRecords = getDataFromQueue(0, pageSize, true);
+                } else {
+                    // If the type is peek, the specified page of data is exported without removing
+                    int startIndex = (pageNum - 1) * pageSize;
+                    int endIndex = startIndex + pageSize;
+                    exportRecords = getDataFromQueue(startIndex, endIndex, false);
+                }
+
+                // Create HttpExportRecordPage
+                HttpExportRecordPage page = new HttpExportRecordPage(pageNum, exportRecords.size(), exportRecords);
+
+                // export the received data
+                ctx.response()
+                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
+                    .setStatusCode(HttpResponseStatus.OK.code())
+                    .send(JSON.toJSONString(page, JSONWriter.Feature.WriteMapNullValue));
+                if (log.isDebugEnabled()) {
+                    log.debug("Succeed to export callback data. Data: {}", page);
+                } else {
+                    log.info("Succeed to export callback data.");
                 }
             });
         // create the export server
         this.exportServer = vertx.createHttpServer(new HttpServerOptions()
             .setPort(this.webhookConfig.getPort())
-            .setIdleTimeout(this.webhookConfig.getIdleTimeout())
+            .setIdleTimeout(this.webhookConfig.getServerIdleTimeout())
             .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)).requestHandler(router);
     }
 
@@ -129,66 +194,118 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     }
 
     /**
-     * Processes the ConnectRecord multiple times by sending it over HTTP or HTTPS to all configured URLs.
+     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
      *
-     * @param record the ConnectRecord to handle
+     * @param record the ConnectRecord to process
      */
     @Override
-    public void multiHandle(ConnectRecord record) {
+    public void handle(ConnectRecord record) {
         for (URI url : super.getUrls()) {
             // convert ConnectRecord to HttpConnectRecord
             String type = String.format("%s.%s.%s", this.getConnectorConfig().getConnectorName(), url.getScheme(), "webhook");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
             // handle the HttpConnectRecord
-            handle(url, httpConnectRecord);
+            deliver(url, httpConnectRecord);
+        }
+    }
+
+
+    /**
+     * Processes HttpConnectRecord on specified URL while returning its own processing logic This method sends the HttpConnectRecord to the specified
+     * URL by super class method and stores the received data.
+     *
+     * @param url               URI to which the HttpConnectRecord should be sent
+     * @param httpConnectRecord HttpConnectRecord to process
+     * @return processing chain
+     */
+    @Override
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord) {
+        // send the request
+        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord);
+        // store the received data
+        return responseFuture.onComplete(arr -> {
+            // If open retry, return directly and handled by RetryHttpSinkHandler
+            if (sinkConnectorConfig.getRetryConfig().getMaxRetries() > 0) {
+                return;
+            }
+            // create ExportMetadataBuilder
+            HttpExportMetadataBuilder builder = HttpExportMetadata.builder()
+                .url(url.toString())
+                .receivedTime(LocalDateTime.now())
+                .retriedBy(null)
+                .uuid(UUID.randomUUID().toString())
+                .retryNum(0);
+
+            if (arr.succeeded()) {
+                HttpResponse<Buffer> response = arr.result();
+                builder.code(response.statusCode())
+                    .message(response.statusMessage());
+            } else {
+                builder.code(-1)
+                    .message(arr.cause().getMessage());
+            }
+            // create ExportRecord
+            HttpExportRecord exportRecord = new HttpExportRecord(builder.build(), arr.succeeded() ? arr.result().bodyAsString() : null);
+            // add the data to the queue
+            addDataToQueue(exportRecord);
+        });
+    }
+
+
+    /**
+     * Adds the received data to the queue.
+     *
+     * @param exportRecord the received data to add to the queue
+     */
+    public void addDataToQueue(HttpExportRecord exportRecord) {
+        // If the current queue size is greater than or equal to the maximum queue size, remove the oldest element
+        if (currentQueueSize.get() >= maxQueueSize) {
+            Object removedData = receivedDataQueue.poll();
+            if (log.isDebugEnabled()) {
+                log.debug("The queue is full, remove the oldest element: {}", removedData);
+            } else {
+                log.info("The queue is full, remove the oldest element");
+            }
+            currentQueueSize.decrementAndGet();
+        }
+        // Try to put the received data into the queue
+        if (receivedDataQueue.offer(exportRecord)) {
+            currentQueueSize.incrementAndGet();
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully put the received data into the queue: {}", exportRecord);
+            } else {
+                log.info("Successfully put the received data into the queue");
+            }
+        } else {
+            log.error("Failed to put the received data into the queue: {}", exportRecord);
         }
     }
 
     /**
-     * Processes the ConnectRecord once by sending it over HTTP or HTTPS to the specified URL. If the status code is 2xx, the received data will be
-     * stored in the queue.
+     * Gets the received data from the queue.
      *
-     * @param url               the URL to send the ConnectRecord to
-     * @param httpConnectRecord the ConnectRecord to handle
-     * @return the Future of the HTTP request
+     * @param startIndex the start index of the data to get
+     * @param endIndex   the end index of the data to get
+     * @param removed    whether to remove the data from the queue
+     * @return the received data
      */
-    @Override
-    public Future<HttpResponse<Buffer>> handle(URI url, HttpConnectRecord httpConnectRecord) {
-        // send the request
-        Future<HttpResponse<Buffer>> responseFuture = super.handle(url, httpConnectRecord);
-        // store the received data
-        return responseFuture.onSuccess(res -> {
-            // Determine whether the status code is 2xx
-            if (!HttpUtils.is2xxSuccessful(res.statusCode())) {
-                return;
-            }
-            // Get the received data
-            String receivedData = res.bodyAsString();
-            if (receivedData.isEmpty()) {
-                log.warn("Received data is empty.");
-                return;
-            }
-            // If the queue is full, remove the oldest element
-            if (receivedDataQueue.size() == Integer.MAX_VALUE) {
-                Object removedData = receivedDataQueue.poll();
-                if (log.isDebugEnabled()) {
-                    log.debug("The queue is full, remove the oldest element: {}", removedData);
-                } else {
-                    log.info("The queue is full, remove the oldest element");
-                }
-            }
-            // Try to put the received data into the queue
-            if (receivedDataQueue.offer(receivedData)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Successfully put the received data into the queue: {}", receivedData);
-                } else {
-                    log.info("Successfully put the received data into the queue");
-                }
-            } else {
-                log.error("Failed to put the received data into the queue: {}", receivedData);
-            }
+    private List<HttpExportRecord> getDataFromQueue(int startIndex, int endIndex, boolean removed) {
+        Iterator<HttpExportRecord> iterator = receivedDataQueue.iterator();
 
-        });
+        List<HttpExportRecord> pageItems = new ArrayList<>(endIndex - startIndex);
+        int count = 0;
+        while (iterator.hasNext() && count < endIndex) {
+            HttpExportRecord item = iterator.next();
+            if (count >= startIndex) {
+                pageItems.add(item);
+                if (removed) {
+                    iterator.remove();
+                    currentQueueSize.decrementAndGet();
+                }
+            }
+            count++;
+        }
+        return pageItems;
     }
 
     /**
@@ -207,5 +324,34 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         } else {
             log.warn("Callback server is null, ignore.");
         }
+    }
+
+
+    @Getter
+    public enum ParamEnum {
+        PAGE_NUM("pageNum"),
+        PAGE_SIZE("pageSize"),
+        TYPE("type");
+
+        private final String value;
+
+        ParamEnum(String value) {
+            this.value = value;
+        }
+
+    }
+
+
+    @Getter
+    public enum TypeEnum {
+        POLL("poll"),
+        PEEK("peek");
+
+        private final String value;
+
+        TypeEnum(String value) {
+            this.value = value;
+        }
+
     }
 }
