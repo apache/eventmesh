@@ -22,7 +22,6 @@ dependencies {
     implementation 'io.cloudevents:cloudevents-http-vertx:3.0.0'
     implementation 'io.vertx:vertx-web:4.4.6'
     implementation 'io.vertx:vertx-web-client:4.4.6'
-    implementation 'io.vertx:vertx-web-validation:4.4.6'
     implementation 'dev.failsafe:failsafe:3.3.2'
 
     testImplementation "org.apache.httpcomponents:httpclient"
