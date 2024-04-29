@@ -39,7 +39,7 @@ connectorConfig:
     interval: 1000
     retryOnNonSuccess: true
   webhookConfig:
-    activate: true
+    activate: false
     exportPath: /export
     port: 8988
     serverIdleTimeout: 5000

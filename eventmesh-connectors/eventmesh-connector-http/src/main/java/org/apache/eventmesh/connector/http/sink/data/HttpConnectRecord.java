@@ -50,10 +50,10 @@ public class HttpConnectRecord {
      * @return the converted HttpConnectRecord
      */
     public static HttpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
-        Map<String, ?> offsets = record.getPosition().getOffset().getOffset();
+        Map<String, ?> offsetMap = record.getPosition().getOffset().getOffset();
         String offset = "0";
-        if (!offsets.isEmpty()) {
-            offset = offsets.values().iterator().next().toString();
+        if (!offsetMap.isEmpty()) {
+            offset = offsetMap.values().iterator().next().toString();
         }
         return HttpConnectRecord.builder()
             .type(type)

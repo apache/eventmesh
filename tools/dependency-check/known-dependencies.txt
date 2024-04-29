@@ -46,6 +46,7 @@ checker-qual-3.12.0.jar
 classmate-1.5.1.jar
 cloudevents-api-2.4.2.jar
 cloudevents-core-2.4.2.jar
+cloudevents-http-vertx-2.3.0.jar
 cloudevents-http-vertx-3.0.0.jar
 cloudevents-json-jackson-2.4.2.jar
 cloudevents-kafka-2.4.2.jar
@@ -348,6 +349,7 @@ vertx-auth-common-4.4.6.jar
 vertx-bridge-common-4.4.6.jar
 vertx-core-4.4.6.jar
 vertx-web-4.4.6.jar
+vertx-web-client-4.0.0.jar
 vertx-web-client-4.4.6.jar
 vertx-web-common-4.4.6.jar
 vertx-uri-template-4.4.6.jar

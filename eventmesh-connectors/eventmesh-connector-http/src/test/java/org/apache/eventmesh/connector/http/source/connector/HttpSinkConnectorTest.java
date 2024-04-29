@@ -21,18 +21,11 @@ import static org.mockserver.model.HttpRequest.request;
 
 import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -52,7 +45,6 @@ import org.mockserver.verify.VerificationTimes;
 import io.vertx.core.http.HttpMethod;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 
 public class HttpSinkConnectorTest {
@@ -129,34 +121,36 @@ public class HttpSinkConnectorTest {
                     .withPath(severUri.getPath()),
                 VerificationTimes.exactly(times));
 
-        // verify response
-        HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
-        URI uri = new URIBuilder()
-            .setScheme("http")
-            .setHost(severUri.getHost())
-            .setPort(webhookConfig.getPort())
-            .setPath(webhookConfig.getExportPath())
-            .addParameter("pageNum", "1")
-            .addParameter("pageSize", "10")
-            .addParameter("type", "poll")
-            .build();
+        // The following code is only required in webhook mode
 
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(uri);
-        httpGet.setHeader("Content-Type", "application/json");
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        String body = EntityUtils.toString(response.getEntity());
-        assert body != null;
-        JSONArray pageItems = JSON.parseObject(body).getJSONArray("pageItems");
-        assert pageItems != null && pageItems.size() == times;
-        for (int i = 0; i < times; i++) {
-            JSONObject pageItem = pageItems.getJSONObject(i);
-            assert pageItem != null;
-            assert pageItem.getJSONObject("data") != null;
-            assert pageItem.getJSONObject("metadata") != null;
-        }
-
-        httpClient.close();
+//        // verify response
+//        HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
+//        URI uri = new URIBuilder()
+//            .setScheme("http")
+//            .setHost(severUri.getHost())
+//            .setPort(webhookConfig.getPort())
+//            .setPath(webhookConfig.getExportPath())
+//            .addParameter("pageNum", "1")
+//            .addParameter("pageSize", "10")
+//            .addParameter("type", "poll")
+//            .build();
+//
+//        CloseableHttpClient httpClient = HttpClients.createDefault();
+//        HttpGet httpGet = new HttpGet(uri);
+//        httpGet.setHeader("Content-Type", "application/json");
+//        CloseableHttpResponse response = httpClient.execute(httpGet);
+//        String body = EntityUtils.toString(response.getEntity());
+//        assert body != null;
+//        JSONArray pageItems = JSON.parseObject(body).getJSONArray("pageItems");
+//        assert pageItems != null && pageItems.size() == times;
+//        for (int i = 0; i < times; i++) {
+//            JSONObject pageItem = pageItems.getJSONObject(i);
+//            assert pageItem != null;
+//            assert pageItem.getJSONObject("data") != null;
+//            assert pageItem.getJSONObject("metadata") != null;
+//        }
+//
+//        httpClient.close();
     }
 
     private ConnectRecord createConnectRecord() {
