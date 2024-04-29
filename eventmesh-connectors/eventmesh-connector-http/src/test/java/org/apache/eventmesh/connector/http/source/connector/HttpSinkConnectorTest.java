@@ -26,7 +26,6 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,36 +120,39 @@ public class HttpSinkConnectorTest {
                     .withPath(severUri.getPath()),
                 VerificationTimes.exactly(times));
 
-        // The following code is only required in webhook mode
+        /*
+        **The following code is only required in webhook mode**
 
-//        // verify response
-//        HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
-//        URI uri = new URIBuilder()
-//            .setScheme("http")
-//            .setHost(severUri.getHost())
-//            .setPort(webhookConfig.getPort())
-//            .setPath(webhookConfig.getExportPath())
-//            .addParameter("pageNum", "1")
-//            .addParameter("pageSize", "10")
-//            .addParameter("type", "poll")
-//            .build();
-//
-//        CloseableHttpClient httpClient = HttpClients.createDefault();
-//        HttpGet httpGet = new HttpGet(uri);
-//        httpGet.setHeader("Content-Type", "application/json");
-//        CloseableHttpResponse response = httpClient.execute(httpGet);
-//        String body = EntityUtils.toString(response.getEntity());
-//        assert body != null;
-//        JSONArray pageItems = JSON.parseObject(body).getJSONArray("pageItems");
-//        assert pageItems != null && pageItems.size() == times;
-//        for (int i = 0; i < times; i++) {
-//            JSONObject pageItem = pageItems.getJSONObject(i);
-//            assert pageItem != null;
-//            assert pageItem.getJSONObject("data") != null;
-//            assert pageItem.getJSONObject("metadata") != null;
-//        }
-//
-//        httpClient.close();
+        // verify response
+        HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
+        URI uri = new URIBuilder()
+            .setScheme("http")
+            .setHost(severUri.getHost())
+            .setPort(webhookConfig.getPort())
+            .setPath(webhookConfig.getExportPath())
+            .addParameter("pageNum", "1")
+            .addParameter("pageSize", "10")
+            .addParameter("type", "poll")
+            .build();
+
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(uri);
+        httpGet.setHeader("Content-Type", "application/json");
+        CloseableHttpResponse response = httpClient.execute(httpGet);
+        String body = EntityUtils.toString(response.getEntity());
+        assert body != null;
+        JSONArray pageItems = JSON.parseObject(body).getJSONArray("pageItems");
+        assert pageItems != null && pageItems.size() == times;
+        for (int i = 0; i < times; i++) {
+            JSONObject pageItem = pageItems.getJSONObject(i);
+            assert pageItem != null;
+            assert pageItem.getJSONObject("data") != null;
+            assert pageItem.getJSONObject("metadata") != null;
+        }
+
+        httpClient.close();
+
+         */
     }
 
     private ConnectRecord createConnectRecord() {
