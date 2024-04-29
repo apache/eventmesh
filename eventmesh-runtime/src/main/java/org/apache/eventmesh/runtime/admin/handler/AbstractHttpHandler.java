@@ -35,7 +35,9 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 public abstract class AbstractHttpHandler implements HttpHandler {
 
@@ -83,6 +85,12 @@ public abstract class AbstractHttpHandler implements HttpHandler {
         writeJson(ctx, json, HttpResponseStatus.UNAUTHORIZED);
     }
 
+    protected void writeInternalServerError(ChannelHandlerContext ctx, String message) {
+        Result<String> result = new Result<>(message);
+        String json = JSON.toJSONString(result, JSONWriter.Feature.WriteNulls);
+        writeJson(ctx, json, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+    }
+
     /**
      * Use {@link HttpResponseUtils#buildHttpResponse} to build {@link HttpResponse} param.
      */
@@ -92,25 +100,36 @@ public abstract class AbstractHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpRequest httpRequest, ChannelHandlerContext ctx) throws Exception {
-        switch (HttpMethod.valueOf(httpRequest.method().name())) {
-            case OPTIONS:
-                preflight(ctx);
-                break;
-            case GET:
-                get(httpRequest, ctx);
-                break;
-            case POST:
-                post(httpRequest, ctx);
-                break;
-            case PUT:
-                put(httpRequest, ctx);
-                break;
-            case DELETE:
-                delete(httpRequest, ctx);
-                break;
-            default:
-                // do nothing
-                break;
+        try {
+            switch (HttpMethod.valueOf(httpRequest.method().name())) {
+                case OPTIONS:
+                    preflight(ctx);
+                    break;
+                case GET:
+                    get(httpRequest, ctx);
+                    break;
+                case POST:
+                    post(httpRequest, ctx);
+                    break;
+                case PUT:
+                    put(httpRequest, ctx);
+                    break;
+                case DELETE:
+                    delete(httpRequest, ctx);
+                    break;
+                default: // do nothing
+            }
+        } catch (RuntimeException e) {
+            StackTraceElement element = e.getStackTrace()[0];
+            String className = element.getClassName();
+            String handlerName = className.substring(className.lastIndexOf(".") + 1);
+            if (e instanceof IllegalArgumentException) {
+                log.warn("Admin endpoint {}:{} - {}", handlerName, element.getLineNumber(), e.getMessage());
+                writeBadRequest(ctx, e.getMessage());
+            } else {
+                log.error("Admin endpoint {}:{} - {}", handlerName, element.getLineNumber(), e.getMessage(), e);
+                writeInternalServerError(ctx, e.getMessage());
+            }
         }
     }
 
