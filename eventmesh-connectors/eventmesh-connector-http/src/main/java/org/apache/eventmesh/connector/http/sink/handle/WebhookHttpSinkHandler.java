@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -233,7 +232,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 .url(url.toString())
                 .receivedTime(LocalDateTime.now())
                 .retriedBy(null)
-                .uuid(UUID.randomUUID().toString())
+                .uuid(httpConnectRecord.getUuid())
                 .retryNum(0);
 
             if (arr.succeeded()) {
@@ -271,11 +270,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         // Try to put the received data into the queue
         if (receivedDataQueue.offer(exportRecord)) {
             currentQueueSize.incrementAndGet();
-            if (log.isDebugEnabled()) {
-                log.debug("Successfully put the received data into the queue: {}", exportRecord);
-            } else {
-                log.info("Successfully put the received data into the queue");
-            }
+            log.debug("Successfully put the received data into the queue: {}", exportRecord);
         } else {
             log.error("Failed to put the received data into the queue: {}", exportRecord);
         }

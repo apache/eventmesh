@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.http.sink.data;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import lombok.Builder;
 import lombok.Data;
@@ -33,7 +34,11 @@ public class HttpConnectRecord {
 
     private String type;
 
-    private String timestamp;
+    private String time;
+
+    private String uuid;
+
+    private String eventId;
 
     private ConnectRecord data;
 
@@ -46,7 +51,9 @@ public class HttpConnectRecord {
     public static HttpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
         return HttpConnectRecord.builder()
             .type(type)
-            .timestamp(LocalDateTime.now().toString())
+            .time(LocalDateTime.now().toString())
+            .uuid(UUID.randomUUID().toString())
+            .eventId(type + "-" + record.getTimestamp())
             .data(record)
             .build();
     }

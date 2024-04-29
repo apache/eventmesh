@@ -75,14 +75,14 @@ public class HttpSinkConnector implements Sink {
         }
 
         int maxRetries = this.httpSinkConfig.connectorConfig.getRetryConfig().getMaxRetries();
-        if (maxRetries < 0) {
-            throw new IllegalArgumentException("Max retries must be greater than or equal to 0.");
-        } else if (maxRetries == 0) {
+        if (maxRetries == 0) {
             // Use the original sink handler
             this.sinkHandler = nonRetryHandler;
-        } else {
+        } else if (maxRetries > 0) {
             // Wrap the sink handler with a retry handler
             this.sinkHandler = new RetryHttpSinkHandler(this.httpSinkConfig.connectorConfig, nonRetryHandler);
+        } else {
+            throw new IllegalArgumentException("Max retries must be greater than or equal to 0.");
         }
     }
 
