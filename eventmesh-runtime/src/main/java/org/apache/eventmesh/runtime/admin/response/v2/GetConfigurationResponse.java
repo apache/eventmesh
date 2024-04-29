@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.response.v2;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -30,7 +31,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GetConfigurationResponse {
 
+    private CommonConfiguration commonConfiguration;
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
     private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
+    private String eventMeshVersion;
 }
