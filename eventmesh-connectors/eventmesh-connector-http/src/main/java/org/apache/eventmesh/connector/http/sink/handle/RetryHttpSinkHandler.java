@@ -21,7 +21,6 @@ import org.apache.eventmesh.connector.http.sink.config.HttpRetryConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
-import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata.HttpExportMetadataBuilder;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -184,27 +183,17 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
      */
     private HttpExportRecord covertToExportRecord(HttpConnectRecord httpConnectRecord, ExecutionEvent event, HttpResponse<Buffer> response,
         Throwable e, URI url, String id) {
-        HttpExportMetadataBuilder builder = HttpExportMetadata.builder()
+
+        HttpExportMetadata httpExportMetadata = HttpExportMetadata.builder()
             .url(url.toString())
+            .code(response != null ? response.statusCode() : -1)
+            .message(response != null ? response.statusMessage() : e.getMessage())
             .receivedTime(LocalDateTime.now())
-            .retryNum(event.getAttemptCount() - 1)
-            .uuid(httpConnectRecord.getUuid());
+            .uuid(httpConnectRecord.getUuid())
+            .retriedBy(event.getAttemptCount() > 1 ? id : null)
+            .retryNum(event.getAttemptCount() - 1).build();
 
-        if (event.getAttemptCount() > 1) {
-            builder.retriedBy(id);
-        }
-
-        if (response != null) {
-            // record the response
-            builder.code(response.statusCode())
-                .message(response.statusMessage());
-        } else {
-            // record the exception
-            builder.code(-1)
-                .message(e.getMessage());
-        }
-
-        return new HttpExportRecord(builder.build(), response == null ? null : response.bodyAsString());
+        return new HttpExportRecord(httpExportMetadata, response == null ? null : response.bodyAsString());
     }
 
     /**

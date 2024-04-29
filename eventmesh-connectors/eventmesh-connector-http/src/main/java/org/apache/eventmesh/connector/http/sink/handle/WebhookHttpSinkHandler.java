@@ -22,7 +22,6 @@ import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
-import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata.HttpExportMetadataBuilder;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -228,23 +227,20 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 return;
             }
             // create ExportMetadataBuilder
-            HttpExportMetadataBuilder builder = HttpExportMetadata.builder()
+            HttpResponse<Buffer> response = arr.succeeded() ? arr.result() : null;
+
+            HttpExportMetadata httpExportMetadata = HttpExportMetadata.builder()
                 .url(url.toString())
+                .code(response != null ? response.statusCode() : -1)
+                .message(response != null ? response.statusMessage() : arr.cause().getMessage())
                 .receivedTime(LocalDateTime.now())
                 .retriedBy(null)
                 .uuid(httpConnectRecord.getUuid())
-                .retryNum(0);
+                .retryNum(0)
+                .build();
 
-            if (arr.succeeded()) {
-                HttpResponse<Buffer> response = arr.result();
-                builder.code(response.statusCode())
-                    .message(response.statusMessage());
-            } else {
-                builder.code(-1)
-                    .message(arr.cause().getMessage());
-            }
             // create ExportRecord
-            HttpExportRecord exportRecord = new HttpExportRecord(builder.build(), arr.succeeded() ? arr.result().bodyAsString() : null);
+            HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
             // add the data to the queue
             addDataToQueue(exportRecord);
         });
