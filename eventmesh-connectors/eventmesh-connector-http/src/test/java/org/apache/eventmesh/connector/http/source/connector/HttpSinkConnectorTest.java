@@ -21,6 +21,7 @@ import static org.mockserver.model.HttpRequest.request;
 
 import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
+import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
@@ -34,17 +35,20 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockserver.client.MockServerClient;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
-import org.mockserver.verify.VerificationTimes;
-
-import io.vertx.core.http.HttpMethod;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class HttpSinkConnectorTest {
 
@@ -68,8 +72,7 @@ public class HttpSinkConnectorTest {
         this.severUri = URI.create(sinkConfig.connectorConfig.getUrls()[0]);
         // start mockServer
         mockServer = ClientAndServer.startClientAndServer(severUri.getPort());
-        // mockServer response
-        new MockServerClient(severUri.getHost(), severUri.getPort())
+        mockServer.reset()
             .when(
                 request()
                     .withMethod("POST")
@@ -113,46 +116,49 @@ public class HttpSinkConnectorTest {
         Thread.sleep(5000);
 
         // verify request
-        new MockServerClient(severUri.getHost(), severUri.getPort())
-            .verify(
-                HttpRequest.request()
-                    .withMethod(HttpMethod.POST.name())
-                    .withPath(severUri.getPath()),
-                VerificationTimes.exactly(times));
-
-        /*
-        **The following code is only required in webhook mode**
+        HttpRequest[] recordedRequests = mockServer.retrieveRecordedRequests(null);
+        assert recordedRequests.length == times;
 
         // verify response
         HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
-        URI uri = new URIBuilder()
-            .setScheme("http")
-            .setHost(severUri.getHost())
-            .setPort(webhookConfig.getPort())
-            .setPath(webhookConfig.getExportPath())
-            .addParameter("pageNum", "1")
-            .addParameter("pageSize", "10")
-            .addParameter("type", "poll")
+        String url = new HttpUrl.Builder()
+            .scheme("http")
+            .host(severUri.getHost())
+            .port(webhookConfig.getPort())
+            .addPathSegments(webhookConfig.getExportPath())
+            .addQueryParameter("pageNum", "1")
+            .addQueryParameter("pageSize", "10")
+            .addQueryParameter("type", "poll")
+            .build().toString();
+
+        // build request
+        Request request = new Request.Builder()
+            .url(url)
+            .addHeader("Content-Type", "application/json")
             .build();
 
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(uri);
-        httpGet.setHeader("Content-Type", "application/json");
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        String body = EntityUtils.toString(response.getEntity());
-        assert body != null;
-        JSONArray pageItems = JSON.parseObject(body).getJSONArray("pageItems");
-        assert pageItems != null && pageItems.size() == times;
-        for (int i = 0; i < times; i++) {
-            JSONObject pageItem = pageItems.getJSONObject(i);
-            assert pageItem != null;
-            assert pageItem.getJSONObject("data") != null;
-            assert pageItem.getJSONObject("metadata") != null;
+        OkHttpClient client = new OkHttpClient();
+        try (Response response = client.newCall(request).execute()) {
+            // check response code
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Unexpected response code: " + response);
+            }
+            // check response body
+            ResponseBody responseBody = response.body();
+            if (responseBody != null) {
+                JSONObject jsonObject = JSON.parseObject(responseBody.string());
+                JSONArray pageItems = jsonObject.getJSONArray("pageItems");
+
+                assert pageItems != null && pageItems.size() == times;
+
+                for (int i = 0; i < times; i++) {
+                    JSONObject pageItem = pageItems.getJSONObject(i);
+                    assert pageItem != null;
+                    assert pageItem.getJSONObject("data") != null;
+                    assert pageItem.getJSONObject("metadata") != null;
+                }
+            }
         }
-
-        httpClient.close();
-
-         */
     }
 
     private ConnectRecord createConnectRecord() {
