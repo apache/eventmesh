@@ -54,7 +54,7 @@ dependencies {
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "com.google.protobuf:protobuf-java-util:4.26.1"
+    implementation "com.google.protobuf:protobuf-java-util:3.25.1"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
