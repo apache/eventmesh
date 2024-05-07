@@ -728,7 +728,6 @@ subprojects {
             dependency "io.grpc:grpc-stub:${grpcVersion}"
             dependency "io.grpc:grpc-netty:${grpcVersion}"
             dependency "io.grpc:grpc-netty-shaded:${grpcVersion}"
-            dependency "google-auth-library-java:1.22.0"
 
             dependency "javax.annotation:javax.annotation-api:1.3.2"
 
