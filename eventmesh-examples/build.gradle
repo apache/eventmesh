@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.43.2'
+def grpcVersion = '1.63.0'
 
 dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
