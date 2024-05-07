@@ -51,6 +51,7 @@ dependencies {
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
+    implementation "google-auth-library-java:1.22.0"
 
     testImplementation "org.junit-pioneer:junit-pioneer"
     implementation "org.yaml:snakeyaml"

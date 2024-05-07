@@ -38,6 +38,7 @@ dependencies {
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
     implementation "io.cloudevents:cloudevents-protobuf"
 
+    implementation "google-auth-library-java:1.22.0"
     // protocol
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"
