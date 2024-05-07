@@ -98,8 +98,7 @@ grpc-netty-shaded-1.63.0.jar
 grpc-protobuf-1.63.0.jar
 grpc-protobuf-1.43.2.jar
 grpc-protobuf-1.42.2.jar
-
-grpc-protobuf-lite-1.63.0jar
+grpc-protobuf-lite-1.63.0.jar
 grpc-protobuf-lite-1.43.2.jar
 grpc-protobuf-lite-1.42.2.jar
 grpc-util-1.63.0.jar
