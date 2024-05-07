@@ -34,6 +34,7 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendStatus;
@@ -259,8 +260,9 @@ public class MessageTransferProcessor implements TcpProcessor {
                 // retry
                 UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
+                ClientGroupWrapper cgw = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(session.getClient().getGroup());
                 Objects.requireNonNull(
-                    session.getClientGroupWrapper().get()).getTcpRetryer()
+                        cgw).getTcpRetryer()
                     .newTimeout(upStreamMsgContext, 10, TimeUnit.SECONDS);
 
                 session.getSender().getFailMsgCount().incrementAndGet();

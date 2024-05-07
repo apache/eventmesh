@@ -260,8 +260,7 @@ public class ClientSessionGroupMapping {
         }
         synchronized (lockMap.get(subsystem)) {
             log.info("readySession session[{}]", session);
-            ClientGroupWrapper cgw = session.getClientGroupWrapper().get();
-
+            ClientGroupWrapper cgw = this.getClientGroupMap().get(session.getClient().getGroup());
             boolean flag = cgw != null && cgw.addGroupConsumerSession(session);
             if (!flag) {
                 throw new Exception("addGroupConsumerSession fail");
@@ -279,14 +278,14 @@ public class ClientSessionGroupMapping {
 
     private void cleanClientGroupWrapperByCloseSub(Session session) throws Exception {
         cleanSubscriptionInSession(session);
-        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
+        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(this.getClientGroupMap().get(session.getClient().getGroup()));
         clientGroupWrapper.removeGroupConsumerSession(session);
         handleUnackMsgsInSession(session);
         cleanClientGroupWrapperCommon(clientGroupWrapper);
     }
 
     private void cleanClientGroupWrapperByClosePub(Session session) throws Exception {
-        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
+        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(this.getClientGroupMap().get(session.getClient().getGroup()));
         clientGroupWrapper.removeGroupProducerSession(session);
         cleanClientGroupWrapperCommon(clientGroupWrapper);
     }
@@ -298,7 +297,7 @@ public class ClientSessionGroupMapping {
      */
     private void cleanSubscriptionInSession(Session session) throws Exception {
         for (SubscriptionItem item : session.getSessionContext().getSubscribeTopics().values()) {
-            ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
+            ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(this.getClientGroupMap().get(session.getClient().getGroup()));
             clientGroupWrapper.removeSubscription(item, session);
             if (!clientGroupWrapper.hasSubscription(item.getTopic())) {
                 clientGroupWrapper.unsubscribe(item);
@@ -314,7 +313,7 @@ public class ClientSessionGroupMapping {
     private void handleUnackMsgsInSession(Session session) {
         // key: seq
         ConcurrentHashMap<String, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
-        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(session.getClientGroupWrapper().get());
+        ClientGroupWrapper clientGroupWrapper = Objects.requireNonNull(this.getClientGroupMap().get(session.getClient().getGroup()));
         if (unAckMsg.size() > 0 && !clientGroupWrapper.getGroupConsumerSessions().isEmpty()) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
