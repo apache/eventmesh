@@ -25,7 +25,7 @@ repositories {
 }
 
 def grpcVersion = '1.63.0' // CURRENT_GRPC_VERSION
-def protobufVersion = '3.21.5'
+def protobufVersion = '4.26.1'
 def protocVersion = protobufVersion
 
 dependencies {
@@ -37,7 +37,7 @@ dependencies {
     implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
-    implementation "google-auth-library-java:1.22.0"
+
 }
 
 protobuf {
