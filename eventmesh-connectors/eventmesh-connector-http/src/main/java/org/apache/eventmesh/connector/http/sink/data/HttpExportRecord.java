@@ -15,25 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.response.v2;
-
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+package org.apache.eventmesh.connector.http.sink.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+/**
+ * Represents an HTTP export record containing metadata and data to be exported.
+ */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class GetConfigurationResponse {
+public class HttpExportRecord {
 
-    private CommonConfiguration commonConfiguration;
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-    private String eventMeshVersion;
+    private HttpExportMetadata metadata;
+
+    private Object data;
 }

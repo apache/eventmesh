@@ -404,7 +404,7 @@ tasks.register('checkDeniedLicense') {
                 "BSD-4-Clause", "BSD-4-Clause-UC", "NPL-1.0", "NPL-1.1", "JSON"
         ]
         // Update exemptions according to https://github.com/apache/eventmesh/issues/4842
-        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "hibernate-core", "hibernate-commons-annotations", "ST4", "xsdlib"]
+        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib"]
 
         def licenseFile = file('tools/dist-license/LICENSE')
         def lines = licenseFile.readLines()

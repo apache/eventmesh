@@ -15,25 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.response.v2;
+package org.apache.eventmesh.connector.http.sink.config;
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class GetConfigurationResponse {
+public class HttpWebhookConfig {
 
-    private CommonConfiguration commonConfiguration;
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-    private String eventMeshVersion;
+    private boolean activate = false;
+
+    // Path to display/export callback data
+    private String exportPath = "/export";
+
+    private int port;
+
+    // timeunit: ms
+    private int serverIdleTimeout = 5000;
+
+    // max size of the storage queue
+    private int maxStorageSize = 5000;
 }

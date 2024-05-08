@@ -58,6 +58,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AdminHandlerManager {
 
+    private EventMeshServer eventMeshServer;
+
     private EventMeshTCPServer eventMeshTCPServer;
 
     private EventMeshHTTPServer eventMeshHTTPServer;
@@ -71,9 +73,10 @@ public class AdminHandlerManager {
     private final Map<String, HttpHandler> httpHandlerMap = new ConcurrentHashMap<>();
 
     public AdminHandlerManager(EventMeshServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
+        this.eventMeshTCPServer = eventMeshServer.getEventMeshTCPServer();
         this.eventMeshGrpcServer = eventMeshServer.getEventMeshGrpcServer();
         this.eventMeshHTTPServer = eventMeshServer.getEventMeshHTTPServer();
-        this.eventMeshTCPServer = eventMeshServer.getEventMeshTCPServer();
         this.eventMeshMetaStorage = eventMeshServer.getMetaStorage();
         this.adminWebHookConfigOperationManage = eventMeshTCPServer.getAdminWebHookConfigOperationManage();
     }
@@ -112,6 +115,7 @@ public class AdminHandlerManager {
 
         // v2 endpoints
         initHandler(new ConfigurationHandler(
+            eventMeshServer.getConfiguration(),
             eventMeshTCPServer.getEventMeshTCPConfiguration(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration()));
