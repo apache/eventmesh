@@ -87,7 +87,6 @@ fastjson-1.2.69_noneautotype.jar
 fastjson2-2.0.48.jar
 gateway-dingtalk-1.0.2.jar
 google-auth-library-credentials-0.22.2.jar
-
 grpc-api-1.63.0.jar
 grpc-auth-1.39.0.jar
 grpc-context-1.63.0.jar

@@ -45,10 +45,7 @@ grep -wvf "$self_modules_txt" "$all_dependencies_txt" | sort | uniq > "$third_pa
 
 # If the check is success it will return 0
 sort "$known_third_party_dependencies_txt" | diff - "$third_party_dependencies_txt"
-echo "Dependencies check success"
-cat $third_party_dependencies_txt
-echo "Known third-party dependencies:"
-cat $known_third_party_dependencies_txt
+
 compareCode=$?
 if [ $compareCode -eq 0 ]
 then
