@@ -48,6 +48,7 @@ client-0.18.2.jar
 cloudevents-api-2.4.2.jar
 cloudevents-core-2.4.2.jar
 cloudevents-http-vertx-2.3.0.jar
+cloudevents-http-vertx-3.0.0.jar
 cloudevents-json-jackson-2.4.2.jar
 cloudevents-kafka-2.4.2.jar
 cloudevents-protobuf-2.4.2.jar
@@ -79,6 +80,7 @@ endpoint-util-0.0.7.jar
 endpoints-spi-2.20.29.jar
 error_prone_annotations-2.9.0.jar
 eventstream-1.0.1.jar
+failsafe-3.3.2.jar
 failureaccess-1.0.1.jar
 fastjson-1.2.69_noneautotype.jar
 fastjson2-2.0.48.jar
@@ -352,7 +354,9 @@ vertx-bridge-common-4.4.6.jar
 vertx-core-4.4.6.jar
 vertx-web-4.4.6.jar
 vertx-web-client-4.0.0.jar
+vertx-web-client-4.4.6.jar
 vertx-web-common-4.4.6.jar
+vertx-uri-template-4.4.6.jar
 xpp3-1.1.4c.jar
 xsdlib-2013.6.1.jar
 zipkin-2.27.1.jar
