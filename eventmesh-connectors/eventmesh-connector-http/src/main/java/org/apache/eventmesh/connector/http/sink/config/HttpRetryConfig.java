@@ -21,8 +21,8 @@ import lombok.Data;
 
 @Data
 public class HttpRetryConfig {
-    // maximum number of retries, default 3, minimum 0
-    private int maxRetries = 3;
+    // maximum number of retries, default 2, minimum 0
+    private int maxRetries = 2;
 
     // retry interval, default 2000ms
     private int interval = 2000;

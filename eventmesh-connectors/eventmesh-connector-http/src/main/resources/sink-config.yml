@@ -28,7 +28,6 @@ connectorConfig:
   connectorName: httpSink
   urls:
    - http://127.0.0.1:8987/test
-  ssl: false
   keepAlive: true
   keepAliveTimeout: 60000
   idleTimeout: 5000   # timeunit: ms, recommended scope: common(5s - 10s), webhook(15s - 60s)
