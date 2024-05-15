@@ -203,9 +203,9 @@
 =======================================================================
 This distribution contains the following third-party artifacts:
 
-FastInfoset 1.2.15 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 ST4 4.3.4 licensed under 'BSD-4-Clause'. For details see: licenses/BSD-4-Clause.txt
 accessors-smart 2.4.7 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+adapter-rxjava2 2.9.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 alibabacloud-gateway-spi 0.0.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 amqp-client 5.16.0 licensed under 'AL 2.0'. For details see: licenses/AL 2.0.txt
 amqp-client 5.16.0 licensed under 'GPL v2'. For details see: licenses/GPL v2.txt
@@ -213,12 +213,12 @@ amqp-client 5.16.0 licensed under 'MPL-2.0'. For details see: licenses/MPL-2.0.t
 animal-sniffer-annotations 1.19 licensed under 'MIT'. For details see: licenses/MIT.txt
 annotations 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 annotations 4.1.1.4 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-antlr 2.7.7 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 antlr-runtime 3.5.3 licensed under 'BSD licence'. For details see: licenses/BSD licence.txt
 antlr4 4.13.0 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 antlr4-runtime 4.13.0 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 aopalliance 1.0 licensed under 'Public Domain'. For details see: licenses/Public Domain.txt
 apache-client 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+api 0.18.2 licensed under 'MIT'. For details see: licenses/MIT.txt
 arns 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 asm 9.1 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 asm 9.2 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
@@ -247,10 +247,11 @@ bouncy-castle-bc 2.10.1 licensed under 'Apache-2.0'. For details see: licenses/A
 bouncy-castle-bc 2.11.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 bson 3.12.11 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 byte-buddy 1.11.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-byte-buddy 1.12.18 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 cache-api 1.1.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 checker-qual 3.12.0 licensed under 'MIT'. For details see: licenses/MIT.txt
+classgraph 4.8.21 licensed under 'MIT'. For details see: licenses/MIT.txt
 classmate 1.5.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+client 0.18.2 licensed under 'MIT'. For details see: licenses/MIT.txt
 cloudevents-api 2.4.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 cloudevents-core 2.4.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 cloudevents-http-vertx 2.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -270,6 +271,7 @@ commons-logging 1.2 licensed under 'Apache-2.0'. For details see: licenses/Apach
 commons-text 1.9 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 commons-validator 1.7 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 consul-api 1.4.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+converter-jackson 2.9.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 credentials-java 0.2.4 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 crt-core 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 curator-client 5.4.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -304,8 +306,6 @@ gson 2.8.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 guava 31.0.1-jre licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 guava-retrying 2.0.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 guice 4.2.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-hibernate-commons-annotations 5.1.2.Final licensed under 'LGPL-2.1-only'. For details see: licenses/LGPL-2.1-only.txt
-hibernate-core 5.6.15.Final licensed under 'LGPL-2.1-only'. For details see: licenses/LGPL-2.1-only.txt
 hibernate-validator 6.2.0.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 http-client-spi 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 httpasyncclient 4.1.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -316,8 +316,6 @@ httpmime 4.5.13 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.
 icu4j 72.1 licensed under 'Unicode/ICU License'. For details see: licenses/Unicode-ICU License.txt
 ini4j 0.5.4 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 ipaddress 5.3.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-istack-commons-runtime 3.0.7 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
-istack-commons-runtime 3.0.7 licensed under 'GPL-2.0-with-classpath-exception'. For details see: licenses/GPL-2.0-with-classpath-exception.txt
 j2objc-annotations 1.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jackson-annotations 2.13.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jackson-core 2.13.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -325,32 +323,24 @@ jackson-databind 2.13.0 licensed under 'Apache-2.0'. For details see: licenses/A
 jackson-dataformat-yaml 2.13.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jackson-datatype-jdk8 2.13.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jackson-datatype-jsr310 2.13.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+jackson-jr-objects 2.16.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jackson-module-parameter-names 2.13.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jakarta.annotation-api 1.3.5 licensed under 'EPL-2.0'. For details see: licenses/EPL-2.0.txt
 jakarta.annotation-api 1.3.5 licensed under 'GPL-2.0-with-classpath-exception'. For details see: licenses/GPL-2.0-with-classpath-exception.txt
 jakarta.validation-api 2.0.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-jandex 2.4.2.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 javassist 3.24.0-GA licensed under 'MPL-1.1'. For details see: licenses/MPL-1.1.txt
 javassist 3.24.0-GA licensed under 'LGPL-2.1-only'. For details see: licenses/LGPL-2.1-only.txt
 javassist 3.24.0-GA licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 javax.inject 1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-javax.persistence-api 2.2 licensed under 'EPL-1.0'. For details see: licenses/EPL-1.0.txt
-javax.persistence-api 2.2 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 javax.ws.rs-api 2.1 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
 javax.ws.rs-api 2.1 licensed under 'GPL-2.0-with-classpath-exception'. For details see: licenses/GPL-2.0-with-classpath-exception.txt
 jaxb-api 2.3.0 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
 jaxb-api 2.3.0 licensed under 'GPL-2.0-with-classpath-exception'. For details see: licenses/GPL-2.0-with-classpath-exception.txt
-jaxb-api 2.3.1 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
-jaxb-api 2.3.1 licensed under 'GPL-2.0-with-classpath-exception'. For details see: licenses/GPL-2.0-with-classpath-exception.txt
 jaxb-core 2.3.0 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
 jaxb-impl 2.3.0 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
-jaxb-runtime 2.3.1 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
 jboss-logging 3.4.1.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-jboss-logging 3.4.3.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jboss-marshalling 2.0.11.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jboss-marshalling-river 2.0.11.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-jboss-transaction-api_1.2_spec 1.1.1.Final licensed under 'Common Development and Distribution License'. For details see: licenses/Common Development and Distribution License.txt
-jboss-transaction-api_1.2_spec 1.1.1.Final licensed under 'GNU General Public License, Version 2 with the Classpath Exception'. For details see: licenses/GNU General Public License, Version 2 with the Classpath Exception.txt
 jcommander 1.78 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jcommander 1.82 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jetcd-common 0.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -367,6 +357,7 @@ json-path 2.7.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.
 json-smart 2.4.7 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 json-utils 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 jsr305 3.0.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+jtokkit 0.5.1 licensed under 'MIT'. For details see: licenses/MIT.txt
 kafka-clients 3.0.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 listenablefuture 9999.0-empty-to-avoid-conflict-with-guava licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 log4j-api 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -374,6 +365,7 @@ log4j-core 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-
 log4j-slf4j2-impl 2.22.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 lz4-java 1.7.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 lz4-java 1.8.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+mbknor-jackson-jsonschema_2.12 1.0.34 licensed under 'MIT'. For details see: licenses/MIT.txt
 metrics-annotation 4.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 metrics-core 4.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 metrics-healthchecks 4.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -454,17 +446,24 @@ okhttp 3.14.9 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.
 okio 1.17.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 openapiutil 0.2.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 openmessaging-api 2.2.1-pubsub licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-api 1.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-api-metrics 1.3.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-context 1.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-exporter-jaeger 1.4.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-exporter-prometheus 1.3.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-exporter-zipkin 1.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-sdk 1.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-sdk-common 1.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-sdk-metrics 1.3.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-sdk-trace 1.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-opentelemetry-semconv 1.3.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-api 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-api-events 1.36.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-context 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-exporter-common 1.34.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-exporter-common 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-exporter-jaeger 1.34.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-exporter-prometheus 1.36.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-exporter-sender-okhttp 1.34.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-exporter-zipkin 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-extension-incubator 1.36.0-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk-common 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk-extension-autoconfigure-spi 1.34.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk-extension-autoconfigure-spi 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk-logs 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk-metrics 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-sdk-trace 1.36.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+opentelemetry-semconv 1.30.1-alpha licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 org.abego.treelayout.core 1.0.3 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 org.jacoco.agent 0.8.4 licensed under 'EPL-1.0'. For details see: licenses/EPL-1.0.txt
 perfmark-api 0.23.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -484,12 +483,16 @@ pravega-shared-controller-api 0.11.0 licensed under 'Apache-2.0'. For details se
 pravega-shared-protocol 0.11.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 pravega-shared-security 0.11.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 profiles 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+prometheus-metrics-config 1.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+prometheus-metrics-exporter-common 1.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+prometheus-metrics-exporter-httpserver 1.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+prometheus-metrics-exposition-formats 1.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+prometheus-metrics-model 1.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+prometheus-metrics-shaded-protobuf 1.1.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 proto-google-common-protos 2.0.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 protobuf-java 3.19.2 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 protobuf-java 3.21.5 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
-protobuf-java 3.21.9 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 protobuf-java-util 3.15.0 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
-protobuf-java-util 3.17.2 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 protobuf-java-util 3.21.5 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 protobuf-java-util 3.5.1 licensed under 'BSD-3-Clause'. For details see: licenses/BSD-3-Clause.txt
 protocol-core 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -503,6 +506,7 @@ reactive-streams 1.0.3 licensed under 'CC0-1.0'. For details see: licenses/CC0-1
 reactor-core 3.4.13 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 redisson 3.17.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 regions 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+retrofit 2.9.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 rocketmq-acl 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 rocketmq-broker 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 rocketmq-client 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -514,12 +518,16 @@ rocketmq-remoting 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/A
 rocketmq-srvutil 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 rocketmq-store 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 rocketmq-tools 4.9.5 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+rxjava 2.0.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 rxjava 3.0.12 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 s3 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+scala-library 2.12.8 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 sdk-core 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-simpleclient 0.8.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-simpleclient_common 0.8.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-simpleclient_httpserver 0.8.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+service 0.18.2 licensed under 'MIT'. For details see: licenses/MIT.txt
+simpleclient 0.12.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+simpleclient_tracer_common 0.12.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+simpleclient_tracer_otel 0.12.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+simpleclient_tracer_otel_agent 0.12.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 slack-api-client 1.1.6 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 slack-api-model 1.1.6 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 slack-app-backend 1.1.6 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -562,9 +570,9 @@ tomcat-embed-core 9.0.73 licensed under 'Apache-2.0'. For details see: licenses/
 tomcat-embed-el 9.0.56 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 tomcat-embed-el 9.0.73 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 tomcat-embed-websocket 9.0.73 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-txw2 2.3.1 licensed under 'CDDL-1.1'. For details see: licenses/CDDL-1.1.txt
 utils 2.20.29 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 validation-api 1.1.0.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+validation-api 2.0.1.Final licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 vertx-auth-common 4.4.6 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 vertx-auth-common 4.4.6 licensed under 'EPL-1.0'. For details see: licenses/EPL-1.0.txt
 vertx-bridge-common 4.4.6 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
@@ -581,9 +589,9 @@ xpp3 1.1.4c licensed under 'Indiana University Extreme! Lab Software License, ve
 xpp3 1.1.4c licensed under 'Public Domain'. For details see: licenses/Public Domain.txt
 xpp3 1.1.4c licensed under 'Apache-1.1'. For details see: licenses/Apache-1.1.txt
 xsdlib 2013.6.1 licensed under 'BSD-4-Clause'. For details see: licenses/BSD-4-Clause.txt
-zipkin 2.23.2 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-zipkin-reporter 2.16.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
-zipkin-sender-okhttp3 2.16.3 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+zipkin 2.27.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+zipkin-reporter 3.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
+zipkin-sender-okhttp3 3.3.0 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 zookeeper 3.7.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 zookeeper-jute 3.7.1 licensed under 'Apache-2.0'. For details see: licenses/Apache-2.0.txt
 zstd-jni 1.5.0-2 licensed under 'BSD-2-Clause'. For details see: licenses/BSD-2-Clause.txt
