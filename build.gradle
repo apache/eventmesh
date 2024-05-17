@@ -648,7 +648,7 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
-    def log4jVersion = '2.22.1'
+    def log4jVersion = '2.23.1'
 
     dependencyManagement {
         dependencies {
