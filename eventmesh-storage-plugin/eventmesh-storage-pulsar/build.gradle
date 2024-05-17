@@ -31,7 +31,7 @@ dependencies {
      *
      * dependency to 4.15.4 or higher (used by Pulsar 2.11.2 or higher).
      */
-    implementation('org.apache.pulsar:pulsar-client:2.10.1')  {
+    implementation('org.apache.pulsar:pulsar-client:2.11.4')  {
         // Remove logging backend implementations
         exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
         exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
