@@ -684,7 +684,7 @@ subprojects {
 
             dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
             dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
-            dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
+            dependency "io.dropwizard.metrics:metrics-annotation:4.2.25"
             dependency "io.dropwizard.metrics:metrics-json:4.1.0"
 
             dependency 'io.opentelemetry:opentelemetry-api:1.36.0'
