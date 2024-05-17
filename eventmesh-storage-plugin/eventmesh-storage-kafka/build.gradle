@@ -22,7 +22,7 @@ dependencies {
     implementation group: 'io.cloudevents', name: 'cloudevents-kafka', version: '2.4.2'
 
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
-    implementation 'org.apache.kafka:kafka-clients:3.0.0'
+    implementation 'org.apache.kafka:kafka-clients:3.7.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
 
