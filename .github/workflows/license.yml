@@ -15,23 +15,32 @@
 # limitations under the License.
 #
 
-FROM openjdk:11-jdk as builder
-WORKDIR /build
-COPY . .
-RUN ./gradlew clean build dist --parallel --daemon
-RUN ./gradlew installPlugin
+name: 'License Check'
+on: [ pull_request ]
 
-FROM openjdk:11-jdk
-RUN apt-get update && apt-get install -y locales procps
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
-WORKDIR /data/app/eventmesh
-COPY --from=builder /build/dist ./
+permissions:
+  contents: read
 
-EXPOSE 10000 10105 10106 10205
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-ENV DOCKER true
-ENV EVENTMESH_HOME /data/app/eventmesh
-ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
-ENV CONFPATH /data/app/eventmesh/conf
+      - name: Check license header
+        uses: apache/skywalking-eyes@main
 
-CMD ["bash", "bin/start.sh"]
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 11
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Check license compatibility
+        run: ./gradlew clean checkDeniedLicense
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}

@@ -15,23 +15,28 @@
 # limitations under the License.
 #
 
-FROM openjdk:11-jdk as builder
-WORKDIR /build
-COPY . .
-RUN ./gradlew clean build dist --parallel --daemon
-RUN ./gradlew installPlugin
+name: Dependabot Auto-approve
+on: pull_request_target
 
-FROM openjdk:11-jdk
-RUN apt-get update && apt-get install -y locales procps
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
-WORKDIR /data/app/eventmesh
-COPY --from=builder /build/dist ./
+permissions:
+  contents: write
+  pull-requests: write
 
-EXPOSE 10000 10105 10106 10205
+jobs:
+  # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions
+  # Pull request Auto merge is not enabled for this repository
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-ENV DOCKER true
-ENV EVENTMESH_HOME /data/app/eventmesh
-ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
-ENV CONFPATH /data/app/eventmesh/conf
-
-CMD ["bash", "bin/start.sh"]
+      - name: Approve PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
