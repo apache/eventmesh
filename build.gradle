@@ -690,7 +690,7 @@ subprojects {
             dependency 'io.opentelemetry:opentelemetry-api:1.36.0'
             dependency 'io.opentelemetry:opentelemetry-sdk:1.36.0'
             dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.36.0-alpha'
+            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.38.0-alpha'
             dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.36.0'
             dependency 'io.opentelemetry:opentelemetry-semconv:1.30.1-alpha'
             dependency 'io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1'
