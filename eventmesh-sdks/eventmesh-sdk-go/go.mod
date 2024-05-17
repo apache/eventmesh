@@ -26,11 +26,9 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.24.2
 	github.com/panjf2000/ants v1.3.0
-	github.com/smartystreets/goconvey v1.7.2
 	github.com/sony/sonyflake v1.0.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.3
 	go.uber.org/atomic v1.4.0
-	go.uber.org/zap v1.10.0
-	google.golang.org/grpc v1.45.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/grpc v1.56.3
+	google.golang.org/protobuf v1.30.0
 )
