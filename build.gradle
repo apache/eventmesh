@@ -15,18 +15,26 @@
  * limitations under the License.
  */
 
+import groovy.json.JsonSlurper
+import org.apache.commons.io.IOUtils
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
-
-
 
 buildscript {
     repositories {
-        mavenLocal()
         mavenCentral()
         maven {
             url "https://maven.aliyun.com/repository/public"
         }
-
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -35,9 +43,16 @@ buildscript {
     dependencies {
         classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
-        classpath "com.github.jk1:gradle-license-report:1.17"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
+
+        classpath "org.apache.httpcomponents:httpclient:4.5.13"
+        classpath "commons-io:commons-io:2.11.0"
     }
+}
+
+plugins {
+    id 'org.cyclonedx.bom' version '1.8.2'
+    id 'com.github.jk1.dependency-license-report' version '2.6'
 }
 
 // Remove doclint warnings that pollute javadoc logs when building
@@ -53,9 +68,7 @@ allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
     apply plugin: "idea"
-    apply plugin: "project-reports"
     apply plugin: "maven-publish"
-    apply plugin: "com.github.spotbugs"
     apply plugin: "project-reports"
     apply plugin: "jacoco"
     apply plugin: "pmd"
@@ -63,6 +76,7 @@ allprojects {
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: "com.github.spotbugs"
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -96,7 +110,6 @@ allprojects {
 
     dependencies {
         repositories {
-            mavenLocal()
             mavenCentral()
             maven {
                 url "https://maven.aliyun.com/repository/public"
@@ -119,12 +132,11 @@ allprojects {
             }
             importOrder ('\\#org.apache.eventmesh','\\#org.apache','\\#java','\\#javax','\\#org','\\#io','\\#net','\\#junit','\\#com','\\#lombok',
                     'org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
-            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
+            licenseHeaderFile rootProject.file('style/checkstyle-header-java.txt')
             eclipse().configFile("${rootDir}/style/task/eventmesh-spotless-formatter.xml")
             removeUnusedImports()
         }
     }
-
     afterEvaluate {
         tasks.forEach {task ->
             if (task.name.contains("spotlessJava")) {
@@ -143,6 +155,7 @@ tasks.register('dist') {
     subprojects.forEach { subProject ->
         dependsOn("${subProject.path}:jar")
     }
+    dependsOn('generateDistLicense', 'generateDistNotice')
     def includedProjects =
             ["eventmesh-common",
              "eventmesh-meta:eventmesh-meta-api",
@@ -184,7 +197,7 @@ tasks.register('dist') {
             }
         }
         copy {
-            from 'tools/third-party-licenses'
+            from 'tools/dist-license'
             into rootProject.file('dist')
         }
     }
@@ -252,6 +265,199 @@ tasks.register('printProjects') {
     })
 }
 
+cyclonedxBom {
+    includeConfigs = ["runtimeClasspath"]
+}
+
+tasks.register('generateDistLicense') {
+    dependsOn('cyclonedxBom') // Task from 'org.cyclonedx.bom' plugin
+    doLast {
+        // Inputs
+        def bomFile = file("$buildDir/reports/bom.json")
+        def bom = new JsonSlurper().parseText(bomFile.text)
+        def projectLicenseText = file('LICENSE').text
+
+        // Outputs
+        def distLicenseFile = file('tools/dist-license/LICENSE')
+        def licensesDir = file('tools/dist-license/licenses/java/')
+        if (licensesDir.exists()) {
+            licensesDir.eachFile { it.delete() }
+        } else {
+            licensesDir.mkdirs()
+        }
+
+        List<Map<String, String>> thirdPartyArtifacts = new ArrayList<Map<String, String>>()
+        // Parse BOM
+        bom.components.each { component ->
+            // Exclude project modules
+            if (!component.group.startsWith('org.apache.eventmesh')) {
+                component.licenses.each { artifactLicense ->
+                    if (artifactLicense.license != null) {
+                        Map<String, String> artifact = new HashMap<String, String>()
+                        artifact.put("name", component.name)
+                        artifact.put("version", component.version)
+                        if (artifactLicense.license.id != null) {
+                            artifact.put("license", artifactLicense.license.id)
+                            if (artifactLicense.license.text != null) {
+                                artifact.put("licenseContent", new String(artifactLicense.license.text.content.decodeBase64()))
+                            }
+                        } else {
+                            artifact.put("license", artifactLicense.license.name)
+                            artifact.put("licenseContent", artifactLicense.license.url)
+                        }
+                        thirdPartyArtifacts.add(artifact)
+                    }
+                }
+            }
+        }
+        thirdPartyArtifacts.sort { a, b ->
+            def nameComparison = a.name <=> b.name
+            if (nameComparison == 0) {
+                return a.version <=> b.version
+            } else {
+                return nameComparison
+            }
+        }
+
+        def distLicenseText = projectLicenseText + "\n=======================================================================\n" +
+                "This distribution contains the following third-party artifacts:\n\n"
+        thirdPartyArtifacts.each { artifact ->
+            // Write licenses
+            def artifactLicenseFilename = artifact.license.replaceAll("/", "-") + ".txt"
+            def artifactLicenseFile = new File(licensesDir, artifactLicenseFilename)
+            if (artifact.licenseContent != null) {
+                artifactLicenseFile.text = artifact.licenseContent
+                if (isURL(artifact.licenseContent)) {
+                    def licenseUrlFilename = artifact.licenseContent.substring(artifact.licenseContent.lastIndexOf("/") + 1)
+                    def downloadedLicenseFilename = artifact.license.replaceAll("/", "-") + "-downloaded-" + licenseUrlFilename
+                    def downloadedLicenseFile = new File(licensesDir, downloadedLicenseFilename)
+                    downloadFileFromURL(artifact.licenseContent, downloadedLicenseFile.path)
+                }
+            } else {
+                artifactLicenseFile.text = "No license content provided by the artifact."
+                logger.warn("No '${artifact.license}' license content provided by ${artifact.name} ${artifact.version}. Please add manually.")
+            }
+
+            // Assemble LICENSE
+            distLicenseText += "${artifact.name} ${artifact.version} licensed under '${artifact.license}'. " +
+                    "For details see: licenses/${artifactLicenseFilename}\n"
+        }
+        distLicenseFile.text = distLicenseText
+    }
+}
+
+static boolean isURL(String urlString) {
+    if (!urlString.startsWith("http")) {
+        return false
+    }
+    try {
+        new URL(urlString)
+        return true
+    } catch (MalformedURLException e) {
+        return false
+    }
+}
+
+void downloadFileFromURL(String urlString, String destinationPath) throws Exception {
+    int timeout = 5 * 1000
+    RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout).setConnectionRequestTimeout(timeout).setSocketTimeout(timeout).build()
+    CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(config).build()
+
+    HttpGet httpGet = new HttpGet(urlString)
+    CloseableHttpResponse response
+    try {
+        response = httpClient.execute(httpGet)
+    } catch (Exception e) {
+        logger.error("Error when downloading " + urlString + " : " + e.getMessage() + ". Please check network connection or add license content manually.")
+        return
+    }
+
+    if (response.getStatusLine().getStatusCode() == 200) {
+        try (InputStream is = response.getEntity().getContent()) {
+            String respContent = IOUtils.toString(is, StandardCharsets.UTF_8)
+            if (respContent.startsWith("../")) {
+                // Follow GitHub symlink
+                URL baseUrl = new URL(urlString);
+                URL absoluteUrl = new URL(baseUrl, respContent);
+                downloadFileFromURL(absoluteUrl.toString(), destinationPath);
+            } else {
+                Files.write(Paths.get(destinationPath), respContent.getBytes(StandardCharsets.UTF_8))
+            }
+        }
+    } else {
+        logger.warn("Failed to download " + urlString + " : " + response.getStatusLine() + ". Please add license content manually.")
+    }
+
+    EntityUtils.consume(response.getEntity())
+    response.close()
+}
+
+tasks.register('checkDeniedLicense') {
+    dependsOn('generateDistLicense')
+    doLast {
+        def deniedLicenses = [
+                "MS-LPL", "BUSL-1.1",
+                "CC-BY-NC-1.0", "CC-BY-NC-2.0", "CC-BY-NC-2.5", "CC-BY-NC-3.0", "CC-BY-NC-4.0",
+                "GPL-1.0", "GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.0", "LGPL-2.1", "LGPL-3.0",
+                "GPL-1.0-only", "GPL-2.0-only", "GPL-3.0-only", "AGPL-3.0-only", "LGPL-2.0-only", "LGPL-2.1-only", "LGPL-3.0-only",
+                "QPL-1.0", "Sleepycat", "SSPL-1.0", "CPOL-1.02",
+                "BSD-4-Clause", "BSD-4-Clause-UC", "NPL-1.0", "NPL-1.1", "JSON"
+        ]
+        // Update exemptions according to https://github.com/apache/eventmesh/issues/4842
+        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib"]
+
+        def licenseFile = file('tools/dist-license/LICENSE')
+        def lines = licenseFile.readLines()
+        def hasFailed = false
+
+        lines.each { line ->
+            deniedLicenses.each { deniedLicense ->
+                if (line.contains("'${deniedLicense}'")) {
+                    def isAllowed = allowedArtifacts.any { allowedArtifact ->
+                        line.contains(allowedArtifact)
+                    }
+                    if (!isAllowed) {
+                        logger.warn("Incompatible license '${deniedLicense}' found in line: ${line}")
+                        hasFailed = true
+                    }
+                }
+            }
+        }
+
+        if (hasFailed) {
+            throw new GradleException("Check failed due to incompatible licenses found. Please remove these dependencies or add exemptions.")
+        } else {
+            logger.lifecycle("Check passed, no incompatible licenses found.")
+        }
+    }
+}
+
+tasks.register('generateDistNotice') {
+    dependsOn('generateLicenseReport') // Task from 'com.github.jk1.dependency-license-report' plugin
+    doLast {
+        // Inputs
+        def reportsDir = file("$buildDir/reports/dependency-license/")
+        def projectNoticeText = file('NOTICE').text
+
+        // Outputs
+        def distNoticeFile = file('tools/dist-license/NOTICE')
+
+        def distNoticeText = projectNoticeText
+        reportsDir.eachDir { dir ->
+            dir.eachFileRecurse (groovy.io.FileType.FILES) { file ->
+                // Find NOTICE files
+                if (file.name.length() >= 6 && file.name.substring(0, 6).equalsIgnoreCase("NOTICE")) {
+                    def artifactName = dir.name.replace(".jar", "")
+                    distNoticeText += "\n=======================================================================\n\n" +
+                            "${artifactName} NOTICE\n" + "\n=======================================================================\n\n"
+                    distNoticeText += file.text
+                }
+            }
+        }
+        distNoticeFile.text = distNoticeText
+    }
+}
+
 subprojects {
 
     apply plugin: "io.spring.dependency-management"
@@ -260,7 +466,6 @@ subprojects {
         main {
             java.srcDirs = ['src/main/java']
         }
-
         test {
             java.srcDirs = ['src/test/java']
         }
@@ -270,6 +475,9 @@ subprojects {
         delete 'build'
         delete 'dist'
     }
+
+    // Print all dependencies trees, useful for finding artifacts
+    tasks.register('printAllDependencyTrees', DependencyReportTask) {}
 
     jacoco {
         toolVersion = "0.8.6"
@@ -297,7 +505,6 @@ subprojects {
     }
 
     spotbugsMain {
-
         reports {
             xml.required = false
             html {
@@ -374,7 +581,6 @@ subprojects {
     }
 
     repositories {
-        mavenLocal()
         mavenCentral()
         maven { url "https://maven.aliyun.com/repository/public" }
     }
@@ -442,7 +648,7 @@ subprojects {
     }
 
     def grpcVersion = '1.43.2'
-    def log4jVersion = '2.22.1'
+    def log4jVersion = '2.23.1'
 
     dependencyManagement {
         dependencies {
@@ -456,7 +662,7 @@ subprojects {
 
             dependency "com.google.guava:guava:31.0.1-jre"
 
-            dependency "org.slf4j:slf4j-api:2.0.9"
+            dependency "org.slf4j:slf4j-api:2.0.13"
             dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
             dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
             dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
@@ -465,7 +671,7 @@ subprojects {
 
             dependency "com.fasterxml.jackson.core:jackson-databind:2.13.0"
             dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
-            dependency "com.fasterxml.jackson.core:jackson-annotations:2.13.0"
+            dependency "com.fasterxml.jackson.core:jackson-annotations:2.17.1"
             dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0"
             dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0"
 
@@ -522,9 +728,9 @@ subprojects {
             dependency "com.google.code.gson:gson:2.8.2"
 
             dependency "org.yaml:snakeyaml:1.30"
-            dependency "org.javassist:javassist:3.24.0-GA"
+            dependency "org.javassist:javassist:3.30.2-GA"
 
-            dependency "com.alibaba.nacos:nacos-client:2.2.1"
+            dependency "com.alibaba.nacos:nacos-client:2.2.3"
 
             dependency 'org.apache.zookeeper:zookeeper:3.7.1'
             dependency 'org.apache.curator:curator-client:5.4.0'
@@ -539,7 +745,6 @@ subprojects {
 
             dependency "software.amazon.awssdk:s3:2.20.29"
             dependency "com.github.rholder:guava-retrying:2.0.0"
-
         }
     }
 }

@@ -58,7 +58,7 @@ public class JsonUtils {
             return null;
         }
         Object obj = OBJECT_MAPPER.convertValue(map, beanClass);
-        return (T) obj;
+        return beanClass.cast(obj);
     }
     
     /**
