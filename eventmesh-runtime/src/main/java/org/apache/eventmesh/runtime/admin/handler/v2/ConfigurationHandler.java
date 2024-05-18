@@ -39,6 +39,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.filter.Filter;
 import com.alibaba.fastjson2.filter.NameFilter;
+import com.alibaba.fastjson2.filter.PropertyFilter;
 import com.alibaba.fastjson2.filter.ValueFilter;
 
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,7 @@ import inet.ipaddr.IPAddress;
 @EventMeshHttpHandler(path = "/v2/configuration")
 public class ConfigurationHandler extends AbstractHttpHandler {
 
+    private final CommonConfiguration commonConfiguration;
     private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
     private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
@@ -68,10 +70,12 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      * @param eventMeshGrpcConfiguration the gRPC configuration for EventMesh
      */
     public ConfigurationHandler(
+        CommonConfiguration commonConfiguration,
         EventMeshTCPConfiguration eventMeshTCPConfiguration,
         EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
         EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         super();
+        this.commonConfiguration = commonConfiguration;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
@@ -85,34 +89,51 @@ public class ConfigurationHandler extends AbstractHttpHandler {
      *         <p>When {@code properties}, the field names are returned in Properties format;
      *         <p>When {@code bean}, the field names themselves are used as json keys.
      *     </li>
+     *     <li>
+     *         {@code configs}: String; Optional, DefaultValue: {@code exclusive}, SelectableValue: {@code all}.
+     *         <p>When {@code exclusive}, protocol-specific configurations will only contain protocol-exclusive fields
+     *         and won't contain any {@link CommonConfiguration} fields;
+     *         <p>When {@code all}, protocol-specific configurations will contain all fields, including those in {@link CommonConfiguration}.
+     *     </li>
      * </ul>
      */
     @Override
     protected void get(HttpRequest httpRequest, ChannelHandlerContext ctx) {
         String format = HttpRequestUtil.getQueryParam(httpRequest, "format", "properties");
+        String configs = HttpRequestUtil.getQueryParam(httpRequest, "configs", "exclusive");
 
-        Filter[] filters;
-        if (format.equals("properties")) {
-            filters = new Filter[] {new ConfigFieldFilter(), new IPAddressToStringFilter()};
-        } else if (format.equals("bean")) {
-            filters = new Filter[] {new IPAddressToStringFilter()};
-        } else {
-            log.warn("Invalid format param: {}", format);
-            writeBadRequest(ctx, "Invalid format param: " + format);
-            return;
+        List<Filter> filters = new ArrayList<>();
+        switch (configs) {
+            case "exclusive":
+                filters.add(new SuperClassFieldFilter());
+                break;
+            case "all": break;
+            default:
+                throw new IllegalArgumentException("Invalid param 'configs': " + configs);
         }
+        switch (format) {
+            case "properties":
+                filters.add(new ConfigFieldFilter());
+                break;
+            case "bean": break;
+            default:
+                throw new IllegalArgumentException("Invalid param 'format': " + format);
+        }
+        filters.add(new IPAddressToStringFilter());
 
         GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+            commonConfiguration,
             eventMeshTCPConfiguration,
             eventMeshHTTPConfiguration,
-            eventMeshGrpcConfiguration
+            eventMeshGrpcConfiguration,
+            "v1.10.0-release" // TODO get version number after merging https://github.com/apache/eventmesh/pull/4055
         );
-        String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters);
+        String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters.toArray(new Filter[0]));
         writeJson(ctx, json);
     }
 
     /**
-     * For each member of {@link EventMeshTCPConfiguration}, {@link EventMeshHTTPConfiguration}, and {@link EventMeshGrpcConfiguration},
+     * For each member of configuration classes,
      * the value of the {@link ConfigField} annotation for each field is obtained through reflection,
      * and then concatenated with the configuration prefix in the {@link Config} annotation to serve as the JSON key for this field.
      * <p>
@@ -150,6 +171,39 @@ public class ConfigurationHandler extends AbstractHttpHandler {
                     throw e;
                 } else {
                     return findFieldInClassHierarchy(superclass, fieldName);
+                }
+            }
+        }
+    }
+
+    /**
+     * For each member of {@link EventMeshTCPConfiguration}, {@link EventMeshHTTPConfiguration}, and {@link EventMeshGrpcConfiguration},
+     * if the {@code name} is a member that exists in {@link CommonConfiguration} class, it will be skipped.
+     */
+    static class SuperClassFieldFilter implements PropertyFilter {
+        @Override
+        public boolean apply(Object object, String name, Object value) {
+            try {
+                Field field = findFieldInClassNonHierarchy(object.getClass(), name);
+                return field != null;
+            } catch (NoSuchFieldException e) {
+                log.error("Failed to get field {} from object {}", name, object, e);
+            }
+            return true;
+        }
+
+        /**
+         * If a field of a subclass exists in the superclass, return null, causing FastJSON to skip this field.
+         */
+        private Field findFieldInClassNonHierarchy(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                Class<?> superclass = clazz.getSuperclass();
+                if (superclass == null) {
+                    throw e;
+                } else {
+                    return null;
                 }
             }
         }

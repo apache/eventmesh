@@ -44,5 +44,6 @@ header:
     - 'gradlew'
     - 'gradlew.bat'
     - '**/*.txt'
+    - 'tools/dist-license/licenses/**'
 
   comment: on-failure
