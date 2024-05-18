@@ -18,10 +18,15 @@
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
-    implementation 'io.cloudevents:cloudevents-http-vertx:2.3.0'
+
+    implementation 'io.cloudevents:cloudevents-http-vertx:3.0.0'
     implementation 'io.vertx:vertx-web:4.4.6'
+    implementation 'io.vertx:vertx-web-client:4.4.6'
+    implementation 'dev.failsafe:failsafe:3.3.2'
 
     testImplementation "org.apache.httpcomponents:httpclient"
+    testImplementation 'org.mock-server:mockserver-netty:5.15.0'
+    testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

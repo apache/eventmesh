@@ -15,25 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.response.v2;
+package org.apache.eventmesh.connector.http.sink.config;
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.openconnect.api.config.SinkConfig;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class GetConfigurationResponse {
+@EqualsAndHashCode(callSuper = true)
+public class HttpSinkConfig extends SinkConfig {
 
-    private CommonConfiguration commonConfiguration;
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-    private String eventMeshVersion;
+    public SinkConnectorConfig connectorConfig;
 }

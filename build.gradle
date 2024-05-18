@@ -123,7 +123,7 @@ allprojects {
             }
             importOrder ('\\#org.apache.eventmesh','\\#org.apache','\\#java','\\#javax','\\#org','\\#io','\\#net','\\#junit','\\#com','\\#lombok',
                     'org.apache.eventmesh','org.apache','java','javax','org','io','net','junit','com','lombok')
-            licenseHeaderFile rootProject.file('style/checkstyle-header1.txt')
+            licenseHeaderFile rootProject.file('style/checkstyle-header-java.txt')
             eclipse().configFile("${rootDir}/style/task/eventmesh-spotless-formatter.xml")
             removeUnusedImports()
         }
@@ -360,22 +360,15 @@ static boolean isURL(String urlString) {
 
 void downloadFileFromURL(String urlString, String destinationPath) throws Exception {
     int timeout = 5 * 1000
-    RequestConfig config = RequestConfig.custom()
-            .setConnectTimeout(timeout)
-            .setConnectionRequestTimeout(timeout)
-            .setSocketTimeout(timeout)
-            .build()
-
-    CloseableHttpClient httpClient = HttpClients.custom()
-            .setDefaultRequestConfig(config)
-            .build()
+    RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout).setConnectionRequestTimeout(timeout).setSocketTimeout(timeout).build()
+    CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(config).build()
 
     HttpGet httpGet = new HttpGet(urlString)
     CloseableHttpResponse response
     try {
         response = httpClient.execute(httpGet)
     } catch (Exception e) {
-        logger.error("Failed to download " + urlString + " : " + e.getMessage())
+        logger.error("Error when downloading " + urlString + " : " + e.getMessage() + ". Please check network connection or add license content manually.")
         return
     }
 
@@ -392,7 +385,7 @@ void downloadFileFromURL(String urlString, String destinationPath) throws Except
             }
         }
     } else {
-        logger.error("Failed to download " + urlString + " : " + response.getStatusLine())
+        logger.warn("Failed to download " + urlString + " : " + response.getStatusLine() + ". Please add license content manually.")
     }
 
     EntityUtils.consume(response.getEntity())
@@ -411,7 +404,7 @@ tasks.register('checkDeniedLicense') {
                 "BSD-4-Clause", "BSD-4-Clause-UC", "NPL-1.0", "NPL-1.1", "JSON"
         ]
         // Update exemptions according to https://github.com/apache/eventmesh/issues/4842
-        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "hibernate-core", "hibernate-commons-annotations", "ST4", "xsdlib"]
+        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib"]
 
         def licenseFile = file('tools/dist-license/LICENSE')
         def lines = licenseFile.readLines()
@@ -655,7 +648,7 @@ subprojects {
     }
 
     def grpcVersion = '1.50.2'
-    def log4jVersion = '2.22.1'
+    def log4jVersion = '2.23.1'
 
     dependencyManagement {
         dependencies {
@@ -669,7 +662,7 @@ subprojects {
 
             dependency "com.google.guava:guava:31.0.1-jre"
 
-            dependency "org.slf4j:slf4j-api:2.0.9"
+            dependency "org.slf4j:slf4j-api:2.0.13"
             dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
             dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
             dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
@@ -678,7 +671,7 @@ subprojects {
 
             dependency "com.fasterxml.jackson.core:jackson-databind:2.13.0"
             dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
-            dependency "com.fasterxml.jackson.core:jackson-annotations:2.13.0"
+            dependency "com.fasterxml.jackson.core:jackson-annotations:2.17.1"
             dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0"
             dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0"
 
@@ -735,9 +728,9 @@ subprojects {
             dependency "com.google.code.gson:gson:2.8.2"
 
             dependency "org.yaml:snakeyaml:1.30"
-            dependency "org.javassist:javassist:3.24.0-GA"
+            dependency "org.javassist:javassist:3.30.2-GA"
 
-            dependency "com.alibaba.nacos:nacos-client:2.2.1"
+            dependency "com.alibaba.nacos:nacos-client:2.2.3"
 
             dependency 'org.apache.zookeeper:zookeeper:3.7.1'
             dependency 'org.apache.curator:curator-client:5.4.0'

@@ -15,25 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.response.v2;
+package org.apache.eventmesh.connector.http.sink.config;
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class GetConfigurationResponse {
+public class HttpRetryConfig {
+    // maximum number of retries, default 2, minimum 0
+    private int maxRetries = 2;
 
-    private CommonConfiguration commonConfiguration;
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-    private String eventMeshVersion;
+    // retry interval, default 2000ms
+    private int interval = 2000;
+
+    // Default value is false, indicating that only requests with network-level errors will be retried.
+    // If set to true, all failed requests will be retried, including network-level errors and non-2xx responses.
+    private boolean retryOnNonSuccess = false;
 }

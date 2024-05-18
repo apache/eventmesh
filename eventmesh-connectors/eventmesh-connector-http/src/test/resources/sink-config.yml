@@ -15,23 +15,31 @@
 # limitations under the License.
 #
 
-FROM openjdk:11-jdk as builder
-WORKDIR /build
-COPY . .
-RUN ./gradlew clean build dist --parallel --daemon
-RUN ./gradlew installPlugin
-
-FROM openjdk:11-jdk
-RUN apt-get update && apt-get install -y locales procps
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
-WORKDIR /data/app/eventmesh
-COPY --from=builder /build/dist ./
-
-EXPOSE 10000 10105 10106 10205
-
-ENV DOCKER true
-ENV EVENTMESH_HOME /data/app/eventmesh
-ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
-ENV CONFPATH /data/app/eventmesh/conf
-
-CMD ["bash", "bin/start.sh"]
+pubSubConfig:
+  meshAddress: 127.0.0.1:10000
+  subject: TopicTest
+  idc: FT
+  env: PRD
+  group: httpSink
+  appId: 5032
+  userName: httpSinkUser
+  passWord: httpPassWord
+connectorConfig:
+  connectorName: httpSink
+  urls:
+    - http://127.0.0.1:8987/test
+  keepAlive: true
+  keepAliveTimeout: 60000
+  idleTimeout: 15000   # timeunit: ms, recommended scope: common(5s - 10s), webhook(15s - 60s)
+  connectionTimeout: 5000   # timeunit: ms, recommended scope: 5 - 10s
+  maxConnectionPoolSize: 10
+  retryConfig:
+    maxRetries: 2
+    interval: 1000
+    retryOnNonSuccess: true
+  webhookConfig:
+    activate: true
+    exportPath: /export
+    port: 8988
+    serverIdleTimeout: 5000
+    maxStorageSize: 5000

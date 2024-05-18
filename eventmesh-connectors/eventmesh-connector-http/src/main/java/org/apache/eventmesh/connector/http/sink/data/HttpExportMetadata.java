@@ -15,25 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.response.v2;
+package org.apache.eventmesh.connector.http.sink.data;
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+/**
+ * Metadata for an HTTP export operation.
+ */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class GetConfigurationResponse {
+@Builder
+public class HttpExportMetadata {
+    private String url;
 
-    private CommonConfiguration commonConfiguration;
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-    private String eventMeshVersion;
+    private int code;
+
+    private String message;
+
+    private LocalDateTime receivedTime;
+
+    private String uuid;
+
+    private String retriedBy;
+
+    private int retryNum;
 }
