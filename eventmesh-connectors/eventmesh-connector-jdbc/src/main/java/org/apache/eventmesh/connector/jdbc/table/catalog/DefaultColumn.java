@@ -28,26 +28,34 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DefaultColumn extends Column<DefaultColumn> {
 
-    public DefaultColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression) {
-        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, 0);
+    public DefaultColumn(String name, EventMeshDataType dataType, JDBCType jdbcType, Long columnLength, Integer decimal, boolean notNull,
+        String comment, Object defaultValue, String defaultValueExpression, String charsetName, boolean autoIncremented, boolean generated,
+        String collationName) {
+        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, 0, charsetName,
+            autoIncremented, generated, collationName);
     }
 
-    public DefaultColumn(String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression, int order) {
-        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
+    public DefaultColumn(String name, EventMeshDataType dataType, JDBCType jdbcType, Long columnLength, Integer decimal, boolean notNull,
+        String comment, Object defaultValue, String defaultValueExpression, int order, String charsetName, boolean autoIncremented, boolean generated,
+        String collationName) {
+        super(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order, charsetName,
+            autoIncremented, generated, collationName);
     }
 
     public static DefaultColumn of(
-        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression) {
-        return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression);
+        String name, EventMeshDataType dataType, JDBCType jdbcType, Long columnLength, Integer decimal, boolean notNull,
+        String comment, Object defaultValue, String defaultValueExpression, String charsetName, boolean autoIncremented, boolean generated,
+        String collationName) {
+        return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression,
+            charsetName, autoIncremented, generated, collationName);
     }
 
     public static DefaultColumn of(
-        String name, EventMeshDataType<?> dataType, JDBCType jdbcType, Integer columnLength, Integer decimal, boolean notNull,
-        String comment, Object defaultValue, String defaultValueExpression, int order) {
-        return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
+        String name, EventMeshDataType dataType, JDBCType jdbcType, Long columnLength, Integer decimal, boolean notNull,
+        String comment, Object defaultValue, String defaultValueExpression, int order, String charsetName, boolean autoIncremented, boolean generated,
+        String collationName) {
+        return new DefaultColumn(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order,
+            charsetName, autoIncremented, generated, collationName);
     }
 
     /**
@@ -57,6 +65,7 @@ public class DefaultColumn extends Column<DefaultColumn> {
      */
     @Override
     public DefaultColumn clone() {
-        return DefaultColumn.of(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order);
+        return DefaultColumn.of(name, dataType, jdbcType, columnLength, decimal, notNull, comment, defaultValue, defaultValueExpression, order,
+            charsetName, autoIncremented, generated, collationName);
     }
 }

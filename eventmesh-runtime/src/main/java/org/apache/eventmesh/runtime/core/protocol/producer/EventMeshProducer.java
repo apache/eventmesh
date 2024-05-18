@@ -65,7 +65,6 @@ public class EventMeshProducer {
         keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
             producerGroupConfig.getGroupName(), configuration.getEventMeshCluster()));
 
-        // TODO for defibus
         keyValue.put(EventMeshConstants.EVENT_MESH_IDC, configuration.getEventMeshIDC());
         mqProducerWrapper = new MQProducerWrapper(
             configuration.getEventMeshStoragePluginType());

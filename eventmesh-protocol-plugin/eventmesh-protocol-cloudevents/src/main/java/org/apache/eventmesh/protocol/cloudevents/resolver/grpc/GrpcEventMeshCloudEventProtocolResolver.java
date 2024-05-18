@@ -52,7 +52,7 @@ public class GrpcEventMeshCloudEventProtocolResolver {
     }
 
     public static EventMeshCloudEventWrapper buildEventMeshCloudEvent(io.cloudevents.CloudEvent cloudEvent) {
-        if (null == cloudEvent) {
+        if (cloudEvent == null) {
             return new EventMeshCloudEventWrapper(null);
         }
         try {

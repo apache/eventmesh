@@ -49,6 +49,9 @@ public class JdbcConfig {
 
     private int connectTimeout;
 
+    // e.g jdbc:mysql://127.0.0.1:3306
+    private String url;
+
     /**
      * Converts the JdbcConfig object to a Properties object containing the user and password.
      *

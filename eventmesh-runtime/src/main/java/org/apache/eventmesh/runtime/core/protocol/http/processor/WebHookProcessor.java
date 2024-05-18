@@ -41,7 +41,7 @@ public class WebHookProcessor implements ShortHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{WebHookOperationConstant.CALLBACK_PATH_PREFIX};
+        return new String[] {WebHookOperationConstant.CALLBACK_PATH_PREFIX};
     }
 
     @Override

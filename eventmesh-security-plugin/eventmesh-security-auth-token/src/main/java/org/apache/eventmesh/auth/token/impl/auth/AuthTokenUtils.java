@@ -55,7 +55,7 @@ public class AuthTokenUtils {
             token = token.replace("Bearer ", "");
             for (String key : ConfigurationContextUtil.KEYS) {
                 CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-                if (null == commonConfiguration) {
+                if (commonConfiguration == null) {
                     continue;
                 }
                 if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {
@@ -98,7 +98,7 @@ public class AuthTokenUtils {
             token = token.replace("Bearer ", "");
             for (String key : ConfigurationContextUtil.KEYS) {
                 CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
-                if (null == commonConfiguration) {
+                if (commonConfiguration == null) {
                     continue;
                 }
                 if (StringUtils.isBlank(commonConfiguration.getEventMeshSecurityPublickey())) {

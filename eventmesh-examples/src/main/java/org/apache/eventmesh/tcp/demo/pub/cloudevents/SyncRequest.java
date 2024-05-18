@@ -65,7 +65,7 @@ public class SyncRequest {
             final Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
             final EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
-            if (null == eventFormat) {
+            if (eventFormat == null) {
                 log.error("eventFormat is null. end the process");
                 return;
             }
@@ -75,7 +75,7 @@ public class SyncRequest {
 
             // check-NPE CloudEventData
             final CloudEventData cloudEventData = replyEvent.getData();
-            if (null == cloudEventData) {
+            if (cloudEventData == null) {
                 log.error("replyEvent.data is null. end the process");
                 return;
             }

@@ -17,7 +17,12 @@
 
 package org.apache.eventmesh.connector.jdbc.table.catalog.mysql;
 
+import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDataTypeConvertor;
 import org.apache.eventmesh.connector.jdbc.table.catalog.AbstractColumnEditorImpl;
+import org.apache.eventmesh.connector.jdbc.table.type.EventMeshDataType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MysqlColumnEditorImpl extends AbstractColumnEditorImpl<MysqlColumnEditor, MysqlColumn> implements MysqlColumnEditor {
 
@@ -26,6 +31,8 @@ public class MysqlColumnEditorImpl extends AbstractColumnEditorImpl<MysqlColumnE
     private boolean generated;
 
     private String collationName;
+
+    private MysqlDataTypeConvertor convertor = new MysqlDataTypeConvertor();
 
     public MysqlColumnEditorImpl(String name) {
         super(name);
@@ -65,7 +72,7 @@ public class MysqlColumnEditorImpl extends AbstractColumnEditorImpl<MysqlColumnE
      * @return The column editor with the collation set.
      */
     @Override
-    public MysqlColumnEditor collate(String collationName) {
+    public MysqlColumnEditor collation(String collationName) {
         this.collationName = collationName;
         return this;
     }
@@ -77,7 +84,17 @@ public class MysqlColumnEditorImpl extends AbstractColumnEditorImpl<MysqlColumnE
      */
     @Override
     public MysqlColumn build() {
+
+        Map<String, Object> dataTypeProperties = new HashMap<>();
+        if (ofColumnLength() != null) {
+            dataTypeProperties.put(MysqlDataTypeConvertor.PRECISION, ofColumnLength().intValue());
+        }
+        dataTypeProperties.put(MysqlDataTypeConvertor.SCALE, ofScale());
+        EventMeshDataType<?> eventMeshType = convertor.toEventMeshType(ofJdbcType(), dataTypeProperties);
+        withEventMeshType(eventMeshType);
+
         return MysqlColumn.of(ofName(), ofEventMeshDataType(), ofJdbcType(), ofColumnLength(), ofScale(), isNotNull(), ofComment(), ofDefaultValue(),
-            ofDefaultValueExpression(), autoIncremented, generated, collationName, ofOrder());
+            ofDefaultValueExpression(), autoIncremented, generated, collationName, ofOrder(), ofCharsetName(), ofEnumValues(), ofTypeName(),
+            ofOptions());
     }
 }

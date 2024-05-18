@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import java.util.concurrent.Executor;
+
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
@@ -28,4 +30,11 @@ public interface HttpProcessor {
     String[] paths();
 
     HttpResponse handler(HttpRequest httpRequest);
+
+    /**
+     * @return {@link Executor}
+     */
+    default Executor executor() {
+        return null;
+    }
 }
