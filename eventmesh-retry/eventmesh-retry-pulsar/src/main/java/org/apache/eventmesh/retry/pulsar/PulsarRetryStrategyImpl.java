@@ -47,9 +47,9 @@ public class PulsarRetryStrategyImpl implements RetryStrategy {
     private void sendMessageBack(final RetryConfiguration configuration) {
         CloudEvent event = configuration.getEvent();
         String topic = configuration.getTopic();
+        String subscriptionMode = configuration.getSubscriptionMode().getMode();
+        String retryTopicName = topic + "-" + subscriptionMode + "-" + RetryMessageUtil.RETRY_GROUP_TOPIC_SUFFIX;
         String consumerGroupName = configuration.getConsumerGroupName();
-        String retryTopicName = consumerGroupName + RetryMessageUtil.RETRY_GROUP_TOPIC_SUFFIX;
-        
         String bizSeqNo = Objects.requireNonNull(event.getExtension(ClientInstanceKey.BIZSEQNO.getKey())).toString();
         String uniqueId = Objects.requireNonNull(event.getExtension(ClientInstanceKey.UNIQUEID.getKey())).toString();
         CloudEvent retryEvent = CloudEventBuilder.from(event)
