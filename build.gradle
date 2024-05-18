@@ -649,6 +649,12 @@ subprojects {
 
     def grpcVersion = '1.50.2'
     def log4jVersion = '2.23.1'
+    def jacksonVersion = '2.17.1'
+    def dropwizardMetricsVersion = '4.1.0'
+    def opentelemetryVersion = '1.36.0'
+    def cloudeventsVersion = '2.4.2'
+    def curatorVersion = '5.4.0'
+    def mockitoVersion = '3.8.0'
 
     dependencyManagement {
         dependencies {
@@ -669,11 +675,11 @@ subprojects {
 
             dependency "com.lmax:disruptor:3.4.2"
 
-            dependency "com.fasterxml.jackson.core:jackson-databind:2.13.0"
-            dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
-            dependency "com.fasterxml.jackson.core:jackson-annotations:2.17.1"
-            dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0"
-            dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0"
+            dependency "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
 
             dependency "com.squareup.okhttp3:okhttp:3.14.9"
 
@@ -682,18 +688,18 @@ subprojects {
 
             dependency "io.netty:netty-all:4.1.79.Final"
 
-            dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
-            dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
-            dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
-            dependency "io.dropwizard.metrics:metrics-json:4.1.0"
+            dependency "io.dropwizard.metrics:metrics-core:${dropwizardMetricsVersion}"
+            dependency "io.dropwizard.metrics:metrics-healthchecks:${dropwizardMetricsVersion}"
+            dependency "io.dropwizard.metrics:metrics-annotation:${dropwizardMetricsVersion}"
+            dependency "io.dropwizard.metrics:metrics-json:${dropwizardMetricsVersion}"
 
-            dependency 'io.opentelemetry:opentelemetry-api:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.36.0-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-semconv:1.30.1-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1'
+            dependency "io.opentelemetry:opentelemetry-api:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-sdk-metrics:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-exporter-prometheus:${opentelemetryVersion}-alpha"
+            dependency "io.opentelemetry:opentelemetry-exporter-zipkin:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha"
+            dependency "io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1"
 
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
@@ -708,13 +714,13 @@ subprojects {
             dependency "org.junit-pioneer:junit-pioneer:1.9.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
-            dependency "org.mockito:mockito-core:3.8.0"
-            dependency "org.mockito:mockito-inline:3.8.0"
-            dependency "org.mockito:mockito-junit-jupiter:3.8.0"
+            dependency "org.mockito:mockito-core:${mockitoVersion}"
+            dependency "org.mockito:mockito-inline:${mockitoVersion}"
+            dependency "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
 
-            dependency "io.cloudevents:cloudevents-core:2.4.2"
-            dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
-            dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
+            dependency "io.cloudevents:cloudevents-core:${cloudeventsVersion}"
+            dependency "io.cloudevents:cloudevents-json-jackson:${cloudeventsVersion}"
+            dependency "io.cloudevents:cloudevents-protobuf:${cloudeventsVersion}"
 
             dependency "io.grpc:grpc-core:${grpcVersion}"
             dependency "io.grpc:grpc-protobuf:${grpcVersion}"
@@ -733,10 +739,10 @@ subprojects {
             dependency "com.alibaba.nacos:nacos-client:2.2.3"
 
             dependency 'org.apache.zookeeper:zookeeper:3.7.1'
-            dependency 'org.apache.curator:curator-client:5.4.0'
-            dependency 'org.apache.curator:curator-framework:5.4.0'
-            dependency 'org.apache.curator:curator-recipes:5.4.0'
-            dependency 'org.apache.curator:curator-test:5.4.0'
+            dependency "org.apache.curator:curator-client:${curatorVersion}"
+            dependency "org.apache.curator:curator-framework:${curatorVersion}"
+            dependency "org.apache.curator:curator-recipes:${curatorVersion}"
+            dependency "org.apache.curator:curator-test:${curatorVersion}"
 
             dependency "org.projectlombok:lombok:1.18.22"
             dependency "com.github.seancfoley:ipaddress:5.3.3"
