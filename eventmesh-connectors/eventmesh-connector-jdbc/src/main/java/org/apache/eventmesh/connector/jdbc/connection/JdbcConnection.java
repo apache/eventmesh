@@ -32,6 +32,7 @@ import java.sql.Statement;
 
 import javax.annotation.concurrent.ThreadSafe;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,6 +46,7 @@ public class JdbcConnection implements AutoCloseable {
 
     private static final String STATEMENT_DELIMITER = ";";
 
+    @Getter
     private final JdbcConfig jdbcConfig;
 
     private volatile Connection connection;
@@ -86,15 +88,6 @@ public class JdbcConnection implements AutoCloseable {
         if (connection != null) {
             connection.close();
         }
-    }
-
-    /**
-     * Retrieves the JDBC configuration.
-     *
-     * @return The JDBC configuration.
-     */
-    public JdbcConfig getJdbcConfig() {
-        return jdbcConfig;
     }
 
     /**
@@ -223,7 +216,6 @@ public class JdbcConnection implements AutoCloseable {
                 statement.execute(sqlStatement);
             }
         }
-
         return this;
     }
 

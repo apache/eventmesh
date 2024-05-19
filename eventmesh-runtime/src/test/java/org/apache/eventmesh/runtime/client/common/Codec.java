@@ -94,7 +94,7 @@ public class Codec {
             int bodyLength = 0;
 
             try {
-                if (null == in) {
+                if (in == null) {
                     return;
                 }
 

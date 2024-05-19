@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges.Builder;
 import org.apache.eventmesh.connector.jdbc.Field;
@@ -25,10 +26,12 @@ import org.apache.eventmesh.connector.jdbc.Payload;
 import org.apache.eventmesh.connector.jdbc.Schema;
 import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
+import org.apache.eventmesh.connector.jdbc.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.event.DeleteDataEvent;
 import org.apache.eventmesh.connector.jdbc.event.EventConsumer;
 import org.apache.eventmesh.connector.jdbc.event.GeneralDataChangeEvent;
 import org.apache.eventmesh.connector.jdbc.event.InsertDataEvent;
+import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
 import org.apache.eventmesh.connector.jdbc.event.UpdateDataEvent;
 import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
@@ -40,12 +43,13 @@ import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql.RowDeseriali
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.EventDataDeserializationExceptionData;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.EventMeshGtidSet;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlConstants;
-import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlJdbcContext;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlSourceMateData;
 import org.apache.eventmesh.connector.jdbc.table.catalog.Column;
+import org.apache.eventmesh.connector.jdbc.table.catalog.DefaultValueConvertor;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableSchema;
+import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlDefaultValueConvertorImpl;
 import org.apache.eventmesh.connector.jdbc.table.type.Pair;
 import org.apache.eventmesh.openconnect.api.config.Config;
 
@@ -112,6 +116,8 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
     private MysqlJdbcConnection connection;
 
     private com.github.shyiko.mysql.binlog.GtidSet localGtidSet;
+
+    private DefaultValueConvertor defaultValueConvertor = new MysqlDefaultValueConvertorImpl();
 
     public MysqlCdcEngine(Config config, MysqlDatabaseDialect databaseDialect) {
         super((JdbcSourceConfig) config, databaseDialect);
@@ -283,7 +289,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
      */
     private void eventMeshMysqlEventListener(Event event, MysqlJdbcContext context) {
 
-        if (null == event) {
+        if (event == null) {
             return;
         }
         final EventHeader eventHeader = event.getHeader();
@@ -360,7 +366,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             Event event = null;
             try {
                 event = eventQueue.poll(5, TimeUnit.SECONDS);
-                if (null == event) {
+                if (event == null) {
                     continue;
                 }
                 eventHandlers.getOrDefault(event.getHeader().getEventType(), ignore -> ignoreEvent(context, ignore)).accept(event);
@@ -386,7 +392,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
             EventMeshGtidSet purgedServerEventMeshGtidSet = new EventMeshGtidSet(purgedServerGtid);
 
             EventMeshGtidSet filteredEventMeshGtidSet = filterGtidSet(context, executedEventMeshGtidSet, purgedServerEventMeshGtidSet);
-            if (null != filteredEventMeshGtidSet) {
+            if (filteredEventMeshGtidSet != null) {
                 client.setGtidSet(filteredEventMeshGtidSet.toString());
                 this.context.completedGtidSet(filteredEventMeshGtidSet.toString());
                 localGtidSet = new com.github.shyiko.mysql.binlog.GtidSet(filteredEventMeshGtidSet.toString());
@@ -509,12 +515,24 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
 
         // set current parse database to Ddl parser
         ddlParser.setCurrentDatabase(queryEventData.getDatabase());
+        ddlParser.setCatalogTableSet(context.getCatalogTableSet());
         ddlParser.parse(sql, this::handleDdlEvent);
     }
 
     private void handleDdlEvent(org.apache.eventmesh.connector.jdbc.event.Event event) {
         if (event == null) {
             return;
+        }
+        // handle default value expression
+        if (event.getJdbcConnectData().isSchemaChanges()) {
+            CatalogChanges catalogChanges = event.getJdbcConnectData().getPayload().getCatalogChanges();
+            SchemaChangeEventType schemaChangeEventType = SchemaChangeEventType.ofSchemaChangeEventType(catalogChanges.getType(),
+                catalogChanges.getOperationType());
+            if (SchemaChangeEventType.TABLE_CREATE == schemaChangeEventType || SchemaChangeEventType.TABLE_ALERT == schemaChangeEventType) {
+                catalogChanges.getColumns().forEach(column -> {
+                    column.setDefaultValue(defaultValueConvertor.parseDefaultValue(column, column.getDefaultValueExpression()));
+                });
+            }
         }
         event.getJdbcConnectData().getPayload().ofSourceMateData().setSnapshot(false);
         consumers.stream().forEach(consumer -> consumer.accept(event));
@@ -583,7 +601,7 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         return sourceMateData;
     }
 
-    private enum CdcDmlType {
+    public enum CdcDmlType {
         INSERT,
         UPDATE,
         DELETE
@@ -606,23 +624,28 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
         List<Pair<Pair<Serializable[], BitSet>, Pair<Serializable[], BitSet>>> rows, CdcDmlType type) {
 
         TableSchema tableSchema = context.getCatalogTableSet().getTableSchema(tableId);
-        Map<Integer, ? extends Column> orderColumnMap = tableSchema.getOrderColumnMap();
-        List<? extends Column> columns = tableSchema.getColumns();
+        Map<Integer, ? extends Column<?>> orderColumnMap = tableSchema.getOrderColumnMap();
+        List<? extends Column<?>> columns = tableSchema.getColumns();
         List<Field> fields = null;
         Builder builder = DataChanges.newBuilder();
         if (CollectionUtils.isNotEmpty(columns)) {
             fields = columns.stream()
-                .map(col -> new Field(col.getDataType().getName(), col.isNotNull(), col.getName(), tableId.toString()))
-                .collect(Collectors.toList());
+                .map(col -> {
+                    Column<?> rebuild = Column.newBuilder().withName(col.getName()).withDataType(col.getDataType()).withJdbcType(col.getJdbcType())
+                        .withNativeType(col.getNativeType()).withOrder(col.getOrder()).build();
+                    return new Field(rebuild, col.isNotNull(), col.getName(), tableId.toString());
+                }).collect(Collectors.toList());
         }
         int columnsSize = orderColumnMap.size();
         for (Pair<Pair<Serializable[], BitSet>, Pair<Serializable[], BitSet>> pair : rows) {
             GeneralDataChangeEvent dataEvent = buildEvent(type, tableId);
-            Payload payload = dataEvent.getJdbcConnectData().getPayload();
+            builder.withType(dataEvent.getDataChangeEventType().ofCode());
             Schema schema = new Schema();
+            // set primary key
+            schema.addKeys(tableSchema.getPrimaryKey().getColumnNames());
             Pair<Serializable[], BitSet> beforePair = Optional.ofNullable(pair.getLeft()).orElse(new Pair<>());
             Serializable[] beforeRows = beforePair.getLeft();
-            if (null != beforeRows && beforeRows.length != 0) {
+            if (beforeRows != null && beforeRows.length != 0) {
                 BitSet includedColumns = beforePair.getRight();
                 Map<String, Object> beforeValues = new HashMap<>(beforeRows.length);
                 for (int index = 0; index < columnsSize; ++index) {
@@ -633,14 +656,14 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
                     beforeValues.put(orderColumnMap.get(index + 1).getName(), beforeRows[index]);
                 }
                 builder.withBefore(beforeValues);
-                Field beforeField = new Field().withField(Payload.BEFORE_FIELD).withType("field").withName("payload.before").withRequired(false);
+                Field beforeField = new Field().withField(Payload.BEFORE_FIELD).withName(Payload.PAYLOAD_BEFORE).withRequired(false);
                 beforeField.withRequired(true).withFields(fields);
                 schema.add(beforeField);
             }
 
             Pair<Serializable[], BitSet> afterPair = Optional.ofNullable(pair.getRight()).orElse(new Pair<>());
             Serializable[] afterRows = afterPair.getLeft();
-            if (null != afterRows && afterRows.length != 0) {
+            if (afterRows != null && afterRows.length != 0) {
                 BitSet includedColumns = afterPair.getRight();
                 Map<String, Object> afterValues = new HashMap<>(afterRows.length);
                 for (int index = 0; index < columnsSize; ++index) {
@@ -650,15 +673,15 @@ public class MysqlCdcEngine extends AbstractCdcEngine<MysqlAntlr4DdlParser, Mysq
                     }
                     afterValues.put(orderColumnMap.get(index + 1).getName(), afterRows[index]);
                 }
-                builder.withBefore(afterValues);
-                Field afterField = new Field().withField(Payload.AFTER_FIELD).withType("field").withName("payload.after").withRequired(false);
+                builder.withAfter(afterValues);
+                Field afterField = new Field().withField(Payload.AFTER_FIELD).withName(Payload.PAYLOAD_AFTER).withRequired(false);
                 afterField.withRequired(true).withFields(fields);
                 schema.add(afterField);
             }
+            Payload payload = dataEvent.getJdbcConnectData().getPayload();
             payload.withSource(sourceMateData).withDataChanges(builder.build());
             dataEvent.getJdbcConnectData().setSchema(schema);
             consumers.stream().forEach(consumer -> consumer.accept(dataEvent));
-
         }
     }
 

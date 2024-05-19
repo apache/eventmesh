@@ -27,13 +27,13 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.AssertUtils;
-import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
+import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.TraceUtils;
 import org.apache.eventmesh.runtime.util.Utils;
@@ -43,7 +43,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,12 +78,8 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.DiskAttribute;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -95,14 +90,13 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * HTTP serves as the runtime module server for the protocol
- *
  */
 @Slf4j
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private HTTPMetricsServer metrics;
+    private EventMeshHttpMetricsManager eventMeshHttpMetricsManager;
 
     private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
 
@@ -110,7 +104,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         DiskAttribute.deleteOnExitTemporaryFile = false;
     }
 
-    private final transient AtomicBoolean started = new AtomicBoolean(false);
+    protected final transient AtomicBoolean started = new AtomicBoolean(false);
     private final transient boolean useTLS;
     private Boolean useTrace = false; // Determine whether trace is enabled
     private static final int MAX_CONNECTIONS = 20_000;
@@ -118,7 +112,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     /**
      * key: request code
      */
-    protected final transient Map<String, Pair<HttpRequestProcessor, ThreadPoolExecutor>> httpRequestProcessorTable =
+    protected final transient Map<String, HttpRequestProcessor> httpRequestProcessorTable =
         new ConcurrentHashMap<>(64);
 
     private HttpConnectionHandler httpConnectionHandler;
@@ -139,13 +133,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.httpThreadPoolGroup = new HTTPThreadPoolGroup(eventMeshHttpConfiguration);
     }
 
-    private void initSharableHandlers() {
+    protected void initSharableHandlers() {
         httpConnectionHandler = new HttpConnectionHandler();
         httpDispatcher = new HttpDispatcher();
     }
 
     public void init() throws Exception {
         super.init("eventMesh-http");
+        initProducerManager();
         httpThreadPoolGroup.initThreadPool();
     }
 
@@ -198,11 +193,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     /**
      * Registers the processors required by the runtime module
      */
-    public void registerProcessor(final Integer requestCode, final HttpRequestProcessor processor, final ThreadPoolExecutor executor) {
+    public void registerProcessor(final Integer requestCode, final HttpRequestProcessor processor) {
         AssertUtils.notNull(requestCode, "requestCode can't be null");
         AssertUtils.notNull(processor, "processor can't be null");
-        AssertUtils.notNull(executor, "executor can't be null");
-        this.httpRequestProcessorTable.put(requestCode.toString(), new Pair<>(processor, executor));
+        this.httpRequestProcessorTable.putIfAbsent(requestCode.toString(), processor);
     }
 
     /**
@@ -258,29 +252,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * @return
      */
     private Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
-        final long bodyDecodeStart = System.currentTimeMillis();
-        final Map<String, Object> httpRequestBody = new HashMap<>();
-
-        if (HttpMethod.GET.equals(httpRequest.method())) {
-            new QueryStringDecoder(httpRequest.uri())
-                .parameters()
-                .forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
-        } else if (HttpMethod.POST.equals(httpRequest.method())) {
-            decodeHttpRequestBody(httpRequest, httpRequestBody);
-        }
-        metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
-        return httpRequestBody;
-    }
-
-    private void decodeHttpRequestBody(HttpRequest httpRequest, Map<String, Object> httpRequestBody) throws IOException {
-        final HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(DEFAULT_HTTP_DATA_FACTORY, httpRequest);
-        for (final InterfaceHttpData param : decoder.getBodyHttpDatas()) {
-            if (InterfaceHttpData.HttpDataType.Attribute == param.getHttpDataType()) {
-                final Attribute data = (Attribute) param;
-                httpRequestBody.put(data.getName(), data.getValue());
-            }
-        }
-        decoder.destroy();
+        return HttpRequestUtil.parseHttpRequestBody(httpRequest, () -> System.currentTimeMillis(),
+            (startTime) -> eventMeshHttpMetricsManager.getHttpMetrics().recordDecodeTimeCost(System.currentTimeMillis() - startTime));
     }
 
     @Sharable
@@ -319,7 +292,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     TraceUtils.finishSpanWithException(span, headerMap, errorStatus.reasonPhrase(), null);
                     return;
                 }
-                metrics.getSummaryMetrics().recordHTTPRequest();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPRequest();
 
                 // process http
                 final HttpCommand requestCommand = new HttpCommand();
@@ -400,50 +373,57 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         private void processHttpCommandRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext) {
             final HttpCommand request = asyncContext.getRequest();
-            final Pair<HttpRequestProcessor, ThreadPoolExecutor> choosed = httpRequestProcessorTable.get(request.getRequestCode());
-            try {
-                choosed.getObject2().submit(() -> {
-                    try {
-                        final HttpRequestProcessor processor = choosed.getObject1();
-                        if (processor.rejectRequest()) {
-                            final HttpCommand responseCommand =
-                                request.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR);
-                            asyncContext.onComplete(responseCommand);
+            final HttpRequestProcessor choosed = httpRequestProcessorTable.get(request.getRequestCode());
+            Runnable runnable = () -> {
+                try {
+                    final HttpRequestProcessor processor = choosed;
+                    if (processor.rejectRequest()) {
+                        final HttpCommand responseCommand =
+                            request.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR);
+                        asyncContext.onComplete(responseCommand);
 
-                            if (asyncContext.isComplete()) {
-                                sendResponse(ctx, responseCommand.httpResponse());
-                                log.debug("{}", asyncContext.getResponse());
-                                final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
-                                TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
+                        if (asyncContext.isComplete()) {
+                            sendResponse(ctx, responseCommand.httpResponse());
+                            log.debug("{}", asyncContext.getResponse());
+                            final Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
+                            TraceUtils.finishSpanWithException(TraceUtils.prepareServerSpan(traceMap,
+
                                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
                                     false),
-                                    traceMap,
-                                    EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
-                            }
-
-                            return;
+                                traceMap,
+                                EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
                         }
 
-                        processor.processRequest(ctx, asyncContext);
-                        if (!asyncContext.isComplete()) {
-                            return;
-                        }
-
-                        metrics.getSummaryMetrics()
-                            .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
-
-                        log.debug("{}", asyncContext.getResponse());
-
-                        sendResponse(ctx, asyncContext.getResponse().httpResponse());
-
-                    } catch (Exception e) {
-                        log.error("process error", e);
+                        return;
                     }
-                });
+
+                    processor.processRequest(ctx, asyncContext);
+                    if (!asyncContext.isComplete()) {
+                        return;
+                    }
+
+                    log.debug("{}", asyncContext.getResponse());
+                    eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                    sendResponse(ctx, asyncContext.getResponse().httpResponse());
+
+                } catch (Exception e) {
+                    log.error("process error", e);
+                }
+            };
+
+            try {
+                if (Objects.nonNull(choosed.executor())) {
+                    choosed.executor().execute(() -> {
+                        runnable.run();
+                    });
+                } else {
+                    runnable.run();
+                }
+
             } catch (RejectedExecutionException re) {
                 asyncContext.onComplete(request.createHttpCommandResponse(EventMeshRetCode.OVERLOAD));
-                metrics.getSummaryMetrics().recordHTTPDiscard();
-                metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPDiscard();
+                eventMeshHttpMetricsManager.getHttpMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
@@ -470,18 +450,18 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-            if (null != cause) {
+            if (cause != null) {
                 log.error("", cause);
             }
 
-            if (null != ctx) {
+            if (ctx != null) {
                 ctx.close();
             }
         }
     }
 
     @Sharable
-    private class HttpConnectionHandler extends ChannelDuplexHandler {
+    protected class HttpConnectionHandler extends ChannelDuplexHandler {
 
         public final transient AtomicInteger connections = new AtomicInteger(0);
 
@@ -552,12 +532,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         return useTrace;
     }
 
-    public HTTPMetricsServer getMetrics() {
-        return metrics;
+    public EventMeshHttpMetricsManager getEventMeshHttpMetricsManager() {
+        return eventMeshHttpMetricsManager;
     }
 
-    public void setMetrics(final HTTPMetricsServer metrics) {
-        this.metrics = metrics;
+    public void setEventMeshHttpMetricsManager(final EventMeshHttpMetricsManager eventMeshHttpMetricsManager) {
+        this.eventMeshHttpMetricsManager = eventMeshHttpMetricsManager;
     }
 
     public HTTPThreadPoolGroup getHttpThreadPoolGroup() {

@@ -15,5 +15,5 @@
 # limitations under the License.
 #
 
-sourceEnable: true
+sourceEnable: false
 sinkEnable: true

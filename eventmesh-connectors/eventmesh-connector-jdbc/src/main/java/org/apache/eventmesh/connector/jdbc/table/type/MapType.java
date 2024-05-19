@@ -19,10 +19,9 @@ package org.apache.eventmesh.connector.jdbc.table.type;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-public class MapType<K, V> implements EventMeshDataType<Map<K, V>> {
+public class MapType<K, V> {
 
     private static final List<SQLType> SUPPORTED_KEY_TYPES =
         Arrays.asList(
@@ -40,11 +39,11 @@ public class MapType<K, V> implements EventMeshDataType<Map<K, V>> {
             SQLType.STRING,
             SQLType.DECIMAL);
 
-    private final EventMeshDataType<K> keyType;
+    private final EventMeshDataType keyType;
 
-    private final EventMeshDataType<V> valueType;
+    private final EventMeshDataType valueType;
 
-    public MapType(EventMeshDataType<K> keyType, EventMeshDataType<V> valueType) {
+    public MapType(EventMeshDataType keyType, EventMeshDataType valueType) {
         Objects.requireNonNull(keyType, "The key type is required.");
         Objects.requireNonNull(valueType, "The value type is required.");
 
@@ -54,27 +53,6 @@ public class MapType<K, V> implements EventMeshDataType<Map<K, V>> {
 
         this.keyType = keyType;
         this.valueType = valueType;
-    }
-
-    /**
-     * Returns the type class of the data.
-     *
-     * @return the type class of the data.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<Map<K, V>> getTypeClass() {
-        return (Class<Map<K, V>>) (Class<?>) Map.class;
-    }
-
-    /**
-     * Returns the SQL type of the data.
-     *
-     * @return the SQL type of the data.
-     */
-    @Override
-    public SQLType getSQLType() {
-        return SQLType.MAP;
     }
 
     @Override
@@ -94,11 +72,11 @@ public class MapType<K, V> implements EventMeshDataType<Map<K, V>> {
         return Objects.hash(keyType, valueType);
     }
 
-    public EventMeshDataType<K> keyType() {
+    public EventMeshDataType keyType() {
         return this.keyType;
     }
 
-    public EventMeshDataType<V> valueType() {
+    public EventMeshDataType valueType() {
         return this.valueType;
     }
 }

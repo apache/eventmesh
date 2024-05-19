@@ -18,7 +18,7 @@
 package org.apache.eventmesh.metrics.prometheus.config;
 
 import org.apache.eventmesh.common.config.Config;
-import org.apache.eventmesh.common.config.ConfigFiled;
+import org.apache.eventmesh.common.config.ConfigField;
 
 import lombok.Data;
 
@@ -26,6 +26,9 @@ import lombok.Data;
 @Config(prefix = "eventMesh.metrics.prometheus", path = "classPath://prometheus.properties")
 public class PrometheusConfiguration {
 
-    @ConfigFiled(field = "port")
+    @ConfigField(field = "port")
     private int eventMeshPrometheusPort = 19090;
+
+    @ConfigField(field = "export.host")
+    private String eventMeshPrometheusExportHost = "0.0.0.0";
 }

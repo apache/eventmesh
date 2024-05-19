@@ -21,10 +21,6 @@ import org.apache.eventmesh.common.Constants;
 
 public class EventMeshConstants {
 
-    public static final String EVENT_STORE_PROPERTIES = "eventstore";
-
-    public static final String EVENT_STORE_ENV = "EVENT_STORE";
-
     public static final String PROTOCOL_HTTP = "http";
 
     public static final String PROTOCOL_TCP = "tcp";
