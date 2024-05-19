@@ -140,6 +140,7 @@ public class PulsarConsumerImpl implements Consumer {
             .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
             .subscriptionMode(SubscriptionMode.Durable)
             .subscriptionType(type)
+            .negativeAckRedeliveryDelay(10, TimeUnit.SECONDS)
             .messageListener(
                 (MessageListener<byte[]>) (ackConsumer, msg) -> {
                     EventFormat eventFormat = Objects.requireNonNull(
