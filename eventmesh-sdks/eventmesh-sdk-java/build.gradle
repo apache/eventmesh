@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.63.0'
-
 dependencies {
     api(project(":eventmesh-common")) {
         // Remove logging backend implementations to allow users to choose their own
@@ -32,10 +30,10 @@ dependencies {
     implementation "io.netty:netty-all"
     implementation "org.apache.httpcomponents:httpclient"
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${project.properties.grpcVersion}"
+    implementation "io.grpc:grpc-stub:${project.properties.grpcVersion}"
+    implementation "io.grpc:grpc-netty:${project.properties.grpcVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${project.properties.grpcVersion}"
     implementation "io.cloudevents:cloudevents-protobuf"
 
     // protocol
@@ -52,8 +50,8 @@ dependencies {
     testImplementation "io.netty:netty-all"
     testImplementation "org.apache.httpcomponents:httpclient"
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${project.properties.grpcVersion}"
+    implementation "io.grpc:grpc-stub:${project.properties.grpcVersion}"
     implementation "com.google.protobuf:protobuf-java-util:3.25.1"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

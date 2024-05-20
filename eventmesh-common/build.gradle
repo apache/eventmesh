@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.63.0'
-
 dependencies {
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"
@@ -48,8 +46,8 @@ dependencies {
 
     implementation "io.netty:netty-all"
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${project.properties.grpcVersion}"
+    implementation "io.grpc:grpc-stub:${project.properties.grpcVersion}"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
 
     testImplementation "org.junit-pioneer:junit-pioneer"

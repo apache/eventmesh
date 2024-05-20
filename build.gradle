@@ -654,7 +654,7 @@ subprojects {
         sign publishing.publications.mavenJava
     }
 
-    def grpcVersion = '1.63.0'
+    project.setProperty('grpcVersion', '1.63.0')
     def log4jVersion = '2.22.1'
 
     dependencyManagement {
@@ -723,11 +723,11 @@ subprojects {
             dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
             dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
 
-            dependency "io.grpc:grpc-core:${grpcVersion}"
-            dependency "io.grpc:grpc-protobuf:${grpcVersion}"
-            dependency "io.grpc:grpc-stub:${grpcVersion}"
-            dependency "io.grpc:grpc-netty:${grpcVersion}"
-            dependency "io.grpc:grpc-netty-shaded:${grpcVersion}"
+            dependency "io.grpc:grpc-core:${project.properties.grpcVersion}"
+            dependency "io.grpc:grpc-protobuf:${project.properties.grpcVersion}"
+            dependency "io.grpc:grpc-stub:${project.properties.grpcVersion}"
+            dependency "io.grpc:grpc-netty:${project.properties.grpcVersion}"
+            dependency "io.grpc:grpc-netty-shaded:${project.properties.grpcVersion}"
 
             dependency "javax.annotation:javax.annotation-api:1.3.2"
 

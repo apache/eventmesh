@@ -27,6 +27,6 @@
 
 # package tar.gz/zip
 gradle clean -Pdev=true -Pjdk=1.8 dist tar zip
-gradlew installPlugin
+
 # package jar
-#gradle clean -Pdev=true -Pjdk=1.8 jar
+gradle clean -Pdev=true -Pjdk=1.8 jar

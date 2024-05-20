@@ -24,16 +24,15 @@ repositories {
     mavenCentral()
 }
 
-def grpcVersion = '1.63.0' // CURRENT_GRPC_VERSION
 def protobufVersion = '3.25.1'
 def protocVersion = protobufVersion
 
 dependencies {
-    implementation ("io.grpc:grpc-protobuf:${grpcVersion}") {
+    implementation ("io.grpc:grpc-protobuf:${project.properties.grpcVersion}") {
         exclude group: "com.google.protobuf", module: "protobuf-java"
     }
     implementation("com.google.protobuf:protobuf-java:${protobufVersion}")
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${project.properties.grpcVersion}"
     implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
@@ -43,7 +42,7 @@ dependencies {
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
     plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${project.properties.grpcVersion}" }
     }
     generateProtoTasks {
         all()*.plugins {
