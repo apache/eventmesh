@@ -699,7 +699,7 @@ subprojects {
 
             dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
-            dependency "com.jayway.jsonpath:json-path:2.7.0"
+            dependency "com.jayway.jsonpath:json-path:2.9.0"
 
             dependency "org.springframework.boot:spring-boot-starter-web:2.7.18"
             dependency "io.openmessaging:registry-server:0.0.1"
