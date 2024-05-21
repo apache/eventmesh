@@ -121,13 +121,15 @@ public class PulsarConsumerImpl implements Consumer {
         };
 
         SubscriptionType type = SubscriptionType.Shared;
+        
+        String subscriptionName = properties.getProperty(Constants.CONSUMER_GROUP);
 
         String consumerKey = topic + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CONSUMER_GROUP)
             + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
         
-        String dlqTopic = subTopic + "-DLQ";
+        String dlqTopic = subTopic + subscriptionName + "-DLQ";
         
-        String retryTopic = subTopic + "-RETRY";
+        String retryTopic = subTopic + subscriptionName + "-RETRY";
         
         org.apache.pulsar.client.api.Consumer<byte[]> consumer = pulsarClient.newConsumer()
             .topic(subTopic)
@@ -137,10 +139,9 @@ public class PulsarConsumerImpl implements Consumer {
                     .retryLetterTopic(retryTopic)
                     .maxRedeliverCount(3)
                     .build())
-            .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
+            .subscriptionName(subscriptionName)
             .subscriptionMode(SubscriptionMode.Durable)
             .subscriptionType(type)
-            .negativeAckRedeliveryDelay(10, TimeUnit.SECONDS)
             .messageListener(
                 (MessageListener<byte[]>) (ackConsumer, msg) -> {
                     EventFormat eventFormat = Objects.requireNonNull(
@@ -155,9 +156,8 @@ public class PulsarConsumerImpl implements Consumer {
                     } catch (EventDeserializationException ex) {
                         log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
                     } catch (Exception e) {
-                        ackConsumer.negativeAcknowledge(msg);
                         try {
-                            ackConsumer.reconsumeLater(msg, 5, TimeUnit.SECONDS);
+                            ackConsumer.reconsumeLater(msg, 1000L, TimeUnit.MILLISECONDS);
                         } catch (PulsarClientException ex) {
                             throw new RuntimeException(ex);
                         }
