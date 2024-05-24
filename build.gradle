@@ -651,7 +651,7 @@ subprojects {
     def grpcVersion = '1.50.2'
     def log4jVersion = '2.23.1'
     def jacksonVersion = '2.17.1'
-    def dropwizardMetricsVersion = '4.1.0'
+    def dropwizardMetricsVersion = '4.2.25'
     def opentelemetryVersion = '1.36.0'
     def cloudeventsVersion = '2.4.2'
     def curatorVersion = '5.4.0'
