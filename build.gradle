@@ -103,10 +103,11 @@ allprojects {
     }
 
     checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
-                  .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
-                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
-                  .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
-                  .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
+            .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
+            .exclude('**/org/apache/eventmesh/common/protocol/grpc/protos/**')
+            .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
+            .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
+            .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
 
     dependencies {
         repositories {
