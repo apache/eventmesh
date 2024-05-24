@@ -654,7 +654,7 @@ subprojects {
     def dropwizardMetricsVersion = '4.1.0'
     def opentelemetryVersion = '1.36.0'
     def cloudeventsVersion = '2.4.2'
-    def curatorVersion = '5.4.0'
+    def curatorVersion = '5.6.0'
     def mockitoVersion = '3.8.0'
 
     dependencyManagement {
