@@ -55,15 +55,6 @@ plugins {
     id 'com.github.jk1.dependency-license-report' version '2.7'
 }
 
-// Remove doclint warnings that pollute javadoc logs when building
-if (JavaVersion.current().isJava8()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            options.addStringOption('xdoclint:none', '-quiet')
-        }
-    }
-}
-
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -150,6 +141,15 @@ allprojects {
     test {
         useJUnitPlatform()
     }
+
+    // Remove doclint warnings that pollute javadoc logs when building
+    if (JavaVersion.current().isJava8()) {
+        tasks.withType(Javadoc).tap {
+            configureEach {
+                options.addStringOption('xdoclint:none', '-quiet')
+            }
+        }
+    }
 }
 
 tasks.register('dist') {
@@ -204,27 +204,6 @@ tasks.register('dist') {
     }
 }
 
-tasks.register('tar', Tar) {
-    archiveBaseName.set(project.name)
-    archiveVersion.set(project.version.toString())
-    archiveExtension.set('tar.gz')
-    compression = Compression.GZIP
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
-    }
-}
-
-tasks.register('zip', Zip) {
-    archiveBaseName.set(project.name)
-    archiveVersion.set(project.version.toString())
-    archiveExtension.set('zip')
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
-    }
-}
-
 tasks.register('installPlugin') {
     var pluginProjects = subprojects.findAll {
         it.file('gradle.properties').exists()
@@ -257,6 +236,27 @@ tasks.register('installPlugin') {
     }
 }
 
+tasks.register('tar', Tar) {
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('tar.gz')
+    compression = Compression.GZIP
+    destinationDirectory = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
+tasks.register('zip', Zip) {
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('zip')
+    destinationDirectory = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
 tasks.register('printProjects') {
     getAllprojects().forEach(subProject -> {
         if ("EventMesh".equals(subProject.getName())) {
@@ -274,7 +274,7 @@ tasks.register('generateDistLicense') {
     dependsOn('cyclonedxBom') // Task from 'org.cyclonedx.bom' plugin
     doLast {
         // Inputs
-        def bomFile = file("$buildDir/reports/bom.json")
+        def bomFile = file("build/reports/bom.json")
         def bom = new JsonSlurper().parseText(bomFile.text)
         def projectLicenseText = file('LICENSE').text
 
@@ -437,7 +437,7 @@ tasks.register('generateDistNotice') {
     dependsOn('generateLicenseReport') // Task from 'com.github.jk1.dependency-license-report' plugin
     doLast {
         // Inputs
-        def reportsDir = file("$buildDir/reports/dependency-license/")
+        def reportsDir = file("build/reports/dependency-license/")
         def projectNoticeText = file('NOTICE').text
 
         // Outputs
@@ -497,7 +497,7 @@ subprojects {
         showProgress = true
         showStackTraces = true
         effort = 'default'
-        reportsDir = file("$buildDir/reports/spotbugs")
+        reportsDir = file("build/reports/spotbugs")
         projectName = rootProject.name
         release = version
         extraArgs = ['-nested:false']
@@ -510,7 +510,7 @@ subprojects {
             xml.required = false
             html {
                 required = true
-                outputLocation = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+                outputLocation = file("build/reports/spotbugs/main/spotbugs.html")
                 stylesheet = 'fancy-hist.xsl'
             }
         }
@@ -521,7 +521,7 @@ subprojects {
             xml.enabled = false
             html {
                 enabled = true
-                destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+                destination = file("build/reports/spotbugs/test/spotbugs.html")
                 stylesheet = 'fancy-hist.xsl'
             }
         }
@@ -557,12 +557,13 @@ subprojects {
         options.encoding = "UTF-8"
     }
 
-    task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
+    tasks.register('packageJavadoc', Jar) {
+        dependsOn('javadoc')
         from project.javadoc.destinationDir
         archiveClassifier.set('javadoc')
     }
 
-    task packageSources(type: Jar) {
+    tasks.register('packageSources', Jar) {
         from project.sourceSets.main.allSource
         archiveClassifier.set('sources')
     }
@@ -574,7 +575,7 @@ subprojects {
     }
 
     if (!Boolean.valueOf(signEnabled)) {
-        tasks.whenTaskAdded { task ->
+        tasks.configureEach { task ->
             if (task.name.contains("sign")) {
                 task.enabled = false
             }
@@ -586,7 +587,7 @@ subprojects {
         maven { url "https://maven.aliyun.com/repository/public" }
     }
 
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
         resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
     }
@@ -639,7 +640,6 @@ subprojects {
                     username apacheUserName
                     password apachePassWord
                 }
-
             }
         }
     }
@@ -648,8 +648,14 @@ subprojects {
         sign publishing.publications.mavenJava
     }
 
-    def grpcVersion = '1.43.2'
+    def grpcVersion = '1.50.2'
     def log4jVersion = '2.23.1'
+    def jacksonVersion = '2.17.1'
+    def dropwizardMetricsVersion = '4.1.0'
+    def opentelemetryVersion = '1.36.0'
+    def cloudeventsVersion = '2.4.2'
+    def curatorVersion = '5.4.0'
+    def mockitoVersion = '3.8.0'
 
     dependencyManagement {
         dependencies {
@@ -670,11 +676,11 @@ subprojects {
 
             dependency "com.lmax:disruptor:3.4.2"
 
-            dependency "com.fasterxml.jackson.core:jackson-databind:2.13.0"
-            dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
-            dependency "com.fasterxml.jackson.core:jackson-annotations:2.17.1"
-            dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0"
-            dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0"
+            dependency "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+            dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
 
             dependency "com.squareup.okhttp3:okhttp:3.14.9"
 
@@ -683,18 +689,18 @@ subprojects {
 
             dependency "io.netty:netty-all:4.1.79.Final"
 
-            dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
-            dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
-            dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
-            dependency "io.dropwizard.metrics:metrics-json:4.1.0"
+            dependency "io.dropwizard.metrics:metrics-core:${dropwizardMetricsVersion}"
+            dependency "io.dropwizard.metrics:metrics-healthchecks:${dropwizardMetricsVersion}"
+            dependency "io.dropwizard.metrics:metrics-annotation:${dropwizardMetricsVersion}"
+            dependency "io.dropwizard.metrics:metrics-json:${dropwizardMetricsVersion}"
 
-            dependency 'io.opentelemetry:opentelemetry-api:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.36.0-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.36.0'
-            dependency 'io.opentelemetry:opentelemetry-semconv:1.30.1-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1'
+            dependency "io.opentelemetry:opentelemetry-api:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-sdk-metrics:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-exporter-prometheus:${opentelemetryVersion}-alpha"
+            dependency "io.opentelemetry:opentelemetry-exporter-zipkin:${opentelemetryVersion}"
+            dependency "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha"
+            dependency "io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1"
 
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
@@ -709,13 +715,13 @@ subprojects {
             dependency "org.junit-pioneer:junit-pioneer:1.9.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
-            dependency "org.mockito:mockito-core:3.8.0"
-            dependency "org.mockito:mockito-inline:3.8.0"
-            dependency "org.mockito:mockito-junit-jupiter:3.8.0"
+            dependency "org.mockito:mockito-core:${mockitoVersion}"
+            dependency "org.mockito:mockito-inline:${mockitoVersion}"
+            dependency "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
 
-            dependency "io.cloudevents:cloudevents-core:2.4.2"
-            dependency "io.cloudevents:cloudevents-json-jackson:2.4.2"
-            dependency "io.cloudevents:cloudevents-protobuf:2.4.2"
+            dependency "io.cloudevents:cloudevents-core:${cloudeventsVersion}"
+            dependency "io.cloudevents:cloudevents-json-jackson:${cloudeventsVersion}"
+            dependency "io.cloudevents:cloudevents-protobuf:${cloudeventsVersion}"
 
             dependency "io.grpc:grpc-core:${grpcVersion}"
             dependency "io.grpc:grpc-protobuf:${grpcVersion}"
@@ -728,16 +734,15 @@ subprojects {
             dependency "com.github.seancfoley:ipaddress:5.3.3"
             dependency "com.google.code.gson:gson:2.11.0"
 
-            dependency "org.yaml:snakeyaml:1.30"
             dependency "org.javassist:javassist:3.30.2-GA"
 
             dependency "com.alibaba.nacos:nacos-client:2.2.3"
 
             dependency 'org.apache.zookeeper:zookeeper:3.9.2'
-            dependency 'org.apache.curator:curator-client:5.4.0'
-            dependency 'org.apache.curator:curator-framework:5.4.0'
-            dependency 'org.apache.curator:curator-recipes:5.4.0'
-            dependency 'org.apache.curator:curator-test:5.4.0'
+            dependency "org.apache.curator:curator-client:${curatorVersion}"
+            dependency "org.apache.curator:curator-framework:${curatorVersion}"
+            dependency "org.apache.curator:curator-recipes:${curatorVersion}"
+            dependency "org.apache.curator:curator-test:${curatorVersion}"
 
             dependency "org.projectlombok:lombok:1.18.22"
             dependency "com.github.seancfoley:ipaddress:5.3.3"
