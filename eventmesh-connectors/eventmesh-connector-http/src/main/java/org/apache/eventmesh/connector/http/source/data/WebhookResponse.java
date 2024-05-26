@@ -23,6 +23,9 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Webhook response.
+ */
 @Data
 @Builder
 public class WebhookResponse implements Serializable {

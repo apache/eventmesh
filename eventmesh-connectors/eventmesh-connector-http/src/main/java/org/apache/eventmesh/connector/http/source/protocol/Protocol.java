@@ -27,7 +27,10 @@ import io.vertx.ext.web.Route;
 
 
 /**
- * Protocol Interface. All protocols should implement this interface.
+ * <p>
+ * Protocol Interface.
+ * </p>
+ * All protocols should implement this interface.
  */
 public interface Protocol {
 

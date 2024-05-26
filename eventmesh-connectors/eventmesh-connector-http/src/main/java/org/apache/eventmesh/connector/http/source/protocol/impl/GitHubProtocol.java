@@ -52,7 +52,10 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * GitHub Protocol. This class represents the GitHub webhook protocol.
+ * <p>
+ * GitHub Protocol.
+ * <p/>
+ * This class represents the GitHub webhook protocol.
  */
 @Slf4j
 public class GitHubProtocol implements Protocol {

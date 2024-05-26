@@ -34,6 +34,11 @@ import io.vertx.ext.web.Route;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * <p>
+ * CloudEvent Protocol.
+ * <p/>
+ */
 @Slf4j
 public class CloudEventProtocol implements Protocol {
 

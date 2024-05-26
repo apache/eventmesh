@@ -20,14 +20,18 @@ package org.apache.eventmesh.connector.http.util;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * <p>
+ * QueueUtils.
+ * </p>
+ */
 public class QueueUtils {
 
     public static final Object lock = new Object();
 
 
     /**
-     * Add an object to the queue, if the queue is full, remove the head element and add the new element <br/>
-     * If you want to add new elements to the
+     * Add an object to the queue, if the queue is full, remove the head element and add the new element. If you want to add new elements to the
      * queue, you must call this method
      *
      * @param queue    queue

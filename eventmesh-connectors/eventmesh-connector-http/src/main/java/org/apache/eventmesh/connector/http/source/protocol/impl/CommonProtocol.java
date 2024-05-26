@@ -42,8 +42,9 @@ import com.alibaba.fastjson2.JSONWriter.Feature;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Common Protocol. This class represents the common webhook protocol.<br/> The processing method of this class does not perform any other operations
- * except storing the request and returning a general response.
+ * <p>Common Protocol.</p>
+ * This class represents the common webhook protocol. The processing method of this class does not perform any other operations except storing the
+ * request and returning a general response.
  */
 @Slf4j
 public class CommonProtocol implements Protocol {
