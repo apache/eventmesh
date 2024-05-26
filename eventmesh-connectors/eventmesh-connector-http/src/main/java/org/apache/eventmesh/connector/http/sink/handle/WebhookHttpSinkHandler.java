@@ -77,7 +77,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         this.sinkConnectorConfig = sinkConnectorConfig;
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
         int maxQueueSize = this.webhookConfig.getMaxStorageSize();
-        this.receivedDataQueue = new BoundedConcurrentQueue<>(maxQueueSize, true);
+        this.receivedDataQueue = new BoundedConcurrentQueue<>(maxQueueSize);
         // init the export server
         doInitExportServer();
     }

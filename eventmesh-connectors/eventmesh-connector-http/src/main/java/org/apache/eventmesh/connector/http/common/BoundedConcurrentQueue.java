@@ -21,16 +21,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * BoundedConcurrentQueue is a wrapper class for ConcurrentLinkedQueue,it has the following features:
- * 1. Limit the maximum size of the queue
- * 2. Add an object to the queue, if the queue is full, remove the head element and add the new element.(thread safe)
- * 3. Poll an object from the queue.(thread safe)
- * 4. Fetch a range of elements from the queue.(thread safe)
+ * <p>BoundedConcurrentQueue is a wrapper class for ConcurrentLinkedQueue</p>
+ * <ol>
+ * <li>Limit the maximum size of the queue</li>
+ * <li>Add an object to the queue, if the queue is full, remove the head element and add the new element.(thread safe)</li>
+ * <li>Poll an object from the queue.(thread safe)</li>
+ * <li>Fetch a range of elements from the queue.(weak consistency)</li>
+ * </ol>
  */
 public class BoundedConcurrentQueue<T> {
 
@@ -40,17 +41,19 @@ public class BoundedConcurrentQueue<T> {
 
     private final ConcurrentLinkedQueue<T> queue;
 
-    private final ReadWriteLock globalLock;
+    // Lock for add operation
+    private final Object addLock = new Object();
+
+    private final AtomicBoolean doReplace = new AtomicBoolean(false);
 
 
-    public BoundedConcurrentQueue(int maxSize, boolean isFair) {
+    public BoundedConcurrentQueue(int maxSize) {
         if (maxSize <= 0) {
             throw new IllegalArgumentException("maxQueueSize must be greater than 0");
         }
         this.maxSize = maxSize;
         this.currSize = new AtomicInteger(0);
         this.queue = new ConcurrentLinkedQueue<>();
-        this.globalLock = new ReentrantReadWriteLock(isFair);
     }
 
     public int getMaxSize() {
@@ -62,7 +65,12 @@ public class BoundedConcurrentQueue<T> {
     }
 
     /**
-     * Add an object to the queue, if the queue is full, remove the head element and add the new element.
+     * <p>Add an object to the queue</p>
+     * <ul>
+     * <li>If the queue is full, remove the head element and add the new element.</li>
+     * <li>When the queue capacity is continuously saturated, each add operation generates a lock contention,
+     * and means are needed to avoid this approach. e.g. Suitable capacity and equal-rate {@link #poll()}</li>
+     * </ul>
      *
      * @param obj object to be added
      */
@@ -70,57 +78,63 @@ public class BoundedConcurrentQueue<T> {
         if (obj == null) {
             return;
         }
-        // Just adding new elements doesn't affect the iteration in a bad way, so there is no need for locks
-        if (currSize.get() < maxSize && queue.offer(obj)) {
+
+        // try to do offer(no-blocking)
+        // 1. currSize < maxSize
+        // 2. no old values are being deleted(queue is not full)
+        // 3. try to add the new element
+        if (currSize.get() < maxSize && !doReplace.get() && queue.offer(obj)) {
             currSize.incrementAndGet();
             return;
         }
 
-        // When the queue is full, only one add operation is allowed
-        globalLock.writeLock().lock();
-        try {
-            // double check
+        // try to do offer again(blocking)
+        synchronized (addLock) {
+            // double check inside the lock
             if (currSize.get() < maxSize && queue.offer(obj)) {
                 currSize.incrementAndGet();
                 return;
             }
-            // remove the head element
-            T removedObj = queue.poll();
-            // add the new element to tail
-            if (!queue.offer(obj)) {
-                throw new IllegalStateException("Unable to add element to the queue.");
-            } else if (removedObj == null) {
-                currSize.incrementAndGet();
+            // remove the head element and add the new element
+            doReplace.set(true);
+            try {
+                T removedObj = queue.poll();
+                if (!queue.offer(obj)) {
+                    // abnormal behavior
+                    throw new IllegalStateException("Unable to add element to queue");
+                } else if (removedObj == null) {
+                    // it is equivalent to just adding new element
+                    currSize.incrementAndGet();
+                }
+            } finally {
+                // finish replace
+                doReplace.set(false);
             }
-        } finally {
-            globalLock.writeLock().unlock();
         }
 
     }
 
 
     /**
-     * Poll an object from the queue.
+     * <p>Poll an object from the queue.</p>
      *
      * @return object
      */
     public T poll() {
-        globalLock.readLock().lock();
-        try {
-            T obj = queue.poll();
-            if (obj != null) {
-                currSize.decrementAndGet();
-            }
-            return obj;
-        } finally {
-            globalLock.readLock().unlock();
+        T obj = queue.poll();
+        if (obj != null) {
+            currSize.decrementAndGet();
         }
-
+        return obj;
     }
 
 
     /**
-     * Fetch a range of elements from the queue.
+     * <p>Fetch a range of elements from the queue(weakly consistent).</p>
+     * <ul>
+     * <li> In the case of concurrent modification, the elements may not be fetched as expected.</li>
+     * <li>Avoiding simultaneous use with the {@link  #poll()} method can greatly reduce the risk of corresponding</li>
+     * </ul>
      *
      * @param start   start index
      * @param end     end index
@@ -132,31 +146,25 @@ public class BoundedConcurrentQueue<T> {
             throw new IllegalArgumentException("Invalid range");
         }
 
-        // Ensure that there is no deletion of elements when iterating over them
-        globalLock.writeLock().lock();
-        try {
-            Iterator<T> iterator = queue.iterator();
-            List<T> items = new ArrayList<>(end - start);
+        Iterator<T> iterator = queue.iterator();
+        List<T> items = new ArrayList<>(end - start);
 
-            int count = 0;
-            while (iterator.hasNext() && count < end) {
-                T item = iterator.next();
-                if (count >= start) {
-                    // Add the element to the list
-                    items.add(item);
-                    if (removed) {
-                        // Remove the element from the queue
-                        iterator.remove();
-                        currSize.decrementAndGet();
-                    }
+        int count = 0;
+        while (iterator.hasNext() && count < end) {
+            T item = iterator.next();
+            if (item != null && count >= start) {
+                // Add the element to the list
+                items.add(item);
+                if (removed) {
+                    // Remove the element from the queue
+                    iterator.remove();
+                    currSize.decrementAndGet();
                 }
-                count++;
             }
-
-            return items;
-        } finally {
-            globalLock.writeLock().unlock();
+            count++;
         }
+
+        return items;
 
     }
 

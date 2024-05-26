@@ -77,7 +77,7 @@ public class HttpSourceConnector implements Source {
     private void doInit() {
         // init queue
         int maxQueueSize = this.sourceConfig.getConnectorConfig().getMaxStorageSize();
-        this.boundedQueue = new BoundedConcurrentQueue<>(maxQueueSize, true);
+        this.boundedQueue = new BoundedConcurrentQueue<>(maxQueueSize);
 
         // init batch size
         this.batchSize = this.sourceConfig.getConnectorConfig().getBatchSize();
