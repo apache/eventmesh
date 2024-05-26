@@ -28,4 +28,10 @@ connectorConfig:
     connectorName: httpSource
     path: /test
     port: 3755
-    protocol: CloudEvent
+    idleTimeout: 5000   # timeunit: ms
+    maxFormAttributeSize: 1048576 # timeunit: byte, default: 1048576(1MB). This applies only when handling form data submissions.
+    maxStorageSize: 1000 # max storage size, default: 1000
+    batchSize: 10 # batch size, default: 10
+    protocol: CloudEvent # Case insensitive, default: CloudEvent, options: CloudEvent, GitHub, Common
+    extraConfig: # extra config for different protocol, e.g. GitHub secret
+        secret: xxxxxxx # GitHub secret

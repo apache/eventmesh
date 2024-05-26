@@ -19,6 +19,9 @@ package org.apache.eventmesh.connector.http.source.config;
 
 import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Data;
 
 @Data
@@ -33,8 +36,21 @@ public class SourceConnectorConfig {
     // timeunit: ms, default 5000ms
     private int idleTimeout = 5000;
 
+    // The maximum size allowed for form attributes when Content-Type is application/x-www-form-urlencoded or multipart/form-data
+    // Default is 1MB (1024 * 1024 bytes).
+    // If you receive a "size exceed allowed maximum capacity" error, you can increase this value.
+    // Note: This applies only when handling form data submissions.
+    private int maxFormAttributeSize = 1024 * 1024;
+
+    // max size of the queue, default 1000
+    private int maxStorageSize = 1000;
+
+    // batch size, default 10
+    private int batchSize = 10;
+
     // protocol, default CloudEvent
     private String protocol = CloudEventProtocol.PROTOCOL_NAME;
 
-    private GitHubConfig github;
+    // extra config, e.g. GitHub secret
+    private Map<String, String> extraConfig = new HashMap<>();
 }

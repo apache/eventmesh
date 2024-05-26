@@ -20,7 +20,8 @@ package org.apache.eventmesh.connector.http.source.protocol;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.ext.web.Route;
 
@@ -33,6 +34,7 @@ public interface Protocol {
 
     /**
      * Initialize the protocol.
+     *
      * @param sourceConnectorConfig source connector config
      */
     void initialize(SourceConnectorConfig sourceConnectorConfig);
@@ -41,10 +43,12 @@ public interface Protocol {
     /**
      * Handle the protocol message.
      *
-     * @param route route
-     * @param queue queue
+     * @param route    route
+     * @param queue    queue
+     * @param maxSize  max size of the queue
+     * @param currSize current size of the queue
      */
-    void setHandler(Route route, BlockingQueue<Object> queue);
+    void setHandler(Route route, ConcurrentLinkedQueue<Object> queue, int maxSize, AtomicInteger currSize);
 
 
     /**

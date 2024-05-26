@@ -28,10 +28,11 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -45,11 +46,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HttpSourceConnector implements Source {
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private HttpSourceConfig sourceConfig;
 
-    private BlockingQueue<Object> queue;
+    private ConcurrentLinkedQueue<Object> queue;
+
+    private int maxQueueSize;
+
+    private AtomicInteger currQueueSize;
+
+    private int batchSize;
 
     private ProtocolFactory protocolFactory;
 
@@ -77,8 +82,14 @@ public class HttpSourceConnector implements Source {
     }
 
     private void doInit() {
+        // init queue size
+        this.maxQueueSize = this.sourceConfig.getConnectorConfig().getMaxStorageSize();
+        this.currQueueSize = new AtomicInteger(0);
+        this.batchSize = this.sourceConfig.getConnectorConfig().getBatchSize();
+
         // init queue
-        this.queue = new LinkedBlockingQueue<>(1000);
+        this.queue = new ConcurrentLinkedQueue<>();
+
         // init protocol
         String protocolName = this.sourceConfig.getConnectorConfig().getProtocol();
         this.protocolFactory = new ProtocolFactory(this.sourceConfig.connectorConfig);
@@ -91,12 +102,12 @@ public class HttpSourceConnector implements Source {
             .handler(LoggerHandler.create());
 
         // set protocol handler
-        this.protocol.setHandler(route, this.queue);
+        this.protocol.setHandler(route, this.queue, this.maxQueueSize, this.currQueueSize);
 
         // create server
         this.server = vertx.createHttpServer(new HttpServerOptions()
             .setPort(this.sourceConfig.connectorConfig.getPort())
-            .setMaxFormAttributeSize(1024 * 1024)
+            .setMaxFormAttributeSize(this.sourceConfig.connectorConfig.getMaxFormAttributeSize())
             .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())
             .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)).requestHandler(router);
     }
@@ -129,19 +140,21 @@ public class HttpSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int i = 0; i < DEFAULT_BATCH_SIZE; i++) {
-            try {
-                Object obj = queue.poll(3, TimeUnit.SECONDS);
-                if (obj == null) {
-                    break;
-                }
-                // convert to ConnectRecord
-                ConnectRecord connectRecord = protocol.convertToConnectRecord(obj);
-                connectRecords.add(connectRecord);
-            } catch (InterruptedException e) {
+        // if queue is empty, return empty list
+        if (currQueueSize.get() == 0) {
+            return Collections.emptyList();
+        }
+        // poll from queue
+        List<ConnectRecord> connectRecords = new ArrayList<>(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            Object obj = queue.poll();
+            if (obj == null) {
                 break;
             }
+            currQueueSize.decrementAndGet();
+            // convert to ConnectRecord
+            ConnectRecord connectRecord = protocol.convertToConnectRecord(obj);
+            connectRecords.add(connectRecord);
         }
         return connectRecords;
     }

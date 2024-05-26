@@ -18,17 +18,12 @@
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.data.WebhookResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
-import org.apache.eventmesh.connector.http.source.protocol.WebhookConstants;
 import org.apache.eventmesh.connector.http.util.QueueUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -36,11 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -50,40 +41,27 @@ import com.alibaba.fastjson2.JSONWriter.Feature;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 /**
- * GitHub Protocol. This class represents the GitHub webhook protocol.
+ * Common Protocol. This class represents the common webhook protocol.<br/> The processing method of this class does not perform any other operations
+ * except storing the request and returning a general response.
  */
 @Slf4j
-public class GitHubProtocol implements Protocol {
+public class CommonProtocol implements Protocol {
 
-    // Protocol name
-    public static final String PROTOCOL_NAME = "GitHub";
-
-    private static final String H_MAC_SHA_265 = "HmacSHA256";
-
-    private static final String SECRET_KEY = "secret";
-
-    private String secret;
-
+    public static final String PROTOCOL_NAME = "Common";
 
     /**
-     * Initialize the protocol.
+     * Initialize the protocol
      *
      * @param sourceConnectorConfig source connector config
      */
     @Override
     public void initialize(SourceConnectorConfig sourceConnectorConfig) {
-        // Initialize the protocol
-        Map<String, String> extraConfig = sourceConnectorConfig.getExtraConfig();
-        this.secret = extraConfig.get(SECRET_KEY);
-        if (StringUtils.isBlank(this.secret)) {
-            throw new EventMeshException("The secret is required for GitHub protocol.");
-        }
+
     }
 
     /**
-     * Handle the protocol message for GitHub.
+     * Set the handler for the route
      *
      * @param route    route
      * @param queue    queue
@@ -98,28 +76,9 @@ public class GitHubProtocol implements Protocol {
                 // Get the payload
                 String payload = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
 
-                // Get the headers
-                MultiMap headers = ctx.request().headers();
-                // validate the signature
-                String signature = headers.get(WebhookConstants.GITHUB_SIGNATURE_256);
-                if (BooleanUtils.isFalse(validateSignature(signature, payload, secret))) {
-                    String errorMsg = String.format("signature is invalid, please check the secret. received signature: %s", signature);
-                    log.error(errorMsg);
-
-                    WebhookResponse response = WebhookResponse.builder()
-                        .msg(errorMsg)
-                        .handleTime(LocalDateTime.now())
-                        .build();
-
-                    // Return 400 Bad Request
-                    ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
-                        .send(JSON.toJSONString(response, Feature.WriteMapNullValue));
-                    return;
-                }
-
                 // Create and store the webhook request
                 Map<String, String> headerMap = new HashMap<>();
-                headers.forEach(header -> headerMap.put(header.getKey(), header.getValue()));
+                ctx.request().headers().forEach(header -> headerMap.put(header.getKey(), header.getValue()));
 
                 WebhookRequest webhookRequest = WebhookRequest.builder()
                     .protocolName(PROTOCOL_NAME)
@@ -136,6 +95,7 @@ public class GitHubProtocol implements Protocol {
                     .msg("success")
                     .handleTime(LocalDateTime.now())
                     .build();
+
                 ctx.response().setStatusCode(HttpResponseStatus.OK.code())
                     .send(JSON.toJSONString(response, Feature.WriteMapNullValue));
 
@@ -152,68 +112,17 @@ public class GitHubProtocol implements Protocol {
                 ctx.response().setStatusCode(ctx.statusCode())
                     .send(JSON.toJSONString(response, Feature.WriteMapNullValue));
             });
+
     }
 
-
     /**
-     * Validate the signature.
-     *
-     * @param signature signature
-     * @param payload   payload
-     * @param secret    secret
-     * @return boolean
-     */
-    public boolean validateSignature(String signature, String payload, String secret) {
-        String hash = WebhookConstants.GITHUB_HASH_265_PREFIX;
-        try {
-            Mac sha = Mac.getInstance(H_MAC_SHA_265);
-            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), H_MAC_SHA_265);
-            sha.init(secretKey);
-            byte[] bytes = sha.doFinal(payload.getBytes(Constants.DEFAULT_CHARSET));
-            hash += byteArrayToHexString(bytes);
-        } catch (Exception e) {
-            throw new EventMeshException("Error occurred while validating the signature.", e);
-        }
-
-        return hash.equals(signature);
-    }
-
-
-    /**
-     * Convert the byte array to hex string.
-     *
-     * @param bytes bytes
-     * @return String
-     */
-    private String byteArrayToHexString(byte[] bytes) {
-        if (bytes == null) {
-            return "";
-        }
-
-        StringBuilder hexSb = new StringBuilder();
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xFF & b);
-            if (hex.length() == 1) {
-                // If the length is 1, append 0
-                hexSb.append('0');
-            }
-            hexSb.append(hex);
-        }
-
-        return hexSb.toString();
-    }
-
-
-    /**
-     * Convert the message to ConnectRecord.
+     * Convert the message to a connect record
      *
      * @param message message
-     * @return ConnectRecord
+     * @return connect record
      */
     @Override
     public ConnectRecord convertToConnectRecord(Object message) {
         return ((WebhookRequest) message).convertToConnectRecord();
     }
-
-
 }

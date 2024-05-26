@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.http.source.data;
 
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
 import java.util.Map;
 
 import lombok.Builder;
@@ -36,5 +38,19 @@ public class WebhookRequest {
     private Map<String, String> headers;
 
     private String payload;
+
+
+    /**
+     * Convert to ConnectRecord.
+     *
+     * @return ConnectRecord
+     */
+    public ConnectRecord convertToConnectRecord() {
+        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), payload);
+        connectRecord.addExtension("protocolName", protocolName);
+        connectRecord.addExtension("url", url);
+        connectRecord.addExtension("headers", headers);
+        return connectRecord;
+    }
 
 }

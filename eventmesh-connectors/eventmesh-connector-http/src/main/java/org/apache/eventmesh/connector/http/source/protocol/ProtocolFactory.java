@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.http.source.protocol;
 
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
+import org.apache.eventmesh.connector.http.source.protocol.impl.CommonProtocol;
 import org.apache.eventmesh.connector.http.source.protocol.impl.GitHubProtocol;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +43,7 @@ public class ProtocolFactory {
         // register all protocols
         this.registerProtocol(CloudEventProtocol.PROTOCOL_NAME, CloudEventProtocol.class);
         this.registerProtocol(GitHubProtocol.PROTOCOL_NAME, GitHubProtocol.class);
+        this.registerProtocol(CommonProtocol.PROTOCOL_NAME, CommonProtocol.class);
     }
 
 

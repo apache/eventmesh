@@ -19,10 +19,12 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
+import org.apache.eventmesh.connector.http.util.QueueUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.http.vertx.VertxMessageFactory;
@@ -41,6 +43,7 @@ public class CloudEventProtocol implements Protocol {
 
     /**
      * Initialize the protocol.
+     *
      * @param sourceConnectorConfig source connector config
      */
     @Override
@@ -51,13 +54,14 @@ public class CloudEventProtocol implements Protocol {
     /**
      * Handle the protocol message for CloudEvent.
      *
-     * @param route route
-     * @param queue queue
+     * @param route    route
+     * @param queue    queue
+     * @param maxSize  max size of the queue
+     * @param currSize current size of the queue
      */
     @Override
-    public void setHandler(Route route, BlockingQueue<Object> queue) {
+    public void setHandler(Route route, ConcurrentLinkedQueue<Object> queue, int maxSize, AtomicInteger currSize) {
         route.method(HttpMethod.POST)
-            .produces("application/cloudevents+json")
             .handler(ctx -> VertxMessageFactory.createReader(ctx.request())
                 .map(reader -> {
                     CloudEvent event = reader.toEvent();
@@ -73,7 +77,8 @@ public class CloudEventProtocol implements Protocol {
                     return event;
                 })
                 .onSuccess(event -> {
-                    queue.add(event);
+                    // Add the event to the queue, thread-safe
+                    QueueUtils.addWithCover(queue, event, maxSize, currSize);
                     log.info("[HttpSourceConnector] Succeed to convert payload into CloudEvent. StatusCode={}", HttpResponseStatus.OK.code());
                     ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
                 })

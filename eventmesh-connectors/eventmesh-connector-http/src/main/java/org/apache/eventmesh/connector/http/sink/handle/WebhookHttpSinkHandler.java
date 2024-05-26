@@ -24,6 +24,7 @@ import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
+import org.apache.eventmesh.connector.http.util.QueueUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
@@ -253,23 +254,8 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
      * @param exportRecord the received data to add to the queue
      */
     public void addDataToQueue(HttpExportRecord exportRecord) {
-        // If the current queue size is greater than or equal to the maximum queue size, remove the oldest element
-        if (currentQueueSize.get() >= maxQueueSize) {
-            Object removedData = receivedDataQueue.poll();
-            if (log.isDebugEnabled()) {
-                log.debug("The queue is full, remove the oldest element: {}", removedData);
-            } else {
-                log.info("The queue is full, remove the oldest element");
-            }
-            currentQueueSize.decrementAndGet();
-        }
-        // Try to put the received data into the queue
-        if (receivedDataQueue.offer(exportRecord)) {
-            currentQueueSize.incrementAndGet();
-            log.debug("Successfully put the received data into the queue: {}", exportRecord);
-        } else {
-            log.error("Failed to put the received data into the queue: {}", exportRecord);
-        }
+        // add exportRecord to the queue, thread-safe
+        QueueUtils.addWithCover(receivedDataQueue, exportRecord, maxQueueSize, currentQueueSize);
     }
 
     /**
