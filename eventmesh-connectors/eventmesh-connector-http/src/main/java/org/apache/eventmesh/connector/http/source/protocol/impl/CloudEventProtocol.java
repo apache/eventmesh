@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
-import org.apache.eventmesh.connector.http.common.QueueInfo;
+import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -56,10 +56,10 @@ public class CloudEventProtocol implements Protocol {
      * Handle the protocol message for CloudEvent.
      *
      * @param route     route
-     * @param queueInfo queue info
+     * @param boundedQueue queue info
      */
     @Override
-    public void setHandler(Route route, QueueInfo<Object> queueInfo) {
+    public void setHandler(Route route, BoundedConcurrentQueue<Object> boundedQueue) {
         route.method(HttpMethod.POST)
             .handler(ctx -> VertxMessageFactory.createReader(ctx.request())
                 .map(reader -> {
@@ -77,7 +77,7 @@ public class CloudEventProtocol implements Protocol {
                 })
                 .onSuccess(event -> {
                     // Add the event to the queue, thread-safe
-                    queueInfo.offerWithReplace(event);
+                    boundedQueue.offerWithReplace(event);
                     log.info("[HttpSourceConnector] Succeed to convert payload into CloudEvent. StatusCode={}", HttpResponseStatus.OK.code());
                     ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
                 })

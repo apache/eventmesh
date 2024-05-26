@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.http.sink.handle;
 
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.connector.http.common.QueueInfo;
+import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
 import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
@@ -70,16 +70,20 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     private HttpServer exportServer;
 
     // store the received data, when webhook is enabled
-    private final QueueInfo<HttpExportRecord> receivedDataQueueInfo;
+    private final BoundedConcurrentQueue<HttpExportRecord> receivedDataQueue;
 
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
         this.sinkConnectorConfig = sinkConnectorConfig;
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
         int maxQueueSize = this.webhookConfig.getMaxStorageSize();
-        this.receivedDataQueueInfo = new QueueInfo<>(maxQueueSize);
+        this.receivedDataQueue = new BoundedConcurrentQueue<>(maxQueueSize, true);
         // init the export server
         doInitExportServer();
+    }
+
+    public BoundedConcurrentQueue<HttpExportRecord> getReceivedDataQueue() {
+        return receivedDataQueue;
     }
 
     /**
@@ -125,7 +129,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 int pageNum = StringUtils.isBlank(pageNumStr) ? 1 : Integer.parseInt(pageNumStr);
                 int pageSize = Integer.parseInt(pageSizeStr);
 
-                if (receivedDataQueueInfo.getCurrSize() == 0) {
+                if (receivedDataQueue.getCurrSize() == 0) {
                     ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                         .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
@@ -138,12 +142,12 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 List<HttpExportRecord> exportRecords;
                 if (Objects.equals(type, TypeEnum.POLL.getValue())) {
                     // If the type is poll, only the first page of data is exported and removed
-                    exportRecords = receivedDataQueueInfo.fetchRange(0, pageSize, true);
+                    exportRecords = receivedDataQueue.fetchRange(0, pageSize, true);
                 } else {
                     // If the type is peek, the specified page of data is exported without removing
                     int startIndex = (pageNum - 1) * pageSize;
                     int endIndex = startIndex + pageSize;
-                    exportRecords = receivedDataQueueInfo.fetchRange(startIndex, endIndex, false);
+                    exportRecords = receivedDataQueue.fetchRange(startIndex, endIndex, false);
                 }
 
                 // Create HttpExportRecordPage
@@ -232,19 +236,8 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             // create ExportRecord
             HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
             // add the data to the queue
-            addDataToQueue(exportRecord);
+            receivedDataQueue.offerWithReplace(exportRecord);
         });
-    }
-
-
-    /**
-     * Adds the received data to the queue.
-     *
-     * @param exportRecord the received data to add to the queue
-     */
-    public void addDataToQueue(HttpExportRecord exportRecord) {
-        // add exportRecord to the queue, thread-safe
-        receivedDataQueueInfo.offerWithReplace(exportRecord);
     }
 
 

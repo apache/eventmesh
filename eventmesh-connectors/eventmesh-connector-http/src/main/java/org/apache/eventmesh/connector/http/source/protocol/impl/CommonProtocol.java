@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.connector.http.common.QueueInfo;
+import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.data.WebhookResponse;
@@ -63,10 +63,10 @@ public class CommonProtocol implements Protocol {
      * Set the handler for the route
      *
      * @param route     route
-     * @param queueInfo queue info
+     * @param boundedQueue queue info
      */
     @Override
-    public void setHandler(Route route, QueueInfo<Object> queueInfo) {
+    public void setHandler(Route route, BoundedConcurrentQueue<Object> boundedQueue) {
         route.method(HttpMethod.POST)
             .handler(BodyHandler.create())
             .handler(ctx -> {
@@ -85,7 +85,7 @@ public class CommonProtocol implements Protocol {
                     .build();
 
                 // Add the webhook request to the queue, thread-safe
-                queueInfo.offerWithReplace(webhookRequest);
+                boundedQueue.offerWithReplace(webhookRequest);
 
                 // Return 200 OK
                 WebhookResponse response = WebhookResponse.builder()

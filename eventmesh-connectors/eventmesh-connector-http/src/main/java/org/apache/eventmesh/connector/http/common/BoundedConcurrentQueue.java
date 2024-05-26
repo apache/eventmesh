@@ -25,36 +25,37 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import lombok.Getter;
-
 /**
- * QueueInfo is a wrapper class for ConcurrentLinkedQueue,it has the following features:
+ * BoundedConcurrentQueue is a wrapper class for ConcurrentLinkedQueue,it has the following features:
  * 1. Limit the maximum size of the queue
  * 2. Add an object to the queue, if the queue is full, remove the head element and add the new element.(thread safe)
  * 3. Poll an object from the queue.(thread safe)
  * 4. Fetch a range of elements from the queue.(thread safe)
  */
-public class QueueInfo<T> {
+public class BoundedConcurrentQueue<T> {
 
-    @Getter
     private final int maxSize;
 
     private final AtomicInteger currSize;
 
     private final ConcurrentLinkedQueue<T> queue;
 
-    private final ReadWriteLock globalLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock globalLock;
 
 
-    public QueueInfo(int maxSize) {
+    public BoundedConcurrentQueue(int maxSize, boolean isFair) {
         if (maxSize <= 0) {
             throw new IllegalArgumentException("maxQueueSize must be greater than 0");
         }
         this.maxSize = maxSize;
         this.currSize = new AtomicInteger(0);
         this.queue = new ConcurrentLinkedQueue<>();
+        this.globalLock = new ReentrantReadWriteLock(isFair);
     }
 
+    public int getMaxSize() {
+        return maxSize;
+    }
 
     public int getCurrSize() {
         return currSize.get();
@@ -83,10 +84,12 @@ public class QueueInfo<T> {
                 currSize.incrementAndGet();
                 return;
             }
+            // remove the head element
             T removedObj = queue.poll();
-            queue.offer(obj);
-            if (removedObj == null) {
-                // If the queue is empty, increment the size of the queue
+            // add the new element to tail
+            if (!queue.offer(obj)) {
+                throw new IllegalStateException("Unable to add element to the queue.");
+            } else if (removedObj == null) {
                 currSize.incrementAndGet();
             }
         } finally {
@@ -139,6 +142,7 @@ public class QueueInfo<T> {
             while (iterator.hasNext() && count < end) {
                 T item = iterator.next();
                 if (count >= start) {
+                    // Add the element to the list
                     items.add(item);
                     if (removed) {
                         // Remove the element from the queue
@@ -148,6 +152,7 @@ public class QueueInfo<T> {
                 }
                 count++;
             }
+
             return items;
         } finally {
             globalLock.writeLock().unlock();
