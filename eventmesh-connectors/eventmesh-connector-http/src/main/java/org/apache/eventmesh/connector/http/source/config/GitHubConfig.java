@@ -17,24 +17,10 @@
 
 package org.apache.eventmesh.connector.http.source.config;
 
-import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
-
 import lombok.Data;
 
 @Data
-public class SourceConnectorConfig {
+public class GitHubConfig {
 
-    private String connectorName;
-
-    private String path;
-
-    private int port;
-
-    // timeunit: ms, default 5000ms
-    private int idleTimeout = 5000;
-
-    // protocol, default CloudEvent
-    private String protocol = CloudEventProtocol.PROTOCOL_NAME;
-
-    private GitHubConfig github;
+    private String secret;
 }

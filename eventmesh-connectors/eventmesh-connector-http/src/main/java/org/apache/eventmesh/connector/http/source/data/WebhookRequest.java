@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.config;
+package org.apache.eventmesh.connector.http.source.data;
 
-import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
+import java.util.Map;
 
+import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Webhook Protocol Request.
+ */
 @Data
-public class SourceConnectorConfig {
+@Builder
+public class WebhookRequest {
 
-    private String connectorName;
+    private String protocolName;
 
-    private String path;
+    private String url;
 
-    private int port;
+    private Map<String, String> headers;
 
-    // timeunit: ms, default 5000ms
-    private int idleTimeout = 5000;
+    private String payload;
 
-    // protocol, default CloudEvent
-    private String protocol = CloudEventProtocol.PROTOCOL_NAME;
-
-    private GitHubConfig github;
 }

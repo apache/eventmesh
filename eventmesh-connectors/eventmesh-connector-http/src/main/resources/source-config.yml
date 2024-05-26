@@ -28,4 +28,7 @@ connectorConfig:
     connectorName: httpSource
     path: /test
     port: 3755
-    idleTimeout: 5
+    idleTimeout: 5000   # timeunit: ms
+    protocol: GitHub
+    github:
+        secret: fdsfherghllasidhgiea

@@ -28,3 +28,4 @@ connectorConfig:
     connectorName: httpSource
     path: /test
     port: 3755
+    protocol: CloudEvent

@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.config;
+package org.apache.eventmesh.connector.http.source.data;
 
-import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class SourceConnectorConfig {
+@Builder
+public class WebhookResponse implements Serializable {
 
-    private String connectorName;
+    private static final long serialVersionUID = 8616938575207104455L;
 
-    private String path;
+    private String msg;
 
-    private int port;
+    private LocalDateTime handleTime;
 
-    // timeunit: ms, default 5000ms
-    private int idleTimeout = 5000;
 
-    // protocol, default CloudEvent
-    private String protocol = CloudEventProtocol.PROTOCOL_NAME;
-
-    private GitHubConfig github;
 }
