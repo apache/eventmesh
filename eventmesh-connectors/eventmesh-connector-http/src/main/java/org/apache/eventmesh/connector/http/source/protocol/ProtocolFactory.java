@@ -25,9 +25,7 @@ import org.apache.eventmesh.connector.http.source.protocol.impl.GitHubProtocol;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>
  * Protocol factory.
- * <p/>
  * This class is responsible for storing and creating instances of {@link Protocol} classes.
  */
 public class ProtocolFactory {

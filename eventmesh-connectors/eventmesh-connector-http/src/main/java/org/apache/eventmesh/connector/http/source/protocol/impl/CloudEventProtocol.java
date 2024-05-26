@@ -17,14 +17,11 @@
 
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
+import org.apache.eventmesh.connector.http.common.QueueInfo;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
-import org.apache.eventmesh.connector.http.util.QueueUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
-
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.http.vertx.VertxMessageFactory;
@@ -35,9 +32,7 @@ import io.vertx.ext.web.Route;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * <p>
  * CloudEvent Protocol.
- * <p/>
  */
 @Slf4j
 public class CloudEventProtocol implements Protocol {
@@ -56,16 +51,15 @@ public class CloudEventProtocol implements Protocol {
 
     }
 
+
     /**
      * Handle the protocol message for CloudEvent.
      *
-     * @param route    route
-     * @param queue    queue
-     * @param maxSize  max size of the queue
-     * @param currSize current size of the queue
+     * @param route     route
+     * @param queueInfo queue info
      */
     @Override
-    public void setHandler(Route route, ConcurrentLinkedQueue<Object> queue, int maxSize, AtomicInteger currSize) {
+    public void setHandler(Route route, QueueInfo<Object> queueInfo) {
         route.method(HttpMethod.POST)
             .handler(ctx -> VertxMessageFactory.createReader(ctx.request())
                 .map(reader -> {
@@ -83,7 +77,7 @@ public class CloudEventProtocol implements Protocol {
                 })
                 .onSuccess(event -> {
                     // Add the event to the queue, thread-safe
-                    QueueUtils.addWithCover(queue, event, maxSize, currSize);
+                    queueInfo.offerWithReplace(event);
                     log.info("[HttpSourceConnector] Succeed to convert payload into CloudEvent. StatusCode={}", HttpResponseStatus.OK.code());
                     ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
                 })

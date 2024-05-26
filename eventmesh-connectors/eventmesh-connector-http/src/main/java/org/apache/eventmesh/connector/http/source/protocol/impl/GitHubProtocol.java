@@ -19,12 +19,12 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.connector.http.common.QueueInfo;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.data.WebhookResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.connector.http.source.protocol.WebhookConstants;
-import org.apache.eventmesh.connector.http.util.QueueUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -33,8 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -52,10 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * <p>
- * GitHub Protocol.
- * <p/>
- * This class represents the GitHub webhook protocol.
+ * GitHub Protocol. This class represents the GitHub webhook protocol.
  */
 @Slf4j
 public class GitHubProtocol implements Protocol {
@@ -88,13 +83,11 @@ public class GitHubProtocol implements Protocol {
     /**
      * Handle the protocol message for GitHub.
      *
-     * @param route    route
-     * @param queue    queue
-     * @param maxSize  max size of the queue
-     * @param currSize current size of the queue
+     * @param route     route
+     * @param queueInfo queue info
      */
     @Override
-    public void setHandler(Route route, ConcurrentLinkedQueue<Object> queue, int maxSize, AtomicInteger currSize) {
+    public void setHandler(Route route, QueueInfo<Object> queueInfo) {
         route.method(HttpMethod.POST)
             .handler(BodyHandler.create())
             .handler(ctx -> {
@@ -132,7 +125,7 @@ public class GitHubProtocol implements Protocol {
                     .build();
 
                 // Add the webhook request to the queue, thread-safe
-                QueueUtils.addWithCover(queue, webhookRequest, maxSize, currSize);
+                queueInfo.offerWithReplace(webhookRequest);
 
                 // Return 200 OK
                 WebhookResponse response = WebhookResponse.builder()

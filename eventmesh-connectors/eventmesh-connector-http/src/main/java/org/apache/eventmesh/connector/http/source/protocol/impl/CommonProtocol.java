@@ -18,18 +18,16 @@
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.connector.http.common.QueueInfo;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.data.WebhookResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
-import org.apache.eventmesh.connector.http.util.QueueUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpMethod;
@@ -42,9 +40,9 @@ import com.alibaba.fastjson2.JSONWriter.Feature;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * <p>Common Protocol.</p>
- * This class represents the common webhook protocol. The processing method of this class does not perform any other operations except storing the
- * request and returning a general response.
+ * Common Protocol.
+ * This class represents the common webhook protocol. The processing method of this class does not perform any other operations
+ * except storing the request and returning a general response.
  */
 @Slf4j
 public class CommonProtocol implements Protocol {
@@ -64,13 +62,11 @@ public class CommonProtocol implements Protocol {
     /**
      * Set the handler for the route
      *
-     * @param route    route
-     * @param queue    queue
-     * @param maxSize  max size of the queue
-     * @param currSize current size of the queue
+     * @param route     route
+     * @param queueInfo queue info
      */
     @Override
-    public void setHandler(Route route, ConcurrentLinkedQueue<Object> queue, int maxSize, AtomicInteger currSize) {
+    public void setHandler(Route route, QueueInfo<Object> queueInfo) {
         route.method(HttpMethod.POST)
             .handler(BodyHandler.create())
             .handler(ctx -> {
@@ -89,7 +85,7 @@ public class CommonProtocol implements Protocol {
                     .build();
 
                 // Add the webhook request to the queue, thread-safe
-                QueueUtils.addWithCover(queue, webhookRequest, maxSize, currSize);
+                queueInfo.offerWithReplace(webhookRequest);
 
                 // Return 200 OK
                 WebhookResponse response = WebhookResponse.builder()

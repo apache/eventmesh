@@ -17,19 +17,15 @@
 
 package org.apache.eventmesh.connector.http.source.protocol;
 
+import org.apache.eventmesh.connector.http.common.QueueInfo;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.ext.web.Route;
 
 
 /**
- * <p>
  * Protocol Interface.
- * </p>
  * All protocols should implement this interface.
  */
 public interface Protocol {
@@ -46,12 +42,10 @@ public interface Protocol {
     /**
      * Handle the protocol message.
      *
-     * @param route    route
-     * @param queue    queue
-     * @param maxSize  max size of the queue
-     * @param currSize current size of the queue
+     * @param route     route
+     * @param queueInfo queue info
      */
-    void setHandler(Route route, ConcurrentLinkedQueue<Object> queue, int maxSize, AtomicInteger currSize);
+    void setHandler(Route route, QueueInfo<Object> queueInfo);
 
 
     /**
