@@ -78,7 +78,7 @@ public class ProtocolFactory {
         }
 
         if (classes.containsKey(name)) {
-            synchronized (ProtocolFactory.class) {
+            synchronized (this) {
                 // double check
                 if (instances.containsKey(name)) {
                     return instances.get(name);
