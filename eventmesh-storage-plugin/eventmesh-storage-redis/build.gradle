@@ -20,7 +20,7 @@ dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     // redisson
-    implementation('org.redisson:redisson:3.17.3') {
+    implementation('org.redisson:redisson:3.30.0') {
         exclude group: 'io.netty', module: 'netty-common'
         exclude group: 'io.netty', module: 'netty-buffer'
         exclude group: 'io.netty', module: 'netty-codec'
