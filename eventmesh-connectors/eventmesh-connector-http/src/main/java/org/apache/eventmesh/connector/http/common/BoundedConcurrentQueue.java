@@ -142,7 +142,7 @@ public class BoundedConcurrentQueue<T> {
      * @return list of elements
      */
     public List<T> fetchRange(int start, int end, boolean removed) {
-        if (start < 0 || end > maxSize || start > end) {
+        if (start < 0 || end > getCurrSize() || start > end) {
             throw new IllegalArgumentException("Invalid range");
         }
 
