@@ -667,7 +667,7 @@ subprojects {
 
             dependency "commons-validator:commons-validator:1.7"
 
-            dependency "com.google.guava:guava:31.0.1-jre"
+            dependency "com.google.guava:guava:31.1-jre"
 
             dependency "org.slf4j:slf4j-api:2.0.13"
             dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
