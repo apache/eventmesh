@@ -29,7 +29,7 @@ dependencies {
     api 'io.cloudevents:cloudevents-json-jackson'
 
     // test dependencies
-    testImplementation 'ai.grakn:redis-mock:0.1.6'
+    testImplementation 'com.github.fppt:jedis-mock:1.1.1'
     testImplementation "org.mockito:mockito-core"
 
     compileOnly 'org.projectlombok:lombok'

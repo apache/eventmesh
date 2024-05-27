@@ -17,23 +17,25 @@
 
 package org.apache.eventmesh.storage.redis;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-import ai.grakn.redismock.RedisServer;
+import com.github.fppt.jedismock.RedisServer;
 
 public abstract class AbstractRedisServer {
 
     private static RedisServer redisServer;
 
     @BeforeAll
-    public static void setupRedisServer() throws Exception {
+    public static void setupRedisServer() throws IOException {
         redisServer = RedisServer.newRedisServer(6379);
         redisServer.start();
     }
 
     @AfterAll
-    public static void shutdownRedisServer() {
+    public static void shutdownRedisServer() throws IOException {
         if (redisServer != null) {
             redisServer.stop();
         }
