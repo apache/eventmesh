@@ -20,8 +20,6 @@ package org.apache.eventmesh.storage.redis.config;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigField;
 
-import java.util.Properties;
-
 import lombok.Data;
 
 @Data
@@ -55,8 +53,11 @@ public class RedisProperties {
     /**
      * The redisson options, redisson properties prefix is `eventMesh.server.redis.redisson`
      */
-    @ConfigField(field = "redisson")
-    private Properties redissonProperties;
+    @ConfigField(field = "redisson.threads")
+    private int redissonThreads = 16;
+
+    @ConfigField(field = "redisson.nettyThreads")
+    private int redissonNettyThreads = 32;
 
     public enum ServerType {
         SINGLE,
