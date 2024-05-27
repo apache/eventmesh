@@ -41,7 +41,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
+        classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.2.5"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
 
