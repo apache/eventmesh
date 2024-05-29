@@ -18,12 +18,12 @@
 package org.apache.eventmesh.connector.rabbitmq.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.mq.rabbitmq.RabbitMQSourceConfig;
+import org.apache.eventmesh.common.config.connector.mq.rabbitmq.SourceConnectorConfig;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
-import org.apache.eventmesh.connector.rabbitmq.source.config.RabbitMQSourceConfig;
-import org.apache.eventmesh.connector.rabbitmq.source.config.SourceConnectorConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
+import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.GetResponse;
@@ -98,7 +99,8 @@ public class RabbitMQSourceConnector implements Source {
     @Override
     public void start() throws Exception {
         if (!started) {
-            rabbitmqClient.binding(channel, sourceConfig.getConnectorConfig().getExchangeType(), sourceConfig.getConnectorConfig().getExchangeName(),
+            BuiltinExchangeType builtinExchangeType = BuiltinExchangeType.valueOf(sourceConfig.getConnectorConfig().getExchangeType());
+            rabbitmqClient.binding(channel, builtinExchangeType, sourceConfig.getConnectorConfig().getExchangeName(),
                 sourceConfig.getConnectorConfig().getRoutingKey(), sourceConfig.getConnectorConfig().getQueueName());
             executor.execute(this.rabbitMQSourceHandler);
             started = true;

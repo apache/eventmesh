@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.connector.openfunction.source.connector;
 
-import org.apache.eventmesh.connector.openfunction.source.config.OpenFunctionSourceConfig;
+import org.apache.eventmesh.common.config.connector.openfunction.OpenFunctionSourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

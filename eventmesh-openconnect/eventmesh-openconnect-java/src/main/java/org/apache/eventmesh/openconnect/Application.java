@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.openconnect;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.SinkConfig;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;

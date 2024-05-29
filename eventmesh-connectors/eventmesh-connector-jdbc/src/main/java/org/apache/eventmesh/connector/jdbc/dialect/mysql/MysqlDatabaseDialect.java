@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.jdbc.dialect.mysql;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.DataTypeConvertor;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
 import org.apache.eventmesh.connector.jdbc.dialect.AbstractGeneralDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseType;

@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,6 +36,10 @@ public class ConnectRecord {
     private RecordPosition position;
 
     private KeyValue extensions;
+
+    public ConnectRecord() {
+
+    }
 
     public ConnectRecord(RecordPartition recordPartition, RecordOffset recordOffset,
         Long timestamp) {

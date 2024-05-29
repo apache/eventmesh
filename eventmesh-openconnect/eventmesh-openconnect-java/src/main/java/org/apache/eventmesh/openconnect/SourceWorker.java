@@ -24,6 +24,8 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
+import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -33,10 +35,8 @@ import org.apache.eventmesh.common.utils.SystemUtils;
 import org.apache.eventmesh.openconnect.api.callback.SendExcepionContext;
 import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.api.callback.SendResult;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffsetManagement;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetManagementServiceImpl;
@@ -152,8 +152,8 @@ public class SourceWorker implements ConnectorWorker {
             .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
             .orElse(new DefaultOffsetManagementServiceImpl());
         this.offsetManagementService.initialize(offsetStorageConfig);
-        this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
-        this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
+        this.offsetStorageWriter = new OffsetStorageWriterImpl(offsetManagementService);
+        this.offsetStorageReader = new OffsetStorageReaderImpl(offsetManagementService);
     }
 
     @Override

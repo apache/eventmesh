@@ -55,6 +55,7 @@ include 'eventmesh-transformer'
 
 include 'eventmesh-openconnect:eventmesh-openconnect-java'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
+include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-admin'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos'
 
 include 'eventmesh-connectors:eventmesh-connector-openfunction'
@@ -77,6 +78,7 @@ include 'eventmesh-connectors:eventmesh-connector-wecom'
 include 'eventmesh-connectors:eventmesh-connector-slack'
 include 'eventmesh-connectors:eventmesh-connector-wechat'
 include 'eventmesh-connectors:eventmesh-connector-http'
+include 'eventmesh-connectors:eventmesh-connector-canal'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'

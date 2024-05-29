@@ -19,10 +19,11 @@ package org.apache.eventmesh.connector.lark.sink.connector;
 
 import static org.apache.eventmesh.connector.lark.sink.ImServiceHandler.create;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.lark.LarkSinkConfig;
+import org.apache.eventmesh.common.config.connector.lark.SinkConnectorConfig;
+import org.apache.eventmesh.connector.lark.ConfigUtils;
 import org.apache.eventmesh.connector.lark.sink.ImServiceHandler;
-import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
-import org.apache.eventmesh.connector.lark.sink.config.SinkConnectorConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
@@ -87,7 +88,7 @@ public class LarkSinkConnector implements Sink {
         this.sinkConfig = (LarkSinkConfig) sinkConnectorContext.getSinkConfig();
 
         SinkConnectorConfig sinkConnectorConfig = sinkConfig.getSinkConnectorConfig();
-        sinkConnectorConfig.validateSinkConfiguration();
+        ConfigUtils.validateSinkConfiguration(sinkConnectorConfig);
 
         imServiceHandler = create(sinkConnectorConfig);
     }

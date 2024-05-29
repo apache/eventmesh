@@ -18,12 +18,12 @@
 package org.apache.eventmesh.connector.wecom.sink.connector;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.wecom.WeComSinkConfig;
 import org.apache.eventmesh.common.enums.EventMeshDataContentType;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.wecom.config.WeComMessageTemplateType;
 import org.apache.eventmesh.connector.wecom.constants.ConnectRecordExtensionKeys;
-import org.apache.eventmesh.connector.wecom.sink.config.WeComSinkConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;

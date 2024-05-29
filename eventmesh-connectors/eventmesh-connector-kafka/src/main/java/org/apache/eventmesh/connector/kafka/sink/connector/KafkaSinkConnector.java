@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.kafka.sink.connector;
 
-import org.apache.eventmesh.connector.kafka.sink.config.KafkaSinkConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.mq.kafka.KafkaSinkConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
