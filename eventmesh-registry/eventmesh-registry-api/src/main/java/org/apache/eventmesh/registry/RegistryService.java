@@ -9,7 +9,6 @@ import java.util.List;
 
 @EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
 public interface RegistryService {
-    String ConfigurationKey = "registry";
     void init() throws RegistryException;
 
     void shutdown() throws RegistryException;
