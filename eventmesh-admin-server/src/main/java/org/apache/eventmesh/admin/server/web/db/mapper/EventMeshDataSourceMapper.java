@@ -15,17 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.mapper;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-        return STATES[index];
-    }
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * @author sodafang
+ * @description 针对表【event_mesh_data_source】的数据库操作Mapper
+ * @createDate 2024-05-09 15:52:49
+ * @Entity entity.db.web.server.admin.eventmesh.apache.org.EventMeshDataSource
+ */
+@Mapper
+public interface EventMeshDataSourceMapper extends BaseMapper<EventMeshDataSource> {
+
 }
+
+
+
+

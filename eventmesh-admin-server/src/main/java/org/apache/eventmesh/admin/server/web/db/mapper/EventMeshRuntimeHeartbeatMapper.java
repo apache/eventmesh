@@ -15,17 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.mapper;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHeartbeat;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import org.apache.ibatis.annotations.Mapper;
 
-        return STATES[index];
-    }
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+/**
+ * for table【event_mesh_runtime_heartbeat】db operation
+ * 2024-05-14 17:15:03
+ * entity.db.web.server.admin.eventmesh.apache.org.EventMeshRuntimeHeartbeat
+ */
+@Mapper
+public interface EventMeshRuntimeHeartbeatMapper extends BaseMapper<EventMeshRuntimeHeartbeat> {
+
 }
+
+
+
+

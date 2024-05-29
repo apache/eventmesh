@@ -15,17 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.entity;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.job.JobTransportType;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import java.util.Map;
 
-        return STATES[index];
-    }
+import lombok.Data;
+
+@Data
+public class EventMeshJobDetail {
+
+    private Integer id;
+
+    private String name;
+
+    private JobTransportType transportType;
+
+    private Map<String, Object> sourceConnectorConfig;
+
+    private String sourceConnectorDesc;
+
+    private Map<String, Object> sinkConnectorConfig;
+
+    private String sinkConnectorDesc;
+
+    private RecordPosition position;
+
+    private JobState state;
 }

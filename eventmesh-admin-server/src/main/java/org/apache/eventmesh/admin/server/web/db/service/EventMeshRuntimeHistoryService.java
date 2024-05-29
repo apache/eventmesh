@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.service;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHistory;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import com.baomidou.mybatisplus.extension.service.IService;
 
-        return STATES[index];
-    }
+/**
+ * @description 针对表【event_mesh_runtime_history(记录runtime上运行任务的变更)】的数据库操作Service
+ * @createDate 2024-05-14 17:15:03
+ */
+public interface EventMeshRuntimeHistoryService extends IService<EventMeshRuntimeHistory> {
+
 }

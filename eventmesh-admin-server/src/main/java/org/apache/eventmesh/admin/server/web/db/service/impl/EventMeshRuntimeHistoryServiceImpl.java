@@ -15,17 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.service.impl;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHistory;
+import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshRuntimeHistoryMapper;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHistoryService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import org.springframework.stereotype.Service;
 
-        return STATES[index];
-    }
+/**
+ * @description 针对表【event_mesh_runtime_history(记录runtime上运行任务的变更)】的数据库操作Service实现
+ * @createDate 2024-05-14 17:15:03
+ */
+@Service
+public class EventMeshRuntimeHistoryServiceImpl extends ServiceImpl<EventMeshRuntimeHistoryMapper, EventMeshRuntimeHistory>
+    implements EventMeshRuntimeHistoryService {
+
 }
+
+
+
+

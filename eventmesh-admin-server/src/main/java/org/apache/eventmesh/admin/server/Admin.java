@@ -15,17 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.common.remote.Task;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
+import org.apache.eventmesh.common.utils.PagedList;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+public interface Admin extends ComponentLifeCycle {
 
-        return STATES[index];
-    }
+    /**
+     * support for web or ops
+     **/
+    boolean createOrUpdateTask(Task task);
+
+    boolean deleteTask(Long id);
+
+    Task getTask(Long id);
+
+    // paged list
+    PagedList<Task> getTaskPaged(Task task);
+
+    /**
+     * support for task
+     */
+    void reportHeartbeat(ReportHeartBeatRequest heartBeat);
 }

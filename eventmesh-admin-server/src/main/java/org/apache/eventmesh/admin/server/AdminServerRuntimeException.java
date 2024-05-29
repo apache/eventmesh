@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import lombok.Getter;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+public class AdminServerRuntimeException extends RuntimeException {
 
-        return STATES[index];
+    @Getter
+    private final int code;
+
+    public AdminServerRuntimeException(int code, String message) {
+        super(message);
+        this.code = code;
     }
 }

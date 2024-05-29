@@ -18,9 +18,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.apache.eventmesh.admin.server.web.db.mapper.EventMeshPositionReporterHistoryMapper">
+<mapper namespace="org.apache.eventmesh.admin.server.web.db.mapper.EventMeshPositionReporterHistoryMapper">
 
-    <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshPositionReporterHistory">
+    <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshPositionReporterHistory">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="job" column="job" jdbcType="INTEGER"/>
             <result property="record" column="record" jdbcType="VARCHAR"/>
