@@ -17,17 +17,20 @@
 
 package org.apache.eventmesh.common.config;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.apache.eventmesh.common.Constants.HTTP;
+
 import org.apache.commons.collections4.CollectionUtils;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
+
 import org.assertj.core.util.Strings;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.eventmesh.common.Constants.HTTP;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor

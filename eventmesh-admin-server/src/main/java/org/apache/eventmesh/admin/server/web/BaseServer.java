@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.server.web;
 
-import com.apache.eventmesh.admin.server.ComponentLifeCycle;
+import org.apache.eventmesh.admin.server.ComponentLifeCycle;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.remote.payload.PayloadFactory;
 

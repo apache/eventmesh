@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
-
 import lombok.Data;
 
 /**

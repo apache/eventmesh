@@ -17,8 +17,10 @@
 
 package org.apache.eventmesh.common.config;
 
-import lombok.Getter;
+import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.assertj.core.util.Strings;
 
 import java.io.File;
@@ -29,7 +31,7 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
 
-import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
+import lombok.Getter;
 
 public class ConfigService {
 
