@@ -27,15 +27,15 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class CanalSinkConfig extends SinkConfig {
 
-    private Integer batchsize = 50;                          // 批次大小
+    private Integer batchSize = 50;                          // batchSize
 
-    private Boolean useBatch = true;                        // 是否使用batch模式
+    private Boolean useBatch = true;                        // enable batch
 
-    private Integer poolSize = 5;                           // sink模块载入线程数，针对单个载入通道
+    private Integer poolSize = 5;                           // sink thread size for single channel
 
-    private SyncMode syncMode;                              // 同步模式：字段/整条记录
+    private SyncMode syncMode;                              // sync mode：column/row
 
-    private Boolean skipException = false;                  // 是否跳过sink执行异常
+    private Boolean skipException = false;                  // skip sink process exception
 
     public SinkConnectorConfig sinkConnectorConfig;
 

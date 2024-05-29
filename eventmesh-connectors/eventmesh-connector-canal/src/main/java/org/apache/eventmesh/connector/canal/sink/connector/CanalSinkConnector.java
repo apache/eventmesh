@@ -106,7 +106,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         // init config for canal source connector
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
         this.sinkConfig = (CanalSinkConfig) sinkConnectorContext.getSinkConfig();
-        this.batchSize = sinkConfig.getBatchsize();
+        this.batchSize = sinkConfig.getBatchSize();
         this.useBatch = sinkConfig.getUseBatch();
         DatabaseConnection.sinkConfig = this.sinkConfig;
         DatabaseConnection.initSinkConnection();
