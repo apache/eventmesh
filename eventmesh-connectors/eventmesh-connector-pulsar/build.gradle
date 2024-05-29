@@ -15,13 +15,28 @@
  * limitations under the License.
  */
 
-List pulsar = [
-        "org.apache.pulsar:pulsar-client:$pulsar_version"
-]
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation pulsar
+
+    /*
+     * TODO: This is a shaded artifact that contains 20 MiB of external libraries. It could probably be replaced by:
+     *
+     *     implementation "org.apache.pulsar:pulsar-client-api:$pulsar_version"
+     *     runtimeOnly "org.apache.pulsar:pulsar-client-original:$pulsar_version"
+     *
+     * The exclusions can be removed after an upgrade of the transitive:
+     *
+     *     "org.apache.bookkeeper:bookkeeper"
+     *
+     * dependency to 4.15.4 or higher (used by Pulsar 2.11.2 or higher).
+     */
+    implementation("org.apache.pulsar:pulsar-client:$pulsar_version") {
+        // Remove logging backend implementations
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    }
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

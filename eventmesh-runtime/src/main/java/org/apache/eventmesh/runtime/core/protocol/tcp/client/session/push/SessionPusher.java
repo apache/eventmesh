@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -109,11 +110,8 @@ public class SessionPusher {
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), downStreamMsgContext.seq));
         } finally {
-            Objects.requireNonNull(session.getClientGroupWrapper().get())
-                .getEventMeshTcpMonitor()
-                .getTcpSummaryMetrics()
-                .getEventMesh2clientMsgNum()
-                .incrementAndGet();
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMetricsManager()
+                .eventMesh2clientMsgNumIncrement(IPUtils.parseChannelRemoteAddr(downStreamMsgContext.getSession().getContext().channel()));
 
             // TODO uploadTrace
             String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();

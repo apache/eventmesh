@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
@@ -83,12 +84,12 @@ public class MessageUtils {
         final Package msg = getPackage(command);
         if (message instanceof CloudEvent) {
             final CloudEvent cloudEvent = (CloudEvent) message;
-            Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
+            Preconditions.checkNotNull(Objects.requireNonNull(cloudEvent.getDataContentType()), "DateContentType cannot be null");
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, CLOUD_EVENTS_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
 
-            final byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+            final byte[] bodyByte = Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType()))
                 .serialize((CloudEvent) message);
             msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {
