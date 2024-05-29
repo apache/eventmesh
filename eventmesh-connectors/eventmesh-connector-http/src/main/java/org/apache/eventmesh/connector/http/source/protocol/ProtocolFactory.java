@@ -22,29 +22,22 @@ import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtoc
 import org.apache.eventmesh.connector.http.source.protocol.impl.CommonProtocol;
 import org.apache.eventmesh.connector.http.source.protocol.impl.GitHubProtocol;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Protocol factory.
- * This class is responsible for storing and creating instances of {@link Protocol} classes.
+ * Protocol factory. This class is responsible for storing and creating instances of {@link Protocol} classes.
  */
 public class ProtocolFactory {
 
     // protocol name -> protocol class
-    private final ConcurrentHashMap<String, Class<?>> classes = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Class<?>> protocols = new ConcurrentHashMap<>();
 
-    // protocol name -> protocol instance
-    private final ConcurrentHashMap<String, Protocol> instances = new ConcurrentHashMap<>();
-
-    private final SourceConnectorConfig sourceConnectorConfig;
-
-
-    public ProtocolFactory(SourceConnectorConfig sourceConnectorConfig) {
-        this.sourceConnectorConfig = sourceConnectorConfig;
+    static {
         // register all protocols
-        this.registerProtocol(CloudEventProtocol.PROTOCOL_NAME, CloudEventProtocol.class);
-        this.registerProtocol(GitHubProtocol.PROTOCOL_NAME, GitHubProtocol.class);
-        this.registerProtocol(CommonProtocol.PROTOCOL_NAME, CommonProtocol.class);
+        registerProtocol(CloudEventProtocol.PROTOCOL_NAME, CloudEventProtocol.class);
+        registerProtocol(GitHubProtocol.PROTOCOL_NAME, GitHubProtocol.class);
+        registerProtocol(CommonProtocol.PROTOCOL_NAME, CommonProtocol.class);
     }
 
 
@@ -54,10 +47,10 @@ public class ProtocolFactory {
      * @param name  name of the protocol
      * @param clazz class of the protocol
      */
-    public void registerProtocol(String name, Class<?> clazz) {
-        name = name.toLowerCase(); // case insensitive
+    public static void registerProtocol(String name, Class<?> clazz) {
         if (Protocol.class.isAssignableFrom(clazz)) {
-            classes.put(name, clazz);
+            // put the class into the map(case insensitive)
+            protocols.put(name.toLowerCase(), clazz);
         } else {
             throw new IllegalArgumentException("Class " + clazz.getName() + " does not implement Protocol interface");
         }
@@ -69,32 +62,19 @@ public class ProtocolFactory {
      * @param name name of the protocol
      * @return instance of the protocol
      */
-    public Protocol getInstance(String name) {
-        name = name.toLowerCase(); // case insensitive
-        if (instances.containsKey(name)) {
-            return instances.get(name);
+    public static Protocol getInstance(SourceConnectorConfig sourceConnectorConfig, String name) {
+        // get the class by name(case insensitive)
+        Class<?> clazz = Optional.ofNullable(protocols.get(name.toLowerCase()))
+            .orElseThrow(() -> new IllegalArgumentException("Protocol " + name + " is not registered"));
+        try {
+            // create a new instance
+            Protocol protocol = (Protocol) clazz.newInstance();
+            // initialize the protocol
+            protocol.initialize(sourceConnectorConfig);
+            return protocol;
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalArgumentException("Failed to instantiate protocol " + name, e);
         }
-
-        if (classes.containsKey(name)) {
-            synchronized (this) {
-                // double check
-                if (instances.containsKey(name)) {
-                    return instances.get(name);
-                }
-                try {
-                    // create a new instance
-                    Protocol protocol = (Protocol) classes.get(name).newInstance();
-                    // initialize the protocol
-                    protocol.initialize(sourceConnectorConfig);
-                    // put it into the instances map
-                    instances.put(name, protocol);
-                    return protocol;
-                } catch (InstantiationException | IllegalAccessException e) {
-                    throw new IllegalArgumentException("Failed to instantiate protocol " + name, e);
-                }
-            }
-        }
-        throw new IllegalArgumentException("Protocol " + name + " is not registered");
     }
 
 }

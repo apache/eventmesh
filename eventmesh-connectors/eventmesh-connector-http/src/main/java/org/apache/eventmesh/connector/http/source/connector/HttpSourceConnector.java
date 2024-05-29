@@ -84,8 +84,7 @@ public class HttpSourceConnector implements Source {
 
         // init protocol
         String protocolName = this.sourceConfig.getConnectorConfig().getProtocol();
-        ProtocolFactory protocolFactory = new ProtocolFactory(this.sourceConfig.connectorConfig);
-        this.protocol = protocolFactory.getInstance(protocolName);
+        this.protocol = ProtocolFactory.getInstance(this.sourceConfig.connectorConfig, protocolName);
 
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
