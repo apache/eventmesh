@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.apache.eventmesh.admin.server.web.service.job;
 
 import com.apache.eventmesh.admin.server.AdminServerRuntimeException;
@@ -9,8 +26,11 @@ import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
 import com.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
@@ -18,16 +38,17 @@ import org.apache.eventmesh.common.remote.job.DataSourceType;
 import org.apache.eventmesh.common.remote.job.JobTransportType;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.utils.JsonUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 /**
-* @author sodafang
-* @description 针对表【event_mesh_job_info】的数据库操作Service实现
-* @createDate 2024-05-09 15:51:45
-*/
+ * @author sodafang
+ * @description 针对表【event_mesh_job_info】的数据库操作Service实现
+ * @createDate 2024-05-09 15:51:45
+ */
 @Service
 @Slf4j
 public class EventMeshJobInfoBizService {
@@ -48,8 +69,8 @@ public class EventMeshJobInfoBizService {
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
         jobInfo.setJobID(jobID);
         jobInfo.setState(state.ordinal());
-        jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().notIn("state",JobState.DELETE.ordinal(),
-                JobState.COMPLETE.ordinal()));
+        jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().notIn("state", JobState.DELETE.ordinal(),
+            JobState.COMPLETE.ordinal()));
         return true;
     }
 
@@ -70,16 +91,17 @@ public class EventMeshJobInfoBizService {
             if (!StringUtils.isBlank(source.getConfiguration())) {
                 try {
                     detail.setSourceConnectorConfig(JsonUtils.parseTypeReferenceObject(source.getConfiguration(),
-                            new TypeReference<Map<String, Object>>() {}));
+                        new TypeReference<Map<String, Object>>() {
+                        }));
                 } catch (Exception e) {
                     log.warn("parse source config id [{}] fail", job.getSourceData(), e);
-                    throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA,"illegal source data source config");
+                    throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal source data source config");
                 }
             }
             detail.setSourceConnectorDesc(source.getDescription());
             if (source.getDataType() != null) {
                 detail.setPosition(positionBizService.getPositionByJobID(job.getJobID(),
-                        DataSourceType.getDataSourceType(source.getDataType())));
+                    DataSourceType.getDataSourceType(source.getDataType())));
 
             }
         }
@@ -87,10 +109,11 @@ public class EventMeshJobInfoBizService {
             if (!StringUtils.isBlank(target.getConfiguration())) {
                 try {
                     detail.setSinkConnectorConfig(JsonUtils.parseTypeReferenceObject(target.getConfiguration(),
-                            new TypeReference<Map<String, Object>>() {}));
+                        new TypeReference<Map<String, Object>>() {
+                        }));
                 } catch (Exception e) {
                     log.warn("parse sink config id [{}] fail", job.getSourceData(), e);
-                    throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA,"illegal target data sink config");
+                    throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal target data sink config");
                 }
             }
             detail.setSinkConnectorDesc(target.getDescription());
@@ -98,7 +121,7 @@ public class EventMeshJobInfoBizService {
 
         JobState state = JobState.fromIndex(job.getState());
         if (state == null) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA,"illegal job state in db");
+            throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal job state in db");
         }
         detail.setState(state);
         detail.setTransportType(JobTransportType.getJobTransportType(job.getTransportType()));

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.apache.eventmesh.admin.server.web.service.position.impl;
 
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshMysqlPosition;
@@ -6,7 +23,9 @@ import com.apache.eventmesh.admin.server.web.db.service.EventMeshMysqlPositionSe
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshPositionReporterHistoryService;
 import com.apache.eventmesh.admin.server.web.service.position.PositionHandler;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.job.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
@@ -15,6 +34,7 @@ import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 import org.apache.eventmesh.common.utils.JsonUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -24,6 +44,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class MysqlPositionHandler extends PositionHandler {
+
     @Autowired
     EventMeshMysqlPositionService positionService;
 
@@ -37,20 +58,20 @@ public class MysqlPositionHandler extends PositionHandler {
 
     public boolean saveOrUpdateByJob(EventMeshMysqlPosition position) {
         EventMeshMysqlPosition old = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobId",
-                position.getJobID()));
+            position.getJobID()));
         if (old == null) {
             return positionService.save(position);
         } else {
             if (old.getPosition() >= position.getPosition()) {
                 log.info("job [{}] report position [{}] by runtime [{}] less than db position [{}] by [{}]",
-                        position.getJobID(), position.getPosition(), position.getAddress(), old.getPosition(), old.getAddress());
+                    position.getJobID(), position.getPosition(), position.getAddress(), old.getPosition(), old.getAddress());
                 return true;
             }
             try {
                 return positionService.update(position, Wrappers.<EventMeshMysqlPosition>update().eq("updateTime",
-                        old.getUpdateTime()));
+                    old.getUpdateTime()));
             } finally {
-                if (old.getAddress()!= null && !old.getAddress().equals(position.getAddress())) {
+                if (old.getAddress() != null && !old.getAddress().equals(position.getAddress())) {
                     EventMeshPositionReporterHistory history = new EventMeshPositionReporterHistory();
                     history.setRecord(JsonUtils.toJSONString(position));
                     history.setJob(old.getJobID());
@@ -60,7 +81,7 @@ public class MysqlPositionHandler extends PositionHandler {
                         historyService.save(history);
                     } catch (Exception e) {
                         log.warn("save job [{}] mysql position reporter changed history fail, now reporter [{}], old " +
-                                "[{}]", position.getJobID(), position.getAddress(), old.getAddress(), e);
+                            "[{}]", position.getJobID(), position.getAddress(), old.getAddress(), e);
                     }
                 }
             }
@@ -79,12 +100,12 @@ public class MysqlPositionHandler extends PositionHandler {
                 }
                 if (!(recordPosition.getRecordPartition() instanceof CanalRecordPartition)) {
                     log.warn("report mysql position, but record partition class [{}] not match [{}]",
-                            recordPosition.getRecordPartition().getRecordPartitionClass(), CanalRecordPartition.class);
+                        recordPosition.getRecordPartition().getRecordPartitionClass(), CanalRecordPartition.class);
                     return false;
                 }
                 if (!(recordPosition.getRecordOffset() instanceof CanalRecordOffset)) {
                     log.warn("report mysql position, but record offset class [{}] not match [{}]",
-                            recordPosition.getRecordOffset().getRecordOffsetClass(), CanalRecordOffset.class);
+                        recordPosition.getRecordOffset().getRecordOffsetClass(), CanalRecordOffset.class);
                     return false;
                 }
                 CanalRecordOffset offset = (CanalRecordOffset) recordPosition.getRecordOffset();
@@ -123,7 +144,7 @@ public class MysqlPositionHandler extends PositionHandler {
     @Override
     public RecordPosition handler(FetchPositionRequest request, Metadata metadata) {
         EventMeshMysqlPosition position = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobID"
-                , request.getJobID()));
+            , request.getJobID()));
         RecordPosition recordPosition = null;
         if (position != null) {
             CanalRecordPartition partition = new CanalRecordPartition();
