@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.mongodb.source.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.connector.mongodb.source.client.Impl.MongodbSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.client.MongodbReplicaSetSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.client.MongodbStandaloneSourceClient;
-import org.apache.eventmesh.connector.mongodb.source.config.MongodbSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.rdb.mongodb.MongodbSourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

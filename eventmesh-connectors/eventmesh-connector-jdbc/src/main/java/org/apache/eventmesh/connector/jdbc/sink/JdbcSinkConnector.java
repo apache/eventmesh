@@ -17,17 +17,17 @@
 
 package org.apache.eventmesh.connector.jdbc.sink;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSinkConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialectFactory;
-import org.apache.eventmesh.connector.jdbc.sink.config.JdbcSinkConfig;
 import org.apache.eventmesh.connector.jdbc.sink.handle.DefaultSinkRecordHandler;
 import org.apache.eventmesh.connector.jdbc.sink.handle.SinkRecordHandler;
 import org.apache.eventmesh.connector.jdbc.sink.hibernate.HibernateConfiguration;
 import org.apache.eventmesh.connector.jdbc.source.JdbcAllFactoryLoader;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;

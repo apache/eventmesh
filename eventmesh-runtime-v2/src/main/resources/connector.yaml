@@ -15,8 +15,4 @@
 # limitations under the License.
 #
 
-componentType: CONNECTOR
-registryServerAddr: 127.0.0.1:8085
-registryPluginType: nacos
-storagePluginType: memory
-adminServiceName: eventmesh-admin
+jobID: 1

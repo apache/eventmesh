@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.openconnect.util;
 
-import org.apache.eventmesh.openconnect.api.config.Config;
-import org.apache.eventmesh.openconnect.api.config.Constants;
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
+import org.apache.eventmesh.common.config.connector.SinkConfig;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;

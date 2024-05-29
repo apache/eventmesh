@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
+import org.apache.eventmesh.common.config.connector.redis.RedisSourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
-import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 

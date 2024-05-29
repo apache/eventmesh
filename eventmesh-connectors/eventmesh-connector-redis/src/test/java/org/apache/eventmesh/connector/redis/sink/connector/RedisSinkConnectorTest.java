@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.redis.sink.connector;
 
+import org.apache.eventmesh.common.config.connector.redis.RedisSinkConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
-import org.apache.eventmesh.connector.redis.sink.config.RedisSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.nio.charset.StandardCharsets;

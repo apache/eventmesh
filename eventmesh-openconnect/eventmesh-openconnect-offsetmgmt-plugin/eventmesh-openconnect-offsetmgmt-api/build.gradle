@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    implementation project(":eventmesh-common")
     api project(":eventmesh-spi")
     api "org.slf4j:slf4j-api"
     implementation "org.apache.logging.log4j:log4j-api"

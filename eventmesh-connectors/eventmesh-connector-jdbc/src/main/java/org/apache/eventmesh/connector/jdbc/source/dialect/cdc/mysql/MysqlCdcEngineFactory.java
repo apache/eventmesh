@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql;
 
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.AbstractCdcEngineFactory;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.CdcEngine;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.CdcEngineFactory;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 
 import org.apache.commons.lang3.StringUtils;
 
