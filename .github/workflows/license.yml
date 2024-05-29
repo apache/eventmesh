@@ -42,5 +42,3 @@ jobs:
 
       - name: Check license compatibility
         run: ./gradlew clean checkDeniedLicense
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
