@@ -1,18 +1,50 @@
 package com.apache.eventmesh.admin.server;
 
-import com.apache.eventmesh.admin.server.task.Task;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.remote.Task;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.PagedList;
+import org.apache.eventmesh.registry.RegisterServerInfo;
+import org.apache.eventmesh.registry.RegistryFactory;
 import org.apache.eventmesh.registry.RegistryService;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Service;
 
-public class AdminServer implements Admin {
+import javax.annotation.PostConstruct;
 
-    private RegistryService registryService;
+@Service
+@Slf4j
+public class AdminServer implements Admin, ApplicationListener<ApplicationReadyEvent> {
 
-//    private EventMeshAdminServerRegisterInfo registerInfo;
+    private final RegistryService registryService;
 
-    public AdminServer(RegistryService registryService) {
-        this.registryService = registryService;
-//        this.registerInfo = registerInfo;
+    private final RegisterServerInfo adminServeInfo;
+
+    private final CommonConfiguration configuration;
+
+    public AdminServer(AdminServerProperties properties) {
+        configuration =
+                ConfigService.getInstance().buildConfigInstance(CommonConfiguration.class);
+        if (configuration == null) {
+            throw new AdminServerRuntimeException(ErrorCode.STARTUP_CONFIG_MISS, "common configuration file miss");
+        }
+        this.adminServeInfo = new RegisterServerInfo();
+
+        adminServeInfo.setHealth(true);
+        adminServeInfo.setAddress(IPUtils.getLocalAddress() + ":" + properties.getPort());
+        String name = Constants.ADMIN_SERVER_REGISTRY_NAME;
+        if (StringUtils.isNotBlank(properties.getServiceName())) {
+            name = properties.getServiceName();
+        }
+        adminServeInfo.setServiceName(name);
+        registryService = RegistryFactory.getInstance(configuration.getEventMeshRegistryPluginType());
     }
 
 
@@ -37,18 +69,35 @@ public class AdminServer implements Admin {
     }
 
     @Override
-    public void reportHeartbeat(HeartBeat heartBeat) {
+    public void reportHeartbeat(ReportHeartBeatRequest heartBeat) {
 
     }
 
     @Override
+    @PostConstruct
     public void start() {
-        registryService.register(null);
+        if (configuration.isEventMeshRegistryPluginEnabled()) {
+            registryService.init();
+        }
     }
 
     @Override
     public void destroy() {
-        registryService.unRegister(null);
-        registryService.shutdown();
+        if (configuration.isEventMeshRegistryPluginEnabled()) {
+            registryService.unRegister(adminServeInfo);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ignore) {
+            }
+            registryService.shutdown();
+        }
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        if (configuration.isEventMeshRegistryPluginEnabled()) {
+            log.info("application is started and registry plugin is enabled, it's will register admin self");
+            registryService.register(adminServeInfo);
+        }
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apache.eventmesh.admin.server.web.db.mapper.EventMeshRuntimeHistoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHistory">
+            <result property="id" column="id" jdbcType="BIGINT"/>
+            <result property="job" column="job" jdbcType="INTEGER"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,job,address,
+        createTime
+    </sql>
+</mapper>

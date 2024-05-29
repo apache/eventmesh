@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apache.eventmesh.admin.server.web.db.mapper.EventMeshMysqlPositionMapper">
+
+    <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshMysqlPosition">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="jobID" column="jobID" jdbcType="INTEGER"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="position" column="position" jdbcType="BIGINT"/>
+            <result property="timestamp" column="timestamp" jdbcType="BIGINT"/>
+            <result property="journalName" column="journalName" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,jobID,address,
+        position,timestamp,journalName,
+        createTime,updateTime
+    </sql>
+</mapper>
