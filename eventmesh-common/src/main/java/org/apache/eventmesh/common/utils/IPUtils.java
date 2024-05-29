@@ -46,7 +46,9 @@ import inet.ipaddr.IPAddressString;
 @Slf4j
 public class IPUtils {
 
-    public static String getLocalAddress() {
+    public static String localAddress = init();
+
+    private static String init() {
         // if the progress works under docker environment
         // return the host ip about this docker located from environment value
         String dockerHostIp = System.getenv("docker_host_ip");
@@ -112,6 +114,11 @@ public class IPUtils {
             log.error("socket or unknown host exception:", e);
         }
         return null;
+    }
+
+    public static String getLocalAddress() {
+        return localAddress;
+
     }
 
     public static boolean isValidIPV4Address(String ip) {

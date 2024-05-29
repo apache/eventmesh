@@ -115,6 +115,9 @@ public class CommonConfiguration {
     @ConfigField(field = "registry.plugin.password")
     private String eventMeshRegistryPluginPassword = "";
 
+    @ConfigField(field = "registry.plugin.enabled")
+    private boolean eventMeshRegistryPluginEnabled = false;
+
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 

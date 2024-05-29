@@ -16,6 +16,37 @@ public final class AdminServiceGrpc {
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<Payload,
+      Payload> getInvokeBiStreamMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "invokeBiStream",
+      requestType = Payload.class,
+      responseType = Payload.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
+  public static io.grpc.MethodDescriptor<Payload,
+      Payload> getInvokeBiStreamMethod() {
+    io.grpc.MethodDescriptor<Payload, Payload> getInvokeBiStreamMethod;
+    if ((getInvokeBiStreamMethod = AdminServiceGrpc.getInvokeBiStreamMethod) == null) {
+      synchronized (AdminServiceGrpc.class) {
+        if ((getInvokeBiStreamMethod = AdminServiceGrpc.getInvokeBiStreamMethod) == null) {
+          AdminServiceGrpc.getInvokeBiStreamMethod = getInvokeBiStreamMethod =
+              io.grpc.MethodDescriptor.<Payload, Payload>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "invokeBiStream"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  Payload.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  Payload.getDefaultInstance()))
+              .setSchemaDescriptor(new AdminServiceMethodDescriptorSupplier("invokeBiStream"))
+              .build();
+        }
+      }
+    }
+    return getInvokeBiStreamMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<Payload,
       Payload> getInvokeMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
@@ -96,6 +127,13 @@ public final class AdminServiceGrpc {
 
     /**
      */
+    public io.grpc.stub.StreamObserver<Payload> invokeBiStream(
+        io.grpc.stub.StreamObserver<Payload> responseObserver) {
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getInvokeBiStreamMethod(), responseObserver);
+    }
+
+    /**
+     */
     public void invoke(Payload request,
         io.grpc.stub.StreamObserver<Payload> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getInvokeMethod(), responseObserver);
@@ -103,6 +141,13 @@ public final class AdminServiceGrpc {
 
     @Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+          .addMethod(
+            getInvokeBiStreamMethod(),
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
+              new MethodHandlers<
+                Payload,
+                Payload>(
+                  this, METHODID_INVOKE_BI_STREAM)))
           .addMethod(
             getInvokeMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -126,6 +171,14 @@ public final class AdminServiceGrpc {
     protected AdminServiceStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new AdminServiceStub(channel, callOptions);
+    }
+
+    /**
+     */
+    public io.grpc.stub.StreamObserver<Payload> invokeBiStream(
+        io.grpc.stub.StreamObserver<Payload> responseObserver) {
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
+          getChannel().newCall(getInvokeBiStreamMethod(), getCallOptions()), responseObserver);
     }
 
     /**
@@ -183,6 +236,7 @@ public final class AdminServiceGrpc {
   }
 
   private static final int METHODID_INVOKE = 0;
+  private static final int METHODID_INVOKE_BI_STREAM = 1;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -215,6 +269,9 @@ public final class AdminServiceGrpc {
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_INVOKE_BI_STREAM:
+          return (io.grpc.stub.StreamObserver<Req>) serviceImpl.invokeBiStream(
+              (io.grpc.stub.StreamObserver<Payload>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -266,6 +323,7 @@ public final class AdminServiceGrpc {
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new AdminServiceFileDescriptorSupplier())
+              .addMethod(getInvokeBiStreamMethod())
               .addMethod(getInvokeMethod())
               .build();
         }
