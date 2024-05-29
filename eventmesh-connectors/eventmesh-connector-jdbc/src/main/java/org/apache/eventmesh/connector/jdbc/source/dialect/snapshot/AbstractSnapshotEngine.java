@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.jdbc.source.dialect.snapshot;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.DataChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges.Builder;
 import org.apache.eventmesh.connector.jdbc.Field;
@@ -33,7 +34,6 @@ import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.event.InsertDataEvent;
 import org.apache.eventmesh.connector.jdbc.source.AbstractEngine;
 import org.apache.eventmesh.connector.jdbc.source.SourceMateData;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.SnapshotResult.SnapshotResultStatus;
 import org.apache.eventmesh.connector.jdbc.table.catalog.Column;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
