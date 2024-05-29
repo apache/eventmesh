@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo">
+            <id property="jobID" column="jobID" jdbcType="INTEGER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="transportType" column="transportType" jdbcType="INTEGER"/>
+            <result property="sourceData" column="sourceData" jdbcType="INTEGER"/>
+            <result property="targetData" column="targetData" jdbcType="INTEGER"/>
+            <result property="state" column="state" jdbcType="TINYINT"/>
+            <result property="jobType" column="jobType" jdbcType="TINYINT"/>
+            <result property="createUid" column="createUid" jdbcType="INTEGER"/>
+            <result property="updateUid" column="updateUid" jdbcType="INTEGER"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        jobID,name,transportType,
+        sourceData,targetData,state,
+        runtimeType,createUid,
+        updateUid,createTime,updateTime
+    </sql>
+</mapper>

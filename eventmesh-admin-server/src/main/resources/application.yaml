@@ -1,8 +1,15 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/test?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false
-    username: sodafang
-    password: asdfasdf
+    url: jdbc:mysql://localhost:3306/eventmesh?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: mike920830
     driver-class-name: com.mysql.cj.jdbc.Driver
-mybatis:
+mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+event-mesh:
+  admin-server:
+    service-name: DEFAULT_GROUP@@em_adm_server
+    port: 8081
