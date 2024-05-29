@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.connector.file.source.connector;
 
-import org.apache.eventmesh.connector.file.source.config.FileSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.file.FileSourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.file.FileRecordPartition;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,9 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -118,9 +117,10 @@ public class FileSourceConnector implements Source {
     }
 
     public static RecordPartition convertToRecordPartition(String fileName) {
-        Map<String, String> map = new HashMap<>();
-        map.put("fileName", fileName);
-        return new RecordPartition(map);
+        FileRecordPartition fileRecordPartition = new FileRecordPartition();
+        fileRecordPartition.setFileName(fileName);
+        fileRecordPartition.setClazz(fileRecordPartition.getRecordPartitionClass());
+        return fileRecordPartition;
     }
 
     private static String getFileName(String filePath) throws NullPointerException {

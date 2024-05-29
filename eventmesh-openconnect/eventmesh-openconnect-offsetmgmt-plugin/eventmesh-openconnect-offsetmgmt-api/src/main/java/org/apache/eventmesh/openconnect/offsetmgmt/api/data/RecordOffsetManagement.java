@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
+
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -26,8 +31,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RecordOffsetManagement {
@@ -47,7 +50,7 @@ public class RecordOffsetManagement {
      */
     public SubmittedPosition submitRecord(RecordPosition position) {
         SubmittedPosition submittedPosition = new SubmittedPosition(position);
-        records.computeIfAbsent(position.getPartition(), e -> new LinkedList<>()).add(submittedPosition);
+        records.computeIfAbsent(position.getRecordPartition(), e -> new LinkedList<>()).add(submittedPosition);
         // ensure thread safety in operation
         synchronized (this) {
             numUnacked.incrementAndGet();
@@ -63,7 +66,7 @@ public class RecordOffsetManagement {
         RecordOffset offset = null;
         // Stop pulling if there is an uncommitted breakpoint
         while (canCommitHead(submittedPositions)) {
-            offset = submittedPositions.poll().getPosition().getOffset();
+            offset = submittedPositions.poll().getPosition().getRecordOffset();
         }
         return offset;
     }
@@ -235,19 +238,19 @@ public class RecordOffsetManagement {
          * @return
          */
         public boolean remove() {
-            Deque<SubmittedPosition> deque = records.get(position.getPartition());
+            Deque<SubmittedPosition> deque = records.get(position.getRecordPartition());
             if (deque == null) {
                 return false;
             }
             boolean result = deque.removeLastOccurrence(this);
             if (deque.isEmpty()) {
-                records.remove(position.getPartition());
+                records.remove(position.getRecordPartition());
             }
             if (result) {
                 messageAcked();
             } else {
                 log.warn("Attempted to remove record from submitted queue for partition {}, "
-                    + "but the record has not been submitted or has already been removed", position.getPartition());
+                    + "but the record has not been submitted or has already been removed", position.getRecordPartition());
             }
             return result;
         }

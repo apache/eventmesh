@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.openconnect.api.connector;
 
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 
 public abstract class SinkConnector implements Sink {

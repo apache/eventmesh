@@ -17,21 +17,21 @@
 
 package org.apache.eventmesh.connector.s3.source.connector;
 
-import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
-import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.s3.S3SourceConfig;
+import org.apache.eventmesh.common.config.connector.s3.SourceConnectorConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.S3.S3RecordOffset;
+import org.apache.eventmesh.common.remote.offset.S3.S3RecordPartition;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -157,16 +157,18 @@ public class S3SourceConnector implements Source {
     }
 
     private RecordPartition getRecordPartition() {
-        Map<String, String> map = new HashMap<>();
-        map.put(REGION, this.sourceConnectorConfig.getRegion());
-        map.put(BUCKET, this.sourceConnectorConfig.getBucket());
-        map.put(FILE_NAME, this.sourceConnectorConfig.getFileName());
-        return new RecordPartition(map);
+        S3RecordPartition s3RecordPartition = new S3RecordPartition();
+        s3RecordPartition.setRegion(this.sourceConnectorConfig.getRegion());
+        s3RecordPartition.setBucket(this.sourceConnectorConfig.getBucket());
+        s3RecordPartition.setFileName(this.sourceConnectorConfig.getFileName());
+        s3RecordPartition.setClazz(s3RecordPartition.getRecordPartitionClass());
+        return s3RecordPartition;
     }
 
     private RecordOffset getRecordOffset() {
-        Map<String, String> map = new HashMap<>();
-        map.put(POSITION, String.valueOf(this.position));
-        return new RecordOffset(map);
+        S3RecordOffset s3RecordOffset = new S3RecordOffset();
+        s3RecordOffset.setOffset(this.position);
+        s3RecordOffset.setClazz(s3RecordOffset.getRecordOffsetClass());
+        return s3RecordOffset;
     }
 }

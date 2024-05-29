@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.sink.handle;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSinkConfig;
 import org.apache.eventmesh.common.utils.LogUtil;
 import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges;
@@ -28,7 +29,6 @@ import org.apache.eventmesh.connector.jdbc.common.EnumeratedValue;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.event.DataChangeEventType;
 import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
-import org.apache.eventmesh.connector.jdbc.sink.config.JdbcSinkConfig;
 import org.apache.eventmesh.connector.jdbc.source.SourceMateData;
 import org.apache.eventmesh.connector.jdbc.table.catalog.Column;
 import org.apache.eventmesh.connector.jdbc.type.Type;

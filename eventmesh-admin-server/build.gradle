@@ -3,6 +3,7 @@ dependencies {
 	implementation project(":eventmesh-common")
 	implementation project(":eventmesh-registry:eventmesh-registry-api")
 	implementation project(":eventmesh-registry:eventmesh-registry-nacos")
+	implementation project(':eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api')
 	implementation "com.alibaba.nacos:nacos-client"
 	implementation ("org.springframework.boot:spring-boot-starter-web") {
 		exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
@@ -11,9 +12,12 @@ dependencies {
 	implementation "io.grpc:grpc-core"
 	implementation "io.grpc:grpc-protobuf"
 	implementation "io.grpc:grpc-stub"
+	implementation "io.grpc:grpc-netty-shaded"
 
+	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
+	implementation group: 'com.baomidou', name: 'mybatis-plus-boot-starter', version: '3.5.5'
+	implementation "org.reflections:reflections:0.10.2"
 
-	implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter"
 	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
 	implementation "com.alibaba:druid-spring-boot-starter"
 	runtimeOnly 'com.mysql:mysql-connector-j'

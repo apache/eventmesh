@@ -19,10 +19,10 @@ package org.apache.eventmesh.connector.openfunction.sink.connector;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.apache.eventmesh.connector.openfunction.sink.config.OpenFunctionSinkConfig;
+import org.apache.eventmesh.common.config.connector.openfunction.OpenFunctionSinkConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.connector.jdbc.source;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
 import org.apache.eventmesh.connector.jdbc.event.Event;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.RandomTaskSelectStrategy;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.TaskSelectStrategy;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.util.Collections;
 import java.util.HashSet;

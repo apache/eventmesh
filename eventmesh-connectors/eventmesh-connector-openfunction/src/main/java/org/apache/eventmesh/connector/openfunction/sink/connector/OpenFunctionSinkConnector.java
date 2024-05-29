@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.openfunction.sink.connector;
 
-import org.apache.eventmesh.connector.openfunction.sink.config.OpenFunctionSinkConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.openfunction.OpenFunctionSinkConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;

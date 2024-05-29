@@ -19,6 +19,7 @@ List pulsar = [
         "org.apache.pulsar:pulsar-client:$pulsar_version"
 ]
 dependencies {
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation pulsar
     compileOnly 'org.projectlombok:lombok'
