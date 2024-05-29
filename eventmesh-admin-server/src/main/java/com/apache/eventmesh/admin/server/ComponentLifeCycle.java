@@ -1,6 +1,6 @@
 package com.apache.eventmesh.admin.server;
 
 public interface ComponentLifeCycle {
-    void start();
+    void start() throws Exception;
     void destroy();
 }
