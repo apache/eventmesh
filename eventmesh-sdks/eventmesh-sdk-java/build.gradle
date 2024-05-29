@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.43.2'
+def grpcVersion = '1.64.0'
 
 dependencies {
-    api project(":eventmesh-common")
+    api(project(":eventmesh-common")) {
+        // Remove logging backend implementations to allow users to choose their own
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+    }
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-core"

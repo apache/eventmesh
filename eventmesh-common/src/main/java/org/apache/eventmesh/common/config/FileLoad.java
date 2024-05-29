@@ -22,11 +22,12 @@ import org.apache.eventmesh.common.config.convert.Convert;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -100,7 +101,10 @@ public interface FileLoad {
         @Override
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             Yaml yaml = new Yaml();
-            return (T) yaml.loadAs(new BufferedInputStream(new FileInputStream(configInfo.getFilePath())), configInfo.getClazz());
+            try (InputStream input = Files.newInputStream(Paths.get(configInfo.getFilePath()));
+                Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                return (T) yaml.loadAs(reader, configInfo.getClazz());
+            }
         }
     }
 }

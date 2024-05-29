@@ -31,7 +31,6 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.ReplyMessageResponseHeader;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
@@ -41,6 +40,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
+import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
@@ -73,12 +73,12 @@ public class ReplyMessageProcessor extends AbstractHttpRequestProcessor {
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
-        HttpCommand responseEventMeshCommand;
         String localAddress = IPUtils.getLocalAddress();
         HttpCommand request = asyncContext.getRequest();
+        final String channelRemoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(request.getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
+            channelRemoteAddr, localAddress);
 
         ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) request.getHeader();
 
@@ -125,7 +125,7 @@ public class ReplyMessageProcessor extends AbstractHttpRequestProcessor {
         }
 
         // control flow rate limit
-        HttpSummaryMetrics summaryMetrics = eventMeshHTTPServer.getMetrics().getSummaryMetrics();
+        HttpMetrics summaryMetrics = eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics();
         if (!eventMeshHTTPServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             summaryMetrics.recordHTTPDiscard();
@@ -167,7 +167,6 @@ public class ReplyMessageProcessor extends AbstractHttpRequestProcessor {
 
         try {
             // body
-            // omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             event = CloudEventBuilder.from(event)
                 .withSubject(replyTopic)
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)

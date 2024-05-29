@@ -38,7 +38,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.HttpTinyClient;
 import org.apache.eventmesh.runtime.util.TraceUtils;
@@ -84,7 +84,7 @@ public class ClientGroupWrapper {
 
     private TcpRetryer tcpRetryer;
 
-    private EventMeshTcpMonitor eventMeshTcpMonitor;
+    private EventMeshTcpMetricsManager eventMeshTcpMetricsManager;
 
     private DownstreamDispatchStrategy downstreamDispatchStrategy;
 
@@ -130,8 +130,8 @@ public class ClientGroupWrapper {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshTCPConfiguration = eventMeshTCPServer.getEventMeshTCPConfiguration();
         this.tcpRetryer = eventMeshTCPServer.getTcpRetryer();
-        this.eventMeshTcpMonitor =
-            Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMonitor());
+        this.eventMeshTcpMetricsManager =
+            Preconditions.checkNotNull(eventMeshTCPServer.getEventMeshTcpMetricsManager());
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
         this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
@@ -437,8 +437,7 @@ public class ClientGroupWrapper {
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
 
             try {
-                eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
-                    .incrementAndGet();
+                eventMeshTcpMetricsManager.mq2eventMeshMsgNumIncrement();
                 event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                         String.valueOf(System.currentTimeMillis()))
@@ -545,8 +544,7 @@ public class ClientGroupWrapper {
                 EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
             try {
-                eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
-                    .incrementAndGet();
+                eventMeshTcpMetricsManager.mq2eventMeshMsgNumIncrement();
                 event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                         String.valueOf(System.currentTimeMillis()))
@@ -663,12 +661,12 @@ public class ClientGroupWrapper {
         this.tcpRetryer = tcpRetryer;
     }
 
-    public EventMeshTcpMonitor getEventMeshTcpMonitor() {
-        return eventMeshTcpMonitor;
+    public EventMeshTcpMetricsManager getEventMeshTcpMetricsManager() {
+        return eventMeshTcpMetricsManager;
     }
 
-    public void setEventMeshTcpMonitor(EventMeshTcpMonitor eventMeshTcpMonitor) {
-        this.eventMeshTcpMonitor = eventMeshTcpMonitor;
+    public void setEventMeshTcpMetricsManager(EventMeshTcpMetricsManager eventMeshTcpMetricsManager) {
+        this.eventMeshTcpMetricsManager = eventMeshTcpMetricsManager;
     }
 
     public DownstreamDispatchStrategy getDownstreamDispatchStrategy() {
@@ -745,7 +743,7 @@ public class ClientGroupWrapper {
                     }
 
                 });
-            eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2mqMsgNum().incrementAndGet();
+            eventMeshTcpMetricsManager.eventMesh2mqMsgNumIncrement();
         } catch (Exception e) {
             log.warn("try send msg back to broker failed");
             throw e;

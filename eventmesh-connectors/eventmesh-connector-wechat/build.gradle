@@ -15,12 +15,6 @@
  * limitations under the License.
  */
 
-configurations {
-    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
-    implementation.exclude group: 'log4j', module: 'log4j'
-    testImplementation.exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
-}
-
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
