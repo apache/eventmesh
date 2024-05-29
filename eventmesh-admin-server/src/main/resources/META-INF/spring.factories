@@ -16,4 +16,4 @@
 #
 
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.apache.eventmesh.admin.server.AdminServerProperties
+  org.apache.eventmesh.admin.server.AdminServerProperties

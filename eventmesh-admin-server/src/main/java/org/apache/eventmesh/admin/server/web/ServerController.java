@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+@RestController
+@RequestMapping("/eventmesh/admin")
+public class ServerController {
 
-        return STATES[index];
-    }
 }

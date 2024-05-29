@@ -15,17 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.service.position;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.common.remote.job.DataSourceType;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+public abstract class PositionHandler implements IReportPositionHandler, IFetchPositionHandler {
 
-        return STATES[index];
-    }
+    protected abstract DataSourceType getSourceType();
 }

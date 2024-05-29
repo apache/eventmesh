@@ -30,8 +30,6 @@ import org.springframework.jdbc.support.lob.LobHandler;
 /**
  * 基于mysql的一些特殊处理定义
  *
- * @author jianghang 2011-10-27 下午01:46:57
- * @version 4.0.0
  */
 public class MysqlDialect extends AbstractDbDialect {
 

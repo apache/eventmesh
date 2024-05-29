@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.handler;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
+import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
+import org.apache.eventmesh.common.remote.response.BaseRemoteResponse;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+public abstract class BaseRequestHandler<T extends BaseRemoteRequest, S extends BaseRemoteResponse> {
 
-        return STATES[index];
+    public BaseRemoteResponse handlerRequest(T request, Metadata metadata) {
+        return handler(request, metadata);
     }
+
+    protected abstract S handler(T request, Metadata metadata);
 }

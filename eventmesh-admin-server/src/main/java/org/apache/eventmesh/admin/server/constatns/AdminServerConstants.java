@@ -15,17 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.constatns;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+public class AdminServerConstants {
+    public static final String CONF_ENV = "configurationPath";
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+    public static final String EVENTMESH_CONF_HOME = System.getProperty(CONF_ENV, System.getenv(CONF_ENV));
 
-        return STATES[index];
-    }
+    public static final String EVENTMESH_CONF_FILE = "eventmesh-admin.properties";
 }

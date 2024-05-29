@@ -15,17 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import lombok.Getter;
+import lombok.Setter;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-        return STATES[index];
-    }
+@ConfigurationProperties("event-mesh.admin-server")
+@Getter
+@Setter
+public class AdminServerProperties {
+
+    private int port;
+    private boolean enableSSL;
+    private String configurationPath;
+    private String configurationFile;
+    private String serviceName;
 }

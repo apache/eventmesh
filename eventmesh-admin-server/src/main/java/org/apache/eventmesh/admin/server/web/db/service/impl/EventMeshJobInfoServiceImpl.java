@@ -15,17 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.service.impl;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
+import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoMapper;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import lombok.extern.slf4j.Slf4j;
 
-        return STATES[index];
-    }
+import org.springframework.stereotype.Service;
+
+/**
+ * @description 针对表【event_mesh_job_info】的数据库操作Service实现
+ * @createDate 2024-05-09 15:51:45
+ */
+@Service
+@Slf4j
+public class EventMeshJobInfoServiceImpl extends ServiceImpl<EventMeshJobInfoMapper, EventMeshJobInfo>
+    implements EventMeshJobInfoService {
+
 }
+
+
+
+
