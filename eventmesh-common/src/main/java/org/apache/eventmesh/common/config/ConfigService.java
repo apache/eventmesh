@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.common.config;
 
-import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
-
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Strings;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,9 +29,7 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.assertj.core.util.Strings;
-
-import lombok.Getter;
+import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
 
 public class ConfigService {
 
@@ -60,6 +58,9 @@ public class ConfigService {
     }
 
     public ConfigService setConfigPath(String configPath) {
+        if (StringUtils.isNotBlank(configPath) && !configPath.endsWith(File.separator)) {
+            configPath = configPath + File.separator;
+        }
         this.configPath = configPath;
         return this;
     }

@@ -40,12 +40,11 @@ public final class EventMeshAdminService {
       "/protobuf/any.proto\"q\n\010Metadata\022\014\n\004type\030" +
       "\003 \001(\t\022\'\n\007headers\030\007 \003(\0132\026.Metadata.Header" +
       "sEntry\032.\n\014HeadersEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005v" +
-      "alue\030\002 \001(\t:\0028\001\"J\n\007Payload\022\033\n\010metadata\030\002 " +
-      "\001(\0132\t.Metadata\022\"\n\004body\030\003 \001(\0132\024.google.pr" +
-      "otobuf.Any2B\n\024AdminBiStreamService\022*\n\016in" +
-      "vokeBiStream\022\010.Payload\032\010.Payload\"\000(\0010\00124" +
-      "\n\014AdminService\022$\n\014invokeStream\022\010.Payload" +
-      "\032\010.Payload\"\000B\002P\001b\006proto3"
+      "alue\030\002 \001(\t:\0028\001\"4\n\007Payload\022\033\n\010metadata\030\002 " +
+      "\001(\0132\t.Metadata\022\014\n\004body\030\003 \001(\0142Z\n\014AdminSer" +
+      "vice\022*\n\016invokeBiStream\022\010.Payload\032\010.Paylo" +
+      "ad\"\000(\0010\001\022\036\n\006invoke\022\010.Payload\032\010.Payload\"\000" +
+      "B\002P\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
