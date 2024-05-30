@@ -95,5 +95,14 @@
         <AsyncLogger name="subscribeLogger" level="info" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
+
+        <AsyncLogger name="com.alipay.sofa.jraft" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="io.grpc.netty" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
     </Loggers>
 </Configuration>

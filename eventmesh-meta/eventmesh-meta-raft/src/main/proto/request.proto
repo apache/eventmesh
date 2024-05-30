@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'com.ecwid.consul:consul-api:1.4.5'
-    implementation 'org.apache.httpcomponents:httpclient'
-    implementation project(":eventmesh-meta:eventmesh-meta-api")
-    implementation project(":eventmesh-common")
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-junit-jupiter"
+syntax = "proto3";
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+option java_multiple_files = true;
+
+option java_package = "org.apache.eventmesh.meta.raft.rpc";
+
+message RequestResponse {
+  int64 value = 1;
+  bool success = 2;
+  string redirect = 3;
+  string errorMsg = 4;
+  map<string, string> info = 5;
 }
+
+
