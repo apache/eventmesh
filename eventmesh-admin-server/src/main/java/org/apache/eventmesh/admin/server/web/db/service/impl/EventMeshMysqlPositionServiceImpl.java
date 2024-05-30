@@ -20,15 +20,16 @@ package org.apache.eventmesh.admin.server.web.db.service.impl;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshMysqlPosition;
 import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshMysqlPositionMapper;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshMysqlPositionService;
+
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.stereotype.Service;
-
 /**
- * @description 针对表【event_mesh_mysql_position】的数据库操作Service实现
- * @createDate 2024-05-14 17:15:03
+ * for table 'event_mesh_mysql_position' db operation
+ * 2024-05-14 17:15:03
  */
 @Service
 @Slf4j

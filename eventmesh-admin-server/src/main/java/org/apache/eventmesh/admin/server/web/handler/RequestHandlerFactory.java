@@ -20,13 +20,13 @@ package org.apache.eventmesh.admin.server.web.handler;
 import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
 import org.apache.eventmesh.common.remote.response.BaseRemoteResponse;
 
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
-
 import java.lang.reflect.ParameterizedType;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Component;
 
 @Component
 public class RequestHandlerFactory implements ApplicationListener<ContextRefreshedEvent> {

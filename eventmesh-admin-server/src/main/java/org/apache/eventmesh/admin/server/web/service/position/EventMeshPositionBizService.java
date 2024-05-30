@@ -18,9 +18,6 @@
 package org.apache.eventmesh.admin.server.web.service.position;
 
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.DataSourceType;
@@ -30,6 +27,8 @@ import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -54,8 +53,8 @@ public class EventMeshPositionBizService {
         }
         IReportPositionHandler handler = factory.getHandler(type);
         if (handler == null) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, String.format("illegal data base " +
-                "type [%s], it not match any report position handler", type));
+            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST,
+                String.format("illegal data base type [%s], it not match any report position handler", type));
         }
     }
 

@@ -19,15 +19,14 @@ package org.apache.eventmesh.admin.server.web.db.mapper;
 
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHistory;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
 import org.apache.ibatis.annotations.Mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
 /**
- * @author sodafang
- * @description 针对表【event_mesh_runtime_history(记录runtime上运行任务的变更)】的数据库操作Mapper
- * @createDate 2024-05-14 17:15:03
- * @Entity entity.db.web.server.admin.eventmesh.apache.org.EventMeshRuntimeHistory
+ * for table 'event_mesh_runtime_history' db operation
+ * 2024-05-14 17:15:03
+ * entity.db.web.server.admin.eventmesh.apache.org.EventMeshRuntimeHistory
  */
 @Mapper
 public interface EventMeshRuntimeHistoryMapper extends BaseMapper<EventMeshRuntimeHistory> {

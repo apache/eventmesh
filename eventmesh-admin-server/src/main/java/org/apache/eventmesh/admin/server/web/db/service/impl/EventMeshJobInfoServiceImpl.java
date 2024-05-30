@@ -20,15 +20,16 @@ package org.apache.eventmesh.admin.server.web.db.service.impl;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoMapper;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
+
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.stereotype.Service;
-
 /**
- * @description 针对表【event_mesh_job_info】的数据库操作Service实现
- * @createDate 2024-05-09 15:51:45
+ * for table 'event_mesh_job_info' db operation
+ * 2024-05-09 15:51:45
  */
 @Service
 @Slf4j

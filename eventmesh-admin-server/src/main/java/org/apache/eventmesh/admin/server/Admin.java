@@ -21,6 +21,9 @@ import org.apache.eventmesh.common.remote.Task;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.utils.PagedList;
 
+/**
+ * Admin
+ */
 public interface Admin extends ComponentLifeCycle {
 
     /**

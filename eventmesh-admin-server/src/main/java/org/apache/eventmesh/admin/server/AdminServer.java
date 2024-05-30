@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.admin.server;
 
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
@@ -33,11 +29,15 @@ import org.apache.eventmesh.registry.RegisterServerInfo;
 import org.apache.eventmesh.registry.RegistryFactory;
 import org.apache.eventmesh.registry.RegistryService;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j

@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.admin.server.web.service.position;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.common.remote.job.DataSourceType;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j

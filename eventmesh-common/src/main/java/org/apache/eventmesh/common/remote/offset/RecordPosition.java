@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common.remote.offset;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.eventmesh.common.remote.offset.S3.S3RecordOffset;
 import org.apache.eventmesh.common.remote.offset.S3.S3RecordPartition;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
@@ -34,15 +32,19 @@ import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordPartitio
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 public class RecordPosition {
+
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     @JsonSubTypes({
-            @JsonSubTypes.Type(value = CanalRecordPartition.class, name = "CanalRecordPartition"),
-            @JsonSubTypes.Type(value = FileRecordPartition.class, name = "FileRecordPartition"),
-            @JsonSubTypes.Type(value = S3RecordPartition.class, name = "S3RecordPartition"),
-            @JsonSubTypes.Type(value = KafkaRecordPartition.class, name = "KafkaRecordPartition"),
-            @JsonSubTypes.Type(value = PulsarRecordPartition.class, name = "PulsarRecordPartition"),
-            @JsonSubTypes.Type(value = RocketMQRecordPartition.class, name = "RocketMQRecordPartition"),
+        @JsonSubTypes.Type(value = CanalRecordPartition.class, name = "CanalRecordPartition"),
+        @JsonSubTypes.Type(value = FileRecordPartition.class, name = "FileRecordPartition"),
+        @JsonSubTypes.Type(value = S3RecordPartition.class, name = "S3RecordPartition"),
+        @JsonSubTypes.Type(value = KafkaRecordPartition.class, name = "KafkaRecordPartition"),
+        @JsonSubTypes.Type(value = PulsarRecordPartition.class, name = "PulsarRecordPartition"),
+        @JsonSubTypes.Type(value = RocketMQRecordPartition.class, name = "RocketMQRecordPartition"),
     })
     private RecordPartition recordPartition;
 
@@ -50,12 +52,12 @@ public class RecordPosition {
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     @JsonSubTypes({
-            @JsonSubTypes.Type(value = CanalRecordOffset.class, name = "CanalRecordOffset"),
-            @JsonSubTypes.Type(value = FileRecordOffset.class, name = "FileRecordOffset"),
-            @JsonSubTypes.Type(value = S3RecordOffset.class, name = "S3RecordOffset"),
-            @JsonSubTypes.Type(value = KafkaRecordOffset.class, name = "KafkaRecordOffset"),
-            @JsonSubTypes.Type(value = PulsarRecordOffset.class, name = "PulsarRecordOffset"),
-            @JsonSubTypes.Type(value = RocketMQRecordOffset.class, name = "RocketMQRecordOffset"),
+        @JsonSubTypes.Type(value = CanalRecordOffset.class, name = "CanalRecordOffset"),
+        @JsonSubTypes.Type(value = FileRecordOffset.class, name = "FileRecordOffset"),
+        @JsonSubTypes.Type(value = S3RecordOffset.class, name = "S3RecordOffset"),
+        @JsonSubTypes.Type(value = KafkaRecordOffset.class, name = "KafkaRecordOffset"),
+        @JsonSubTypes.Type(value = PulsarRecordOffset.class, name = "PulsarRecordOffset"),
+        @JsonSubTypes.Type(value = RocketMQRecordOffset.class, name = "RocketMQRecordOffset"),
     })
     private RecordOffset recordOffset;
 
@@ -66,11 +68,15 @@ public class RecordPosition {
     }
 
     public RecordPosition(
-            RecordPartition recordPartition, RecordOffset recordOffset) {
+        RecordPartition recordPartition, RecordOffset recordOffset) {
         this.recordPartition = recordPartition;
         this.recordOffset = recordOffset;
         this.recordPartitionClazz = recordPartition.getRecordPartitionClass();
         this.recordOffsetClazz = recordOffset.getRecordOffsetClass();
+    }
+
+    public RecordPartition getRecordPartition() {
+        return recordPartition;
     }
 
     public void setRecordPartition(RecordPartition recordPartition) {
@@ -82,6 +88,10 @@ public class RecordPosition {
         this.recordPartitionClazz = recordPartition.getRecordPartitionClass();
     }
 
+    public RecordOffset getRecordOffset() {
+        return recordOffset;
+    }
+
     public void setRecordOffset(RecordOffset recordOffset) {
         this.recordOffset = recordOffset;
         if (recordOffset == null) {
@@ -89,14 +99,6 @@ public class RecordPosition {
             return;
         }
         this.recordOffsetClazz = recordOffset.getRecordOffsetClass();
-    }
-
-    public RecordPartition getRecordPartition() {
-        return recordPartition;
-    }
-
-    public RecordOffset getRecordOffset() {
-        return recordOffset;
     }
 
     public Class<? extends RecordPartition> getRecordPartitionClazz() {

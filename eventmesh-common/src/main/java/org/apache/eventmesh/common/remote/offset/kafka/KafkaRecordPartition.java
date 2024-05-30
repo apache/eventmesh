@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.common.remote.offset.kafka;
 
-import lombok.Data;
-import lombok.ToString;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.Objects;
+
+import lombok.Data;
+import lombok.ToString;
 
 
 @Data

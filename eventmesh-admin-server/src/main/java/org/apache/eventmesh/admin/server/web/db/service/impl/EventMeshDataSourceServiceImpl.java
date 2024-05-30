@@ -20,13 +20,14 @@ package org.apache.eventmesh.admin.server.web.db.service.impl;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshDataSourceMapper;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import org.springframework.stereotype.Service;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
 /**
- * @description 针对表【event_mesh_data_source】的数据库操作Service实现
- * @createDate 2024-05-09 15:52:49
+ * for table 'event_mesh_data_source' db operation
+ * 2024-05-09 15:52:49
  */
 @Service
 public class EventMeshDataSourceServiceImpl extends ServiceImpl<EventMeshDataSourceMapper, EventMeshDataSource>

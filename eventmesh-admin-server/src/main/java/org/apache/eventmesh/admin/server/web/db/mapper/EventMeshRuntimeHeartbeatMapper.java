@@ -24,7 +24,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * for table【event_mesh_runtime_heartbeat】db operation
+ * for table 'event_mesh_runtime_heartbeat' db operation
  * 2024-05-14 17:15:03
  * entity.db.web.server.admin.eventmesh.apache.org.EventMeshRuntimeHeartbeat
  */
