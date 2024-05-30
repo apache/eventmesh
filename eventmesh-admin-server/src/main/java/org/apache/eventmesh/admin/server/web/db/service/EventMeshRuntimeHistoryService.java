@@ -22,8 +22,8 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHistory;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
- * @description 针对表【event_mesh_runtime_history(记录runtime上运行任务的变更)】的数据库操作Service
- * @createDate 2024-05-14 17:15:03
+ * for table 'event_mesh_runtime_history' db operation
+ * 2024-05-14 17:15:03
  */
 public interface EventMeshRuntimeHistoryService extends IService<EventMeshRuntimeHistory> {
 

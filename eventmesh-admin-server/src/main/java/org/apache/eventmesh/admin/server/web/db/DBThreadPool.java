@@ -17,17 +17,17 @@
 
 package org.apache.eventmesh.admin.server.web.db;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.common.EventMeshThreadFactory;
-
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PreDestroy;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
+
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j

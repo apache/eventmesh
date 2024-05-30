@@ -24,7 +24,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * for table【event_mesh_job_info】db operation
+ * for table 'event_mesh_job_info' db operation
  * 2024-05-09 15:51:45
  * entity.db.web.server.admin.eventmesh.apache.org.EventMeshJobInfo
  */

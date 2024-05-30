@@ -24,13 +24,6 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
 import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
@@ -39,14 +32,21 @@ import org.apache.eventmesh.common.remote.job.JobTransportType;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * @description 针对表【event_mesh_job_info】的数据库操作Service实现
- * @createDate 2024-05-09 15:51:45
+ * for table 'event_mesh_job_info' db operation
+ * 2024-05-09 15:51:45
  */
 @Service
 @Slf4j

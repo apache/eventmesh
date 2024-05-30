@@ -193,12 +193,12 @@ public final class Payload extends
     @Override
     public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) {
-        return true;
-      }
-      if (isInitialized == 0) {
-        return false;
-      }
+        if (isInitialized == 1) {
+            return true;
+        }
+        if (isInitialized == 0) {
+            return false;
+        }
 
         memoizedIsInitialized = 1;
         return true;
@@ -219,9 +219,9 @@ public final class Payload extends
     @Override
     public int getSerializedSize() {
         int size = memoizedSize;
-      if (size != -1) {
-        return size;
-      }
+        if (size != -1) {
+            return size;
+        }
 
         size = 0;
         if (metadata_ != null) {
@@ -247,27 +247,27 @@ public final class Payload extends
         }
         Payload other = (Payload) obj;
 
-      if (hasMetadata() != other.hasMetadata()) {
-        return false;
-      }
+        if (hasMetadata() != other.hasMetadata()) {
+            return false;
+        }
         if (hasMetadata()) {
-          if (!getMetadata()
-              .equals(other.getMetadata())) {
-            return false;
-          }
+            if (!getMetadata()
+                .equals(other.getMetadata())) {
+                return false;
+            }
         }
-      if (hasBody() != other.hasBody()) {
-        return false;
-      }
+        if (hasBody() != other.hasBody()) {
+            return false;
+        }
         if (hasBody()) {
-          if (!getBody()
-              .equals(other.getBody())) {
-            return false;
-          }
+            if (!getBody()
+                .equals(other.getBody())) {
+                return false;
+            }
         }
-      if (!unknownFields.equals(other.unknownFields)) {
-        return false;
-      }
+        if (!unknownFields.equals(other.unknownFields)) {
+            return false;
+        }
         return true;
     }
 
@@ -540,9 +540,9 @@ public final class Payload extends
         }
 
         public Builder mergeFrom(Payload other) {
-          if (other == Payload.getDefaultInstance()) {
-            return this;
-          }
+            if (other == Payload.getDefaultInstance()) {
+                return this;
+            }
             if (other.hasMetadata()) {
                 mergeMetadata(other.getMetadata());
             }

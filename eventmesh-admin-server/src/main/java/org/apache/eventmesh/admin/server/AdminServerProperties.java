@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.admin.server;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("event-mesh.admin-server")
 @Getter

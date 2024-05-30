@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.admin.server;
 
+/**
+ * adminServer ComponentLifeCycle
+ */
 public interface ComponentLifeCycle {
 
     void start() throws Exception;

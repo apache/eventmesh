@@ -18,7 +18,6 @@
 package org.apache.eventmesh.admin.server;
 
 import org.apache.eventmesh.admin.server.constatns.AdminServerConstants;
-
 import org.apache.eventmesh.common.config.ConfigService;
 
 import org.springframework.boot.SpringApplication;

@@ -19,15 +19,14 @@ package org.apache.eventmesh.admin.server.web.db.mapper;
 
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
 import org.apache.ibatis.annotations.Mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
 /**
- * @author sodafang
- * @description 针对表【event_mesh_data_source】的数据库操作Mapper
- * @createDate 2024-05-09 15:52:49
- * @Entity entity.db.web.server.admin.eventmesh.apache.org.EventMeshDataSource
+ * for table 'event_mesh_data_source' db operation
+ * 2024-05-09 15:52:49
+ * entity.db.web.server.admin.eventmesh.apache.org.EventMeshDataSource
  */
 @Mapper
 public interface EventMeshDataSourceMapper extends BaseMapper<EventMeshDataSource> {
