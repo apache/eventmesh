@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'com.ecwid.consul:consul-api:1.4.5'
-    implementation 'org.apache.httpcomponents:httpclient'
-    implementation project(":eventmesh-meta:eventmesh-meta-api")
-    implementation project(":eventmesh-common")
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-junit-jupiter"
+package org.apache.eventmesh.meta.raft;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+
+import org.apache.eventmesh.meta.raft.rpc.RequestResponse;
+
+/**
+ * MetaService.
+ */
+public interface JraftMetaService {
+
+    void handle(RequestResponse request, EventClosure closure);
 }

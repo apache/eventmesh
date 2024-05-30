@@ -15,14 +15,33 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'com.ecwid.consul:consul-api:1.4.5'
-    implementation 'org.apache.httpcomponents:httpclient'
-    implementation project(":eventmesh-meta:eventmesh-meta-api")
-    implementation project(":eventmesh-common")
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-junit-jupiter"
+package org.apache.eventmesh.meta.raft.consts;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+/**
+ * MetaRaftConstants.
+ */
+
+public interface MetaRaftConstants {
+
+    String GROUP = "EM_META";
+
+    String SELF = "self";
+
+    String MEMBERS = "members";
+
+    String DATAPATH = "dataPath";
+
+    String ELECTIONTIMEOUT = "electionTimeout";
+
+    String SNAPSHOTINTERVAL = "snapshotInterval";
+
+    String REFRESHLEADERINTERVAL = "refreshLeaderInterval";
+
+    int PUT = 1;
+
+    int GET = 2;
+
+    int DELETE = 3;
+
+    int RESPONSE = 4;
 }
