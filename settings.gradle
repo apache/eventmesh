@@ -95,6 +95,7 @@ include 'eventmesh-meta:eventmesh-meta-nacos'
 include 'eventmesh-meta:eventmesh-meta-etcd'
 include 'eventmesh-meta:eventmesh-meta-consul'
 include 'eventmesh-meta:eventmesh-meta-zookeeper'
+include 'eventmesh-meta:eventmesh-meta-raft'
 
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
@@ -124,3 +125,6 @@ include 'eventmesh-webhook:eventmesh-webhook-receive'
 include 'eventmesh-retry'
 include 'eventmesh-retry:eventmesh-retry-api'
 include 'eventmesh-retry:eventmesh-retry-rocketmq'
+
+
+
