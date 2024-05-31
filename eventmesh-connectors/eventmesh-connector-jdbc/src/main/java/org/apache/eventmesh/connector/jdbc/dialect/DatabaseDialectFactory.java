@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.dialect;
 
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 

@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.pravega.sink.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.pravega.PravegaSinkConfig;
 import org.apache.eventmesh.connector.pravega.client.PravegaCloudEventWriter;
 import org.apache.eventmesh.connector.pravega.client.PravegaEvent;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
-import org.apache.eventmesh.connector.pravega.sink.config.PravegaSinkConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;

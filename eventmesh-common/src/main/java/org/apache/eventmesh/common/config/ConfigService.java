@@ -60,6 +60,9 @@ public class ConfigService {
     }
 
     public ConfigService setConfigPath(String configPath) {
+        if (StringUtils.isNotBlank(configPath) && !configPath.endsWith(File.separator)) {
+            configPath = configPath + File.separator;
+        }
         this.configPath = configPath;
         return this;
     }

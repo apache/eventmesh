@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.http.sink.handle;
 
+import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
@@ -132,7 +133,7 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
 
         // get timestamp and offset
         Long timestamp = httpConnectRecord.getData().getTimestamp();
-        Map<String, ?> offset = httpConnectRecord.getData().getPosition().getOffset().getOffset();
+        Map<String, ?> offset = ((HttpRecordOffset) httpConnectRecord.getData().getPosition().getRecordOffset()).getOffsetMap();
 
         // send the request
         return this.webClient.post(url.getPath())
