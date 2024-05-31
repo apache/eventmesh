@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.dingtalk.sink.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.dingtalk.DingDingSinkConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.dingtalk.common.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.connector.dingtalk.config.DingDingMessageTemplateType;
-import org.apache.eventmesh.connector.dingtalk.sink.config.DingDingSinkConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;

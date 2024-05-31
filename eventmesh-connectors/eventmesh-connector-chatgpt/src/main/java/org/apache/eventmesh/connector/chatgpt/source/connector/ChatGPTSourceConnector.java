@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.chatgpt.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
 import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
@@ -25,7 +26,6 @@ import org.apache.eventmesh.connector.chatgpt.source.enums.ChatGPTRequestType;
 import org.apache.eventmesh.connector.chatgpt.source.handlers.ChatHandler;
 import org.apache.eventmesh.connector.chatgpt.source.handlers.ParseHandler;
 import org.apache.eventmesh.connector.chatgpt.source.managers.OpenaiManager;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

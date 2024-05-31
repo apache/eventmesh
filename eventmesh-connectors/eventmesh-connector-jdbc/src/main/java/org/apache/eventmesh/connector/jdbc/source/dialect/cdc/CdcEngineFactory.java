@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc;
 
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialect;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 

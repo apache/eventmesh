@@ -21,10 +21,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.apache.eventmesh.connector.wechat.sink.config.WeChatSinkConfig;
+import org.apache.eventmesh.common.config.connector.wechat.WeChatSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.io.IOException;
@@ -111,9 +109,7 @@ public class WeChatSinkConnectorTest {
         Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();
 
         List<ConnectRecord> records = new ArrayList<>();
-        RecordPartition partition = new RecordPartition();
-        RecordOffset offset = new RecordOffset();
-        ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+        ConnectRecord connectRecord = new ConnectRecord(null, null,
             System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
         records.add(connectRecord);
 
@@ -141,9 +137,7 @@ public class WeChatSinkConnectorTest {
         Mockito.doReturn(sendMessageRequestCall).when(okHttpClient).newCall(Mockito.argThat(sendMessageMatcher));
         Mockito.doReturn(sendMessageResponse).when(sendMessageRequestCall).execute();
 
-        RecordPartition partition = new RecordPartition();
-        RecordOffset offset = new RecordOffset();
-        ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+        ConnectRecord connectRecord = new ConnectRecord(null, null,
             System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
         Method sendMessageMethod = WeChatSinkConnector.class.getDeclaredMethod("sendMessage", ConnectRecord.class);
         sendMessageMethod.setAccessible(true);

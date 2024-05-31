@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.snapshot.mysql;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
 import org.apache.eventmesh.connector.jdbc.context.mysql.MysqlOffsetContext;
@@ -26,8 +28,6 @@ import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.event.EventConsumer;
 import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
 import org.apache.eventmesh.connector.jdbc.source.SourceMateData;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
-import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlConstants;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDialectSql;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlJdbcContext;

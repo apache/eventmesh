@@ -17,10 +17,14 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
+import org.apache.eventmesh.common.config.connector.Config;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class RabbitMQServerConfig {
+@EqualsAndHashCode(callSuper = true)
+public class RabbitMQServerConfig extends Config {
 
     private boolean sourceEnable;
 

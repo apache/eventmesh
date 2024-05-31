@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
 
     implementation 'org.redisson:redisson:3.17.3'
