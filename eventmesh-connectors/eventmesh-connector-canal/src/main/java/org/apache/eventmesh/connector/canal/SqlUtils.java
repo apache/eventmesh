@@ -29,11 +29,17 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlUtils {
 
@@ -42,12 +48,13 @@ public class SqlUtils {
     public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final Map<Integer, Class<?>> sqlTypeToJavaTypeMap = new HashMap<Integer, Class<?>>();
     private static final ConvertUtilsBean convertUtilsBean = new ConvertUtilsBean();
+    private static final Logger log = LoggerFactory.getLogger(SqlUtils.class);
 
     static {
         // regist Converter
-        convertUtilsBean.register(SQL_TIMESTAMP, java.sql.Date.class);
-        convertUtilsBean.register(SQL_TIMESTAMP, java.sql.Time.class);
-        convertUtilsBean.register(SQL_TIMESTAMP, java.sql.Timestamp.class);
+        convertUtilsBean.register(SQL_TIMESTAMP, Date.class);
+        convertUtilsBean.register(SQL_TIMESTAMP, Time.class);
+        convertUtilsBean.register(SQL_TIMESTAMP, Timestamp.class);
         convertUtilsBean.register(SQL_BYTES, byte[].class);
 
         // bool
@@ -60,7 +67,7 @@ public class SqlUtils {
 
         // long
         sqlTypeToJavaTypeMap.put(Types.BIGINT, Long.class);
-        // mysql bit最多64位，无符号
+        // mysql bit
         sqlTypeToJavaTypeMap.put(Types.BIT, BigInteger.class);
 
         // decimal
@@ -71,9 +78,9 @@ public class SqlUtils {
         sqlTypeToJavaTypeMap.put(Types.DECIMAL, BigDecimal.class);
 
         // date
-        sqlTypeToJavaTypeMap.put(Types.DATE, java.sql.Date.class);
-        sqlTypeToJavaTypeMap.put(Types.TIME, java.sql.Time.class);
-        sqlTypeToJavaTypeMap.put(Types.TIMESTAMP, java.sql.Timestamp.class);
+        sqlTypeToJavaTypeMap.put(Types.DATE, Date.class);
+        sqlTypeToJavaTypeMap.put(Types.TIME, Time.class);
+        sqlTypeToJavaTypeMap.put(Types.TIMESTAMP, Timestamp.class);
 
         // blob
         sqlTypeToJavaTypeMap.put(Types.BLOB, byte[].class);
@@ -102,15 +109,6 @@ public class SqlUtils {
         sqlTypeToJavaTypeMap.put(Types.CLOB, String.class);
     }
 
-    /**
-     * 将指定java.sql.Types的ResultSet value转换成相应的String
-     *
-     * @param rs
-     * @param index
-     * @param sqlType
-     * @return
-     * @throws SQLException
-     */
     public static String sqlValueToString(ResultSet rs, int index, int sqlType) throws SQLException {
         Class<?> requiredType = sqlTypeToJavaTypeMap.get(sqlType);
         if (requiredType == null) {
@@ -120,17 +118,7 @@ public class SqlUtils {
         return getResultSetValue(rs, index, requiredType);
     }
 
-    /**
-     * sqlValueToString方法的逆向过程
-     *
-     * @param value
-     * @param sqlType
-     * @param isRequired
-     * @param isEmptyStringNulled
-     * @return
-     */
     public static Object stringToSqlValue(String value, int sqlType, boolean isRequired, boolean isEmptyStringNulled) {
-        // 设置变量
         if (SqlUtils.isTextType(sqlType)) {
             if ((value == null) || (StringUtils.isEmpty(value) && isEmptyStringNulled)) {
                 return isRequired ? REQUIRED_FIELD_NULL_SUBSTITUTE : null;
@@ -139,7 +127,7 @@ public class SqlUtils {
             }
         } else {
             if (StringUtils.isEmpty(value)) {
-                return isEmptyStringNulled ? null : value;// oracle的返回null，保持兼容
+                return isEmptyStringNulled ? null : value;
             } else {
                 Class<?> requiredType = sqlTypeToJavaTypeMap.get(sqlType);
                 if (requiredType == null) {
@@ -178,6 +166,9 @@ public class SqlUtils {
                     }
                     // }
                 }
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + sqlType);
         }
 
         return source;
@@ -230,27 +221,10 @@ public class SqlUtils {
             || Number.class.equals(requiredType)) {
             value = rs.getDouble(index);
             wasNullCheck = true;
-        } else if (java.sql.Time.class.equals(requiredType)) {
-            // try {
-            // value = rs.getTime(index);
-            // } catch (SQLException e) {
-            value = rs.getString(index);// 尝试拿为string对象，0000无法用Time表示
-            // if (value == null && !rs.wasNull()) {
-            // value = "00:00:00"; //
-            // mysql设置了zeroDateTimeBehavior=convertToNull，出现0值时返回为null
-            // }
-            // }
-        } else if (java.sql.Timestamp.class.equals(requiredType) || java.sql.Date.class.equals(requiredType)) {
-            // try {
-            // value = convertTimestamp(rs.getTimestamp(index));
-            // } catch (SQLException e) {
-            // 尝试拿为string对象，0000-00-00 00:00:00无法用Timestamp 表示
+        } else if (Time.class.equals(requiredType)) {
             value = rs.getString(index);
-            // if (value == null && !rs.wasNull()) {
-            // value = "0000:00:00 00:00:00"; //
-            // mysql设置了zeroDateTimeBehavior=convertToNull，出现0值时返回为null
-            // }
-            // }
+        } else if (Timestamp.class.equals(requiredType) || Date.class.equals(requiredType)) {
+            value = rs.getString(index);
         } else if (BigDecimal.class.equals(requiredType)) {
             value = rs.getBigDecimal(index);
         } else if (BigInteger.class.equals(requiredType)) {
@@ -262,7 +236,7 @@ public class SqlUtils {
         } else if (byte[].class.equals(requiredType)) {
             byte[] bytes = rs.getBytes(index);
             if (bytes != null) {
-                value = new String(bytes, StandardCharsets.ISO_8859_1);// 将binary转化为iso-8859-1的字符串
+                value = new String(bytes, StandardCharsets.ISO_8859_1);
             }
         } else {
             // Some unknown type desired -> rely on getObject.
@@ -293,7 +267,7 @@ public class SqlUtils {
      * @throws SQLException if thrown by the JDBC API
      * @see Blob
      * @see Clob
-     * @see java.sql.Timestamp
+     * @see Timestamp
      */
     private static String getResultSetValue(ResultSet rs, int index) throws SQLException {
         Object obj = rs.getObject(index);

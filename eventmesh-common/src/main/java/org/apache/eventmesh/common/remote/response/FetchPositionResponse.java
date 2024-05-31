@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.common.remote.response;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -23,8 +23,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
 * 
-* for table `event_mesh_data_source】的数据库操作Service
-* @createDate 2024-05-09 15:52:49
+* for table 'event_mesh_data_source' db operation
+* 2024-05-09 15:52:49
 */
 public interface EventMeshDataSourceService extends IService<EventMeshDataSource> {
 

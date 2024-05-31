@@ -18,7 +18,9 @@
 package org.apache.eventmesh.common.remote.offset;
 
 public abstract class RecordPartition {
+
     public abstract Class<? extends RecordPartition> getRecordPartitionClass();
+
     public RecordPartition() {
 
     }

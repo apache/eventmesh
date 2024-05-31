@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.registry.nacos;
 
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.client.naming.utils.UtilAndComs;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigField;
+
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.client.naming.utils.UtilAndComs;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor

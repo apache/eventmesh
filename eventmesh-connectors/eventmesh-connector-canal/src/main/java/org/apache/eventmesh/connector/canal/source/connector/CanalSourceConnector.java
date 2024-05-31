@@ -18,26 +18,18 @@
 package org.apache.eventmesh.connector.canal.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
-import org.apache.eventmesh.common.config.connector.rdb.canal.SinkConnectorConfig;
-import org.apache.eventmesh.common.config.connector.rdb.canal.SourceConnectorConfig;
-import org.apache.eventmesh.common.remote.job.SyncConsistency;
-import org.apache.eventmesh.common.remote.job.SyncMode;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
-import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.source.EntryParser;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
-import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -103,10 +95,6 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
-//        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
-        // init source database connection
-//        DatabaseConnection.sourceConfig = sourceConfig;
-//        DatabaseConnection.initSourceConnection();
 
         canalServer = CanalServerWithEmbedded.instance();
 
@@ -144,8 +132,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     }
 
     private Canal buildCanal(CanalSourceConfig sourceConfig) {
-        // 设置下slaveId，保证多个piplineId下重复引用时不重复
-        long slaveId = 10000;// 默认基数
+        long slaveId = 10000;
         if (sourceConfig.getSlaveId() != null) {
             slaveId = sourceConfig.getSlaveId();
         }
@@ -249,7 +236,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     public List<ConnectRecord> poll() {
         int emptyTimes = 0;
         com.alibaba.otter.canal.protocol.Message message = null;
-        if (sourceConfig.getBatchTimeout() < 0) {// perform polling
+        if (sourceConfig.getBatchTimeout() < 0) {
             while (running) {
                 message = canalServer.getWithoutAck(clientIdentity, sourceConfig.getBatchSize());
                 if (message == null || message.getId() == -1L) { // empty
@@ -322,57 +309,5 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     @Override
     public Source create() {
         return new CanalSourceConnector();
-    }
-
-    public static void main(String[] args) {
-        CanalSourceConfig canalSourceConfig = new CanalSourceConfig();
-        canalSourceConfig.setCanalInstanceId(12L);
-        canalSourceConfig.setDesc("canalSourceDemo");
-        canalSourceConfig.setSlaveId(123L);
-        canalSourceConfig.setClientId((short) 1);
-        canalSourceConfig.setDestination("destinationGroup");
-        canalSourceConfig.setDdlSync(false);
-        canalSourceConfig.setFilterTableError(false);
-        canalSourceConfig.setSyncMode(SyncMode.ROW);
-        canalSourceConfig.setSyncConsistency(SyncConsistency.BASE);
-
-        SourceConnectorConfig sourceConnectorConfig = new SourceConnectorConfig();
-        sourceConnectorConfig.setConnectorName("canalSourceConnector");
-        sourceConnectorConfig.setDbAddress("127.0.0.1");
-        sourceConnectorConfig.setDbPort(3306);
-        sourceConnectorConfig.setUrl("jdbc:mysql://127.0.0.1:3306/test_db?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false");
-        sourceConnectorConfig.setSchemaName("test_db");
-        sourceConnectorConfig.setTableName("people");
-        sourceConnectorConfig.setUserName("root");
-        sourceConnectorConfig.setPassWord("default");
-
-        OffsetStorageConfig offsetStorageConfig = new OffsetStorageConfig();
-        offsetStorageConfig.setOffsetStorageAddr("127.0.0.1:8081");
-        offsetStorageConfig.setOffsetStorageType("admin");
-        Map<String, String> extensionMap = new HashMap<>();
-        extensionMap.put("jobId", "1");
-        offsetStorageConfig.setExtensions(extensionMap);
-
-        canalSourceConfig.setSourceConnectorConfig(sourceConnectorConfig);
-        canalSourceConfig.setOffsetStorageConfig(offsetStorageConfig);
-
-        System.out.println(JsonUtils.toJSONString(canalSourceConfig));
-
-        CanalSinkConfig canalSinkConfig = new CanalSinkConfig();
-        canalSinkConfig.setSyncMode(SyncMode.ROW);
-
-        SinkConnectorConfig sinkConnectorConfig = new SinkConnectorConfig();
-        sinkConnectorConfig.setConnectorName("canalSinkConnector");
-        sinkConnectorConfig.setDbAddress("127.0.0.1");
-        sinkConnectorConfig.setDbPort(25000);
-        sinkConnectorConfig.setUrl("jdbc:mysql://127.0.0.1:25000/test_db?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false");
-        sinkConnectorConfig.setSchemaName("test_db");
-        sinkConnectorConfig.setTableName("people");
-        sinkConnectorConfig.setUserName("clougence");
-        sinkConnectorConfig.setPassWord("123456");
-
-        canalSinkConfig.setSinkConnectorConfig(sinkConnectorConfig);
-
-        System.out.println(JsonUtils.toJSONString(canalSinkConfig));
     }
 }

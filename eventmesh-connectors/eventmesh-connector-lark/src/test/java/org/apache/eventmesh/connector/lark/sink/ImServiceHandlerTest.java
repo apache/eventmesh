@@ -29,8 +29,6 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.config.connector.lark.LarkSinkConfig;
 import org.apache.eventmesh.common.config.connector.lark.SinkConnectorConfig;
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
@@ -103,9 +101,8 @@ public class ImServiceHandlerTest {
     private void regularSink() throws Exception {
         final int times = 3;
         for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+
+            ConnectRecord connectRecord = new ConnectRecord(null, null,
                 System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
             if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
                 imServiceHandler.sinkAsync(connectRecord);
@@ -145,9 +142,8 @@ public class ImServiceHandlerTest {
         long duration = retryDelayInMills * sinkTimes;
 
         for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+
+            ConnectRecord connectRecord = new ConnectRecord(null, null,
                 System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
             if (Boolean.parseBoolean(sinkConnectorConfig.getSinkAsync())) {
                 imServiceHandler.sinkAsync(connectRecord);

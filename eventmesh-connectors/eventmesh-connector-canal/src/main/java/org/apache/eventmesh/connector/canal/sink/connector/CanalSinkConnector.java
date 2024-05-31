@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.canal.sink.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
-
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
@@ -152,12 +151,11 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             if (isDdlDatas(canalConnectRecordList)) {
                 doDdl(context, canalConnectRecordList);
             } else {
-                // 进行一次数据合并，合并相同pk的多次I/U/D操作
                 canalConnectRecordList = DbLoadMerger.merge(canalConnectRecordList);
-                // 按I/U/D进行归并处理
+
                 DbLoadData loadData = new DbLoadData();
                 doBefore(canalConnectRecordList, loadData);
-                // 执行load操作
+
                 doLoad(context, sinkConfig, loadData);
 
             }
@@ -170,11 +168,6 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         return new CanalSinkConnector();
     }
 
-    /**
-     * 分析整个数据，将datas划分为多个批次. ddl sql前的DML并发执行，然后串行执行ddl后，再并发执行DML
-     *
-     * @return
-     */
     private boolean isDdlDatas(List<CanalConnectRecord> canalConnectRecordList) {
         boolean result = false;
         for (CanalConnectRecord canalConnectRecord : canalConnectRecordList) {
@@ -186,19 +179,13 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         return result;
     }
 
-    /**
-     * 过滤掉不需要处理的数据
-     */
     private List<CanalConnectRecord> filterRecord(List<CanalConnectRecord> canalConnectRecordList, CanalSinkConfig sinkConfig) {
         return canalConnectRecordList.stream()
-            .filter(record -> sinkConfig.getSinkConnectorConfig().getSchemaName().equalsIgnoreCase(record.getSchemaName()) &&
-                sinkConfig.getSinkConnectorConfig().getTableName().equalsIgnoreCase(record.getTableName()))
+            .filter(record -> sinkConfig.getSinkConnectorConfig().getSchemaName().equalsIgnoreCase(record.getSchemaName())
+                && sinkConfig.getSinkConnectorConfig().getTableName().equalsIgnoreCase(record.getTableName()))
             .collect(Collectors.toList());
     }
 
-    /**
-     * 执行ddl的调用，处理逻辑比较简单: 串行调用
-     */
     private void doDdl(DbLoadContext context, List<CanalConnectRecord> canalConnectRecordList) {
         for (final CanalConnectRecord record : canalConnectRecordList) {
             try {
@@ -207,11 +194,6 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     public Boolean doInStatement(Statement stmt) throws SQLException, DataAccessException {
                         boolean result = true;
                         if (StringUtils.isNotEmpty(record.getDdlSchemaName())) {
-                            // 如果mysql，执行ddl时，切换到在源库执行的schema上
-                            // result &= stmt.execute("use " +
-                            // data.getDdlSchemaName());
-
-                            // 解决当数据库名称为关键字如"Order"的时候,会报错,无法同步
                             result &= stmt.execute("use `" + record.getDdlSchemaName() + "`");
                         }
                         result &= stmt.execute(record.getSql());
@@ -229,28 +211,21 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         }
     }
 
-    /**
-     * 执行数据处理，比如数据冲突检测
-     */
     private void doBefore(List<CanalConnectRecord> canalConnectRecordList, final DbLoadData loadData) {
         for (final CanalConnectRecord record : canalConnectRecordList) {
             boolean filter = interceptor.before(sinkConfig, record);
             if (!filter) {
-                loadData.merge(record);// 进行分类
+                loadData.merge(record);
             }
         }
     }
 
     private void doLoad(DbLoadContext context, CanalSinkConfig sinkConfig, DbLoadData loadData) {
-        // 优先处理delete,可以利用batch优化
         List<List<CanalConnectRecord>> batchDatas = new ArrayList<>();
         for (TableLoadData tableData : loadData.getTables()) {
             if (useBatch) {
-                // 优先执行delete语句，针对unique更新，一般会进行delete + insert的处理模式，避免并发更新
                 batchDatas.addAll(split(tableData.getDeleteDatas()));
             } else {
-                // 如果不可以执行batch，则按照单条数据进行并行提交
-                // 优先执行delete语句，针对unique更新，一般会进行delete + insert的处理模式，避免并发更新
                 for (CanalConnectRecord data : tableData.getDeleteDatas()) {
                     batchDatas.add(Arrays.asList(data));
                 }
@@ -261,14 +236,11 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
         batchDatas.clear();
 
-        // 处理下insert/update
         for (TableLoadData tableData : loadData.getTables()) {
             if (useBatch) {
-                // 执行insert + update语句
                 batchDatas.addAll(split(tableData.getInsertDatas()));
-                batchDatas.addAll(split(tableData.getUpdateDatas()));// 每条记录分为一组，并行加载
+                batchDatas.addAll(split(tableData.getUpdateDatas()));
             } else {
-                // 执行insert + update语句
                 for (CanalConnectRecord data : tableData.getInsertDatas()) {
                     batchDatas.add(Arrays.asList(data));
                 }
@@ -283,33 +255,28 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         batchDatas.clear();
     }
 
-    /**
-     * 将对应的数据按照sql相同进行batch组合
-     */
     private List<List<CanalConnectRecord>> split(List<CanalConnectRecord> records) {
         List<List<CanalConnectRecord>> result = new ArrayList<>();
         if (records == null || records.isEmpty()) {
             return result;
         } else {
-            int[] bits = new int[records.size()];// 初始化一个标记，用于标明对应的记录是否已分入某个batch
+            int[] bits = new int[records.size()];
             for (int i = 0; i < bits.length; i++) {
-                // 跳过已经被分入batch的
                 while (i < bits.length && bits[i] == 1) {
                     i++;
                 }
 
-                if (i >= bits.length) { // 已处理完成，退出
+                if (i >= bits.length) {
                     break;
                 }
 
-                // 开始添加batch，最大只加入batchSize个数的对象
                 List<CanalConnectRecord> batch = new ArrayList<>();
                 bits[i] = 1;
                 batch.add(records.get(i));
                 for (int j = i + 1; j < bits.length && batch.size() < batchSize; j++) {
                     if (bits[j] == 0 && canBatch(records.get(i), records.get(j))) {
                         batch.add(records.get(j));
-                        bits[j] = 1;// 修改为已加入
+                        bits[j] = 1;
                     }
                 }
                 result.add(batch);
@@ -319,9 +286,6 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         }
     }
 
-    /**
-     * 判断两条记录是否可以作为一个batch提交，主要判断sql是否相等. 可优先通过schemaName进行判断
-     */
     private boolean canBatch(CanalConnectRecord source, CanalConnectRecord target) {
         return StringUtils.equals(source.getSchemaName(),
             target.getSchemaName())
@@ -329,15 +293,11 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             && StringUtils.equals(source.getSql(), target.getSql());
     }
 
-    /**
-     * 首先进行并行执行，出错后转为串行执行
-     */
     private void doTwoPhase(DbLoadContext context, CanalSinkConfig sinkConfig, List<List<CanalConnectRecord>> totalRows, boolean canBatch) {
-        // 预处理下数据
         List<Future<Exception>> results = new ArrayList<Future<Exception>>();
         for (List<CanalConnectRecord> rows : totalRows) {
             if (CollectionUtils.isEmpty(rows)) {
-                continue; // 过滤空记录
+                continue;
             }
             results.add(executor.submit(new DbLoadWorker(context, rows, dbDialect, canBatch)));
         }
@@ -347,9 +307,6 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             Exception ex = null;
             try {
                 ex = result.get();
-//                for (CanalConnectRecord data : totalRows.get(i)) {
-//                    interceptor.after(context, data);// 通知加载完成
-//                }
             } catch (Exception e) {
                 ex = e;
             }
@@ -361,20 +318,17 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         }
 
         if (partFailed) {
-
-            // 尝试的内容换成phase one跑的所有数据，避免因failed datas计算错误而导致丢数据
             List<CanalConnectRecord> retryRecords = new ArrayList<>();
             for (List<CanalConnectRecord> rows : totalRows) {
                 retryRecords.addAll(rows);
             }
 
-            context.getFailedRecords().clear(); // 清理failed data数据
+            context.getFailedRecords().clear();
 
-            // 可能为null，manager老版本数据序列化传输时，因为数据库中没有skipLoadException变量配置
             Boolean skipException = sinkConfig.getSkipException();
-            if (skipException != null && skipException) {// 如果设置为允许跳过单条异常，则一条条执行数据load，准确过滤掉出错的记录，并进行日志记录
+            if (skipException != null && skipException) {
                 for (CanalConnectRecord retryRecord : retryRecords) {
-                    DbLoadWorker worker = new DbLoadWorker(context, Arrays.asList(retryRecord), dbDialect, false);// 强制设置batch为false
+                    DbLoadWorker worker = new DbLoadWorker(context, Arrays.asList(retryRecord), dbDialect, false);
                     try {
                         Exception ex = worker.call();
                         if (ex != null) {
@@ -391,23 +345,17 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     }
                 }
             } else {
-                // 直接一批进行处理，减少线程调度
-                DbLoadWorker worker = new DbLoadWorker(context, retryRecords, dbDialect, false);// 强制设置batch为false
+                DbLoadWorker worker = new DbLoadWorker(context, retryRecords, dbDialect, false);
                 try {
                     Exception ex = worker.call();
                     if (ex != null) {
-                        throw ex; // 自己抛自己接
+                        throw ex;
                     }
                 } catch (Exception ex) {
                     log.error("##load phase two failed!", ex);
                     throw new RuntimeException(ex);
                 }
             }
-
-            // 清理failed data数据
-//            for (CanalConnectRecord retryRecord : retryRecords) {
-//                interceptor.after(context, retryRecord);// 通知加载完成
-//            }
         }
     }
 
@@ -444,17 +392,16 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         private Exception doCall() {
             RuntimeException error = null;
             ExecuteResult exeResult = null;
-            int index = 0;// 记录下处理成功的记录下标
+            int index = 0;
             while (index < records.size()) {
-                // 处理数据切分
                 final List<CanalConnectRecord> splitDatas = new ArrayList<>();
                 if (useBatch && canBatch) {
                     int end = Math.min(index + batchSize, records.size());
                     splitDatas.addAll(records.subList(index, end));
-                    index = end;// 移动到下一批次
+                    index = end;
                 } else {
                     splitDatas.add(records.get(index));
-                    index = index + 1;// 移动到下一条
+                    index = index + 1;
                 }
 
                 int retryCount = 0;
@@ -462,20 +409,18 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     try {
                         if (!CollectionUtils.isEmpty(failedRecords)) {
                             splitDatas.clear();
-                            splitDatas.addAll(failedRecords); // 下次重试时，只处理错误的记录
+                            splitDatas.addAll(failedRecords);
                         } else {
-                            failedRecords.addAll(splitDatas); // 先添加为出错记录，可能获取lob,datasource会出错
+                            failedRecords.addAll(splitDatas);
                         }
 
                         final LobCreator lobCreator = dbDialect.getLobHandler().getLobCreator();
                         if (useBatch && canBatch) {
-                            // 处理batch
                             final String sql = splitDatas.get(0).getSql();
                             int[] affects = new int[splitDatas.size()];
                             affects = (int[]) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
-                                // 初始化一下内容
                                 try {
-                                    failedRecords.clear(); // 先清理
+                                    failedRecords.clear();
                                     processedRecords.clear();
                                     JdbcTemplate template = dbDialect.getJdbcTemplate();
                                     int[] affects1 = template.batchUpdate(sql, new BatchPreparedStatementSetter() {
@@ -494,17 +439,16 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                                 }
                             });
 
-                            // 更新统计信息
                             for (int i = 0; i < splitDatas.size(); i++) {
                                 assert affects != null;
                                 processStat(splitDatas.get(i), affects[i], true);
                             }
                         } else {
-                            final CanalConnectRecord record = splitDatas.get(0);// 直接取第一条
+                            final CanalConnectRecord record = splitDatas.get(0);
                             int affect = 0;
                             affect = (Integer) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
                                 try {
-                                    failedRecords.clear(); // 先清理
+                                    failedRecords.clear();
                                     processedRecords.clear();
                                     JdbcTemplate template = dbDialect.getJdbcTemplate();
                                     int affect1 = template.update(record.getSql(), new PreparedStatementSetter() {
@@ -518,7 +462,6 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                                     lobCreator.close();
                                 }
                             });
-                            // 更新统计信息
                             processStat(record, affect, false);
                         }
 
@@ -533,20 +476,19 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     }
 
                     if (ExecuteResult.SUCCESS == exeResult) {
-                        allFailedRecords.addAll(failedRecords);// 记录一下异常到all记录中
+                        allFailedRecords.addAll(failedRecords);
                         allProcessedRecords.addAll(processedRecords);
-                        failedRecords.clear();// 清空上一轮的处理
+                        failedRecords.clear();
                         processedRecords.clear();
                         break; // do next eventData
                     } else if (ExecuteResult.RETRY == exeResult) {
-                        retryCount = retryCount + 1;// 计数一次
-                        // 出现异常，理论上当前的批次都会失败
+                        retryCount = retryCount + 1;
                         processedRecords.clear();
                         failedRecords.clear();
                         failedRecords.addAll(splitDatas);
                         int retry = 3;
                         if (retryCount >= retry) {
-                            processFailedDatas(index);// 重试已结束，添加出错记录并退出
+                            processFailedDatas(index);
                             throw new RuntimeException(String.format("execute retry %s times failed", retryCount), error);
                         } else {
                             try {
@@ -556,42 +498,37 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                                 Thread.sleep(wait);
                             } catch (InterruptedException ex) {
                                 Thread.interrupted();
-                                processFailedDatas(index);// 局部处理出错了
+                                processFailedDatas(index);
                                 throw new RuntimeException(ex);
                             }
                         }
                     } else {
-                        // 出现异常，理论上当前的批次都会失败
                         processedRecords.clear();
                         failedRecords.clear();
                         failedRecords.addAll(splitDatas);
-                        processFailedDatas(index);// 局部处理出错了
+                        processFailedDatas(index);
                         throw error;
                     }
                 }
             }
-
-            // 记录一下当前处理过程中失败的记录,affect = 0的记录
             context.getFailedRecords().addAll(allFailedRecords);
             context.getProcessedRecords().addAll(allProcessedRecords);
             return null;
         }
 
         private void doPreparedStatement(PreparedStatement ps, DbDialect dbDialect, LobCreator lobCreator,
-            CanalConnectRecord record) throws SQLException {
+                                         CanalConnectRecord record) throws SQLException {
             EventType type = record.getEventType();
-            // 注意insert/update语句对应的字段数序都是将主键排在后面
             List<EventColumn> columns = new ArrayList<EventColumn>();
             if (type.isInsert()) {
-                columns.addAll(record.getColumns()); // insert为所有字段
+                columns.addAll(record.getColumns());
                 columns.addAll(record.getKeys());
             } else if (type.isDelete()) {
                 columns.addAll(record.getKeys());
             } else if (type.isUpdate()) {
                 boolean existOldKeys = !CollectionUtils.isEmpty(record.getOldKeys());
-                columns.addAll(record.getUpdatedColumns());// 只更新带有isUpdate=true的字段
+                columns.addAll(record.getUpdatedColumns());
                 if (existOldKeys && dbDialect.isDRDS()) {
-                    // DRDS需要区分主键是否有变更
                     columns.addAll(record.getUpdatedKeys());
                 } else {
                     columns.addAll(record.getKeys());
@@ -609,8 +546,6 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                 Object param = null;
                 if (dbDialect instanceof MysqlDialect
                     && (sqlType == Types.TIME || sqlType == Types.TIMESTAMP || sqlType == Types.DATE)) {
-                    // 解决mysql的0000-00-00 00:00:00问题，直接依赖mysql
-                    // driver进行处理，如果转化为Timestamp会出错
                     param = column.getColumnValue();
                 } else {
                     param = SqlUtils.stringToSqlValue(column.getColumnValue(),
@@ -631,18 +566,13 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                         case Types.TIME:
                         case Types.TIMESTAMP:
                         case Types.DATE:
-                            // 只处理mysql的时间类型，oracle的进行转化处理
                             if (dbDialect instanceof MysqlDialect) {
-                                // 解决mysql的0000-00-00 00:00:00问题，直接依赖mysql
-                                // driver进行处理，如果转化为Timestamp会出错
                                 ps.setObject(paramIndex, param);
                             } else {
                                 StatementCreatorUtils.setParameterValue(ps, paramIndex, sqlType, null, param);
                             }
                             break;
                         case Types.BIT:
-                            // 只处理mysql的bit类型，bit最多存储64位，所以需要使用BigInteger进行处理才能不丢精度
-                            // mysql driver将bit按照setInt进行处理，会导致数据越界
                             if (dbDialect instanceof MysqlDialect) {
                                 StatementCreatorUtils.setParameterValue(ps, paramIndex, Types.DECIMAL, null, param);
                             } else {
@@ -663,26 +593,23 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
         private void processStat(CanalConnectRecord record, int affect, boolean batch) {
             if (batch && (affect < 1 && affect != Statement.SUCCESS_NO_INFO)) {
-                failedRecords.add(record); // 记录到错误的临时队列，进行重试处理
+                failedRecords.add(record);
             } else if (!batch && affect < 1) {
-                failedRecords.add(record);// 记录到错误的临时队列，进行重试处理
+                failedRecords.add(record);
             } else {
-                processedRecords.add(record); // 记录到成功的临时队列，commit也可能会失败。所以这记录也可能需要进行重试
-//              this.processStat(record, context);
+                processedRecords.add(record);
+                // this.processStat(record, context);
             }
         }
 
-        // 出现异常回滚了，记录一下异常记录
         private void processFailedDatas(int index) {
-            allFailedRecords.addAll(failedRecords);// 添加失败记录
-            context.getFailedRecords().addAll(allFailedRecords);// 添加历史出错记录
-            for (; index < records.size(); index++) { // 记录一下未处理的数据
+            allFailedRecords.addAll(failedRecords);
+            context.getFailedRecords().addAll(allFailedRecords);
+            for (; index < records.size(); index++) {
                 context.getFailedRecords().add(records.get(index));
             }
-            // 这里不需要添加当前成功记录，出现异常后会rollback所有的成功记录，比如processDatas有记录，但在commit出现失败
-            // (bugfix)
             allProcessedRecords.addAll(processedRecords);
-            context.getProcessedRecords().addAll(allProcessedRecords);// 添加历史成功记录
+            context.getProcessedRecords().addAll(allProcessedRecords);
         }
     }
 

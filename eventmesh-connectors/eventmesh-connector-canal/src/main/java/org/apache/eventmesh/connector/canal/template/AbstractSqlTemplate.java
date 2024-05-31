@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.canal.template;
 
 /**
- * 默认的基于标准SQL实现的CRUD sql封装
+ * implement SQL CRUD with standard SQL
  */
 public abstract class AbstractSqlTemplate implements SqlTemplate {
 
@@ -34,7 +34,7 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         sql.append(" from ").append(getFullName(schemaName, tableName)).append(" where ( ");
         appendColumnEquals(sql, pkNames, "and");
         sql.append(" ) ");
-        return sql.toString().intern();// 不使用intern，避免方法区内存消耗过多
+        return sql.toString().intern();
     }
 
     public String getUpdateSql(String schemaName, String tableName, String[] pkNames, String[] columnNames, boolean updatePks, String shardColumn) {
@@ -43,7 +43,7 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         sql.append(" where (");
         appendColumnEquals(sql, pkNames, "and");
         sql.append(")");
-        return sql.toString().intern(); // 不使用intern，避免方法区内存消耗过多
+        return sql.toString().intern();
     }
 
     public String getInsertSql(String schemaName, String tableName, String[] pkNames, String[] columnNames) {
@@ -60,13 +60,13 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         sql.append(") values (");
         appendColumnQuestions(sql, allColumns);
         sql.append(")");
-        return sql.toString().intern();// intern优化，避免出现大量相同的字符串
+        return sql.toString().intern();
     }
 
     public String getDeleteSql(String schemaName, String tableName, String[] pkNames) {
         StringBuilder sql = new StringBuilder("delete from " + getFullName(schemaName, tableName) + " where ");
         appendColumnEquals(sql, pkNames, "and");
-        return sql.toString().intern();// intern优化，避免出现大量相同的字符串
+        return sql.toString().intern();
     }
 
     protected String getFullName(String schemaName, String tableName) {
@@ -101,19 +101,10 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         }
     }
 
-    /**
-     * 针对DRDS改造, 在 update set 集合中, 排除 单个拆分键 的赋值操作
-     *
-     * @param sql
-     * @param columns
-     * @param separator
-     * @param excludeShardColumn 需要排除的 拆分列
-     */
     protected void appendExcludeSingleShardColumnEquals(StringBuilder sql, String[] columns, String separator, boolean updatePks,
         String excludeShardColumn) {
         int size = columns.length;
         for (int i = 0; i < size; i++) {
-            // 如果是DRDS数据库, 并且存在拆分键 且 等于当前循环列, 跳过
             if (!updatePks && columns[i].equals(excludeShardColumn)) {
                 continue;
             }

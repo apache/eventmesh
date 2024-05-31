@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.canal.template;
 
 /**
- * sql构造模板操作
+ * SqlTemplate
  */
 public interface SqlTemplate {
 
@@ -30,9 +30,6 @@ public interface SqlTemplate {
 
     public String getInsertSql(String schemaName, String tableName, String[] pkNames, String[] columnNames);
 
-    /**
-     * 获取对应的mergeSql
-     */
     public String getMergeSql(String schemaName, String tableName, String[] pkNames, String[] columnNames,
         String[] viewColumnNames, boolean updatePks, String shardColumn);
 }

@@ -27,7 +27,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * @TableName event_mesh_runtime_heartbeat
+ * event_mesh_runtime_heartbeat
  */
 @TableName(value = "event_mesh_runtime_heartbeat")
 @Data

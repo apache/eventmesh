@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.registry;
 
-import lombok.Getter;
-
 import java.util.List;
+
+import lombok.Getter;
 
 public class NotifyEvent {
 
-    public NotifyEvent(){
+    public NotifyEvent() {
 
     }
 
@@ -35,7 +35,6 @@ public class NotifyEvent {
         this.isIncrement = isIncrement;
         this.instances = instances;
     }
-
 
 
     // means whether it is an increment data

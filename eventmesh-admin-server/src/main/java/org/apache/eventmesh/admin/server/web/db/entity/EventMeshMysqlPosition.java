@@ -27,7 +27,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * @TableName event_mesh_mysql_position
+ * event_mesh_mysql_position
  */
 @TableName(value = "event_mesh_mysql_position")
 @Data

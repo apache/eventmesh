@@ -21,6 +21,8 @@ import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.spring.SpringSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.spring.SpringRecordOffset;
+import org.apache.eventmesh.common.remote.offset.spring.SpringRecordPartition;
 import org.apache.eventmesh.connector.spring.source.MessageSendingOperations;
 import org.apache.eventmesh.openconnect.SourceWorker;
 import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
@@ -125,8 +127,8 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
      */
     @Override
     public void send(Object message) {
-        RecordPartition partition = new RecordPartition();
-        RecordOffset offset = new RecordOffset();
+        RecordPartition partition = new SpringRecordPartition();
+        RecordOffset offset = new SpringRecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
         addSpringEnvironmentPropertyExtensions(record);
         queue.offer(record);
@@ -140,8 +142,8 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
      */
     @Override
     public void send(Object message, SendMessageCallback workerCallback) {
-        RecordPartition partition = new RecordPartition();
-        RecordOffset offset = new RecordOffset();
+        RecordPartition partition = new SpringRecordPartition();
+        RecordOffset offset = new SpringRecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message);
         record.addExtension(SourceWorker.CALLBACK_EXTENSION, workerCallback);
         addSpringEnvironmentPropertyExtensions(record);

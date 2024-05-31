@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import io.netty.channel.Channel;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import inet.ipaddr.HostName;
@@ -46,6 +47,7 @@ import inet.ipaddr.IPAddressString;
 @Slf4j
 public class IPUtils {
 
+    @Getter
     public static String localAddress = init();
 
     private static String init() {
@@ -114,11 +116,6 @@ public class IPUtils {
             log.error("socket or unknown host exception:", e);
         }
         return null;
-    }
-
-    public static String getLocalAddress() {
-        return localAddress;
-
     }
 
     public static boolean isValidIPV4Address(String ip) {

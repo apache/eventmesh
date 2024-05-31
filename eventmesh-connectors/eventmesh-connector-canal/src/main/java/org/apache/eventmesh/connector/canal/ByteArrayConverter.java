@@ -22,6 +22,8 @@ import org.apache.commons.beanutils.Converter;
 import org.apache.commons.beanutils.converters.ArrayConverter;
 import org.apache.commons.beanutils.converters.ByteConverter;
 
+import java.nio.charset.StandardCharsets;
+
 
 public class ByteArrayConverter implements Converter {
 
@@ -54,15 +56,14 @@ public class ByteArrayConverter implements Converter {
             return (value);
         }
 
-        // BLOB类型，canal直接存储为String("ISO-8859-1")
         if (value instanceof String) {
             try {
-                return ((String) value).getBytes("ISO-8859-1");
+                return ((String) value).getBytes(StandardCharsets.ISO_8859_1);
             } catch (Exception e) {
                 throw new ConversionException(e);
             }
         }
 
-        return converter.convert(type, value); // byteConvertor进行转化
+        return converter.convert(type, value);
     }
 }

@@ -21,13 +21,13 @@ import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mq.rocketmq.RocketMQSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordOffset;
+import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordPartition;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordOffset;
-import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
@@ -144,10 +144,6 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
 
             for (MessageQueue messageQueue : mqDivided) {
                 try {
-//                    Map<String, String> partitionMap = new HashMap<>();
-//                    partitionMap.put("topic", messageQueue.getTopic());
-//                    partitionMap.put("brokerName", messageQueue.getBrokerName());
-//                    partitionMap.put("queueId", messageQueue.getQueueId() + "");
                     RocketMQRecordPartition recordPartition = new RocketMQRecordPartition();
                     recordPartition.setBroker(messageQueue.getBrokerName());
                     recordPartition.setTopic(messageQueue.getTopic());
@@ -192,12 +188,12 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
     @Override
     public void commit(ConnectRecord record) {
         // send success, commit offset
-        RocketMQRecordPartition rocketMQRecordPartition = (RocketMQRecordPartition)(record.getPosition().getRecordPartition());
+        RocketMQRecordPartition rocketMQRecordPartition = (RocketMQRecordPartition) (record.getPosition().getRecordPartition());
         String brokerName = rocketMQRecordPartition.getBroker();
         String topic = rocketMQRecordPartition.getTopic();
         int queueId = Integer.parseInt(rocketMQRecordPartition.getQueueId());
         MessageQueue mq = new MessageQueue(topic, brokerName, queueId);
-        RocketMQRecordOffset rocketMQRecordOffset = (RocketMQRecordOffset)record.getPosition().getRecordOffset();
+        RocketMQRecordOffset rocketMQRecordOffset = (RocketMQRecordOffset) record.getPosition().getRecordOffset();
         long offset = rocketMQRecordOffset.getQueueOffset();
         long canCommitOffset = removeMessage(mq, offset);
         log.info("commit record {}|mq {}|canCommitOffset {}", record, mq, canCommitOffset);

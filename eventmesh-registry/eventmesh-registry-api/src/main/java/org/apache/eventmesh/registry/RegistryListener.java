@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.registry;
 
+/**
+ * RegistryListener
+ */
 public interface RegistryListener {
+
     void onChange(NotifyEvent event) throws Exception;
 }

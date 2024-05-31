@@ -68,6 +68,7 @@ public interface FileLoad {
         private final Convert convert = new Convert();
 
         @SuppressWarnings("unchecked")
+        @Override
         public <T> T getConfig(ConfigInfo configInfo) throws IOException {
             final Properties properties = new Properties();
             if (StringUtils.isNotBlank(configInfo.getResourceUrl())) {

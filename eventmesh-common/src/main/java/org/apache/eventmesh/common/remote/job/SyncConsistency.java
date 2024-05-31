@@ -19,15 +19,15 @@ package org.apache.eventmesh.common.remote.job;
 
 public enum SyncConsistency {
     /**
-     * 基于当前介质最新数据
+     * based with media
      */
     MEDIA("M"),
     /**
-     * 基于当前的store记录的数据
+     * based with store
      */
     STORE("S"),
     /**
-     * 基于当前的变更value，最终一致性
+     * Based on the current change value, eventual consistency
      */
     BASE("B");
 

@@ -33,7 +33,7 @@ public class CanalSinkConfig extends SinkConfig {
 
     private Integer poolSize = 5;                           // sink thread size for single channel
 
-    private SyncMode syncMode;                              // sync mode：column/row
+    private SyncMode syncMode;                              // sync mode: field/row
 
     private Boolean skipException = false;                  // skip sink process exception
 

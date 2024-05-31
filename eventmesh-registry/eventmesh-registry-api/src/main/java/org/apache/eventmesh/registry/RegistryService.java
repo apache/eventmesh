@@ -24,6 +24,9 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 
 import java.util.List;
 
+/**
+ * RegistryService
+ */
 @EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
 public interface RegistryService {
     void init() throws RegistryException;

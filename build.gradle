@@ -95,7 +95,8 @@ allprojects {
 
     checkstyleMain.exclude('**/org/apache/eventmesh/client/grpc/protos**')
             .exclude('**/org/apache/eventmesh/common/protocol/grpc/cloudevents**')
-            .exclude('**/org/apache/eventmesh/common/protocol/grpc/protos/**')
+            .exclude('**/org/apache/eventmesh/common/protocol/grpc/proto**')
+            .exclude('**/org/apache/eventmesh/common/protocol/grpc/adminserver/**')
             .exclude('**/org/apache/eventmesh/connector/openfunction/client/EventMeshGrpcService**')
             .exclude('**/org/apache/eventmesh/connector/openfunction/client/CallbackServiceGrpc**')
             .exclude('**/org/apache/eventmesh/connector/jdbc/antlr**')
@@ -405,7 +406,7 @@ tasks.register('checkDeniedLicense') {
                 "BSD-4-Clause", "BSD-4-Clause-UC", "NPL-1.0", "NPL-1.1", "JSON"
         ]
         // Update exemptions according to https://github.com/apache/eventmesh/issues/4842
-        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib"]
+        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib", "jsqlparser"]
 
         def licenseFile = file('tools/dist-license/LICENSE')
         def lines = licenseFile.readLines()

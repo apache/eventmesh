@@ -22,8 +22,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.apache.eventmesh.common.config.connector.mq.rocketmq.RocketMQSinkConfig;
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
@@ -81,9 +79,7 @@ public class RocketMQSinkConnectorTest {
     private List<ConnectRecord> generateMockedRecords(final int messageCount) {
         List<ConnectRecord> records = new ArrayList<>();
         for (int i = 0; i < messageCount; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset, System.currentTimeMillis(),
+            ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(),
                 EXPECTED_MESSAGE.getBytes(StandardCharsets.UTF_8));
             connectRecord.addExtension("id", String.valueOf(UUID.randomUUID()));
             records.add(connectRecord);

@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector.canal.sink;
 
-import javafx.fxml.LoadException;
-
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.model.EventColumn;
 import org.apache.eventmesh.connector.canal.model.EventColumnIndexComparable;
@@ -32,29 +30,30 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 
 /**
  * <pre>
- * 合并相同schema-table的变更记录.
- * pk相同的多条变更数据合并后的结果是：
+ * merge the same schema-table change record.
+ * The result of merging multiple change data with the same primary key (pk) is:
  * 1, I
  * 2, U
  * 3, D
- * 如果有一条I，多条U，merge成I;
- * 如果有多条U，取最晚的那条;
+ * If there is one "I" (Insert) and multiple "U" (Update), merge into "I";
+ * If there are multiple "U" (Update), take the latest one;
  * </pre>
  */
 @Slf4j
 public class DbLoadMerger {
 
     /**
-     * 将一批数据进行根据table+主键信息进行合并，保证一个表的一个pk记录只有一条结果
+     * Merge a batch of data based on table and primary key information,
+     * ensuring that there is only one record for each primary key in a table
      *
      * @param eventDatas
      * @return
@@ -85,7 +84,6 @@ public class DbLoadMerger {
     }
 
     private static void mergeInsert(CanalConnectRecord record, Map<RowKey, CanalConnectRecord> result) {
-        // insert无主键变更的处理
         RowKey rowKey = new RowKey(record.getSchemaName(), record.getTableName(),
             record.getKeys());
         if (!result.containsKey(rowKey)) {
@@ -93,18 +91,13 @@ public class DbLoadMerger {
         } else {
             CanalConnectRecord oldRecord = result.get(rowKey);
             record.setSize(oldRecord.getSize() + record.getSize());
-            // 如果上一条变更是delete的，就直接用insert替换
             if (oldRecord.getEventType() == EventType.DELETE) {
                 result.put(rowKey, record);
             } else if (record.getEventType() == EventType.UPDATE
                 || record.getEventType() == EventType.INSERT) {
-                // insert之前出现了update逻辑上不可能，唯一的可能性主要是Freedom的介入，人为的插入了一条Insert记录
-                // 不过freedom一般不建议Insert操作，只建议执行update/delete操作. update默认会走merge
-                // sql,不存在即插入
                 log.warn("update-insert/insert-insert happend. before[{}] , after[{}]", oldRecord, record);
-                // 如果上一条变更是update的，就用insert替换，并且把上一条存在而这一条不存在的字段值拷贝到这一条中
                 CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
-                mergeEventData.getOldKeys().clear();// 清空oldkeys，insert记录不需要
+                mergeEventData.getOldKeys().clear();
                 result.put(rowKey, mergeEventData);
             }
         }
@@ -112,29 +105,23 @@ public class DbLoadMerger {
 
     private static void mergeUpdate(CanalConnectRecord record, Map<RowKey, CanalConnectRecord> result) {
         RowKey rowKey = new RowKey(record.getSchemaName(), record.getTableName(), record.getKeys());
-        if (!CollectionUtils.isEmpty(record.getOldKeys())) {// 存在主键变更
-            // 需要解决(1->2 , 2->3)级联主键变更的问题
+        if (!CollectionUtils.isEmpty(record.getOldKeys())) {
             RowKey oldKey = new RowKey(record.getSchemaName(), record.getTableName(),
                 record.getOldKeys());
-            if (!result.containsKey(oldKey)) {// 不需要级联
+            if (!result.containsKey(oldKey)) {
                 result.put(rowKey, record);
             } else {
                 CanalConnectRecord oldRecord = result.get(oldKey);
                 record.setSize(oldRecord.getSize() + record.getSize());
-                // 如果上一条变更是insert的，就把这一条的eventType改成insert，并且把上一条存在而这一条不存在的字段值拷贝到这一条中
                 if (oldRecord.getEventType() == EventType.INSERT) {
                     record.setEventType(EventType.INSERT);
-                    // 删除当前变更数据老主键的记录.
                     result.remove(oldKey);
 
                     CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
-                    mergeEventData.getOldKeys().clear();// 清空oldkeys，insert记录不需要
+                    mergeEventData.getOldKeys().clear();
                     result.put(rowKey, mergeEventData);
                 } else if (oldRecord.getEventType() == EventType.UPDATE) {
-                    // 删除当前变更数据老主键的记录.
                     result.remove(oldKey);
-
-                    // 如果上一条变更是update的，把上一条存在而这一条不存在的数据拷贝到这一条中
                     CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
                     result.put(rowKey, mergeEventData);
                 } else {
@@ -142,26 +129,19 @@ public class DbLoadMerger {
                 }
             }
         } else {
-            if (!result.containsKey(rowKey)) {// 没有主键变更
+            if (!result.containsKey(rowKey)) {
                 result.put(rowKey, record);
             } else {
                 CanalConnectRecord oldRecord = result.get(rowKey);
-                // 如果上一条变更是insert的，就把这一条的eventType改成insert，并且把上一条存在而这一条不存在的字段值拷贝到这一条中
                 if (oldRecord.getEventType() == EventType.INSERT) {
                     oldRecord.setEventType(EventType.INSERT);
 
                     CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
                     result.put(rowKey, mergeEventData);
-                } else if (oldRecord.getEventType() == EventType.UPDATE) {// 可能存在
-                    // 1->2
-                    // ,
-                    // 2update的问题
-
-                    // 如果上一条变更是update的，把上一条存在而这一条不存在的数据拷贝到这一条中
+                } else if (oldRecord.getEventType() == EventType.UPDATE) {
                     CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
                     result.put(rowKey, mergeEventData);
                 } else if (oldRecord.getEventType() == EventType.DELETE) {
-                    //异常情况，出现 delete + update，那就直接更新为update
                     result.put(rowKey, record);
                 }
             }
@@ -169,7 +149,6 @@ public class DbLoadMerger {
     }
 
     private static void mergeDelete(CanalConnectRecord record, Map<RowKey, CanalConnectRecord> result) {
-        // 只保留pks，把columns去掉. 以后针对数据仓库可以开放delete columns记录
         RowKey rowKey = new RowKey(record.getSchemaName(), record.getTableName(),
             record.getKeys());
         if (!result.containsKey(rowKey)) {
@@ -177,16 +156,15 @@ public class DbLoadMerger {
         } else {
             CanalConnectRecord oldRecord = result.get(rowKey);
             record.setSize(oldRecord.getSize() + record.getSize());
-            if (!CollectionUtils.isEmpty(oldRecord.getOldKeys())) {// 存在主键变更
-                // insert/update -> delete记录组合时，delete的对应的pk为上一条记录的pk
+            if (!CollectionUtils.isEmpty(oldRecord.getOldKeys())) {
                 record.setKeys(oldRecord.getOldKeys());
-                record.getOldKeys().clear();// 清除oldKeys
+                record.getOldKeys().clear();
 
-                result.remove(rowKey);// 删除老的对象
+                result.remove(rowKey);
                 result.put(new RowKey(record.getSchemaName(), record.getTableName(),
-                    record.getKeys()), record); // key发生变化，需要重新构造一个RowKey
+                    record.getKeys()), record);
             } else {
-                record.getOldKeys().clear();// 清除oldKeys
+                record.getOldKeys().clear();
                 result.put(rowKey, record);
             }
 
@@ -194,7 +172,8 @@ public class DbLoadMerger {
     }
 
     /**
-     * 把old中的值存在而new中不存在的值合并到new中,并且把old中的变更前的主键保存到new中的变更前的主键.
+     * Merge the old value that exists in the old record and does not exist in the new record into the new record,
+     * and save the old primary key of the last change to the old primary key of this change.
      *
      * @param newRecord
      * @param oldRecord
@@ -208,7 +187,7 @@ public class DbLoadMerger {
             boolean contain = false;
             for (EventColumn newColumn : newColumns) {
                 if (oldColumn.getColumnName().equalsIgnoreCase(newColumn.getColumnName())) {
-                    newColumn.setUpdate(newColumn.isUpdate() || oldColumn.isUpdate());// 合并isUpdate字段
+                    newColumn.setUpdate(newColumn.isUpdate() || oldColumn.isUpdate());
                     contain = true;
                 }
             }
@@ -218,8 +197,7 @@ public class DbLoadMerger {
             }
         }
         newColumns.addAll(temp);
-        Collections.sort(newColumns, new EventColumnIndexComparable()); // 排序
-        // 把上一次变更的旧主键传递到这次变更的旧主键.
+        Collections.sort(newColumns, new EventColumnIndexComparable());
         newRecord.setOldKeys(oldRecord.getOldKeys());
         if (oldRecord.getSyncConsistency() != null) {
             newRecord.setSyncConsistency(oldRecord.getSyncConsistency());
@@ -229,17 +207,18 @@ public class DbLoadMerger {
         }
 
         if (oldRecord.isRemedy()) {
-            newRecord.setRemedy(oldRecord.isRemedy());
+            newRecord.setRemedy(true);
         }
         newRecord.setSize(oldRecord.getSize() + newRecord.getSize());
         return newRecord;
     }
 
+    @Setter
+    @Getter
     public static class RowKey implements Serializable {
 
-        private static final long serialVersionUID = -7369951798499581038L;
-        private String schemaName;                              // tableId代表统配符时，需要指定schemaName
-        private String tableName;                               // tableId代表统配符时，需要指定tableName
+        private String schemaName;
+        private String tableName;
 
         public RowKey(String schemaName, String tableName, List<EventColumn> keys) {
             this.schemaName = schemaName;
@@ -253,30 +232,6 @@ public class DbLoadMerger {
 
         private List<EventColumn> keys = new ArrayList<EventColumn>();
 
-        public List<EventColumn> getKeys() {
-            return keys;
-        }
-
-        public void setKeys(List<EventColumn> keys) {
-            this.keys = keys;
-        }
-
-        public String getSchemaName() {
-            return schemaName;
-        }
-
-        public void setSchemaName(String schemaName) {
-            this.schemaName = schemaName;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public void setTableName(String tableName) {
-            this.tableName = tableName;
-        }
-
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -287,6 +242,7 @@ public class DbLoadMerger {
             return result;
         }
 
+        @SuppressWarnings("checkstyle:NeedBraces")
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -314,13 +270,10 @@ public class DbLoadMerger {
                 return false;
             }
             if (tableName == null) {
-                if (other.tableName != null) {
-                    return false;
-                }
-            } else if (!tableName.equals(other.tableName)) {
-                return false;
+                return other.tableName == null;
+            } else {
+                return tableName.equals(other.tableName);
             }
-            return true;
         }
 
     }

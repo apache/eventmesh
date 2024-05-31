@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.eventmesh.registry.QueryInstances;
 import org.apache.eventmesh.registry.RegisterServerInfo;
 import org.apache.eventmesh.registry.RegistryFactory;
@@ -32,11 +28,15 @@ import org.apache.eventmesh.runtime.connector.ConnectorRuntimeFactory;
 import org.apache.eventmesh.runtime.function.FunctionRuntimeFactory;
 import org.apache.eventmesh.runtime.mesh.MeshRuntimeFactory;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RuntimeInstance {

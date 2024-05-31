@@ -21,10 +21,10 @@ package org.apache.eventmesh.connector.canal;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 
-import com.alibaba.druid.pool.DruidDataSource;
-
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import com.alibaba.druid.pool.DruidDataSource;
 
 public class DatabaseConnection {
 

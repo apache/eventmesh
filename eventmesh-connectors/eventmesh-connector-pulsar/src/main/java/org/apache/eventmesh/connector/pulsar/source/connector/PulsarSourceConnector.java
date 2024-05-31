@@ -19,11 +19,11 @@ package org.apache.eventmesh.connector.pulsar.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mq.pulsar.PulsarSourceConfig;
+import org.apache.eventmesh.common.remote.offset.pulsar.PulsarRecordPartition;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.common.remote.offset.pulsar.PulsarRecordPartition;
 
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
@@ -109,7 +109,6 @@ public class PulsarSourceConnector implements Source {
                 PulsarRecordPartition partition = new PulsarRecordPartition();
                 partition.setTopic(consumer.getTopic());
                 partition.setQueueId(message.getSequenceId());
-                partition.setClazz(partition.getRecordPartitionClass());
                 ConnectRecord connectRecord = new ConnectRecord(partition, null, timestamp, bodyStr);
                 connectRecord.addExtension("topic", consumer.getTopic());
                 connectRecords.add(connectRecord);

@@ -24,7 +24,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * 数据库方言定义接口
+ * DbDialect
  */
 public interface DbDialect {
 

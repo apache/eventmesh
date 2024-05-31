@@ -21,8 +21,6 @@ import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParent
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.assertj.core.util.Strings;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +28,8 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
+
+import org.assertj.core.util.Strings;
 
 import lombok.Getter;
 

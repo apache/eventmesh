@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime;
 
+/**
+ * RuntimeFactory
+ */
 public interface RuntimeFactory extends AutoCloseable {
 
     void init() throws Exception;

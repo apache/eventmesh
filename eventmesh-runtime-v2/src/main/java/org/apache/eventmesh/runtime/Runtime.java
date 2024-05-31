@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime;
 
+/**
+ * Runtime
+ */
 public interface Runtime {
 
     void init() throws Exception;
