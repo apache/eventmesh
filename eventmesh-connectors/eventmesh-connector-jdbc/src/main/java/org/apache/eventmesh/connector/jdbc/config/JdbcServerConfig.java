@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc.config;
 
-import org.apache.eventmesh.openconnect.api.config.Config;
+
+import org.apache.eventmesh.common.config.connector.Config;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

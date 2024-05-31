@@ -106,6 +106,21 @@ public class CommonConfiguration {
     @ConfigField(field = "server.retry.plugin.type")
     private String eventMeshRetryPluginType = Constants.DEFAULT;
 
+    @ConfigField(field = "registry.plugin.server-addr", notEmpty = true)
+    private String registryAddr = "";
+
+    @ConfigField(field = "registry.plugin.type", notEmpty = true)
+    private String eventMeshRegistryPluginType = "nacos";
+
+    @ConfigField(field = "registry.plugin.username")
+    private String eventMeshRegistryPluginUsername = "";
+
+    @ConfigField(field = "registry.plugin.password")
+    private String eventMeshRegistryPluginPassword = "";
+
+    @ConfigField(field = "registry.plugin.enabled")
+    private boolean eventMeshRegistryPluginEnabled = false;
+
     public void reload() {
         this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 

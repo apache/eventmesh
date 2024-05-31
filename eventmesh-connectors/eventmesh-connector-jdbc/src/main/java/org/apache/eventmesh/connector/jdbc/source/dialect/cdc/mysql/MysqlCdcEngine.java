@@ -18,13 +18,16 @@
 package org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges.Builder;
 import org.apache.eventmesh.connector.jdbc.Field;
 import org.apache.eventmesh.connector.jdbc.Payload;
 import org.apache.eventmesh.connector.jdbc.Schema;
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.connection.mysql.MysqlJdbcConnection;
 import org.apache.eventmesh.connector.jdbc.dialect.mysql.MysqlDatabaseDialect;
 import org.apache.eventmesh.connector.jdbc.event.DeleteDataEvent;
@@ -33,8 +36,6 @@ import org.apache.eventmesh.connector.jdbc.event.GeneralDataChangeEvent;
 import org.apache.eventmesh.connector.jdbc.event.InsertDataEvent;
 import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
 import org.apache.eventmesh.connector.jdbc.event.UpdateDataEvent;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
-import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.MysqlAntlr4DdlParser;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.AbstractCdcEngine;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql.RowDeserializers.DeleteRowsEventMeshDeserializer;
@@ -51,7 +52,6 @@ import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableSchema;
 import org.apache.eventmesh.connector.jdbc.table.catalog.mysql.MysqlDefaultValueConvertorImpl;
 import org.apache.eventmesh.connector.jdbc.table.type.Pair;
-import org.apache.eventmesh.openconnect.api.config.Config;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -19,7 +19,7 @@ package org.apache.eventmesh.connector.spring.source.connector;
 
 import static org.mockito.Mockito.doReturn;
 
-import org.apache.eventmesh.connector.spring.source.config.SpringSourceConfig;
+import org.apache.eventmesh.common.config.connector.spring.SpringSourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.List;

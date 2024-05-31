@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.s3.source;
 
-import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
-import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.common.config.connector.s3.S3SourceConfig;
+import org.apache.eventmesh.common.config.connector.s3.SourceConnectorConfig;
 import org.apache.eventmesh.connector.s3.source.connector.S3SourceConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 

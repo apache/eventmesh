@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.connection.mysql;
 
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.connection.JdbcConnection;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlDialectSql;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;

@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.connector.http.sink.data;
 
+import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,7 +52,10 @@ public class HttpConnectRecord {
      * @return the converted HttpConnectRecord
      */
     public static HttpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
-        Map<String, ?> offsetMap = record.getPosition().getOffset().getOffset();
+        Map<String, ?> offsetMap = new HashMap<>();
+        if (record != null && record.getPosition() != null && record.getPosition().getRecordOffset() != null) {
+            offsetMap = ((HttpRecordOffset) record.getPosition().getRecordOffset()).getOffsetMap();
+        }
         String offset = "0";
         if (!offsetMap.isEmpty()) {
             offset = offsetMap.values().iterator().next().toString();

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.chatgpt.source.config;
 
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
