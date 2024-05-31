@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
@@ -32,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class RecordOffsetManagement {
 
@@ -45,6 +46,7 @@ public class RecordOffsetManagement {
 
     /**
      * submit record
+     *
      * @param position
      * @return
      */
@@ -135,8 +137,8 @@ public class RecordOffsetManagement {
     }
 
     /**
-     * Contains a snapshot of offsets that can be committed for a source task and metadata for that offset commit
-     * (such as the number of messages for which offsets can and cannot be committed).
+     * Contains a snapshot of offsets that can be committed for a source task and metadata for that offset commit (such as the number of messages for
+     * which offsets can and cannot be committed).
      */
     public static class CommittableOffsets {
 

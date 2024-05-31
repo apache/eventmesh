@@ -17,15 +17,16 @@
 
 package org.apache.eventmesh.registry;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @ToString
 public class RegisterServerInfo {
+
     // different implementations will have different formats
     @Getter
     @Setter
@@ -39,7 +40,7 @@ public class RegisterServerInfo {
     @Setter
     private boolean health;
     @Getter
-    private Map<String,String> metadata = new HashMap<>();
+    private Map<String, String> metadata = new HashMap<>();
     @Getter
     private Map<String, Object> extFields = new HashMap<>();
 

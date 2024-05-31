@@ -17,14 +17,16 @@
 
 package org.apache.eventmesh.registry;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class RegistryFactory {
+
     private static final Map<String, RegistryService> META_CACHE = new HashMap<>(16);
 
     public static RegistryService getInstance(String registryPluginType) {
@@ -39,7 +41,7 @@ public class RegistryFactory {
             throw new RuntimeException(errorMsg);
         }
         log.info("build registry plugin [{}] by type [{}] success", registryServiceExt.getClass().getSimpleName(),
-                registryPluginType);
+            registryPluginType);
         return registryServiceExt;
     }
 }

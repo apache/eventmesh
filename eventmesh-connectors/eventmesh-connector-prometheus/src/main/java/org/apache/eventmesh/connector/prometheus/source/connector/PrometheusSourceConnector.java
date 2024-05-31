@@ -21,6 +21,8 @@ import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.prometheus.PrometheusSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.prometheus.PrometheusRecordOffset;
+import org.apache.eventmesh.common.remote.offset.prometheus.PrometheusRecordPartition;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusReq;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusRsp;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -185,8 +187,8 @@ public class PrometheusSourceConnector implements Source {
 
     private ConnectRecord assembleRecord(String data) {
         Long timestamp = System.currentTimeMillis();
-        RecordPartition recordPartition = new RecordPartition();
-        RecordOffset recordOffset = new RecordOffset();
+        RecordPartition recordPartition = new PrometheusRecordPartition();
+        RecordOffset recordOffset = new PrometheusRecordOffset();
 
         return new ConnectRecord(recordPartition, recordOffset, timestamp, data);
     }

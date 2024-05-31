@@ -18,14 +18,18 @@
 package org.apache.eventmesh.common.remote.job;
 
 public enum SyncMode {
-    /** 行记录 */
+    /**
+     * row
+     */
     ROW("R"),
-    /** 字段记录 */
+    /**
+     * field
+     */
     FIELD("F");
 
     private String value;
 
-    SyncMode(String value){
+    SyncMode(String value) {
         this.value = value;
     }
 

@@ -18,8 +18,6 @@
 package org.apache.eventmesh.connector.redis.sink.connector;
 
 import org.apache.eventmesh.common.config.connector.redis.RedisSinkConfig;
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -79,9 +77,7 @@ public class RedisSinkConnectorTest extends AbstractRedisServer {
 
         List<ConnectRecord> records = new ArrayList<>();
         for (int i = 0; i < expectedCount; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset, System.currentTimeMillis(),
+            ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(),
                 expectedMessage.getBytes(StandardCharsets.UTF_8));
             connectRecord.addExtension("id", String.valueOf(UUID.randomUUID()));
             connectRecord.addExtension("source", "testSource");

@@ -25,17 +25,14 @@ import java.util.List;
 
 import lombok.Data;
 
-/**
- * 数据库处理上下文
- */
 @Data
 public class DbLoadContext {
 
-    private List<CanalConnectRecord> lastProcessedRecords;                      // 上一轮的已录入的记录，可能会有多次失败需要合并多次已录入的数据
+    private List<CanalConnectRecord> lastProcessedRecords;
 
-    private List<CanalConnectRecord> prepareRecords;                            // 准备处理的数据
+    private List<CanalConnectRecord> prepareRecords;
 
-    private List<CanalConnectRecord> processedRecords;                          // 已处理完成的数据
+    private List<CanalConnectRecord> processedRecords;
 
     private List<CanalConnectRecord> failedRecords;
 

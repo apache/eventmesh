@@ -17,13 +17,6 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.admin;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.protobuf.Any;
-import com.google.protobuf.UnsafeByteOperations;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
@@ -48,6 +41,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.protobuf.Any;
+import com.google.protobuf.UnsafeByteOperations;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AdminOffsetService implements OffsetManagementService {
@@ -112,8 +115,8 @@ public class AdminOffsetService implements OffsetManagementService {
             .build();
         Payload payload = Payload.newBuilder()
             .setMetadata(metadata)
-            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
-                unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportPositionRequest)))).build())
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportPositionRequest))))
+                .build())
             .build();
         requestObserver.onNext(payload);
     }
@@ -144,15 +147,18 @@ public class AdminOffsetService implements OffsetManagementService {
 
             Payload request = Payload.newBuilder()
                 .setMetadata(metadata)
-                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
-                    unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(fetchPositionRequest)))).build())
+                .setBody(
+                    Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(fetchPositionRequest))))
+                        .build())
                 .build();
             Payload response = adminServiceBlockingStub.invoke(request);
             if (response.getMetadata().getType().equals(FetchPositionResponse.class.getSimpleName())) {
-                FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
+                FetchPositionResponse fetchPositionResponse =
+                    JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(), fetchPositionResponse.getRecordPosition().getRecordOffset());
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(),
+                        fetchPositionResponse.getRecordPosition().getRecordOffset());
                 }
             }
         }
@@ -179,15 +185,18 @@ public class AdminOffsetService implements OffsetManagementService {
 
             Payload request = Payload.newBuilder()
                 .setMetadata(metadata)
-                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
-                    unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(fetchPositionRequest)))).build())
+                .setBody(
+                    Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(fetchPositionRequest))))
+                        .build())
                 .build();
             Payload response = adminServiceBlockingStub.invoke(request);
             if (response.getMetadata().getType().equals(FetchPositionResponse.class.getSimpleName())) {
-                FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
+                FetchPositionResponse fetchPositionResponse =
+                    JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(), fetchPositionResponse.getRecordPosition().getRecordOffset());
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(),
+                        fetchPositionResponse.getRecordPosition().getRecordOffset());
                 }
             }
         }
@@ -250,7 +259,7 @@ public class AdminOffsetService implements OffsetManagementService {
         String offset = offsetStorageConfig.getExtensions().get("offset");
         if (offset != null) {
             Map<RecordPartition, RecordOffset> initialRecordOffsetMap = JsonUtils.parseTypeReferenceObject(offset,
-                new TypeReference<Map<RecordPartition, RecordOffset>>(){
+                new TypeReference<Map<RecordPartition, RecordOffset>>() {
                 });
             log.info("init record offset {}", initialRecordOffsetMap);
             positionStore.putAll(initialRecordOffsetMap);

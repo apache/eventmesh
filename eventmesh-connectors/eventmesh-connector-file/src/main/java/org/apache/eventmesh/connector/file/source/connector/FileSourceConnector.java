@@ -20,11 +20,11 @@ package org.apache.eventmesh.connector.file.source.connector;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.file.FileSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.file.FileRecordPartition;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.common.remote.offset.file.FileRecordPartition;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -119,7 +119,6 @@ public class FileSourceConnector implements Source {
     public static RecordPartition convertToRecordPartition(String fileName) {
         FileRecordPartition fileRecordPartition = new FileRecordPartition();
         fileRecordPartition.setFileName(fileName);
-        fileRecordPartition.setClazz(fileRecordPartition.getRecordPartitionClass());
         return fileRecordPartition;
     }
 

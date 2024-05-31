@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.canal.model;
 
 /**
  * chang the eventtype num to I/U/D/C/A/E.
- *
  */
 public enum EventType {
 
@@ -80,7 +79,7 @@ public enum EventType {
 
     private String value;
 
-    private EventType(String value){
+    private EventType(String value) {
         this.value = value;
     }
 

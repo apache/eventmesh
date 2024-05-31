@@ -17,15 +17,6 @@
 
 package org.apache.eventmesh.runtime.connector;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.UnsafeByteOperations;
-
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
@@ -39,8 +30,8 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.Ad
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
-import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -75,6 +66,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.UnsafeByteOperations;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConnectorRuntime implements Runtime {
@@ -111,11 +111,9 @@ public class ConnectorRuntime implements Runtime {
 
     private Consumer consumer;
 
-    private final ExecutorService sourceService =
-        ThreadPoolFactory.createSingleExecutor("eventMesh-sourceService");
+    private final ExecutorService sourceService = ThreadPoolFactory.createSingleExecutor("eventMesh-sourceService");
 
-    private final ExecutorService sinkService =
-        ThreadPoolFactory.createSingleExecutor("eventMesh-sinkService");
+    private final ExecutorService sinkService = ThreadPoolFactory.createSingleExecutor("eventMesh-sinkService");
 
     private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -143,9 +141,7 @@ public class ConnectorRuntime implements Runtime {
 
     private void initAdminService() {
         // create gRPC channel
-        channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServerAddr())
-            .usePlaintext()
-            .build();
+        channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServerAddr()).usePlaintext().build();
 
         adminServiceStub = AdminServiceGrpc.newStub(channel).withWaitForReady();
 
@@ -197,8 +193,8 @@ public class ConnectorRuntime implements Runtime {
         connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getSinkConnectorDesc());
         connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getSinkConnectorConfig());
 
-        ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
-            connectorRuntimeConfig.getSourceConnectorType() + "-Source");
+        ConnectorCreateService<?> sourceConnectorCreateService =
+            ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSourceConnectorType() + "-Source");
         sourceConnector = (Source) sourceConnectorCreateService.create();
 
         SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
@@ -212,8 +208,7 @@ public class ConnectorRuntime implements Runtime {
         OffsetStorageConfig offsetStorageConfig = sourceConfig.getOffsetStorageConfig();
         offsetStorageConfig.setDataSourceType(jobResponse.getTransportType().getSrc());
         offsetStorageConfig.setDataSinkType(jobResponse.getTransportType().getDst());
-        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig)
-            .map(OffsetStorageConfig::getOffsetStorageType)
+        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig).map(OffsetStorageConfig::getOffsetStorageType)
             .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
             .orElse(new DefaultOffsetManagementServiceImpl());
         this.offsetManagementService.initialize(offsetStorageConfig);
@@ -238,14 +233,10 @@ public class ConnectorRuntime implements Runtime {
         FetchJobRequest jobRequest = new FetchJobRequest();
         jobRequest.setJobID(jobId);
 
-        Metadata metadata = Metadata.newBuilder()
-            .setType(FetchJobRequest.class.getSimpleName())
-            .build();
+        Metadata metadata = Metadata.newBuilder().setType(FetchJobRequest.class.getSimpleName()).build();
 
-        Payload request = Payload.newBuilder()
-            .setMetadata(metadata)
-            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
-                unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(jobRequest)))).build())
+        Payload request = Payload.newBuilder().setMetadata(metadata)
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(jobRequest)))).build())
             .build();
         Payload response = adminServiceBlockingStub.invoke(request);
         if (response.getMetadata().getType().equals(FetchJobResponse.class.getSimpleName())) {
@@ -264,14 +255,10 @@ public class ConnectorRuntime implements Runtime {
             heartBeat.setReportedTimeStamp(String.valueOf(System.currentTimeMillis()));
             heartBeat.setJobID(connectorRuntimeConfig.getJobID());
 
-            Metadata metadata = Metadata.newBuilder()
-                .setType(ReportHeartBeatRequest.class.getSimpleName())
-                .build();
+            Metadata metadata = Metadata.newBuilder().setType(ReportHeartBeatRequest.class.getSimpleName()).build();
 
-            Payload request = Payload.newBuilder()
-                .setMetadata(metadata)
-                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
-                    unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(heartBeat)))).build())
+            Payload request = Payload.newBuilder().setMetadata(metadata)
+                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(heartBeat)))).build())
                 .build();
 
             requestObserver.onNext(request);
@@ -281,33 +268,31 @@ public class ConnectorRuntime implements Runtime {
         offsetManagementService.start();
         isRunning = true;
         // start sinkService
-        sinkService.execute(
-            () -> {
+        sinkService.execute(() -> {
+            try {
+                startSinkConnector();
+            } catch (Exception e) {
+                log.error("sink connector [{}] start fail", sinkConnector.name(), e);
                 try {
-                    startSinkConnector();
-                } catch (Exception e) {
-                    log.error("sink connector [{}] start fail", sinkConnector.name(), e);
-                    try {
-                        this.stop();
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    this.stop();
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
                 }
-            });
+            }
+        });
         // start
-        sourceService.execute(
-            () -> {
+        sourceService.execute(() -> {
+            try {
+                startSourceConnector();
+            } catch (Exception e) {
+                log.error("source connector [{}] start fail", sourceConnector.name(), e);
                 try {
-                    startSourceConnector();
-                } catch (Exception e) {
-                    log.error("source connector [{}] start fail", sourceConnector.name(), e);
-                    try {
-                        this.stop();
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    this.stop();
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
                 }
-            });
+            }
+        });
     }
 
     @Override
@@ -330,13 +315,13 @@ public class ConnectorRuntime implements Runtime {
                 for (ConnectRecord record : connectorRecordList) {
                     queue.put(record);
                     Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
-                    Optional<SendMessageCallback> callback = Optional.ofNullable(record.getExtensionObj(CALLBACK_EXTENSION))
-                        .map(v -> (SendMessageCallback) v);
+                    Optional<SendMessageCallback> callback =
+                        Optional.ofNullable(record.getExtensionObj(CALLBACK_EXTENSION)).map(v -> (SendMessageCallback) v);
                     // commit record
                     this.sourceConnector.commit(record);
                     submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
                     // TODO:finish the optional callback
-//                    callback.ifPresent(cb -> cb.onSuccess(record));
+                    // callback.ifPresent(cb -> cb.onSuccess(record));
                     offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
                     // update & commit offset
                     updateCommittableOffsets();
@@ -369,23 +354,23 @@ public class ConnectorRuntime implements Runtime {
         }
 
         if (committableOffsets.isEmpty()) {
-            log.debug("Either no records were produced since the last offset commit, "
-                + "or every record has been filtered out by a transformation "
-                + "or dropped due to transformation or conversion errors.");
+            log.debug(
+                "Either no records were produced since the last offset commit, "
+                    + "or every record has been filtered out by a transformation or dropped due to transformation or conversion errors.");
             // We continue with the offset commit process here instead of simply returning immediately
             // in order to invoke SourceTask::commit and record metrics for a successful offset commit
         } else {
             log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
             if (committableOffsets.hasPending()) {
-                log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
-                        + "The source partition with the most pending messages is {}, with {} pending messages",
+                log.debug(
+                    "{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed."
+                        + " The source partition with the most pending messages is {}, with {} pending messages",
                     this,
-                    committableOffsets.numUncommittableMessages(),
-                    committableOffsets.numDeques(),
-                    committableOffsets.largestDequePartition(),
+                    committableOffsets.numUncommittableMessages(), committableOffsets.numDeques(), committableOffsets.largestDequePartition(),
                     committableOffsets.largestDequeSize());
             } else {
-                log.debug("{} There are currently no pending messages for this offset commit; "
+                log.debug(
+                    "{} There are currently no pending messages for this offset commit; "
                         + "all messages dispatched to the task's producer since the last commit have been acknowledged",
                     this);
             }

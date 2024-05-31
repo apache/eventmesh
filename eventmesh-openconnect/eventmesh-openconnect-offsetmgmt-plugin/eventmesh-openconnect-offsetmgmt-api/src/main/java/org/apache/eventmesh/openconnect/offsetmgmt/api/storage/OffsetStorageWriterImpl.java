@@ -52,9 +52,7 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
 
     @Override
     public void writeOffset(RecordPartition partition, RecordOffset offset) {
-//        RecordPartition extendRecordPartition;
         if (partition != null) {
-//            extendRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartitionMap());
             data.put(partition, offset);
         }
     }

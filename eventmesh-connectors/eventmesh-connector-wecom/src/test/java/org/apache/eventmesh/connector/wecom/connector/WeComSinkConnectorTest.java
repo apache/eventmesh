@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.connector.wecom.connector;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.apache.eventmesh.common.config.connector.wecom.WeComSinkConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
@@ -27,11 +31,20 @@ import org.apache.eventmesh.connector.wecom.sink.connector.SendMessageResponse;
 import org.apache.eventmesh.connector.wecom.sink.connector.WeComSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,17 +55,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class WeComSinkConnectorTest {
@@ -71,9 +73,8 @@ public class WeComSinkConnectorTest {
         Mockito.doReturn(httpEntity).when(mockedResponse).getEntity();
         WeComSinkConfig sinkConfig = (WeComSinkConfig) ConfigUtil.parse(connector.configClass());
         connector.init(sinkConfig);
-        Field httpClientField = ReflectionSupport.findFields(connector.getClass(),
-            (f) -> f.getName().equals("httpClient"),
-            HierarchyTraversalMode.BOTTOM_UP).get(0);
+        Field httpClientField =
+            ReflectionSupport.findFields(connector.getClass(), (f) -> f.getName().equals("httpClient"), HierarchyTraversalMode.BOTTOM_UP).get(0);
         httpClientField.setAccessible(true);
         httpClientField.set(connector, httpClient);
         connector.start();
@@ -89,8 +90,8 @@ public class WeComSinkConnectorTest {
             for (int i = 0; i < times; i++) {
                 RecordPartition partition = new MockRecordPartition();
                 RecordOffset offset = new MockRecordOffset();
-                ConnectRecord connectRecord = new ConnectRecord(partition, offset,
-                    System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
+                ConnectRecord connectRecord =
+                    new ConnectRecord(partition, offset, System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
                 connectRecord.addExtension(ConnectRecordExtensionKeys.WECOM_MESSAGE_TEMPLATE_TYPE,
                     WeComMessageTemplateType.PLAIN_TEXT.getTemplateType());
                 records.add(connectRecord);

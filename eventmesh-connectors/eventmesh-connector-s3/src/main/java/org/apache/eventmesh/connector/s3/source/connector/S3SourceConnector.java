@@ -22,12 +22,12 @@ import org.apache.eventmesh.common.config.connector.s3.S3SourceConfig;
 import org.apache.eventmesh.common.config.connector.s3.SourceConnectorConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.S3.S3RecordOffset;
+import org.apache.eventmesh.common.remote.offset.S3.S3RecordPartition;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.common.remote.offset.S3.S3RecordOffset;
-import org.apache.eventmesh.common.remote.offset.S3.S3RecordPartition;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,14 +161,12 @@ public class S3SourceConnector implements Source {
         s3RecordPartition.setRegion(this.sourceConnectorConfig.getRegion());
         s3RecordPartition.setBucket(this.sourceConnectorConfig.getBucket());
         s3RecordPartition.setFileName(this.sourceConnectorConfig.getFileName());
-        s3RecordPartition.setClazz(s3RecordPartition.getRecordPartitionClass());
         return s3RecordPartition;
     }
 
     private RecordOffset getRecordOffset() {
         S3RecordOffset s3RecordOffset = new S3RecordOffset();
         s3RecordOffset.setOffset(this.position);
-        s3RecordOffset.setClazz(s3RecordOffset.getRecordOffsetClass());
         return s3RecordOffset;
     }
 }

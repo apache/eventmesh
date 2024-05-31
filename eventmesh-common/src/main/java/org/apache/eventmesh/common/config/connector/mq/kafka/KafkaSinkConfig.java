@@ -20,7 +20,9 @@ package org.apache.eventmesh.common.config.connector.mq.kafka;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class KafkaSinkConfig extends SinkConfig {
 

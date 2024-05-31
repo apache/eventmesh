@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.common.remote.payload;
 
+/**
+ * IPayload
+ */
 public interface IPayload {
 
 }

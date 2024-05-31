@@ -19,6 +19,9 @@ package org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql;
 
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges;
 import org.apache.eventmesh.connector.jdbc.DataChanges.Builder;
@@ -33,8 +36,6 @@ import org.apache.eventmesh.connector.jdbc.event.GeneralDataChangeEvent;
 import org.apache.eventmesh.connector.jdbc.event.InsertDataEvent;
 import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
 import org.apache.eventmesh.connector.jdbc.event.UpdateDataEvent;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
-import org.apache.eventmesh.connector.jdbc.source.config.MysqlConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.MysqlAntlr4DdlParser;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.AbstractCdcEngine;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.mysql.RowDeserializers.DeleteRowsEventMeshDeserializer;

@@ -20,7 +20,9 @@ package org.apache.eventmesh.common.config.connector.mq.pulsar;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class PulsarSourceConfig extends SourceConfig {
 

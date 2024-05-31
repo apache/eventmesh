@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.common.remote.offset.rocketmq;
 
-import lombok.Data;
-import lombok.ToString;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.Objects;
+
+import lombok.Data;
+import lombok.ToString;
 
 
 @Data
@@ -29,9 +30,7 @@ import java.util.Objects;
 public class RocketMQRecordPartition extends RecordPartition {
 
     /**
-     *  key=topic,value=topicName
-     *  key=brokerName,value=brokerName
-     *  key=queueId,value=queueId
+     * key=topic,value=topicName key=brokerName,value=brokerName key=queueId,value=queueId
      */
 
     private String broker;

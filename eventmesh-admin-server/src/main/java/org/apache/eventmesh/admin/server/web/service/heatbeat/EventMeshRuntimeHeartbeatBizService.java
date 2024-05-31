@@ -30,8 +30,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * for table 'event_mesh_runtime_heartbeat' db operation
- * 2024-05-14 17:15:03
+ * for table 'event_mesh_runtime_heartbeat' db operation 2024-05-14 17:15:03
  */
 @Service
 @Slf4j
@@ -51,8 +50,8 @@ public class EventMeshRuntimeHeartbeatBizService {
             return heartbeatService.save(entity);
         } else {
             if (Long.parseLong(old.getReportTime()) >= Long.parseLong(entity.getReportTime())) {
-                log.info("update heartbeat record ignore, current report time late than db, job " +
-                    "[{}], remote [{}]", entity.getJobID(), entity.getRuntimeAddr());
+                log.info("update heartbeat record ignore, current report time late than db, job [{}], remote [{}]", entity.getJobID(),
+                    entity.getRuntimeAddr());
                 return true;
             }
             try {

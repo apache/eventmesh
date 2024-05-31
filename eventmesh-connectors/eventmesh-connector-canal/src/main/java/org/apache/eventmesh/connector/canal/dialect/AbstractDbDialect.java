@@ -38,37 +38,22 @@ public abstract class AbstractDbDialect implements DbDialect {
     protected JdbcTemplate jdbcTemplate;
     protected TransactionTemplate transactionTemplate;
     protected LobHandler lobHandler;
-//    protected Map<List<String>, Table> tables;
 
     public AbstractDbDialect(final JdbcTemplate jdbcTemplate, LobHandler lobHandler) {
         this.jdbcTemplate = jdbcTemplate;
         this.lobHandler = lobHandler;
-        // 初始化transction
+
         this.transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(new DataSourceTransactionManager(jdbcTemplate.getDataSource()));
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
-        // 初始化一些数据
-//        jdbcTemplate.execute(new ConnectionCallback() {
-//
-//            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-//                DatabaseMetaData meta = c.getMetaData();
-//                databaseName = meta.getDatabaseProductName();
-//                databaseMajorVersion = meta.getDatabaseMajorVersion();
-//                databaseMinorVersion = meta.getDatabaseMinorVersion();
-//
-//                return null;
-//            }
-//        });
-//
-//        initTables(jdbcTemplate);
     }
 
     public AbstractDbDialect(JdbcTemplate jdbcTemplate, LobHandler lobHandler, String name, int majorVersion,
-        int minorVersion) {
+                             int minorVersion) {
         this.jdbcTemplate = jdbcTemplate;
         this.lobHandler = lobHandler;
-        // 初始化transction
+
         this.transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(new DataSourceTransactionManager(jdbcTemplate.getDataSource()));
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -77,30 +62,7 @@ public abstract class AbstractDbDialect implements DbDialect {
         this.databaseMajorVersion = majorVersion;
         this.databaseMinorVersion = minorVersion;
 
-//        initTables(jdbcTemplate);
     }
-
-//    public Table findTable(String schema, String table, boolean useCache) {
-//        List<String> key = Arrays.asList(schema, table);
-//        if (useCache == false) {
-//            tables.remove(key);
-//        }
-//
-//        return tables.get(key);
-//    }
-//
-//    public Table findTable(String schema, String table) {
-//        return findTable(schema, table, true);
-//    }
-
-//    public void reloadTable(String schema, String table) {
-//        if (StringUtils.isNotEmpty(table)) {
-//            tables.remove(Arrays.asList(schema, table));
-//        } else {
-//            // 如果没有存在表名，则直接清空所有的table，重新加载
-//            tables.clear();
-//        }
-//    }
 
     public String getName() {
         return databaseName;
@@ -145,42 +107,4 @@ public abstract class AbstractDbDialect implements DbDialect {
 
     public void destory() {
     }
-
-    // ================================ helper method ==========================
-
-//    private void initTables(final JdbcTemplate jdbcTemplate) {
-//        this.tables = new ConcurrentMap<>((Function<List<String>, Table>) names -> {
-//            Assert.isTrue(names.size() == 2);
-//            try {
-//                beforeFindTable(jdbcTemplate, names.get(0), names.get(0), names.get(1));
-////                    DdlUtilsFilter filter = getDdlUtilsFilter(jdbcTemplate, names.get(0), names.get(0), names.get(1));
-//                Table table = DdlUtils.findTable(jdbcTemplate, names.get(0), names.get(0), names.get(1));
-//                afterFindTable(table, jdbcTemplate, names.get(0), names.get(0), names.get(1));
-//                if (table == null) {
-//                    throw new NestableRuntimeException("no found table [" + names.get(0) + "." + names.get(1)
-//                                                       + "] , pls check");
-//                } else {
-//                    return table;
-//                }
-//            } catch (Exception e) {
-//                throw new NestableRuntimeException("find table [" + names.get(0) + "." + names.get(1) + "] error",
-//                    e);
-//            }
-//        });
-//    }
-
-//    protected DdlUtilsFilter getDdlUtilsFilter(JdbcTemplate jdbcTemplate, String catalogName, String schemaName,
-//                                               String tableName) {
-//        // we need to return null for backward compatibility
-//        return null;
-//    }
-
-//    protected void beforeFindTable(JdbcTemplate jdbcTemplate, String catalogName, String schemaName, String tableName) {
-//        // for subclass to extend
-//    }
-//
-//    protected void afterFindTable(Table table, JdbcTemplate jdbcTemplate, String catalogName, String schemaName,
-//                                  String tableName) {
-//        // for subclass to extend
-//    }
 }

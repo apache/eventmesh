@@ -24,7 +24,6 @@ import org.apache.eventmesh.runtime.admin.handler.v1.GrpcClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.HTTPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.InsertWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.MetaHandler;
-import org.apache.eventmesh.runtime.admin.handler.v1.MetricsHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.QueryRecommendEventMeshHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.QueryWebHookConfigByIdHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.QueryWebHookConfigByManufacturerHandler;
@@ -100,7 +99,6 @@ public class AdminHandlerManager {
             eventMeshTCPServer.getEventMeshTCPConfiguration(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration()));
-        initHandler(new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
         initHandler(new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType()));
         initHandler(new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType()));
         initHandler(new MetaHandler(eventMeshMetaStorage));

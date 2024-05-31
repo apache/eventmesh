@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.mongodb.sink.client;
 
-import org.apache.eventmesh.connector.mongodb.sink.client.Impl.MongodbSinkClient;
 import org.apache.eventmesh.common.config.connector.rdb.mongodb.SinkConnectorConfig;
+import org.apache.eventmesh.connector.mongodb.sink.client.Impl.MongodbSinkClient;
 import org.apache.eventmesh.connector.mongodb.utils.MongodbCloudEventUtil;
 
 import org.bson.Document;

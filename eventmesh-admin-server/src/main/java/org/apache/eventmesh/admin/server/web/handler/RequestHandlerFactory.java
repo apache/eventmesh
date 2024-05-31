@@ -58,8 +58,8 @@ public class RequestHandlerFactory implements ApplicationListener<ContextRefresh
                 continue;
             }
 
-            Class tClass = (Class) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
-            handlers.putIfAbsent(tClass.getSimpleName(), requestHandler);
+            Class c = (Class) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
+            handlers.putIfAbsent(c.getSimpleName(), requestHandler);
         }
     }
 }

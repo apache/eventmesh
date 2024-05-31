@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.antlr4.Antlr4DdlParser;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlLexer;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser;
@@ -25,7 +26,6 @@ import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.Col
 import org.apache.eventmesh.connector.jdbc.antlr4.listener.Antlr4DdlParserListener;
 import org.apache.eventmesh.connector.jdbc.ddl.DdlParserCallback;
 import org.apache.eventmesh.connector.jdbc.event.Event;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.listener.MySqlAntlr4DdlParserListener;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 import org.apache.eventmesh.connector.jdbc.utils.JdbcStringUtils;
@@ -113,7 +113,7 @@ public class MysqlAntlr4DdlParser extends Antlr4DdlParser<MySqlLexer, MySqlParse
      */
     public TableId parseTableId(String fullIdText) {
         // Remove special characters from the full ID text
-        String sanitizedText = StringUtils.replaceEach(fullIdText, new String[]{"'\\''", "\"", "`"}, new String[]{"", "", ""});
+        String sanitizedText = StringUtils.replaceEach(fullIdText, new String[] {"'\\''", "\"", "`"}, new String[] {"", "", ""});
 
         // Split the sanitized text by dot (.) to separate catalog and table name
         String[] split = sanitizedText.split("\\.");

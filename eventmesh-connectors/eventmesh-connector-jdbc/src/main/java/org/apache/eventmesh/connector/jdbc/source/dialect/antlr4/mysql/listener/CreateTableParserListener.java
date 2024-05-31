@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.listener;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.CatalogChanges;
 import org.apache.eventmesh.connector.jdbc.Payload;
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.ColumnCreateTableContext;
@@ -29,7 +30,6 @@ import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.Tab
 import org.apache.eventmesh.connector.jdbc.antlr4.autogeneration.MySqlParser.TableOptionEngineContext;
 import org.apache.eventmesh.connector.jdbc.event.CreateTableEvent;
 import org.apache.eventmesh.connector.jdbc.event.SchemaChangeEventType;
-import org.apache.eventmesh.connector.jdbc.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.MysqlAntlr4DdlParser;
 import org.apache.eventmesh.connector.jdbc.source.dialect.mysql.MysqlSourceMateData;
 import org.apache.eventmesh.connector.jdbc.table.catalog.Table;

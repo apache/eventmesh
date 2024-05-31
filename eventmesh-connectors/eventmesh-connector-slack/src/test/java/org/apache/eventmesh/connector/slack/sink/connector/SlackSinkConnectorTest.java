@@ -23,8 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.apache.eventmesh.common.config.connector.slack.SlackSinkConfig;
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
@@ -74,9 +72,7 @@ public class SlackSinkConnectorTest {
         final int times = 3;
         List<ConnectRecord> records = new ArrayList<>();
         for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+            ConnectRecord connectRecord = new ConnectRecord(null, null,
                 System.currentTimeMillis(), "Hello, EventMesh!".getBytes(StandardCharsets.UTF_8));
             records.add(connectRecord);
         }

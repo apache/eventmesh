@@ -19,10 +19,6 @@ package org.apache.eventmesh.connector.canal.model;
 
 import java.util.Comparator;
 
-/**
- * 按照EventColumn的index进行排序.
- *
- */
 public class EventColumnIndexComparable implements Comparator<EventColumn> {
 
     public int compare(EventColumn o1, EventColumn o2) {

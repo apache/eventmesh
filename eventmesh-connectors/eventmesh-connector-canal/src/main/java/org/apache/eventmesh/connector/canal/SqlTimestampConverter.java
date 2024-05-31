@@ -37,7 +37,7 @@ public class SqlTimestampConverter implements Converter {
         "yyyy-MM-dd hh:mm:ss.fffffffff", "EEE MMM dd HH:mm:ss zzz yyyy",
         DateFormatUtils.ISO_DATETIME_FORMAT.getPattern(),
         DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(),
-        DateFormatUtils.SMTP_DATETIME_FORMAT.getPattern(),};
+        DateFormatUtils.SMTP_DATETIME_FORMAT.getPattern(), };
 
     public static final Converter SQL_TIMESTAMP = new SqlTimestampConverter(null);
 
@@ -115,35 +115,33 @@ public class SqlTimestampConverter implements Converter {
         }
 
         try {
-            // 先处理Timestamp类型
             return Timestamp.valueOf(input).getTime();
         } catch (Exception nfe) {
             try {
                 try {
-                    return parseDate(input, DATE_FORMATS, Locale.ENGLISH).getTime();
+                    return parseDate(input, Locale.ENGLISH).getTime();
                 } catch (Exception err) {
-                    return parseDate(input, DATE_FORMATS, Locale.getDefault()).getTime();
+                    return parseDate(input, Locale.getDefault()).getTime();
                 }
             } catch (Exception err) {
-                // 最后处理long time的情况
                 return Long.parseLong(input);
             }
         }
     }
 
-    private Date parseDate(String str, String[] parsePatterns, Locale locale) throws ParseException {
-        if ((str == null) || (parsePatterns == null)) {
+    private Date parseDate(String str, Locale locale) throws ParseException {
+        if ((str == null) || (SqlTimestampConverter.DATE_FORMATS == null)) {
             throw new IllegalArgumentException("Date and Patterns must not be null");
         }
 
         SimpleDateFormat parser = null;
         ParsePosition pos = new ParsePosition(0);
 
-        for (int i = 0; i < parsePatterns.length; i++) {
+        for (int i = 0; i < SqlTimestampConverter.DATE_FORMATS.length; i++) {
             if (i == 0) {
-                parser = new SimpleDateFormat(parsePatterns[0], locale);
+                parser = new SimpleDateFormat(SqlTimestampConverter.DATE_FORMATS[0], locale);
             } else {
-                parser.applyPattern(parsePatterns[i]);
+                parser.applyPattern(SqlTimestampConverter.DATE_FORMATS[i]);
             }
             pos.setIndex(0);
             Date date = parser.parse(str, pos);

@@ -48,15 +48,12 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
 
     private Payload process(Payload value) {
         if (value == null || StringUtils.isBlank(value.getMetadata().getType())) {
-            return PayloadUtil.from(FailResponse.build(ErrorCode.BAD_REQUEST, "bad request: type not " +
-                "exists"));
+            return PayloadUtil.from(FailResponse.build(ErrorCode.BAD_REQUEST, "bad request: type not exists"));
         }
         try {
-            BaseRequestHandler<BaseRemoteRequest, BaseRemoteResponse> handler =
-                handlerFactory.getHandler(value.getMetadata().getType());
+            BaseRequestHandler<BaseRemoteRequest, BaseRemoteResponse> handler = handlerFactory.getHandler(value.getMetadata().getType());
             if (handler == null) {
-                return PayloadUtil.from(FailResponse.build(BaseRemoteResponse.UNKNOWN,
-                    "not match any request handler"));
+                return PayloadUtil.from(FailResponse.build(BaseRemoteResponse.UNKNOWN, "not match any request handler"));
             }
             BaseRemoteResponse response = handler.handlerRequest((BaseRemoteRequest) PayloadUtil.parse(value), value.getMetadata());
             if (response == null || response instanceof EmptyAckResponse) {
@@ -66,8 +63,7 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
         } catch (Exception e) {
             log.warn("process payload {} fail", value.getMetadata().getType(), e);
             if (e instanceof AdminServerRuntimeException) {
-                return PayloadUtil.from(FailResponse.build(((AdminServerRuntimeException) e).getCode(),
-                    e.getMessage()));
+                return PayloadUtil.from(FailResponse.build(((AdminServerRuntimeException) e).getCode(), e.getMessage()));
             }
             return PayloadUtil.from(FailResponse.build(ErrorCode.INTERNAL_ERR, "admin server internal err"));
         }

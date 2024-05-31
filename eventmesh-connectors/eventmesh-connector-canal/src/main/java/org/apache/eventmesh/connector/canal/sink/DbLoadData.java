@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 将数据归类,按表和insert/update/delete类型进行分类
+ * Classify the data according to the table and insert/update/delete types.
  *
  * <pre>
- * 归类用途：对insert语句进行batch优化
- * 1. mysql索引的限制，需要避免insert并发执行
+ * Purpose of classification: to optimize the insert statement in batches.
+ * 1. Due to the restrictions of MySQL indexes, concurrent execution of insert statements needs to be avoided.
  * </pre>
  */
 public class DbLoadData {
@@ -64,8 +64,8 @@ public class DbLoadData {
 
     private synchronized TableLoadData findTableData(CanalConnectRecord record) {
         for (TableLoadData table : tables) {
-            if (table.getSchemaName().equals(record.getSchemaName()) &&
-                table.getTableName().equals(record.getTableName())) {
+            if (table.getSchemaName().equals(record.getSchemaName())
+                && table.getTableName().equals(record.getTableName())) {
                 return table;
             }
         }
@@ -76,7 +76,7 @@ public class DbLoadData {
     }
 
     /**
-     * 按table进行分类
+     * classify by table
      */
     public static class TableLoadData {
 

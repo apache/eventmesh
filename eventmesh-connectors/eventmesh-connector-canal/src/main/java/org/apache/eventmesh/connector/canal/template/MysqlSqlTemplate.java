@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.connector.canal.template;
 
-/**
- * mysql sql生成模板
- */
 public class MysqlSqlTemplate extends AbstractSqlTemplate {
 
     private static final String ESCAPE = "`";
@@ -50,7 +47,6 @@ public class MysqlSqlTemplate extends AbstractSqlTemplate {
 
         size = columnNames.length;
         for (int i = 0; i < size; i++) {
-            // 如果是DRDS数据库, 并且存在拆分键 且 等于当前循环列, 跳过
             if (!includePks && shardColumn != null && columnNames[i].equals(shardColumn)) {
                 continue;
             }
@@ -67,7 +63,6 @@ public class MysqlSqlTemplate extends AbstractSqlTemplate {
         }
 
         if (includePks) {
-            // mysql merge sql匹配了uniqe / primary key时都会执行update，所以需要更新pk信息
             size = pkNames.length;
             for (int i = 0; i < size; i++) {
                 sql.append(appendEscape(pkNames[i])).append("=values(").append(appendEscape(pkNames[i])).append(")");
@@ -75,7 +70,7 @@ public class MysqlSqlTemplate extends AbstractSqlTemplate {
             }
         }
 
-        return sql.toString().intern();// intern优化，避免出现大量相同的字符串
+        return sql.toString().intern();
     }
 
     protected String appendEscape(String columnName) {

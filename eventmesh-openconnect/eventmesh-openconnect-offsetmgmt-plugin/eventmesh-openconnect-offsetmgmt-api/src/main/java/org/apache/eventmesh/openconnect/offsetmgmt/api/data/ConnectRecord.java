@@ -48,7 +48,11 @@ public class ConnectRecord {
 
     public ConnectRecord(RecordPartition recordPartition, RecordOffset recordOffset,
         Long timestamp, Object data) {
-        this.position = new RecordPosition(recordPartition, recordOffset);
+        if (recordPartition == null || recordOffset == null) {
+            this.position = null;
+        } else {
+            this.position = new RecordPosition(recordPartition, recordOffset);
+        }
         this.timestamp = timestamp;
         this.data = data;
     }

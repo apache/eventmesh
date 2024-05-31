@@ -20,6 +20,8 @@ package org.apache.eventmesh.connector.jdbc.source;
 import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.jdbc.JdbcRecordOffset;
+import org.apache.eventmesh.common.remote.offset.jdbc.JdbcRecordPartition;
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
 import org.apache.eventmesh.connector.jdbc.event.Event;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.RandomTaskSelectStrategy;
@@ -68,8 +70,8 @@ public class SourceJdbcTaskManager extends AbstractJdbcTaskManager<SourceEventMe
             return;
         }
         JdbcConnectData jdbcConnectData = event.getJdbcConnectData();
-        RecordPartition partition = new RecordPartition();
-        RecordOffset offset = new RecordOffset();
+        RecordPartition partition = new JdbcRecordPartition();
+        RecordOffset offset = new JdbcRecordOffset();
         ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), jdbcConnectData);
         List<ConnectRecord> records = Collections.singletonList(record);
         for (TaskManagerListener listener : listeners) {

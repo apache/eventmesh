@@ -23,14 +23,16 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PayloadFactory {
-    private PayloadFactory(){
+
+    private PayloadFactory() {
     }
 
     private static class PayloadFactoryHolder {
+
         private static final PayloadFactory INSTANCE = new PayloadFactory();
     }
 
-    public static PayloadFactory getInstance(){
+    public static PayloadFactory getInstance() {
         return PayloadFactoryHolder.INSTANCE;
     }
 

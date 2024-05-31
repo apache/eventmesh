@@ -27,10 +27,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 
-/**
- * 基于mysql的一些特殊处理定义
- *
- */
 public class MysqlDialect extends AbstractDbDialect {
 
     private Map<List<String>, String> shardColumns;
@@ -41,7 +37,7 @@ public class MysqlDialect extends AbstractDbDialect {
     }
 
     public MysqlDialect(JdbcTemplate jdbcTemplate, LobHandler lobHandler, String name, String databaseVersion,
-        int majorVersion, int minorVersion) {
+                        int majorVersion, int minorVersion) {
         super(jdbcTemplate, lobHandler, name, majorVersion, minorVersion);
         sqlTemplate = new MysqlSqlTemplate();
     }

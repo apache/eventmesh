@@ -56,9 +56,7 @@ public class CanalSourceConfig extends SourceConfig {
 
     private Boolean enableRemedy = false;                                             // enable remedy
 
-//    private RemedyAlgorithm remedyAlgorithm;                                          // remedyAlgorithm
-
-    private SyncMode syncMode;                                                 // sync mode：column/row
+    private SyncMode syncMode;                                                 // sync mode: field/row
 
     private SyncConsistency syncConsistency;                                          // sync consistency
 
@@ -71,7 +69,8 @@ public class CanalSourceConfig extends SourceConfig {
 
     private String systemMarkTableColumn;                                    // Column name of the bidirectional synchronization mark
 
-    private String systemMarkTableInfo;                                      // nfo information of the bidirectional synchronization mark, similar to BI_SYNC
+    private String systemMarkTableInfo;
+    // nfo information of the bidirectional synchronization mark, similar to BI_SYNC
 
     private String systemBufferTable;                                        // sync buffer table
 

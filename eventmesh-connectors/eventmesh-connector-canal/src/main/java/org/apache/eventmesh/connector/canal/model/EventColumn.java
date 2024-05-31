@@ -17,67 +17,44 @@
 
 package org.apache.eventmesh.connector.canal.model;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.io.Serializable;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class EventColumn implements Serializable {
 
+    @Setter
+    @Getter
     private int index;
 
+    @Getter
+    @Setter
     private int columnType;
 
+    @Getter
+    @Setter
     private String columnName;
 
     /**
-     * timestamp,Datetime是一个long型的数字.
+     * timestamp,Datetime is long
      */
+    @Setter
     private String columnValue;
 
     private boolean isNull;
 
     private boolean isKey;
 
-    /**
-     * 2012.08.09 add by ljh , 新加字段，用于表明是否为真实变更字段，只针对非主键字段有效<br> 因为FileResolver/EventProcessor会需要所有字段数据做分析，但又想保留按需字段同步模式
-     *
-     * <pre>
-     * 可以简单理解isUpdate代表是否需要在目标库执行数据变更，针对update有效，默认insert/delete为true
-     * 1. row模式，所有字段均为updated
-     * 2. field模式，通过db反查得到的结果，均为updated
-     * 3. 其余场景，根据判断是否变更过，设置updated数据
-     * </pre>
-     */
     private boolean isUpdate = true;
-
-    public int getColumnType() {
-        return columnType;
-    }
-
-    public void setColumnType(int columnType) {
-        this.columnType = columnType;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
 
     public String getColumnValue() {
         if (isNull) {
-            // 如果为null值，强制设置为null, canal主要是走protobuf协议，String值默认为空字符，无法标示为null对象
             columnValue = null;
             return null;
         } else {
             return columnValue;
         }
-    }
-
-    public void setColumnValue(String columnValue) {
-        this.columnValue = columnValue;
     }
 
     public boolean isNull() {
@@ -94,14 +71,6 @@ public class EventColumn implements Serializable {
 
     public void setKey(boolean isKey) {
         this.isKey = isKey;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
     }
 
     public boolean isUpdate() {
@@ -176,22 +145,19 @@ public class EventColumn implements Serializable {
         if (isNull != other.isNull) {
             return false;
         }
-        if (isUpdate != other.isUpdate) {
-            return false;
-        }
-        return true;
+        return isUpdate == other.isUpdate;
     }
 
     @Override
     public String toString() {
-        return "EventColumn{" +
-            "index=" + index +
-            ", columnType=" + columnType +
-            ", columnName='" + columnName + '\'' +
-            ", columnValue='" + columnValue + '\'' +
-            ", isNull=" + isNull +
-            ", isKey=" + isKey +
-            ", isUpdate=" + isUpdate +
-            '}';
+        return "EventColumn{"
+            + "index=" + index
+            + ", columnType=" + columnType
+            + ", columnName='" + columnName + '\''
+            + ", columnValue='" + columnValue + '\''
+            + ", isNull=" + isNull
+            + ", isKey=" + isKey
+            + ", isUpdate=" + isUpdate
+            + '}';
     }
 }

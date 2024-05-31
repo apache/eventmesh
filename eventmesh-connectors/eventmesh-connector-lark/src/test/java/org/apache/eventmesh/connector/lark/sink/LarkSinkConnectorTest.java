@@ -25,8 +25,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.config.connector.lark.LarkSinkConfig;
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
@@ -82,9 +80,7 @@ public class LarkSinkConnectorTest {
         final int times = 3;
         List<ConnectRecord> connectRecords = new ArrayList<>();
         for (int i = 0; i < times; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord connectRecord = new ConnectRecord(partition, offset,
+            ConnectRecord connectRecord = new ConnectRecord(null, null,
                 System.currentTimeMillis(), "test-lark".getBytes(StandardCharsets.UTF_8));
             connectRecords.add(connectRecord);
         }
