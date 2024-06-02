@@ -42,7 +42,7 @@ public class RedisProperties {
      * The address of the redis server following format -- host1:port1,host2:port2,……
      */
     @ConfigField(field = "serverAddress")
-    private String serverAddress;
+    private String serverAddress = "redis://127.0.0.1:6379";
 
     /**
      * The password for redis authentication.
