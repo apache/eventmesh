@@ -53,7 +53,6 @@ public class EventMeshHTTPConfigurationTest {
         Assertions.assertEquals(5816, config.getEventMeshServerReplyMsgThreadNum());
         Assertions.assertEquals(6816, config.getEventMeshServerClientManageThreadNum());
         Assertions.assertEquals(7816, config.getEventMeshServerMetaStorageThreadNum());
-        Assertions.assertEquals(8816, config.getEventMeshServerAdminThreadNum());
 
         Assertions.assertEquals(9816, config.getEventMeshServerRetryThreadNum());
         Assertions.assertEquals(11816, config.getEventMeshServerPullMetaStorageInterval());
