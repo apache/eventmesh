@@ -23,11 +23,14 @@ import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
+import lombok.Getter;
+
 public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
-    private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
+    @Getter
     public EventMeshHTTPServer eventMeshHttpServer;
+
+    private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private final EventMeshServer eventMeshServer;
 
@@ -63,13 +66,5 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
         if (eventMeshHttpServer != null) {
             eventMeshHttpServer.shutdown();
         }
-    }
-
-    public EventMeshHTTPServer getEventMeshHttpServer() {
-        return eventMeshHttpServer;
-    }
-
-    public void setEventMeshHttpServer(EventMeshHTTPServer eventMeshHttpServer) {
-        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 }

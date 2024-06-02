@@ -17,23 +17,38 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.apache.eventmesh.common.Constants.ADMIN;
+
+import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.runtime.configuration.EventMeshAdminConfiguration;
+
+import lombok.Getter;
+
 public class EventMeshAdminBootstrap implements EventMeshBootstrap {
 
+    @Getter
     private EventMeshAdminServer eventMeshAdminServer;
 
-    private EventMeshServer eventMeshServer;
+    private final EventMeshAdminConfiguration eventMeshAdminConfiguration;
+
+    private final EventMeshServer eventMeshServer;
 
     public EventMeshAdminBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
+
+        ConfigService configService = ConfigService.getInstance();
+        this.eventMeshAdminConfiguration = configService.buildConfigInstance(EventMeshAdminConfiguration.class);
+
+        ConfigurationContextUtil.putIfAbsent(ADMIN, eventMeshAdminConfiguration);
     }
 
     @Override
     public void init() throws Exception {
         if (eventMeshServer != null) {
-            eventMeshAdminServer = new EventMeshAdminServer(eventMeshServer);
+            eventMeshAdminServer = new EventMeshAdminServer(eventMeshServer, eventMeshAdminConfiguration);
             eventMeshAdminServer.init();
         }
-
     }
 
     @Override
@@ -41,7 +56,6 @@ public class EventMeshAdminBootstrap implements EventMeshBootstrap {
         if (eventMeshAdminServer != null) {
             eventMeshAdminServer.start();
         }
-
     }
 
     @Override
