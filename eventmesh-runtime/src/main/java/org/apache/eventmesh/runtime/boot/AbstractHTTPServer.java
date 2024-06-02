@@ -86,6 +86,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -96,6 +98,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     private final transient EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
+    @Getter
+    @Setter
     private EventMeshHttpMetricsManager eventMeshHttpMetricsManager;
 
     private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
@@ -105,8 +109,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     }
 
     protected final transient AtomicBoolean started = new AtomicBoolean(false);
+
+    @Getter
     private final transient boolean useTLS;
+
+    @Getter
+    @Setter
     private Boolean useTrace = false; // Determine whether trace is enabled
+
     private static final int MAX_CONNECTIONS = 20_000;
 
     /**
@@ -118,10 +128,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private HttpConnectionHandler httpConnectionHandler;
     private HttpDispatcher httpDispatcher;
 
+    @Setter
+    @Getter
     private HandlerService handlerService;
     private final transient ThreadPoolExecutor asyncContextCompleteHandler =
         ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext");
 
+    @Getter
     private final HTTPThreadPoolGroup httpThreadPoolGroup;
 
     public AbstractHTTPServer(final int port, final boolean useTLS,
@@ -522,33 +535,5 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 new HttpObjectAggregator(Integer.MAX_VALUE),
                 httpDispatcher);
         }
-    }
-
-    public void setUseTrace(final Boolean useTrace) {
-        this.useTrace = useTrace;
-    }
-
-    public Boolean getUseTrace() {
-        return useTrace;
-    }
-
-    public EventMeshHttpMetricsManager getEventMeshHttpMetricsManager() {
-        return eventMeshHttpMetricsManager;
-    }
-
-    public void setEventMeshHttpMetricsManager(final EventMeshHttpMetricsManager eventMeshHttpMetricsManager) {
-        this.eventMeshHttpMetricsManager = eventMeshHttpMetricsManager;
-    }
-
-    public HTTPThreadPoolGroup getHttpThreadPoolGroup() {
-        return httpThreadPoolGroup;
-    }
-
-    public HandlerService getHandlerService() {
-        return handlerService;
-    }
-
-    public void setHandlerService(HandlerService handlerService) {
-        this.handlerService = handlerService;
     }
 }
