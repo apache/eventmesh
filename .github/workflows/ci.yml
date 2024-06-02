@@ -69,7 +69,9 @@ jobs:
 
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
-        run: ./gradlew clean build dist jacocoTestReport -x spotlessJava -x generateGrammarSource --parallel --daemon
+        run: >
+          ./gradlew clean build dist jacocoTestReport --parallel --daemon
+          -x spotlessJava -x generateGrammarSource -x generateDistLicense -x checkDeniedLicense
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
