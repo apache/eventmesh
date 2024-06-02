@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.rabbitmq.sink.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.mq.rabbitmq.RabbitMQSinkConfig;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqConnectionFactory;
 import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEvent;
 import org.apache.eventmesh.connector.rabbitmq.cloudevent.RabbitmqCloudEventWriter;
-import org.apache.eventmesh.connector.rabbitmq.sink.config.RabbitMQSinkConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
@@ -33,6 +33,7 @@ import java.util.List;
 
 import io.cloudevents.CloudEvent;
 
+import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
@@ -77,7 +78,8 @@ public class RabbitMQSinkConnector implements Sink {
     @Override
     public void start() throws Exception {
         if (!started) {
-            rabbitmqClient.binding(channel, sinkConfig.getConnectorConfig().getExchangeType(), sinkConfig.getConnectorConfig().getExchangeName(),
+            BuiltinExchangeType builtinExchangeType = BuiltinExchangeType.valueOf(sinkConfig.getConnectorConfig().getExchangeType());
+            rabbitmqClient.binding(channel, builtinExchangeType, sinkConfig.getConnectorConfig().getExchangeName(),
                 sinkConfig.getConnectorConfig().getRoutingKey(), sinkConfig.getConnectorConfig().getQueueName());
             started = true;
         }

@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation 'software.amazon.awssdk:s3'
     compileOnly 'org.projectlombok:lombok'

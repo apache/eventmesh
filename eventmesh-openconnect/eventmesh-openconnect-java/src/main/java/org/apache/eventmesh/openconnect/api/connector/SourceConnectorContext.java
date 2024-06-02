@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.openconnect.api.connector;
 
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import lombok.Data;

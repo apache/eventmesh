@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation 'org.apache.httpcomponents:httpclient'
     implementation 'com.github.rholder:guava-retrying'

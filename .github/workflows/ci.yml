@@ -57,7 +57,7 @@ jobs:
           java-version: 11
 
       - name: GenerateGrammarSource
-        run: ./gradlew clean generateGrammarSource --parallel --daemon
+        run: ./gradlew clean generateGrammarSource --parallel --daemon --scan
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
@@ -70,13 +70,13 @@ jobs:
       # https://docs.gradle.org/current/userguide/performance.html
       - name: Build
         run: >
-          ./gradlew clean build dist jacocoTestReport --parallel --daemon
+          ./gradlew clean build dist jacocoTestReport --parallel --daemon --scan
           -x spotlessJava -x generateGrammarSource -x generateDistLicense -x checkDeniedLicense
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
       - name: Install plugin
-        run: ./gradlew installPlugin
+        run: ./gradlew installPlugin --scan
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 

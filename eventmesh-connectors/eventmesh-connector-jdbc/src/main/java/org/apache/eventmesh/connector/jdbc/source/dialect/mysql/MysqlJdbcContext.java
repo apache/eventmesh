@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.jdbc.source.dialect.mysql;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.PartitionOffSetContextPair;
 import org.apache.eventmesh.connector.jdbc.UniversalJdbcContext;
 import org.apache.eventmesh.connector.jdbc.context.mysql.MysqlOffsetContext;
 import org.apache.eventmesh.connector.jdbc.context.mysql.MysqlPartition;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
-import org.apache.eventmesh.connector.jdbc.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.antlr4.mysql.MysqlAntlr4DdlParser;
 
 import org.apache.commons.lang3.StringUtils;

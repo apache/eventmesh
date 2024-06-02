@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.List;
 import java.util.Map;
@@ -51,27 +52,27 @@ public class DefaultOffsetManagementServiceImpl implements OffsetManagementServi
     }
 
     @Override
-    public Map<ConnectorRecordPartition, RecordOffset> getPositionMap() {
+    public Map<RecordPartition, RecordOffset> getPositionMap() {
         return null;
     }
 
     @Override
-    public RecordOffset getPosition(ConnectorRecordPartition partition) {
+    public RecordOffset getPosition(RecordPartition partition) {
         return null;
     }
 
     @Override
-    public void putPosition(Map<ConnectorRecordPartition, RecordOffset> positions) {
+    public void putPosition(Map<RecordPartition, RecordOffset> positions) {
 
     }
 
     @Override
-    public void putPosition(ConnectorRecordPartition partition, RecordOffset position) {
+    public void putPosition(RecordPartition partition, RecordOffset position) {
 
     }
 
     @Override
-    public void removePosition(List<ConnectorRecordPartition> partitions) {
+    public void removePosition(List<RecordPartition> partitions) {
 
     }
 

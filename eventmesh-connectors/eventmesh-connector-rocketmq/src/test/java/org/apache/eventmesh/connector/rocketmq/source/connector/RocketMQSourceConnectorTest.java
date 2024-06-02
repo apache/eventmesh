@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.source.connector;
 
-import org.apache.eventmesh.connector.rocketmq.source.config.RocketMQSourceConfig;
+import org.apache.eventmesh.common.config.connector.mq.rocketmq.RocketMQSourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 

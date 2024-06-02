@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
@@ -60,7 +61,7 @@ public class JsonUtils {
         Object obj = OBJECT_MAPPER.convertValue(map, beanClass);
         return beanClass.cast(obj);
     }
-    
+
     /**
      * Serialize object to json string.
      *
@@ -108,6 +109,14 @@ public class JsonUtils {
         }
     }
 
+    public static <T> T parseObject(InputStream inputStream, Class<T> clazz) {
+        try {
+            return OBJECT_MAPPER.readValue(inputStream, clazz);
+        } catch (IOException e) {
+            throw new JsonException("deserialize input stream to object error", e);
+        }
+    }
+
     public static <T> T parseObject(String text, Type type) {
         if (StringUtils.isEmpty(text)) {
             return null;
@@ -152,6 +161,14 @@ public class JsonUtils {
         try {
             return OBJECT_MAPPER.readValue(text, typeReference);
         } catch (JsonProcessingException e) {
+            throw new JsonException("deserialize json string to typeReference error", e);
+        }
+    }
+
+    public static <T> T parseTypeReferenceObject(byte[] text, TypeReference<T> typeReference) {
+        try {
+            return OBJECT_MAPPER.readValue(text, typeReference);
+        } catch (IOException e) {
             throw new JsonException("deserialize json string to typeReference error", e);
         }
     }

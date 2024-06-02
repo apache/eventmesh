@@ -27,11 +27,11 @@
 
 ### EventMesh Architecture
 
-![EventMesh Architecture](resources/eventmesh-architecture-4.png)
+![EventMesh Architecture](resources/eventmesh-architecture-5.png)
 
-### EventMesh Dashboard
+### EventMesh K8S deployment
 
-![EventMesh Dashboard](resources/dashboard.png)
+![EventMesh Operator](resources/eventmesh-operator.png)
 
 ## Features
 

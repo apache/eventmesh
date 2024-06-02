@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    implementation project(":eventmesh-common")
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     testImplementation('org.junit.jupiter:junit-jupiter')
     testImplementation('org.mockito:mockito-junit-jupiter')

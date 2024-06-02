@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.redis.RedisSourceConfig;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
-import org.apache.eventmesh.connector.redis.source.config.RedisSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
