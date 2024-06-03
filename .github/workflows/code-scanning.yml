@@ -68,7 +68,7 @@ jobs:
         if: matrix.language == 'java'
         run: ./gradlew clean assemble compileTestJava --parallel --daemon --scan
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3

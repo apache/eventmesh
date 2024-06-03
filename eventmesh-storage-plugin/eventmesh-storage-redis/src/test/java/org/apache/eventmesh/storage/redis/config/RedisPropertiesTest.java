@@ -19,8 +19,6 @@ package org.apache.eventmesh.storage.redis.config;
 
 import org.apache.eventmesh.common.config.ConfigService;
 
-import java.util.Properties;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -37,11 +35,7 @@ public class RedisPropertiesTest {
         Assertions.assertEquals("redis://127.0.0.1:6379", config.getServerAddress());
         Assertions.assertEquals(RedisProperties.ServerType.SINGLE, config.getServerType());
         Assertions.assertEquals("serverMasterName-success!!!", config.getServerMasterName());
-
-        Properties properties = new Properties();
-        properties.put("threads", "2");
-        properties.put("nettyThreads", "2");
-        Properties redissonProperties = config.getRedissonProperties();
-        Assertions.assertEquals(properties, redissonProperties);
+        Assertions.assertEquals(2, config.getRedissonThreads());
+        Assertions.assertEquals(2, config.getRedissonNettyThreads());
     }
 }
