@@ -666,7 +666,7 @@ subprojects {
 
             dependency "commons-io:commons-io:2.16.1"
 
-            dependency "commons-validator:commons-validator:1.7"
+            dependency "commons-validator:commons-validator:1.9.0"
 
             dependency "com.google.guava:guava:31.1-jre"
 
