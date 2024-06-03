@@ -24,7 +24,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     implementation 'org.apache.kafka:kafka-clients:3.6.2'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
 
     testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     testImplementation project(":eventmesh-common")
