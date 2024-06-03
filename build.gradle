@@ -752,7 +752,7 @@ subprojects {
             dependency "software.amazon.awssdk:s3:2.25.55"
             dependency "com.github.rholder:guava-retrying:2.0.0"
 
-            dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.1"
+            dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2"
             dependency "com.alibaba:druid-spring-boot-starter:1.2.22"
             dependency "org.springframework.boot:spring-boot-starter-jetty:2.7.10"
 
