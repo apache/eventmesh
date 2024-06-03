@@ -108,7 +108,7 @@ allprojects {
                 url "https://maven.aliyun.com/repository/public"
             }
         }
-        testImplementation "org.junit.jupiter:junit-jupiter:5.6.0"
+        testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
     }
 
     spotless {
@@ -712,7 +712,7 @@ subprojects {
             dependency "org.springframework.boot:spring-boot-starter-web:2.7.18"
             dependency "io.openmessaging:registry-server:0.0.1"
 
-            dependency "org.junit.jupiter:junit-jupiter:5.6.0"
+            dependency "org.junit.jupiter:junit-jupiter:5.10.2"
             dependency "org.junit-pioneer:junit-pioneer:1.9.1"
             dependency "org.assertj:assertj-core:2.8.0"
 
