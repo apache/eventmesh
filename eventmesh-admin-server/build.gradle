@@ -32,7 +32,7 @@ dependencies {
 	implementation "io.grpc:grpc-netty-shaded"
 
 	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
-	implementation group: 'com.baomidou', name: 'mybatis-plus-boot-starter', version: '3.5.5'
+	implementation group: 'com.baomidou', name: 'mybatis-plus-boot-starter', version: '3.5.6'
 	implementation "org.reflections:reflections:0.10.2"
 
 	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
