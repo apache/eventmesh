@@ -27,12 +27,13 @@ updates:
         update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gomod"
     directory: "eventmesh-sdks/eventmesh-sdk-go"
+    # Disabled temporarily since the Go SDK is not integrated with CI
+    open-pull-requests-limit: 0
     schedule:
       interval: "monthly"
     ignore:
       - dependency-name: "*"
-        # Disabled temporarily since the Go SDK is not integrated with CI
-        update-types: [ "version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-patch" ]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
