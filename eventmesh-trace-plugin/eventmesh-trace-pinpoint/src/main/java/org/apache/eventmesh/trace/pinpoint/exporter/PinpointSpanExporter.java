@@ -26,7 +26,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
-
+import org.mapstruct.factory.Mappers;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
@@ -54,7 +54,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 import com.navercorp.pinpoint.bootstrap.context.SpanId;
-import com.navercorp.pinpoint.bootstrap.context.TraceId;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.util.JvmUtils;
@@ -75,12 +74,24 @@ import com.navercorp.pinpoint.profiler.context.compress.GrpcSpanProcessorV2;
 import com.navercorp.pinpoint.profiler.context.grpc.GrpcAgentInfoMessageConverter;
 import com.navercorp.pinpoint.profiler.context.grpc.GrpcSpanMessageConverter;
 import com.navercorp.pinpoint.profiler.context.grpc.config.GrpcTransportConfig;
-import com.navercorp.pinpoint.profiler.context.id.DefaultTraceId;
-import com.navercorp.pinpoint.profiler.context.id.DefaultTraceRoot;
+import com.navercorp.pinpoint.profiler.context.grpc.config.SpanAutoUriGetter;
+import com.navercorp.pinpoint.profiler.context.grpc.config.SpanUriGetter;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.AgentInfoMapper;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.AgentInfoMapperImpl;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.AnnotationValueMapper;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.JvmGcTypeMapper;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.JvmGcTypeMapperImpl;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.SpanMessageMapper;
+import com.navercorp.pinpoint.profiler.context.grpc.mapper.SpanMessageMapperImpl;
+import com.navercorp.pinpoint.profiler.context.id.DefaultTraceIdFactory;
+import com.navercorp.pinpoint.profiler.context.id.DefaultTraceRootFactory;
+import com.navercorp.pinpoint.profiler.context.id.TraceIdFactory;
 import com.navercorp.pinpoint.profiler.context.id.TraceRoot;
+import com.navercorp.pinpoint.profiler.context.id.TraceRootFactory;
 import com.navercorp.pinpoint.profiler.context.provider.AgentInformationProvider;
 import com.navercorp.pinpoint.profiler.context.provider.grpc.DnsExecutorServiceProvider;
 import com.navercorp.pinpoint.profiler.context.provider.grpc.GrpcNameResolverProvider;
+import com.navercorp.pinpoint.profiler.context.provider.grpc.SSLContextProvider;
 import com.navercorp.pinpoint.profiler.metadata.MetaDataType;
 import com.navercorp.pinpoint.profiler.monitor.metric.gc.JvmGcType;
 import com.navercorp.pinpoint.profiler.receiver.ProfilerCommandLocatorBuilder;
@@ -117,12 +128,21 @@ public final class PinpointSpanExporter implements SpanExporter {
     private final String applicationName;
 
     private final GrpcTransportConfig grpcTransportConfig;
+    private final SSLContextProvider sslContextProvider;
 
     private final HeaderFactory headerFactory;
 
     private final AgentInfoSender agentInfoSender;
 
     private final SpanGrpcDataSender spanGrpcDataSender;
+
+    private final JvmGcTypeMapper jvmGcTypeMapper = new JvmGcTypeMapperImpl();
+    private final AgentInfoMapper agentInfoMapper = new AgentInfoMapperImpl(jvmGcTypeMapper);
+
+    private final SpanUriGetter spanUriGetter = new SpanAutoUriGetter();
+    private final AnnotationValueMapper annotationValueMapper = Mappers.getMapper(AnnotationValueMapper.class);
+    private final SpanMessageMapper spanMessageMapper = new SpanMessageMapperImpl(annotationValueMapper, spanUriGetter);
+    
 
     public PinpointSpanExporter(final String agentId,
         final String agentName,
@@ -133,6 +153,8 @@ public final class PinpointSpanExporter implements SpanExporter {
         this.agentName = Objects.requireNonNull(agentName, "agentName cannot be null");
         this.applicationName = Objects.requireNonNull(applicationName, "applicationName cannot be  null");
         this.grpcTransportConfig = Objects.requireNonNull(grpcTransportConfig, "grpcTransportConfig cannot be  null");
+
+        this.sslContextProvider = new SSLContextProvider(grpcTransportConfig);
 
         this.headerFactory = new AgentHeaderFactory(
             agentId,
@@ -149,13 +171,13 @@ public final class PinpointSpanExporter implements SpanExporter {
 
     private AgentInfoSender createAgentInfoSender() {
         final ChannelFactory agentChannelFactory = createAgentChannelFactory();
-
+        
         final AgentGrpcDataSender<MetaDataType> agentGrpcDataSender =
             new AgentGrpcDataSender<>(
                 grpcTransportConfig.getAgentCollectorIp(),
                 grpcTransportConfig.getAgentCollectorPort(),
                 grpcTransportConfig.getAgentSenderExecutorQueueSize(),
-                new GrpcAgentInfoMessageConverter(),
+                new GrpcAgentInfoMessageConverter(agentInfoMapper),
                 reconnectExecutor,
                 scheduledExecutorService,
                 agentChannelFactory,
@@ -193,7 +215,8 @@ public final class PinpointSpanExporter implements SpanExporter {
             new GrpcSpanMessageConverter(
                 agentId,
                 ServiceType.STAND_ALONE.getCode(),
-                new GrpcSpanProcessorV2());
+                new GrpcSpanProcessorV2(),
+                this.spanMessageMapper);
 
         final StreamState streamState =
             new SimpleStreamState(
@@ -207,7 +230,8 @@ public final class PinpointSpanExporter implements SpanExporter {
             messageConverter,
             reconnectExecutor,
             spanChannelFactory,
-            streamState);
+            streamState,
+            grpcTransportConfig.getSpanRpcMaxAgeMillis());
     }
 
     private ChannelFactory createAgentChannelFactory() {
@@ -215,7 +239,7 @@ public final class PinpointSpanExporter implements SpanExporter {
             new DefaultChannelFactoryBuilder(AGENT_CHANNEL_FACTORY);
         channelFactoryBuilder.setHeaderFactory(headerFactory);
         channelFactoryBuilder.setNameResolverProvider(nameResolverProvider);
-        channelFactoryBuilder.setSslOption(grpcTransportConfig.getSslOption());
+        channelFactoryBuilder.setSslContext(this.sslContextProvider.get());
         channelFactoryBuilder.setClientOption(grpcTransportConfig.getAgentClientOption());
         channelFactoryBuilder.setExecutorQueueSize(grpcTransportConfig.getAgentChannelExecutorQueueSize());
 
@@ -227,7 +251,7 @@ public final class PinpointSpanExporter implements SpanExporter {
             new DefaultChannelFactoryBuilder(SPAN_CHANNEL_FACTORY);
         channelFactoryBuilder.setHeaderFactory(headerFactory);
         channelFactoryBuilder.setNameResolverProvider(nameResolverProvider);
-        channelFactoryBuilder.setSslOption(grpcTransportConfig.getSslOption());
+        channelFactoryBuilder.setSslContext(this.sslContextProvider.get());
         channelFactoryBuilder.setClientOption(grpcTransportConfig.getSpanClientOption());
         channelFactoryBuilder.setExecutorQueueSize(grpcTransportConfig.getSpanChannelExecutorQueueSize());
 
@@ -289,10 +313,11 @@ public final class PinpointSpanExporter implements SpanExporter {
             }
         });
 
-        final TraceId traceId = new DefaultTraceId(agentId, startTimestamp, transactionId, parentSpanId[0], spanId,
-            (short) spanData.getKind().ordinal());
+        final TraceIdFactory traceIdFactory = new DefaultTraceIdFactory(this.agentId, startTimestamp);
+        traceIdFactory.continueTraceId(spanData.getTraceId(), parentSpanId[0], spanId, (short) spanData.getKind().ordinal());
 
-        final TraceRoot traceRoot = new DefaultTraceRoot(traceId, this.agentId, startTimestamp, transactionId);
+        final TraceRootFactory traceRootFactory = new DefaultTraceRootFactory(agentId, traceIdFactory);
+        final TraceRoot traceRoot = traceRootFactory.newTraceRoot(transactionId);
 
         final Span span = new Span(traceRoot);
 
