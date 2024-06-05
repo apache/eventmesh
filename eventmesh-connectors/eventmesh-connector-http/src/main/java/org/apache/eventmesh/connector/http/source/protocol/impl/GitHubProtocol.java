@@ -100,16 +100,8 @@ public class GitHubProtocol implements Protocol {
                 String signature = headers.get(WebhookConstants.GITHUB_SIGNATURE_256);
                 if (BooleanUtils.isFalse(validateSignature(signature, payload, secret))) {
                     String errorMsg = String.format("signature is invalid, please check the secret. received signature: %s", signature);
-                    log.error(errorMsg);
-
-                    WebhookResponse response = WebhookResponse.builder()
-                        .msg(errorMsg)
-                        .handleTime(LocalDateTime.now())
-                        .build();
-
-                    // Return 400 Bad Request
-                    ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
-                        .send(JSON.toJSONString(response, Feature.WriteMapNullValue));
+                    // Return Bad Request
+                    ctx.fail(HttpResponseStatus.BAD_REQUEST.code(), new EventMeshException(errorMsg));
                     return;
                 }
 
@@ -137,7 +129,7 @@ public class GitHubProtocol implements Protocol {
 
             })
             .failureHandler(ctx -> {
-                log.error("Failed to handle the request from github.", ctx.failure());
+                log.error("Failed to handle the request from github. ", ctx.failure());
 
                 WebhookResponse response = WebhookResponse.builder()
                     .msg(ctx.failure().getMessage())

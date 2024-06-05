@@ -98,7 +98,7 @@ public class CommonProtocol implements Protocol {
 
             })
             .failureHandler(ctx -> {
-                log.error("Failed to handle the request from github.", ctx.failure());
+                log.error("Failed to handle the request. ", ctx.failure());
 
                 WebhookResponse response = WebhookResponse.builder()
                     .msg(ctx.failure().getMessage())

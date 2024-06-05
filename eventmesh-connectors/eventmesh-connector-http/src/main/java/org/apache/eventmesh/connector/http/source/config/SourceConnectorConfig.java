@@ -36,10 +36,14 @@ public class SourceConnectorConfig {
     // timeunit: ms, default 5000ms
     private int idleTimeout = 5000;
 
-    // The maximum size allowed for form attributes when Content-Type is application/x-www-form-urlencoded or multipart/form-data
-    // Default is 1MB (1024 * 1024 bytes).
-    // If you receive a "size exceed allowed maximum capacity" error, you can increase this value.
-    // Note: This applies only when handling form data submissions.
+    /**
+     * <ul>
+     *     <li>The maximum size allowed for form attributes when Content-Type is application/x-www-form-urlencoded or multipart/form-data </li>
+     *     <li>Default is 1MB (1024 * 1024 bytes). </li>
+     *     <li>If you receive a "size exceed allowed maximum capacity" error, you can increase this value. </li>
+     *     <li>Note: This applies only when handling form data submissions.</li>
+     * </ul>
+     */
     private int maxFormAttributeSize = 1024 * 1024;
 
     // max size of the queue, default 1000
