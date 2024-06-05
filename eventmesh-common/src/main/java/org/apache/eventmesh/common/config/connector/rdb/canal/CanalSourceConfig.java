@@ -54,27 +54,23 @@ public class CanalSourceConfig extends SourceConfig {
     // ================================= channel parameter
     // ================================
 
-    private Boolean enableRemedy = false;                                             // enable remedy
+    // enable remedy
+    private Boolean enableRemedy = false;
 
-    private SyncMode syncMode;                                                 // sync mode: field/row
+    // sync mode: field/row
+    private SyncMode syncMode;
 
-    private SyncConsistency syncConsistency;                                          // sync consistency
+    // sync consistency
+    private SyncConsistency syncConsistency;
 
     // ================================= system parameter
     // ================================
 
-    private String systemSchema;                                             // Default is retl
+    // Column name of the bidirectional synchronization mark
+    private String needSyncMarkTableColumnName = "needSync";
 
-    private String systemMarkTable;                                          // Bidirectional synchronization mark table
-
-    private String systemMarkTableColumn;                                    // Column name of the bidirectional synchronization mark
-
-    private String systemMarkTableInfo;
-    // nfo information of the bidirectional synchronization mark, similar to BI_SYNC
-
-    private String systemBufferTable;                                        // sync buffer table
-
-    private String systemDualTable;                                          // sync heartbeat table
+    // Column value of the bidirectional synchronization mark
+    private String needSyncMarkTableColumnValue = "needSync";
 
     private SourceConnectorConfig sourceConnectorConfig;
 }

@@ -47,7 +47,7 @@ public class MysqlSqlTemplate extends AbstractSqlTemplate {
 
         size = columnNames.length;
         for (int i = 0; i < size; i++) {
-            if (!includePks && shardColumn != null && columnNames[i].equals(shardColumn)) {
+            if (!includePks && columnNames[i].equals(shardColumn)) {
                 continue;
             }
 
