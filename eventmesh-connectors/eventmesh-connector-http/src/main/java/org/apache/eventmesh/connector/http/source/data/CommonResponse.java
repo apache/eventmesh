@@ -20,15 +20,20 @@ package org.apache.eventmesh.connector.http.source.data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import lombok.Builder;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter.Feature;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Webhook response.
  */
 @Data
-@Builder
-public class WebhookResponse implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommonResponse implements Serializable {
 
     private static final long serialVersionUID = 8616938575207104455L;
 
@@ -36,5 +41,34 @@ public class WebhookResponse implements Serializable {
 
     private LocalDateTime handleTime;
 
+    /**
+     * Convert to json string.
+     *
+     * @return json string
+     */
+    public String toJsonStr() {
+        return JSON.toJSONString(this, Feature.WriteMapNullValue);
+    }
+
+
+    /**
+     * Create a success response.
+     *
+     * @return response
+     */
+    public static CommonResponse success() {
+        return base("success");
+    }
+
+
+    /**
+     * Create a base response.
+     *
+     * @param msg message
+     * @return response
+     */
+    public static CommonResponse base(String msg) {
+        return new CommonResponse(msg, LocalDateTime.now());
+    }
 
 }

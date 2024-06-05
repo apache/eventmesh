@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
@@ -79,11 +80,15 @@ public class CloudEventProtocol implements Protocol {
                     // Add the event to the queue, thread-safe
                     boundedQueue.offerWithReplace(event);
                     log.info("[HttpSourceConnector] Succeed to convert payload into CloudEvent. StatusCode={}", HttpResponseStatus.OK.code());
-                    ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
+                    ctx.response()
+                        .setStatusCode(HttpResponseStatus.OK.code())
+                        .end(CommonResponse.success().toJsonStr());
                 })
                 .onFailure(t -> {
                     log.error("[HttpSourceConnector] Malformed request. StatusCode={}", HttpResponseStatus.BAD_REQUEST.code(), t);
-                    ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+                    ctx.response()
+                        .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+                        .end(CommonResponse.base(t.getMessage()).toJsonStr());
                 }));
     }
 

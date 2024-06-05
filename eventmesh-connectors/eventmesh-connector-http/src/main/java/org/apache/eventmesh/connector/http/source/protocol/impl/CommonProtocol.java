@@ -20,22 +20,19 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
-import org.apache.eventmesh.connector.http.source.data.WebhookResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.handler.BodyHandler;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONWriter.Feature;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,43 +68,26 @@ public class CommonProtocol implements Protocol {
             .handler(BodyHandler.create())
             .handler(ctx -> {
                 // Get the payload
-                String payload = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
+                String payloadStr = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
 
                 // Create and store the webhook request
-                Map<String, String> headerMap = new HashMap<>();
-                ctx.request().headers().forEach(header -> headerMap.put(header.getKey(), header.getValue()));
-
-                WebhookRequest webhookRequest = WebhookRequest.builder()
-                    .protocolName(PROTOCOL_NAME)
-                    .url(ctx.request().absoluteURI())
-                    .headers(headerMap)
-                    .payload(payload)
-                    .build();
-
-                // Add the webhook request to the queue, thread-safe
+                Map<String, String> headerMap = ctx.request().headers().entries().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payloadStr);
                 boundedQueue.offerWithReplace(webhookRequest);
 
                 // Return 200 OK
-                WebhookResponse response = WebhookResponse.builder()
-                    .msg("success")
-                    .handleTime(LocalDateTime.now())
-                    .build();
-
-                ctx.response().setStatusCode(HttpResponseStatus.OK.code())
-                    .send(JSON.toJSONString(response, Feature.WriteMapNullValue));
-
+                ctx.response()
+                    .setStatusCode(HttpResponseStatus.OK.code())
+                    .end(CommonResponse.success().toJsonStr());
             })
             .failureHandler(ctx -> {
                 log.error("Failed to handle the request. ", ctx.failure());
 
-                WebhookResponse response = WebhookResponse.builder()
-                    .msg(ctx.failure().getMessage())
-                    .handleTime(LocalDateTime.now())
-                    .build();
-
                 // Return Bad Response
-                ctx.response().setStatusCode(ctx.statusCode())
-                    .send(JSON.toJSONString(response, Feature.WriteMapNullValue));
+                ctx.response()
+                    .setStatusCode(ctx.statusCode())
+                    .end(CommonResponse.base(ctx.failure().getMessage()).toJsonStr());
             });
 
     }
@@ -120,6 +100,11 @@ public class CommonProtocol implements Protocol {
      */
     @Override
     public ConnectRecord convertToConnectRecord(Object message) {
-        return ((WebhookRequest) message).convertToConnectRecord();
+        WebhookRequest request = (WebhookRequest) message;
+        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), request.getPayload());
+        connectRecord.addExtension("source", request.getProtocolName());
+        connectRecord.addExtension("url", request.getUrl());
+        connectRecord.addExtension("headers", request.getHeaders());
+        return connectRecord;
     }
 }

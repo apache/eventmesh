@@ -17,19 +17,22 @@
 
 package org.apache.eventmesh.connector.http.source.data;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
+import java.io.Serializable;
 import java.util.Map;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Webhook Protocol Request.
  */
 @Data
-@Builder
-public class WebhookRequest {
+@NoArgsConstructor
+@AllArgsConstructor
+public class WebhookRequest implements Serializable {
+
+    private static final long serialVersionUID = -483500600756490500L;
 
     private String protocolName;
 
@@ -37,20 +40,6 @@ public class WebhookRequest {
 
     private Map<String, String> headers;
 
-    private String payload;
-
-
-    /**
-     * Convert to ConnectRecord.
-     *
-     * @return ConnectRecord
-     */
-    public ConnectRecord convertToConnectRecord() {
-        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), payload);
-        connectRecord.addExtension("protocolName", protocolName);
-        connectRecord.addExtension("url", url);
-        connectRecord.addExtension("headers", headers);
-        return connectRecord;
-    }
+    private Object payload;
 
 }
