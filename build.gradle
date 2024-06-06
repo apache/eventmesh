@@ -160,11 +160,14 @@ tasks.register('dist') {
     dependsOn('generateDistLicense', 'generateDistNotice')
     def includedProjects =
             ["eventmesh-common",
+             "eventmesh-admin-server",
              "eventmesh-meta:eventmesh-meta-api",
              "eventmesh-metrics-plugin:eventmesh-metrics-api",
              "eventmesh-protocol-plugin:eventmesh-protocol-api",
+             "eventmesh-registry:eventmesh-registry-api",
              "eventmesh-retry:eventmesh-retry-api",
              "eventmesh-runtime",
+             "eventmesh-runtime-v2",
              "eventmesh-security-plugin:eventmesh-security-api",
              "eventmesh-spi",
              "eventmesh-starter",
@@ -660,6 +663,17 @@ subprojects {
 
     dependencyManagement {
         dependencies {
+            dependencySet(group: 'org.springframework', version: '5.3.31') {
+                entry 'spring-aop'
+                entry 'spring-beans'
+                entry 'spring-context'
+                entry 'spring-core'
+                entry 'spring-expression'
+                entry 'spring-jcl'
+                entry 'spring-jdbc'
+                entry 'spring-tx'
+            }
+
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.4"
             dependency "org.apache.commons:commons-text:1.9"
