@@ -30,10 +30,10 @@ dependencies {
     implementation "io.netty:netty-all"
     implementation "org.apache.httpcomponents:httpclient"
 
-    implementation "io.grpc:grpc-protobuf:${project.ext.grpcVersion}"
-    implementation "io.grpc:grpc-stub:${project.ext.grpcVersion}"
-    implementation "io.grpc:grpc-netty:${project.ext.grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${project.ext.grpcVersion}"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
     implementation "io.cloudevents:cloudevents-protobuf"
 
     // protocol
@@ -50,8 +50,8 @@ dependencies {
     testImplementation "io.netty:netty-all"
     testImplementation "org.apache.httpcomponents:httpclient"
 
-    implementation "io.grpc:grpc-protobuf:${project.ext.grpcVersion}"
-    implementation "io.grpc:grpc-stub:${project.ext.grpcVersion}"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
     implementation "com.google.protobuf:protobuf-java-util:3.25.1"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
