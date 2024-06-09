@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.64.0'
 
 dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
@@ -31,10 +30,10 @@ dependencies {
     implementation "io.openmessaging:openmessaging-api"
     implementation 'com.alibaba.nacos:nacos-client'
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
