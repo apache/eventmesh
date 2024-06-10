@@ -22,7 +22,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 /**
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.49.1-SNAPSHOT)",
+    value = "by gRPC proto compiler (version 1.64.0)",
     comments = "Source: workflow.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 @SuppressWarnings({"all"})

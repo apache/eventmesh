@@ -30,7 +30,7 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
  *
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.4.0)",
+    value = "by gRPC proto compiler (version 1.64.0)",
     comments = "Source: callback-service.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class CallbackServiceGrpc {
