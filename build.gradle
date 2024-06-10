@@ -653,11 +653,11 @@ subprojects {
     def grpcVersion = '1.64.0'
     def log4jVersion = '2.23.1'
     def jacksonVersion = '2.17.1'
-    def dropwizardMetricsVersion = '4.2.25'
+    def dropwizardMetricsVersion = '4.2.26'
     def opentelemetryVersion = '1.36.0'
-    def cloudeventsVersion = '2.5.0'
+    def cloudeventsVersion = '3.0.0'
     def curatorVersion = '5.6.0'
-    def mockitoVersion = '3.12.4'
+    def mockitoVersion = '4.11.0'
 
     dependencyManagement {
         dependencies {
@@ -666,7 +666,7 @@ subprojects {
             dependency "org.apache.commons:commons-text:1.12.0"
             dependency "commons-io:commons-io:2.16.1"
             dependency "commons-validator:commons-validator:1.9.0"
-            dependency "com.google.guava:guava:31.1-jre"
+            dependency "com.google.guava:guava:33.2.1-jre"
 
             dependency "org.slf4j:slf4j-api:2.0.13"
             dependency "org.apache.logging.log4j:log4j-api:${log4jVersion}"
