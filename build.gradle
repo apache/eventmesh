@@ -655,7 +655,7 @@ subprojects {
     def jacksonVersion = '2.17.1'
     def dropwizardMetricsVersion = '4.2.26'
     def opentelemetryVersion = '1.36.0'
-    def cloudeventsVersion = '2.5.0'
+    def cloudeventsVersion = '3.0.0'
     def curatorVersion = '5.6.0'
     def mockitoVersion = '3.12.4'
 
