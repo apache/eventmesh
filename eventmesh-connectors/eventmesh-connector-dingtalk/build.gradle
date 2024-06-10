@@ -25,7 +25,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation "com.aliyun:dingtalk:2.1.25"
+    implementation "com.aliyun:dingtalk:2.1.26"
     implementation 'com.google.guava:guava'
 
     compileOnly 'org.projectlombok:lombok'
