@@ -23,7 +23,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * AdminServiceGrpc
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.64.0)",
+    value = "by gRPC proto compiler (version 1.40.0)",
     comments = "Source: event_mesh_admin_service.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class AdminServiceGrpc {
