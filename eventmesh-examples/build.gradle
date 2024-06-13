@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-common")
