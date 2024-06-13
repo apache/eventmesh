@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-
-
 dependencies {
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"

@@ -24,7 +24,6 @@ repositories {
     mavenCentral()
 }
 
-
 def protobufVersion = '3.25.3'
 def protocVersion = protobufVersion
 
