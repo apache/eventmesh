@@ -673,7 +673,7 @@ subprojects {
             dependency "org.apache.logging.log4j:log4j-core:${log4jVersion}"
             dependency "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
 
-            dependency "com.lmax:disruptor:3.4.2"
+            dependency "com.lmax:disruptor:3.4.4"
 
             dependency "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
             dependency "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
