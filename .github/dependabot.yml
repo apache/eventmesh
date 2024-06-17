@@ -25,6 +25,8 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "software.amazon.awssdk:s3"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gomod"
     directory: "eventmesh-sdks/eventmesh-sdk-go"
     # Disabled temporarily since the Go SDK is not integrated with CI
