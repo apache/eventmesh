@@ -754,7 +754,7 @@ subprojects {
             dependency "com.alibaba:druid-spring-boot-starter:1.2.23"
             dependency "org.springframework.boot:spring-boot-starter-jetty:2.7.18"
 
-            dependency "com.baomidou:mybatis-plus:3.5.6"
+            dependency "com.baomidou:mybatis-plus:3.5.7"
             dependency "com.mysql:mysql-connector-j:8.4.0"
         }
     }
