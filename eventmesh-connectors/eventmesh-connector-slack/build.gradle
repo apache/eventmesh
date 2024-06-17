@@ -20,7 +20,7 @@ dependencies {
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     
-    implementation "com.slack.api:bolt:1.39.+"
+    implementation "com.slack.api:bolt:1.40.+"
     implementation 'com.google.guava:guava'
 
     compileOnly 'org.projectlombok:lombok'
