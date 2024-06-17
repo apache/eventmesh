@@ -16,33 +16,33 @@
  */
 
 dependencies {
-	implementation project(":eventmesh-spi")
-	implementation project(":eventmesh-common")
-	implementation project(":eventmesh-registry:eventmesh-registry-api")
-	implementation project(":eventmesh-registry:eventmesh-registry-nacos")
-	implementation project(':eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api')
-	implementation "com.alibaba.nacos:nacos-client"
-	implementation ("org.springframework.boot:spring-boot-starter-web") {
-		exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
-	}
-	implementation 'org.springframework.boot:spring-boot-starter-jetty'
-	implementation "io.grpc:grpc-core"
-	implementation "io.grpc:grpc-protobuf"
-	implementation "io.grpc:grpc-stub"
-	implementation "io.grpc:grpc-netty-shaded"
+    implementation project(":eventmesh-spi")
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-registry:eventmesh-registry-api")
+    implementation project(":eventmesh-registry:eventmesh-registry-nacos")
+    implementation project(':eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api')
+    implementation "com.alibaba.nacos:nacos-client"
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-jetty'
+    implementation "io.grpc:grpc-core"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty-shaded"
 
-	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
-	implementation group: 'com.baomidou', name: 'mybatis-plus-boot-starter', version: '3.5.7'
-	implementation "org.reflections:reflections:0.10.2"
+    // https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
+    implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.7'
+    implementation "org.reflections:reflections:0.10.2"
 
-	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
-	implementation "com.alibaba:druid-spring-boot-starter"
-	compileOnly 'com.mysql:mysql-connector-j'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
+    implementation "com.alibaba:druid-spring-boot-starter"
+    compileOnly 'com.mysql:mysql-connector-j'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }
 
-configurations.implementation  {
-	exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+configurations.implementation {
+    exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
 }
 
