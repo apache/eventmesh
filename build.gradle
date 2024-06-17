@@ -686,7 +686,7 @@ subprojects {
             dependency "org.asynchttpclient:async-http-client:2.12.3"
             dependency "org.apache.httpcomponents:httpclient:4.5.14"
 
-            dependency "io.netty:netty-all:4.1.79.Final"
+            dependency "io.netty:netty-all:4.1.111.Final"
 
             dependency "io.dropwizard.metrics:metrics-core:${dropwizardMetricsVersion}"
             dependency "io.dropwizard.metrics:metrics-healthchecks:${dropwizardMetricsVersion}"
