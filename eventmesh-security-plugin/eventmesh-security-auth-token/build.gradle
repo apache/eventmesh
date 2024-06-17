@@ -16,7 +16,7 @@
  */
 
 
-def jwtVersion = '0.11.1'
+def jwtVersion = '0.12.5'
 
 dependencies {
 
