@@ -658,6 +658,8 @@ subprojects {
     def cloudeventsVersion = '2.5.0'
     def curatorVersion = '5.6.0'
     def mockitoVersion = '3.12.4'
+    def protobufVersion = '3.25.3'
+    def protocVersion = protobufVersion
 
     dependencyManagement {
         dependencies {
@@ -757,6 +759,10 @@ subprojects {
 
             dependency "com.baomidou:mybatis-plus:3.5.6"
             dependency "com.mysql:mysql-connector-j:8.0.33"
+
+            dependency "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+            dependency "com.google.protobuf:protobuf-java:${protobufVersion}"
+            dependency "com.google.protobuf:protoc:${protocVersion}"
         }
     }
 }
