@@ -210,6 +210,48 @@ tasks.register('dist') {
     }
 }
 
+tasks.register('dist-admin') {
+    subprojects.forEach { subProject ->
+        dependsOn("${subProject.path}:jar")
+    }
+    def includedProjects =
+            [
+                    "eventmesh-admin-server",
+                    "eventmesh-common",
+                    "eventmesh-spi",
+                    "eventmesh-registry:eventmesh-registry-api",
+                    "eventmesh-registry:eventmesh-registry-nacos",
+                    "eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api"
+            ]
+    doLast {
+        includedProjects.each {
+            def subProject = findProject(it)
+            copy {
+                from subProject.jar.archivePath
+                into rootProject.file('dist/apps')
+            }
+            copy {
+                from subProject.configurations.runtimeClasspath
+                into rootProject.file('dist/lib')
+                exclude 'eventmesh-*'
+            }
+            copy {
+                from subProject.file('bin')
+                into rootProject.file('dist/bin')
+            }
+            copy {
+                from subProject.file('conf')
+                from subProject.sourceSets.main.resources.srcDirs
+                into rootProject.file('dist/conf')
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                exclude 'META-INF'
+            }
+
+        }
+    }
+
+}
+
 tasks.register('installPlugin') {
     var pluginProjects = subprojects.findAll {
         it.file('gradle.properties').exists()
@@ -754,8 +796,8 @@ subprojects {
             dependency "software.amazon.awssdk:s3:2.26.3"
             dependency "com.github.rholder:guava-retrying:2.0.0"
 
-            dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2"
             dependency "com.alibaba:druid-spring-boot-starter:1.2.23"
+            dependency "com.baomidou:mybatis-plus-boot-starter:3.5.5"
             dependency "org.springframework.boot:spring-boot-starter-jetty:2.7.18"
             dependency "com.baomidou:mybatis-plus:3.5.7"
             dependency "com.mysql:mysql-connector-j:8.4.0"

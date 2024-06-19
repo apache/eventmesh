@@ -31,18 +31,25 @@ dependencies {
     implementation "io.grpc:grpc-stub"
     implementation "io.grpc:grpc-netty-shaded"
 
-    // https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
-    implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.7'
-    implementation "org.reflections:reflections:0.10.2"
+	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
+	implementation "com.baomidou:mybatis-plus-boot-starter"
 
-    // https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
-    implementation "com.alibaba:druid-spring-boot-starter"
-    compileOnly 'com.mysql:mysql-connector-j'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
+	implementation "com.alibaba:druid-spring-boot-starter"
+	implementation 'com.mysql:mysql-connector-j'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 }
 
 configurations.implementation {
     exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDirs = ['src/main/resources', 'conf']
+		}
+	}
 }
 
