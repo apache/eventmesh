@@ -37,10 +37,10 @@ public class EventMeshCloudEventWriterTest {
         String key = "testKey";
         EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
 
-        eventMeshCloudEventWriter.withContextAttribute(key, new URI("file://foo/bar"));
+        eventMeshCloudEventWriter.withContextAttribute(key, new URI("file://foo/bars"));
 
         Map<String, Object> extensionMap = eventMeshCloudEventWriter.getExtensionMap();
-        Assertions.assertEquals(extensionMap.get(key), "file://foo/bar");
+        Assertions.assertEquals(extensionMap.get(key), "file://foo/bars");
     }
 
     @Test
