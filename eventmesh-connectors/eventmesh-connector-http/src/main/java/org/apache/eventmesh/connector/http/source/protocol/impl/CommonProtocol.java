@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
+import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
@@ -37,8 +37,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Common Protocol.
- * This class represents the common webhook protocol. The processing method of this class does not perform any other operations
+ * Common Protocol. This class represents the common webhook protocol. The processing method of this class does not perform any other operations
  * except storing the request and returning a general response.
  */
 @Slf4j
@@ -59,11 +58,11 @@ public class CommonProtocol implements Protocol {
     /**
      * Set the handler for the route
      *
-     * @param route     route
-     * @param boundedQueue queue info
+     * @param route route
+     * @param queue queue info
      */
     @Override
-    public void setHandler(Route route, BoundedConcurrentQueue<Object> boundedQueue) {
+    public void setHandler(Route route, SynchronizedCircularFifoQueue<Object> queue) {
         route.method(HttpMethod.POST)
             .handler(BodyHandler.create())
             .handler(ctx -> {
@@ -74,7 +73,9 @@ public class CommonProtocol implements Protocol {
                 Map<String, String> headerMap = ctx.request().headers().entries().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payloadStr);
-                boundedQueue.offerWithReplace(webhookRequest);
+                if (!queue.offer(webhookRequest)) {
+                    throw new IllegalStateException("Failed to store the request.");
+                }
 
                 // Return 200 OK
                 ctx.response()

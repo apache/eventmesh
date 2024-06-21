@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.http.source.connector;
 
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
+import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.config.HttpSourceConfig;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.connector.http.source.protocol.ProtocolFactory;
@@ -47,7 +47,7 @@ public class HttpSourceConnector implements Source {
 
     private HttpSourceConfig sourceConfig;
 
-    private BoundedConcurrentQueue<Object> boundedQueue;
+    private SynchronizedCircularFifoQueue<Object> queue;
 
     private int batchSize;
 
@@ -77,7 +77,7 @@ public class HttpSourceConnector implements Source {
     private void doInit() {
         // init queue
         int maxQueueSize = this.sourceConfig.getConnectorConfig().getMaxStorageSize();
-        this.boundedQueue = new BoundedConcurrentQueue<>(maxQueueSize);
+        this.queue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
 
         // init batch size
         this.batchSize = this.sourceConfig.getConnectorConfig().getBatchSize();
@@ -93,7 +93,7 @@ public class HttpSourceConnector implements Source {
             .handler(LoggerHandler.create());
 
         // set protocol handler
-        this.protocol.setHandler(route, boundedQueue);
+        this.protocol.setHandler(route, queue);
 
         // create server
         this.server = vertx.createHttpServer(new HttpServerOptions()
@@ -132,13 +132,13 @@ public class HttpSourceConnector implements Source {
     @Override
     public List<ConnectRecord> poll() {
         // if queue is empty, return empty list
-        if (boundedQueue.getCurrSize() == 0) {
+        if (queue.isEmpty()) {
             return Collections.emptyList();
         }
         // poll from queue
         List<ConnectRecord> connectRecords = new ArrayList<>(batchSize);
         for (int i = 0; i < batchSize; i++) {
-            Object obj = boundedQueue.poll();
+            Object obj = queue.poll();
             if (obj == null) {
                 break;
             }

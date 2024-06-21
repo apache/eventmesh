@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.http.sink.handle;
 
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
+import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
@@ -70,19 +70,19 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     private HttpServer exportServer;
 
     // store the received data, when webhook is enabled
-    private final BoundedConcurrentQueue<HttpExportRecord> receivedDataQueue;
+    private final SynchronizedCircularFifoQueue<HttpExportRecord> receivedDataQueue;
 
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
         this.sinkConnectorConfig = sinkConnectorConfig;
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
         int maxQueueSize = this.webhookConfig.getMaxStorageSize();
-        this.receivedDataQueue = new BoundedConcurrentQueue<>(maxQueueSize);
+        this.receivedDataQueue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
         // init the export server
         doInitExportServer();
     }
 
-    public BoundedConcurrentQueue<HttpExportRecord> getReceivedDataQueue() {
+    public SynchronizedCircularFifoQueue<HttpExportRecord> getReceivedDataQueue() {
         return receivedDataQueue;
     }
 
@@ -129,7 +129,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 int pageNum = StringUtils.isBlank(pageNumStr) ? 1 : Integer.parseInt(pageNumStr);
                 int pageSize = Integer.parseInt(pageSizeStr);
 
-                if (receivedDataQueue.getCurrSize() == 0) {
+                if (receivedDataQueue.isEmpty()) {
                     ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                         .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
@@ -236,7 +236,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             // create ExportRecord
             HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
             // add the data to the queue
-            receivedDataQueue.offerWithReplace(exportRecord);
+            receivedDataQueue.offer(exportRecord);
         });
     }
 

@@ -132,7 +132,7 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                     // convert the result to an HttpExportRecord
                     HttpExportRecord exportRecord = covertToExportRecord(httpConnectRecord, event, event.getResult(), event.getException(), url, id);
                     // add the data to the queue
-                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offerWithReplace(exportRecord);
+                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offer(exportRecord);
                 }
             })
             .onRetry(event -> {
@@ -144,7 +144,7 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                 if (connectorConfig.getWebhookConfig().isActivate()) {
                     HttpExportRecord exportRecord =
                         covertToExportRecord(httpConnectRecord, event, event.getLastResult(), event.getLastException(), url, id);
-                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offerWithReplace(exportRecord);
+                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offer(exportRecord);
                 }
                 // update the HttpConnectRecord
                 httpConnectRecord.setTime(LocalDateTime.now().toString());
@@ -159,7 +159,7 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                 }
                 if (connectorConfig.getWebhookConfig().isActivate()) {
                     HttpExportRecord exportRecord = covertToExportRecord(httpConnectRecord, event, event.getResult(), event.getException(), url, id);
-                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offerWithReplace(exportRecord);
+                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offer(exportRecord);
                 }
             }).build();
 

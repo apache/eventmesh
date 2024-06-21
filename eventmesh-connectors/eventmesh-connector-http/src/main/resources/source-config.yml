@@ -35,3 +35,4 @@ connectorConfig:
     protocol: CloudEvent # Case insensitive, default: CloudEvent, options: CloudEvent, GitHub, Common
     extraConfig: # extra config for different protocol, e.g. GitHub secret
         secret: xxxxxxx # GitHub secret
+        contentType: application/json # GitHub content type

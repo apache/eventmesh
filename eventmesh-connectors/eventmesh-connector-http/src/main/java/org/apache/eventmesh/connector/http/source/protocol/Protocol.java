@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.http.source.protocol;
 
-import org.apache.eventmesh.connector.http.common.BoundedConcurrentQueue;
+import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -43,9 +43,9 @@ public interface Protocol {
      * Handle the protocol message.
      *
      * @param route     route
-     * @param boundedQueue queue info
+     * @param queue queue info
      */
-    void setHandler(Route route, BoundedConcurrentQueue<Object> boundedQueue);
+    void setHandler(Route route, SynchronizedCircularFifoQueue<Object> queue);
 
 
     /**
