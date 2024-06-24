@@ -19,19 +19,18 @@ plugins {
     id 'com.google.protobuf' version '0.9.4'
 }
 
-def grpcVersion = '1.64.0'
 def protobufVersion = '3.25.3'
 def protocVersion = protobufVersion
 
 def jraftVersion = '1.3.14'
 
 dependencies {
-    implementation ("io.grpc:grpc-protobuf:${grpcVersion}") {
+    implementation ("io.grpc:grpc-protobuf") {
         exclude group: "com.google.protobuf", module: "protobuf-java"
     }
-    implementation("com.google.protobuf:protobuf-java:${protobufVersion}")
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+    implementation "com.google.protobuf:protobuf-java"
+    implementation "io.grpc:grpc-stub"
+    implementation "com.google.protobuf:protobuf-java-util"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -44,9 +43,9 @@ dependencies {
 }
 
 protobuf {
-    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    protoc { artifact = "com.google.protobuf:protoc" }
     plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java" }
     }
     generateProtoTasks {
         all()*.plugins {
