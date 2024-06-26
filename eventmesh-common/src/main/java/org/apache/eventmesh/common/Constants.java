@@ -200,9 +200,13 @@ public class Constants {
 
     public static final String GRPC = "GRPC";
 
+    public static final String ADMIN = "ADMIN";
+
     public static final String OS_NAME_KEY = "os.name";
 
     public static final String OS_WIN_PREFIX = "win";
 
     public static final String DEFAULT = "default";
+
+    public static final String ADMIN_SERVER_REGISTRY_NAME = "DEFAULT_GROUP@@em_adm_server";
 }

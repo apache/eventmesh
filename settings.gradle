@@ -16,19 +16,17 @@
  */
 
 plugins {
-    id 'com.gradle.enterprise' version '3.16.1'
-    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.12.1'
+    id 'com.gradle.develocity' version '3.17.5'
+    id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
 }
 
 def isCiServer = System.getenv().containsKey("CI")
 
-gradleEnterprise {
+develocity {
     server = "https://ge.apache.org"
     buildScan {
-        capture { taskInputFiles = true }
         uploadInBackground = !isCiServer
-        publishAlways()
-        publishIfAuthenticated()
+        publishing.onlyIf { false }
         obfuscation {
             ipAddresses { addresses -> addresses.collect { address -> "0.0.0.0"} }
         }
@@ -36,11 +34,10 @@ gradleEnterprise {
 }
 
 buildCache {
-    remote(gradleEnterprise.buildCache) {
+    remote(develocity.buildCache) {
         enabled = false
     }
 }
-
 
 rootProject.name = 'eventmesh'
 String jdkVersion = "${jdk}"
@@ -55,6 +52,7 @@ include 'eventmesh-transformer'
 
 include 'eventmesh-openconnect:eventmesh-openconnect-java'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
+include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-admin'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos'
 
 include 'eventmesh-connectors:eventmesh-connector-openfunction'
@@ -78,6 +76,7 @@ include 'eventmesh-connectors:eventmesh-connector-slack'
 include 'eventmesh-connectors:eventmesh-connector-wechat'
 include 'eventmesh-connectors:eventmesh-connector-http'
 include 'eventmesh-connectors:eventmesh-connector-chatgpt'
+include 'eventmesh-connectors:eventmesh-connector-canal'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
@@ -98,6 +97,7 @@ include 'eventmesh-meta:eventmesh-meta-nacos'
 include 'eventmesh-meta:eventmesh-meta-etcd'
 include 'eventmesh-meta:eventmesh-meta-consul'
 include 'eventmesh-meta:eventmesh-meta-zookeeper'
+include 'eventmesh-meta:eventmesh-meta-raft'
 
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
@@ -127,3 +127,9 @@ include 'eventmesh-webhook:eventmesh-webhook-receive'
 include 'eventmesh-retry'
 include 'eventmesh-retry:eventmesh-retry-api'
 include 'eventmesh-retry:eventmesh-retry-rocketmq'
+include 'eventmesh-runtime-v2'
+include 'eventmesh-admin-server'
+include 'eventmesh-registry'
+include 'eventmesh-registry:eventmesh-registry-api'
+include 'eventmesh-registry:eventmesh-registry-nacos'
+

@@ -23,17 +23,25 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import lombok.Getter;
+
 public class HTTPThreadPoolGroup implements ThreadPoolGroup {
 
     private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
+    @Getter
     private ThreadPoolExecutor batchMsgExecutor;
+    @Getter
     private ThreadPoolExecutor sendMsgExecutor;
+    @Getter
     private ThreadPoolExecutor remoteMsgExecutor;
+    @Getter
     private ThreadPoolExecutor replyMsgExecutor;
+    @Getter
     private ThreadPoolExecutor pushMsgExecutor;
+    @Getter
     private ThreadPoolExecutor clientManageExecutor;
-    private ThreadPoolExecutor runtimeAdminExecutor;
+    @Getter
     private ThreadPoolExecutor webhookExecutor;
 
     public HTTPThreadPoolGroup(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -73,12 +81,6 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
             new LinkedBlockingQueue<>(eventMeshHttpConfiguration.getEventMeshServerClientManageBlockQSize()),
             "eventMesh-clientManage", true);
 
-        // The runtimeAdminExecutor here is for the runtime.admin package.
-        runtimeAdminExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-            eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
-            eventMeshHttpConfiguration.getEventMeshServerAdminThreadNum(),
-            new LinkedBlockingQueue<>(50), "eventMesh-runtime-admin", true);
-
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
@@ -95,9 +97,6 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
         if (batchMsgExecutor != null) {
             batchMsgExecutor.shutdown();
         }
-        if (runtimeAdminExecutor != null) {
-            runtimeAdminExecutor.shutdown();
-        }
         if (clientManageExecutor != null) {
             clientManageExecutor.shutdown();
         }
@@ -113,37 +112,5 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
         if (replyMsgExecutor != null) {
             replyMsgExecutor.shutdown();
         }
-    }
-
-    public ThreadPoolExecutor getBatchMsgExecutor() {
-        return batchMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getSendMsgExecutor() {
-        return sendMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getRemoteMsgExecutor() {
-        return remoteMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getReplyMsgExecutor() {
-        return replyMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getPushMsgExecutor() {
-        return pushMsgExecutor;
-    }
-
-    public ThreadPoolExecutor getClientManageExecutor() {
-        return clientManageExecutor;
-    }
-
-    public ThreadPoolExecutor getRuntimeAdminExecutor() {
-        return runtimeAdminExecutor;
-    }
-
-    public ThreadPoolExecutor getWebhookExecutor() {
-        return webhookExecutor;
     }
 }

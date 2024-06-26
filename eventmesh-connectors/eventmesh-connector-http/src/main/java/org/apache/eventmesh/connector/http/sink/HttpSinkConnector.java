@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.connector.http.sink;
 
+import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.HttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.RetryHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.WebhookHttpSinkHandler;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;

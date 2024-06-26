@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc.connection;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.JdbcDriverMetaData;
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 
 import org.apache.commons.lang3.StringUtils;
 

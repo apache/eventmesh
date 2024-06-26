@@ -34,15 +34,15 @@ packageSources {
 }
 
 dependencies {
-    antlr("org.antlr:antlr4:4.13.0")
-    implementation 'org.antlr:antlr4-runtime:4.13.0'
-    implementation 'com.alibaba:druid:1.2.20'
+    antlr("org.antlr:antlr4:4.13.1")
+    implementation 'org.antlr:antlr4-runtime:4.13.1'
+    implementation 'com.alibaba:druid:1.2.23'
     compileOnly 'org.hibernate:hibernate-core:5.6.15.Final'
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-spi")
-    implementation 'com.zendesk:mysql-binlog-connector-java:0.28.0'
-    compileOnly 'mysql:mysql-connector-java:8.0.32'
+    implementation 'com.zendesk:mysql-binlog-connector-java:0.29.2'
+    compileOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

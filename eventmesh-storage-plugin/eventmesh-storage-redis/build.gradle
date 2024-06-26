@@ -20,24 +20,16 @@ dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     // redisson
-    implementation('org.redisson:redisson:3.17.3') {
-        exclude group: 'io.netty', module: 'netty-common'
-        exclude group: 'io.netty', module: 'netty-buffer'
-        exclude group: 'io.netty', module: 'netty-codec'
-        exclude group: 'io.netty', module: 'netty-transport'
-        exclude group: 'io.netty', module: 'netty-resolver'
-        exclude group: 'io.netty', module: 'netty-resolver-dns'
-        exclude group: 'io.netty', module: 'netty-handler'
-    }
+    implementation 'org.redisson:redisson:3.31.0'
 
     // netty
-    implementation "io.netty:netty-all"
+    implementation 'io.netty:netty-all'
 
     // auxiliary serialize
     api 'io.cloudevents:cloudevents-json-jackson'
 
     // test dependencies
-    testImplementation 'ai.grakn:redis-mock:0.1.6'
+    testImplementation 'com.github.fppt:jedis-mock:1.1.1'
     testImplementation "org.mockito:mockito-core"
 
     compileOnly 'org.projectlombok:lombok'

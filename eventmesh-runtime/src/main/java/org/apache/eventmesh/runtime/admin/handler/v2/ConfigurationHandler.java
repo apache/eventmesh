@@ -27,6 +27,7 @@ import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshVersion;
 import org.apache.eventmesh.runtime.util.HttpRequestUtil;
 
 import java.lang.reflect.Field;
@@ -126,7 +127,7 @@ public class ConfigurationHandler extends AbstractHttpHandler {
             eventMeshTCPConfiguration,
             eventMeshHTTPConfiguration,
             eventMeshGrpcConfiguration,
-            "v1.10.0-release" // TODO get version number after merging https://github.com/apache/eventmesh/pull/4055
+            EventMeshVersion.getCurrentVersionDesc()
         );
         String json = JSON.toJSONString(Result.success(getConfigurationResponse), filters.toArray(new Filter[0]));
         writeJson(ctx, json);

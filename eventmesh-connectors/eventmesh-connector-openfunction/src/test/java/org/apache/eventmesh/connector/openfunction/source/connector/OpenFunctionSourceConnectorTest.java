@@ -17,10 +17,8 @@
 
 package org.apache.eventmesh.connector.openfunction.source.connector;
 
-import org.apache.eventmesh.connector.openfunction.source.config.OpenFunctionSourceConfig;
+import org.apache.eventmesh.common.config.connector.openfunction.OpenFunctionSourceConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -53,9 +51,7 @@ public class OpenFunctionSourceConnectorTest {
     private void writeMockedRecords(int count, String message) {
         BlockingQueue<ConnectRecord> queue = connector.queue();
         for (int i = 0; i < count; i++) {
-            RecordPartition partition = new RecordPartition();
-            RecordOffset offset = new RecordOffset();
-            ConnectRecord record = new ConnectRecord(partition, offset, System.currentTimeMillis(), message + i);
+            ConnectRecord record = new ConnectRecord(null, null, System.currentTimeMillis(), message + i);
             queue.offer(record);
         }
     }
