@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common.config.connector.http;
 
-import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +51,7 @@ public class SourceConnectorConfig {
     private int batchSize = 10;
 
     // protocol, default CloudEvent
-    private String protocol = CloudEventProtocol.PROTOCOL_NAME;
+    private String protocol = "CloudEvent";
 
     // extra config, e.g. GitHub secret
     private Map<String, String> extraConfig = new HashMap<>();

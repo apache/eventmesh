@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
+import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
-import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;

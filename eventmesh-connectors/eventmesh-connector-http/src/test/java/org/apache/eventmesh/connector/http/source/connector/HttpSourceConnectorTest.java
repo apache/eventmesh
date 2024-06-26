@@ -17,22 +17,16 @@
 
 package org.apache.eventmesh.connector.http.source.connector;
 
+
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
 import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-
+import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -40,12 +34,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 class HttpSourceConnectorTest {
 
     private HttpSourceConnector connector;
     private SourceConnectorConfig config;
-    private CloseableHttpClient httpClient;
-    private String uri;
+    private OkHttpClient httpClient;
+    private String url;
     private final String expectedMessage = "testHttpMessage";
 
     @BeforeEach
@@ -56,9 +57,8 @@ class HttpSourceConnectorTest {
         connector.init(sourceConfig);
         connector.start();
 
-        uri = new URIBuilder().setScheme("http").setHost("127.0.0.1").setPort(config.getPort()).setPath(config.getPath()).build().toString();
-
-        httpClient = HttpClients.createDefault();
+        url = new URL("http", "127.0.0.1", config.getPort(), config.getPath()).toString();
+        httpClient = new OkHttpClient();
     }
 
     @Test
@@ -66,9 +66,9 @@ class HttpSourceConnectorTest {
         final int batchSize = 10;
         // test binary content mode
         for (int i = 0; i < batchSize; i++) {
-            HttpResponse resp = mockBinaryRequest();
-            Assertions.assertEquals(resp.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
-
+            try (Response resp = mockBinaryRequest()) {
+                Assertions.assertEquals(200, resp.code());
+            }
         }
         List<ConnectRecord> res = connector.poll();
         Assertions.assertEquals(batchSize, res.size());
@@ -78,8 +78,9 @@ class HttpSourceConnectorTest {
 
         // test structured content mode
         for (int i = 0; i < batchSize; i++) {
-            HttpResponse resp = mockStructuredRequest();
-            Assertions.assertEquals(resp.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+            try (Response resp = mockStructuredRequest()) {
+                Assertions.assertEquals(200, resp.code());
+            }
         }
         res = connector.poll();
         Assertions.assertEquals(batchSize, res.size());
@@ -88,30 +89,39 @@ class HttpSourceConnectorTest {
         }
 
         // test invalid requests
-        HttpPost invalidPost = new HttpPost(uri);
-        invalidPost.setHeader(HttpHeaders.CONTENT_TYPE, "text/plain");
-        invalidPost.setHeader("ce-id", String.valueOf(UUID.randomUUID()));
-        HttpResponse resp = httpClient.execute(invalidPost);
-        Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, resp.getStatusLine().getStatusCode());
+        Request request = new Request.Builder()
+            .url(url)
+            .addHeader("Content-Type", "text/plain")
+            .addHeader("ce-id", String.valueOf(UUID.randomUUID()))
+            .build();
+
+        try (Response resp = httpClient.newCall(request).execute()) {
+            // verify the response code
+            Assertions.assertEquals(405, resp.code());
+        }
+
     }
 
-    HttpResponse mockBinaryRequest() throws Exception {
-        HttpPost httpPost = new HttpPost(uri);
-        httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "text/plain");
-        httpPost.setHeader("ce-id", String.valueOf(UUID.randomUUID()));
-        httpPost.setHeader("ce-specversion", "1.0");
-        httpPost.setHeader("ce-type", "com.example.someevent");
-        httpPost.setHeader("ce-source", "/mycontext");
-        httpPost.setHeader("ce-subject", "test");
-        httpPost.setEntity(new StringEntity(expectedMessage));
+    Response mockBinaryRequest() throws Exception {
 
-        return httpClient.execute(httpPost);
+        RequestBody body = RequestBody.create(expectedMessage, MediaType.parse("text/plain"));
+
+        Request request = new Request.Builder()
+            .url(url)
+            .addHeader("Content-Type", "text/plain")
+            .addHeader("ce-id", String.valueOf(UUID.randomUUID()))
+            .addHeader("ce-specversion", "1.0")
+            .addHeader("ce-type", "com.example.someevent")
+            .addHeader("ce-source", "/mycontext")
+            .addHeader("ce-subject", "test")
+            .post(body)
+            .build();
+
+        return httpClient.newCall(request).execute();
     }
 
-    HttpResponse mockStructuredRequest() throws Exception {
-        HttpPost httpPost = new HttpPost(uri);
-        // according to the CloudEvent specification, a json format event MUST use the media type `application/cloudevents+json`
-        httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/cloudevents+json");
+    Response mockStructuredRequest() throws Exception {
+        // create a CloudEvent
         TestEvent event = new TestEvent();
         event.id = String.valueOf(UUID.randomUUID());
         event.specversion = "1.0";
@@ -120,15 +130,23 @@ class HttpSourceConnectorTest {
         event.subject = "test";
         event.datacontenttype = "text/plain";
         event.data = expectedMessage;
-        httpPost.setEntity(new StringEntity(JsonUtils.toJSONString(event)));
 
-        return httpClient.execute(httpPost);
+        RequestBody body = RequestBody.create(Objects.requireNonNull(JsonUtils.toJSONString(event)), MediaType.parse("application/cloudevents+json"));
+
+        Request request = new Request.Builder()
+            .url(url)
+            .addHeader("Content-Type", "application/cloudevents+json")
+            .post(body)
+            .build();
+
+        return httpClient.newCall(request).execute();
+
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         connector.stop();
-        httpClient.close();
+        httpClient.dispatcher().executorService().shutdown();
     }
 
     class TestEvent {

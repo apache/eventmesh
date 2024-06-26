@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.http.source.protocol;
 
-import org.apache.eventmesh.connector.http.source.config.SourceConnectorConfig;
+import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 import org.apache.eventmesh.connector.http.source.protocol.impl.CloudEventProtocol;
 import org.apache.eventmesh.connector.http.source.protocol.impl.CommonProtocol;
 import org.apache.eventmesh.connector.http.source.protocol.impl.GitHubProtocol;

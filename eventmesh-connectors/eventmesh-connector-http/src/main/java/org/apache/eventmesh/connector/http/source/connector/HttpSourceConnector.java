@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.connector.http.source.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
-import org.apache.eventmesh.connector.http.source.config.HttpSourceConfig;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.connector.http.source.protocol.ProtocolFactory;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
