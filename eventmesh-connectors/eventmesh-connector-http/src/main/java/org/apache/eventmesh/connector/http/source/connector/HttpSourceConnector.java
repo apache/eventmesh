@@ -20,25 +20,23 @@ package org.apache.eventmesh.connector.http.source.connector;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
+import org.apache.eventmesh.connector.http.source.protocol.Protocol;
+import org.apache.eventmesh.connector.http.source.protocol.ProtocolFactory;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.http.vertx.VertxMessageFactory;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.LoggerHandler;
 
@@ -47,11 +45,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HttpSourceConnector implements Source {
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private HttpSourceConfig sourceConfig;
-    private BlockingQueue<CloudEvent> queue;
+
+    private SynchronizedCircularFifoQueue<Object> queue;
+
+    private int batchSize;
+
+    private Protocol protocol;
+
     private HttpServer server;
+
 
     @Override
     public Class<? extends Config> configClass() {
@@ -72,42 +75,32 @@ public class HttpSourceConnector implements Source {
     }
 
     private void doInit() {
-        this.queue = new LinkedBlockingQueue<>(1000);
+        // init queue
+        int maxQueueSize = this.sourceConfig.getConnectorConfig().getMaxStorageSize();
+        this.queue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
+
+        // init batch size
+        this.batchSize = this.sourceConfig.getConnectorConfig().getBatchSize();
+
+        // init protocol
+        String protocolName = this.sourceConfig.getConnectorConfig().getProtocol();
+        this.protocol = ProtocolFactory.getInstance(this.sourceConfig.connectorConfig, protocolName);
 
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
-        router.route()
+        final Route route = router.route()
             .path(this.sourceConfig.connectorConfig.getPath())
-            .method(HttpMethod.POST)
-            .handler(LoggerHandler.create())
-            .handler(ctx -> {
-                VertxMessageFactory.createReader(ctx.request())
-                    .map(reader -> {
-                        CloudEvent event = reader.toEvent();
-                        if (event.getSubject() == null) {
-                            throw new IllegalStateException("attribute 'subject' cannot be null");
-                        }
-                        if (event.getDataContentType() == null) {
-                            throw new IllegalStateException("attribute 'datacontenttype' cannot be null");
-                        }
-                        if (event.getData() == null) {
-                            throw new IllegalStateException("attribute 'data' cannot be null");
-                        }
-                        return event;
-                    })
-                    .onSuccess(event -> {
-                        queue.add(event);
-                        log.info("[HttpSourceConnector] Succeed to convert payload into CloudEvent. StatusCode={}", HttpResponseStatus.OK.code());
-                        ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
-                    })
-                    .onFailure(t -> {
-                        log.error("[HttpSourceConnector] Malformed request. StatusCode={}", HttpResponseStatus.BAD_REQUEST.code(), t);
-                        ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
-                    });
-            });
+            .handler(LoggerHandler.create());
+
+        // set protocol handler
+        this.protocol.setHandler(route, queue);
+
+        // create server
         this.server = vertx.createHttpServer(new HttpServerOptions()
             .setPort(this.sourceConfig.connectorConfig.getPort())
-            .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())).requestHandler(router);
+            .setMaxFormAttributeSize(this.sourceConfig.connectorConfig.getMaxFormAttributeSize())
+            .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())
+            .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)).requestHandler(router);
     }
 
     @Override
@@ -138,17 +131,20 @@ public class HttpSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int i = 0; i < DEFAULT_BATCH_SIZE; i++) {
-            try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
-                if (event == null) {
-                    break;
-                }
-                connectRecords.add(CloudEventUtil.convertEventToRecord(event));
-            } catch (InterruptedException e) {
+        // if queue is empty, return empty list
+        if (queue.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // poll from queue
+        List<ConnectRecord> connectRecords = new ArrayList<>(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            Object obj = queue.poll();
+            if (obj == null) {
                 break;
             }
+            // convert to ConnectRecord
+            ConnectRecord connectRecord = protocol.convertToConnectRecord(obj);
+            connectRecords.add(connectRecord);
         }
         return connectRecords;
     }
