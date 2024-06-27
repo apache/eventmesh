@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.http.sink.handle;
 
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
@@ -30,13 +31,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -73,23 +70,20 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     private HttpServer exportServer;
 
     // store the received data, when webhook is enabled
-    private final ConcurrentLinkedQueue<HttpExportRecord> receivedDataQueue;
-
-    // the maximum queue size
-    private final int maxQueueSize;
-
-    // the current queue size
-    private final AtomicInteger currentQueueSize;
+    private final SynchronizedCircularFifoQueue<HttpExportRecord> receivedDataQueue;
 
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
         this.sinkConnectorConfig = sinkConnectorConfig;
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
-        this.maxQueueSize = this.webhookConfig.getMaxStorageSize();
-        this.currentQueueSize = new AtomicInteger(0);
-        this.receivedDataQueue = new ConcurrentLinkedQueue<>();
+        int maxQueueSize = this.webhookConfig.getMaxStorageSize();
+        this.receivedDataQueue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
         // init the export server
         doInitExportServer();
+    }
+
+    public SynchronizedCircularFifoQueue<HttpExportRecord> getReceivedDataQueue() {
+        return receivedDataQueue;
     }
 
     /**
@@ -135,7 +129,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 int pageNum = StringUtils.isBlank(pageNumStr) ? 1 : Integer.parseInt(pageNumStr);
                 int pageSize = Integer.parseInt(pageSizeStr);
 
-                if (currentQueueSize.get() == 0) {
+                if (receivedDataQueue.isEmpty()) {
                     ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                         .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
@@ -148,12 +142,12 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
                 List<HttpExportRecord> exportRecords;
                 if (Objects.equals(type, TypeEnum.POLL.getValue())) {
                     // If the type is poll, only the first page of data is exported and removed
-                    exportRecords = getDataFromQueue(0, pageSize, true);
+                    exportRecords = receivedDataQueue.fetchRange(0, pageSize, true);
                 } else {
                     // If the type is peek, the specified page of data is exported without removing
                     int startIndex = (pageNum - 1) * pageSize;
                     int endIndex = startIndex + pageSize;
-                    exportRecords = getDataFromQueue(startIndex, endIndex, false);
+                    exportRecords = receivedDataQueue.fetchRange(startIndex, endIndex, false);
                 }
 
                 // Create HttpExportRecordPage
@@ -242,62 +236,10 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             // create ExportRecord
             HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
             // add the data to the queue
-            addDataToQueue(exportRecord);
+            receivedDataQueue.offer(exportRecord);
         });
     }
 
-
-    /**
-     * Adds the received data to the queue.
-     *
-     * @param exportRecord the received data to add to the queue
-     */
-    public void addDataToQueue(HttpExportRecord exportRecord) {
-        // If the current queue size is greater than or equal to the maximum queue size, remove the oldest element
-        if (currentQueueSize.get() >= maxQueueSize) {
-            Object removedData = receivedDataQueue.poll();
-            if (log.isDebugEnabled()) {
-                log.debug("The queue is full, remove the oldest element: {}", removedData);
-            } else {
-                log.info("The queue is full, remove the oldest element");
-            }
-            currentQueueSize.decrementAndGet();
-        }
-        // Try to put the received data into the queue
-        if (receivedDataQueue.offer(exportRecord)) {
-            currentQueueSize.incrementAndGet();
-            log.debug("Successfully put the received data into the queue: {}", exportRecord);
-        } else {
-            log.error("Failed to put the received data into the queue: {}", exportRecord);
-        }
-    }
-
-    /**
-     * Gets the received data from the queue.
-     *
-     * @param startIndex the start index of the data to get
-     * @param endIndex   the end index of the data to get
-     * @param removed    whether to remove the data from the queue
-     * @return the received data
-     */
-    private List<HttpExportRecord> getDataFromQueue(int startIndex, int endIndex, boolean removed) {
-        Iterator<HttpExportRecord> iterator = receivedDataQueue.iterator();
-
-        List<HttpExportRecord> pageItems = new ArrayList<>(endIndex - startIndex);
-        int count = 0;
-        while (iterator.hasNext() && count < endIndex) {
-            HttpExportRecord item = iterator.next();
-            if (count >= startIndex) {
-                pageItems.add(item);
-                if (removed) {
-                    iterator.remove();
-                    currentQueueSize.decrementAndGet();
-                }
-            }
-            count++;
-        }
-        return pageItems;
-    }
 
     /**
      * Cleans up and releases resources used by the HTTP/HTTPS handler.
