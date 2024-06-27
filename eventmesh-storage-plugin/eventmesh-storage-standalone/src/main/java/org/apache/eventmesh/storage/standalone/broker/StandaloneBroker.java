@@ -19,42 +19,36 @@ package org.apache.eventmesh.storage.standalone.broker;
 
 import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.storage.standalone.broker.model.TopicMetadata;
-import org.apache.eventmesh.storage.standalone.broker.task.HistoryMessageClear;
-import org.apache.eventmesh.storage.standalone.broker.task.HistoryMessageClearTask;
-
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.eventmesh.storage.standalone.broker.task.Subscribe;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import io.cloudevents.CloudEvent;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This broker used to store event, it just support standalone mode, you shouldn't use this module in production environment
  */
+@Slf4j
 public class StandaloneBroker {
 
-    private final ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer;
+    // message source by topic
+    @Getter
+    private final ConcurrentHashMap<TopicMetadata, Channel> messageContainer;
 
-    // todo: move the offset manage to consumer
-    private final ConcurrentHashMap<TopicMetadata, AtomicLong> offsetMap;
+    @Getter
+    private final ConcurrentHashMap<TopicMetadata, Subscribe> subscribeContainer;
 
     private StandaloneBroker() {
         this.messageContainer = new ConcurrentHashMap<>();
-        this.offsetMap = new ConcurrentHashMap<>();
-        startHistoryMessageCleanTask();
+        this.subscribeContainer = new ConcurrentHashMap<>();
     }
 
-    public ConcurrentHashMap<TopicMetadata, MessageQueue> getMessageContainer() {
-        return this.messageContainer;
-    }
-
-    public ConcurrentHashMap<TopicMetadata, AtomicLong> getOffsetMap() {
-        return this.offsetMap;
-    }
 
     public static StandaloneBroker getInstance() {
-        return StandaloneBrokerInstanceHolder.instance;
+        return StandaloneBrokerInstanceHolder.INSTANCE;
     }
 
     /**
@@ -62,18 +56,29 @@ public class StandaloneBroker {
      *
      * @param topicName topic name
      * @param message   message
-     * @throws InterruptedException
      */
-    public MessageEntity putMessage(String topicName, CloudEvent message) throws InterruptedException {
-        Pair<MessageQueue, AtomicLong> pair = createTopicIfAbsent(topicName);
-        AtomicLong topicOffset = pair.getRight();
-        MessageQueue messageQueue = pair.getLeft();
-
-        MessageEntity messageEntity = new MessageEntity(
-            new TopicMetadata(topicName), message, topicOffset.getAndIncrement(), System.currentTimeMillis());
-        messageQueue.put(messageEntity);
-
+    public MessageEntity putMessage(String topicName, CloudEvent message) {
+        TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        if (!messageContainer.containsKey(topicMetadata)) {
+            createTopic(topicName);
+        }
+        Channel channel = messageContainer.get(topicMetadata);
+        MessageEntity messageEntity = new MessageEntity(new TopicMetadata(topicName), message);
+        channel.getProvider().onData(messageEntity);
         return messageEntity;
+    }
+
+    public Channel createTopic(String topicName) {
+        TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        return messageContainer.computeIfAbsent(topicMetadata, k -> {
+            Subscribe subscribe = subscribeContainer.get(topicMetadata);
+            if (subscribe == null) {
+                throw new IllegalStateException("the topic not exist subscribe ");
+            }
+            Channel channel = new Channel(topicMetadata, subscribe);
+            channel.start();
+            return channel;
+        });
     }
 
     /**
@@ -82,8 +87,7 @@ public class StandaloneBroker {
      * @param topicName
      */
     public CloudEvent takeMessage(String topicName) throws InterruptedException {
-        TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        return messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).take().getMessage();
+        return null;
     }
 
     /**
@@ -92,12 +96,7 @@ public class StandaloneBroker {
      * @param topicName
      */
     public CloudEvent getMessage(String topicName) {
-        TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        MessageEntity head = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).getHead();
-        if (head == null) {
-            return null;
-        }
-        return head.getMessage();
+        return null;
     }
 
     /**
@@ -108,21 +107,9 @@ public class StandaloneBroker {
      * @return CloudEvent
      */
     public CloudEvent getMessage(String topicName, long offset) {
-        TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        MessageEntity messageEntity = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).getByOffset(offset);
-        if (messageEntity == null) {
-            return null;
-        }
-        return messageEntity.getMessage();
+        return null;
     }
 
-    private void startHistoryMessageCleanTask() {
-        HistoryMessageClear historyMessageClear = new HistoryMessageClear(messageContainer);
-        Thread thread = new Thread(new HistoryMessageClearTask(historyMessageClear));
-        thread.setDaemon(true);
-        thread.setName("StandaloneBroker-HistoryMessageCleanTask");
-        thread.start();
-    }
 
     public boolean checkTopicExist(String topicName) {
         return messageContainer.containsKey(new TopicMetadata(topicName));
@@ -132,13 +119,10 @@ public class StandaloneBroker {
      * if the topic does not exist, create the topic
      *
      * @param topicName topicName
-     * @return messageQueue and offset
+     * @return Channel
      */
-    public Pair<MessageQueue, AtomicLong> createTopicIfAbsent(String topicName) {
-        TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        MessageQueue messageQueue = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue());
-        AtomicLong offset = offsetMap.computeIfAbsent(topicMetadata, k -> new AtomicLong());
-        return Pair.of(messageQueue, offset);
+    public Channel createTopicIfAbsent(String topicName) {
+        return createTopic(topicName);
     }
 
     /**
@@ -148,18 +132,23 @@ public class StandaloneBroker {
      */
     public void deleteTopicIfExist(String topicName) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        Channel channel = createTopicIfAbsent(topicName);
+        channel.shutdown();
         messageContainer.remove(topicMetadata);
     }
 
-    public void updateOffset(TopicMetadata topicMetadata, long offset) {
-        offsetMap.computeIfPresent(topicMetadata, (k, v) -> {
-            v.set(offset);
-            return v;
-        });
+    public void subscribed(String topicName, Subscribe subscribe) {
+        TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        if (getMessageContainer().containsKey(topicMetadata)) {
+            log.warn("the topic already subscribed");
+            return;
+        }
+        subscribeContainer.put(topicMetadata, subscribe);
     }
+
 
     private static class StandaloneBrokerInstanceHolder {
 
-        private static final StandaloneBroker instance = new StandaloneBroker();
+        private static final StandaloneBroker INSTANCE = new StandaloneBroker();
     }
 }

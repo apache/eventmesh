@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.storage.standalone.producer;
 
+import static org.apache.eventmesh.storage.standalone.TestUtils.TEST_TOPIC;
+
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.storage.standalone.TestUtils;
+import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
 
 import java.util.Properties;
 
@@ -28,9 +31,12 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 
+
+
 public class StandaloneProducerTest {
 
     private StandaloneProducer standaloneProducer;
+
 
     @BeforeEach
     public void setUp() {
@@ -61,6 +67,8 @@ public class StandaloneProducerTest {
 
     @Test
     public void testPublish() {
+        StandaloneBroker standaloneBroker = StandaloneBroker.getInstance();
+        standaloneBroker.createTopicIfAbsent(TEST_TOPIC);
         CloudEvent cloudEvent = TestUtils.createDefaultCloudEvent();
         SendResult sendResult = standaloneProducer.publish(cloudEvent);
         Assertions.assertNotNull(sendResult);
