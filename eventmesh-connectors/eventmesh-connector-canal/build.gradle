@@ -26,7 +26,6 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation canal
     implementation "com.alibaba:druid:1.2.6"
-//    implementation "org.apache.ddlutils:ddlutils:1.0"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-core"

@@ -26,6 +26,7 @@ import org.apache.eventmesh.connector.canal.model.EventType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +47,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntryParser {
 
-    public List<CanalConnectRecord> parse(CanalSourceConfig sourceConfig, List<Entry> datas) {
+    public Map<Long, List<CanalConnectRecord>> parse(CanalSourceConfig sourceConfig, List<Entry> datas) {
         List<CanalConnectRecord> recordList = new ArrayList<>();
         List<Entry> transactionDataBuffer = new ArrayList<>();
         // need check weather the entry is loopback
         boolean needSync;
+        Map<Long, List<CanalConnectRecord>> recordMap = new HashMap<>();
         try {
             for (Entry entry : datas) {
                 switch (entry.getEntryType()) {
@@ -63,17 +65,19 @@ public class EntryParser {
                         break;
                     case TRANSACTIONEND:
                         parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer);
+                        if (!recordList.isEmpty()) {
+                            recordMap.put(entry.getHeader().getLogfileOffset(), recordList);
+                        }
                         transactionDataBuffer.clear();
                         break;
                     default:
                         break;
                 }
             }
-            parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return recordList;
+        return recordMap;
     }
 
     private void parseRecordListWithEntryBuffer(CanalSourceConfig sourceConfig, List<CanalConnectRecord> recordList,

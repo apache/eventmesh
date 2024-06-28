@@ -49,6 +49,10 @@ public class CanalSourceConfig extends SourceConfig {
 
     private Long batchTimeout = -1L;
 
+    private String tableFilter;
+
+    private String fieldFilter;
+
     private List<RecordPosition> recordPositions;
 
     // ================================= channel parameter
