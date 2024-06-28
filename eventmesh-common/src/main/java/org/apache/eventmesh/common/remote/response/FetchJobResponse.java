@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.JobTransportType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.Data;
@@ -45,7 +46,7 @@ public class FetchJobResponse extends BaseRemoteResponse {
 
     private String sinkConnectorDesc;
 
-    private RecordPosition position;
+    private List<RecordPosition> position;
 
     private JobState state;
 
