@@ -19,10 +19,6 @@ package org.apache.eventmesh.connector.canal.dialect;
 
 import org.apache.eventmesh.connector.canal.template.MysqlSqlTemplate;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 

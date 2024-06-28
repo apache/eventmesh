@@ -152,9 +152,9 @@ public class MysqlPositionHandler extends PositionHandler {
             CanalRecordPartition partition = new CanalRecordPartition();
             partition.setTimeStamp(position.getTimestamp());
             partition.setJournalName(position.getJournalName());
+            recordPosition.setRecordPartition(partition);
             CanalRecordOffset offset = new CanalRecordOffset();
             offset.setOffset(position.getPosition());
-            recordPosition.setRecordPartition(partition);
             recordPosition.setRecordOffset(offset);
             recordPositionList.add(recordPosition);
         }
