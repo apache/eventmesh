@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server;
+package org.apache.eventmesh.common;
 
 /**
- * adminServer ComponentLifeCycle
+ * LifeCycle of EventMesh Component
  */
 public interface ComponentLifeCycle {
 
     void start() throws Exception;
 
-    void destroy();
+    void stop() throws Exception;
 }

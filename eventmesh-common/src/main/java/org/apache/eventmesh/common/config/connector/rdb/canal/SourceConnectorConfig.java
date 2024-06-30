@@ -19,6 +19,8 @@ package org.apache.eventmesh.common.config.connector.rdb.canal;
 
 import lombok.Data;
 
+import java.util.Set;
+
 /**
  * Represents the configuration for a database connector.
  */
@@ -37,8 +39,6 @@ public class SourceConnectorConfig {
 
     private String passWord;
 
-    private String schemaName;
-
-    private String tableName;
+    private Set<RdbDBDefinition> schemas;
 
 }
