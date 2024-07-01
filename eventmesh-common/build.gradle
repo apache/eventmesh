@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.64.0'
+def grpcVersion = '1.65.0'
 
 dependencies {
     api "com.google.guava:guava"

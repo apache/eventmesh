@@ -650,7 +650,7 @@ subprojects {
         sign publishing.publications.mavenJava
     }
 
-    def grpcVersion = '1.64.0'
+    def grpcVersion = '1.65.0'
     def log4jVersion = '2.23.1'
     def jacksonVersion = '2.17.1'
     def dropwizardMetricsVersion = '4.2.26'
