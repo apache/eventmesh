@@ -63,9 +63,6 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     @ConfigField(field = "metaStorage.threads.num")
     private int eventMeshServerMetaStorageThreadNum = 10;
 
-    @ConfigField(field = "admin.threads.num")
-    private int eventMeshServerAdminThreadNum = 2;
-
     @ConfigField(field = "retry.threads.num")
     private int eventMeshServerRetryThreadNum = 2;
 
@@ -131,5 +128,4 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigField(field = "blacklist.ipv6")
     private List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
-
 }

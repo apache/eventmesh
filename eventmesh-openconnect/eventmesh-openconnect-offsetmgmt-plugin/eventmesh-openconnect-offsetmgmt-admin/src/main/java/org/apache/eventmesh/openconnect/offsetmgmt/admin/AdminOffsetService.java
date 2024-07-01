@@ -69,8 +69,6 @@ public class AdminOffsetService implements OffsetManagementService {
 
     public KeyValueStore<RecordPartition, RecordOffset> positionStore;
 
-    public KeyValueStore<String, RecordPosition> positionStore2;
-
     private String jobId;
 
     private JobState jobState;
