@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.canal.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
@@ -84,6 +85,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     private static final int maxEmptyTimes = 10;
 
+    private RdbTableMgr tableMgr;
+
     @Override
     public Class<? extends Config> configClass() {
         return CanalSourceConfig.class;
@@ -146,6 +149,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 return instance;
             }
         });
+        tableMgr = RdbTableMgr.getInstance();
+        tableMgr.init(sourceConfig.getSourceConnectorConfig());
     }
 
     private Canal buildCanal(CanalSourceConfig sourceConfig) {
@@ -218,6 +223,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         if (running) {
             return;
         }
+        tableMgr.start();
         canalServer.start();
 
         canalServer.start(sourceConfig.getDestination());
@@ -288,11 +294,9 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             entries = message.getEntries();
         }
 
-        EntryParser entryParser = new EntryParser();
-
         List<ConnectRecord> result = new ArrayList<>();
         // key: Xid offset
-        Map<Long, List<CanalConnectRecord>> connectorRecordMap = entryParser.parse(sourceConfig, entries);
+        Map<Long, List<CanalConnectRecord>> connectorRecordMap = EntryParser.parse(sourceConfig, entries);
 
         if (!connectorRecordMap.isEmpty()) {
             Set<Map.Entry<Long, List<CanalConnectRecord>>> entrySet = connectorRecordMap.entrySet();

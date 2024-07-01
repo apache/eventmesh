@@ -7,7 +7,7 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.RdbTableDefinition
 import java.util.Set;
 
 /**
- * @Description:
+ * Description:
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

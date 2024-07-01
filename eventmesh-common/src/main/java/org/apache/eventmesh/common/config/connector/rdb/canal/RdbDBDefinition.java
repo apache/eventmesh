@@ -5,10 +5,10 @@ import lombok.Data;
 import java.util.Set;
 
 /**
- * @Description: as class name
+ * Description: as class name
  */
 @Data
 public class RdbDBDefinition {
-    private String schemaName;
+    private String schema;
     private Set<RdbTableDefinition> tables;
 }

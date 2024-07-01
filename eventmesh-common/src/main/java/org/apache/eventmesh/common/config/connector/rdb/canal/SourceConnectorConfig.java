@@ -39,6 +39,6 @@ public class SourceConnectorConfig {
 
     private String passWord;
 
-    private Set<RdbDBDefinition> schemas;
+    private Set<RdbDBDefinition> databases;
 
 }
