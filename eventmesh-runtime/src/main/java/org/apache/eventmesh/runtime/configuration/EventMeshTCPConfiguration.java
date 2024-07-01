@@ -109,9 +109,6 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     @ConfigField(field = "tcp.RebalanceIntervalInMills")
     private Integer eventMeshTcpRebalanceIntervalInMills = 30 * 1000;
 
-    @ConfigField(field = "admin.http.port")
-    private int eventMeshServerAdminPort = 10106;
-
     @ConfigField(field = "tcp.sendBack.enabled")
     private boolean eventMeshTcpSendBackEnabled = Boolean.TRUE;
 

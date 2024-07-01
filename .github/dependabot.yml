@@ -25,14 +25,19 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "software.amazon.awssdk:s3"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "com.aliyun:dingtalk"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gomod"
     directory: "eventmesh-sdks/eventmesh-sdk-go"
+    # Disabled temporarily since the Go SDK is not integrated with CI
+    open-pull-requests-limit: 0
     schedule:
       interval: "monthly"
     ignore:
       - dependency-name: "*"
-        # Disabled temporarily since the Go SDK is not integrated with CI
-        update-types: [ "version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-patch" ]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
