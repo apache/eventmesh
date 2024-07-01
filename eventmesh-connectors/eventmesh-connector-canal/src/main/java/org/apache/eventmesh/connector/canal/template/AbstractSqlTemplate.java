@@ -32,7 +32,7 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         }
 
         sql.append(" from ").append(getFullName(schemaName, tableName)).append(" where ( ");
-        appendColumnEquals(sql, pkNames, "and");
+        appendColumnEquals(sql, pkNames);
         sql.append(" ) ");
         return sql.toString().intern();
     }
@@ -41,7 +41,7 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         StringBuilder sql = new StringBuilder("update " + getFullName(schemaName, tableName) + " set ");
         appendExcludeSingleShardColumnEquals(sql, columnNames, ",", updatePks, shardColumn);
         sql.append(" where (");
-        appendColumnEquals(sql, pkNames, "and");
+        appendColumnEquals(sql, pkNames);
         sql.append(")");
         return sql.toString().intern();
     }
@@ -65,7 +65,7 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
 
     public String getDeleteSql(String schemaName, String tableName, String[] pkNames) {
         StringBuilder sql = new StringBuilder("delete from " + getFullName(schemaName, tableName) + " where ");
-        appendColumnEquals(sql, pkNames, "and");
+        appendColumnEquals(sql, pkNames);
         return sql.toString().intern();
     }
 
@@ -91,12 +91,12 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
         }
     }
 
-    protected void appendColumnEquals(StringBuilder sql, String[] columns, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, String[] columns) {
         int size = columns.length;
         for (int i = 0; i < size; i++) {
             sql.append(" ").append(appendEscape(columns[i])).append(" = ").append("? ");
             if (i != size - 1) {
-                sql.append(separator);
+                sql.append("and");
             }
         }
     }
