@@ -162,9 +162,13 @@ tasks.register('dist') {
             ["eventmesh-common",
              "eventmesh-meta:eventmesh-meta-api",
              "eventmesh-metrics-plugin:eventmesh-metrics-api",
+             "eventmesh-openconnect:eventmesh-openconnect-java",
+             "eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api",
              "eventmesh-protocol-plugin:eventmesh-protocol-api",
+             "eventmesh-registry:eventmesh-registry-api",
              "eventmesh-retry:eventmesh-retry-api",
              "eventmesh-runtime",
+             "eventmesh-runtime-v2",
              "eventmesh-security-plugin:eventmesh-security-api",
              "eventmesh-spi",
              "eventmesh-starter",
@@ -660,6 +664,7 @@ subprojects {
 
     dependencyManagement {
         dependencies {
+
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.4"
             dependency "org.apache.commons:commons-text:1.9"
@@ -709,7 +714,7 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.6.0"
             dependency "com.jayway.jsonpath:json-path:2.9.0"
 
-            dependency "org.springframework.boot:spring-boot-starter-web:2.7.18"
+            dependency "org.springframework.boot:spring-boot-starter-web:2.5.4"
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "org.junit.jupiter:junit-jupiter:5.6.0"

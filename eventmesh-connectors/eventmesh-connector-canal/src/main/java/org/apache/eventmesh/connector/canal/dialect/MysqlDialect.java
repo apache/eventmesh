@@ -19,26 +19,14 @@ package org.apache.eventmesh.connector.canal.dialect;
 
 import org.apache.eventmesh.connector.canal.template.MysqlSqlTemplate;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 
 public class MysqlDialect extends AbstractDbDialect {
 
-    private Map<List<String>, String> shardColumns;
-
     public MysqlDialect(JdbcTemplate jdbcTemplate, LobHandler lobHandler) {
         super(jdbcTemplate, lobHandler);
-        sqlTemplate = new MysqlSqlTemplate();
-    }
-
-    public MysqlDialect(JdbcTemplate jdbcTemplate, LobHandler lobHandler, String name, String databaseVersion,
-                        int majorVersion, int minorVersion) {
-        super(jdbcTemplate, lobHandler, name, majorVersion, minorVersion);
         sqlTemplate = new MysqlSqlTemplate();
     }
 
@@ -66,16 +54,8 @@ public class MysqlDialect extends AbstractDbDialect {
         return false;
     }
 
-    public String getShardColumns(String schema, String table) {
-        if (isDRDS()) {
-            return shardColumns.get(Arrays.asList(schema, table));
-        } else {
-            return null;
-        }
-    }
-
     public String getDefaultCatalog() {
-        return (String) jdbcTemplate.queryForObject("select database()", String.class);
+        return jdbcTemplate.queryForObject("select database()", String.class);
     }
 
 }

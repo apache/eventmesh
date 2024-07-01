@@ -20,6 +20,8 @@ package org.apache.eventmesh.common.remote.response;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
+import java.util.List;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -27,7 +29,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class FetchPositionResponse extends BaseRemoteResponse {
 
-    private RecordPosition recordPosition;
+    private List<RecordPosition> recordPosition;
 
     public static FetchPositionResponse successResponse() {
         FetchPositionResponse response = new FetchPositionResponse();
@@ -36,7 +38,7 @@ public class FetchPositionResponse extends BaseRemoteResponse {
         return response;
     }
 
-    public static FetchPositionResponse successResponse(RecordPosition recordPosition) {
+    public static FetchPositionResponse successResponse(List<RecordPosition> recordPosition) {
         FetchPositionResponse response = successResponse();
         response.setRecordPosition(recordPosition);
         return response;

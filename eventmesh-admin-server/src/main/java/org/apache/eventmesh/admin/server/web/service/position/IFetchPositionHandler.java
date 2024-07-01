@@ -21,10 +21,12 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 
+import java.util.List;
+
 /**
  * IFetchPositionHandler
  */
 public interface IFetchPositionHandler {
 
-    RecordPosition handler(FetchPositionRequest request, Metadata metadata);
+    List<RecordPosition> handler(FetchPositionRequest request, Metadata metadata);
 }
