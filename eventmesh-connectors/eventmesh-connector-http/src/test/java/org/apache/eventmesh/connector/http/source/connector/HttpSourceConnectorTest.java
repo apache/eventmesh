@@ -57,6 +57,9 @@ class HttpSourceConnectorTest {
         connector.init(sourceConfig);
         connector.start();
 
+        // Add delay to ensure the server is fully started before the tests begin
+        Thread.sleep(2000);
+
         url = new URL("http", "127.0.0.1", config.getPort(), config.getPath()).toString();
         httpClient = new OkHttpClient();
     }
