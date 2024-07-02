@@ -133,7 +133,14 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
 
         // get timestamp and offset
         Long timestamp = httpConnectRecord.getData().getTimestamp();
-        Map<String, ?> offset = ((HttpRecordOffset) httpConnectRecord.getData().getPosition().getRecordOffset()).getOffsetMap();
+        Map<String, ?> offset = null;
+        try {
+            // May throw NullPointerException.
+            offset = ((HttpRecordOffset) httpConnectRecord.getData().getPosition().getRecordOffset()).getOffsetMap();
+        } catch (NullPointerException e) {
+            // ignore null pointer exception
+        }
+        final Map<String, ?> finalOffset = offset;
 
         // send the request
         return this.webClient.post(url.getPath())
@@ -143,26 +150,28 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             .ssl(Objects.equals(url.getScheme(), "https"))
             .sendJson(httpConnectRecord)
             .onSuccess(res -> {
-                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, offset);
+                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, finalOffset);
                 // log the response
                 if (HttpUtils.is2xxSuccessful(res.statusCode())) {
                     if (log.isDebugEnabled()) {
                         log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                            res.statusCode(), timestamp, offset, res.bodyAsString());
+                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
                     } else {
-                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp, offset);
+                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
+                            finalOffset);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
                         log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                            res.statusCode(), timestamp, offset, res.bodyAsString());
+                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
                     } else {
-                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp, offset);
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
+                            finalOffset);
                     }
                 }
 
             })
-            .onFailure(err -> log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, offset, err));
+            .onFailure(err -> log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err));
     }
 
 
