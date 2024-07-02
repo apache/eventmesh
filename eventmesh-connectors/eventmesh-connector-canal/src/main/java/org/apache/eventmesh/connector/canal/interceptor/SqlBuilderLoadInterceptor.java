@@ -28,11 +28,16 @@ import java.util.List;
 
 import org.springframework.util.CollectionUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * compute latest sql
  */
 public class SqlBuilderLoadInterceptor {
 
+    @Getter
+    @Setter
     private DbDialect dbDialect;
 
     public boolean before(CanalSinkConfig sinkConfig, CanalConnectRecord record) {
@@ -127,13 +132,5 @@ public class SqlBuilderLoadInterceptor {
             result[i] = column.getColumnName();
         }
         return result;
-    }
-
-    public DbDialect getDbDialect() {
-        return dbDialect;
-    }
-
-    public void setDbDialect(DbDialect dbDialect) {
-        this.dbDialect = dbDialect;
     }
 }

@@ -106,6 +106,7 @@ public class AdminOffsetService implements OffsetManagementService {
         ReportPositionRequest reportPositionRequest = new ReportPositionRequest();
         reportPositionRequest.setJobID(jobId);
         reportPositionRequest.setState(jobState);
+        reportPositionRequest.setDataSourceType(dataSourceType);
         reportPositionRequest.setAddress(IPUtils.getLocalAddress());
 
         reportPositionRequest.setRecordPositionList(recordToSyncList);
@@ -119,6 +120,10 @@ public class AdminOffsetService implements OffsetManagementService {
                 .build())
             .build();
         requestObserver.onNext(payload);
+
+        for (Map.Entry<RecordPartition, RecordOffset> entry : recordMap.entrySet()) {
+            positionStore.remove(entry.getKey());
+        }
     }
 
     @Override
@@ -157,8 +162,9 @@ public class AdminOffsetService implements OffsetManagementService {
                     JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(),
-                        fetchPositionResponse.getRecordPosition().getRecordOffset());
+                    for (RecordPosition recordPosition : fetchPositionResponse.getRecordPosition()) {
+                        positionStore.put(recordPosition.getRecordPartition(), recordPosition.getRecordOffset());
+                    }
                 }
             }
         }
@@ -175,9 +181,9 @@ public class AdminOffsetService implements OffsetManagementService {
             fetchPositionRequest.setJobID(jobId);
             fetchPositionRequest.setAddress(IPUtils.getLocalAddress());
             fetchPositionRequest.setDataSourceType(dataSourceType);
-            RecordPosition recordPosition = new RecordPosition();
-            recordPosition.setRecordPartition(partition);
-            fetchPositionRequest.setRecordPosition(recordPosition);
+            RecordPosition fetchRecordPosition = new RecordPosition();
+            fetchRecordPosition.setRecordPartition(partition);
+            fetchPositionRequest.setRecordPosition(fetchRecordPosition);
 
             Metadata metadata = Metadata.newBuilder()
                 .setType(FetchPositionRequest.class.getSimpleName())
@@ -195,8 +201,9 @@ public class AdminOffsetService implements OffsetManagementService {
                     JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(),
-                        fetchPositionResponse.getRecordPosition().getRecordOffset());
+                    for (RecordPosition recordPosition : fetchPositionResponse.getRecordPosition()) {
+                        positionStore.put(recordPosition.getRecordPartition(), recordPosition.getRecordOffset());
+                    }
                 }
             }
         }

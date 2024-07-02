@@ -31,6 +31,7 @@ import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,20 +143,21 @@ public class MysqlPositionHandler extends PositionHandler {
     }
 
     @Override
-    public RecordPosition handler(FetchPositionRequest request, Metadata metadata) {
-        EventMeshMysqlPosition position = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobID",
+    public List<RecordPosition> handler(FetchPositionRequest request, Metadata metadata) {
+        List<EventMeshMysqlPosition> positionList = positionService.list(Wrappers.<EventMeshMysqlPosition>query().eq("jobID",
             request.getJobID()));
-        RecordPosition recordPosition = null;
-        if (position != null) {
+        List<RecordPosition> recordPositionList = new ArrayList<>();
+        for (EventMeshMysqlPosition position : positionList) {
+            RecordPosition recordPosition = new RecordPosition();
             CanalRecordPartition partition = new CanalRecordPartition();
             partition.setTimeStamp(position.getTimestamp());
             partition.setJournalName(position.getJournalName());
+            recordPosition.setRecordPartition(partition);
             CanalRecordOffset offset = new CanalRecordOffset();
             offset.setOffset(position.getPosition());
-            recordPosition = new RecordPosition();
-            recordPosition.setRecordPartition(partition);
             recordPosition.setRecordOffset(offset);
+            recordPositionList.add(recordPosition);
         }
-        return recordPosition;
+        return recordPositionList;
     }
 }

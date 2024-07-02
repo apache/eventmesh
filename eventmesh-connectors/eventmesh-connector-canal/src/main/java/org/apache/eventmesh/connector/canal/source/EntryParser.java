@@ -23,9 +23,10 @@ import org.apache.eventmesh.connector.canal.model.EventColumn;
 import org.apache.eventmesh.connector.canal.model.EventColumnIndexComparable;
 import org.apache.eventmesh.connector.canal.model.EventType;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,32 +47,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntryParser {
 
-    public List<CanalConnectRecord> parse(CanalSourceConfig sourceConfig, List<Entry> datas) {
+    public Map<Long, List<CanalConnectRecord>> parse(CanalSourceConfig sourceConfig, List<Entry> datas) {
         List<CanalConnectRecord> recordList = new ArrayList<>();
         List<Entry> transactionDataBuffer = new ArrayList<>();
+        // need check weather the entry is loopback
+        boolean needSync;
+        Map<Long, List<CanalConnectRecord>> recordMap = new HashMap<>();
         try {
             for (Entry entry : datas) {
                 switch (entry.getEntryType()) {
-                    case TRANSACTIONBEGIN:
-                        break;
                     case ROWDATA:
-                        transactionDataBuffer.add(entry);
+                        RowChange rowChange = RowChange.parseFrom(entry.getStoreValue());
+                        needSync = checkNeedSync(sourceConfig, rowChange.getRowDatas(0));
+                        if (needSync) {
+                            transactionDataBuffer.add(entry);
+                        }
                         break;
                     case TRANSACTIONEND:
-                        for (Entry bufferEntry : transactionDataBuffer) {
-                            List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry);
-                            if (CollectionUtils.isEmpty(recordParsedList)) {
-                                continue;
-                            }
-                            long totalSize = bufferEntry.getHeader().getEventLength();
-                            long eachSize = totalSize / recordParsedList.size();
-                            for (CanalConnectRecord record : recordParsedList) {
-                                if (record == null) {
-                                    continue;
-                                }
-                                record.setSize(eachSize);
-                                recordList.add(record);
-                            }
+                        parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer);
+                        if (!recordList.isEmpty()) {
+                            recordMap.put(entry.getHeader().getLogfileOffset(), recordList);
                         }
                         transactionDataBuffer.clear();
                         break;
@@ -79,27 +74,46 @@ public class EntryParser {
                         break;
                 }
             }
-
-            for (Entry bufferEntry : transactionDataBuffer) {
-                List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry);
-                if (CollectionUtils.isEmpty(recordParsedList)) {
-                    continue;
-                }
-
-                long totalSize = bufferEntry.getHeader().getEventLength();
-                long eachSize = totalSize / recordParsedList.size();
-                for (CanalConnectRecord record : recordParsedList) {
-                    if (record == null) {
-                        continue;
-                    }
-                    record.setSize(eachSize);
-                    recordList.add(record);
-                }
-            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return recordList;
+        return recordMap;
+    }
+
+    private void parseRecordListWithEntryBuffer(CanalSourceConfig sourceConfig, List<CanalConnectRecord> recordList,
+        List<Entry> transactionDataBuffer) {
+        for (Entry bufferEntry : transactionDataBuffer) {
+            List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry);
+            if (CollectionUtils.isEmpty(recordParsedList)) {
+                continue;
+            }
+            long totalSize = bufferEntry.getHeader().getEventLength();
+            long eachSize = totalSize / recordParsedList.size();
+            for (CanalConnectRecord record : recordParsedList) {
+                if (record == null) {
+                    continue;
+                }
+                record.setSize(eachSize);
+                recordList.add(record);
+            }
+        }
+    }
+
+    private boolean checkNeedSync(CanalSourceConfig sourceConfig, RowData rowData) {
+        Column markedColumn = getColumnIgnoreCase(rowData.getAfterColumnsList(), sourceConfig.getNeedSyncMarkTableColumnName());
+        if (markedColumn != null) {
+            return StringUtils.equalsIgnoreCase(markedColumn.getValue(), sourceConfig.getNeedSyncMarkTableColumnValue());
+        }
+        return false;
+    }
+
+    private Column getColumnIgnoreCase(List<Column> columns, String columName) {
+        for (Column column : columns) {
+            if (column.getName().equalsIgnoreCase(columName)) {
+                return column;
+            }
+        }
+        return null;
     }
 
     private List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry) {
@@ -127,20 +141,9 @@ public class EntryParser {
             return null;
         }
 
-        if (StringUtils.equalsIgnoreCase(sourceConfig.getSystemSchema(), schemaName)) {
-            // do noting
-            if (eventType.isDdl()) {
-                return null;
-            }
-
-            if (StringUtils.equalsIgnoreCase(sourceConfig.getSystemDualTable(), tableName)) {
-                return null;
-            }
-        } else {
-            if (eventType.isDdl()) {
-                log.warn("unsupported ddl event type: {}", eventType);
-                return null;
-            }
+        if (eventType.isDdl()) {
+            log.warn("unsupported ddl event type: {}", eventType);
+            return null;
         }
 
         List<CanalConnectRecord> recordList = new ArrayList<>();
@@ -164,13 +167,12 @@ public class EntryParser {
 
         List<Column> beforeColumns = rowData.getBeforeColumnsList();
         List<Column> afterColumns = rowData.getAfterColumnsList();
-        String tableName = canalConnectRecord.getSchemaName() + "." + canalConnectRecord.getTableName();
 
         boolean isRowMode = canalSourceConfig.getSyncMode().isRow();
 
-        Map<String, EventColumn> keyColumns = new LinkedHashMap<String, EventColumn>();
-        Map<String, EventColumn> oldKeyColumns = new LinkedHashMap<String, EventColumn>();
-        Map<String, EventColumn> notKeyColumns = new LinkedHashMap<String, EventColumn>();
+        Map<String, EventColumn> keyColumns = new LinkedHashMap<>();
+        Map<String, EventColumn> oldKeyColumns = new LinkedHashMap<>();
+        Map<String, EventColumn> notKeyColumns = new LinkedHashMap<>();
 
         if (eventType.isInsert()) {
             for (Column column : afterColumns) {
@@ -195,7 +197,7 @@ public class EntryParser {
                     keyColumns.put(column.getName(), copyEventColumn(column, true));
                 } else {
                     if (isRowMode && entry.getHeader().getSourceType() == CanalEntry.Type.ORACLE) {
-                        notKeyColumns.put(column.getName(), copyEventColumn(column, isRowMode));
+                        notKeyColumns.put(column.getName(), copyEventColumn(column, true));
                     }
                 }
             }
@@ -233,7 +235,7 @@ public class EntryParser {
             }
             canalConnectRecord.setColumns(columns);
         } else {
-            throw new RuntimeException("this row data has no pks , entry: " + entry.toString() + " and rowData: "
+            throw new RuntimeException("this row data has no pks , entry: " + entry + " and rowData: "
                 + rowData);
         }
 
