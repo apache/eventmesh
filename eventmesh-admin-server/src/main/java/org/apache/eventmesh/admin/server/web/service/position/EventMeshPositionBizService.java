@@ -25,6 +25,8 @@ import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +40,7 @@ public class EventMeshPositionBizService {
     PositionHandlerFactory factory;
 
     // called isValidateReportRequest before call this
-    public RecordPosition getPosition(FetchPositionRequest request, Metadata metadata) {
+    public List<RecordPosition> getPosition(FetchPositionRequest request, Metadata metadata) {
         if (request == null) {
             return null;
         }
@@ -68,7 +70,7 @@ public class EventMeshPositionBizService {
         return handler.handler(request, metadata);
     }
 
-    public RecordPosition getPositionByJobID(Integer jobID, DataSourceType type) {
+    public List<RecordPosition> getPositionByJobID(Integer jobID, DataSourceType type) {
         if (jobID == null || type == null) {
             return null;
         }

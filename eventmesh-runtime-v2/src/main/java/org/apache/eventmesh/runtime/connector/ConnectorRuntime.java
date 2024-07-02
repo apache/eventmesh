@@ -53,6 +53,8 @@ import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -201,6 +203,9 @@ public class ConnectorRuntime implements Runtime {
         SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
         sourceConnectorContext.setSourceConfig(sourceConfig);
         sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
+        if (CollectionUtils.isNotEmpty(jobResponse.getPosition())) {
+            sourceConnectorContext.setRecordPositionList(jobResponse.getPosition());
+        }
 
         // spi load offsetMgmtService
         this.offsetManagement = new RecordOffsetManagement();
