@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def pinpointVersion = "2.4.1"
+def pinpointVersion = "3.0.0"
 
 dependencies {
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
