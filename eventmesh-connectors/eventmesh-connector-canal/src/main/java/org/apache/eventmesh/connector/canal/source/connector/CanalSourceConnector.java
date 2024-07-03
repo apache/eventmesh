@@ -31,15 +31,17 @@ import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
-
 
 import com.alibaba.otter.canal.instance.core.CanalInstance;
 import com.alibaba.otter.canal.instance.core.CanalInstanceGenerator;
@@ -74,7 +76,9 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     private ClientIdentity clientIdentity;
 
-    private String filter = null;
+    private String tableFilter = null;
+
+    private String fieldFilter = null;
 
     private volatile boolean running = false;
 
@@ -95,6 +99,16 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
+        if (sourceConnectorContext.getRecordPositionList() != null) {
+            this.sourceConfig.setRecordPositions(sourceConnectorContext.getRecordPositionList());
+        }
+
+        if (StringUtils.isNotEmpty(sourceConfig.getTableFilter())) {
+            tableFilter = sourceConfig.getTableFilter();
+        }
+        if (StringUtils.isNotEmpty(sourceConfig.getFieldFilter())) {
+            fieldFilter = sourceConfig.getFieldFilter();
+        }
 
         canalServer = CanalServerWithEmbedded.instance();
 
@@ -103,7 +117,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             public CanalInstance generate(String destination) {
                 Canal canal = buildCanal(sourceConfig);
 
-                CanalInstanceWithManager instance = new CanalInstanceWithManager(canal, filter) {
+                CanalInstanceWithManager instance = new CanalInstanceWithManager(canal, tableFilter) {
 
                     protected CanalHAController initHaController() {
                         return super.initHaController();
@@ -118,6 +132,9 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                             ((MysqlEventParser) eventParser).setSupportBinlogImages("FULL");
                             MysqlEventParser mysqlEventParser = (MysqlEventParser) eventParser;
                             mysqlEventParser.setParallel(false);
+                            if (StringUtils.isNotEmpty(fieldFilter)) {
+                                mysqlEventParser.setFieldFilter(fieldFilter);
+                            }
 
                             CanalHAController haController = mysqlEventParser.getHaController();
                             if (!haController.isStart()) {
@@ -204,7 +221,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         canalServer.start();
 
         canalServer.start(sourceConfig.getDestination());
-        this.clientIdentity = new ClientIdentity(sourceConfig.getDestination(), sourceConfig.getClientId(), filter);
+        this.clientIdentity = new ClientIdentity(sourceConfig.getDestination(), sourceConfig.getClientId(), tableFilter);
         canalServer.subscribe(clientIdentity);
 
         running = true;
@@ -274,23 +291,31 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         EntryParser entryParser = new EntryParser();
 
         List<ConnectRecord> result = new ArrayList<>();
+        // key: Xid offset
+        Map<Long, List<CanalConnectRecord>> connectorRecordMap = entryParser.parse(sourceConfig, entries);
 
-        List<CanalConnectRecord> connectRecordList = entryParser.parse(sourceConfig, entries);
+        if (!connectorRecordMap.isEmpty()) {
+            Set<Map.Entry<Long, List<CanalConnectRecord>>> entrySet = connectorRecordMap.entrySet();
+            for (Map.Entry<Long, List<CanalConnectRecord>> entry : entrySet) {
+                // Xid offset
+                Long binLogOffset = entry.getKey();
+                List<CanalConnectRecord> connectRecordList = entry.getValue();
+                CanalConnectRecord lastRecord = entry.getValue().get(connectRecordList.size() - 1);
+                CanalRecordPartition canalRecordPartition = new CanalRecordPartition();
+                canalRecordPartition.setJournalName(lastRecord.getJournalName());
+                canalRecordPartition.setTimeStamp(lastRecord.getExecuteTime());
 
-        if (connectRecordList != null && !connectRecordList.isEmpty()) {
-            CanalConnectRecord lastRecord = connectRecordList.get(connectRecordList.size() - 1);
+                CanalRecordOffset canalRecordOffset = new CanalRecordOffset();
+                canalRecordOffset.setOffset(binLogOffset);
 
-            CanalRecordPartition canalRecordPartition = new CanalRecordPartition();
-            canalRecordPartition.setJournalName(lastRecord.getJournalName());
-            canalRecordPartition.setTimeStamp(lastRecord.getExecuteTime());
-
-            CanalRecordOffset canalRecordOffset = new CanalRecordOffset();
-            canalRecordOffset.setOffset(lastRecord.getBinLogOffset());
-
-            ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
-            connectRecord.addExtension("messageId", String.valueOf(message.getId()));
-            connectRecord.setData(connectRecordList);
-            result.add(connectRecord);
+                ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
+                connectRecord.addExtension("messageId", String.valueOf(message.getId()));
+                connectRecord.setData(connectRecordList);
+                result.add(connectRecord);
+            }
+        } else {
+            // for the message has been filtered need ack message
+            canalServer.ack(clientIdentity, message.getId());
         }
 
         return result;

@@ -15,18 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.service.position;
+package org.apache.eventmesh.connector.http.source.data;
 
-import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
-import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
+import java.io.Serializable;
+import java.util.Map;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * IFetchPositionHandler
+ * Webhook Protocol Request.
  */
-public interface IFetchPositionHandler {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class WebhookRequest implements Serializable {
 
-    List<RecordPosition> handler(FetchPositionRequest request, Metadata metadata);
+    private static final long serialVersionUID = -483500600756490500L;
+
+    private String protocolName;
+
+    private String url;
+
+    private Map<String, String> headers;
+
+    private Object payload;
+
 }
