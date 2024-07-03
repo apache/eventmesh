@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
-import org.mapstruct.factory.Mappers;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
@@ -40,6 +39,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.mapstruct.factory.Mappers;
 
 import io.grpc.NameResolverProvider;
 import io.opentelemetry.api.common.Attributes;
