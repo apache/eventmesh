@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.canal;
 import static org.apache.eventmesh.connector.canal.ByteArrayConverter.SQL_BYTES;
 import static org.apache.eventmesh.connector.canal.SqlTimestampConverter.SQL_TIMESTAMP;
 
+import com.mysql.cj.MysqlType;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.lang.StringUtils;
 
@@ -30,12 +31,15 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -107,6 +111,25 @@ public class SqlUtils {
         sqlTypeToJavaTypeMap.put(Types.NVARCHAR, String.class);
         sqlTypeToJavaTypeMap.put(Types.NCLOB, String.class);
         sqlTypeToJavaTypeMap.put(Types.CLOB, String.class);
+    }
+
+    public static String genPrepareSqlOfInClause(int size) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("(");
+        for (int i = 0; i < size; i++) {
+            sql.append("?");
+            if (i < size - 1) {
+                sql.append(",");
+            }
+        }
+        sql.append(")");
+        return sql.toString();
+    }
+
+    public static void setInClauseParameters(PreparedStatement preparedStatement, List<String> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) {
+            preparedStatement.setString(i + 1, params.get(i));
+        }
     }
 
     public static String sqlValueToString(ResultSet rs, int index, int sqlType) throws SQLException {
@@ -292,5 +315,10 @@ public class SqlUtils {
         return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR
             || sqlType == Types.NCHAR || sqlType == Types.NVARCHAR || sqlType == Types.NCLOB
             || sqlType == Types.LONGNVARCHAR;
+    }
+
+    public static JDBCType toJDBCType(String connectorDataType) {
+        MysqlType mysqlType = MysqlType.getByName(connectorDataType);
+        return JDBCType.valueOf(mysqlType.getJdbcType());
     }
 }

@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 public abstract class AbstractComponent implements ComponentLifeCycle {
-    private final AtomicBoolean init = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     @Override
     public void start() throws Exception {
-        if (!init.compareAndSet(false, true)){
+        if (!started.compareAndSet(false, true)){
             log.info("component [{}] has started", this.getClass());
             return;
         }

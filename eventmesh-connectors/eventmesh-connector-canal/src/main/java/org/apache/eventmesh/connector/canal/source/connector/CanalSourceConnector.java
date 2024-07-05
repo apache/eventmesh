@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.canal.source.connector;
 
+import com.alibaba.otter.canal.parse.inbound.TableMeta;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
@@ -149,8 +150,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 return instance;
             }
         });
-        tableMgr = RdbTableMgr.getInstance();
-        tableMgr.init(sourceConfig.getSourceConnectorConfig());
+        tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig());
     }
 
     private Canal buildCanal(CanalSourceConfig sourceConfig) {

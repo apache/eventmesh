@@ -9,6 +9,6 @@ import java.util.Set;
  */
 @Data
 public class RdbDBDefinition {
-    private String schema;
+    private String schemaName;
     private Set<RdbTableDefinition> tables;
 }
