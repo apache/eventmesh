@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.http.source.connector;
 
+
 import static org.mockserver.model.HttpRequest.request;
 
 import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
@@ -25,28 +26,30 @@ import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.net.URIBuilder;
+
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
+
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 public class HttpSinkConnectorTest {
 
@@ -54,30 +57,33 @@ public class HttpSinkConnectorTest {
 
     private HttpSinkConfig sinkConfig;
 
-    private URI severUri;
+    private URL url;
 
     private ClientAndServer mockServer;
 
+    private static final AtomicInteger counter = new AtomicInteger(0);
 
     @BeforeEach
     void before() throws Exception {
         // init sinkConnector
-        this.sinkConnector = new HttpSinkConnector();
-        this.sinkConfig = (HttpSinkConfig) ConfigUtil.parse(sinkConnector.configClass());
-        this.sinkConnector.init(this.sinkConfig);
-        this.sinkConnector.start();
+        sinkConnector = new HttpSinkConnector();
+        sinkConfig = (HttpSinkConfig) ConfigUtil.parse(sinkConnector.configClass());
+        sinkConnector.init(this.sinkConfig);
+        sinkConnector.start();
 
-        this.severUri = URI.create(sinkConfig.connectorConfig.getUrls()[0]);
+        url = new URL(sinkConfig.connectorConfig.getUrls()[0]);
         // start mockServer
-        mockServer = ClientAndServer.startClientAndServer(severUri.getPort());
+        mockServer = ClientAndServer.startClientAndServer(url.getPort());
         mockServer.reset()
             .when(
                 request()
                     .withMethod("POST")
-                    .withPath(severUri.getPath())
+                    .withPath(url.getPath())
             )
             .respond(
                 httpRequest -> {
+                    // Increase the number of requests received
+                    counter.incrementAndGet();
                     JSONObject requestBody = JSON.parseObject(httpRequest.getBodyAsString());
                     return HttpResponse.response()
                         .withContentType(MediaType.APPLICATION_JSON)
@@ -90,6 +96,7 @@ public class HttpSinkConnectorTest {
                         ); // .withDelay(TimeUnit.SECONDS, 10);
                 }
             );
+
     }
 
     @AfterEach
@@ -101,62 +108,57 @@ public class HttpSinkConnectorTest {
     @Test
     void testPut() throws Exception {
         // Create a list of ConnectRecord
-        final int times = 10;
+        final int size = 10;
         List<ConnectRecord> connectRecords = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
+        for (int i = 0; i < size; i++) {
             ConnectRecord record = createConnectRecord();
             connectRecords.add(record);
         }
         // Put ConnectRecord
         sinkConnector.put(connectRecords);
 
-        // sleep 5s
-        Thread.sleep(5000);
-
-        // verify request
-        HttpRequest[] recordedRequests = mockServer.retrieveRecordedRequests(null);
-        // assert recordedRequests.length == times;
+        // wait for receiving request
+        final int times = 5000; // 5 seconds
+        long start = System.currentTimeMillis();
+        while (counter.get() < size) {
+            if (System.currentTimeMillis() - start > times) {
+                // timeout
+                Assertions.fail("The number of requests received=" + counter.get() + " is less than the number of ConnectRecord=" + size);
+            } else {
+                Thread.sleep(100);
+            }
+        }
 
         // verify response
         HttpWebhookConfig webhookConfig = sinkConfig.connectorConfig.getWebhookConfig();
-        String url = new HttpUrl.Builder()
-            .scheme("http")
-            .host(severUri.getHost())
-            .port(webhookConfig.getPort())
-            .addPathSegments(webhookConfig.getExportPath())
-            .addQueryParameter("pageNum", "1")
-            .addQueryParameter("pageSize", "10")
-            .addQueryParameter("type", "poll")
-            .build().toString();
 
-        // build request
-        Request request = new Request.Builder()
-            .url(url)
-            .addHeader("Content-Type", "application/json")
+        URI exportUrl = new URIBuilder()
+            .setScheme("http")
+            .setHost(url.getHost())
+            .setPort(webhookConfig.getPort())
+            .setPath(webhookConfig.getExportPath())
+            .addParameter("pageNum", "1")
+            .addParameter("pageSize", "10")
+            .addParameter("type", "poll")
             .build();
 
-        OkHttpClient client = new OkHttpClient();
-        try (Response response = client.newCall(request).execute()) {
-            // check response code
-            if (!response.isSuccessful()) {
-                throw new RuntimeException("Unexpected response code: " + response);
-            }
-            // check response body
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                JSONObject jsonObject = JSON.parseObject(responseBody.string());
+        Request.get(exportUrl)
+            .execute()
+            .handleResponse(response -> {
+                // check response code
+                Assertions.assertEquals(HttpStatus.SC_OK, response.getCode());
+                // check response body
+                JSONObject jsonObject = JSON.parseObject(response.getEntity().getContent());
                 JSONArray pageItems = jsonObject.getJSONArray("pageItems");
 
-                assert pageItems != null && pageItems.size() == times;
-
-                for (int i = 0; i < times; i++) {
+                Assertions.assertNotNull(pageItems);
+                Assertions.assertEquals(size, pageItems.size());
+                for (int i = 0; i < size; i++) {
                     JSONObject pageItem = pageItems.getJSONObject(i);
-                    assert pageItem != null;
-                    // assert pageItem.getJSONObject("data") != null;
-                    // assert pageItem.getJSONObject("metadata") != null;
+                    Assertions.assertNotNull(pageItem);
                 }
-            }
-        }
+                return null;
+            });
     }
 
     private ConnectRecord createConnectRecord() {

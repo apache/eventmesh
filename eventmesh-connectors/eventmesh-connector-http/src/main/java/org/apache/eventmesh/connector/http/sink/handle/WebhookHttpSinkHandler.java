@@ -72,6 +72,18 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     // store the received data, when webhook is enabled
     private final SynchronizedCircularFifoQueue<HttpExportRecord> receivedDataQueue;
 
+    private volatile boolean exportStarted = false;
+
+    private volatile boolean exportDestroyed = false;
+
+    public boolean isExportStarted() {
+        return exportStarted;
+    }
+
+    public boolean isExportDestroyed() {
+        return exportDestroyed;
+    }
+
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
         this.sinkConnectorConfig = sinkConnectorConfig;
@@ -179,10 +191,15 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         // start the webclient
         super.start();
         // start the export server
-        Throwable t = this.exportServer.listen().cause();
-        if (t != null) {
-            throw new EventMeshException("Failed to start Vertx server. ", t);
-        }
+        this.exportServer.listen(res -> {
+            if (res.succeeded()) {
+                this.exportStarted = true;
+                log.info("WebhookHttpExportServer started on port: {}", this.webhookConfig.getPort());
+            } else {
+                log.error("WebhookHttpExportServer failed to start on port: {}", this.webhookConfig.getPort());
+                throw new EventMeshException("Failed to start Vertx server. ", res.cause());
+            }
+        });
     }
 
     /**
@@ -250,10 +267,15 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         super.stop();
         // stop the export server
         if (this.exportServer != null) {
-            Throwable t = this.exportServer.close().cause();
-            if (t != null) {
-                throw new EventMeshException("Failed to stop Vertx server. ", t);
-            }
+            this.exportServer.close(res -> {
+                if (res.succeeded()) {
+                    this.exportDestroyed = true;
+                    log.info("WebhookHttpExportServer stopped on port: {}", this.webhookConfig.getPort());
+                } else {
+                    log.error("WebhookHttpExportServer failed to stop on port: {}", this.webhookConfig.getPort());
+                    throw new EventMeshException("Failed to stop Vertx server. ", res.cause());
+                }
+            });
         } else {
             log.warn("Callback server is null, ignore.");
         }
