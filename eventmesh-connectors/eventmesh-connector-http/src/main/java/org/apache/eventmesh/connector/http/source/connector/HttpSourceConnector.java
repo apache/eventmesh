@@ -55,6 +55,18 @@ public class HttpSourceConnector implements Source {
 
     private HttpServer server;
 
+    private volatile boolean started = false;
+
+    private volatile boolean destroyed = false;
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
 
     @Override
     public Class<? extends Config> configClass() {
@@ -105,10 +117,15 @@ public class HttpSourceConnector implements Source {
 
     @Override
     public void start() {
-        Throwable t = this.server.listen().cause();
-        if (t != null) {
-            throw new EventMeshException("failed to start Vertx server", t);
-        }
+        this.server.listen(res -> {
+            if (res.succeeded()) {
+                this.started = true;
+                log.info("HttpSourceConnector started on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+            } else {
+                log.error("HttpSourceConnector failed to start on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                throw new EventMeshException("failed to start Vertx server", res.cause());
+            }
+        });
     }
 
     @Override
@@ -123,9 +140,19 @@ public class HttpSourceConnector implements Source {
 
     @Override
     public void stop() {
-        Throwable t = this.server.close().cause();
-        if (t != null) {
-            throw new EventMeshException("failed to stop Vertx server", t);
+        if (this.server != null) {
+            this.server.close(res -> {
+                    if (res.succeeded()) {
+                        this.destroyed = true;
+                        log.info("HttpSourceConnector stopped on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                    } else {
+                        log.error("HttpSourceConnector failed to stop on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                        throw new EventMeshException("failed to stop Vertx server", res.cause());
+                    }
+                }
+            );
+        } else {
+            log.warn("HttpSourceConnector server is null, ignore.");
         }
     }
 
