@@ -24,53 +24,83 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 class HttpSourceConnectorTest {
 
-    private HttpSourceConnector connector;
-    private SourceConnectorConfig config;
-    private OkHttpClient httpClient;
-    private String url;
-    private final String expectedMessage = "testHttpMessage";
+    private static HttpSourceConnector connector;
+    private static String url;
+    private static final String expectedMessage = "testHttpMessage";
+    private static final int batchSize = 10;
 
-    @BeforeEach
-    void setUp() throws Exception {
+
+    @BeforeAll
+    static void setUpAll() throws Exception {
         connector = new HttpSourceConnector();
-        HttpSourceConfig sourceConfig = (HttpSourceConfig) ConfigUtil.parse(connector.configClass());
-        config = sourceConfig.getConnectorConfig();
+        final HttpSourceConfig sourceConfig = (HttpSourceConfig) ConfigUtil.parse(connector.configClass());
+        final SourceConnectorConfig config = sourceConfig.getConnectorConfig();
+        // initialize and start the connector
         connector.init(sourceConfig);
         connector.start();
 
-        // Add delay to ensure the server is fully started before the tests begin
-        Thread.sleep(2000);
+        // wait for the connector to start
+        long timeout = 5000; // 5 seconds
+        long start = System.currentTimeMillis();
+        while (!connector.isStarted()) {
+            if (System.currentTimeMillis() - start > timeout) {
+                // timeout
+                Assertions.fail("Failed to start the connector");
+            } else {
+                Thread.sleep(100);
+            }
+        }
 
         url = new URL("http", "127.0.0.1", config.getPort(), config.getPath()).toString();
-        httpClient = new OkHttpClient();
     }
 
+    @AfterAll
+    static void tearDownAll() throws IOException {
+        connector.stop();
+    }
+
+
     @Test
-    void testPoll() throws Exception {
-        final int batchSize = 10;
-        // test binary content mode
+    void testPollForBinaryRequest() {
         for (int i = 0; i < batchSize; i++) {
-            try (Response resp = mockBinaryRequest()) {
-                Assertions.assertEquals(200, resp.code());
+            try {
+                // Set the request body
+                StringEntity entity = new StringEntity(expectedMessage, ContentType.TEXT_PLAIN);
+
+                Request.post(url)
+                    .addHeader("Content-Type", "text/plain")
+                    .addHeader("ce-id", String.valueOf(UUID.randomUUID()))
+                    .addHeader("ce-specversion", "1.0")
+                    .addHeader("ce-type", "com.example.someevent")
+                    .addHeader("ce-source", "/mycontext")
+                    .addHeader("ce-subject", "test")
+                    .body(entity)
+                    .execute()
+                    .handleResponse(res -> {
+                        Assertions.assertEquals(HttpStatus.SC_OK, res.getCode());
+                        return null;
+                    });
+            } catch (IOException e) {
+                Assertions.fail("Failed to send request", e);
             }
         }
         List<ConnectRecord> res = connector.poll();
@@ -78,78 +108,61 @@ class HttpSourceConnectorTest {
         for (ConnectRecord r : res) {
             Assertions.assertEquals(expectedMessage, new String((byte[]) r.getData()));
         }
+    }
 
-        // test structured content mode
+    @Test
+    void testPollForStructuredRequest() {
         for (int i = 0; i < batchSize; i++) {
-            try (Response resp = mockStructuredRequest()) {
-                Assertions.assertEquals(200, resp.code());
+            try {
+                // Create a CloudEvent
+                TestEvent event = new TestEvent();
+                event.id = String.valueOf(UUID.randomUUID());
+                event.specversion = "1.0";
+                event.type = "com.example.someevent";
+                event.source = "/mycontext";
+                event.subject = "test";
+                event.datacontenttype = "text/plain";
+                event.data = expectedMessage;
+
+                // Set the request body
+                StringEntity entity = new StringEntity(Objects.requireNonNull(JsonUtils.toJSONString(event)), ContentType.APPLICATION_JSON);
+
+                // Send the request and return the response
+                Request.post(url)
+                    .addHeader("Content-Type", "application/cloudevents+json")
+                    .body(entity)
+                    .execute()
+                    .handleResponse(res -> {
+                        Assertions.assertEquals(HttpStatus.SC_OK, res.getCode());
+                        return null;
+                    });
+            } catch (IOException e) {
+                Assertions.fail("Failed to send request", e);
             }
         }
-        res = connector.poll();
+        List<ConnectRecord> res = connector.poll();
         Assertions.assertEquals(batchSize, res.size());
         for (ConnectRecord r : res) {
             Assertions.assertEquals(expectedMessage, new String((byte[]) r.getData()));
         }
+    }
 
-        // test invalid requests
-        Request request = new Request.Builder()
-            .url(url)
-            .addHeader("Content-Type", "text/plain")
-            .addHeader("ce-id", String.valueOf(UUID.randomUUID()))
-            .build();
 
-        try (Response resp = httpClient.newCall(request).execute()) {
-            // verify the response code
-            Assertions.assertEquals(405, resp.code());
+    @Test
+    void testPollForInvalidRequest() {
+        // Send a bad request.
+        try {
+            Request.post(url)
+                .addHeader("Content-Type", "text/plain")
+                .execute()
+                .handleResponse(res -> {
+                    // Check the response code
+                    Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, res.getCode());
+                    return null;
+                });
+        } catch (IOException e) {
+            Assertions.fail("Failed to send request", e);
         }
-
-    }
-
-    Response mockBinaryRequest() throws Exception {
-
-        RequestBody body = RequestBody.create(expectedMessage, MediaType.parse("text/plain"));
-
-        Request request = new Request.Builder()
-            .url(url)
-            .addHeader("Content-Type", "text/plain")
-            .addHeader("ce-id", String.valueOf(UUID.randomUUID()))
-            .addHeader("ce-specversion", "1.0")
-            .addHeader("ce-type", "com.example.someevent")
-            .addHeader("ce-source", "/mycontext")
-            .addHeader("ce-subject", "test")
-            .post(body)
-            .build();
-
-        return httpClient.newCall(request).execute();
-    }
-
-    Response mockStructuredRequest() throws Exception {
-        // create a CloudEvent
-        TestEvent event = new TestEvent();
-        event.id = String.valueOf(UUID.randomUUID());
-        event.specversion = "1.0";
-        event.type = "com.example.someevent";
-        event.source = "/mycontext";
-        event.subject = "test";
-        event.datacontenttype = "text/plain";
-        event.data = expectedMessage;
-
-        RequestBody body = RequestBody.create(Objects.requireNonNull(JsonUtils.toJSONString(event)), MediaType.parse("application/cloudevents+json"));
-
-        Request request = new Request.Builder()
-            .url(url)
-            .addHeader("Content-Type", "application/cloudevents+json")
-            .post(body)
-            .build();
-
-        return httpClient.newCall(request).execute();
-
-    }
-
-    @AfterEach
-    void tearDown() {
-        connector.stop();
-        httpClient.dispatcher().executorService().shutdown();
     }
 
     class TestEvent {
