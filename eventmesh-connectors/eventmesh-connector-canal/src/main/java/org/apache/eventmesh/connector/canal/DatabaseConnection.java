@@ -18,13 +18,12 @@
 package org.apache.eventmesh.connector.canal;
 
 
+import com.alibaba.druid.pool.DruidDataSource;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import com.alibaba.druid.pool.DruidDataSource;
 
 public class DatabaseConnection {
 
@@ -42,6 +41,7 @@ public class DatabaseConnection {
         dataSource.setUsername(UserName);
         dataSource.setPassword(passWord);
         dataSource.setInitialSize(5);
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setMinIdle(5);
         dataSource.setMaxActive(20);
         dataSource.setMaxWait(60000);

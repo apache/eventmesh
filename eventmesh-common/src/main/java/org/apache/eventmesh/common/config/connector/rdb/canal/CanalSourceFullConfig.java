@@ -13,4 +13,5 @@ public class CanalSourceFullConfig extends SourceConfig {
     private SourceConnectorConfig connectorConfig;
     private List<RecordPosition> startPosition;
     private int parallel;
+    private int flushSize;
 }

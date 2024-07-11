@@ -2,7 +2,8 @@ package org.apache.eventmesh.common.config.connector.rdb.canal;
 
 import com.mysql.cj.MysqlType;
 
-import java.sql.JDBCType;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum CanalMySQLType {
     BIT("BIT"),
@@ -12,37 +13,38 @@ public enum CanalMySQLType {
     INT("INT"),
     BIGINT("BIGINT"),
     DECIMAL("DECIMAL"),
-    FLOAT("FLOAT", JDBCType.REAL),
-    DOUBLE("DOUBLE", JDBCType.DOUBLE),
-    DATE("DATE", JDBCType.DATE),
-    DATETIME("DATETIME", JDBCType.TIMESTAMP),
-    TIMESTAMP("TIMESTAMP", JDBCType.TIMESTAMP),
-    TIME("TIME", JDBCType.TIME),
-    YEAR("YEAR", JDBCType.DATE),
-    CHAR("CHAR", JDBCType.CHAR),
-    VARCHAR("VARCHAR", JDBCType.VARCHAR),
-    BINARY("BINARY", JDBCType.BINARY),
-    VARBINARY("VARBINARY", JDBCType.VARBINARY),
-    TINYBLOB("TINYBLOB", JDBCType.VARBINARY),
-    BLOB("BLOB", JDBCType.LONGVARBINARY),
-    MEDIUMBLOB("MEDIUMBLOB", JDBCType.LONGVARBINARY),
-    LONGBLOB("LONGBLOB", JDBCType.LONGVARBINARY),
-    TINYTEXT("TINYTEXT", JDBCType.VARCHAR),
-    TEXT("TEXT", JDBCType.LONGVARCHAR),
-    MEDIUMTEXT("MEDIUMTEXT", JDBCType.LONGVARCHAR),
-    LONGTEXT("LONGTEXT", JDBCType.LONGVARCHAR),
-    ENUM("ENUM", JDBCType.CHAR),
-    SET("SET", JDBCType.CHAR),
-    JSON("JSON", JDBCType.LONGVARCHAR),
-    GEOMETRY("GEOMETRY", JDBCType.BINARY),
-    POINT("POINT", JDBCType.BINARY),
-    LINESTRING("LINESTRING", JDBCType.BINARY),
-    POLYGON("POLYGON", JDBCType.BINARY),
-    MULTIPOINT("MULTIPOINT", JDBCType.BINARY),
-    GEOMETRY_COLLECTION("GEOMETRYCOLLECTION", JDBCType.BINARY),
-    GEOM_COLLECTION("GEOMCOLLECTION", JDBCType.BINARY),
-    MULTILINESTRING("MULTILINESTRING", JDBCType.BINARY),
-    MULTIPOLYGON("MULTIPOLYGON", JDBCType.BINARY);
+    FLOAT("FLOAT"),
+    DOUBLE("DOUBLE"),
+    DATE("DATE"),
+    DATETIME("DATETIME"),
+    TIMESTAMP("TIMESTAMP"),
+    TIME("TIME"),
+    YEAR("YEAR"),
+    CHAR("CHAR"),
+    VARCHAR("VARCHAR"),
+    BINARY("BINARY"),
+    VARBINARY("VARBINARY"),
+    TINYBLOB("TINYBLOB"),
+    BLOB("BLOB"),
+    MEDIUMBLOB("MEDIUMBLOB"),
+    LONGBLOB("LONGBLOB"),
+    TINYTEXT("TINYTEXT"),
+    TEXT("TEXT"),
+    MEDIUMTEXT("MEDIUMTEXT"),
+    LONGTEXT("LONGTEXT"),
+    ENUM("ENUM"),
+    SET("SET"),
+    JSON("JSON"),
+    GEOMETRY("GEOMETRY"),
+    // MysqlType not include the following type
+    POINT("POINT"),
+    LINESTRING("LINESTRING"),
+    POLYGON("POLYGON"),
+    MULTIPOINT("MULTIPOINT"),
+    GEOMETRY_COLLECTION("GEOMETRYCOLLECTION"),
+    GEOM_COLLECTION("GEOMCOLLECTION"),
+    MULTILINESTRING("MULTILINESTRING"),
+    MULTIPOLYGON("MULTIPOLYGON");
 
     private final String codeKey;
     private final MysqlType mysqlType;
@@ -51,13 +53,18 @@ public enum CanalMySQLType {
         this.codeKey = codeKey;
         this.mysqlType = MysqlType.getByName(codeKey);
     }
-
-    public static CanalMySQLType valueOfCode(String code) {
+    private static final Map<String, CanalMySQLType> TYPES = new HashMap<>();
+    static {
         CanalMySQLType[] values = values();
         for (CanalMySQLType tableType : values) {
-            if (tableType.codeKey.equalsIgnoreCase(code)) {
-                return tableType;
-            }
+                TYPES.put(tableType.codeKey, tableType);
+        }
+    }
+
+    public static CanalMySQLType valueOfCode(String code) {
+        CanalMySQLType type = TYPES.get(code.toUpperCase());
+        if (type != null) {
+            return type;
         }
         switch (MysqlType.getByName(code)) {
             case BOOLEAN:

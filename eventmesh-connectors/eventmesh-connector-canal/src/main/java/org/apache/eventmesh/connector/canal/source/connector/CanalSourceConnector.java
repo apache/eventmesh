@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.connector.canal.source.connector;
 
-import com.alibaba.otter.canal.parse.inbound.TableMeta;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
-import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.source.EntryParser;
+import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -296,7 +295,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
         List<ConnectRecord> result = new ArrayList<>();
         // key: Xid offset
-        Map<Long, List<CanalConnectRecord>> connectorRecordMap = EntryParser.parse(sourceConfig, entries);
+        Map<Long, List<CanalConnectRecord>> connectorRecordMap = EntryParser.parse(sourceConfig, entries, tableMgr);
 
         if (!connectorRecordMap.isEmpty()) {
             Set<Map.Entry<Long, List<CanalConnectRecord>>> entrySet = connectorRecordMap.entrySet();

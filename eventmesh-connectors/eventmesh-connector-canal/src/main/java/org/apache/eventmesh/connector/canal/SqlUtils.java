@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.connector.canal;
 
-import static org.apache.eventmesh.connector.canal.ByteArrayConverter.SQL_BYTES;
-import static org.apache.eventmesh.connector.canal.SqlTimestampConverter.SQL_TIMESTAMP;
-
 import com.mysql.cj.MysqlType;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -42,8 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.eventmesh.connector.canal.ByteArrayConverter.SQL_BYTES;
+import static org.apache.eventmesh.connector.canal.SqlTimestampConverter.SQL_TIMESTAMP;
 
 public class SqlUtils {
 
@@ -127,8 +126,13 @@ public class SqlUtils {
     }
 
     public static void setInClauseParameters(PreparedStatement preparedStatement, List<String> params) throws SQLException {
+        setInClauseParameters(preparedStatement, 0, params);
+    }
+
+    public static void setInClauseParameters(PreparedStatement preparedStatement, int paramIndexStart,
+                                             List<String> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
-            preparedStatement.setString(i + 1, params.get(i));
+            preparedStatement.setString(paramIndexStart + i, params.get(i));
         }
     }
 

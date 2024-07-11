@@ -22,6 +22,7 @@ import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.model.EventColumn;
 import org.apache.eventmesh.connector.canal.model.EventColumnIndexComparable;
 import org.apache.eventmesh.connector.canal.model.EventType;
+import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.springframework.util.CollectionUtils;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
@@ -48,7 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntryParser {
 
-    public static Map<Long, List<CanalConnectRecord>> parse(CanalSourceConfig sourceConfig, List<Entry> datas) {
+    public static Map<Long, List<CanalConnectRecord>> parse(CanalSourceConfig sourceConfig, List<Entry> datas,
+                                                            RdbTableMgr tables) {
         List<CanalConnectRecord> recordList = new ArrayList<>();
         List<Entry> transactionDataBuffer = new ArrayList<>();
         // need check weather the entry is loopback
@@ -65,7 +66,7 @@ public class EntryParser {
                         }
                         break;
                     case TRANSACTIONEND:
-                        parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer);
+                        parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer, tables);
                         if (!recordList.isEmpty()) {
                             recordMap.put(entry.getHeader().getLogfileOffset(), recordList);
                         }
@@ -81,10 +82,11 @@ public class EntryParser {
         return recordMap;
     }
 
-    private void parseRecordListWithEntryBuffer(CanalSourceConfig sourceConfig, List<CanalConnectRecord> recordList,
-        List<Entry> transactionDataBuffer) {
+    private static void parseRecordListWithEntryBuffer(CanalSourceConfig sourceConfig,
+                                                       List<CanalConnectRecord> recordList,
+                                                       List<Entry> transactionDataBuffer, RdbTableMgr tables) {
         for (Entry bufferEntry : transactionDataBuffer) {
-            List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry);
+            List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry, tables);
             if (CollectionUtils.isEmpty(recordParsedList)) {
                 continue;
             }
@@ -100,15 +102,17 @@ public class EntryParser {
         }
     }
 
-    private boolean checkNeedSync(CanalSourceConfig sourceConfig, RowData rowData) {
-        Column markedColumn = getColumnIgnoreCase(rowData.getAfterColumnsList(), sourceConfig.getNeedSyncMarkTableColumnName());
+    private static boolean checkNeedSync(CanalSourceConfig sourceConfig, RowData rowData) {
+        Column markedColumn = getColumnIgnoreCase(rowData.getAfterColumnsList(),
+            sourceConfig.getNeedSyncMarkTableColumnName());
         if (markedColumn != null) {
-            return StringUtils.equalsIgnoreCase(markedColumn.getValue(), sourceConfig.getNeedSyncMarkTableColumnValue());
+            return StringUtils.equalsIgnoreCase(markedColumn.getValue(),
+                sourceConfig.getNeedSyncMarkTableColumnValue());
         }
         return false;
     }
 
-    private Column getColumnIgnoreCase(List<Column> columns, String columName) {
+    private static Column getColumnIgnoreCase(List<Column> columns, String columName) {
         for (Column column : columns) {
             if (column.getName().equalsIgnoreCase(columName)) {
                 return column;
@@ -117,7 +121,8 @@ public class EntryParser {
         return null;
     }
 
-    private static List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry, RdbTableMgr tableMgr) {
+    private static List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry,
+                                                        RdbTableMgr tableMgr) {
         String schemaName = entry.getHeader().getSchemaName();
         String tableName = entry.getHeader().getTableName();
         if (tableMgr.getTable(schemaName, tableName) == null) {
@@ -155,7 +160,8 @@ public class EntryParser {
         return recordList;
     }
 
-    private static CanalConnectRecord internParse(CanalSourceConfig canalSourceConfig, Entry entry, RowChange rowChange, RowData rowData) {
+    private static CanalConnectRecord internParse(CanalSourceConfig canalSourceConfig, Entry entry,
+                                                  RowChange rowChange, RowData rowData) {
         CanalConnectRecord canalConnectRecord = new CanalConnectRecord();
         canalConnectRecord.setTableName(entry.getHeader().getTableName());
         canalConnectRecord.setSchemaName(entry.getHeader().getSchemaName());
@@ -243,7 +249,7 @@ public class EntryParser {
     }
 
     private static void checkUpdateKeyColumns(Map<String, EventColumn> oldKeyColumns,
-                                           Map<String, EventColumn> keyColumns) {
+                                              Map<String, EventColumn> keyColumns) {
         if (oldKeyColumns.isEmpty()) {
             return;
         }
