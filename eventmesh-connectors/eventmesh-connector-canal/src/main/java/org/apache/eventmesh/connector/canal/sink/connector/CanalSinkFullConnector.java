@@ -1,5 +1,7 @@
 package org.apache.eventmesh.connector.canal.sink.connector;
 
+import com.alibaba.druid.pool.DruidPooledConnection;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkFullConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
@@ -14,10 +16,6 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.locks.LockSupport;
-
-import com.alibaba.druid.pool.DruidPooledConnection;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink> {
@@ -81,7 +79,6 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             return;
         }
         try(DruidPooledConnection connection = DatabaseConnection.sinkDataSource.getConnection()) {
-            connection.prepareStatement();
         } catch (SQLException e) {
             log.warn("create sink connection ");
             LockSupport.parkNanos(3000 * 1000L);
