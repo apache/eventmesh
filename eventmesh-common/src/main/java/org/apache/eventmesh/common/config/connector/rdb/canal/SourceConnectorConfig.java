@@ -17,28 +17,16 @@
 
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import lombok.Data;
+import org.apache.eventmesh.common.config.connector.rdb.JdbcConfig;
 
-import java.util.Set;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Represents the configuration for a database connector.
  */
 @Data
-public class SourceConnectorConfig {
-
+@EqualsAndHashCode(callSuper = true)
+public class SourceConnectorConfig extends JdbcConfig {
     private String connectorName;
-
-    private String url;
-
-    private String dbAddress;
-
-    private int dbPort;
-
-    private String userName;
-
-    private String passWord;
-
-    private Set<RdbDBDefinition> databases;
-
 }

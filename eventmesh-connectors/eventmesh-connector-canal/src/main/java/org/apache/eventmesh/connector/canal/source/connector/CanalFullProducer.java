@@ -1,7 +1,5 @@
-package org.apache.eventmesh.connector.canal.source;
+package org.apache.eventmesh.connector.canal.source.connector;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalMySQLType;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbColumnDefinition;
@@ -14,10 +12,9 @@ import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.io.WKBReader;
 
-import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,6 +36,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
+
+import javax.sql.DataSource;
+
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKBReader;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
@@ -396,6 +400,8 @@ public class CanalFullProducer {
         generateQueryColumnsSql(builder, tableDefinition.getColumnDefinitions().values());
         builder.append(" from ");
         builder.append(Constants.MySQLQuot);
+        builder.append(tableDefinition.getSchemaName());
+        builder.append(".");
         builder.append(tableDefinition.getTableName());
         builder.append(Constants.MySQLQuot);
         buildWhereSql(builder, tableDefinition, isEquals);

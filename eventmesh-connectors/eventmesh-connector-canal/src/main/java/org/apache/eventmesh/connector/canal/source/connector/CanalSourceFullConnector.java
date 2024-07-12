@@ -11,7 +11,6 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLTableDe
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
-import org.apache.eventmesh.connector.canal.source.CanalFullProducer;
 import org.apache.eventmesh.connector.canal.source.position.CanalFullPositionMgr;
 import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.connector.canal.source.table.RdbSimpleTable;
@@ -22,17 +21,13 @@ import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.sql.DataSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +37,6 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     private CanalFullPositionMgr positionMgr;
     private RdbTableMgr tableMgr;
     private ThreadPoolExecutor executor;
-    private final Map<String, DataSource> dataSources = new HashMap<>();
     private final BlockingQueue<List<ConnectRecord>> queue = new LinkedBlockingQueue<>();
     private final AtomicBoolean flag = new AtomicBoolean(true);
 
@@ -62,10 +56,6 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
                 for (RdbTableDefinition table : db.getTables()) {
                     try {
                         log.info("it will create producer of db [{}] table [{}]", db.getSchemaName(), table.getTableName());
-                        DataSource dataSource = dataSources.computeIfAbsent(db.getSchemaName(),
-                            k -> DatabaseConnection.createDruidDataSource(config.getConnectorConfig().getUrl(),
-                                config.getConnectorConfig().getUserName(),
-                                config.getConnectorConfig().getPassWord()));
                         RdbSimpleTable simpleTable = new RdbSimpleTable(db.getSchemaName(), table.getTableName());
                         JobRdbFullPosition position = positionMgr.getPosition(simpleTable);
                         if (position == null) {
@@ -78,7 +68,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
                                 db.getSchemaName(), table.getTableName()));
                         }
 
-                        producers.add(new CanalFullProducer(queue, dataSource, (MySQLTableDef) tableDefinition,
+                        producers.add(new CanalFullProducer(queue, DatabaseConnection.sourceDataSource, (MySQLTableDef) tableDefinition,
                             JsonUtils.parseObject(position.getPrimaryKeyRecords(), TableFullPosition.class),
                             config.getFlushSize()));
                     } catch (Exception e) {
@@ -94,6 +84,22 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     @Override
     protected void shutdown() throws Exception {
         flag.set(false);
+        if (!executor.isShutdown()) {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    log.warn("wait thread pool shutdown timeout, it will shutdown now");
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.info("shutdown thread pool fail");
+            }
+        }
+        if (DatabaseConnection.sourceDataSource != null) {
+            DatabaseConnection.sourceDataSource.close();
+            log.info("data source has been closed");
+        }
     }
 
     @Override
@@ -109,14 +115,21 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     @Override
     public void init(Config config) throws Exception {
         this.config = (CanalSourceFullConfig) config;
+        init();
+    }
+
+    private void init() {
+        DatabaseConnection.sourceConfig = this.config.getConnectorConfig();
+        DatabaseConnection.initSourceConnection();
+        this.tableMgr = new RdbTableMgr(config.getConnectorConfig(), DatabaseConnection.sourceDataSource);
+        this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.config = (CanalSourceFullConfig) sourceConnectorContext.getSourceConfig();
-        this.tableMgr = new RdbTableMgr(config.getConnectorConfig());
-        this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
+        init();
     }
 
     @Override

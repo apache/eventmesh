@@ -31,6 +31,7 @@ import org.apache.eventmesh.connector.canal.sink.DbLoadContext;
 import org.apache.eventmesh.connector.canal.sink.DbLoadData;
 import org.apache.eventmesh.connector.canal.sink.DbLoadData.TableLoadData;
 import org.apache.eventmesh.connector.canal.sink.DbLoadMerger;
+import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -88,6 +89,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     private int batchSize = 50;
 
     private boolean useBatch = true;
+    private RdbTableMgr tableMgr;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -107,12 +109,13 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         this.sinkConfig = (CanalSinkConfig) sinkConnectorContext.getSinkConfig();
         this.batchSize = sinkConfig.getBatchSize();
         this.useBatch = sinkConfig.getUseBatch();
-        DatabaseConnection.sinkConfig = this.sinkConfig;
+        DatabaseConnection.sinkConfig = this.sinkConfig.getSinkConnectorConfig();
         DatabaseConnection.initSinkConnection();
         jdbcTemplate = new JdbcTemplate(DatabaseConnection.sinkDataSource);
         dbDialect = new MysqlDialect(jdbcTemplate, new DefaultLobHandler());
         interceptor = new SqlBuilderLoadInterceptor();
         interceptor.setDbDialect(dbDialect);
+        tableMgr = new RdbTableMgr(sinkConfig.getSinkConnectorConfig(), DatabaseConnection.sinkDataSource);
         executor = new ThreadPoolExecutor(sinkConfig.getPoolSize(),
             sinkConfig.getPoolSize(),
             0L,
@@ -124,7 +127,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     @Override
     public void start() throws Exception {
-
+        tableMgr.start();
     }
 
     @Override
@@ -147,7 +150,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         DbLoadContext context = new DbLoadContext();
         for (ConnectRecord connectRecord : sinkRecords) {
             List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>) connectRecord.getData();
-            canalConnectRecordList = filterRecord(canalConnectRecordList, sinkConfig);
+            canalConnectRecordList = filterRecord(canalConnectRecordList);
             if (isDdlDatas(canalConnectRecordList)) {
                 doDdl(context, canalConnectRecordList);
             } else {
@@ -179,10 +182,9 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         return result;
     }
 
-    private List<CanalConnectRecord> filterRecord(List<CanalConnectRecord> canalConnectRecordList, CanalSinkConfig sinkConfig) {
+    private List<CanalConnectRecord> filterRecord(List<CanalConnectRecord> canalConnectRecordList) {
         return canalConnectRecordList.stream()
-            .filter(record -> sinkConfig.getSinkConnectorConfig().getSchemaName().equalsIgnoreCase(record.getSchemaName())
-                && sinkConfig.getSinkConnectorConfig().getTableName().equalsIgnoreCase(record.getTableName()))
+            .filter(record -> tableMgr.getTable(record.getSchemaName(), record.getTableName()) != null)
             .collect(Collectors.toList());
     }
 

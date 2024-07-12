@@ -1,8 +1,5 @@
 package org.apache.eventmesh.connector.canal.source.position;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.AbstractComponent;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
@@ -18,7 +15,8 @@ import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.source.table.RdbSimpleTable;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 
-import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,15 +24,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import javax.sql.DataSource;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CanalFullPositionMgr extends AbstractComponent {
 
-    private CanalSourceFullConfig config;
-    private ScheduledThreadPoolExecutor executor;
-    private Map<RdbSimpleTable, JobRdbFullPosition> positions = new LinkedHashMap<>();
-    private RdbTableMgr tableMgr;
+    private final CanalSourceFullConfig config;
+//    private ScheduledThreadPoolExecutor executor;
+    private final Map<RdbSimpleTable, JobRdbFullPosition> positions = new LinkedHashMap<>();
+    private final RdbTableMgr tableMgr;
 
     public CanalFullPositionMgr(CanalSourceFullConfig config, RdbTableMgr tableMgr) {
         this.config = config;
@@ -47,12 +48,12 @@ public class CanalFullPositionMgr extends AbstractComponent {
             log.info("config or database is null");
             return;
         }
-        executor = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r);
-            thread.setDaemon(true);
-            thread.setName("task-full-position-timer");
-            return thread;
-        }, new ScheduledThreadPoolExecutor.DiscardOldestPolicy());
+//        executor = new ScheduledThreadPoolExecutor(1, r -> {
+//            Thread thread = new Thread(r);
+//            thread.setDaemon(true);
+//            thread.setName("task-full-position-timer");
+//            return thread;
+//        }, new ScheduledThreadPoolExecutor.DiscardOldestPolicy());
         prepareRecordPosition();
         initPositions();
     }
@@ -82,32 +83,29 @@ public class CanalFullPositionMgr extends AbstractComponent {
     }
 
     private void initPositions() {
-        try (DruidDataSource dataSource =
-                     DatabaseConnection.createDruidDataSource(config.getConnectorConfig().getUrl(),
-                             config.getConnectorConfig().getUserName(), config.getConnectorConfig().getPassWord())) {
-            for (RdbDBDefinition database : config.getConnectorConfig().getDatabases()) {
-                for (RdbTableDefinition table : database.getTables()) {
-                    try {
-                        RdbSimpleTable simpleTable = new RdbSimpleTable(database.getSchemaName(), table.getTableName());
-                        RdbTableDefinition tableDefinition;
-                        if ((tableDefinition = tableMgr.getTable(simpleTable)) == null) {
-                            log.error("db [{}] table [{}] definition is null", database.getSchemaName(),
-                                    table.getTableName());
-                            continue;
-                        }
-                        log.info("init position of data [{}] table [{}]", database.getSchemaName(),
-                                table.getTableName());
-
-                        JobRdbFullPosition recordPosition = positions.get(simpleTable);
-                        if (recordPosition == null || !recordPosition.isFinished()) {
-                            positions.put(simpleTable, fetchTableInfo(dataSource, (MySQLTableDef) tableDefinition,
-                                    recordPosition));
-                        }
-                    } catch (Exception e) {
-                        log.error("process schema [{}] table [{}] position fail", database.getSchemaName(),
-                                table.getTableName(), e);
+        for (RdbDBDefinition database : config.getConnectorConfig().getDatabases()) {
+            for (RdbTableDefinition table : database.getTables()) {
+                try {
+                    RdbSimpleTable simpleTable = new RdbSimpleTable(database.getSchemaName(), table.getTableName());
+                    RdbTableDefinition tableDefinition;
+                    if ((tableDefinition = tableMgr.getTable(simpleTable)) == null) {
+                        log.error("db [{}] table [{}] definition is null", database.getSchemaName(),
+                            table.getTableName());
+                        continue;
                     }
+                    log.info("init position of data [{}] table [{}]", database.getSchemaName(),
+                        table.getTableName());
+
+                    JobRdbFullPosition recordPosition = positions.get(simpleTable);
+                    if (recordPosition == null || !recordPosition.isFinished()) {
+                        positions.put(simpleTable, fetchTableInfo(DatabaseConnection.sourceDataSource, (MySQLTableDef) tableDefinition,
+                            recordPosition));
+                    }
+                } catch (Exception e) {
+                    log.error("process schema [{}] table [{}] position fail", database.getSchemaName(),
+                        table.getTableName(), e);
                 }
+
             }
         }
     }
@@ -131,7 +129,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
         if (recordPosition != null) {
             if (StringUtils.isNotBlank(recordPosition.getPrimaryKeyRecords())) {
                 TableFullPosition record = JsonUtils.parseObject(recordPosition.getPrimaryKeyRecords(),
-                        TableFullPosition.class);
+                    TableFullPosition.class);
                 if (record != null && record.getCurPrimaryKeyCols() != null && !record.getCurPrimaryKeyCols().isEmpty()) {
                     position.setCurPrimaryKeyCols(record.getCurPrimaryKeyCols());
                 }
@@ -148,9 +146,10 @@ public class CanalFullPositionMgr extends AbstractComponent {
 
     private long queryCurTableRowCount(DataSource datasource, MySQLTableDef tableDefinition) throws SQLException {
         String sql =
-                "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName() +"' and `TABLE_NAME`='" + tableDefinition.getTableName() +"'";
+            "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName() +
+                "' and `TABLE_NAME`='" + tableDefinition.getTableName() + "'";
         try (Statement statement = datasource.getConnection().createStatement(); ResultSet resultSet =
-                statement.executeQuery(sql)) {
+            statement.executeQuery(sql)) {
             long result = 0L;
             if (resultSet.next()) {
                 long avgRowLength = resultSet.getLong("AVG_ROW_LENGTH");
@@ -192,8 +191,10 @@ public class CanalFullPositionMgr extends AbstractComponent {
     private Object fetchMinPrimaryKey(DataSource dataSource, MySQLTableDef tableDefinition,
                                       Map<String, Object> prePrimary, String curPrimaryKeyCol) throws SQLException {
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT MIN(").append(Constants.MySQLQuot).append(curPrimaryKeyCol).append(Constants.MySQLQuot).append(") min_primary_key FROM")
-                .append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot).append(".").append(Constants.MySQLQuot).append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
+        builder.append("SELECT MIN(").append(Constants.MySQLQuot).append(curPrimaryKeyCol).append(Constants.MySQLQuot)
+            .append(") min_primary_key FROM")
+            .append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot).append(".").append(Constants.MySQLQuot)
+            .append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
         appendPrePrimaryKey(prePrimary, builder);
         String sql = builder.toString();
         log.info("fetch min primary sql [{}]", sql);
@@ -216,8 +217,10 @@ public class CanalFullPositionMgr extends AbstractComponent {
     private Object fetchMaxPrimaryKey(DataSource dataSource, MySQLTableDef tableDefinition,
                                       Map<String, Object> prePrimary, String curPrimaryKeyCol) throws SQLException {
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT MAX(").append(Constants.MySQLQuot).append(curPrimaryKeyCol).append(Constants.MySQLQuot).append(") max_primary_key FROM")
-                .append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot).append(".").append(Constants.MySQLQuot).append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
+        builder.append("SELECT MAX(").append(Constants.MySQLQuot).append(curPrimaryKeyCol).append(Constants.MySQLQuot)
+            .append(") max_primary_key FROM")
+            .append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot).append(".").append(Constants.MySQLQuot)
+            .append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
         appendPrePrimaryKey(prePrimary, builder);
         String sql = builder.toString();
         log.info("fetch max primary sql [{}]", sql);

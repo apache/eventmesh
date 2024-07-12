@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
+import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.source.EntryParser;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -149,7 +150,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 return instance;
             }
         });
-        tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig());
+        tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
     }
 
     private Canal buildCanal(CanalSourceConfig sourceConfig) {

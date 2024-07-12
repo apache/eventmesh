@@ -18,12 +18,13 @@
 package org.apache.eventmesh.connector.canal;
 
 
-import com.alibaba.druid.pool.DruidDataSource;
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.SourceConnectorConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import com.alibaba.druid.pool.DruidDataSource;
 
 public class DatabaseConnection {
 
@@ -31,9 +32,9 @@ public class DatabaseConnection {
 
     public static DruidDataSource sinkDataSource;
 
-    public static CanalSourceConfig sourceConfig;
+    public static SourceConnectorConfig sourceConfig;
 
-    public static CanalSinkConfig sinkConfig;
+    public static SinkConnectorConfig sinkConfig;
 
     public static DruidDataSource createDruidDataSource(String url, String UserName, String passWord) {
         DruidDataSource dataSource = new DruidDataSource();
@@ -41,7 +42,6 @@ public class DatabaseConnection {
         dataSource.setUsername(UserName);
         dataSource.setPassword(passWord);
         dataSource.setInitialSize(5);
-        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setMinIdle(5);
         dataSource.setMaxActive(20);
         dataSource.setMaxWait(60000);
@@ -57,15 +57,15 @@ public class DatabaseConnection {
     }
 
     public static void initSourceConnection() {
-        sourceDataSource = createDruidDataSource(sourceConfig.getSourceConnectorConfig().getUrl(),
-                sourceConfig.getSourceConnectorConfig().getUserName(),
-                sourceConfig.getSourceConnectorConfig().getPassWord());
+        sourceDataSource = createDruidDataSource(sourceConfig.getUrl(),
+                sourceConfig.getUserName(),
+                sourceConfig.getPassWord());
     }
 
     public static void initSinkConnection() {
-        sinkDataSource = createDruidDataSource(sinkConfig.getSinkConnectorConfig().getUrl(),
-                sinkConfig.getSinkConnectorConfig().getUserName(),
-                sinkConfig.getSinkConnectorConfig().getPassWord());
+        sinkDataSource = createDruidDataSource(sinkConfig.getUrl(),
+                sinkConfig.getUserName(),
+                sinkConfig.getPassWord());
     }
 
 
