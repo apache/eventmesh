@@ -22,6 +22,7 @@ import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -111,7 +112,17 @@ public class Trace {
         }
         Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
         Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
-        return addTraceInfoToSpan(span, cloudEvent);
+
+        if (span == null) {
+            log.warn("span is null when finishSpan");
+            return null;
+        }
+
+        //add trace info
+        for (String entry : cloudEvent.getExtensionNames()) {
+            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : Objects.requireNonNull(cloudEvent.getExtension(entry)).toString());
+        }
+        return span;
     }
 
     public Span addTraceInfoToSpan(Span span, CloudEvent cloudEvent) {
@@ -130,7 +141,7 @@ public class Trace {
 
         // add trace info
         for (String entry : cloudEvent.getExtensionNames()) {
-            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : cloudEvent.getExtension(entry).toString());
+            span.setAttribute(entry, cloudEvent.getExtension(entry) != null ? cloudEvent.getExtension(entry).toString() : "");
         }
         return span;
     }
