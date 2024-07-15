@@ -21,7 +21,7 @@ updates:
     directory: "/"
     open-pull-requests-limit: 15
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     ignore:
       - dependency-name: "*"
         update-types: [ "version-update:semver-major" ]
