@@ -739,7 +739,7 @@ subprojects {
 
             dependency "org.javassist:javassist:3.30.2-GA"
 
-            dependency "com.alibaba.nacos:nacos-client:2.3.2"
+            dependency "com.alibaba.nacos:nacos-client:2.3.3"
 
             dependency 'org.apache.zookeeper:zookeeper:3.9.2'
             dependency "org.apache.curator:curator-client:${curatorVersion}"
