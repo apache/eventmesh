@@ -25,7 +25,7 @@ dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
     implementation canal
-    implementation "com.alibaba:druid:1.2.6"
+    implementation "com.alibaba:druid:1.2.23"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-core"
