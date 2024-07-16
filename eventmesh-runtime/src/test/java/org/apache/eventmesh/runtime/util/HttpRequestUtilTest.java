@@ -42,7 +42,11 @@ public class HttpRequestUtilTest {
 
     @Test
     public void testShouldParseHttpPOSTRequestBody() throws IOException {
-        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/some-path", Unpooled.copiedBuffer(("q1=xyz").getBytes()));
+        HttpRequest httpRequest = new DefaultFullHttpRequest(
+            HttpVersion.HTTP_1_1, HttpMethod.POST,
+            "/some-path",
+            Unpooled.copiedBuffer(("q1=xyz").getBytes())
+        );
         Map<String, Object> expected = new HashMap<>();
         expected.put("q1", "xyz");
         Assertions.assertEquals(expected, HttpRequestUtil.parseHttpRequestBody(httpRequest));
@@ -58,13 +62,22 @@ public class HttpRequestUtilTest {
 
     @Test
     public void testGetQueryParam() {
-        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/some-path?q1=xyz");
+        HttpRequest httpRequest = new DefaultFullHttpRequest(
+            HttpVersion.HTTP_1_1,
+            HttpMethod.GET,
+            "/some-path?q1=xyz"
+        );
         Assertions.assertEquals("xyz", HttpRequestUtil.getQueryParam(httpRequest, "q1", ""));
     }
 
     @Test
     public void testGetBodyParam() throws IOException {
-        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/some-path", Unpooled.copiedBuffer(("q1=xyz").getBytes()));
+        HttpRequest httpRequest = new DefaultFullHttpRequest(
+            HttpVersion.HTTP_1_1,
+            HttpMethod.POST,
+            "/some-path",
+            Unpooled.copiedBuffer(("q1=xyz").getBytes())
+        );
         Assertions.assertEquals("xyz", HttpRequestUtil.getBodyParam(httpRequest, "q1"));
     }
 
