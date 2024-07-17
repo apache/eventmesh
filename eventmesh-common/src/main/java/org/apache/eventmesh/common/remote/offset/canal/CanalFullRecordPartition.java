@@ -17,18 +17,17 @@
 
 package org.apache.eventmesh.common.remote.offset.canal;
 
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class CanalFullRecordPartition extends RecordPartition {
-    private String schema;
-    private String table;
 
     @Override
     public Class<? extends RecordPartition> getRecordPartitionClass() {

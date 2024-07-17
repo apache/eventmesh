@@ -20,6 +20,9 @@ package org.apache.eventmesh.connector.canal;
 import com.mysql.cj.MysqlType;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.lang.StringUtils;
+
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKBReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +40,15 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.eventmesh.connector.canal.ByteArrayConverter.SQL_BYTES;
 import static org.apache.eventmesh.connector.canal.SqlTimestampConverter.SQL_TIMESTAMP;
+
+import org.apache.eventmesh.common.exception.EventMeshException;
 
 public class SqlUtils {
 
@@ -52,6 +58,7 @@ public class SqlUtils {
     private static final Map<Integer, Class<?>> sqlTypeToJavaTypeMap = new HashMap<Integer, Class<?>>();
     private static final ConvertUtilsBean convertUtilsBean = new ConvertUtilsBean();
     private static final Logger log = LoggerFactory.getLogger(SqlUtils.class);
+    private static final WKBReader WKB_READER = new WKBReader(new GeometryFactory());
 
     static {
         // regist Converter
@@ -324,5 +331,233 @@ public class SqlUtils {
     public static JDBCType toJDBCType(String connectorDataType) {
         MysqlType mysqlType = MysqlType.getByName(connectorDataType);
         return JDBCType.valueOf(mysqlType.getJdbcType());
+    }
+
+    private static BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = (String) value;
+            if (!org.apache.commons.lang3.StringUtils.isNotBlank(strValue)) {
+                return null;
+            }
+            try {
+                return new BigDecimal(strValue);
+            } catch (Exception e) {
+                if ("true".equals(strValue)) {
+                    return BigDecimal.ONE;
+                }
+                if ("false".equals(strValue)) {
+                    return BigDecimal.ZERO;
+                }
+                return new BigDecimal(strValue);
+            }
+        } else if (value instanceof Number) {
+            if (value instanceof BigDecimal) {
+                return (BigDecimal) value;
+            }
+            if (value instanceof Integer) {
+                return BigDecimal.valueOf(((Integer) value).longValue());
+            }
+            if (value instanceof Long) {
+                return BigDecimal.valueOf(((Long) value));
+            }
+            if (value instanceof Double) {
+                return BigDecimal.valueOf(((Double) value));
+            }
+            if (value instanceof Float) {
+                return BigDecimal.valueOf(((Float) value).doubleValue());
+            }
+            if (value instanceof BigInteger) {
+                return new BigDecimal((BigInteger)value);
+            }
+            if (value instanceof Byte) {
+                return BigDecimal.valueOf(((Byte) value).longValue());
+            }
+            if (value instanceof Short) {
+                return BigDecimal.valueOf(((Short) value).longValue());
+            }
+            return null;
+        } else if (value instanceof Boolean) {
+            return Boolean.TRUE.equals(value) ? BigDecimal.ONE : BigDecimal.ZERO;
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to big decimal failed.");
+        }
+    }
+
+    protected static Double toDouble(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = (String) value;
+            if (org.apache.commons.lang3.StringUtils.isBlank(strValue)) {
+                return null;
+            }
+            try {
+                return Double.parseDouble(strValue);
+            } catch (Exception e) {
+                if ("true".equals(strValue)) {
+                    return 1.0d;
+                }
+                if ("false".equals(strValue)) {
+                    return 0.0d;
+                }
+                return new BigDecimal(strValue).doubleValue();
+            }
+        } else if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        } else {
+            if (value instanceof Boolean) {
+                return Boolean.TRUE.equals(value) ? 1.0d : 0.0d;
+            }
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to double failed.");
+        }
+    }
+
+    protected static Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = (String) value;
+            if (org.apache.commons.lang3.StringUtils.isBlank(strValue)) {
+                return null;
+            }
+            try {
+                return Long.parseLong(strValue);
+            } catch (Exception e) {
+                try {
+                    return Long.decode(strValue);
+                } catch (Exception e2) {
+                    if ("true".equals(strValue)) {
+                        return 1L;
+                    }
+                    if ("false".equals(strValue)) {
+                        return 0L;
+                    }
+                    return new BigDecimal(strValue).longValue();
+                }
+            }
+        } else if (value instanceof Number) {
+            return ((Number) value).longValue();
+        } else {
+            if (value instanceof Boolean) {
+                return Boolean.TRUE.equals(value) ? 1L : 0L;
+            }
+            throw new UnsupportedOperationException(value.getClass() + ", value '" + value + "' , parse to long failed.");
+        }
+    }
+
+    protected static boolean isZeroTime(Object value) {
+        if (value == null || org.apache.commons.lang3.StringUtils.isBlank(value.toString())) {
+            return false;
+        }
+        return value.toString().startsWith("0000-00-00");
+    }
+
+    protected static LocalDateTime safeToLocalDateTime(Object value) {
+        return DateTimeUtils.safeToLocalDateTime(value);
+    }
+
+    public static boolean isHexNumber(String str) {
+        boolean flag = true;
+        if (str.startsWith("0x") || str.startsWith("0X")) {
+            str = str.substring(2);
+        }
+        int i = 0;
+        while (true) {
+            if (i < str.length()) {
+                char cc = str.charAt(i);
+                if (cc != '0' && cc != '1' && cc != '2' && cc != '3' && cc != '4' && cc != '5' && cc != '6' && cc != '7' && cc != '8' && cc != '9' && cc != 'A' && cc != 'B' && cc != 'C' && cc != 'D' && cc != 'E' && cc != 'F' && cc != 'a' && cc != 'b' && cc != 'c' && cc != 'd' && cc != 'e' && cc != 'f') {
+                    flag = false;
+                    break;
+                }
+                i++;
+            } else {
+                break;
+            }
+        }
+        return flag;
+    }
+
+    protected static byte[] safeToBytes(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strVal = (String) value;
+            if ((strVal.startsWith("0x") || strVal.startsWith("0X")) && isHexNumber(strVal)) {
+                return hex2bytes(strVal.substring(2));
+            }
+            return ((String) value).getBytes(StandardCharsets.ISO_8859_1);
+        } else if (value instanceof byte[]) {
+            return (byte[]) value;
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , safeToBytes failed.");
+        }
+    }
+
+    public static String toGeometry(Object value) throws Exception {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strVal = (String) value;
+            if (!strVal.startsWith("0x") && !strVal.startsWith("0X")) {
+                return (String) value;
+            }
+            return WKB_READER.read(hex2bytes(strVal.substring(2))).toText();
+        } else if (value instanceof byte[]) {
+            return WKB_READER.read((byte[]) value).toText();
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , " +
+                "safeToGisWKT" +
+                " failed.");
+        }
+    }
+
+    public static byte[] hex2bytes(String hexStr) {
+        if (hexStr == null)
+            return null;
+        if (org.apache.commons.lang3.StringUtils.isBlank(hexStr)) {
+            return new byte[0];
+        }
+
+        if (hexStr.length() % 2 == 1) {
+            hexStr = "0" + hexStr;
+        }
+
+        int count = hexStr.length() / 2;
+        byte[] ret = new byte[count];
+        for (int i = 0; i < count; i++) {
+            int index = i * 2;
+            char c1 = hexStr.charAt(index);
+            char c2 = hexStr.charAt(index + 1);
+            if (c1 < '0' || c1 > 'F' || c2 < '0' || c2 > 'F') {
+                throw new EventMeshException(String.format("illegal byte [%s], [%s]", c1, c2));
+            }
+            ret[i] = (byte) ((byte) c1 << 4);
+            ret[i] = (byte) (ret[i] | (byte) (c2));
+        }
+        return ret;
+    }
+
+    protected static String toGisWKT(Object value) throws Exception {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strVal = (String) value;
+            if (!strVal.startsWith("0x") && !strVal.startsWith("0X")) {
+                return (String) value;
+            }
+            return WKB_READER.read(hex2bytes(strVal.substring(2))).toText();
+        } else if (value instanceof byte[]) {
+            return WKB_READER.read((byte[]) value).toText();
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to gis failed.");
+        }
     }
 }

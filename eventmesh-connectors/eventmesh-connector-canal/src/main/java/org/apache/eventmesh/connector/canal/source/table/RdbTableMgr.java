@@ -3,7 +3,6 @@ package org.apache.eventmesh.connector.canal.source.table;
 import org.apache.eventmesh.common.AbstractComponent;
 import org.apache.eventmesh.common.config.connector.rdb.JdbcConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalMySQLType;
-import org.apache.eventmesh.common.config.connector.rdb.canal.RdbColumnDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbTableDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLColumnDef;
@@ -76,7 +75,7 @@ public class RdbTableMgr extends AbstractComponent {
                             log.warn("init db [{}] table [{}] info, and columns are empty", db.getSchemaName(),
                                 table.getTableName());
                         } else {
-                            LinkedHashMap<String, RdbColumnDefinition> cols = new LinkedHashMap<>();
+                            LinkedHashMap<String, MySQLColumnDef> cols = new LinkedHashMap<>();
                             columns.get(table.getTableName()).forEach(x -> cols.put(x.getName(), x));
                             mysqlTable.setColumnDefinitions(cols);
                         }

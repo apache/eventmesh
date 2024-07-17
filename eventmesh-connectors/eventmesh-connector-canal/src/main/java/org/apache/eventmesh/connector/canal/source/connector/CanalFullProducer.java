@@ -10,6 +10,7 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.canal.SqlUtils;
 import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -56,7 +57,7 @@ public class CanalFullProducer {
     private final AtomicReference<String> choosePrimaryKey = new AtomicReference<>(null);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final WKBReader WKB_READER = new WKBReader(new GeometryFactory());
+
 
     public CanalFullProducer(BlockingQueue<List<ConnectRecord>> queue, DataSource dataSource,
                              MySQLTableDef tableDefinition, TableFullPosition position, int flushSize) {
@@ -95,10 +96,10 @@ public class CanalFullProducer {
                     Map<String, Object> lastCol = null;
                     while (flag.get() && resultSet.next()) {
                         Map<String, Object> columnValues = new LinkedHashMap<>();
-                        for (Map.Entry<String, RdbColumnDefinition> col :
+                        for (Map.Entry<String, MySQLColumnDef> col :
                                 tableDefinition.getColumnDefinitions().entrySet()) {
                             columnValues.put(col.getKey(), readColumn(resultSet, col.getKey(),
-                                    ((MySQLColumnDef) col.getValue()).getType()));
+                                    col.getValue().getType()));
                         }
                         lastCol = columnValues;
                         rows.add(lastCol);
@@ -145,10 +146,10 @@ public class CanalFullProducer {
         CanalFullRecordOffset offset = new CanalFullRecordOffset();
         JobRdbFullPosition jobRdbFullPosition = new JobRdbFullPosition();
         jobRdbFullPosition.setPrimaryKeyRecords(JsonUtils.toJSONString(position));
+        jobRdbFullPosition.setTableName(tableDefinition.getTableName());
+        jobRdbFullPosition.setSchema(tableDefinition.getSchemaName());
         offset.setPosition(jobRdbFullPosition);
         CanalFullRecordPartition partition = new CanalFullRecordPartition();
-        partition.setSchema(tableDefinition.getSchemaName());
-        partition.setTable(tableDefinition.getTableName());
         records.add(new ConnectRecord(partition, offset, System.currentTimeMillis(), rows));
         queue.put(records);
     }
@@ -229,7 +230,7 @@ public class CanalFullProducer {
             case LONGBLOB:
                 return rs.getBytes(col);
             case GEOMETRY:
-                return toGeometry("0x" + rs.getString(col));
+                return SqlUtils.toGeometry("0x" + rs.getString(col));
             case GEOMETRY_COLLECTION:
             case GEOM_COLLECTION:
             case POINT:
@@ -244,24 +245,7 @@ public class CanalFullProducer {
         }
     }
 
-    protected static String toGeometry(Object value) throws Exception {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof String) {
-            String strVal = (String) value;
-            if (!strVal.startsWith("0x") && !strVal.startsWith("0X")) {
-                return (String) value;
-            }
-            return WKB_READER.read(hex2bytes(strVal.substring(2))).toText();
-        } else if (value instanceof byte[]) {
-            return WKB_READER.read((byte[]) value).toText();
-        } else {
-            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , " +
-                    "safeToGisWKT" +
-                    " failed.");
-        }
-    }
+
 
     private void refreshPosition(Map<String, Object> lastCol) {
         Map<String, Object> nextPosition = new LinkedHashMap<>();
@@ -311,7 +295,7 @@ public class CanalFullProducer {
                 if (str.startsWith("0x")) {
                     hexStr = str.substring(str.indexOf("0x"));
                 }
-                byte[] bytes = hex2bytes(hexStr);
+                byte[] bytes = SqlUtils.hex2bytes(hexStr);
                 statement.setBytes(1, bytes);
                 break;
             case DATE:
@@ -350,33 +334,9 @@ public class CanalFullProducer {
         }
     }
 
-    public static byte[] hex2bytes(String hexStr) {
-        if (hexStr == null)
-            return null;
-        if (StringUtils.isBlank(hexStr)) {
-            return new byte[0];
-        }
 
-        if (hexStr.length() % 2 == 1) {
-            hexStr = "0" + hexStr;
-        }
 
-        int count = hexStr.length() / 2;
-        byte[] ret = new byte[count];
-        for (int i = 0; i < count; i++) {
-            int index = i * 2;
-            char c1 = hexStr.charAt(index);
-            char c2 = hexStr.charAt(index + 1);
-            if (c1 < '0' || c1 > 'F' || c2 < '0' || c2 > 'F') {
-                throw new EventMeshException(String.format("illegal byte [%s], [%s]", c1, c2));
-            }
-            ret[i] = (byte) ((byte) c1 << 4);
-            ret[i] = (byte) (ret[i] | (byte) (c2));
-        }
-        return ret;
-    }
-
-    private void generateQueryColumnsSql(StringBuilder builder, Collection<RdbColumnDefinition> rdbColDefs) {
+    private void generateQueryColumnsSql(StringBuilder builder, Collection<MySQLColumnDef> rdbColDefs) {
         if (rdbColDefs == null || rdbColDefs.isEmpty()) {
             builder.append("*");
             return;
