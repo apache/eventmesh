@@ -14,8 +14,6 @@ import org.apache.eventmesh.connector.canal.SqlUtils;
 import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,9 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
 import javax.sql.DataSource;
-
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.io.WKBReader;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,6 +67,8 @@ public class CanalFullProducer {
         for (RdbColumnDefinition col : tableDefinition.getColumnDefinitions().values()) {
             if (position.getCurPrimaryKeyCols().get(col.getName()) != null) {
                 choosePrimaryKey.set(col.getName());
+                log.info("schema [{}] table [{}] choose primary key [{}]", tableDefinition.getSchemaName(), tableDefinition.getTableName(),
+                    col.getName());
                 return;
             }
         }
@@ -81,12 +78,11 @@ public class CanalFullProducer {
 
     public void start(AtomicBoolean flag) {
         choosePrimaryKey();
-        boolean isNextPage = false;
+        boolean isFirstSelect = true;
         List<Map<String, Object>> rows = new LinkedList<>();
         while (flag.get()) {
-            String scanSql = generateScanSql(!isNextPage);
-            log.info("scan sql is [{}] , cur position [{}], choose primary key [{}]", scanSql,
-                    JsonUtils.toJSONString(position.getCurPrimaryKeyCols()), choosePrimaryKey.get());
+            String scanSql = generateScanSql(isFirstSelect);
+            log.info("scan sql is [{}] , cur position [{}]", scanSql, JsonUtils.toJSONString(position.getCurPrimaryKeyCols()));
 
             try (Connection connection = dataSource.getConnection(); PreparedStatement statement =
                     connection.prepareStatement(scanSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
@@ -132,8 +128,8 @@ public class CanalFullProducer {
                         tableDefinition.getTableName(), e);
                 LockSupport.parkNanos(3000 * 1000L);
             }
-            if (!isNextPage) {
-                isNextPage = true;
+            if (isFirstSelect) {
+                isFirstSelect = false;
             }
         }
     }
@@ -230,7 +226,11 @@ public class CanalFullProducer {
             case LONGBLOB:
                 return rs.getBytes(col);
             case GEOMETRY:
-                return SqlUtils.toGeometry("0x" + rs.getString(col));
+                String geo = rs.getString(col);
+                if (col == null) {
+                    return null;
+                }
+                return SqlUtils.toGeometry("0x" + geo);
             case GEOMETRY_COLLECTION:
             case GEOM_COLLECTION:
             case POINT:
@@ -354,22 +354,24 @@ public class CanalFullProducer {
         }
     }
 
-    private String generateScanSql(boolean isEquals) {
+    private String generateScanSql(boolean isFirst) {
         StringBuilder builder = new StringBuilder();
         builder.append("select ");
         generateQueryColumnsSql(builder, tableDefinition.getColumnDefinitions().values());
         builder.append(" from ");
         builder.append(Constants.MySQLQuot);
         builder.append(tableDefinition.getSchemaName());
+        builder.append(Constants.MySQLQuot);
         builder.append(".");
+        builder.append(Constants.MySQLQuot);
         builder.append(tableDefinition.getTableName());
         builder.append(Constants.MySQLQuot);
-        buildWhereSql(builder, tableDefinition, isEquals);
+        buildWhereSql(builder, isFirst);
         builder.append(" limit " + LIMIT);
         return builder.toString();
     }
 
-    private void buildWhereSql(StringBuilder builder, MySQLTableDef tableDefinition, boolean isEquals) {
+    private void buildWhereSql(StringBuilder builder, boolean isEquals) {
         builder.append(" where ")
                 .append(Constants.MySQLQuot)
                 .append(choosePrimaryKey.get())

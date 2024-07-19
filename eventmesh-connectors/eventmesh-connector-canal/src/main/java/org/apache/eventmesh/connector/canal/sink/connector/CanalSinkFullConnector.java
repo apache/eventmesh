@@ -10,6 +10,7 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLTableDe
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordOffset;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
+import org.apache.eventmesh.connector.canal.SqlUtils;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -20,20 +21,18 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
 
-import org.locationtech.jts.io.WKBReader;
-
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.mysql.cj.exceptions.MysqlErrorNumbers;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,9 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink> {
     private CanalSinkFullConfig config;
     private RdbTableMgr tableMgr;
+    private final DateTimeFormatter dataTimePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
     @Override
     public void start() throws Exception {
-
         tableMgr.start();
     }
 
@@ -127,7 +126,6 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
         String sql = generateInsertPrepareSql(offset.getPosition().getSchema(), offset.getPosition().getTableName(),
             cols);
 
-
         try(DruidPooledConnection connection = DatabaseConnection.sinkDataSource.getConnection();PreparedStatement statement =
             connection.prepareStatement(sql)) {
             for (Map<String, Object> col : data) {
@@ -136,22 +134,21 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             }
             statement.executeBatch();
         } catch (SQLException e) {
-            log.warn("create sink connection ");
+            log.warn("sink connector write fail", e);
             LockSupport.parkNanos(3000 * 1000L);
         } catch (Exception e) {
+            log.error("", e);
             // todo rollback
         }
     }
 
     private void setPrepareParams(PreparedStatement preparedStatement, Map<String, Object> col,  List<MySQLColumnDef> columnDefs) throws Exception {
-        for (int i = 0; i <= columnDefs.size(); i++) {
-            writeColumn(preparedStatement, i + 1, columnDefs.get(i), col.get(columnDefs.get(i)));
+        for (int i = 0; i < columnDefs.size(); i++) {
+            writeColumn(preparedStatement, i + 1, columnDefs.get(i), col.get(columnDefs.get(i).getName()));
         }
     }
 
     public void writeColumn(PreparedStatement ps, int index, MySQLColumnDef colType, Object value) throws Exception {
-        LocalDateTime colValue;
-        LocalDateTime colValue2;
         if (colType == null) {
             String colVal = null;
             if (value != null) {
@@ -170,7 +167,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                 case SMALLINT:
                 case MEDIUMINT:
                 case INT:
-                    Long longValue = toLong(value);
+                    Long longValue = SqlUtils.toLong(value);
                     if (longValue == null) {
                         ps.setNull(index, 4);
                         return;
@@ -180,7 +177,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                     }
                 case BIGINT:
                 case DECIMAL:
-                    BigDecimal bigDecimalValue = toBigDecimal(value);
+                    BigDecimal bigDecimalValue = SqlUtils.toBigDecimal(value);
                     if (bigDecimalValue == null) {
                         ps.setNull(index, 3);
                         return;
@@ -190,62 +187,61 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                     }
                 case FLOAT:
                 case DOUBLE:
-                    Double colValue6 = toDouble(value);
-                    if (colValue6 == null) {
+                    Double doubleValue = SqlUtils.toDouble(value);
+                    if (doubleValue == null) {
                         ps.setNull(index, 8);
-                        return;
                     } else {
-                        ps.setDouble(index, colValue6);
-                        return;
+                        ps.setDouble(index, doubleValue);
                     }
+                    return;
                 case DATE:
                 case DATETIME:
                 case TIMESTAMP:
-                    if (!isZeroTime(value)) {
+                    LocalDateTime dateValue = null;
+                    if (!SqlUtils.isZeroTime(value)) {
                         try {
-                            colValue2 = safeToLocalDateTime(value);
+                            dateValue = SqlUtils.toLocalDateTime(value);
                         } catch (Exception e) {
-                            ps.setString(index, CrwUtils.convertToString(value));
+                            ps.setString(index, SqlUtils.convertToString(value));
                             return;
                         }
-                    } else if (StringUtils.isNotBlank(options.getDefaultZeroDate())) {
-                        colValue2 = safeToLocalDateTime(options.getDefaultZeroDate());
+                    } else if (StringUtils.isNotBlank(config.getZeroDate())) {
+                        dateValue = SqlUtils.toLocalDateTime(config.getZeroDate());
                     } else {
                         ps.setObject(index, value);
                         return;
                     }
-                    if (colValue2 == null) {
-                        ps.setNull(index, 93);
-                        return;
+                    if (dateValue == null) {
+                        ps.setNull(index, Types.TIMESTAMP);
                     } else {
-                        ps.setString(index, WellKnowFormat.WKF_DATE_TIME24_S9.format(colValue2));
-                        return;
+                        ps.setString(index, dataTimePattern.format(dateValue));
                     }
+                    return;
                 case TIME:
-                    String colValue7 = safeToMySqlTime(value, options);
-                    if (StringUtils.isBlank(colValue7)) {
+                    String timeValue = SqlUtils.toMySqlTime(value);
+                    if (StringUtils.isBlank(timeValue)) {
                         ps.setNull(index, 12);
                         return;
                     } else {
-                        ps.setString(index, colValue7);
+                        ps.setString(index, timeValue);
                         return;
                     }
                 case YEAR:
-                    if (!isZeroTime(value)) {
-                        colValue = safeToLocalDateTime(value);
-                    } else if (StringUtils.isNotBlank(options.getDefaultZeroDate())) {
-                        colValue = safeToLocalDateTime(options.getDefaultZeroDate());
+                    LocalDateTime yearValue = null;
+                    if (!SqlUtils.isZeroTime(value)) {
+                        yearValue = SqlUtils.toLocalDateTime(value);
+                    } else if (StringUtils.isNotBlank(config.getZeroDate())) {
+                        yearValue = SqlUtils.toLocalDateTime(config.getZeroDate());
                     } else {
                         ps.setInt(index, 0);
                         return;
                     }
-                    if (colValue == null) {
+                    if (yearValue == null) {
                         ps.setNull(index, 4);
-                        return;
                     } else {
-                        ps.setInt(index, colValue.getYear());
-                        return;
+                        ps.setInt(index, yearValue.getYear());
                     }
+                    return;
                 case CHAR:
                 case VARCHAR:
                 case TINYTEXT:
@@ -254,23 +250,22 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                 case LONGTEXT:
                 case ENUM:
                 case SET:
-                    String colValue8 = safeToString(value);
-                    if (colValue8 == null) {
-                        ps.setNull(index, 12);
+                    String strValue = value.toString();
+                    if (strValue == null) {
+                        ps.setNull(index, Types.VARCHAR);
                         return;
                     } else {
-                        ps.setString(index, colValue8);
+                        ps.setString(index, strValue);
                         return;
                     }
                 case JSON:
-                    String colValue9 = safeToJson(value);
-                    if (colValue9 == null) {
-                        ps.setNull(index, 12);
-                        return;
+                    String jsonValue = value.toString();
+                    if (jsonValue == null) {
+                        ps.setNull(index, Types.VARCHAR);
                     } else {
-                        ps.setString(index, colValue9);
-                        return;
+                        ps.setString(index, jsonValue);
                     }
+                    return;
                 case BIT:
                     if (value instanceof Boolean) {
                         byte[] bArr = new byte[1];
@@ -278,19 +273,19 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                         ps.setBytes(index, bArr);
                         return;
                     } else if (value instanceof Number) {
-                        ps.setBytes(index, numberToBinaryArray((Number) value));
+                        ps.setBytes(index, SqlUtils.numberToBinaryArray((Number) value));
                         return;
                     } else if ((value instanceof byte[]) || value.toString().startsWith("0x") || value.toString().startsWith("0X")) {
-                        byte[] colValue10 = safeToBytes(value);
-                        if (colValue10 == null || colValue10.length == 0) {
-                            ps.setNull(index, -7);
+                        byte[] bArr = SqlUtils.toBytes(value);
+                        if (bArr == null || bArr.length == 0) {
+                            ps.setNull(index, Types.BIT);
                             return;
                         } else {
-                            ps.setBytes(index, colValue10);
+                            ps.setBytes(index, bArr);
                             return;
                         }
                     } else {
-                        ps.setBytes(index, numberToBinaryArray(safeToInt(value)));
+                        ps.setBytes(index, SqlUtils.numberToBinaryArray(SqlUtils.toInt(value)));
                         return;
                     }
                 case BINARY:
@@ -299,26 +294,26 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                 case BLOB:
                 case MEDIUMBLOB:
                 case LONGBLOB:
-                    byte[] colValue11 = safeToBytes(value);
-                    if (colValue11 == null) {
-                        ps.setNull(index, -2);
+                    byte[] binaryValue = SqlUtils.toBytes(value);
+                    if (binaryValue == null) {
+                        ps.setNull(index, Types.BINARY);
                         return;
                     } else {
-                        ps.setBytes(index, colValue11);
+                        ps.setBytes(index, binaryValue);
                         return;
                     }
                 case GEOMETRY:
                 case GEOMETRY_COLLECTION:
                 case GEOM_COLLECTION:
-                    String colValue12 = safeToGisWKT(value);
-                    if (colValue12 == null) {
-                        ps.setNull(index, 12);
+                    String geoValue = SqlUtils.toGisWKT(value);
+                    if (geoValue == null) {
+                        ps.setNull(index, Types.VARCHAR);
                         return;
                     }
-                    if (colValue12.length() >= 5 && StringUtils.startsWithIgnoreCase(colValue12.substring(0, 5), "SRID=")) {
-                        colValue12 = colValue12.substring(colValue12.indexOf(59) + 1);
+                    if (geoValue.length() >= 5 && StringUtils.startsWithIgnoreCase(geoValue.substring(0, 5), "SRID=")) {
+                        geoValue = geoValue.substring(geoValue.indexOf(59) + 1);
                     }
-                    ps.setString(index, colValue12);
+                    ps.setString(index, geoValue);
                     return;
                 case POINT:
                 case LINESTRING:
@@ -339,7 +334,9 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
         builder.append("INSERT IGNORE INTO ");
         builder.append(Constants.MySQLQuot);
         builder.append(schema);
+        builder.append(Constants.MySQLQuot);
         builder.append(".");
+        builder.append(Constants.MySQLQuot);
         builder.append(table);
         builder.append(Constants.MySQLQuot);
         StringBuilder columns = new StringBuilder();

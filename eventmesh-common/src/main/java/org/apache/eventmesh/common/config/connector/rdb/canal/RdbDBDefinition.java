@@ -1,8 +1,8 @@
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import lombok.Data;
-
 import java.util.Set;
+
+import lombok.Data;
 
 /**
  * Description: as class name

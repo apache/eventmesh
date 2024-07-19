@@ -19,6 +19,8 @@ package org.apache.eventmesh.common.remote.offset;
 
 import org.apache.eventmesh.common.remote.offset.S3.S3RecordOffset;
 import org.apache.eventmesh.common.remote.offset.S3.S3RecordPartition;
+import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordOffset;
+import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordPartition;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.remote.offset.file.FileRecordOffset;
@@ -40,6 +42,7 @@ public class RecordPosition {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     @JsonSubTypes({
         @JsonSubTypes.Type(value = CanalRecordPartition.class, name = "CanalRecordPartition"),
+        @JsonSubTypes.Type(value = CanalFullRecordPartition.class, name = "CanalFullRecordPartition"),
         @JsonSubTypes.Type(value = FileRecordPartition.class, name = "FileRecordPartition"),
         @JsonSubTypes.Type(value = S3RecordPartition.class, name = "S3RecordPartition"),
         @JsonSubTypes.Type(value = KafkaRecordPartition.class, name = "KafkaRecordPartition"),
@@ -53,6 +56,7 @@ public class RecordPosition {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     @JsonSubTypes({
         @JsonSubTypes.Type(value = CanalRecordOffset.class, name = "CanalRecordOffset"),
+        @JsonSubTypes.Type(value = CanalFullRecordOffset.class, name = "CanalFullRecordOffset"),
         @JsonSubTypes.Type(value = FileRecordOffset.class, name = "FileRecordOffset"),
         @JsonSubTypes.Type(value = S3RecordOffset.class, name = "S3RecordOffset"),
         @JsonSubTypes.Type(value = KafkaRecordOffset.class, name = "KafkaRecordOffset"),
