@@ -24,6 +24,7 @@ import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.HttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.RetryHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handle.WebhookHttpSinkHandler;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
@@ -37,7 +38,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HttpSinkConnector implements Sink {
+public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     private HttpSinkConfig httpSinkConfig;
 
@@ -47,6 +48,11 @@ public class HttpSinkConnector implements Sink {
     @Override
     public Class<? extends Config> configClass() {
         return HttpSinkConfig.class;
+    }
+
+    @Override
+    public Sink create() {
+        return new HttpSinkConnector();
     }
 
     @Override

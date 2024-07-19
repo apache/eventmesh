@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.connector;
+package org.apache.eventmesh.connector.http.source;
 
 
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
