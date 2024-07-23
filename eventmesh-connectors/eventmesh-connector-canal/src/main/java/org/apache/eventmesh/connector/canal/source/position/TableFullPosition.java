@@ -15,21 +15,16 @@
  * limitations under the License.
  */
 
-List canal = [
-        "com.alibaba.otter:canal.instance.manager:$canal_version",
-        "com.alibaba.otter:canal.parse:$canal_version",
-        "com.alibaba.otter:canal.server:$canal_version"
-]
+package org.apache.eventmesh.connector.canal.source.position;
 
-dependencies {
-    api project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation "org.locationtech.jts:jts-core"
-    implementation project(":eventmesh-common")
-    implementation canal
-    implementation "com.alibaba:druid"
-    implementation 'com.mysql:mysql-connector-j'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-junit-jupiter"
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import lombok.Data;
+
+@Data
+public class TableFullPosition {
+    private Map<String, Object> curPrimaryKeyCols = new LinkedHashMap<>();
+    private Map<String, Object> minPrimaryKeyCols = new LinkedHashMap<>();
+    private Map<String, Object> maxPrimaryKeyCols = new LinkedHashMap<>();
 }

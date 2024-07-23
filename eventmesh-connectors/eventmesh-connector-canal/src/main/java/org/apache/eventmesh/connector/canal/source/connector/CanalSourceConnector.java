@@ -24,7 +24,9 @@ import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
+import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.source.EntryParser;
+import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -83,6 +85,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     private volatile boolean running = false;
 
     private static final int maxEmptyTimes = 10;
+
+    private RdbTableMgr tableMgr;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -146,6 +150,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 return instance;
             }
         });
+        tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
     }
 
     private Canal buildCanal(CanalSourceConfig sourceConfig) {
@@ -218,6 +223,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         if (running) {
             return;
         }
+        tableMgr.start();
         canalServer.start();
 
         canalServer.start(sourceConfig.getDestination());
@@ -288,11 +294,9 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             entries = message.getEntries();
         }
 
-        EntryParser entryParser = new EntryParser();
-
         List<ConnectRecord> result = new ArrayList<>();
         // key: Xid offset
-        Map<Long, List<CanalConnectRecord>> connectorRecordMap = entryParser.parse(sourceConfig, entries);
+        Map<Long, List<CanalConnectRecord>> connectorRecordMap = EntryParser.parse(sourceConfig, entries, tableMgr);
 
         if (!connectorRecordMap.isEmpty()) {
             Set<Map.Entry<Long, List<CanalConnectRecord>>> entrySet = connectorRecordMap.entrySet();
