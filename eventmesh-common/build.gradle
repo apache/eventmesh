@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.64.0'
+def grpcVersion = '1.65.1'
 
 dependencies {
     api "com.google.guava:guava"
@@ -48,6 +48,7 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
 
     implementation "io.netty:netty-all"
+    compileOnly 'com.mysql:mysql-connector-j'
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"

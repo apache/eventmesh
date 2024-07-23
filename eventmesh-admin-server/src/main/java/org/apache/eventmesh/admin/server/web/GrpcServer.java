@@ -52,7 +52,7 @@ public class GrpcServer extends BaseServer {
     }
 
     @Override
-    public void destroy() {
+    public void stop() {
         try {
             if (server != null) {
                 server.shutdown();

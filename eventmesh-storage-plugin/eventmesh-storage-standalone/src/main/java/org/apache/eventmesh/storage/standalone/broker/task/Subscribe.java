@@ -21,16 +21,19 @@ import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.storage.standalone.broker.StandaloneBroker;
+import org.apache.eventmesh.storage.standalone.broker.model.MessageEntity;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
+
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.WorkHandler;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Subscribe {
+public class Subscribe implements WorkHandler<MessageEntity>, EventHandler<MessageEntity> {
 
     @Getter
     private final String topicName;
@@ -38,8 +41,6 @@ public class Subscribe {
     private final EventListener listener;
     @Getter
     private volatile boolean isRunning;
-    @Getter
-    private AtomicInteger offset;
 
     public Subscribe(String topicName,
         StandaloneBroker standaloneBroker,
@@ -51,52 +52,50 @@ public class Subscribe {
     }
 
     public void subscribe() {
-        try {
-            log.debug("execute subscribe task, topic: {}, offset: {}", topicName, offset);
-            if (offset == null) {
-                CloudEvent message = standaloneBroker.getMessage(topicName);
-                if (message != null) {
-                    Object tmpOffset = message.getExtension("offset");
-                    if (tmpOffset instanceof Integer) {
-                        offset = new AtomicInteger(Integer.parseInt(tmpOffset.toString()));
-                    } else {
-                        offset = new AtomicInteger(0);
-                    }
-                }
-            }
-            if (offset != null) {
-                CloudEvent message = standaloneBroker.getMessage(topicName, offset.get());
-                if (message != null) {
-                    EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
-
-                        @Override
-                        public void commit(EventMeshAction action) {
-                            switch (action) {
-                                case CommitMessage:
-                                    // update offset
-                                    log.info("message commit, topic: {}, current offset:{}", topicName, offset.get());
-                                    break;
-                                case ManualAck:
-                                    // update offset
-                                    offset.incrementAndGet();
-                                    log.info("message ack, topic: {}, current offset:{}", topicName, offset.get());
-                                    break;
-                                case ReconsumeLater:
-                                default:
-
-                            }
-                        }
-                    };
-                    listener.consume(message, consumeContext);
-                }
-            }
-        } catch (Exception ex) {
-            log.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(), ex);
-        }
+        standaloneBroker.subscribed(topicName, this);
     }
 
     public void shutdown() {
         isRunning = false;
+        standaloneBroker.deleteTopicIfExist(topicName);
+    }
+
+    @Override
+    public void onEvent(MessageEntity event, long sequence, boolean endOfBatch) {
+        onEvent(event);
+    }
+
+    @Override
+    public void onEvent(MessageEntity event) {
+        try {
+            if (!isRunning) {
+                return;
+            }
+            CloudEvent message = event.getMessage();
+            if (message != null) {
+                EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+
+                    @Override
+                    public void commit(EventMeshAction action) {
+                        switch (action) {
+                            case CommitMessage:
+                                // update offset
+                                log.info("message commit, topic: {}, current offset:{}", topicName, event.getOffset());
+                                break;
+                            case ManualAck:
+                                // update offset
+                                log.info("message ack, topic: {}, current offset:{}", topicName, event.getOffset());
+                                break;
+                            case ReconsumeLater:
+                            default:
+                        }
+                    }
+                };
+                listener.consume(message, consumeContext);
+            }
+        } catch (Exception ex) {
+            log.error("consumer error, topic: {}, offset: {}", topicName, event.getOffset(), ex);
+        }
     }
 
 }

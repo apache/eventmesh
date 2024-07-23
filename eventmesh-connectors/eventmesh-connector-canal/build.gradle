@@ -23,9 +23,11 @@ List canal = [
 
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    implementation "org.locationtech.jts:jts-core"
     implementation project(":eventmesh-common")
     implementation canal
-    implementation "com.alibaba:druid:1.2.6"
+    implementation "com.alibaba:druid"
+    implementation 'com.mysql:mysql-connector-j'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-core"

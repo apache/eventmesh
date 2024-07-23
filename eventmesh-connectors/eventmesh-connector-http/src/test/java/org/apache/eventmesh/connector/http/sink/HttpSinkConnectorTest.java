@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.connector;
+package org.apache.eventmesh.connector.http.sink;
 
 
 import static org.mockserver.model.HttpRequest.request;
 
-import org.apache.eventmesh.connector.http.sink.HttpSinkConnector;
 import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
 import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;

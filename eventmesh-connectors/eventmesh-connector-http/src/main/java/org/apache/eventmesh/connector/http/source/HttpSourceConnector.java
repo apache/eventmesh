@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.connector;
+package org.apache.eventmesh.connector.http.source;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.connector.http.source.protocol.ProtocolFactory;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
@@ -43,7 +44,7 @@ import io.vertx.ext.web.handler.LoggerHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HttpSourceConnector implements Source {
+public class HttpSourceConnector implements Source, ConnectorCreateService<Source> {
 
     private HttpSourceConfig sourceConfig;
 
@@ -71,6 +72,11 @@ public class HttpSourceConnector implements Source {
     @Override
     public Class<? extends Config> configClass() {
         return HttpSourceConfig.class;
+    }
+
+    @Override
+    public Source create() {
+        return new HttpSourceConnector();
     }
 
     @Override
