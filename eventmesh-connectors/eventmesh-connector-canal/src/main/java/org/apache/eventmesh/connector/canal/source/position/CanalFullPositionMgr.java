@@ -131,7 +131,6 @@ public class CanalFullPositionMgr extends AbstractComponent {
             position.getMinPrimaryKeyCols().put(pk, min);
             position.getMaxPrimaryKeyCols().put(pk, max);
         }
-        long rowCount = queryCurTableRowCount(dataSource, tableDefinition);
         JobRdbFullPosition jobRdbFullPosition = new JobRdbFullPosition();
         if (recordPosition != null) {
             if (StringUtils.isNotBlank(recordPosition.getPrimaryKeyRecords())) {
@@ -142,6 +141,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
             }
             jobRdbFullPosition.setPercent(recordPosition.getPercent());
         }
+        long rowCount = queryCurTableRowCount(dataSource, tableDefinition);
         jobRdbFullPosition.setSchema(tableDefinition.getSchemaName());
         jobRdbFullPosition.setTableName(tableDefinition.getTableName());
         jobRdbFullPosition.setMaxCount(rowCount);
@@ -151,8 +151,8 @@ public class CanalFullPositionMgr extends AbstractComponent {
 
 
     private long queryCurTableRowCount(DataSource datasource, MySQLTableDef tableDefinition) throws SQLException {
-        String sql = "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName() +
-            "' and `TABLE_NAME`='" + tableDefinition.getTableName() + "'";
+        String sql = "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName()
+            + "' and `TABLE_NAME`='" + tableDefinition.getTableName() + "'";
         try (Statement statement = datasource.getConnection().createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
             long result = 0L;
             if (resultSet.next()) {

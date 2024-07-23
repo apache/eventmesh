@@ -314,20 +314,20 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                     return;
                 case BIT:
                     if (value instanceof Boolean) {
-                        byte[] bArr = new byte[1];
-                        bArr[0] = (byte) (Boolean.TRUE.equals(value) ? 1 : 0);
-                        ps.setBytes(index, bArr);
+                        byte[] arrayBoolean = new byte[1];
+                        arrayBoolean[0] = (byte) (Boolean.TRUE.equals(value) ? 1 : 0);
+                        ps.setBytes(index, arrayBoolean);
                         return;
                     } else if (value instanceof Number) {
                         ps.setBytes(index, SqlUtils.numberToBinaryArray((Number) value));
                         return;
                     } else if ((value instanceof byte[]) || value.toString().startsWith("0x") || value.toString().startsWith("0X")) {
-                        byte[] bArr = SqlUtils.toBytes(value);
-                        if (bArr == null || bArr.length == 0) {
+                        byte[] arrayBoolean = SqlUtils.toBytes(value);
+                        if (arrayBoolean == null || arrayBoolean.length == 0) {
                             ps.setNull(index, Types.BIT);
                             return;
                         } else {
-                            ps.setBytes(index, bArr);
+                            ps.setBytes(index, arrayBoolean);
                             return;
                         }
                     } else {

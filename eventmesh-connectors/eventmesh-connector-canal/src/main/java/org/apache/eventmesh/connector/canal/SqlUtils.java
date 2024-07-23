@@ -324,14 +324,14 @@ public class SqlUtils {
      * Check whether the given SQL type is numeric.
      */
     public static boolean isNumeric(int sqlType) {
-        return (Types.BIT == sqlType) || (Types.BIGINT == sqlType) || (Types.DECIMAL == sqlType) || (Types.DOUBLE == sqlType) ||
-            (Types.FLOAT == sqlType) || (Types.INTEGER == sqlType) || (Types.NUMERIC == sqlType) || (Types.REAL == sqlType) ||
-            (Types.SMALLINT == sqlType) || (Types.TINYINT == sqlType);
+        return (Types.BIT == sqlType) || (Types.BIGINT == sqlType) || (Types.DECIMAL == sqlType) || (Types.DOUBLE == sqlType)
+            || (Types.FLOAT == sqlType) || (Types.INTEGER == sqlType) || (Types.NUMERIC == sqlType) || (Types.REAL == sqlType)
+            || (Types.SMALLINT == sqlType) || (Types.TINYINT == sqlType);
     }
 
     public static boolean isTextType(int sqlType) {
-        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR || sqlType == Types.NCHAR ||
-            sqlType == Types.NVARCHAR || sqlType == Types.NCLOB || sqlType == Types.LONGNVARCHAR;
+        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR || sqlType == Types.NCHAR
+            || sqlType == Types.NVARCHAR || sqlType == Types.NCLOB || sqlType == Types.LONGNVARCHAR;
     }
 
     public static JDBCType toJDBCType(String connectorDataType) {
@@ -473,119 +473,37 @@ public class SqlUtils {
         }
         if (len >= 7) {
             char checkCharAt1 = datetime.charAt(len - 2);
-            char checkCharAt2 = datetime.charAt(len - 3);
-            char checkCharAt3 = datetime.charAt(len - 6);
-            char checkCharAt4 = datetime.charAt(len - 5);
-            char checkCharAt5 = len >= 9 ? datetime.charAt(len - 9) : ' ';
-            char checkCharAt6 = datetime.charAt(len - 7);
-            boolean matchTest1 = (checkCharAt1 == '+' || checkCharAt1 == '-') && len >= 10;
-            boolean matchTest2 = (checkCharAt2 == '+' || checkCharAt2 == '-') && len >= 11;
-            boolean matchTest3 = (checkCharAt3 == '+' || checkCharAt3 == '-') && checkCharAt2 == ':';
-            boolean matchTest4 = (checkCharAt4 == '+' || checkCharAt4 == '-') && checkCharAt2 == ':';
-            boolean matchTest5 = (checkCharAt5 == '+' || checkCharAt5 == '-') && checkCharAt2 == ':' && checkCharAt3 == ':';
-            boolean matchTest6 = checkCharAt6 == '+' || checkCharAt6 == '-';
-            boolean matchTest7 = checkCharAt4 == '+' || checkCharAt4 == '-';
-            if (matchTest1) {
+            if ((checkCharAt1 == '+' || checkCharAt1 == '-') && len >= 10) {
                 return datetime.substring(0, len - 2).trim();
             }
-            if (matchTest2) {
+            char checkCharAt2 = datetime.charAt(len - 3);
+            if ((checkCharAt2 == '+' || checkCharAt2 == '-') && len >= 11) {
                 return datetime.substring(0, len - 3).trim();
             }
-            if (matchTest3) {
+            char checkCharAt3 = datetime.charAt(len - 6);
+            if ((checkCharAt3 == '+' || checkCharAt3 == '-') && checkCharAt2 == ':') {
                 return datetime.substring(0, len - 6).trim();
             }
-            if (matchTest4) {
+            char checkCharAt4 = datetime.charAt(len - 5);
+            if ((checkCharAt4 == '+' || checkCharAt4 == '-') && checkCharAt2 == ':') {
                 return datetime.substring(0, len - 5).trim();
             }
-            if (matchTest5) {
+            char checkCharAt5 = len >= 9 ? datetime.charAt(len - 9) : ' ';
+            if ((checkCharAt5 == '+' || checkCharAt5 == '-') && checkCharAt2 == ':' && checkCharAt3 == ':') {
                 return datetime.substring(0, len - 9).trim();
             }
-            if (matchTest6) {
+            char checkCharAt6 = datetime.charAt(len - 7);
+            if (checkCharAt6 == '+' || checkCharAt6 == '-') {
                 return datetime.substring(0, len - 7).trim();
             }
-            if (matchTest7) {
+            if (checkCharAt4 == '+' || checkCharAt4 == '-') {
                 return datetime.substring(0, len - 5).trim();
             }
         }
         return datetime;
     }
 
-    private static LocalDateTime toLocalDateTime(String value) {
-        if (value.trim().length() >= 4) {
-            String dateStr2 = removeZone(value);
-            int len = dateStr2.length();
-            if (len == 4) {
-                return LocalDateTime.of(Integer.parseInt(dateStr2), 1, 1, 0, 0, 0, 0);
-            }
-            if (dateStr2.charAt(4) == '-') {
-                switch (len) {
-                    case 7:
-                        String[] dataParts = dateStr2.split("-");
-                        return LocalDateTime.of(Integer.parseInt(dataParts[0]), Integer.parseInt(dataParts[1]), 1, 0, 0, 0, 0);
-                    case 8:
-                    case 9:
-                    case 11:
-                    case 12:
-                    case 14:
-                    case 15:
-                    case 17:
-                    case 18:
-                    default:
-                        String[] dataTime = dateStr2.split(" ");
-                        String[] dataParts2 = dataTime[0].split("-");
-                        String[] timeParts = dataTime[1].split(":");
-                        String[] secondParts = timeParts[2].split("\\.");
-                        secondParts[1] = StringUtils.rightPad(secondParts[1], 9, Constants.CJ_MINOR_VERSION);
-                        return LocalDateTime.of(Integer.parseInt(dataParts2[0]), Integer.parseInt(dataParts2[1]), Integer.parseInt(dataParts2[2]),
-                            Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]), Integer.parseInt(secondParts[0]),
-                            Integer.parseInt(secondParts[1]));
-                    case 10:
-                        String[] dataParts3 = dateStr2.split("-");
-                        return LocalDateTime.of(Integer.parseInt(dataParts3[0]), Integer.parseInt(dataParts3[1]), Integer.parseInt(dataParts3[2]), 0,
-                            0, 0, 0);
-                    case 13:
-                        String[] dataTime2 = dateStr2.split(" ");
-                        String[] dataParts4 = dataTime2[0].split("-");
-                        return LocalDateTime.of(Integer.parseInt(dataParts4[0]), Integer.parseInt(dataParts4[1]), Integer.parseInt(dataParts4[2]),
-                            Integer.parseInt(dataTime2[1]), 0, 0, 0);
-                    case 16:
-                        String[] dataTime3 = dateStr2.split(" ");
-                        String[] dataParts5 = dataTime3[0].split("-");
-                        String[] timeParts2 = dataTime3[1].split(":");
-                        return LocalDateTime.of(Integer.parseInt(dataParts5[0]), Integer.parseInt(dataParts5[1]), Integer.parseInt(dataParts5[2]),
-                            Integer.parseInt(timeParts2[0]), Integer.parseInt(timeParts2[1]), 0, 0);
-                    case 19:
-                        String[] dataTime4 = dateStr2.split(" ");
-                        String[] dataParts6 = dataTime4[0].split("-");
-                        String[] timeParts3 = dataTime4[1].split(":");
-                        return LocalDateTime.of(Integer.parseInt(dataParts6[0]), Integer.parseInt(dataParts6[1]), Integer.parseInt(dataParts6[2]),
-                            Integer.parseInt(timeParts3[0]), Integer.parseInt(timeParts3[1]), Integer.parseInt(timeParts3[2]), 0);
-                }
-            } else if (dateStr2.charAt(2) == ':') {
-                switch (len) {
-                    case 5:
-                        String[] timeParts4 = dateStr2.split(":");
-                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts4[0]), Integer.parseInt(timeParts4[1]), 0, 0);
-                    case 8:
-                        String[] timeParts5 = dateStr2.split(":");
-                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts5[0]), Integer.parseInt(timeParts5[1]),
-                            Integer.parseInt(timeParts5[2]), 0);
-                    default:
-                        String[] timeParts6 = dateStr2.split(":");
-                        String[] secondParts2 = timeParts6[2].split("\\.");
-                        secondParts2[1] = StringUtils.rightPad(secondParts2[1], 9, Constants.CJ_MINOR_VERSION);
-                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts6[0]), Integer.parseInt(timeParts6[1]),
-                            Integer.parseInt(secondParts2[0]), Integer.parseInt(secondParts2[1]));
-                }
-            } else {
-                throw new UnsupportedOperationException(value.getClass() + ", value '" + value + "' , parse to local date time failed.");
-            }
-        } else if (StringUtils.isNumeric(value)) {
-            return LocalDateTime.of(Integer.parseInt(value), 1, 1, 0, 0, 0, 0);
-        } else {
-            throw new DateTimeException(value + " format error.");
-        }
-    }
+
 
     public static String bytes2hex(byte[] b) {
         if (b == null) {
@@ -760,6 +678,83 @@ public class SqlUtils {
         }
     }
 
+    private static LocalDateTime toLocalDateTime(String value) {
+        if (value.trim().length() >= 4) {
+            String dateStr2 = removeZone(value);
+            int len = dateStr2.length();
+            if (len == 4) {
+                return LocalDateTime.of(Integer.parseInt(dateStr2), 1, 1, 0, 0, 0, 0);
+            }
+            if (dateStr2.charAt(4) == '-') {
+                switch (len) {
+                    case 7:
+                        String[] dataParts = dateStr2.split("-");
+                        return LocalDateTime.of(Integer.parseInt(dataParts[0]), Integer.parseInt(dataParts[1]), 1, 0, 0, 0, 0);
+                    case 8:
+                    case 9:
+                    case 11:
+                    case 12:
+                    case 14:
+                    case 15:
+                    case 17:
+                    case 18:
+                    default:
+                        String[] dataTime = dateStr2.split(" ");
+                        String[] dataParts2 = dataTime[0].split("-");
+                        String[] timeParts = dataTime[1].split(":");
+                        String[] secondParts = timeParts[2].split("\\.");
+                        secondParts[1] = StringUtils.rightPad(secondParts[1], 9, Constants.CJ_MINOR_VERSION);
+                        return LocalDateTime.of(Integer.parseInt(dataParts2[0]), Integer.parseInt(dataParts2[1]), Integer.parseInt(dataParts2[2]),
+                            Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]), Integer.parseInt(secondParts[0]),
+                            Integer.parseInt(secondParts[1]));
+                    case 10:
+                        String[] dataParts3 = dateStr2.split("-");
+                        return LocalDateTime.of(Integer.parseInt(dataParts3[0]), Integer.parseInt(dataParts3[1]), Integer.parseInt(dataParts3[2]), 0,
+                            0, 0, 0);
+                    case 13:
+                        String[] dataTime2 = dateStr2.split(" ");
+                        String[] dataParts4 = dataTime2[0].split("-");
+                        return LocalDateTime.of(Integer.parseInt(dataParts4[0]), Integer.parseInt(dataParts4[1]), Integer.parseInt(dataParts4[2]),
+                            Integer.parseInt(dataTime2[1]), 0, 0, 0);
+                    case 16:
+                        String[] dataTime3 = dateStr2.split(" ");
+                        String[] dataParts5 = dataTime3[0].split("-");
+                        String[] timeParts2 = dataTime3[1].split(":");
+                        return LocalDateTime.of(Integer.parseInt(dataParts5[0]), Integer.parseInt(dataParts5[1]), Integer.parseInt(dataParts5[2]),
+                            Integer.parseInt(timeParts2[0]), Integer.parseInt(timeParts2[1]), 0, 0);
+                    case 19:
+                        String[] dataTime4 = dateStr2.split(" ");
+                        String[] dataParts6 = dataTime4[0].split("-");
+                        String[] timeParts3 = dataTime4[1].split(":");
+                        return LocalDateTime.of(Integer.parseInt(dataParts6[0]), Integer.parseInt(dataParts6[1]), Integer.parseInt(dataParts6[2]),
+                            Integer.parseInt(timeParts3[0]), Integer.parseInt(timeParts3[1]), Integer.parseInt(timeParts3[2]), 0);
+                }
+            } else if (dateStr2.charAt(2) == ':') {
+                switch (len) {
+                    case 5:
+                        String[] timeParts4 = dateStr2.split(":");
+                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts4[0]), Integer.parseInt(timeParts4[1]), 0, 0);
+                    case 8:
+                        String[] timeParts5 = dateStr2.split(":");
+                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts5[0]), Integer.parseInt(timeParts5[1]),
+                            Integer.parseInt(timeParts5[2]), 0);
+                    default:
+                        String[] timeParts6 = dateStr2.split(":");
+                        String[] secondParts2 = timeParts6[2].split("\\.");
+                        secondParts2[1] = StringUtils.rightPad(secondParts2[1], 9, Constants.CJ_MINOR_VERSION);
+                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts6[0]), Integer.parseInt(timeParts6[1]),
+                            Integer.parseInt(secondParts2[0]), Integer.parseInt(secondParts2[1]));
+                }
+            } else {
+                throw new UnsupportedOperationException(value.getClass() + ", value '" + value + "' , parse to local date time failed.");
+            }
+        } else if (StringUtils.isNumeric(value)) {
+            return LocalDateTime.of(Integer.parseInt(value), 1, 1, 0, 0, 0, 0);
+        } else {
+            throw new DateTimeException(value + " format error.");
+        }
+    }
+
     public static LocalDateTime toLocalDateTime(Object value) {
         if (value == null || StringUtils.isBlank(value.toString())) {
             return null;
@@ -806,9 +801,9 @@ public class SqlUtils {
         while (true) {
             if (i < str.length()) {
                 char cc = str.charAt(i);
-                if (cc != '0' && cc != '1' && cc != '2' && cc != '3' && cc != '4' && cc != '5' && cc != '6' && cc != '7' && cc != '8' && cc != '9' &&
-                    cc != 'A' && cc != 'B' && cc != 'C' && cc != 'D' && cc != 'E' && cc != 'F' && cc != 'a' && cc != 'b' && cc != 'c' && cc != 'd' &&
-                    cc != 'e' && cc != 'f') {
+                if (cc != '0' && cc != '1' && cc != '2' && cc != '3' && cc != '4' && cc != '5' && cc != '6' && cc != '7' && cc != '8' && cc != '9'
+                    && cc != 'A' && cc != 'B' && cc != 'C' && cc != 'D' && cc != 'E' && cc != 'F' && cc != 'a' && cc != 'b' && cc != 'c' && cc != 'd'
+                    && cc != 'e' && cc != 'f') {
                     flag = false;
                     break;
                 }
@@ -919,7 +914,8 @@ public class SqlUtils {
                 return 14;
             case 'F':
                 return 15;
+            default:
+                throw new IllegalStateException("0-F");
         }
-        throw new IllegalStateException("0-F");
     }
 }

@@ -156,14 +156,14 @@ public class CanalFullProducer {
         if (rows == null || rows.isEmpty()) {
             return;
         }
-        ArrayList<ConnectRecord> records = new ArrayList<>();
-        CanalFullRecordOffset offset = new CanalFullRecordOffset();
         JobRdbFullPosition jobRdbFullPosition = new JobRdbFullPosition();
         jobRdbFullPosition.setPrimaryKeyRecords(JsonUtils.toJSONString(position));
         jobRdbFullPosition.setTableName(tableDefinition.getTableName());
         jobRdbFullPosition.setSchema(tableDefinition.getSchemaName());
+        CanalFullRecordOffset offset = new CanalFullRecordOffset();
         offset.setPosition(jobRdbFullPosition);
         CanalFullRecordPartition partition = new CanalFullRecordPartition();
+        ArrayList<ConnectRecord> records = new ArrayList<>();
         records.add(new ConnectRecord(partition, offset, System.currentTimeMillis(), rows));
         queue.put(records);
     }
@@ -192,21 +192,21 @@ public class CanalFullProducer {
             case SMALLINT:
             case MEDIUMINT:
             case INT:
-                Long uLong = rs.getLong(col);
-                if (uLong.compareTo((long) Integer.MAX_VALUE) > 0) {
-                    return uLong;
+                Long valueLong = rs.getLong(col);
+                if (valueLong.compareTo((long) Integer.MAX_VALUE) > 0) {
+                    return valueLong;
                 }
-                return uLong.intValue();
+                return valueLong.intValue();
             case BIGINT:
                 String v = rs.getString(col);
                 if (v == null) {
                     return null;
                 }
-                BigDecimal uBigInt = new BigDecimal(v);
-                if (uBigInt.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0) {
-                    return uBigInt;
+                BigDecimal valueBigInt = new BigDecimal(v);
+                if (valueBigInt.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0) {
+                    return valueBigInt;
                 }
-                return uBigInt.longValue();
+                return valueBigInt.longValue();
             case FLOAT:
             case DOUBLE:
             case DECIMAL:

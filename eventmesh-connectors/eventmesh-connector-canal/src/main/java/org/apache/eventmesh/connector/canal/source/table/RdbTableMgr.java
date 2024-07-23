@@ -138,10 +138,10 @@ public class RdbTableMgr extends AbstractComponent {
 
     private Map<String, List<MySQLColumnDef>> queryColumns(String schema, List<String> tables) throws SQLException {
         String prepareTables = SqlUtils.genPrepareSqlOfInClause(tables.size());
-        String sql = "select TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH," +
-            "CHARACTER_OCTET_LENGTH,NUMERIC_SCALE,NUMERIC_PRECISION,DATETIME_PRECISION,CHARACTER_SET_NAME," +
-            "COLLATION_NAME,COLUMN_TYPE,COLUMN_DEFAULT,COLUMN_COMMENT,ORDINAL_POSITION,EXTRA from " +
-            "INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = ? and TABLE_NAME in " + prepareTables + " order by " + "ORDINAL_POSITION asc";
+        String sql = "select TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH,"
+            + "CHARACTER_OCTET_LENGTH,NUMERIC_SCALE,NUMERIC_PRECISION,DATETIME_PRECISION,CHARACTER_SET_NAME,"
+            + "COLLATION_NAME,COLUMN_TYPE,COLUMN_DEFAULT,COLUMN_COMMENT,ORDINAL_POSITION,EXTRA from "
+            + "INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = ? and TABLE_NAME in " + prepareTables + " order by " + "ORDINAL_POSITION asc";
         Map<String, List<MySQLColumnDef>> cols = new LinkedHashMap<>();
         try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
             statement.setString(1, schema);
@@ -151,14 +151,14 @@ public class RdbTableMgr extends AbstractComponent {
                 return null;
             }
             while (resultSet.next()) {
-                String tableName = resultSet.getString("TABLE_NAME");
-                String colName = resultSet.getString("COLUMN_NAME");
                 String dataType = resultSet.getString("DATA_TYPE");
                 JDBCType jdbcType = SqlUtils.toJDBCType(dataType);
                 MySQLColumnDef col = new MySQLColumnDef();
                 col.setJdbcType(jdbcType);
                 col.setType(CanalMySQLType.valueOfCode(dataType));
+                String colName = resultSet.getString("COLUMN_NAME");
                 col.setName(colName);
+                String tableName = resultSet.getString("TABLE_NAME");
                 cols.compute(tableName, (k, v) -> {
                     if (v == null) {
                         v = new LinkedList<>();
