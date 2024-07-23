@@ -58,9 +58,17 @@ public class EntryParser {
                 switch (entry.getEntryType()) {
                     case ROWDATA:
                         RowChange rowChange = RowChange.parseFrom(entry.getStoreValue());
-                        needSync = checkNeedSync(sourceConfig, rowChange.getRowDatas(0));
-                        if (needSync) {
-                            transactionDataBuffer.add(entry);
+                        if (sourceConfig.getServerUUID() != null && sourceConfig.isGTIDMode()) {
+                            String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
+                            if (currentGtid.contains(sourceConfig.getServerUUID())) {
+                                transactionDataBuffer.add(entry);
+                            }
+                        } else {
+                            // if not gtid mode, need check weather the entry is loopback by specified column value
+                            needSync = checkNeedSync(sourceConfig, rowChange.getRowDatas(0));
+                            if (needSync) {
+                                transactionDataBuffer.add(entry);
+                            }
                         }
                         break;
                     case TRANSACTIONEND:
@@ -163,6 +171,14 @@ public class EntryParser {
         canalConnectRecord.setExecuteTime(entry.getHeader().getExecuteTime());
         canalConnectRecord.setJournalName(entry.getHeader().getLogfileName());
         canalConnectRecord.setBinLogOffset(entry.getHeader().getLogfileOffset());
+        // if enabled gtid mode, gtid not null
+        if (canalSourceConfig.isGTIDMode()) {
+            String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
+            String gtidRange = replaceGtidRange(entry.getHeader().getGtid(), currentGtid, canalSourceConfig.getServerUUID());
+            canalConnectRecord.setGtid(gtidRange);
+            canalConnectRecord.setCurrentGtid(currentGtid);
+        }
+
         EventType eventType = canalConnectRecord.getEventType();
 
         List<Column> beforeColumns = rowData.getBeforeColumnsList();
@@ -240,6 +256,17 @@ public class EntryParser {
         }
 
         return canalConnectRecord;
+    }
+
+    public static String replaceGtidRange(String gtid, String currentGtid, String serverUUID) {
+        String[] gtidRangeArray = gtid.split(",");
+        for (int i = 0; i < gtidRangeArray.length; i++) {
+            String gtidRange = gtidRangeArray[i];
+            if (gtidRange.startsWith(serverUUID)) {
+                gtidRangeArray[i] = gtidRange.replaceFirst("\\d+$", currentGtid.split(":")[1]);
+            }
+        }
+        return String.join(",", gtidRangeArray);
     }
 
     private void checkUpdateKeyColumns(Map<String, EventColumn> oldKeyColumns, Map<String, EventColumn> keyColumns) {

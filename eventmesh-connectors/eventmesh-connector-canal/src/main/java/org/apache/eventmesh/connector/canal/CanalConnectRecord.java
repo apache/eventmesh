@@ -31,7 +31,13 @@ import lombok.Data;
 public class CanalConnectRecord {
 
     private String schemaName;
+
     private String tableName;
+
+    // mysql instance gtid range
+    private String gtid;
+
+    private String currentGtid;
 
     /**
      * The business type of the changed data (I/U/D/C/A/E), consistent with the EventType defined in EntryProtocol in canal.

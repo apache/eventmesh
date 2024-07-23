@@ -71,8 +71,11 @@ CREATE TABLE IF NOT EXISTS `event_mesh_job_info` (
 CREATE TABLE IF NOT EXISTS `event_mesh_mysql_position` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `jobID` int unsigned NOT NULL,
+  `serverUUID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `position` bigint DEFAULT NULL,
+  `gtid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `currentGtid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `timestamp` bigint DEFAULT NULL,
   `journalName` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

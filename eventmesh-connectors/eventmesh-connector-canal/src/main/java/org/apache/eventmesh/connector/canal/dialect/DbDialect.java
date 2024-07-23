@@ -48,8 +48,6 @@ public interface DbDialect {
 
     public boolean isSupportMergeSql();
 
-    public boolean isDRDS();
-
     public LobHandler getLobHandler();
 
     public JdbcTemplate getJdbcTemplate();

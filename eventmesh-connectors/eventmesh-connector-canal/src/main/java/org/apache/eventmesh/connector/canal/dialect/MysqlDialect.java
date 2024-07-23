@@ -50,10 +50,6 @@ public class MysqlDialect extends AbstractDbDialect {
         return null;
     }
 
-    public boolean isDRDS() {
-        return false;
-    }
-
     public String getDefaultCatalog() {
         return jdbcTemplate.queryForObject("select database()", String.class);
     }

@@ -39,6 +39,8 @@ public class CanalSinkConfig extends SinkConfig {
     // sync mode: field/row
     private SyncMode syncMode;
 
+    private boolean isGTIDMode = true;
+
     // skip sink process exception
     private Boolean skipException = false;
 
