@@ -30,25 +30,45 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.DateTimeException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.temporal.Temporal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKTReader;
+
+import com.mysql.cj.Constants;
+import com.mysql.cj.MysqlType;
+import com.taobao.tddl.dbsync.binlog.LogBuffer;
 
 public class SqlUtils {
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
-    public static final String SQLDATE_FORMAT = "yyyy-MM-dd";
-    public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final Map<Integer, Class<?>> sqlTypeToJavaTypeMap = new HashMap<Integer, Class<?>>();
     private static final ConvertUtilsBean convertUtilsBean = new ConvertUtilsBean();
-    private static final Logger log = LoggerFactory.getLogger(SqlUtils.class);
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+    private static final WKBReader WKB_READER = new WKBReader(GEOMETRY_FACTORY);
+    private static final BigDecimal NANO_SEC = new BigDecimal(LogBuffer.DIG_BASE);
+    private static final LocalDateTime BASE = LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0);
+    private static final long ONE_HOUR = 3600;
+    private static final long ONE_MINUTE = 60;
 
     static {
         // regist Converter
@@ -107,6 +127,29 @@ public class SqlUtils {
         sqlTypeToJavaTypeMap.put(Types.NVARCHAR, String.class);
         sqlTypeToJavaTypeMap.put(Types.NCLOB, String.class);
         sqlTypeToJavaTypeMap.put(Types.CLOB, String.class);
+    }
+
+    public static String genPrepareSqlOfInClause(int size) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("(");
+        for (int i = 0; i < size; i++) {
+            sql.append("?");
+            if (i < size - 1) {
+                sql.append(",");
+            }
+        }
+        sql.append(")");
+        return sql.toString();
+    }
+
+    public static void setInClauseParameters(PreparedStatement preparedStatement, List<String> params) throws SQLException {
+        setInClauseParameters(preparedStatement, 0, params);
+    }
+
+    public static void setInClauseParameters(PreparedStatement preparedStatement, int paramIndexStart, List<String> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) {
+            preparedStatement.setString(paramIndexStart + i, params.get(i));
+        }
     }
 
     public static String sqlValueToString(ResultSet rs, int index, int sqlType) throws SQLException {
@@ -217,8 +260,7 @@ public class SqlUtils {
         } else if (float.class.equals(requiredType) || Float.class.equals(requiredType)) {
             value = rs.getFloat(index);
             wasNullCheck = true;
-        } else if (double.class.equals(requiredType) || Double.class.equals(requiredType)
-            || Number.class.equals(requiredType)) {
+        } else if (double.class.equals(requiredType) || Double.class.equals(requiredType) || Number.class.equals(requiredType)) {
             value = rs.getDouble(index);
             wasNullCheck = true;
         } else if (Time.class.equals(requiredType)) {
@@ -282,15 +324,598 @@ public class SqlUtils {
      * Check whether the given SQL type is numeric.
      */
     public static boolean isNumeric(int sqlType) {
-        return (Types.BIT == sqlType) || (Types.BIGINT == sqlType) || (Types.DECIMAL == sqlType)
-            || (Types.DOUBLE == sqlType) || (Types.FLOAT == sqlType) || (Types.INTEGER == sqlType)
-            || (Types.NUMERIC == sqlType) || (Types.REAL == sqlType) || (Types.SMALLINT == sqlType)
-            || (Types.TINYINT == sqlType);
+        return (Types.BIT == sqlType) || (Types.BIGINT == sqlType) || (Types.DECIMAL == sqlType) || (Types.DOUBLE == sqlType)
+            || (Types.FLOAT == sqlType) || (Types.INTEGER == sqlType) || (Types.NUMERIC == sqlType) || (Types.REAL == sqlType)
+            || (Types.SMALLINT == sqlType) || (Types.TINYINT == sqlType);
     }
 
     public static boolean isTextType(int sqlType) {
-        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR
-            || sqlType == Types.NCHAR || sqlType == Types.NVARCHAR || sqlType == Types.NCLOB
-            || sqlType == Types.LONGNVARCHAR;
+        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR || sqlType == Types.NCHAR
+            || sqlType == Types.NVARCHAR || sqlType == Types.NCLOB || sqlType == Types.LONGNVARCHAR;
+    }
+
+    public static JDBCType toJDBCType(String connectorDataType) {
+        MysqlType mysqlType = MysqlType.getByName(connectorDataType);
+        return JDBCType.valueOf(mysqlType.getJdbcType());
+    }
+
+    public static BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = (String) value;
+            if (!org.apache.commons.lang3.StringUtils.isNotBlank(strValue)) {
+                return null;
+            }
+            try {
+                return new BigDecimal(strValue);
+            } catch (Exception e) {
+                if ("true".equals(strValue)) {
+                    return BigDecimal.ONE;
+                }
+                if ("false".equals(strValue)) {
+                    return BigDecimal.ZERO;
+                }
+                return new BigDecimal(strValue);
+            }
+        } else if (value instanceof Number) {
+            if (value instanceof BigDecimal) {
+                return (BigDecimal) value;
+            }
+            if (value instanceof Integer) {
+                return BigDecimal.valueOf(((Integer) value).longValue());
+            }
+            if (value instanceof Long) {
+                return BigDecimal.valueOf(((Long) value));
+            }
+            if (value instanceof Double) {
+                return BigDecimal.valueOf(((Double) value));
+            }
+            if (value instanceof Float) {
+                return BigDecimal.valueOf(((Float) value).doubleValue());
+            }
+            if (value instanceof BigInteger) {
+                return new BigDecimal((BigInteger) value);
+            }
+            if (value instanceof Byte) {
+                return BigDecimal.valueOf(((Byte) value).longValue());
+            }
+            if (value instanceof Short) {
+                return BigDecimal.valueOf(((Short) value).longValue());
+            }
+            return null;
+        } else if (value instanceof Boolean) {
+            return Boolean.TRUE.equals(value) ? BigDecimal.ONE : BigDecimal.ZERO;
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to big decimal failed.");
+        }
+    }
+
+    public static Double toDouble(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = (String) value;
+            if (org.apache.commons.lang3.StringUtils.isBlank(strValue)) {
+                return null;
+            }
+            try {
+                return Double.parseDouble(strValue);
+            } catch (Exception e) {
+                if ("true".equals(strValue)) {
+                    return 1.0d;
+                }
+                if ("false".equals(strValue)) {
+                    return 0.0d;
+                }
+                return new BigDecimal(strValue).doubleValue();
+            }
+        } else if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        } else {
+            if (value instanceof Boolean) {
+                return Boolean.TRUE.equals(value) ? 1.0d : 0.0d;
+            }
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to double failed.");
+        }
+    }
+
+    public static Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = (String) value;
+            if (org.apache.commons.lang3.StringUtils.isBlank(strValue)) {
+                return null;
+            }
+            try {
+                return Long.parseLong(strValue);
+            } catch (Exception e) {
+                try {
+                    return Long.decode(strValue);
+                } catch (Exception e2) {
+                    if ("true".equals(strValue)) {
+                        return 1L;
+                    }
+                    if ("false".equals(strValue)) {
+                        return 0L;
+                    }
+                    return new BigDecimal(strValue).longValue();
+                }
+            }
+        } else if (value instanceof Number) {
+            return ((Number) value).longValue();
+        } else {
+            if (value instanceof Boolean) {
+                return Boolean.TRUE.equals(value) ? 1L : 0L;
+            }
+            throw new UnsupportedOperationException(value.getClass() + ", value '" + value + "' , parse to long failed.");
+        }
+    }
+
+    public static boolean isZeroTime(Object value) {
+        if (value == null || org.apache.commons.lang3.StringUtils.isBlank(value.toString())) {
+            return false;
+        }
+        return value.toString().startsWith("0000-00-00");
+    }
+
+    public static String removeZone(String datetime) {
+        if (datetime == null || datetime.length() == 0) {
+            return datetime;
+        }
+        int len = datetime.length();
+        if (datetime.charAt(len - 1) == 'Z' || datetime.charAt(len - 1) == 'z') {
+            return datetime.substring(0, len - 1).trim();
+        }
+        if (len >= 7) {
+            char checkCharAt1 = datetime.charAt(len - 2);
+            if ((checkCharAt1 == '+' || checkCharAt1 == '-') && len >= 10) {
+                return datetime.substring(0, len - 2).trim();
+            }
+            char checkCharAt2 = datetime.charAt(len - 3);
+            if ((checkCharAt2 == '+' || checkCharAt2 == '-') && len >= 11) {
+                return datetime.substring(0, len - 3).trim();
+            }
+            char checkCharAt3 = datetime.charAt(len - 6);
+            if ((checkCharAt3 == '+' || checkCharAt3 == '-') && checkCharAt2 == ':') {
+                return datetime.substring(0, len - 6).trim();
+            }
+            char checkCharAt4 = datetime.charAt(len - 5);
+            if ((checkCharAt4 == '+' || checkCharAt4 == '-') && checkCharAt2 == ':') {
+                return datetime.substring(0, len - 5).trim();
+            }
+            char checkCharAt5 = len >= 9 ? datetime.charAt(len - 9) : ' ';
+            if ((checkCharAt5 == '+' || checkCharAt5 == '-') && checkCharAt2 == ':' && checkCharAt3 == ':') {
+                return datetime.substring(0, len - 9).trim();
+            }
+            char checkCharAt6 = datetime.charAt(len - 7);
+            if (checkCharAt6 == '+' || checkCharAt6 == '-') {
+                return datetime.substring(0, len - 7).trim();
+            }
+            if (checkCharAt4 == '+' || checkCharAt4 == '-') {
+                return datetime.substring(0, len - 5).trim();
+            }
+        }
+        return datetime;
+    }
+
+
+
+    public static String bytes2hex(byte[] b) {
+        if (b == null) {
+            return null;
+        }
+        if (b.length == 0) {
+            return "";
+        }
+        StringBuilder hs = new StringBuilder();
+        for (byte element : b) {
+            String stmp = Integer.toHexString(element & 255).toUpperCase();
+            if (stmp.length() == 1) {
+                hs.append(Constants.CJ_MINOR_VERSION);
+                hs.append(stmp);
+            } else {
+                hs.append(stmp);
+            }
+        }
+        return hs.toString();
+    }
+
+    public static String convertToString(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            return (String) value;
+        }
+        if (value instanceof BigInteger) {
+            return value.toString();
+        }
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).toPlainString();
+        }
+        if (value instanceof Number) {
+            return new BigDecimal(value.toString()).toPlainString();
+        }
+        if (value instanceof Boolean) {
+            return Boolean.TRUE.equals(value) ? "1" : "0";
+        }
+        if (value instanceof byte[]) {
+            return "0x" + bytes2hex((byte[]) value);
+        }
+        if (value instanceof Timestamp) {
+            long nanos = ((Timestamp) value).getNanos();
+            value = Instant.ofEpochMilli(((Timestamp) value).getTime() - (nanos / 1000000)).plusNanos(nanos).atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+        } else if (value instanceof Date) {
+            value = ((Date) value).toLocalDate().atTime(0, 0);
+        } else if (value instanceof Time) {
+            value = LocalDateTime.of(LocalDate.of(1970, 1, 1),
+                Instant.ofEpochMilli(((Time) value).getTime()).atZone(ZoneId.systemDefault()).toLocalTime());
+        } else if (value instanceof java.util.Date) {
+            value = ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        }
+        if (value instanceof LocalDateTime) {
+            return coverLocalDateTime2String((LocalDateTime) value);
+        } else if (value instanceof OffsetDateTime) {
+            OffsetDateTime zone = (OffsetDateTime) value;
+            String datetimeStr = coverLocalDateTime2String(zone.toLocalDateTime());
+            String zonedStr = zone.getOffset().toString();
+            if ("Z".equals(zonedStr)) {
+                return datetimeStr + "+00:00";
+            }
+            return datetimeStr + zonedStr;
+        } else if (!(value instanceof LocalTime)) {
+            return value.toString();
+        } else {
+            LocalTime local3 = (LocalTime) value;
+            return String.format("%02d:%02d:%02d", local3.getHour(), local3.getMinute(), local3.getSecond());
+        }
+    }
+
+
+    private static String coverLocalDateTime2String(LocalDateTime localDateTime) {
+        LocalDate localDate = localDateTime.toLocalDate();
+        LocalTime localTime = localDateTime.toLocalTime();
+        int year = localDate.getYear();
+        int month = localDate.getMonthValue();
+        int day = localDate.getDayOfMonth();
+        int hour = localTime.getHour();
+        int minute = localTime.getMinute();
+        int second = localTime.getSecond();
+        int nano = localTime.getNano();
+        return nano == 0 ? String.format("%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second) :
+            String.format("%04d-%02d-%02d %02d:%02d:%02d.%s", year, month, day, hour, minute, second,
+                new BigDecimal(nano).divide(NANO_SEC).toPlainString().substring(2));
+    }
+
+    public static String toMySqlTime(Object value) {
+        if (value == null || StringUtils.isBlank(value.toString())) {
+            return null;
+        }
+        if (value instanceof String) {
+            return value.toString();
+        }
+        LocalDateTime localTime = toLocalDateTime(value);
+        if (BASE.isBefore(localTime) || BASE.isEqual(localTime)) {
+            long diffHours = Duration.between(BASE, localTime).toHours();
+            if (localTime.getNano() == 0) {
+                return String.format("%02d:%02d:%02d", diffHours, localTime.getMinute(), localTime.getSecond());
+            }
+            return String.format("%02d:%02d:%02d.%s", diffHours, localTime.getMinute(), localTime.getSecond(),
+                Integer.parseInt(trimEnd(String.valueOf(localTime.getNano()), '0')));
+        }
+        Duration duration = Duration.between(localTime, BASE);
+        long totalSecond = duration.getSeconds();
+        long hours = totalSecond / ONE_HOUR;
+        long remaining = totalSecond - (hours * ONE_HOUR);
+        long minutes = remaining / ONE_MINUTE;
+        remaining = remaining - (minutes * ONE_MINUTE);
+        if (duration.getNano() == 0) {
+            return String.format("-%02d:%02d:%02d", hours, minutes, remaining);
+        }
+        return String.format("-%02d:%02d:%02d.%s", hours, minutes, remaining, Integer.parseInt(trimEnd(String.valueOf(duration.getNano()), '0')));
+    }
+
+    public static String trimEnd(String str, char trimChar) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        char[] val = str.toCharArray();
+        int len = val.length;
+        while (0 < len && val[len - 1] == trimChar) {
+            len--;
+        }
+        return len < val.length ? str.substring(0, len) : str;
+    }
+
+    public static byte[] numberToBinaryArray(Number number) {
+        BigInteger bigInt = BigInteger.valueOf(number.longValue());
+        int size = (bigInt.bitLength() + 7) / 8;
+        byte[] result = new byte[size];
+        byte[] bigIntBytes = bigInt.toByteArray();
+        int start = bigInt.bitLength() % 8 == 0 ? 1 : 0;
+        int length = Math.min(bigIntBytes.length - start, size);
+        System.arraycopy(bigIntBytes, start, result, size - length, length);
+        return result;
+    }
+
+    public static Integer toInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strValue = ((String) value).toLowerCase();
+            if (StringUtils.isBlank(strValue)) {
+                return null;
+            }
+            try {
+                return Integer.parseInt(strValue);
+            } catch (Exception e) {
+                try {
+                    return Integer.decode(strValue);
+                } catch (Exception e2) {
+                    if ("true".equals(strValue)) {
+                        return 1;
+                    }
+                    if ("false".equals(strValue)) {
+                        return 0;
+                    }
+                    return new BigDecimal(strValue).intValue();
+                }
+            }
+        } else if (value instanceof Number) {
+            return ((Number) value).intValue();
+        } else {
+            if (value instanceof Boolean) {
+                return Boolean.TRUE.equals(value) ? 1 : 0;
+            }
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to int failed.");
+        }
+    }
+
+    private static LocalDateTime toLocalDateTime(String value) {
+        if (value.trim().length() >= 4) {
+            String dateStr2 = removeZone(value);
+            int len = dateStr2.length();
+            if (len == 4) {
+                return LocalDateTime.of(Integer.parseInt(dateStr2), 1, 1, 0, 0, 0, 0);
+            }
+            if (dateStr2.charAt(4) == '-') {
+                switch (len) {
+                    case 7:
+                        String[] dataParts = dateStr2.split("-");
+                        return LocalDateTime.of(Integer.parseInt(dataParts[0]), Integer.parseInt(dataParts[1]), 1, 0, 0, 0, 0);
+                    case 8:
+                    case 9:
+                    case 11:
+                    case 12:
+                    case 14:
+                    case 15:
+                    case 17:
+                    case 18:
+                    default:
+                        String[] dataTime = dateStr2.split(" ");
+                        String[] dataParts2 = dataTime[0].split("-");
+                        String[] timeParts = dataTime[1].split(":");
+                        String[] secondParts = timeParts[2].split("\\.");
+                        secondParts[1] = StringUtils.rightPad(secondParts[1], 9, Constants.CJ_MINOR_VERSION);
+                        return LocalDateTime.of(Integer.parseInt(dataParts2[0]), Integer.parseInt(dataParts2[1]), Integer.parseInt(dataParts2[2]),
+                            Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]), Integer.parseInt(secondParts[0]),
+                            Integer.parseInt(secondParts[1]));
+                    case 10:
+                        String[] dataParts3 = dateStr2.split("-");
+                        return LocalDateTime.of(Integer.parseInt(dataParts3[0]), Integer.parseInt(dataParts3[1]), Integer.parseInt(dataParts3[2]), 0,
+                            0, 0, 0);
+                    case 13:
+                        String[] dataTime2 = dateStr2.split(" ");
+                        String[] dataParts4 = dataTime2[0].split("-");
+                        return LocalDateTime.of(Integer.parseInt(dataParts4[0]), Integer.parseInt(dataParts4[1]), Integer.parseInt(dataParts4[2]),
+                            Integer.parseInt(dataTime2[1]), 0, 0, 0);
+                    case 16:
+                        String[] dataTime3 = dateStr2.split(" ");
+                        String[] dataParts5 = dataTime3[0].split("-");
+                        String[] timeParts2 = dataTime3[1].split(":");
+                        return LocalDateTime.of(Integer.parseInt(dataParts5[0]), Integer.parseInt(dataParts5[1]), Integer.parseInt(dataParts5[2]),
+                            Integer.parseInt(timeParts2[0]), Integer.parseInt(timeParts2[1]), 0, 0);
+                    case 19:
+                        String[] dataTime4 = dateStr2.split(" ");
+                        String[] dataParts6 = dataTime4[0].split("-");
+                        String[] timeParts3 = dataTime4[1].split(":");
+                        return LocalDateTime.of(Integer.parseInt(dataParts6[0]), Integer.parseInt(dataParts6[1]), Integer.parseInt(dataParts6[2]),
+                            Integer.parseInt(timeParts3[0]), Integer.parseInt(timeParts3[1]), Integer.parseInt(timeParts3[2]), 0);
+                }
+            } else if (dateStr2.charAt(2) == ':') {
+                switch (len) {
+                    case 5:
+                        String[] timeParts4 = dateStr2.split(":");
+                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts4[0]), Integer.parseInt(timeParts4[1]), 0, 0);
+                    case 8:
+                        String[] timeParts5 = dateStr2.split(":");
+                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts5[0]), Integer.parseInt(timeParts5[1]),
+                            Integer.parseInt(timeParts5[2]), 0);
+                    default:
+                        String[] timeParts6 = dateStr2.split(":");
+                        String[] secondParts2 = timeParts6[2].split("\\.");
+                        secondParts2[1] = StringUtils.rightPad(secondParts2[1], 9, Constants.CJ_MINOR_VERSION);
+                        return LocalDateTime.of(0, 1, 1, Integer.parseInt(timeParts6[0]), Integer.parseInt(timeParts6[1]),
+                            Integer.parseInt(secondParts2[0]), Integer.parseInt(secondParts2[1]));
+                }
+            } else {
+                throw new UnsupportedOperationException(value.getClass() + ", value '" + value + "' , parse to local date time failed.");
+            }
+        } else if (StringUtils.isNumeric(value)) {
+            return LocalDateTime.of(Integer.parseInt(value), 1, 1, 0, 0, 0, 0);
+        } else {
+            throw new DateTimeException(value + " format error.");
+        }
+    }
+
+    public static LocalDateTime toLocalDateTime(Object value) {
+        if (value == null || StringUtils.isBlank(value.toString())) {
+            return null;
+        }
+        if (value instanceof Temporal) {
+            if (value instanceof LocalDateTime) {
+                return (LocalDateTime) value;
+            }
+            if (value instanceof OffsetDateTime) {
+                return ((OffsetDateTime) value).toLocalDateTime();
+            }
+            if (value instanceof LocalTime) {
+                return LocalDateTime.of(LocalDate.of(1970, 1, 1), (LocalTime) value);
+            } else if (value instanceof LocalDate) {
+                return LocalDateTime.of((LocalDate) value, LocalTime.of(0, 0));
+            } else {
+                throw new UnsupportedOperationException(value.getClass() + ", value '" + value + "' , parse local date time failed.");
+            }
+        } else if (!(value instanceof java.util.Date)) {
+            return toLocalDateTime(value.toString());
+        } else {
+            if (value instanceof Timestamp) {
+                long nanos = ((Timestamp) value).getNanos();
+                return Instant.ofEpochMilli(((Timestamp) value).getTime() - (nanos / 1000000)).plusNanos(nanos).atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            } else if (value instanceof java.sql.Date) {
+                return ((java.sql.Date) value).toLocalDate().atTime(0, 0);
+            } else {
+                if (!(value instanceof Time)) {
+                    return ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                }
+                return LocalDateTime.of(LocalDate.of(1970, 1, 1),
+                    Instant.ofEpochMilli(((Time) value).getTime()).atZone(ZoneId.systemDefault()).toLocalTime());
+            }
+        }
+    }
+
+    public static boolean isHexNumber(String str) {
+        boolean flag = true;
+        if (str.startsWith("0x") || str.startsWith("0X")) {
+            str = str.substring(2);
+        }
+        int i = 0;
+        while (true) {
+            if (i < str.length()) {
+                char cc = str.charAt(i);
+                if (cc != '0' && cc != '1' && cc != '2' && cc != '3' && cc != '4' && cc != '5' && cc != '6' && cc != '7' && cc != '8' && cc != '9'
+                    && cc != 'A' && cc != 'B' && cc != 'C' && cc != 'D' && cc != 'E' && cc != 'F' && cc != 'a' && cc != 'b' && cc != 'c' && cc != 'd'
+                    && cc != 'e' && cc != 'f') {
+                    flag = false;
+                    break;
+                }
+                i++;
+            } else {
+                break;
+            }
+        }
+        return flag;
+    }
+
+    public static byte[] toBytes(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strVal = (String) value;
+            if ((strVal.startsWith("0x") || strVal.startsWith("0X")) && isHexNumber(strVal)) {
+                return hex2bytes(strVal.substring(2));
+            }
+            return ((String) value).getBytes(StandardCharsets.ISO_8859_1);
+        } else if (value instanceof byte[]) {
+            return (byte[]) value;
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , parse to bytes failed.");
+        }
+    }
+
+    public static String toGeometry(Object value) throws Exception {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String) {
+            String strVal = (String) value;
+            if (!strVal.startsWith("0x") && !strVal.startsWith("0X")) {
+                return (String) value;
+            }
+            return new WKTReader().read((String) value).toText();
+        } else if (value instanceof byte[]) {
+            // mysql add 4 byte in header of geometry
+            byte[] bytes = (byte[]) value;
+            if (bytes.length > 4) {
+                byte[] dst = new byte[bytes.length - 4];
+                System.arraycopy(bytes, 4, dst, 0, bytes.length - 4);
+                return new WKBReader().read(dst).toText();
+            }
+            return new WKBReader().read(bytes).toText();
+        } else {
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , " + "parse to geometry failed.");
+        }
+    }
+
+    public static byte[] hex2bytes(String hexStr) {
+        if (hexStr == null) {
+            return null;
+        }
+        if (org.apache.commons.lang3.StringUtils.isBlank(hexStr)) {
+            return new byte[0];
+        }
+
+        if (hexStr.length() % 2 == 1) {
+            hexStr = "0" + hexStr;
+        }
+
+        int count = hexStr.length() / 2;
+        byte[] ret = new byte[count];
+        for (int i = 0; i < count; i++) {
+            int index = i * 2;
+            char c1 = hexStr.charAt(index);
+            char c2 = hexStr.charAt(index + 1);
+            ret[i] = (byte) (toByte(c1) << 4);
+            ret[i] = (byte) (ret[i] | toByte(c2));
+        }
+        return ret;
+    }
+
+    private static byte toByte(char src) {
+        switch (Character.toUpperCase(src)) {
+            case '0':
+                return 0;
+            case '1':
+                return 1;
+            case '2':
+                return 2;
+            case '3':
+                return 3;
+            case '4':
+                return 4;
+            case '5':
+                return 5;
+            case '6':
+                return 6;
+            case '7':
+                return 7;
+            case '8':
+                return 8;
+            case '9':
+                return 9;
+            case 'A':
+                return 10;
+            case 'B':
+                return 11;
+            case 'C':
+                return 12;
+            case 'D':
+                return 13;
+            case 'E':
+                return 14;
+            case 'F':
+                return 15;
+            default:
+                throw new IllegalStateException("0-F");
+        }
     }
 }

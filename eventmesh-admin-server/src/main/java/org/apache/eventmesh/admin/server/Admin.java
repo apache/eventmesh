@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.admin.server;
 
+import org.apache.eventmesh.common.ComponentLifeCycle;
 import org.apache.eventmesh.common.remote.Task;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.utils.PagedList;
