@@ -36,7 +36,7 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
 	implementation "com.alibaba:druid-spring-boot-starter"
-	implementation 'com.mysql:mysql-connector-j'
+    compileOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 }
