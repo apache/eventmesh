@@ -15,21 +15,14 @@
  * limitations under the License.
  */
 
-List canal = [
-        "com.alibaba.otter:canal.instance.manager:$canal_version",
-        "com.alibaba.otter:canal.parse:$canal_version",
-        "com.alibaba.otter:canal.server:$canal_version"
-]
+package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-dependencies {
-    api project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation "org.locationtech.jts:jts-core"
-    implementation project(":eventmesh-common")
-    implementation canal
-    implementation "com.alibaba:druid"
-    implementation 'com.mysql:mysql-connector-j'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-junit-jupiter"
+import java.sql.JDBCType;
+
+import lombok.Data;
+
+@Data
+public class RdbColumnDefinition {
+    protected String name;
+    protected JDBCType jdbcType;
 }

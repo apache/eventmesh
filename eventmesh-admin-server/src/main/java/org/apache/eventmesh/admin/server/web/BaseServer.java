@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.server.web;
 
-import org.apache.eventmesh.admin.server.ComponentLifeCycle;
+import org.apache.eventmesh.common.ComponentLifeCycle;
 import org.apache.eventmesh.common.remote.payload.PayloadFactory;
 
 import javax.annotation.PostConstruct;
@@ -40,9 +40,9 @@ public abstract class BaseServer implements ComponentLifeCycle {
     }
 
     @PreDestroy
-    public void shutdown() {
+    public void shutdown() throws Exception {
         log.info("[{}] server will destroy", this.getClass().getSimpleName());
-        destroy();
+        stop();
         log.info("[{}] server has be destroy", this.getClass().getSimpleName());
     }
 

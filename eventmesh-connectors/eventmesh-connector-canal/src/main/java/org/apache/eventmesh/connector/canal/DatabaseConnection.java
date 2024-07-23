@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.canal;
 
 
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.SourceConnectorConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,46 +32,40 @@ public class DatabaseConnection {
 
     public static DruidDataSource sinkDataSource;
 
-    public static CanalSourceConfig sourceConfig;
+    public static SourceConnectorConfig sourceConfig;
 
-    public static CanalSinkConfig sinkConfig;
+    public static SinkConnectorConfig sinkConfig;
+
+    public static DruidDataSource createDruidDataSource(String url, String userName, String passWord) {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl(url);
+        dataSource.setUsername(userName);
+        dataSource.setPassword(passWord);
+        dataSource.setInitialSize(5);
+        dataSource.setMinIdle(5);
+        dataSource.setMaxActive(20);
+        dataSource.setMaxWait(60000);
+        dataSource.setTimeBetweenEvictionRunsMillis(60000);
+        dataSource.setMinEvictableIdleTimeMillis(300000);
+        dataSource.setValidationQuery("SELECT 1");
+        dataSource.setTestWhileIdle(true);
+        dataSource.setTestOnBorrow(false);
+        dataSource.setTestOnReturn(false);
+        dataSource.setPoolPreparedStatements(true);
+        dataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
+        return dataSource;
+    }
 
     public static void initSourceConnection() {
-        sourceDataSource = new DruidDataSource();
-        sourceDataSource.setUrl(sourceConfig.getSourceConnectorConfig().getUrl());
-        sourceDataSource.setUsername(sourceConfig.getSourceConnectorConfig().getUserName());
-        sourceDataSource.setPassword(sourceConfig.getSourceConnectorConfig().getPassWord());
-        sourceDataSource.setInitialSize(5);
-        sourceDataSource.setMinIdle(5);
-        sourceDataSource.setMaxActive(20);
-        sourceDataSource.setMaxWait(60000);
-        sourceDataSource.setTimeBetweenEvictionRunsMillis(60000);
-        sourceDataSource.setMinEvictableIdleTimeMillis(300000);
-        sourceDataSource.setValidationQuery("SELECT 1");
-        sourceDataSource.setTestWhileIdle(true);
-        sourceDataSource.setTestOnBorrow(false);
-        sourceDataSource.setTestOnReturn(false);
-        sourceDataSource.setPoolPreparedStatements(true);
-        sourceDataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
+        sourceDataSource = createDruidDataSource(sourceConfig.getUrl(),
+            sourceConfig.getUserName(),
+            sourceConfig.getPassWord());
     }
 
     public static void initSinkConnection() {
-        sinkDataSource = new DruidDataSource();
-        sinkDataSource.setUrl(sinkConfig.getSinkConnectorConfig().getUrl());
-        sinkDataSource.setUsername(sinkConfig.getSinkConnectorConfig().getUserName());
-        sinkDataSource.setPassword(sinkConfig.getSinkConnectorConfig().getPassWord());
-        sinkDataSource.setInitialSize(5);
-        sinkDataSource.setMinIdle(5);
-        sinkDataSource.setMaxActive(20);
-        sinkDataSource.setMaxWait(60000);
-        sinkDataSource.setTimeBetweenEvictionRunsMillis(60000);
-        sinkDataSource.setMinEvictableIdleTimeMillis(300000);
-        sinkDataSource.setValidationQuery("SELECT 1");
-        sinkDataSource.setTestWhileIdle(true);
-        sinkDataSource.setTestOnBorrow(false);
-        sinkDataSource.setTestOnReturn(false);
-        sinkDataSource.setPoolPreparedStatements(true);
-        sinkDataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
+        sinkDataSource = createDruidDataSource(sinkConfig.getUrl(),
+            sinkConfig.getUserName(),
+            sinkConfig.getPassWord());
     }
 
 

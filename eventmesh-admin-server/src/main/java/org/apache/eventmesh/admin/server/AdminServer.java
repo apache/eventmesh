@@ -102,7 +102,7 @@ public class AdminServer implements Admin, ApplicationListener<ApplicationReadyE
     }
 
     @Override
-    public void destroy() {
+    public void stop() {
         if (configuration.isEventMeshRegistryPluginEnabled()) {
             registryService.unRegister(adminServeInfo);
             try {

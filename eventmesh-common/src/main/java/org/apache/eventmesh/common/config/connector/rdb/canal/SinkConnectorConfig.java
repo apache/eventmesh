@@ -17,27 +17,16 @@
 
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
+import org.apache.eventmesh.common.config.connector.rdb.JdbcConfig;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Configuration parameters for a sink connector.
  */
 @Data
-public class SinkConnectorConfig {
-
+@EqualsAndHashCode(callSuper = true)
+public class SinkConnectorConfig extends JdbcConfig {
     private String connectorName;
-
-    private String url;
-
-    private String dbAddress;
-
-    private int dbPort;
-
-    private String userName;
-
-    private String passWord;
-
-    private String schemaName;
-
-    private String tableName;
 }
