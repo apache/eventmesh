@@ -1,7 +1,5 @@
 package org.apache.eventmesh.connector.canal.sink.connector;
 
-import com.alibaba.druid.pool.DruidPooledConnection;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.Constants;
@@ -32,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.mysql.cj.exceptions.MysqlErrorNumbers;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,6 +38,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
     private CanalSinkFullConfig config;
     private RdbTableMgr tableMgr;
     private final DateTimeFormatter dataTimePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+
     @Override
     public void start() throws Exception {
         tableMgr.start();
@@ -69,7 +67,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        this.config = (CanalSinkFullConfig)((SinkConnectorContext)connectorContext).getSinkConfig();
+        this.config = (CanalSinkFullConfig) ((SinkConnectorContext) connectorContext).getSinkConfig();
         init();
     }
 
@@ -79,6 +77,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
         }
         DatabaseConnection.sinkConfig = this.config.getSinkConfig();
         DatabaseConnection.initSinkConnection();
+        DatabaseConnection.sinkDataSource.setDefaultAutoCommit(false);
 
         tableMgr = new RdbTableMgr(this.config.getSinkConfig(), DatabaseConnection.sinkDataSource);
     }
@@ -102,7 +101,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             return;
         }
         ConnectRecord record = sinkRecords.get(0);
-        List<Map<String, Object>> data = (List<Map<String, Object>>)record.getData();
+        List<Map<String, Object>> data = (List<Map<String, Object>>) record.getData();
         if (data == null || data.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("[{}] got rows data is none", this.getClass());
@@ -117,7 +116,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             return;
         }
 
-        MySQLTableDef tableDefinition = (MySQLTableDef)tableMgr.getTable(offset.getPosition().getSchema(), offset.getPosition().getTableName());
+        MySQLTableDef tableDefinition = (MySQLTableDef) tableMgr.getTable(offset.getPosition().getSchema(), offset.getPosition().getTableName());
         if (tableDefinition == null) {
             log.warn("target schema [{}] table [{}] is not exists", offset.getPosition().getSchema(), offset.getPosition().getTableName());
             return;
@@ -125,24 +124,53 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
         List<MySQLColumnDef> cols = new ArrayList<>(tableDefinition.getColumnDefinitions().values());
         String sql = generateInsertPrepareSql(offset.getPosition().getSchema(), offset.getPosition().getTableName(),
             cols);
-
-        try(DruidPooledConnection connection = DatabaseConnection.sinkDataSource.getConnection();PreparedStatement statement =
-            connection.prepareStatement(sql)) {
+        DruidPooledConnection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DatabaseConnection.sinkDataSource.getConnection();
+            statement =
+                connection.prepareStatement(sql);
             for (Map<String, Object> col : data) {
                 setPrepareParams(statement, col, cols);
+                log.info("insert sql {}", statement.toString());
                 statement.addBatch();
             }
             statement.executeBatch();
         } catch (SQLException e) {
-            log.warn("sink connector write fail", e);
+            log.warn("full sink process schema [{}] table [{}] connector write fail", tableDefinition.getSchemaName(),tableDefinition.getTableName(),
+                e);
             LockSupport.parkNanos(3000 * 1000L);
         } catch (Exception e) {
-            log.error("", e);
-            // todo rollback
+            log.error("full sink process schema [{}] table [{}] catch unknown exception", tableDefinition.getSchemaName(),
+                tableDefinition.getTableName(), e);
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.rollback();
+                }
+            } catch (SQLException rollback) {
+                log.warn("full sink process schema [{}] table [{}] rollback fail", tableDefinition.getSchemaName(),
+                    tableDefinition.getTableName(), e);
+            }
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    log.info("close prepare statement fail", e);
+                }
+            }
+
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    log.info("close db connection fail", e);
+                }
+            }
         }
     }
 
-    private void setPrepareParams(PreparedStatement preparedStatement, Map<String, Object> col,  List<MySQLColumnDef> columnDefs) throws Exception {
+    private void setPrepareParams(PreparedStatement preparedStatement, Map<String, Object> col, List<MySQLColumnDef> columnDefs) throws Exception {
         for (int i = 0; i < columnDefs.size(); i++) {
             writeColumn(preparedStatement, i + 1, columnDefs.get(i), col.get(columnDefs.get(i).getName()));
         }
@@ -305,23 +333,18 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                 case GEOMETRY:
                 case GEOMETRY_COLLECTION:
                 case GEOM_COLLECTION:
-                    String geoValue = SqlUtils.toGisWKT(value);
-                    if (geoValue == null) {
-                        ps.setNull(index, Types.VARCHAR);
-                        return;
-                    }
-                    if (geoValue.length() >= 5 && StringUtils.startsWithIgnoreCase(geoValue.substring(0, 5), "SRID=")) {
-                        geoValue = geoValue.substring(geoValue.indexOf(59) + 1);
-                    }
-                    ps.setString(index, geoValue);
-                    return;
                 case POINT:
                 case LINESTRING:
                 case POLYGON:
                 case MULTIPOINT:
                 case MULTILINESTRING:
                 case MULTIPOLYGON:
-                    ps.setNull(index, MysqlErrorNumbers.ER_INVALID_GROUP_FUNC_USE);
+                    String geoValue = SqlUtils.toGeometry(value);
+                    if (geoValue == null) {
+                        ps.setNull(index, Types.VARCHAR);
+                        return;
+                    }
+                    ps.setString(index, geoValue);
                     return;
                 default:
                     throw new UnsupportedOperationException("columnType '" + colType + "' Unsupported.");
@@ -348,7 +371,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             }
             String wrapName = Constants.MySQLQuot + colInfo.getName() + Constants.MySQLQuot;
             columns.append(wrapName);
-            values.append("?");
+            values.append(colInfo.getType() == null ? "?" : colInfo.getType().genPrepareStatement4Insert());
         }
         builder.append("(").append(columns).append(")");
         builder.append(" VALUES ");

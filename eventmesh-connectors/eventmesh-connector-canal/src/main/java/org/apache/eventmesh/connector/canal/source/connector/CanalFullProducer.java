@@ -85,7 +85,7 @@ public class CanalFullProducer {
             log.info("scan sql is [{}] , cur position [{}]", scanSql, JsonUtils.toJSONString(position.getCurPrimaryKeyCols()));
 
             try (Connection connection = dataSource.getConnection(); PreparedStatement statement =
-                    connection.prepareStatement(scanSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+                connection.prepareStatement(scanSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
                 statement.setFetchSize(Integer.MIN_VALUE);
                 setPrepareStatementValue(statement);
                 try (ResultSet resultSet = statement.executeQuery()) {
@@ -93,9 +93,9 @@ public class CanalFullProducer {
                     while (flag.get() && resultSet.next()) {
                         Map<String, Object> columnValues = new LinkedHashMap<>();
                         for (Map.Entry<String, MySQLColumnDef> col :
-                                tableDefinition.getColumnDefinitions().entrySet()) {
+                            tableDefinition.getColumnDefinitions().entrySet()) {
                             columnValues.put(col.getKey(), readColumn(resultSet, col.getKey(),
-                                    col.getValue().getType()));
+                                col.getValue().getType()));
                         }
                         lastCol = columnValues;
                         rows.add(lastCol);
@@ -109,24 +109,25 @@ public class CanalFullProducer {
 
                     if (lastCol == null || checkIsScanFinish(lastCol)) {
                         log.info("full scan db [{}] table [{}] finish", tableDefinition.getSchemaName(),
-                                tableDefinition.getTableName());
+                            tableDefinition.getTableName());
                         commitConnectRecord(rows);
                         return;
                     }
                     refreshPosition(lastCol);
                 } catch (InterruptedException ignore) {
                     log.info("full scan db [{}] table [{}] interrupted", tableDefinition.getSchemaName(),
-                            tableDefinition.getTableName());
+                        tableDefinition.getTableName());
                     Thread.currentThread().interrupt();
                     return;
                 }
             } catch (SQLException e) {
-                log.error("catch SQLException fail", e);
+                log.error("full source process schema [{}] table [{}] catch SQLException fail",tableDefinition.getSchemaName(),
+                    tableDefinition.getTableName(), e);
                 LockSupport.parkNanos(3000 * 1000L);
             } catch (Exception e) {
-                log.error("process schema [{}] table [{}] catch unknown exception", tableDefinition.getSchemaName(),
-                        tableDefinition.getTableName(), e);
-                LockSupport.parkNanos(3000 * 1000L);
+                log.error("full source process schema [{}] table [{}] catch unknown exception", tableDefinition.getSchemaName(),
+                    tableDefinition.getTableName(), e);
+                return;
             }
             if (isFirstSelect) {
                 isFirstSelect = false;
@@ -156,7 +157,7 @@ public class CanalFullProducer {
         if (lastPrimaryValue instanceof Number) {
             BigDecimal last = new BigDecimal(String.valueOf(lastPrimaryValue));
             BigDecimal max =
-                    new BigDecimal(String.valueOf(maxPrimaryValue));
+                new BigDecimal(String.valueOf(maxPrimaryValue));
             return last.compareTo(max) > 0;
         }
         if (lastPrimaryValue instanceof Comparable) {
@@ -166,17 +167,15 @@ public class CanalFullProducer {
     }
 
     public Object readColumn(ResultSet rs, String col, CanalMySQLType colType) throws Exception {
+        if (col == null || rs.wasNull()) {
+            return null;
+        }
         switch (colType) {
             case TINYINT:
             case SMALLINT:
             case MEDIUMINT:
             case INT:
-                Long uLong;
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    uLong = rs.getLong(col);
-                }
+                Long uLong = rs.getLong(col);
                 if (uLong.compareTo((long) Integer.MAX_VALUE) > 0) {
                     return uLong;
                 }
@@ -203,9 +202,6 @@ public class CanalFullProducer {
             case TIMESTAMP:
                 return rs.getObject(col, LocalDateTime.class);
             case YEAR:
-                if (rs.wasNull()) {
-                    return null;
-                }
                 return rs.getInt(col);
             case CHAR:
             case VARCHAR:
@@ -226,11 +222,6 @@ public class CanalFullProducer {
             case LONGBLOB:
                 return rs.getBytes(col);
             case GEOMETRY:
-                String geo = rs.getString(col);
-                if (col == null) {
-                    return null;
-                }
-                return SqlUtils.toGeometry("0x" + geo);
             case GEOMETRY_COLLECTION:
             case GEOM_COLLECTION:
             case POINT:
@@ -239,12 +230,15 @@ public class CanalFullProducer {
             case MULTIPOINT:
             case MULTILINESTRING:
             case MULTIPOLYGON:
-                return null;
+                byte[] geo = rs.getBytes(col);
+                if (geo == null) {
+                    return null;
+                }
+                return SqlUtils.toGeometry(geo);
             default:
                 return rs.getObject(col);
         }
     }
-
 
 
     private void refreshPosition(Map<String, Object> lastCol) {
@@ -335,7 +329,6 @@ public class CanalFullProducer {
     }
 
 
-
     private void generateQueryColumnsSql(StringBuilder builder, Collection<MySQLColumnDef> rdbColDefs) {
         if (rdbColDefs == null || rdbColDefs.isEmpty()) {
             builder.append("*");
@@ -373,15 +366,15 @@ public class CanalFullProducer {
 
     private void buildWhereSql(StringBuilder builder, boolean isEquals) {
         builder.append(" where ")
-                .append(Constants.MySQLQuot)
-                .append(choosePrimaryKey.get())
-                .append(Constants.MySQLQuot);
+            .append(Constants.MySQLQuot)
+            .append(choosePrimaryKey.get())
+            .append(Constants.MySQLQuot);
         if (isEquals) {
             builder.append(" >= ? ");
         } else {
             builder.append(" > ? ");
         }
         builder.append(" order by ").append(Constants.MySQLQuot).append(choosePrimaryKey.get()).append(Constants.MySQLQuot)
-                .append(" asc ");
+            .append(" asc ");
     }
 }

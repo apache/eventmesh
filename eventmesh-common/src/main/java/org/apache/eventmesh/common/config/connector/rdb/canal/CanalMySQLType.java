@@ -1,9 +1,9 @@
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import com.mysql.cj.MysqlType;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.mysql.cj.MysqlType;
 
 public enum CanalMySQLType {
     BIT("BIT"),
@@ -58,6 +58,29 @@ public enum CanalMySQLType {
         CanalMySQLType[] values = values();
         for (CanalMySQLType tableType : values) {
                 TYPES.put(tableType.codeKey, tableType);
+        }
+    }
+
+    public String genPrepareStatement4Insert() {
+        switch (this) {
+            case GEOMETRY:
+            case GEOM_COLLECTION:
+            case GEOMETRY_COLLECTION:
+                return "ST_GEOMFROMTEXT(?)";
+            case POINT:
+                return "ST_PointFromText(?)";
+            case LINESTRING:
+                return "ST_LineStringFromText(?)";
+            case POLYGON:
+                return "ST_PolygonFromText(?)";
+            case MULTIPOINT:
+                return "ST_MultiPointFromText(?)";
+            case MULTILINESTRING:
+                return "ST_MultiLineStringFromText(?)";
+            case MULTIPOLYGON:
+                return "ST_MultiPolygonFromText(?)";
+            default:
+                return "?";
         }
     }
 
