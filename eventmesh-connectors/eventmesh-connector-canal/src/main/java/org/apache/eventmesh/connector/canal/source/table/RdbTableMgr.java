@@ -79,18 +79,15 @@ public class RdbTableMgr extends AbstractComponent {
                         mysqlTable.setSchemaName(db.getSchemaName());
                         mysqlTable.setTableName(table.getTableName());
                         List<String> tables = Collections.singletonList(table.getTableName());
-                        Map<String, List<String>> primaryKeys = queryTablePrimaryKey(db.getSchemaName(),
-                            tables);
+                        Map<String, List<String>> primaryKeys = queryTablePrimaryKey(db.getSchemaName(), tables);
                         Map<String, List<MySQLColumnDef>> columns = queryColumns(db.getSchemaName(), tables);
                         if (primaryKeys == null || primaryKeys.isEmpty() || primaryKeys.get(table.getTableName()) == null) {
-                            log.warn("init db [{}] table [{}] info, and primary keys are empty", db.getSchemaName(),
-                                table.getTableName());
+                            log.warn("init db [{}] table [{}] info, and primary keys are empty", db.getSchemaName(), table.getTableName());
                         } else {
                             mysqlTable.setPrimaryKeys(new HashSet<>(primaryKeys.get(table.getTableName())));
                         }
                         if (columns == null || columns.isEmpty() || columns.get(table.getTableName()) == null) {
-                            log.warn("init db [{}] table [{}] info, and columns are empty", db.getSchemaName(),
-                                table.getTableName());
+                            log.warn("init db [{}] table [{}] info, and columns are empty", db.getSchemaName(), table.getTableName());
                         } else {
                             LinkedHashMap<String, MySQLColumnDef> cols = new LinkedHashMap<>();
                             columns.get(table.getTableName()).forEach(x -> cols.put(x.getName(), x));
@@ -99,8 +96,7 @@ public class RdbTableMgr extends AbstractComponent {
 
                         this.tables.put(new RdbSimpleTable(db.getSchemaName(), table.getTableName()), mysqlTable);
                     } catch (Exception e) {
-                        log.error("init rdb table schema [{}] table [{}] fail", db.getSchemaName(),
-                            table.getTableName(), e);
+                        log.error("init rdb table schema [{}] table [{}] fail", db.getSchemaName(), table.getTableName(), e);
                     }
                 }
 
@@ -108,16 +104,15 @@ public class RdbTableMgr extends AbstractComponent {
         }
     }
 
-    private Map<String, List<String>> queryTablePrimaryKey(String schema,
-                                                           List<String> tables) throws SQLException {
+    private Map<String, List<String>> queryTablePrimaryKey(String schema, List<String> tables) throws SQLException {
         Map<String, List<String>> primaryKeys = new LinkedHashMap<>();
         String prepareTables = SqlUtils.genPrepareSqlOfInClause(tables.size());
-        String sql = "select L.TABLE_NAME,L.COLUMN_NAME,R.CONSTRAINT_TYPE from " +
-            "INFORMATION_SCHEMA.KEY_COLUMN_USAGE L left join INFORMATION_SCHEMA.TABLE_CONSTRAINTS R on L" +
-            ".TABLE_SCHEMA = R.TABLE_SCHEMA and L.TABLE_NAME = R.TABLE_NAME and L.CONSTRAINT_CATALOG = R" +
-            ".CONSTRAINT_CATALOG and L.CONSTRAINT_SCHEMA = R.CONSTRAINT_SCHEMA and L.CONSTRAINT_NAME = R" +
-            ".CONSTRAINT_NAME where L.TABLE_SCHEMA = ? and L.TABLE_NAME in " + prepareTables + " and R" +
-            ".CONSTRAINT_TYPE IN ('PRIMARY KEY') order by L.ORDINAL_POSITION asc";
+        String sql = "select L.TABLE_NAME,L.COLUMN_NAME,R.CONSTRAINT_TYPE from "
+            + "INFORMATION_SCHEMA.KEY_COLUMN_USAGE L left join INFORMATION_SCHEMA.TABLE_CONSTRAINTS R on L"
+            + ".TABLE_SCHEMA = R.TABLE_SCHEMA and L.TABLE_NAME = R.TABLE_NAME and L.CONSTRAINT_CATALOG = R"
+            + ".CONSTRAINT_CATALOG and L.CONSTRAINT_SCHEMA = R.CONSTRAINT_SCHEMA and L.CONSTRAINT_NAME = R"
+            + ".CONSTRAINT_NAME where L.TABLE_SCHEMA = ? and L.TABLE_NAME in " + prepareTables + " and R"
+            + ".CONSTRAINT_TYPE IN ('PRIMARY KEY') order by L.ORDINAL_POSITION asc";
         try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
             statement.setString(1, schema);
             SqlUtils.setInClauseParameters(statement, 2, tables);
@@ -146,8 +141,7 @@ public class RdbTableMgr extends AbstractComponent {
         String sql = "select TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH," +
             "CHARACTER_OCTET_LENGTH,NUMERIC_SCALE,NUMERIC_PRECISION,DATETIME_PRECISION,CHARACTER_SET_NAME," +
             "COLLATION_NAME,COLUMN_TYPE,COLUMN_DEFAULT,COLUMN_COMMENT,ORDINAL_POSITION,EXTRA from " +
-            "INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = ? and TABLE_NAME in " + prepareTables + " order by " +
-            "ORDINAL_POSITION asc";
+            "INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = ? and TABLE_NAME in " + prepareTables + " order by " + "ORDINAL_POSITION asc";
         Map<String, List<MySQLColumnDef>> cols = new LinkedHashMap<>();
         try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
             statement.setString(1, schema);

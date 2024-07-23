@@ -146,8 +146,7 @@ public class SqlUtils {
         setInClauseParameters(preparedStatement, 0, params);
     }
 
-    public static void setInClauseParameters(PreparedStatement preparedStatement, int paramIndexStart,
-                                             List<String> params) throws SQLException {
+    public static void setInClauseParameters(PreparedStatement preparedStatement, int paramIndexStart, List<String> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             preparedStatement.setString(paramIndexStart + i, params.get(i));
         }
@@ -261,8 +260,7 @@ public class SqlUtils {
         } else if (float.class.equals(requiredType) || Float.class.equals(requiredType)) {
             value = rs.getFloat(index);
             wasNullCheck = true;
-        } else if (double.class.equals(requiredType) || Double.class.equals(requiredType)
-            || Number.class.equals(requiredType)) {
+        } else if (double.class.equals(requiredType) || Double.class.equals(requiredType) || Number.class.equals(requiredType)) {
             value = rs.getDouble(index);
             wasNullCheck = true;
         } else if (Time.class.equals(requiredType)) {
@@ -326,16 +324,14 @@ public class SqlUtils {
      * Check whether the given SQL type is numeric.
      */
     public static boolean isNumeric(int sqlType) {
-        return (Types.BIT == sqlType) || (Types.BIGINT == sqlType) || (Types.DECIMAL == sqlType)
-            || (Types.DOUBLE == sqlType) || (Types.FLOAT == sqlType) || (Types.INTEGER == sqlType)
-            || (Types.NUMERIC == sqlType) || (Types.REAL == sqlType) || (Types.SMALLINT == sqlType)
-            || (Types.TINYINT == sqlType);
+        return (Types.BIT == sqlType) || (Types.BIGINT == sqlType) || (Types.DECIMAL == sqlType) || (Types.DOUBLE == sqlType) ||
+            (Types.FLOAT == sqlType) || (Types.INTEGER == sqlType) || (Types.NUMERIC == sqlType) || (Types.REAL == sqlType) ||
+            (Types.SMALLINT == sqlType) || (Types.TINYINT == sqlType);
     }
 
     public static boolean isTextType(int sqlType) {
-        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR
-            || sqlType == Types.NCHAR || sqlType == Types.NVARCHAR || sqlType == Types.NCLOB
-            || sqlType == Types.LONGNVARCHAR;
+        return sqlType == Types.CHAR || sqlType == Types.VARCHAR || sqlType == Types.CLOB || sqlType == Types.LONGVARCHAR || sqlType == Types.NCHAR ||
+            sqlType == Types.NVARCHAR || sqlType == Types.NCLOB || sqlType == Types.LONGNVARCHAR;
     }
 
     public static JDBCType toJDBCType(String connectorDataType) {
@@ -861,8 +857,7 @@ public class SqlUtils {
             }
             return new WKBReader().read(bytes).toText();
         } else {
-            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , " +
-                "parse to geometry failed.");
+            throw new UnsupportedOperationException("class " + value.getClass() + ", value '" + value + "' , " + "parse to geometry failed.");
         }
     }
 

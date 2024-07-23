@@ -36,10 +36,10 @@ public class DatabaseConnection {
 
     public static SinkConnectorConfig sinkConfig;
 
-    public static DruidDataSource createDruidDataSource(String url, String UserName, String passWord) {
+    public static DruidDataSource createDruidDataSource(String url, String userName, String passWord) {
         DruidDataSource dataSource = new DruidDataSource();
         dataSource.setUrl(url);
-        dataSource.setUsername(UserName);
+        dataSource.setUsername(userName);
         dataSource.setPassword(passWord);
         dataSource.setInitialSize(5);
         dataSource.setMinIdle(5);
@@ -58,14 +58,14 @@ public class DatabaseConnection {
 
     public static void initSourceConnection() {
         sourceDataSource = createDruidDataSource(sourceConfig.getUrl(),
-                sourceConfig.getUserName(),
-                sourceConfig.getPassWord());
+            sourceConfig.getUserName(),
+            sourceConfig.getPassWord());
     }
 
     public static void initSinkConnection() {
         sinkDataSource = createDruidDataSource(sinkConfig.getUrl(),
-                sinkConfig.getUserName(),
-                sinkConfig.getPassWord());
+            sinkConfig.getUserName(),
+            sinkConfig.getPassWord());
     }
 
 

@@ -138,7 +138,7 @@ public class CanalFullProducer {
                     return;
                 }
             } catch (SQLException e) {
-                log.error("full source process schema [{}] table [{}] catch SQLException fail",tableDefinition.getSchemaName(),
+                log.error("full source process schema [{}] table [{}] catch SQLException fail", tableDefinition.getSchemaName(),
                     tableDefinition.getTableName(), e);
                 LockSupport.parkNanos(3000 * 1000L);
             } catch (Exception e) {

@@ -99,29 +99,26 @@ public class CanalFullPositionMgr extends AbstractComponent {
                     RdbSimpleTable simpleTable = new RdbSimpleTable(database.getSchemaName(), table.getTableName());
                     RdbTableDefinition tableDefinition;
                     if ((tableDefinition = tableMgr.getTable(simpleTable)) == null) {
-                        log.error("db [{}] table [{}] definition is null", database.getSchemaName(),
-                            table.getTableName());
+                        log.error("db [{}] table [{}] definition is null", database.getSchemaName(), table.getTableName());
                         continue;
                     }
-                    log.info("init position of data [{}] table [{}]", database.getSchemaName(),
-                        table.getTableName());
+                    log.info("init position of data [{}] table [{}]", database.getSchemaName(), table.getTableName());
 
                     JobRdbFullPosition recordPosition = positions.get(simpleTable);
                     if (recordPosition == null || !recordPosition.isFinished()) {
-                        positions.put(simpleTable, fetchTableInfo(DatabaseConnection.sourceDataSource, (MySQLTableDef) tableDefinition,
-                            recordPosition));
+                        positions.put(simpleTable,
+                            fetchTableInfo(DatabaseConnection.sourceDataSource, (MySQLTableDef) tableDefinition, recordPosition));
                     }
                 } catch (Exception e) {
-                    log.error("process schema [{}] table [{}] position fail", database.getSchemaName(),
-                        table.getTableName(), e);
+                    log.error("process schema [{}] table [{}] position fail", database.getSchemaName(), table.getTableName(), e);
                 }
 
             }
         }
     }
 
-    private JobRdbFullPosition fetchTableInfo(DataSource dataSource, MySQLTableDef tableDefinition,
-                                              JobRdbFullPosition recordPosition) throws SQLException {
+    private JobRdbFullPosition fetchTableInfo(DataSource dataSource, MySQLTableDef tableDefinition, JobRdbFullPosition recordPosition)
+        throws SQLException {
         TableFullPosition position = new TableFullPosition();
         Map<String, Object> preMinPrimaryKeys = new LinkedHashMap<>();
         Map<String, Object> preMaxPrimaryKeys = new LinkedHashMap<>();
@@ -138,8 +135,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
         JobRdbFullPosition jobRdbFullPosition = new JobRdbFullPosition();
         if (recordPosition != null) {
             if (StringUtils.isNotBlank(recordPosition.getPrimaryKeyRecords())) {
-                TableFullPosition record = JsonUtils.parseObject(recordPosition.getPrimaryKeyRecords(),
-                    TableFullPosition.class);
+                TableFullPosition record = JsonUtils.parseObject(recordPosition.getPrimaryKeyRecords(), TableFullPosition.class);
                 if (record != null && record.getCurPrimaryKeyCols() != null && !record.getCurPrimaryKeyCols().isEmpty()) {
                     position.setCurPrimaryKeyCols(record.getCurPrimaryKeyCols());
                 }
@@ -155,11 +151,9 @@ public class CanalFullPositionMgr extends AbstractComponent {
 
 
     private long queryCurTableRowCount(DataSource datasource, MySQLTableDef tableDefinition) throws SQLException {
-        String sql =
-            "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName() +
-                "' and `TABLE_NAME`='" + tableDefinition.getTableName() + "'";
-        try (Statement statement = datasource.getConnection().createStatement(); ResultSet resultSet =
-            statement.executeQuery(sql)) {
+        String sql = "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName() +
+            "' and `TABLE_NAME`='" + tableDefinition.getTableName() + "'";
+        try (Statement statement = datasource.getConnection().createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
             long result = 0L;
             if (resultSet.next()) {
                 long avgRowLength = resultSet.getLong("AVG_ROW_LENGTH");
@@ -198,13 +192,12 @@ public class CanalFullPositionMgr extends AbstractComponent {
         }
     }
 
-    private Object fetchMinPrimaryKey(DataSource dataSource, MySQLTableDef tableDefinition,
-                                      Map<String, Object> prePrimary, String curPrimaryKeyCol) throws SQLException {
+    private Object fetchMinPrimaryKey(DataSource dataSource, MySQLTableDef tableDefinition, Map<String, Object> prePrimary, String curPrimaryKeyCol)
+        throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT MIN(").append(Constants.MySQLQuot).append(curPrimaryKeyCol).append(Constants.MySQLQuot)
-            .append(") min_primary_key FROM")
-            .append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot).append(".").append(Constants.MySQLQuot)
-            .append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
+            .append(") min_primary_key FROM").append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot)
+            .append(".").append(Constants.MySQLQuot).append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
         appendPrePrimaryKey(prePrimary, builder);
         String sql = builder.toString();
         log.info("fetch min primary sql [{}]", sql);
@@ -224,13 +217,12 @@ public class CanalFullPositionMgr extends AbstractComponent {
         return null;
     }
 
-    private Object fetchMaxPrimaryKey(DataSource dataSource, MySQLTableDef tableDefinition,
-                                      Map<String, Object> prePrimary, String curPrimaryKeyCol) throws SQLException {
+    private Object fetchMaxPrimaryKey(DataSource dataSource, MySQLTableDef tableDefinition, Map<String, Object> prePrimary, String curPrimaryKeyCol)
+        throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT MAX(").append(Constants.MySQLQuot).append(curPrimaryKeyCol).append(Constants.MySQLQuot)
-            .append(") max_primary_key FROM")
-            .append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot).append(".").append(Constants.MySQLQuot)
-            .append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
+            .append(") max_primary_key FROM").append(Constants.MySQLQuot).append(tableDefinition.getSchemaName()).append(Constants.MySQLQuot)
+            .append(".").append(Constants.MySQLQuot).append(tableDefinition.getTableName()).append(Constants.MySQLQuot);
         appendPrePrimaryKey(prePrimary, builder);
         String sql = builder.toString();
         log.info("fetch max primary sql [{}]", sql);
