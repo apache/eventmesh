@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.eventmesh.connector.canal.source.position;
 
 import org.apache.eventmesh.common.AbstractComponent;
@@ -33,7 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 public class CanalFullPositionMgr extends AbstractComponent {
 
     private final CanalSourceFullConfig config;
-//    private ScheduledThreadPoolExecutor executor;
     private final Map<RdbSimpleTable, JobRdbFullPosition> positions = new LinkedHashMap<>();
     private final RdbTableMgr tableMgr;
 
@@ -43,17 +59,11 @@ public class CanalFullPositionMgr extends AbstractComponent {
     }
 
     @Override
-    protected void startup() throws Exception {
+    protected void run() throws Exception {
         if (config == null || config.getConnectorConfig() == null || config.getConnectorConfig().getDatabases() == null) {
             log.info("config or database is null");
             return;
         }
-//        executor = new ScheduledThreadPoolExecutor(1, r -> {
-//            Thread thread = new Thread(r);
-//            thread.setDaemon(true);
-//            thread.setName("task-full-position-timer");
-//            return thread;
-//        }, new ScheduledThreadPoolExecutor.DiscardOldestPolicy());
         prepareRecordPosition();
         initPositions();
     }
