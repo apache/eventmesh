@@ -23,7 +23,7 @@ List canal = [
 
 dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
-    implementation "org.locationtech.jts"
+    implementation "org.locationtech.jts:jts-core"
     implementation project(":eventmesh-common")
     implementation canal
     implementation "com.alibaba:druid"

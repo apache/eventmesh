@@ -136,6 +136,7 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                 statement.addBatch();
             }
             statement.executeBatch();
+            connection.commit();
         } catch (SQLException e) {
             log.warn("full sink process schema [{}] table [{}] connector write fail", tableDefinition.getSchemaName(),tableDefinition.getTableName(),
                 e);
