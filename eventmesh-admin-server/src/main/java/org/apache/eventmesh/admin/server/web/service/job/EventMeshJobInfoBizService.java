@@ -24,12 +24,10 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
 import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
-import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.DataSourceType;
 import org.apache.eventmesh.common.remote.job.JobTransportType;
-import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -73,11 +71,11 @@ public class EventMeshJobInfoBizService {
         return true;
     }
 
-    public EventMeshJobDetail getJobDetail(FetchJobRequest request, Metadata metadata) {
-        if (request == null) {
+    public EventMeshJobDetail getJobDetail(Integer jobID) {
+        if (jobID == null) {
             return null;
         }
-        EventMeshJobInfo job = jobInfoService.getById(request.getJobID());
+        EventMeshJobInfo job = jobInfoService.getById(jobID);
         if (job == null) {
             return null;
         }

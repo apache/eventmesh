@@ -19,6 +19,7 @@ package org.apache.eventmesh.admin.server.web.handler.impl;
 
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.db.DBThreadPool;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobDetail;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
 import org.apache.eventmesh.admin.server.web.service.job.EventMeshJobInfoBizService;
 import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
@@ -37,15 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequest, EmptyAckResponse> {
+    @Autowired
+    private EventMeshJobInfoBizService jobInfoBizService;
 
     @Autowired
-    EventMeshJobInfoBizService jobInfoBizService;
+    private DBThreadPool executor;
 
     @Autowired
-    DBThreadPool executor;
-
-    @Autowired
-    EventMeshPositionBizService positionBizService;
+    private EventMeshPositionBizService positionBizService;
 
 
     @Override
@@ -88,8 +88,10 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
                 log.warn("handle position request fail, request [{}]", request, e);
             } finally {
                 try {
-                    if (!jobInfoBizService.updateJobState(jobID, request.getState())) {
-                        log.warn("update job [{}] state to [{}] fail", jobID, request.getState());
+                    EventMeshJobDetail detail = jobInfoBizService.getJobDetail(jobID);
+                    if (detail != null && !detail.getState().equals(request.getState()) && !jobInfoBizService.updateJobState(jobID,
+                        request.getState())) {
+                        log.warn("update job [{}] old state [{}] to [{}] fail", jobID, detail.getState(), request.getState());
                     }
                 } catch (Exception e) {
                     log.warn("update job id [{}] type [{}] state [{}] fail", request.getJobID(),

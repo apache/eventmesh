@@ -53,7 +53,7 @@ public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, 
                 request.getJobID()));
         }
         FetchJobResponse response = FetchJobResponse.successResponse();
-        EventMeshJobDetail detail = jobInfoBizService.getJobDetail(request, metadata);
+        EventMeshJobDetail detail = jobInfoBizService.getJobDetail(jobID);
         if (detail == null) {
             return response;
         }
