@@ -115,9 +115,12 @@ public class MysqlPositionHandler extends PositionHandler {
                 CanalRecordOffset offset = (CanalRecordOffset) recordPosition.getRecordOffset();
                 if (offset != null) {
                     position.setPosition(offset.getOffset());
+                    position.setGtid(offset.getGtid());
+                    position.setCurrentGtid(offset.getCurrentGtid());
                 }
                 CanalRecordPartition partition = (CanalRecordPartition) recordPosition.getRecordPartition();
                 if (partition != null) {
+                    position.setServerUUID(partition.getServerUUID());
                     position.setTimestamp(partition.getTimeStamp());
                     position.setJournalName(partition.getJournalName());
                 }
@@ -148,13 +151,16 @@ public class MysqlPositionHandler extends PositionHandler {
             request.getJobID()));
         List<RecordPosition> recordPositionList = new ArrayList<>();
         for (EventMeshMysqlPosition position : positionList) {
-            RecordPosition recordPosition = new RecordPosition();
             CanalRecordPartition partition = new CanalRecordPartition();
             partition.setTimeStamp(position.getTimestamp());
             partition.setJournalName(position.getJournalName());
+            partition.setServerUUID(position.getServerUUID());
+            RecordPosition recordPosition = new RecordPosition();
             recordPosition.setRecordPartition(partition);
             CanalRecordOffset offset = new CanalRecordOffset();
             offset.setOffset(position.getPosition());
+            offset.setGtid(position.getGtid());
+            offset.setCurrentGtid(position.getCurrentGtid());
             recordPosition.setRecordOffset(offset);
             recordPositionList.add(recordPosition);
         }

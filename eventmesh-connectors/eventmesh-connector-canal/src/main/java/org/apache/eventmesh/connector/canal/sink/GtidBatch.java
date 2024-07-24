@@ -19,31 +19,30 @@ package org.apache.eventmesh.connector.canal.sink;
 
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import lombok.Data;
+public class GtidBatch {
+    private int totalBatches;
+    private List<List<CanalConnectRecord>> batches;
+    private int receivedBatchCount;
 
-@Data
-public class DbLoadContext {
-
-    private String gtid;
-
-    private List<CanalConnectRecord> lastProcessedRecords;
-
-    private List<CanalConnectRecord> prepareRecords;
-
-    private List<CanalConnectRecord> processedRecords;
-
-    private List<CanalConnectRecord> failedRecords;
-
-    public DbLoadContext() {
-        lastProcessedRecords = Collections.synchronizedList(new LinkedList<>());
-        prepareRecords = Collections.synchronizedList(new LinkedList<>());
-        processedRecords = Collections.synchronizedList(new LinkedList<>());
-        failedRecords = Collections.synchronizedList(new LinkedList<>());
+    public GtidBatch(int totalBatches) {
+        this.totalBatches = totalBatches;
+        this.batches = new CopyOnWriteArrayList<>(new List[totalBatches]);
+        this.receivedBatchCount = 0;
     }
 
+    public void addBatch(int batchIndex, List<CanalConnectRecord> batchRecords) {
+        batches.set(batchIndex, batchRecords);
+        receivedBatchCount++;
+    }
 
+    public List<List<CanalConnectRecord>> getBatches() {
+        return batches;
+    }
+
+    public boolean isComplete() {
+        return receivedBatchCount == totalBatches;
+    }
 }
