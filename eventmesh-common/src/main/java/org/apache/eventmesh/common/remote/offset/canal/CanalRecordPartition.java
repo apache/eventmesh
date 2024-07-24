@@ -29,6 +29,8 @@ import lombok.ToString;
 @ToString
 public class CanalRecordPartition extends RecordPartition {
 
+    private String serverUUID;
+
     private String journalName;
 
     private Long timeStamp;

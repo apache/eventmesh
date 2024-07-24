@@ -38,9 +38,15 @@ public class EventMeshMysqlPosition implements Serializable {
 
     private Integer jobID;
 
+    private String serverUUID;
+
     private String address;
 
     private Long position;
+
+    private String gtid;
+
+    private String currentGtid;
 
     private Long timestamp;
 

@@ -31,13 +31,14 @@ import org.apache.eventmesh.connector.canal.sink.DbLoadContext;
 import org.apache.eventmesh.connector.canal.sink.DbLoadData;
 import org.apache.eventmesh.connector.canal.sink.DbLoadData.TableLoadData;
 import org.apache.eventmesh.connector.canal.sink.DbLoadMerger;
+import org.apache.eventmesh.connector.canal.sink.GtidBatch;
+import org.apache.eventmesh.connector.canal.sink.GtidBatchManager;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -86,9 +88,12 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     private ExecutorService executor;
 
+    private ExecutorService gtidSingleExecutor;
+
     private int batchSize = 50;
 
     private boolean useBatch = true;
+
     private RdbTableMgr tableMgr;
 
     @Override
@@ -123,6 +128,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             new ArrayBlockingQueue<>(sinkConfig.getPoolSize() * 4),
             new NamedThreadFactory("canalSink"),
             new ThreadPoolExecutor.CallerRunsPolicy());
+        gtidSingleExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "gtidSingleExecutor"));
     }
 
     @Override
@@ -143,6 +149,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     @Override
     public void stop() {
         executor.shutdown();
+        gtidSingleExecutor.shutdown();
     }
 
     @Override
@@ -153,6 +160,8 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             canalConnectRecordList = filterRecord(canalConnectRecordList);
             if (isDdlDatas(canalConnectRecordList)) {
                 doDdl(context, canalConnectRecordList);
+            } else if (sinkConfig.isGTIDMode()) {
+                doLoadWithGtid(context, sinkConfig, connectRecord);
             } else {
                 canalConnectRecordList = DbLoadMerger.merge(canalConnectRecordList);
 
@@ -257,6 +266,57 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         batchDatas.clear();
     }
 
+    private void doLoadWithGtid(DbLoadContext context, CanalSinkConfig sinkConfig, ConnectRecord connectRecord) {
+        int batchIndex = connectRecord.getExtension("batchIndex", Integer.class);
+        int totalBatches = connectRecord.getExtension("totalBatches", Integer.class);
+        List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>) connectRecord.getData();
+        String gtid = canalConnectRecordList.get(0).getCurrentGtid();
+        GtidBatchManager.addBatch(gtid, batchIndex, totalBatches, canalConnectRecordList);
+        // check whether the batch is complete
+        if (GtidBatchManager.isComplete(gtid)) {
+            GtidBatch batch = GtidBatchManager.getGtidBatch(gtid);
+            List<List<CanalConnectRecord>> totalRows = batch.getBatches();
+            List<CanalConnectRecord> filteredRows = new ArrayList<>();
+            for (List<CanalConnectRecord> canalConnectRecords : totalRows) {
+                canalConnectRecords = filterRecord(canalConnectRecords);
+                if (!CollectionUtils.isEmpty(canalConnectRecords)) {
+                    for (final CanalConnectRecord record : canalConnectRecords) {
+                        boolean filter = interceptor.before(sinkConfig, record);
+                        filteredRows.add(record);
+                    }
+                }
+            }
+            context.setGtid(gtid);
+            Future<Exception> result = gtidSingleExecutor.submit(new DbLoadWorker(context, filteredRows, dbDialect, false, sinkConfig));
+            Exception ex = null;
+            try {
+                ex = result.get();
+            } catch (Exception e) {
+                ex = e;
+            }
+            Boolean skipException = sinkConfig.getSkipException();
+            if (skipException != null && skipException) {
+                if (ex != null) {
+                    // do skip
+                    log.warn("skip exception for data : {} , caused by {}",
+                        filteredRows,
+                        ExceptionUtils.getFullStackTrace(ex));
+                    GtidBatchManager.removeGtidBatch(gtid);
+                }
+            } else {
+                if (ex != null) {
+                    log.error("sink connector will shutdown by " + ex.getMessage(), ExceptionUtils.getFullStackTrace(ex));
+                    gtidSingleExecutor.shutdown();
+                    System.exit(1);
+                } else {
+                    GtidBatchManager.removeGtidBatch(gtid);
+                }
+            }
+        } else {
+            log.info("Batch received, waiting for other batches.");
+        }
+    }
+
     private List<List<CanalConnectRecord>> split(List<CanalConnectRecord> records) {
         List<List<CanalConnectRecord>> result = new ArrayList<>();
         if (records == null || records.isEmpty()) {
@@ -296,12 +356,12 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     }
 
     private void doTwoPhase(DbLoadContext context, CanalSinkConfig sinkConfig, List<List<CanalConnectRecord>> totalRows, boolean canBatch) {
-        List<Future<Exception>> results = new ArrayList<Future<Exception>>();
+        List<Future<Exception>> results = new ArrayList<>();
         for (List<CanalConnectRecord> rows : totalRows) {
             if (CollectionUtils.isEmpty(rows)) {
                 continue;
             }
-            results.add(executor.submit(new DbLoadWorker(context, rows, dbDialect, canBatch)));
+            results.add(executor.submit(new DbLoadWorker(context, rows, dbDialect, canBatch, sinkConfig)));
         }
 
         boolean partFailed = false;
@@ -330,7 +390,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             Boolean skipException = sinkConfig.getSkipException();
             if (skipException != null && skipException) {
                 for (CanalConnectRecord retryRecord : retryRecords) {
-                    DbLoadWorker worker = new DbLoadWorker(context, Arrays.asList(retryRecord), dbDialect, false);
+                    DbLoadWorker worker = new DbLoadWorker(context, Arrays.asList(retryRecord), dbDialect, false, sinkConfig);
                     try {
                         Exception ex = worker.call();
                         if (ex != null) {
@@ -347,7 +407,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     }
                 }
             } else {
-                DbLoadWorker worker = new DbLoadWorker(context, retryRecords, dbDialect, false);
+                DbLoadWorker worker = new DbLoadWorker(context, retryRecords, dbDialect, false, sinkConfig);
                 try {
                     Exception ex = worker.call();
                     if (ex != null) {
@@ -355,7 +415,9 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     }
                 } catch (Exception ex) {
                     log.error("##load phase two failed!", ex);
-                    throw new RuntimeException(ex);
+                    log.error("sink connector will shutdown by " + ex.getMessage(), ex);
+                    executor.shutdown();
+                    System.exit(1);
                 }
             }
         }
@@ -371,16 +433,21 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         private final DbDialect dbDialect;
         private final List<CanalConnectRecord> records;
         private final boolean canBatch;
+
+        private final CanalSinkConfig sinkConfig;
+
         private final List<CanalConnectRecord> allFailedRecords = new ArrayList<>();
         private final List<CanalConnectRecord> allProcessedRecords = new ArrayList<>();
         private final List<CanalConnectRecord> processedRecords = new ArrayList<>();
         private final List<CanalConnectRecord> failedRecords = new ArrayList<>();
 
-        public DbLoadWorker(DbLoadContext context, List<CanalConnectRecord> records, DbDialect dbDialect, boolean canBatch) {
+        public DbLoadWorker(DbLoadContext context, List<CanalConnectRecord> records, DbDialect dbDialect, boolean canBatch,
+            CanalSinkConfig sinkConfig) {
             this.context = context;
             this.records = records;
             this.canBatch = canBatch;
             this.dbDialect = dbDialect;
+            this.sinkConfig = sinkConfig;
         }
 
         public Exception call() throws Exception {
@@ -394,132 +461,239 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         private Exception doCall() {
             RuntimeException error = null;
             ExecuteResult exeResult = null;
-            int index = 0;
-            while (index < records.size()) {
-                final List<CanalConnectRecord> splitDatas = new ArrayList<>();
-                if (useBatch && canBatch) {
-                    int end = Math.min(index + batchSize, records.size());
-                    splitDatas.addAll(records.subList(index, end));
-                    index = end;
-                } else {
-                    splitDatas.add(records.get(index));
-                    index = index + 1;
-                }
 
+            if (sinkConfig.isGTIDMode()) {
                 int retryCount = 0;
-                while (true) {
-                    try {
-                        if (!CollectionUtils.isEmpty(failedRecords)) {
-                            splitDatas.clear();
-                            splitDatas.addAll(failedRecords);
-                        } else {
-                            failedRecords.addAll(splitDatas);
-                        }
-
-                        final LobCreator lobCreator = dbDialect.getLobHandler().getLobCreator();
-                        if (useBatch && canBatch) {
-                            final String sql = splitDatas.get(0).getSql();
-                            int[] affects = new int[splitDatas.size()];
-                            affects = (int[]) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
-                                try {
-                                    failedRecords.clear();
-                                    processedRecords.clear();
-                                    JdbcTemplate template = dbDialect.getJdbcTemplate();
-                                    int[] affects1 = template.batchUpdate(sql, new BatchPreparedStatementSetter() {
-
-                                        public void setValues(PreparedStatement ps, int idx) throws SQLException {
-                                            doPreparedStatement(ps, dbDialect, lobCreator, splitDatas.get(idx));
-                                        }
-
-                                        public int getBatchSize() {
-                                            return splitDatas.size();
-                                        }
-                                    });
-                                    return affects1;
-                                } finally {
-                                    lobCreator.close();
-                                }
-                            });
-
-                            for (int i = 0; i < splitDatas.size(); i++) {
-                                assert affects != null;
-                                processStat(splitDatas.get(i), affects[i], true);
-                            }
-                        } else {
-                            final CanalConnectRecord record = splitDatas.get(0);
-                            int affect = 0;
-                            affect = (Integer) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
-                                try {
-                                    failedRecords.clear();
-                                    processedRecords.clear();
-                                    JdbcTemplate template = dbDialect.getJdbcTemplate();
-                                    int affect1 = template.update(record.getSql(), new PreparedStatementSetter() {
-
-                                        public void setValues(PreparedStatement ps) throws SQLException {
-                                            doPreparedStatement(ps, dbDialect, lobCreator, record);
-                                        }
-                                    });
-                                    return affect1;
-                                } finally {
-                                    lobCreator.close();
-                                }
-                            });
-                            processStat(record, affect, false);
-                        }
-
-                        error = null;
-                        exeResult = ExecuteResult.SUCCESS;
-                    } catch (DeadlockLoserDataAccessException ex) {
-                        error = new RuntimeException(ExceptionUtils.getFullStackTrace(ex));
-                        exeResult = ExecuteResult.RETRY;
-                    } catch (Throwable ex) {
-                        error = new RuntimeException(ExceptionUtils.getFullStackTrace(ex));
-                        exeResult = ExecuteResult.ERROR;
+                final List<CanalConnectRecord> toExecuteRecords = new ArrayList<>();
+                try {
+                    if (!CollectionUtils.isEmpty(failedRecords)) {
+                        // if failedRecords not empty, make it retry
+                        toExecuteRecords.addAll(failedRecords);
+                    } else {
+                        toExecuteRecords.addAll(records);
+                        // add to failed record first, maybe get lob or datasource error
+                        failedRecords.addAll(toExecuteRecords);
+                    }
+                    JdbcTemplate template = dbDialect.getJdbcTemplate();
+                    String sourceGtid = context.getGtid();
+                    if (StringUtils.isNotEmpty(sourceGtid)) {
+                        String setGtid = "SET @@session.gtid_next = '" + sourceGtid + "';";
+                        template.execute(setGtid);
+                    } else {
+                        log.error("gtid is empty in gtid mode");
+                        throw new RuntimeException("gtid is empty in gtid mode");
                     }
 
-                    if (ExecuteResult.SUCCESS == exeResult) {
-                        allFailedRecords.addAll(failedRecords);
-                        allProcessedRecords.addAll(processedRecords);
-                        failedRecords.clear();
-                        processedRecords.clear();
-                        break; // do next eventData
-                    } else if (ExecuteResult.RETRY == exeResult) {
-                        retryCount = retryCount + 1;
-                        processedRecords.clear();
-                        failedRecords.clear();
-                        failedRecords.addAll(splitDatas);
-                        int retry = 3;
-                        if (retryCount >= retry) {
-                            processFailedDatas(index);
-                            throw new RuntimeException(String.format("execute retry %s times failed", retryCount), error);
-                        } else {
-                            try {
-                                int retryWait = 3000;
-                                int wait = retryCount * retryWait;
-                                wait = Math.max(wait, retryWait);
-                                Thread.sleep(wait);
-                            } catch (InterruptedException ex) {
-                                Thread.interrupted();
-                                processFailedDatas(index);
-                                throw new RuntimeException(ex);
+                    final LobCreator lobCreator = dbDialect.getLobHandler().getLobCreator();
+                    int affect = (Integer) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
+                        try {
+                            failedRecords.clear();
+                            processedRecords.clear();
+                            int affect1 = 0;
+                            for (CanalConnectRecord record : toExecuteRecords) {
+                                int affects = template.update(record.getSql(), new PreparedStatementSetter() {
+                                    public void setValues(PreparedStatement ps) throws SQLException {
+                                        doPreparedStatement(ps, dbDialect, lobCreator, record);
+                                    }
+                                });
+                                affect1 = affect1 + affects;
+                                processStat(record, affects, false);
                             }
+                            return affect1;
+                        } catch (Exception e) {
+                            // rollback
+                            status.setRollbackOnly();
+                            throw new RuntimeException("Failed to executed", e);
+                        } finally {
+                            lobCreator.close();
                         }
+                    });
+
+                    // reset gtid
+                    String resetGtid = "SET @@session.gtid_next = AUTOMATIC;";
+                    dbDialect.getJdbcTemplate().execute(resetGtid);
+                    error = null;
+                    exeResult = ExecuteResult.SUCCESS;
+                } catch (DeadlockLoserDataAccessException ex) {
+                    error = new RuntimeException(ExceptionUtils.getFullStackTrace(ex));
+                    exeResult = ExecuteResult.RETRY;
+                } catch (Throwable ex) {
+                    error = new RuntimeException(ExceptionUtils.getFullStackTrace(ex));
+                    exeResult = ExecuteResult.ERROR;
+                }
+
+                if (ExecuteResult.SUCCESS == exeResult) {
+                    allFailedRecords.addAll(failedRecords);
+                    allProcessedRecords.addAll(processedRecords);
+                    failedRecords.clear();
+                    processedRecords.clear();
+                } else if (ExecuteResult.RETRY == exeResult) {
+                    retryCount = retryCount + 1;
+                    processedRecords.clear();
+                    failedRecords.clear();
+                    failedRecords.addAll(toExecuteRecords);
+                    int retry = 3;
+                    if (retryCount >= retry) {
+                        processFailedDatas(toExecuteRecords.size());
+                        throw new RuntimeException(String.format("execute retry %s times failed", retryCount), error);
                     } else {
-                        processedRecords.clear();
-                        failedRecords.clear();
-                        failedRecords.addAll(splitDatas);
-                        processFailedDatas(index);
-                        throw error;
+                        try {
+                            int retryWait = 3000;
+                            int wait = retryCount * retryWait;
+                            wait = Math.max(wait, retryWait);
+                            Thread.sleep(wait);
+                        } catch (InterruptedException ex) {
+                            Thread.interrupted();
+                            processFailedDatas(toExecuteRecords.size());
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                } else {
+                    processedRecords.clear();
+                    failedRecords.clear();
+                    failedRecords.addAll(toExecuteRecords);
+                    processFailedDatas(toExecuteRecords.size());
+                    throw error;
+                }
+            } else {
+                int index = 0;
+                while (index < records.size()) {
+                    final List<CanalConnectRecord> toExecuteRecords = new ArrayList<>();
+                    if (useBatch && canBatch) {
+                        int end = Math.min(index + batchSize, records.size());
+                        toExecuteRecords.addAll(records.subList(index, end));
+                        index = end;
+                    } else {
+                        toExecuteRecords.add(records.get(index));
+                        index = index + 1;
+                    }
+
+                    int retryCount = 0;
+                    while (true) {
+                        try {
+                            if (!CollectionUtils.isEmpty(failedRecords)) {
+                                toExecuteRecords.clear();
+                                toExecuteRecords.addAll(failedRecords);
+                            } else {
+                                failedRecords.addAll(toExecuteRecords);
+                            }
+
+                            final LobCreator lobCreator = dbDialect.getLobHandler().getLobCreator();
+                            if (useBatch && canBatch) {
+                                JdbcTemplate template = dbDialect.getJdbcTemplate();
+                                final String sql = toExecuteRecords.get(0).getSql();
+
+                                int[] affects = new int[toExecuteRecords.size()];
+
+                                affects = (int[]) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
+                                    try {
+                                        failedRecords.clear();
+                                        processedRecords.clear();
+                                        int[] affects1 = template.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
+                                            public void setValues(PreparedStatement ps, int idx) throws SQLException {
+                                                doPreparedStatement(ps, dbDialect, lobCreator, toExecuteRecords.get(idx));
+                                            }
+
+                                            public int getBatchSize() {
+                                                return toExecuteRecords.size();
+                                            }
+                                        });
+                                        return affects1;
+                                    } catch (Exception e) {
+                                        // rollback
+                                        status.setRollbackOnly();
+                                        throw new RuntimeException("Failed to execute batch with GTID", e);
+                                    } finally {
+                                        lobCreator.close();
+                                    }
+                                });
+
+                                for (int i = 0; i < toExecuteRecords.size(); i++) {
+                                    assert affects != null;
+                                    processStat(toExecuteRecords.get(i), affects[i], true);
+                                }
+                            } else {
+                                final CanalConnectRecord record = toExecuteRecords.get(0);
+                                JdbcTemplate template = dbDialect.getJdbcTemplate();
+                                int affect = 0;
+                                affect = (Integer) dbDialect.getTransactionTemplate().execute((TransactionCallback) status -> {
+                                    try {
+                                        failedRecords.clear();
+                                        processedRecords.clear();
+                                        int affect1 = template.update(record.getSql(), new PreparedStatementSetter() {
+
+                                            public void setValues(PreparedStatement ps) throws SQLException {
+                                                doPreparedStatement(ps, dbDialect, lobCreator, record);
+                                            }
+                                        });
+                                        return affect1;
+                                    } catch (Exception e) {
+                                        // rollback
+                                        status.setRollbackOnly();
+                                        throw new RuntimeException("Failed to executed", e);
+                                    } finally {
+                                        lobCreator.close();
+                                    }
+                                });
+                                processStat(record, affect, false);
+                            }
+
+                            error = null;
+                            exeResult = ExecuteResult.SUCCESS;
+                        } catch (DeadlockLoserDataAccessException ex) {
+                            error = new RuntimeException(ExceptionUtils.getFullStackTrace(ex));
+                            exeResult = ExecuteResult.RETRY;
+                        } catch (Throwable ex) {
+                            error = new RuntimeException(ExceptionUtils.getFullStackTrace(ex));
+                            exeResult = ExecuteResult.ERROR;
+                        }
+
+                        if (ExecuteResult.SUCCESS == exeResult) {
+                            allFailedRecords.addAll(failedRecords);
+                            allProcessedRecords.addAll(processedRecords);
+                            failedRecords.clear();
+                            processedRecords.clear();
+                            break; // do next eventData
+                        } else if (ExecuteResult.RETRY == exeResult) {
+                            retryCount = retryCount + 1;
+                            processedRecords.clear();
+                            failedRecords.clear();
+                            failedRecords.addAll(toExecuteRecords);
+                            int retry = 3;
+                            if (retryCount >= retry) {
+                                processFailedDatas(index);
+                                throw new RuntimeException(String.format("execute retry %s times failed", retryCount), error);
+                            } else {
+                                try {
+                                    int retryWait = 3000;
+                                    int wait = retryCount * retryWait;
+                                    wait = Math.max(wait, retryWait);
+                                    Thread.sleep(wait);
+                                } catch (InterruptedException ex) {
+                                    Thread.interrupted();
+                                    processFailedDatas(index);
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        } else {
+                            processedRecords.clear();
+                            failedRecords.clear();
+                            failedRecords.addAll(toExecuteRecords);
+                            processFailedDatas(index);
+                            throw error;
+                        }
                     }
                 }
             }
+
             context.getFailedRecords().addAll(allFailedRecords);
             context.getProcessedRecords().addAll(allProcessedRecords);
             return null;
         }
 
         private void doPreparedStatement(PreparedStatement ps, DbDialect dbDialect, LobCreator lobCreator,
-                                         CanalConnectRecord record) throws SQLException {
+            CanalConnectRecord record) throws SQLException {
             EventType type = record.getEventType();
             List<EventColumn> columns = new ArrayList<EventColumn>();
             if (type.isInsert()) {
@@ -530,11 +704,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             } else if (type.isUpdate()) {
                 boolean existOldKeys = !CollectionUtils.isEmpty(record.getOldKeys());
                 columns.addAll(record.getUpdatedColumns());
-                if (existOldKeys && dbDialect.isDRDS()) {
-                    columns.addAll(record.getUpdatedKeys());
-                } else {
-                    columns.addAll(record.getKeys());
-                }
+                columns.addAll(record.getKeys());
                 if (existOldKeys) {
                     columns.addAll(record.getOldKeys());
                 }

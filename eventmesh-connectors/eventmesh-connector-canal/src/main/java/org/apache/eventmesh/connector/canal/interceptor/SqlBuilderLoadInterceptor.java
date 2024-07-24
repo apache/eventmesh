@@ -51,35 +51,21 @@ public class SqlBuilderLoadInterceptor {
         String shardColumns = null;
 
         if (type.isInsert()) {
-            if (CollectionUtils.isEmpty(record.getColumns())
-                && (dbDialect.isDRDS())) {
-                // sql
-                sql = sqlTemplate.getInsertSql(schemaName,
-                    record.getTableName(),
-                    buildColumnNames(record.getKeys()),
-                    buildColumnNames(record.getColumns()));
-            } else {
-                sql = sqlTemplate.getMergeSql(schemaName,
+            sql = sqlTemplate.getMergeSql(schemaName,
                     record.getTableName(),
                     buildColumnNames(record.getKeys()),
                     buildColumnNames(record.getColumns()),
                     new String[] {},
-                    !dbDialect.isDRDS(),
+                    true,
                     shardColumns);
-            }
         } else if (type.isUpdate()) {
-
             boolean existOldKeys = !CollectionUtils.isEmpty(record.getOldKeys());
             boolean rowMode = sinkConfig.getSyncMode().isRow();
             String[] keyColumns = null;
             String[] otherColumns = null;
             if (existOldKeys) {
                 keyColumns = buildColumnNames(record.getOldKeys());
-                if (dbDialect.isDRDS()) {
-                    otherColumns = buildColumnNames(record.getUpdatedColumns(), record.getUpdatedKeys());
-                } else {
-                    otherColumns = buildColumnNames(record.getUpdatedColumns(), record.getKeys());
-                }
+                otherColumns = buildColumnNames(record.getUpdatedColumns(), record.getKeys());
             } else {
                 keyColumns = buildColumnNames(record.getKeys());
                 otherColumns = buildColumnNames(record.getUpdatedColumns());
@@ -91,10 +77,10 @@ public class SqlBuilderLoadInterceptor {
                     keyColumns,
                     otherColumns,
                     new String[] {},
-                    !dbDialect.isDRDS(),
+                    true,
                     shardColumns);
             } else {
-                sql = sqlTemplate.getUpdateSql(schemaName, record.getTableName(), keyColumns, otherColumns, !dbDialect.isDRDS(), shardColumns);
+                sql = sqlTemplate.getUpdateSql(schemaName, record.getTableName(), keyColumns, otherColumns, true, shardColumns);
             }
         } else if (type.isDelete()) {
             sql = sqlTemplate.getDeleteSql(schemaName,
