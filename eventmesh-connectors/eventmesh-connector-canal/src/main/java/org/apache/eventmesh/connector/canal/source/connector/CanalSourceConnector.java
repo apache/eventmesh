@@ -150,6 +150,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 return instance;
             }
         });
+        DatabaseConnection.sourceConfig = sourceConfig.getSourceConnectorConfig();
+        DatabaseConnection.initSourceConnection();
         tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
     }
 
@@ -180,6 +182,9 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         parameter.setDbUsername(sourceConfig.getSourceConnectorConfig().getUserName());
         parameter.setDbPassword(sourceConfig.getSourceConnectorConfig().getPassWord());
 
+        // set if enabled gtid mode
+        parameter.setGtidEnable(sourceConfig.isGTIDMode());
+
         // check positions
         // example: Arrays.asList("{\"journalName\":\"mysql-bin.000001\",\"position\":6163L,\"timestamp\":1322803601000L}",
         //         "{\"journalName\":\"mysql-bin.000001\",\"position\":6163L,\"timestamp\":1322803601000L}")
@@ -193,6 +198,14 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 recordPositionMap.put("journalName", canalRecordPartition.getJournalName());
                 recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
                 recordPositionMap.put("position", canalRecordOffset.getOffset());
+                String gtidRange = canalRecordOffset.getGtid();
+                if (gtidRange != null) {
+                    if (canalRecordOffset.getCurrentGtid() != null) {
+                        gtidRange = EntryParser.replaceGtidRange(canalRecordOffset.getGtid(), canalRecordOffset.getCurrentGtid(),
+                            sourceConfig.getServerUUID());
+                    }
+                    recordPositionMap.put("gtid", gtidRange);
+                }
                 positions.add(JsonUtils.toJSONString(recordPositionMap));
             });
             parameter.setPositions(positions);
@@ -237,7 +250,13 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     @Override
     public void commit(ConnectRecord record) {
         long batchId = Long.parseLong(record.getExtension("messageId"));
-        canalServer.ack(clientIdentity, batchId);
+        int batchIndex = record.getExtension("batchIndex", Integer.class);
+        int totalBatches = record.getExtension("totalBatches", Integer.class);
+        if (batchIndex == totalBatches - 1) {
+            log.debug("ack records batchIndex:{}, totalBatches:{}, batchId:{}",
+                batchIndex, totalBatches, batchId);
+            canalServer.ack(clientIdentity, batchId);
+        }
     }
 
     @Override
@@ -301,21 +320,37 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         if (!connectorRecordMap.isEmpty()) {
             Set<Map.Entry<Long, List<CanalConnectRecord>>> entrySet = connectorRecordMap.entrySet();
             for (Map.Entry<Long, List<CanalConnectRecord>> entry : entrySet) {
-                // Xid offset
-                Long binLogOffset = entry.getKey();
                 List<CanalConnectRecord> connectRecordList = entry.getValue();
                 CanalConnectRecord lastRecord = entry.getValue().get(connectRecordList.size() - 1);
                 CanalRecordPartition canalRecordPartition = new CanalRecordPartition();
+                canalRecordPartition.setServerUUID(sourceConfig.getServerUUID());
                 canalRecordPartition.setJournalName(lastRecord.getJournalName());
                 canalRecordPartition.setTimeStamp(lastRecord.getExecuteTime());
-
+                // Xid offset with gtid
+                Long binLogOffset = entry.getKey();
                 CanalRecordOffset canalRecordOffset = new CanalRecordOffset();
                 canalRecordOffset.setOffset(binLogOffset);
+                if (StringUtils.isNotEmpty(lastRecord.getGtid()) && StringUtils.isNotEmpty(lastRecord.getCurrentGtid())) {
+                    canalRecordOffset.setGtid(lastRecord.getGtid());
+                    canalRecordOffset.setCurrentGtid(lastRecord.getCurrentGtid());
+                }
 
-                ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
-                connectRecord.addExtension("messageId", String.valueOf(message.getId()));
-                connectRecord.setData(connectRecordList);
-                result.add(connectRecord);
+                // split record list
+                List<List<CanalConnectRecord>> splitLists = new ArrayList<>();
+                for (int i = 0; i < connectRecordList.size(); i += sourceConfig.getBatchSize()) {
+                    int end = Math.min(i + sourceConfig.getBatchSize(), connectRecordList.size());
+                    List<CanalConnectRecord> subList = connectRecordList.subList(i, end);
+                    splitLists.add(subList);
+                }
+
+                for (int i = 0; i < splitLists.size(); i++) {
+                    ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
+                    connectRecord.addExtension("messageId", String.valueOf(message.getId()));
+                    connectRecord.addExtension("batchIndex", i);
+                    connectRecord.addExtension("totalBatches", splitLists.size());
+                    connectRecord.setData(splitLists.get(i));
+                    result.add(connectRecord);
+                }
             }
         } else {
             // for the message has been filtered need ack message

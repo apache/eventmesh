@@ -19,31 +19,27 @@ package org.apache.eventmesh.connector.canal.sink;
 
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
-import lombok.Data;
+public class GtidBatchManager {
 
-@Data
-public class DbLoadContext {
+    private static ConcurrentHashMap<String, GtidBatch> gtidBatchMap = new ConcurrentHashMap<>();
 
-    private String gtid;
-
-    private List<CanalConnectRecord> lastProcessedRecords;
-
-    private List<CanalConnectRecord> prepareRecords;
-
-    private List<CanalConnectRecord> processedRecords;
-
-    private List<CanalConnectRecord> failedRecords;
-
-    public DbLoadContext() {
-        lastProcessedRecords = Collections.synchronizedList(new LinkedList<>());
-        prepareRecords = Collections.synchronizedList(new LinkedList<>());
-        processedRecords = Collections.synchronizedList(new LinkedList<>());
-        failedRecords = Collections.synchronizedList(new LinkedList<>());
+    public static void addBatch(String gtid, int batchIndex, int totalBatches, List<CanalConnectRecord> batchRecords) {
+        gtidBatchMap.computeIfAbsent(gtid, k -> new GtidBatch(totalBatches)).addBatch(batchIndex, batchRecords);
     }
 
+    public static GtidBatch getGtidBatch(String gtid) {
+        return gtidBatchMap.get(gtid);
+    }
 
+    public static boolean isComplete(String gtid) {
+        GtidBatch batch = gtidBatchMap.get(gtid);
+        return batch != null && batch.isComplete();
+    }
+
+    public static void removeGtidBatch(String gtid) {
+        gtidBatchMap.remove(gtid);
+    }
 }

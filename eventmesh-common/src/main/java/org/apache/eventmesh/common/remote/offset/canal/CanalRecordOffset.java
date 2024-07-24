@@ -30,6 +30,11 @@ public class CanalRecordOffset extends RecordOffset {
 
     private Long offset;
 
+    // mysql instance gtid range
+    private String gtid;
+
+    private String currentGtid;
+
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return CanalRecordOffset.class;

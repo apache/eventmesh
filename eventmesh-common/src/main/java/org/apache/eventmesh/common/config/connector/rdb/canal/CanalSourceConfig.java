@@ -45,6 +45,10 @@ public class CanalSourceConfig extends SourceConfig {
 
     private Short clientId;
 
+    private String serverUUID;
+
+    private boolean isGTIDMode = true;
+
     private Integer batchSize = 10000;
 
     private Long batchTimeout = -1L;
