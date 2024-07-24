@@ -278,7 +278,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             List<List<CanalConnectRecord>> totalRows = batch.getBatches();
             List<CanalConnectRecord> filteredRows = new ArrayList<>();
             for (List<CanalConnectRecord> canalConnectRecords : totalRows) {
-                canalConnectRecords = filterRecord(canalConnectRecords, sinkConfig);
+                canalConnectRecords = filterRecord(canalConnectRecords);
                 if (!CollectionUtils.isEmpty(canalConnectRecords)) {
                     for (final CanalConnectRecord record : canalConnectRecords) {
                         boolean filter = interceptor.before(sinkConfig, record);

@@ -150,6 +150,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 return instance;
             }
         });
+        DatabaseConnection.sourceConfig = sourceConfig.getSourceConnectorConfig();
+        DatabaseConnection.initSourceConnection();
         tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
     }
 
