@@ -41,6 +41,8 @@ public class CanalSinkConfig extends SinkConfig {
 
     private boolean isGTIDMode = true;
 
+    private boolean isMariaDB = true;
+
     // skip sink process exception
     private Boolean skipException = false;
 
