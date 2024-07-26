@@ -47,6 +47,8 @@ public class CanalSourceConfig extends SourceConfig {
 
     private String serverUUID;
 
+    private boolean isMariaDB = true;
+
     private boolean isGTIDMode = true;
 
     private Integer batchSize = 10000;

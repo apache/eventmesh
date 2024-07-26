@@ -198,13 +198,16 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 recordPositionMap.put("journalName", canalRecordPartition.getJournalName());
                 recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
                 recordPositionMap.put("position", canalRecordOffset.getOffset());
-                String gtidRange = canalRecordOffset.getGtid();
-                if (gtidRange != null) {
-                    if (canalRecordOffset.getCurrentGtid() != null) {
-                        gtidRange = EntryParser.replaceGtidRange(canalRecordOffset.getGtid(), canalRecordOffset.getCurrentGtid(),
-                            sourceConfig.getServerUUID());
+                // for mariaDB not support gtid mode
+                if(sourceConfig.isGTIDMode() && !sourceConfig.isMariaDB()) {
+                    String gtidRange = canalRecordOffset.getGtid();
+                    if (gtidRange != null) {
+                        if (canalRecordOffset.getCurrentGtid() != null ) {
+                            gtidRange = EntryParser.replaceGtidRange(canalRecordOffset.getGtid(), canalRecordOffset.getCurrentGtid(),
+                                sourceConfig.getServerUUID());
+                        }
+                        recordPositionMap.put("gtid", gtidRange);
                     }
-                    recordPositionMap.put("gtid", gtidRange);
                 }
                 positions.add(JsonUtils.toJSONString(recordPositionMap));
             });
