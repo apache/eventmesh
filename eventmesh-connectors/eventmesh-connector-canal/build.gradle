@@ -27,7 +27,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation canal
     implementation "com.alibaba:druid"
-    implementation 'com.mysql:mysql-connector-j'
+    compileOnly 'com.mysql:mysql-connector-j'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-core"
