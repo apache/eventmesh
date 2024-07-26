@@ -199,10 +199,10 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                 recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
                 recordPositionMap.put("position", canalRecordOffset.getOffset());
                 // for mariaDB not support gtid mode
-                if(sourceConfig.isGTIDMode() && !sourceConfig.isMariaDB()) {
+                if (sourceConfig.isGTIDMode() && !sourceConfig.isMariaDB()) {
                     String gtidRange = canalRecordOffset.getGtid();
                     if (gtidRange != null) {
-                        if (canalRecordOffset.getCurrentGtid() != null ) {
+                        if (canalRecordOffset.getCurrentGtid() != null) {
                             gtidRange = EntryParser.replaceGtidRange(canalRecordOffset.getGtid(), canalRecordOffset.getCurrentGtid(),
                                 sourceConfig.getServerUUID());
                         }
