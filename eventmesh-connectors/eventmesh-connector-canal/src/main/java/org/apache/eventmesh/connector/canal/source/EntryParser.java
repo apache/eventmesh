@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EntryParser {
 
     public static Map<Long, List<CanalConnectRecord>> parse(CanalSourceConfig sourceConfig, List<Entry> datas,
-                                                            RdbTableMgr tables) {
+        RdbTableMgr tables) {
         List<CanalConnectRecord> recordList = new ArrayList<>();
         List<Entry> transactionDataBuffer = new ArrayList<>();
         // need check weather the entry is loopback
@@ -60,9 +60,9 @@ public class EntryParser {
                 switch (entry.getEntryType()) {
                     case ROWDATA:
                         RowChange rowChange = RowChange.parseFrom(entry.getStoreValue());
-                        if (sourceConfig.getServerUUID() != null && sourceConfig.isGTIDMode()) {
-                            String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
-                            if (currentGtid.contains(sourceConfig.getServerUUID())) {
+                        // don't support gtid for mariadb
+                        if (sourceConfig.getServerUUID() != null && sourceConfig.isGTIDMode() && !sourceConfig.isMariaDB()) {
+                            if (checkGtidForEntry(entry, sourceConfig)) {
                                 transactionDataBuffer.add(entry);
                             }
                         } else {
@@ -90,9 +90,14 @@ public class EntryParser {
         return recordMap;
     }
 
+    private static boolean checkGtidForEntry(Entry entry, CanalSourceConfig sourceConfig) {
+        String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
+        return currentGtid.contains(sourceConfig.getServerUUID());
+    }
+
     private static void parseRecordListWithEntryBuffer(CanalSourceConfig sourceConfig,
-                                                       List<CanalConnectRecord> recordList,
-                                                       List<Entry> transactionDataBuffer, RdbTableMgr tables) {
+        List<CanalConnectRecord> recordList,
+        List<Entry> transactionDataBuffer, RdbTableMgr tables) {
         for (Entry bufferEntry : transactionDataBuffer) {
             List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry, tables);
             if (CollectionUtils.isEmpty(recordParsedList)) {
@@ -130,7 +135,7 @@ public class EntryParser {
     }
 
     private static List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry,
-                                                        RdbTableMgr tableMgr) {
+        RdbTableMgr tableMgr) {
         String schemaName = entry.getHeader().getSchemaName();
         String tableName = entry.getHeader().getTableName();
         if (tableMgr.getTable(schemaName, tableName) == null) {
@@ -169,7 +174,7 @@ public class EntryParser {
     }
 
     private static CanalConnectRecord internParse(CanalSourceConfig canalSourceConfig, Entry entry,
-                                                  RowChange rowChange, RowData rowData) {
+        RowChange rowChange, RowData rowData) {
         CanalConnectRecord canalConnectRecord = new CanalConnectRecord();
         canalConnectRecord.setTableName(entry.getHeader().getTableName());
         canalConnectRecord.setSchemaName(entry.getHeader().getSchemaName());
@@ -179,10 +184,16 @@ public class EntryParser {
         canalConnectRecord.setBinLogOffset(entry.getHeader().getLogfileOffset());
         // if enabled gtid mode, gtid not null
         if (canalSourceConfig.isGTIDMode()) {
-            String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
-            String gtidRange = replaceGtidRange(entry.getHeader().getGtid(), currentGtid, canalSourceConfig.getServerUUID());
-            canalConnectRecord.setGtid(gtidRange);
-            canalConnectRecord.setCurrentGtid(currentGtid);
+            if (canalSourceConfig.isMariaDB()) {
+                String currentGtid = entry.getHeader().getGtid();
+                canalConnectRecord.setGtid(currentGtid);
+                canalConnectRecord.setCurrentGtid(currentGtid);
+            } else {
+                String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
+                String gtidRange = replaceGtidRange(entry.getHeader().getGtid(), currentGtid, canalSourceConfig.getServerUUID());
+                canalConnectRecord.setGtid(gtidRange);
+                canalConnectRecord.setCurrentGtid(currentGtid);
+            }
         }
 
         EventType eventType = canalConnectRecord.getEventType();
@@ -276,7 +287,7 @@ public class EntryParser {
     }
 
     private static void checkUpdateKeyColumns(Map<String, EventColumn> oldKeyColumns,
-                                              Map<String, EventColumn> keyColumns) {
+        Map<String, EventColumn> keyColumns) {
         if (oldKeyColumns.isEmpty()) {
             return;
         }

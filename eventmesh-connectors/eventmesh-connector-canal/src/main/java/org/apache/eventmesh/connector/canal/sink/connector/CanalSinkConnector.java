@@ -476,9 +476,11 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     }
                     JdbcTemplate template = dbDialect.getJdbcTemplate();
                     String sourceGtid = context.getGtid();
-                    if (StringUtils.isNotEmpty(sourceGtid)) {
-                        String setGtid = "SET @@session.gtid_next = '" + sourceGtid + "';";
-                        template.execute(setGtid);
+                    if (StringUtils.isNotEmpty(sourceGtid) && !sinkConfig.isMariaDB()) {
+                        String setMySQLGtid = "SET @@session.gtid_next = '" + sourceGtid + "';";
+                        template.execute(setMySQLGtid);
+                    } else if (StringUtils.isNotEmpty(sourceGtid) && sinkConfig.isMariaDB()) {
+                        throw new RuntimeException("unsupport gtid mode for mariaDB");
                     } else {
                         log.error("gtid is empty in gtid mode");
                         throw new RuntimeException("gtid is empty in gtid mode");
@@ -510,8 +512,13 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     });
 
                     // reset gtid
-                    String resetGtid = "SET @@session.gtid_next = AUTOMATIC;";
-                    dbDialect.getJdbcTemplate().execute(resetGtid);
+                    if (sinkConfig.isMariaDB()) {
+                        throw new RuntimeException("unsupport gtid mode for mariaDB");
+                    } else {
+                        String resetMySQLGtid = "SET @@session.gtid_next = 'AUTOMATIC';";
+                        dbDialect.getJdbcTemplate().execute(resetMySQLGtid);
+                    }
+
                     error = null;
                     exeResult = ExecuteResult.SUCCESS;
                 } catch (DeadlockLoserDataAccessException ex) {
