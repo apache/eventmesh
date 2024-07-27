@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.common.remote.response;
 
-import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.job.JobState;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.job.JobTransportType;
+import org.apache.eventmesh.common.remote.task.TransportType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 import java.util.List;
@@ -36,7 +36,7 @@ public class FetchJobResponse extends BaseRemoteResponse {
 
     private String name;
 
-    private JobTransportType transportType;
+    private TransportType transportType;
 
     private Map<String, Object> sourceConnectorConfig;
 

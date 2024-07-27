@@ -23,7 +23,7 @@ import org.apache.eventmesh.admin.server.web.db.service.EventMeshMysqlPositionSe
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshPositionReporterHistoryService;
 import org.apache.eventmesh.admin.server.web.service.position.PositionHandler;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
-import org.apache.eventmesh.common.remote.job.DataSourceType;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
@@ -95,12 +95,7 @@ public class MysqlPositionHandler extends PositionHandler {
                 return true;
             }
             try {
-                EventMeshMysqlPosition entity = new EventMeshMysqlPosition();
-                entity.setPosition(position.getPosition());
-                entity.setJournalName(position.getJournalName());
-                entity.setTimestamp(position.getTimestamp());
-                entity.setAddress(position.getAddress());
-                if (!positionService.update(entity, Wrappers.<EventMeshMysqlPosition>update().eq("updateTime",
+                if (!positionService.update(position, Wrappers.<EventMeshMysqlPosition>update().eq("updateTime",
                     old.getUpdateTime()).eq("jobID", old.getJobID()))) {
                     log.warn("update position [{}] fail, maybe current update. it will retry in 500ms", position);
                     LockSupport.parkNanos(retryPeriod);
@@ -128,57 +123,48 @@ public class MysqlPositionHandler extends PositionHandler {
 
     @Override
     public boolean handler(ReportPositionRequest request, Metadata metadata) {
-        for (int i = 0; i < 3; i++) {
-            try {
-                List<RecordPosition> recordPositionList = request.getRecordPositionList();
-                RecordPosition recordPosition = recordPositionList.get(0);
-                if (recordPosition == null || recordPosition.getRecordPartition() == null || recordPosition.getRecordOffset() == null) {
-                    log.warn("report mysql position, but record-partition/partition/offset is null");
-                    return false;
-                }
-                if (!(recordPosition.getRecordPartition() instanceof CanalRecordPartition)) {
-                    log.warn("report mysql position, but record partition class [{}] not match [{}]",
-                        recordPosition.getRecordPartition().getRecordPartitionClass(), CanalRecordPartition.class);
-                    return false;
-                }
-                if (!(recordPosition.getRecordOffset() instanceof CanalRecordOffset)) {
-                    log.warn("report mysql position, but record offset class [{}] not match [{}]",
-                        recordPosition.getRecordOffset().getRecordOffsetClass(), CanalRecordOffset.class);
-                    return false;
-                }
-                EventMeshMysqlPosition position = new EventMeshMysqlPosition();
-                position.setJobID(Integer.parseInt(request.getJobID()));
-                position.setAddress(request.getAddress());
-                CanalRecordOffset offset = (CanalRecordOffset) recordPosition.getRecordOffset();
-                if (offset != null) {
-                    position.setPosition(offset.getOffset());
-                    position.setGtid(offset.getGtid());
-                    position.setCurrentGtid(offset.getCurrentGtid());
-                }
-                CanalRecordPartition partition = (CanalRecordPartition) recordPosition.getRecordPartition();
-                if (partition != null) {
-                    position.setServerUUID(partition.getServerUUID());
-                    position.setTimestamp(partition.getTimeStamp());
-                    position.setJournalName(partition.getJournalName());
-                }
-                if (!saveOrUpdateByJob(position)) {
-                    log.warn("update job position fail [{}]", request);
-                    return false;
-                }
-                return true;
-            } catch (DuplicateKeyException e) {
-                log.warn("concurrent report position job [{}], it will try again", request.getJobID());
-            } catch (Exception e) {
-                log.warn("save position job [{}] fail", request.getJobID(), e);
+
+        try {
+            List<RecordPosition> recordPositionList = request.getRecordPositionList();
+            RecordPosition recordPosition = recordPositionList.get(0);
+            if (recordPosition == null || recordPosition.getRecordPartition() == null || recordPosition.getRecordOffset() == null) {
+                log.warn("report mysql position, but record-partition/partition/offset is null");
                 return false;
             }
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException ignore) {
-                log.warn("save position thread interrupted, [{}]", request);
-                return true;
+            if (!(recordPosition.getRecordPartition() instanceof CanalRecordPartition)) {
+                log.warn("report mysql position, but record partition class [{}] not match [{}]",
+                    recordPosition.getRecordPartition().getRecordPartitionClass(), CanalRecordPartition.class);
+                return false;
             }
+            if (!(recordPosition.getRecordOffset() instanceof CanalRecordOffset)) {
+                log.warn("report mysql position, but record offset class [{}] not match [{}]",
+                    recordPosition.getRecordOffset().getRecordOffsetClass(), CanalRecordOffset.class);
+                return false;
+            }
+            EventMeshMysqlPosition position = new EventMeshMysqlPosition();
+            position.setJobID(Integer.parseInt(request.getJobID()));
+            position.setAddress(request.getAddress());
+            CanalRecordOffset offset = (CanalRecordOffset) recordPosition.getRecordOffset();
+            if (offset != null) {
+                position.setPosition(offset.getOffset());
+                position.setGtid(offset.getGtid());
+                position.setCurrentGtid(offset.getCurrentGtid());
+            }
+            CanalRecordPartition partition = (CanalRecordPartition) recordPosition.getRecordPartition();
+            if (partition != null) {
+                position.setServerUUID(partition.getServerUUID());
+                position.setTimestamp(partition.getTimeStamp());
+                position.setJournalName(partition.getJournalName());
+            }
+            if (!saveOrUpdateByJob(position)) {
+                log.warn("update job position fail [{}]", request);
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.warn("save position job [{}] fail", request.getJobID(), e);
         }
+
         return false;
     }
 

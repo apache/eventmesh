@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.job;
+package org.apache.eventmesh.common.remote.datasource;
 
-public enum DataSourceDriverType {
-    MYSQL,
-    REDIS,
-    ROCKETMQ;
+public enum DataSourceClassify {
+    // relationship db
+    RDB,
+    MQ,
+    CACHE;
 }

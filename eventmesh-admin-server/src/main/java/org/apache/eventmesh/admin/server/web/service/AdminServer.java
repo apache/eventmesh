@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server;
+package org.apache.eventmesh.admin.server.web.service;
 
+import org.apache.eventmesh.admin.server.web.Admin;
+import org.apache.eventmesh.admin.server.AdminServerProperties;
+import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.common.remote.Task;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -69,8 +71,13 @@ public class AdminServer implements Admin, ApplicationListener<ApplicationReadyE
 
 
     @Override
-    public boolean createOrUpdateTask(Task task) {
-        return false;
+    public Task createOrUpdateTask(Task task) {
+        if (task.getId() == null) {
+
+        } else {
+
+        }
+        return null;
     }
 
     @Override

@@ -21,21 +21,26 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoMapper">
+<mapper namespace="org.apache.eventmesh.admin.server.web.db.mapper.EventMeshTaskInfoMapper">
 
-    <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo">
+    <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="jobID" column="jobID" jdbcType="VARCHAR"/>
             <result property="taskID" column="taskID" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="transportType" column="transportType" jdbcType="VARCHAR"/>
+            <result property="sourceData" column="sourceData" jdbcType="INTEGER"/>
+            <result property="targetData" column="targetData" jdbcType="INTEGER"/>
             <result property="state" column="state" jdbcType="VARCHAR"/>
-            <result property="jobType" column="jobType" jdbcType="VARCHAR"/>
+            <result property="createUid" column="createUid" jdbcType="INTEGER"/>
+            <result property="updateUid" column="updateUid" jdbcType="INTEGER"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,jobID,taskID,
-        state,jobType,createTime,
-        updateTime
+        id,taskID,name,
+        transportType,sourceData,targetData,
+        state,createUid,updateUid,
+        createTime,updateTime
     </sql>
 </mapper>

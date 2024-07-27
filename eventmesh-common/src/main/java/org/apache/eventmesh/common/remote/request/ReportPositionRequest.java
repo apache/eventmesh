@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.common.remote.request;
 
-import org.apache.eventmesh.common.remote.JobState;
-import org.apache.eventmesh.common.remote.job.DataSourceType;
+import org.apache.eventmesh.common.remote.job.JobState;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 import java.util.List;

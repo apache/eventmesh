@@ -15,32 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server;
+package org.apache.eventmesh.admin.server.web.pojo;
 
-import org.apache.eventmesh.common.ComponentLifeCycle;
-import org.apache.eventmesh.common.remote.Task;
-import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
-import org.apache.eventmesh.common.utils.PagedList;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.common.remote.task.TransportType;
 
-/**
- * Admin
- */
-public interface Admin extends ComponentLifeCycle {
+import java.util.Date;
+import java.util.List;
 
-    /**
-     * support for web or ops
-     **/
-    boolean createOrUpdateTask(Task task);
+import lombok.Data;
 
-    boolean deleteTask(Long id);
+@Data
+public class JobDetail {
+    private Integer jobID;
 
-    Task getTask(Long id);
+    private Integer taskID;
 
-    // paged list
-    PagedList<Task> getTaskPaged(Task task);
+    private String state;
 
-    /**
-     * support for task
-     */
-    void reportHeartbeat(ReportHeartBeatRequest heartBeat);
+    private String jobType;
+
+    private Date createTime;
+
+    private Date updateTime;
+
+    private String sourceConfig;
+
+    private String sourceDesc;
+
+    private String targetConfig;
+
+    private String targetDesc;
+
+    private TransportType transportType;
+
+    private List<RecordPosition> positions;
 }

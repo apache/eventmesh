@@ -15,11 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.common.remote.datasource;
 
-public class Job {
-    private long id;
-    private long taskID;
-    private JobType type;
-    private JobState state;
+import lombok.Data;
+
+@Data
+public class DataSource {
+    private Integer id;
+
+    private Integer dataType;
+
+    private String description;
+
+    private String sourceUser;
+    private String sourcePasswd;
+    private String targetUser;
+    private String targetPasswd;
+    private int sourceType;
+    private int targetType;
+
+    private Integer createUid;
+
+    private Integer updateUid;
+
+    private String createTime;
+
+    private String updateTime;
 }

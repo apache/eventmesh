@@ -15,39 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.entity;
+package org.apache.eventmesh.admin.server.web.db.mapper;
 
-import java.io.Serializable;
-import java.util.Date;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 
-import lombok.Data;
+import java.util.List;
 
-/**
- * TableName event_mesh_data_source
- */
-@TableName(value ="event_mesh_data_source")
-@Data
-public class EventMeshDataSource implements Serializable {
-    @TableId(type = IdType.AUTO)
-    private Integer id;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-    private Integer dataType;
-
-    private String description;
-
-    private String configuration;
-
-    private Integer createUid;
-
-    private Integer updateUid;
-
-    private Date createTime;
-
-    private Date updateTime;
-
-    private static final long serialVersionUID = 1L;
+@Mapper
+public interface EventMeshJobInfoExtMapper extends BaseMapper<EventMeshJobInfo> {
+    @Insert("insert into event_mesh_job_info(`taskID`,`state`,`jobType`) values"
+        + "<foreach collection= 'jobs' item='job' separator=','>(#{job.taskID},#{job.state},#{job.jobType})</foreach>")
+    @Options(useGeneratedKeys = true, keyProperty = "jobID")
+    int saveBatch(@Param("jobs")List<EventMeshJobInfo> jobInfoList);
 }
+
+
+
+

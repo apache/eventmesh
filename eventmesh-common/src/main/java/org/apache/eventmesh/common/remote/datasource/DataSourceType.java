@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.job;
+package org.apache.eventmesh.common.remote.datasource;
 
 public enum DataSourceType {
     MYSQL("MySQL", DataSourceDriverType.MYSQL, DataSourceClassify.RDB),

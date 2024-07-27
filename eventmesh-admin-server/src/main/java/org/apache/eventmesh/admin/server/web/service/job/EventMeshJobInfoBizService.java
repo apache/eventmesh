@@ -19,23 +19,27 @@ package org.apache.eventmesh.admin.server.web.service.job;
 
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobDetail;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
 import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
-import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.job.JobState;
+import org.apache.eventmesh.common.remote.job.JobType;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.job.DataSourceType;
-import org.apache.eventmesh.common.remote.job.JobTransportType;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
+import org.apache.eventmesh.common.remote.task.TransportType;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -54,6 +58,9 @@ public class EventMeshJobInfoBizService {
     EventMeshJobInfoService jobInfoService;
 
     @Autowired
+    EventMeshJobInfoExtService jobInfoExtService;
+
+    @Autowired
     EventMeshDataSourceService dataSourceService;
 
     @Autowired
@@ -65,13 +72,32 @@ public class EventMeshJobInfoBizService {
         }
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
         jobInfo.setJobID(jobID);
-        jobInfo.setState(state.ordinal());
+        jobInfo.setState(state.name());
         jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().notIn("state", JobState.DELETE.ordinal(),
             JobState.COMPLETE.ordinal()));
         return true;
     }
 
-    public EventMeshJobDetail getJobDetail(Integer jobID) {
+    @Transactional
+    public List<EventMeshJobInfo> createJobs(Integer taskID, List<JobType> type) {
+        List<EventMeshJobInfo> entityList = new LinkedList<>();
+        for (JobType jobType : type) {
+            EventMeshJobInfo job = new EventMeshJobInfo();
+            job.setState(JobState.INIT.name());
+            job.setTaskID(taskID);
+            job.setJobType(jobType.name());
+            entityList.add(job);
+        }
+        int changed = jobInfoExtService.batchSave(entityList);
+        if (changed != type.size()) {
+            throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of task [%d] not match expect [%d]",
+                changed, taskID, type.size()));
+        }
+        return entityList;
+    }
+
+
+    public Job getJobDetail(Integer jobID) {
         if (jobID == null) {
             return null;
         }
@@ -79,9 +105,8 @@ public class EventMeshJobInfoBizService {
         if (job == null) {
             return null;
         }
-        EventMeshJobDetail detail = new EventMeshJobDetail();
+        Job detail = new Job();
         detail.setId(job.getJobID());
-        detail.setName(job.getName());
         EventMeshDataSource source = dataSourceService.getById(job.getSourceData());
         EventMeshDataSource target = dataSourceService.getById(job.getTargetData());
         if (source != null) {
@@ -121,7 +146,7 @@ public class EventMeshJobInfoBizService {
             throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal job state in db");
         }
         detail.setState(state);
-        detail.setTransportType(JobTransportType.getJobTransportType(job.getTransportType()));
+        detail.setTransportType(TransportType.getJobTransportType(job.getTransportType()));
         return detail;
     }
 }

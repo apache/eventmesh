@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web;
+package org.apache.eventmesh.admin.server.web.service;
 
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;

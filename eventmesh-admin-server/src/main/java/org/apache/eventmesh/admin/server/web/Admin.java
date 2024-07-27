@@ -15,20 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web;
 
-// task : job = 1 : m
-public class Task {
-    private long id;
-    private String name;
-    private String desc;
-    private String uid;
-    private String sourceUser;
-    private String sourcePasswd;
-    private String targetUser;
-    private String targetPasswd;
-    private int sourceType;
-    private int targetType;
+import org.apache.eventmesh.common.ComponentLifeCycle;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
+import org.apache.eventmesh.common.utils.PagedList;
 
+/**
+ * Admin
+ */
+public interface Admin extends ComponentLifeCycle {
 
+    /**
+     * support for web or ops
+     **/
+    Task createOrUpdateTask(Task task);
+
+    boolean deleteTask(Long id);
+
+    Task getTask(Long id);
+
+    // paged list
+    PagedList<Task> getTaskPaged(Task task);
+
+    /**
+     * support for task
+     */
+    void reportHeartbeat(ReportHeartBeatRequest heartBeat);
 }

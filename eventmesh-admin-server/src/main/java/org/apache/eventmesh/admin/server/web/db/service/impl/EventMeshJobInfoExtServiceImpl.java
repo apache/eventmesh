@@ -15,35 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.entity;
+package org.apache.eventmesh.admin.server.web.db.service.impl;
 
-import org.apache.eventmesh.common.remote.JobState;
-import org.apache.eventmesh.common.remote.job.JobTransportType;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
+import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoExtMapper;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 
 import java.util.List;
-import java.util.Map;
 
-import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-@Data
-public class EventMeshJobDetail {
+@Service
+public class EventMeshJobInfoExtServiceImpl implements EventMeshJobInfoExtService {
+    @Autowired
+    EventMeshJobInfoExtMapper mapper;
 
-    private Integer id;
-
-    private String name;
-
-    private JobTransportType transportType;
-
-    private Map<String, Object> sourceConnectorConfig;
-
-    private String sourceConnectorDesc;
-
-    private Map<String, Object> sinkConnectorConfig;
-
-    private String sinkConnectorDesc;
-
-    private List<RecordPosition> position;
-
-    private JobState state;
+    @Override
+    public int batchSave(List<EventMeshJobInfo> jobs) {
+        return mapper.saveBatch(jobs);
+    }
 }

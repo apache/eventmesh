@@ -17,9 +17,32 @@
 
 package org.apache.eventmesh.common.remote.job;
 
-public enum DataSourceClassify {
-    // relationship db
-    RDB,
-    MQ,
-    CACHE;
+import java.util.HashMap;
+import java.util.Map;
+
+public enum JobState {
+    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
+    private static final JobState[] STATES_NUM_INDEX = JobState.values();
+    private static final Map<String, JobState> STATES_NAME_INDEX = new HashMap<>();
+    static {
+        for (JobState jobState : STATES_NUM_INDEX) {
+            STATES_NAME_INDEX.put(jobState.name(), jobState);
+        }
+    }
+
+    public static JobState fromIndex(Integer index) {
+        if (index == null || index < 0 || index >= STATES_NUM_INDEX.length) {
+            return null;
+        }
+
+        return STATES_NUM_INDEX[index];
+    }
+
+    public static JobState fromIndex(String index) {
+        if (index == null || index.isEmpty()) {
+            return null;
+        }
+
+        return STATES_NAME_INDEX.get(index);
+    }
 }

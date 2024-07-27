@@ -20,23 +20,19 @@ package org.apache.eventmesh.admin.server.web.db.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import lombok.Data;
 
 /**
- * event_mesh_runtime_history
+ * TableName event_mesh_runtime_history
  */
-@TableName(value = "event_mesh_runtime_history")
+@TableName(value ="event_mesh_runtime_history")
 @Data
 public class EventMeshRuntimeHistory implements Serializable {
-
-    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Integer job;
+    private String job;
 
     private String address;
 

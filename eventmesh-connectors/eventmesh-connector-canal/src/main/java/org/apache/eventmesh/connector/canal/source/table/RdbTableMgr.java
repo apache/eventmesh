@@ -89,6 +89,7 @@ public class RdbTableMgr extends AbstractComponent {
                         }
                         if (columns == null || columns.isEmpty() || columns.get(table.getTableName()) == null) {
                             log.warn("init db [{}] table [{}] info, and columns are empty", db.getSchemaName(), table.getTableName());
+                            throw new EventMeshException("db [{}] table [{}] columns are empty");
                         } else {
                             LinkedHashMap<String, MySQLColumnDef> cols = new LinkedHashMap<>();
                             columns.get(table.getTableName()).forEach(x -> cols.put(x.getName(), x));
@@ -96,7 +97,7 @@ public class RdbTableMgr extends AbstractComponent {
                         }
 
                         this.tables.put(new RdbSimpleTable(db.getSchemaName(), table.getTableName()), mysqlTable);
-                    } catch (Exception e) {
+                    } catch (SQLException e) {
                         log.error("init rdb table schema [{}] table [{}] fail", db.getSchemaName(), table.getTableName(), e);
                         throw new EventMeshException(e);
                     }

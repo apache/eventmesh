@@ -18,7 +18,6 @@
 package org.apache.eventmesh.admin.server.web.handler.impl;
 
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobDetail;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
 import org.apache.eventmesh.admin.server.web.service.job.EventMeshJobInfoBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
