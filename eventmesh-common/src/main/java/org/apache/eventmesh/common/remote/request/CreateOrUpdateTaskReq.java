@@ -15,30 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.entity;
+package org.apache.eventmesh.common.remote.request;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.apache.eventmesh.common.remote.job.JobConnectorConfig;
+import org.apache.eventmesh.common.remote.task.TaskState;
 
-import java.io.Serializable;
-import java.util.Date;
+import java.util.List;
 
 /**
- * TableName event_mesh_runtime_history
+ * Description: create Task without task id, otherwise update task
  */
-@TableName(value ="event_mesh_runtime_history")
 @Data
-public class EventMeshRuntimeHistory implements Serializable {
-    @TableId(type = IdType.AUTO)
-    private Long id;
-
-    private String job;
-
-    private String address;
-
-    private Date createTime;
-
-    private static final long serialVersionUID = 1L;
+public class CreateOrUpdateTaskReq {
+    private String taskID;
+    private String name;
+    private String desc;
+    private TaskState state;
+    private String uid;
+    private List<JobConnectorConfig> job;
 }

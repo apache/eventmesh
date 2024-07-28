@@ -34,7 +34,7 @@ import lombok.Data;
 public class EventMeshMysqlPosition implements Serializable {
     @TableId(type = IdType.AUTO)
     private Integer id;
-    @TableId(type = IdType.ASSIGN_UUID)
+
     private String jobID;
 
     private String serverUUID;

@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.common.remote.response;
 
-import org.apache.eventmesh.common.remote.job.JobState;
-import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.task.TransportType;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
-
-import java.util.List;
-import java.util.Map;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.common.remote.job.JobConnectorConfig;
+import org.apache.eventmesh.common.remote.job.JobState;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.common.remote.task.TransportType;
+
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -38,13 +37,7 @@ public class FetchJobResponse extends BaseRemoteResponse {
 
     private TransportType transportType;
 
-    private Map<String, Object> sourceConnectorConfig;
-
-    private String sourceConnectorDesc;
-
-    private Map<String, Object> sinkConnectorConfig;
-
-    private String sinkConnectorDesc;
+    private JobConnectorConfig connectorConfig;
 
     private List<RecordPosition> position;
 

@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.admin.server.web.db.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.TableName;
-
-import lombok.Data;
 
 /**
  * TableName event_mesh_runtime_heartbeat
@@ -30,6 +31,7 @@ import lombok.Data;
 @TableName(value ="event_mesh_runtime_heartbeat")
 @Data
 public class EventMeshRuntimeHeartbeat implements Serializable {
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String adminAddr;

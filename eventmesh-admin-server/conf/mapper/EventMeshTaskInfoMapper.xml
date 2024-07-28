@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 * Licensed to the Apache Software Foundation (ASF) under one or more
 * contributor license agreements.  See the NOTICE file distributed with
@@ -15,9 +14,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
--->
-
+* -->
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
@@ -27,6 +24,7 @@
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="taskID" column="taskID" jdbcType="VARCHAR"/>
             <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="desc" column="desc" jdbcType="VARCHAR"/>
             <result property="transportType" column="transportType" jdbcType="VARCHAR"/>
             <result property="sourceData" column="sourceData" jdbcType="INTEGER"/>
             <result property="targetData" column="targetData" jdbcType="INTEGER"/>
@@ -39,8 +37,8 @@
 
     <sql id="Base_Column_List">
         id,taskID,name,
-        transportType,sourceData,targetData,
-        state,createUid,updateUid,
-        createTime,updateTime
+        desc,transportType,sourceData,
+        targetData,state,createUid,
+        updateUid,createTime,updateTime
     </sql>
 </mapper>

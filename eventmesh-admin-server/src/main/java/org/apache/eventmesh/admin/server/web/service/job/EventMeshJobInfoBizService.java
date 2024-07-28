@@ -23,6 +23,8 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshTaskInfoService;
+import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
 import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
 import org.apache.eventmesh.common.remote.job.JobState;
 import org.apache.eventmesh.common.remote.job.JobType;
@@ -61,25 +63,26 @@ public class EventMeshJobInfoBizService {
     EventMeshJobInfoExtService jobInfoExtService;
 
     @Autowired
+    EventMeshTaskInfoService taskInfoService;
+
+    @Autowired
     EventMeshDataSourceService dataSourceService;
 
     @Autowired
     EventMeshPositionBizService positionBizService;
 
-    public boolean updateJobState(Integer jobID, JobState state) {
+    public boolean updateJobState(String jobID, JobState state) {
         if (jobID == null || state == null) {
             return false;
         }
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
-        jobInfo.setJobID(jobID);
         jobInfo.setState(state.name());
-        jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().notIn("state", JobState.DELETE.ordinal(),
-            JobState.COMPLETE.ordinal()));
+        jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("state", JobState.DELETE.name()));
         return true;
     }
 
     @Transactional
-    public List<EventMeshJobInfo> createJobs(Integer taskID, List<JobType> type) {
+    public List<EventMeshJobInfo> createJobs(String taskID, List<JobType> type) {
         List<EventMeshJobInfo> entityList = new LinkedList<>();
         for (JobType jobType : type) {
             EventMeshJobInfo job = new EventMeshJobInfo();
@@ -90,14 +93,14 @@ public class EventMeshJobInfoBizService {
         }
         int changed = jobInfoExtService.batchSave(entityList);
         if (changed != type.size()) {
-            throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of task [%d] not match expect [%d]",
+            throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of task [%s] not match expect [%d]",
                 changed, taskID, type.size()));
         }
         return entityList;
     }
 
 
-    public Job getJobDetail(Integer jobID) {
+    public JobDetail getJobDetail(String jobID) {
         if (jobID == null) {
             return null;
         }
@@ -105,8 +108,8 @@ public class EventMeshJobInfoBizService {
         if (job == null) {
             return null;
         }
-        Job detail = new Job();
-        detail.setId(job.getJobID());
+        JobDetail detail = new JobDetail();
+        detail.setJobID(job.getJobID());
         EventMeshDataSource source = dataSourceService.getById(job.getSourceData());
         EventMeshDataSource target = dataSourceService.getById(job.getTargetData());
         if (source != null) {

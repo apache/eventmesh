@@ -17,6 +17,13 @@
 
 package org.apache.eventmesh.runtime.connector;
 
+import com.google.protobuf.Any;
+import com.google.protobuf.UnsafeByteOperations;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
@@ -63,6 +70,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.*;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -193,12 +201,12 @@ public class ConnectorRuntime implements Runtime {
         }
 
         connectorRuntimeConfig.setSourceConnectorType(jobResponse.getTransportType().getSrc().getName());
-        connectorRuntimeConfig.setSourceConnectorDesc(jobResponse.getSourceConnectorDesc());
-        connectorRuntimeConfig.setSourceConnectorConfig(jobResponse.getSourceConnectorConfig());
+        connectorRuntimeConfig.setSourceConnectorDesc(jobResponse.getConnectorConfig().getSourceConnectorDesc());
+        connectorRuntimeConfig.setSourceConnectorConfig(jobResponse.getConnectorConfig().getSourceConnectorConfig());
 
         connectorRuntimeConfig.setSinkConnectorType(jobResponse.getTransportType().getDst().getName());
-        connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getSinkConnectorDesc());
-        connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getSinkConnectorConfig());
+        connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getConnectorConfig().getSinkConnectorDesc());
+        connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getConnectorConfig().getSinkConnectorConfig());
 
         ConnectorCreateService<?> sourceConnectorCreateService =
             ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSourceConnectorType() + "-Source");

@@ -17,19 +17,19 @@
 
 package org.apache.eventmesh.admin.server.web.pojo;
 
+import lombok.Data;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.task.TransportType;
 
 import java.util.Date;
 import java.util.List;
 
-import lombok.Data;
-
 @Data
 public class JobDetail {
-    private Integer jobID;
+    private Integer id;
+    private String jobID;
 
-    private Integer taskID;
+    private String taskID;
 
     private String state;
 
