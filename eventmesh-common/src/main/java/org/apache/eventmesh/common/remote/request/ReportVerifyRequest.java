@@ -22,7 +22,8 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ReportVerifyRequest extends BaseRemoteRequest{
+public class ReportVerifyRequest extends BaseRemoteRequest {
+
     private String taskID;
 
     private String recordID;
