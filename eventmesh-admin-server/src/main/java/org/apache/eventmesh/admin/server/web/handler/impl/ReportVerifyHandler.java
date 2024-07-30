@@ -43,7 +43,7 @@ public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest,
             log.info("report verify request [{}] illegal", request);
             return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id, sign, record id or stage is none");
         }
-        return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify " +
-            "request fail");
+        return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify "
+                + "request fail");
     }
 }

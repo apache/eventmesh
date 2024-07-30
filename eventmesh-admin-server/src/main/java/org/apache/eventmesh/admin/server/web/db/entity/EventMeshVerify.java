@@ -29,7 +29,7 @@ import lombok.Data;
 /**
  * TableName event_mesh_verify
  */
-@TableName(value ="event_mesh_verify")
+@TableName(value = "event_mesh_verify")
 @Data
 public class EventMeshVerify implements Serializable {
     @TableId(type = IdType.AUTO)

@@ -88,6 +88,17 @@ public class JobInfoBizService {
         }
         List<EventMeshJobInfo> entityList = new LinkedList<>();
         for (JobDetail job : jobs) {
+            EventMeshJobInfo entity = new EventMeshJobInfo();
+            entity.setState(TaskState.INIT.name());
+            entity.setTaskID(job.getTaskID());
+            entity.setJobType(job.getJobType().name());
+            entity.setDesc(job.getDesc());
+            String jobID = UUID.randomUUID().toString();
+            entity.setJobID(jobID);
+            entity.setTransportType(job.getTransportType().name());
+            entity.setCreateUid(job.getCreateUid());
+            entity.setUpdateUid(job.getUpdateUid());
+            entity.setFromRegion(job.getRegion());
             CreateOrUpdateDataSourceReq source = new CreateOrUpdateDataSourceReq();
             source.setType(job.getTransportType().getSrc());
             source.setOperator(job.getCreateUid());
@@ -95,6 +106,7 @@ public class JobInfoBizService {
             source.setDesc(job.getSourceConnectorDesc());
             source.setConfig(job.getSourceDataSource());
             EventMeshDataSource createdSource = dataSourceBizService.createDataSource(source);
+            entity.setSourceData(createdSource.getId());
 
             CreateOrUpdateDataSourceReq sink = new CreateOrUpdateDataSourceReq();
             sink.setType(job.getTransportType().getDst());
@@ -102,21 +114,9 @@ public class JobInfoBizService {
             sink.setRegion(job.getRegion());
             sink.setDesc(job.getSinkConnectorDesc());
             sink.setConfig(job.getSinkDataSource());
-
             EventMeshDataSource createdSink = dataSourceBizService.createDataSource(source);
-            String jobID = UUID.randomUUID().toString();
-            EventMeshJobInfo entity = new EventMeshJobInfo();
-            entity.setState(TaskState.INIT.name());
-            entity.setTaskID(job.getTaskID());
-            entity.setJobType(job.getJobType().name());
-            entity.setDesc(job.getDesc());
-            entity.setSourceData(createdSource.getId());
             entity.setTargetData(createdSink.getId());
-            entity.setJobID(jobID);
-            entity.setTransportType(job.getTransportType().name());
-            entity.setCreateUid(job.getCreateUid());
-            entity.setUpdateUid(job.getUpdateUid());
-            entity.setFromRegion(job.getRegion());
+
             entityList.add(entity);
         }
         int changed = jobInfoExtService.batchSave(entityList);

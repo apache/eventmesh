@@ -29,7 +29,7 @@ import lombok.Data;
 /**
  * TableName event_mesh_data_source
  */
-@TableName(value ="event_mesh_data_source")
+@TableName(value = "event_mesh_data_source")
 @Data
 public class EventMeshDataSource implements Serializable {
     @TableId(type = IdType.AUTO)

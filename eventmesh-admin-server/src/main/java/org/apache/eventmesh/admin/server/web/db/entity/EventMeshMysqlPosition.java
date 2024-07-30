@@ -29,7 +29,7 @@ import lombok.Data;
 /**
  * TableName event_mesh_mysql_position
  */
-@TableName(value ="event_mesh_mysql_position")
+@TableName(value = "event_mesh_mysql_position")
 @Data
 public class EventMeshMysqlPosition implements Serializable {
     @TableId(type = IdType.AUTO)

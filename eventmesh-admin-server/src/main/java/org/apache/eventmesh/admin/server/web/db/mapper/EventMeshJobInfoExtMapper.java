@@ -28,12 +28,15 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+/**
+ * etx operator for table event_mesh_job_info
+ */
 @Mapper
 public interface EventMeshJobInfoExtMapper extends BaseMapper<EventMeshJobInfo> {
     @Insert("insert into event_mesh_job_info(`taskID`,`state`,`jobType`) values"
         + "<foreach collection= 'jobs' item='job' separator=','>(#{job.taskID},#{job.state},#{job.jobType})</foreach>")
     @Options(useGeneratedKeys = true, keyProperty = "jobID")
-    int saveBatch(@Param("jobs")List<EventMeshJobInfo> jobInfoList);
+    int saveBatch(@Param("jobs") List<EventMeshJobInfo> jobInfoList);
 }
 
 
