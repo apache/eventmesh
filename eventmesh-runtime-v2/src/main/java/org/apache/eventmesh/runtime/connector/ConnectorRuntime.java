@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
+import org.apache.eventmesh.common.enums.ConnectorStage;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
@@ -32,6 +33,7 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
+import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
 import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -55,10 +57,13 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -281,8 +286,9 @@ public class ConnectorRuntime implements Runtime {
                 try {
                     this.stop();
                 } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    log.error("Failed to stop after exception", ex);
                 }
+                throw new RuntimeException(e);
             }
         });
         // start
@@ -294,8 +300,9 @@ public class ConnectorRuntime implements Runtime {
                 try {
                     this.stop();
                 } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    log.error("Failed to stop after exception", ex);
                 }
+                throw new RuntimeException(e);
             }
         });
     }
@@ -304,6 +311,8 @@ public class ConnectorRuntime implements Runtime {
     public void stop() throws Exception {
         sourceConnector.stop();
         sinkConnector.stop();
+        sourceService.shutdown();
+        sinkService.shutdown();
         heartBeatExecutor.shutdown();
         requestObserver.onCompleted();
         if (channel != null && !channel.isShutdown()) {
@@ -318,6 +327,11 @@ public class ConnectorRuntime implements Runtime {
             // TODO: use producer pub record to storage replace below
             if (connectorRecordList != null && !connectorRecordList.isEmpty()) {
                 for (ConnectRecord record : connectorRecordList) {
+                    // if enabled incremental data reporting consistency check
+                    if (connectorRuntimeConfig.enableIncrementalDataConsistencyCheck) {
+                        reportVerifyRequest(record, connectorRuntimeConfig, ConnectorStage.SOURCE);
+                    }
+
                     queue.put(record);
                     Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
                     Optional<SendMessageCallback> callback =
@@ -333,6 +347,43 @@ public class ConnectorRuntime implements Runtime {
                     commitOffsets();
                 }
             }
+        }
+    }
+
+    private void reportVerifyRequest(ConnectRecord record, ConnectorRuntimeConfig connectorRuntimeConfig, ConnectorStage connectorStage) {
+        UUID uuid = UUID.randomUUID();
+        String recordId = uuid.toString();
+        String md5Str = md5(record.toString());
+        ReportVerifyRequest reportVerifyRequest = new ReportVerifyRequest();
+        reportVerifyRequest.setTaskID(connectorRuntimeConfig.getTaskID());
+        reportVerifyRequest.setRecordID(recordId);
+        reportVerifyRequest.setRecordSig(md5Str);
+        reportVerifyRequest.setConnectorName(
+            IPUtils.getLocalAddress() + "_" + connectorRuntimeConfig.getJobID() + "_" + connectorRuntimeConfig.getRegion());
+        reportVerifyRequest.setConnectorStage(connectorStage.name());
+        reportVerifyRequest.setPosition(JsonUtils.toJSONString(record.getPosition()));
+
+        Metadata metadata = Metadata.newBuilder().setType(ReportVerifyRequest.class.getSimpleName()).build();
+
+        Payload request = Payload.newBuilder().setMetadata(metadata)
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportVerifyRequest))))
+                .build())
+            .build();
+
+        requestObserver.onNext(request);
+    }
+
+    private String md5(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : messageDigest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -426,6 +477,10 @@ public class ConnectorRuntime implements Runtime {
             List<ConnectRecord> connectRecordList = new ArrayList<>();
             connectRecordList.add(connectRecord);
             sinkConnector.put(connectRecordList);
+            // if enabled incremental data reporting consistency check
+            if (connectorRuntimeConfig.enableIncrementalDataConsistencyCheck) {
+                reportVerifyRequest(connectRecord, connectorRuntimeConfig, ConnectorStage.SINK);
+            }
         }
     }
 }
