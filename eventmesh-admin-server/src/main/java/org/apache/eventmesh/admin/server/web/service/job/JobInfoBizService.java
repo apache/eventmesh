@@ -23,28 +23,28 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
-import org.apache.eventmesh.admin.server.web.db.service.EventMeshTaskInfoService;
 import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
-import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
-import org.apache.eventmesh.common.remote.job.JobState;
-import org.apache.eventmesh.common.remote.job.JobType;
-import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.admin.server.web.service.datasource.DataSourceBizService;
+import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
+import org.apache.eventmesh.common.remote.TaskState;
+import org.apache.eventmesh.common.remote.TransportType;
+import org.apache.eventmesh.common.remote.datasource.DataSource;
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
-import org.apache.eventmesh.common.remote.task.TransportType;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.common.remote.request.CreateOrUpdateDataSourceReq;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,47 +54,75 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-public class EventMeshJobInfoBizService {
+public class JobInfoBizService {
 
     @Autowired
-    EventMeshJobInfoService jobInfoService;
+    private EventMeshJobInfoService jobInfoService;
 
     @Autowired
-    EventMeshJobInfoExtService jobInfoExtService;
+    private EventMeshJobInfoExtService jobInfoExtService;
 
     @Autowired
-    EventMeshTaskInfoService taskInfoService;
+    private DataSourceBizService dataSourceBizService;
 
     @Autowired
-    EventMeshDataSourceService dataSourceService;
+    private EventMeshDataSourceService dataSourceService;
 
     @Autowired
-    EventMeshPositionBizService positionBizService;
+    private PositionBizService positionBizService;
 
-    public boolean updateJobState(String jobID, JobState state) {
+    public boolean updateJobState(String jobID, TaskState state) {
         if (jobID == null || state == null) {
             return false;
         }
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
         jobInfo.setState(state.name());
-        jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("state", JobState.DELETE.name()));
-        return true;
+        return jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("state", TaskState.DELETE.name()));
     }
 
     @Transactional
-    public List<EventMeshJobInfo> createJobs(String taskID, List<JobType> type) {
+    public List<EventMeshJobInfo> createJobs(List<JobDetail> jobs) {
+        if (jobs == null || jobs.isEmpty() || jobs.stream().anyMatch(job -> StringUtils.isBlank(job.getTaskID()))) {
+            log.warn("when create jobs, task id is empty or jobs config is empty ");
+            return null;
+        }
         List<EventMeshJobInfo> entityList = new LinkedList<>();
-        for (JobType jobType : type) {
-            EventMeshJobInfo job = new EventMeshJobInfo();
-            job.setState(JobState.INIT.name());
-            job.setTaskID(taskID);
-            job.setJobType(jobType.name());
-            entityList.add(job);
+        for (JobDetail job : jobs) {
+            CreateOrUpdateDataSourceReq source = new CreateOrUpdateDataSourceReq();
+            source.setType(job.getTransportType().getSrc());
+            source.setOperator(job.getCreateUid());
+            source.setRegion(job.getRegion());
+            source.setDesc(job.getSourceConnectorDesc());
+            source.setConfig(job.getSourceDataSource());
+            EventMeshDataSource createdSource = dataSourceBizService.createDataSource(source);
+
+            CreateOrUpdateDataSourceReq sink = new CreateOrUpdateDataSourceReq();
+            sink.setType(job.getTransportType().getDst());
+            sink.setOperator(job.getCreateUid());
+            sink.setRegion(job.getRegion());
+            sink.setDesc(job.getSinkConnectorDesc());
+            sink.setConfig(job.getSinkDataSource());
+
+            EventMeshDataSource createdSink = dataSourceBizService.createDataSource(source);
+            String jobID = UUID.randomUUID().toString();
+            EventMeshJobInfo entity = new EventMeshJobInfo();
+            entity.setState(TaskState.INIT.name());
+            entity.setTaskID(job.getTaskID());
+            entity.setJobType(job.getJobType().name());
+            entity.setDesc(job.getDesc());
+            entity.setSourceData(createdSource.getId());
+            entity.setTargetData(createdSink.getId());
+            entity.setJobID(jobID);
+            entity.setTransportType(job.getTransportType().name());
+            entity.setCreateUid(job.getCreateUid());
+            entity.setUpdateUid(job.getUpdateUid());
+            entity.setFromRegion(job.getRegion());
+            entityList.add(entity);
         }
         int changed = jobInfoExtService.batchSave(entityList);
-        if (changed != type.size()) {
-            throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of task [%s] not match expect [%d]",
-                changed, taskID, type.size()));
+        if (changed != jobs.size()) {
+            throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of not match expect [%d]",
+                changed, jobs.size()));
         }
         return entityList;
     }
@@ -115,9 +143,7 @@ public class EventMeshJobInfoBizService {
         if (source != null) {
             if (!StringUtils.isBlank(source.getConfiguration())) {
                 try {
-                    detail.setSourceConnectorConfig(JsonUtils.parseTypeReferenceObject(source.getConfiguration(),
-                        new TypeReference<Map<String, Object>>() {
-                        }));
+                    detail.setSourceDataSource(JsonUtils.parseObject(source.getConfiguration(), DataSource.class));
                 } catch (Exception e) {
                     log.warn("parse source config id [{}] fail", job.getSourceData(), e);
                     throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal source data source config");
@@ -125,7 +151,7 @@ public class EventMeshJobInfoBizService {
             }
             detail.setSourceConnectorDesc(source.getDescription());
             if (source.getDataType() != null) {
-                detail.setPosition(positionBizService.getPositionByJobID(job.getJobID(),
+                detail.setPositions(positionBizService.getPositionByJobID(job.getJobID(),
                     DataSourceType.getDataSourceType(source.getDataType())));
 
             }
@@ -133,9 +159,7 @@ public class EventMeshJobInfoBizService {
         if (target != null) {
             if (!StringUtils.isBlank(target.getConfiguration())) {
                 try {
-                    detail.setSinkConnectorConfig(JsonUtils.parseTypeReferenceObject(target.getConfiguration(),
-                        new TypeReference<Map<String, Object>>() {
-                        }));
+                    detail.setSinkDataSource(JsonUtils.parseObject(target.getConfiguration(), DataSource.class));
                 } catch (Exception e) {
                     log.warn("parse sink config id [{}] fail", job.getSourceData(), e);
                     throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal target data sink config");
@@ -144,12 +168,12 @@ public class EventMeshJobInfoBizService {
             detail.setSinkConnectorDesc(target.getDescription());
         }
 
-        JobState state = JobState.fromIndex(job.getState());
+        TaskState state = TaskState.fromIndex(job.getState());
         if (state == null) {
             throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal job state in db");
         }
         detail.setState(state);
-        detail.setTransportType(TransportType.getJobTransportType(job.getTransportType()));
+        detail.setTransportType(TransportType.getTransportType(job.getTransportType()));
         return detail;
     }
 }

@@ -21,5 +21,6 @@ public enum DataSourceClassify {
     // relationship db
     RDB,
     MQ,
-    CACHE;
+    CACHE,
+    TUNNEL;
 }

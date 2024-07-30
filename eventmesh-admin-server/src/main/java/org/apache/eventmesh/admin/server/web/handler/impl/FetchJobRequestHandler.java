@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.admin.server.web.handler.impl;
 
-import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
-import org.apache.eventmesh.admin.server.web.service.job.EventMeshJobInfoBizService;
+import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
+import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.common.remote.job.JobConnectorConfig;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.remote.response.FetchJobResponse;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,34 +39,29 @@ import lombok.extern.slf4j.Slf4j;
 public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, FetchJobResponse> {
 
     @Autowired
-    EventMeshJobInfoBizService jobInfoBizService;
+    JobInfoBizService jobInfoBizService;
 
     @Override
     public FetchJobResponse handler(FetchJobRequest request, Metadata metadata) {
         if (StringUtils.isBlank(request.getJobID())) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "job id is empty");
-        }
-        int jobID;
-        try {
-            jobID = Integer.parseInt(request.getJobID());
-        } catch (NumberFormatException e) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, String.format("illegal job id %s",
-                request.getJobID()));
+            return FetchJobResponse.failResponse(ErrorCode.BAD_REQUEST, "job id is empty");
         }
         FetchJobResponse response = FetchJobResponse.successResponse();
-        EventMeshJobDetail detail = jobInfoBizService.getJobDetail(jobID);
+        JobDetail detail = jobInfoBizService.getJobDetail(request.getJobID());
         if (detail == null) {
             return response;
         }
-        response.setId(detail.getId());
-        response.setName(detail.getName());
-        response.setSourceConnectorConfig(detail.getSourceConnectorConfig());
-        response.setSourceConnectorDesc(detail.getSourceConnectorDesc());
+        response.setId(detail.getJobID());
+        JobConnectorConfig config = new JobConnectorConfig();
+        config.setSourceConnectorConfig(JsonUtils.objectToMap(detail.getSourceDataSource()));
+        config.setSourceConnectorDesc(detail.getSourceConnectorDesc());
+        config.setSinkConnectorConfig(JsonUtils.objectToMap(detail.getSinkDataSource()));
+        config.setSourceConnectorDesc(detail.getSinkConnectorDesc());
+        response.setConnectorConfig(config);
         response.setTransportType(detail.getTransportType());
-        response.setSinkConnectorConfig(detail.getSinkConnectorConfig());
-        response.setSourceConnectorDesc(detail.getSinkConnectorDesc());
         response.setState(detail.getState());
-        response.setPosition(detail.getPosition());
+        response.setPosition(detail.getPositions());
+        response.setType(detail.getJobType());
         return response;
     }
 }

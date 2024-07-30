@@ -17,13 +17,6 @@
 
 package org.apache.eventmesh.runtime.connector;
 
-import com.google.protobuf.Any;
-import com.google.protobuf.UnsafeByteOperations;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
@@ -70,7 +63,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.*;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;

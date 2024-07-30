@@ -17,28 +17,27 @@
 
 package org.apache.eventmesh.common.remote.datasource;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@Data
+import lombok.Getter;
+
+@Getter
 public class DataSource {
-    private Integer id;
+    private final DataSourceType type;
+    private String desc;
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    @JsonSubTypes({
+        @JsonSubTypes.Type(value = MySqlIncDataSourceSourceConf.class, name = "MySqlIncDataSourceSourceConf")
+    })
+    private final DataSourceConf conf;
+    private final Class<? extends DataSourceConf> confClazz;
 
-    private Integer dataType;
+    public DataSource(DataSourceType type, DataSourceConf conf) {
+        this.type = type;
+        this.conf = conf;
+        this.confClazz = conf.getConfClass();
+    }
 
-    private String description;
 
-    private String sourceUser;
-    private String sourcePasswd;
-    private String targetUser;
-    private String targetPasswd;
-    private int sourceType;
-    private int targetType;
-
-    private Integer createUid;
-
-    private Integer updateUid;
-
-    private String createTime;
-
-    private String updateTime;
 }

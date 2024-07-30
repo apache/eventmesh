@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.admin.server.web.handler.impl;
 
-import org.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
-import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
+import org.apache.eventmesh.admin.server.web.service.verify.VerifyBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
-import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
+import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
+import org.apache.eventmesh.common.remote.response.SimpleResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,22 +33,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class FetchPositionHandler extends BaseRequestHandler<FetchPositionRequest, FetchPositionResponse> {
-
+public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest, SimpleResponse> {
     @Autowired
-    DBThreadPool executor;
-
-    @Autowired
-    PositionBizService positionBizService;
+    private VerifyBizService verifyService;
 
     @Override
-    protected FetchPositionResponse handler(FetchPositionRequest request, Metadata metadata) {
-        if (request.getDataSourceType() == null) {
-            return FetchPositionResponse.failResponse(ErrorCode.BAD_REQUEST, "illegal data type, it's empty");
+    protected SimpleResponse handler(ReportVerifyRequest request, Metadata metadata) {
+        if (StringUtils.isAnyBlank(request.getTaskID(), request.getRecordSig(), request.getRecordID(), request.getConnectorStage())) {
+            log.info("report verify request [{}] illegal", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id, sign, record id or stage is none");
         }
-        if (StringUtils.isBlank(request.getJobID())) {
-            return FetchPositionResponse.failResponse(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
-        }
-        return FetchPositionResponse.successResponse(positionBizService.getPosition(request, metadata));
+        return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify " +
+            "request fail");
     }
 }

@@ -15,23 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.request;
+package org.apache.eventmesh.common.remote.datasource;
 
-import lombok.Data;
-import org.apache.eventmesh.common.remote.job.JobConnectorConfig;
-import org.apache.eventmesh.common.remote.task.TaskState;
 
-import java.util.List;
-
-/**
- * Description: create Task without task id, otherwise update task
- */
-@Data
-public class CreateOrUpdateTaskReq {
-    private String taskID;
-    private String name;
-    private String desc;
-    private TaskState state;
-    private String uid;
-    private List<JobConnectorConfig> job;
+public abstract class DataSourceConf {
+    public abstract Class<? extends DataSourceConf> getConfClass();
 }

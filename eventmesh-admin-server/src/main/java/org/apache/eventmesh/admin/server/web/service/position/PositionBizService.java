@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class EventMeshPositionBizService {
+public class PositionBizService {
 
     @Autowired
     PositionHandlerFactory factory;
@@ -70,14 +70,14 @@ public class EventMeshPositionBizService {
         return handler.handler(request, metadata);
     }
 
-    public List<RecordPosition> getPositionByJobID(Integer jobID, DataSourceType type) {
+    public List<RecordPosition> getPositionByJobID(String jobID, DataSourceType type) {
         if (jobID == null || type == null) {
             return null;
         }
         isValidatePositionRequest(type);
         PositionHandler handler = factory.getHandler(type);
         FetchPositionRequest request = new FetchPositionRequest();
-        request.setJobID(String.valueOf(jobID));
+        request.setJobID(jobID);
         return handler.handler(request, null);
     }
 }

@@ -17,35 +17,48 @@
 
 package org.apache.eventmesh.admin.server.web.pojo;
 
-import lombok.Data;
+import org.apache.eventmesh.common.remote.TaskState;
+import org.apache.eventmesh.common.remote.TransportType;
+import org.apache.eventmesh.common.remote.datasource.DataSource;
+import org.apache.eventmesh.common.remote.job.JobType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
-import org.apache.eventmesh.common.remote.task.TransportType;
 
 import java.util.Date;
 import java.util.List;
 
+import lombok.Data;
+
 @Data
 public class JobDetail {
     private Integer id;
+
     private String jobID;
+
+    private String desc;
 
     private String taskID;
 
-    private String state;
+    private TaskState state;
 
-    private String jobType;
+    private JobType jobType;
 
     private Date createTime;
 
     private Date updateTime;
 
-    private String sourceConfig;
+    private String createUid;
 
-    private String sourceDesc;
+    private String updateUid;
 
-    private String targetConfig;
+    private String region;
 
-    private String targetDesc;
+    private DataSource sourceDataSource;
+
+    private String sourceConnectorDesc;
+
+    private DataSource sinkDataSource;
+
+    private String sinkConnectorDesc;
 
     private TransportType transportType;
 

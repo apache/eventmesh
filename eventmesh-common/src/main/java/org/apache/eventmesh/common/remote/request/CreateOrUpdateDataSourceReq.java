@@ -15,31 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web;
+package org.apache.eventmesh.common.remote.request;
 
-import org.apache.eventmesh.common.ComponentLifeCycle;
-import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
-import org.apache.eventmesh.common.utils.PagedList;
+import org.apache.eventmesh.common.remote.datasource.DataSource;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * Admin
+ * create or update datasource with custom data source config
  */
-public interface Admin extends ComponentLifeCycle {
-
-    /**
-     * support for web or ops
-     **/
-    Task createOrUpdateTask(Task task);
-
-    boolean deleteTask(Long id);
-
-    Task getTask(Long id);
-
-    // paged list
-    PagedList<Task> getTaskPaged(Task task);
-
-    /**
-     * support for task
-     */
-    void reportHeartbeat(ReportHeartBeatRequest heartBeat);
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CreateOrUpdateDataSourceReq extends BaseRemoteRequest {
+    private Integer id;
+    private DataSourceType type;
+    private String desc;
+    private DataSource config;
+    private String region;
+    private String operator;
 }

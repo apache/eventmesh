@@ -20,11 +20,14 @@ package org.apache.eventmesh.admin.server.web.handler.impl;
 import org.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHeartbeat;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
-import org.apache.eventmesh.admin.server.web.service.heatbeat.EventMeshRuntimeHeartbeatBizService;
+import org.apache.eventmesh.admin.server.web.service.heatbeat.RuntimeHeartbeatBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
-import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
+import org.apache.eventmesh.common.remote.response.SimpleResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,26 +36,23 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRequest, EmptyAckResponse> {
+public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRequest, SimpleResponse> {
 
     @Autowired
-    EventMeshRuntimeHeartbeatBizService heartbeatBizService;
+    RuntimeHeartbeatBizService heartbeatBizService;
 
     @Autowired
     DBThreadPool executor;
 
     @Override
-    protected EmptyAckResponse handler(ReportHeartBeatRequest request, Metadata metadata) {
+    protected SimpleResponse handler(ReportHeartBeatRequest request, Metadata metadata) {
+        if (StringUtils.isBlank(request.getJobID()) || StringUtils.isBlank(request.getAddress())) {
+            log.info("request [{}] id or reporter address is empty", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request id or reporter address is empty");
+        }
         executor.getExecutors().execute(() -> {
             EventMeshRuntimeHeartbeat heartbeat = new EventMeshRuntimeHeartbeat();
-            int job;
-            try {
-                job = Integer.parseInt(request.getJobID());
-            } catch (NumberFormatException e) {
-                log.warn("runtime {} report heartbeat fail, illegal job id {}", request.getAddress(), request.getJobID());
-                return;
-            }
-            heartbeat.setJobID(job);
+            heartbeat.setJobID(request.getJobID());
             heartbeat.setReportTime(request.getReportedTimeStamp());
             heartbeat.setAdminAddr(IPUtils.getLocalAddress());
             heartbeat.setRuntimeAddr(request.getAddress());
@@ -65,6 +65,6 @@ public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRe
             }
         });
 
-        return new EmptyAckResponse();
+        return SimpleResponse.success();
     }
 }

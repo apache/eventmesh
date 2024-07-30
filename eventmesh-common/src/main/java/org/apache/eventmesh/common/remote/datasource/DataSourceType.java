@@ -17,10 +17,27 @@
 
 package org.apache.eventmesh.common.remote.datasource;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@ToString
 public enum DataSourceType {
     MYSQL("MySQL", DataSourceDriverType.MYSQL, DataSourceClassify.RDB),
     REDIS("Redis", DataSourceDriverType.REDIS, DataSourceClassify.CACHE),
-    ROCKETMQ("RocketMQ", DataSourceDriverType.ROCKETMQ, DataSourceClassify.MQ);
+    ROCKETMQ("RocketMQ", DataSourceDriverType.ROCKETMQ, DataSourceClassify.MQ),
+    HTTP("HTTP", DataSourceDriverType.HTTP, DataSourceClassify.TUNNEL);
+    private static final Map<String, DataSourceType> INDEX_TYPES = new HashMap<>();
+    private static final DataSourceType[] TYPES = DataSourceType.values();
+    static {
+        for (DataSourceType type : TYPES) {
+            INDEX_TYPES.put(type.name(), type);
+        }
+    }
+
     private final String name;
     private final DataSourceDriverType driverType;
     private final DataSourceClassify classify;
@@ -31,19 +48,12 @@ public enum DataSourceType {
         this.classify = classify;
     }
 
-    public String getName() {
-        return name;
+    public static DataSourceType getDataSourceType(String index) {
+        if (index == null || index.isEmpty()) {
+            return null;
+        }
+        return INDEX_TYPES.get(index);
     }
-
-    public DataSourceDriverType getDriverType() {
-        return driverType;
-    }
-
-    public DataSourceClassify getClassify() {
-        return classify;
-    }
-
-    private static final DataSourceType[] TYPES = DataSourceType.values();
 
     public static DataSourceType getDataSourceType(Integer index) {
         if (index == null || index < 0 || index >= TYPES.length) {

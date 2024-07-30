@@ -26,8 +26,7 @@ import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.payload.PayloadUtil;
 import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
 import org.apache.eventmesh.common.remote.response.BaseRemoteResponse;
-import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
-import org.apache.eventmesh.common.remote.response.FailResponse;
+import org.apache.eventmesh.common.remote.response.SimpleResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,24 +47,26 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
 
     private Payload process(Payload value) {
         if (value == null || StringUtils.isBlank(value.getMetadata().getType())) {
-            return PayloadUtil.from(FailResponse.build(ErrorCode.BAD_REQUEST, "bad request: type not exists"));
+            return PayloadUtil.from(SimpleResponse.fail(ErrorCode.BAD_REQUEST, "bad request: type not exists"));
         }
         try {
             BaseRequestHandler<BaseRemoteRequest, BaseRemoteResponse> handler = handlerFactory.getHandler(value.getMetadata().getType());
             if (handler == null) {
-                return PayloadUtil.from(FailResponse.build(BaseRemoteResponse.UNKNOWN, "not match any request handler"));
+                return PayloadUtil.from(SimpleResponse.fail(ErrorCode.BAD_REQUEST, "not match any request handler"));
             }
             BaseRemoteResponse response = handler.handlerRequest((BaseRemoteRequest) PayloadUtil.parse(value), value.getMetadata());
-            if (response == null || response instanceof EmptyAckResponse) {
-                return null;
+            if (response == null) {
+                log.warn("received request type [{}] handler [{}], then replay empty response", value.getMetadata().getType(),
+                    handler.getClass().getName());
+                response = SimpleResponse.success();
             }
             return PayloadUtil.from(response);
         } catch (Exception e) {
             log.warn("process payload {} fail", value.getMetadata().getType(), e);
             if (e instanceof AdminServerRuntimeException) {
-                return PayloadUtil.from(FailResponse.build(((AdminServerRuntimeException) e).getCode(), e.getMessage()));
+                return PayloadUtil.from(SimpleResponse.fail(((AdminServerRuntimeException) e).getCode(), e.getMessage()));
             }
-            return PayloadUtil.from(FailResponse.build(ErrorCode.INTERNAL_ERR, "admin server internal err"));
+            return PayloadUtil.from(SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "admin server internal err"));
         }
     }
 

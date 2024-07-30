@@ -142,7 +142,7 @@ public class MysqlPositionHandler extends PositionHandler {
                 return false;
             }
             EventMeshMysqlPosition position = new EventMeshMysqlPosition();
-            position.setJobID(Integer.parseInt(request.getJobID()));
+            position.setJobID(request.getJobID());
             position.setAddress(request.getAddress());
             CanalRecordOffset offset = (CanalRecordOffset) recordPosition.getRecordOffset();
             if (offset != null) {

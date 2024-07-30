@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.remote.request;
 
-import org.apache.eventmesh.common.remote.job.JobState;
+import org.apache.eventmesh.common.remote.TaskState;
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
@@ -25,16 +25,18 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@ToString
 public class ReportPositionRequest extends BaseRemoteRequest {
 
     private String jobID;
 
     private List<RecordPosition> recordPositionList;
 
-    private JobState state;
+    private TaskState state;
 
     private String address;
 

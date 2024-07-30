@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.task;
+package org.apache.eventmesh.common.remote;
 
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 
@@ -28,7 +28,10 @@ import lombok.Getter;
 public enum TransportType {
     MYSQL_MYSQL(DataSourceType.MYSQL, DataSourceType.MYSQL),
     REDIS_REDIS(DataSourceType.REDIS, DataSourceType.REDIS),
-    ROCKETMQ_ROCKETMQ(DataSourceType.ROCKETMQ, DataSourceType.ROCKETMQ);
+    ROCKETMQ_ROCKETMQ(DataSourceType.ROCKETMQ, DataSourceType.ROCKETMQ),
+    MYSQL_HTTP(DataSourceType.MYSQL, DataSourceType.HTTP),
+    HTTP_MYSQL(DataSourceType.HTTP, DataSourceType.MYSQL),
+    REDIS_MQ(DataSourceType.REDIS, DataSourceType.ROCKETMQ);
     private static final Map<String, TransportType> INDEX_TYPES = new HashMap<>();
     private static final TransportType[] TYPES = TransportType.values();
     private static final String SEPARATOR = "@";
@@ -49,14 +52,14 @@ public enum TransportType {
     }
 
 
-    public static TransportType getJobTransportType(String index) {
+    public static TransportType getTransportType(String index) {
         if (index == null || index.isEmpty()) {
             return null;
         }
         return INDEX_TYPES.get(index);
     }
 
-    public static TransportType getJobTransportType(Integer index) {
+    public static TransportType getTransportType(Integer index) {
         if (index == null || index < 0 || index >= TYPES.length) {
             return null;
         }

@@ -35,15 +35,17 @@ public class EventMeshDataSource implements Serializable {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
-    private Integer dataType;
+    private String dataType;
 
     private String description;
 
     private String configuration;
 
-    private Integer createUid;
+    private String region;
 
-    private Integer updateUid;
+    private String createUid;
+
+    private String updateUid;
 
     private Date createTime;
 

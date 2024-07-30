@@ -20,5 +20,6 @@ package org.apache.eventmesh.common.remote.datasource;
 public enum DataSourceDriverType {
     MYSQL,
     REDIS,
-    ROCKETMQ;
+    ROCKETMQ,
+    HTTP;
 }

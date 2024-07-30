@@ -17,9 +17,18 @@
 
 package org.apache.eventmesh.common.remote.response;
 
-public class FailResponse extends BaseRemoteResponse {
-    public static FailResponse build(int errorCode, String msg) {
-        FailResponse response = new FailResponse();
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
+
+public class SimpleResponse extends BaseRemoteResponse {
+    /**
+     * just mean remote received or process success
+     */
+    public static SimpleResponse success() {
+        return new SimpleResponse();
+    }
+
+    public static SimpleResponse fail(int errorCode, String msg) {
+        SimpleResponse response = new SimpleResponse();
         response.setErrorCode(errorCode);
         response.setDesc(msg);
         response.setSuccess(false);
@@ -33,7 +42,7 @@ public class FailResponse extends BaseRemoteResponse {
      * @param exception exception
      * @return response
      */
-    public static FailResponse build(Throwable exception) {
-        return build(BaseRemoteResponse.UNKNOWN, exception.getMessage());
+    public static SimpleResponse fail(Throwable exception) {
+        return fail(ErrorCode.INTERNAL_ERR, exception.getMessage());
     }
 }

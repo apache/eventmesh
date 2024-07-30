@@ -15,22 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.job;
+package org.apache.eventmesh.common.remote;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public enum JobState {
+import lombok.ToString;
+
+@ToString
+public enum TaskState {
     INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES_NUM_INDEX = JobState.values();
-    private static final Map<String, JobState> STATES_NAME_INDEX = new HashMap<>();
+    private static final TaskState[] STATES_NUM_INDEX = TaskState.values();
+    private static final Map<String, TaskState> STATES_NAME_INDEX = new HashMap<>();
     static {
-        for (JobState jobState : STATES_NUM_INDEX) {
+        for (TaskState jobState : STATES_NUM_INDEX) {
             STATES_NAME_INDEX.put(jobState.name(), jobState);
         }
     }
 
-    public static JobState fromIndex(Integer index) {
+    public static TaskState fromIndex(Integer index) {
         if (index == null || index < 0 || index >= STATES_NUM_INDEX.length) {
             return null;
         }
@@ -38,7 +41,7 @@ public enum JobState {
         return STATES_NUM_INDEX[index];
     }
 
-    public static JobState fromIndex(String index) {
+    public static TaskState fromIndex(String index) {
         if (index == null || index.isEmpty()) {
             return null;
         }

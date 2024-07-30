@@ -15,22 +15,41 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.job;
+package org.apache.eventmesh.common.remote.request;
 
-import java.util.Map;
+import org.apache.eventmesh.common.remote.TransportType;
+import org.apache.eventmesh.common.remote.datasource.DataSource;
+import org.apache.eventmesh.common.remote.job.JobType;
+
+import java.util.List;
 
 import lombok.Data;
 
 /**
- * Description:
+ * Description: create task without task id, otherwise update task
  */
 @Data
-public class JobConnectorConfig {
-    private Map<String, Object> sourceConnectorConfig;
+public class CreateTaskRequest {
+    private String name;
+    private String desc;
+    private String uid;
+    private List<JobDetail> jobs;
+    private String region;
 
-    private String sourceConnectorDesc;
+    @Data
+    public static class JobDetail {
+        private String desc;
 
-    private Map<String, Object> sinkConnectorConfig;
+        private JobType jobType;
 
-    private String sinkConnectorDesc;
+        private DataSource sourceDataSource;
+
+        private String sourceConnectorDesc;
+
+        private DataSource sinkDataSource;
+
+        private String sinkConnectorDesc;
+
+        private TransportType transportType;
+    }
 }

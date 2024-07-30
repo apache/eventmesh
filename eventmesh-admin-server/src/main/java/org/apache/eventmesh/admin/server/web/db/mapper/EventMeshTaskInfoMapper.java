@@ -18,12 +18,16 @@
 package org.apache.eventmesh.admin.server.web.db.mapper;
 
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
+
+import org.apache.ibatis.annotations.Mapper;
+
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
 * event_mesh_task_info
 * Entity org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo
 */
+@Mapper
 public interface EventMeshTaskInfoMapper extends BaseMapper<EventMeshTaskInfo> {
 
 }

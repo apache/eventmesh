@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-public class EventMeshRuntimeHeartbeatBizService {
+public class RuntimeHeartbeatBizService {
 
     @Autowired
     EventMeshRuntimeHistoryService historyService;

@@ -23,7 +23,7 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.Ad
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
-import org.apache.eventmesh.common.remote.job.JobState;
+import org.apache.eventmesh.common.remote.TaskState;
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
@@ -71,7 +71,7 @@ public class AdminOffsetService implements OffsetManagementService {
 
     private String jobId;
 
-    private JobState jobState;
+    private TaskState jobState;
 
     private DataSourceType dataSourceType;
 
@@ -271,7 +271,7 @@ public class AdminOffsetService implements OffsetManagementService {
             log.info("init record offset {}", initialRecordOffsetMap);
             positionStore.putAll(initialRecordOffsetMap);
         }
-        this.jobState = JobState.RUNNING;
+        this.jobState = TaskState.RUNNING;
         this.jobId = offsetStorageConfig.getExtensions().get("jobId");
     }
 }

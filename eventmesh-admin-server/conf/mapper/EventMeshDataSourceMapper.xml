@@ -25,18 +25,19 @@
 
     <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="dataType" column="dataType" jdbcType="INTEGER"/>
+            <result property="dataType" column="dataType" jdbcType="VARCHAR"/>
             <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="configuration" column="configuration" jdbcType="VARCHAR"/>
-            <result property="createUid" column="createUid" jdbcType="INTEGER"/>
-            <result property="updateUid" column="updateUid" jdbcType="INTEGER"/>
+            <result property="region" column="region" jdbcType="VARCHAR"/>
+            <result property="createUid" column="createUid" jdbcType="VARCHAR"/>
+            <result property="updateUid" column="updateUid" jdbcType="VARCHAR"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,dataType,description,
-        configuration,createUid,updateUid,
+        configuration,region,createUid,updateUid,
         createTime,updateTime
     </sql>
 </mapper>

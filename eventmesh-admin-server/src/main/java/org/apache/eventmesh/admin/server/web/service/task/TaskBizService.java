@@ -17,23 +17,61 @@
 
 package org.apache.eventmesh.admin.server.web.service.task;
 
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshTaskInfoService;
+import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
+import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
+import org.apache.eventmesh.common.remote.TaskState;
+import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class TaskBizService {
     @Autowired
     private EventMeshTaskInfoService taskInfoService;
 
+    @Autowired
+    private JobInfoBizService jobInfoService;
 
     @Transactional
-    public void createTask() {
-        String uuid = UUID.randomUUID().toString();
+    public String createTask(CreateTaskRequest req) {
+        String taskID = UUID.randomUUID().toString();
+        List<JobDetail> jobs = req.getJobs().stream().map(x -> {
+            JobDetail job = parse(x);
+            job.setTaskID(taskID);
+            job.setRegion(req.getRegion());
+            job.setCreateUid(req.getUid());
+            job.setUpdateUid(req.getUid());
+            return job;
+        }).collect(Collectors.toList());
+        jobInfoService.createJobs(jobs);
+        EventMeshTaskInfo taskInfo = new EventMeshTaskInfo();
+        taskInfo.setTaskID(taskID);
+        taskInfo.setName(req.getName());
+        taskInfo.setDesc(req.getDesc());
+        taskInfo.setState(TaskState.INIT.name());
+        taskInfo.setCreateUid(req.getUid());
+        taskInfo.setFromRegion(req.getRegion());
+        taskInfoService.save(taskInfo);
+        return taskID;
+    }
 
+    private JobDetail parse(CreateTaskRequest.JobDetail src) {
+        JobDetail dst = new JobDetail();
+        dst.setDesc(src.getDesc());
+        dst.setTransportType(src.getTransportType());
+        dst.setSourceConnectorDesc(src.getSourceConnectorDesc());
+        dst.setSourceDataSource(src.getSourceDataSource());
+        dst.setSinkConnectorDesc(src.getSinkConnectorDesc());
+        dst.setSinkDataSource(src.getSinkDataSource());
+        dst.setJobType(src.getJobType());
+        return dst;
     }
 }
