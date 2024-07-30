@@ -15,4 +15,6 @@
 # limitations under the License.
 #
 
+taskID: 1
 jobID: 1
+region: region1
