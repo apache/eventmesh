@@ -25,8 +25,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * for table 'event_mesh_job_info' db operation
- * 2024-05-09 15:51:45
- * entity.db.web.server.admin.eventmesh.apache.org.EventMeshJobInfo
+ * entity org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo
  */
 @Mapper
 public interface EventMeshJobInfoMapper extends BaseMapper<EventMeshJobInfo> {

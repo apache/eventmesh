@@ -27,7 +27,7 @@ import lombok.Getter;
 @Getter
 public abstract class BaseRemoteRequest implements IPayload {
 
-    private Map<String, String> header = new HashMap<>();
+    private final Map<String, String> header = new HashMap<>();
 
     public void addHeader(String key, String value) {
         if (key == null || value == null) {

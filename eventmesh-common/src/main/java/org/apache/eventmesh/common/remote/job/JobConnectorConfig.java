@@ -17,9 +17,20 @@
 
 package org.apache.eventmesh.common.remote.job;
 
-public enum DataSourceClassify {
-    // relationship db
-    RDB,
-    MQ,
-    CACHE;
+import java.util.Map;
+
+import lombok.Data;
+
+/**
+ * Description:
+ */
+@Data
+public class JobConnectorConfig {
+    private Map<String, Object> sourceConnectorConfig;
+
+    private String sourceConnectorDesc;
+
+    private Map<String, Object> sinkConnectorConfig;
+
+    private String sinkConnectorDesc;
 }

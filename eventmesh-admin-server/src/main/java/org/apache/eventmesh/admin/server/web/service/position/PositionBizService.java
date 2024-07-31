@@ -19,8 +19,8 @@ package org.apache.eventmesh.admin.server.web.service.position;
 
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.job.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class EventMeshPositionBizService {
+public class PositionBizService {
 
     @Autowired
     PositionHandlerFactory factory;
@@ -70,14 +70,14 @@ public class EventMeshPositionBizService {
         return handler.handler(request, metadata);
     }
 
-    public List<RecordPosition> getPositionByJobID(Integer jobID, DataSourceType type) {
+    public List<RecordPosition> getPositionByJobID(String jobID, DataSourceType type) {
         if (jobID == null || type == null) {
             return null;
         }
         isValidatePositionRequest(type);
         PositionHandler handler = factory.getHandler(type);
         FetchPositionRequest request = new FetchPositionRequest();
-        request.setJobID(String.valueOf(jobID));
+        request.setJobID(jobID);
         return handler.handler(request, null);
     }
 }

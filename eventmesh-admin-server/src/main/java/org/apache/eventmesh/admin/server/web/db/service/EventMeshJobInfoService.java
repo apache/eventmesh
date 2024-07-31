@@ -22,8 +22,8 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
-* for table `event_mesh_job_info' db operation
-* 2024-05-09 15:51:45
-*/
+ * event_mesh_job_info
+ */
 public interface EventMeshJobInfoService extends IService<EventMeshJobInfo> {
+
 }

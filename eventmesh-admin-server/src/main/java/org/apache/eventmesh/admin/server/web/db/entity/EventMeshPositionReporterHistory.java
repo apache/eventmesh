@@ -27,16 +27,15 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * event_mesh_position_reporter_history
+ * TableName event_mesh_position_reporter_history
  */
 @TableName(value = "event_mesh_position_reporter_history")
 @Data
 public class EventMeshPositionReporterHistory implements Serializable {
-
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Integer job;
+    private String job;
 
     private String record;
 
