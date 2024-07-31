@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.admin.server.web.service.position;
 
-import org.apache.eventmesh.common.remote.job.DataSourceType;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

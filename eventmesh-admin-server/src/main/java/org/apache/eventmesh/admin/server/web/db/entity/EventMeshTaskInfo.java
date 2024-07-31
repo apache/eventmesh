@@ -17,33 +17,41 @@
 
 package org.apache.eventmesh.admin.server.web.db.entity;
 
-import org.apache.eventmesh.common.remote.JobState;
-import org.apache.eventmesh.common.remote.job.JobTransportType;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import java.io.Serializable;
+import java.util.Date;
 
-import java.util.List;
-import java.util.Map;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 
 import lombok.Data;
 
+/**
+ * TableName event_mesh_task_info
+ */
+@TableName(value = "event_mesh_task_info")
 @Data
-public class EventMeshJobDetail {
-
+public class EventMeshTaskInfo implements Serializable {
+    @TableId(type = IdType.AUTO)
     private Integer id;
+
+    private String taskID;
 
     private String name;
 
-    private JobTransportType transportType;
+    private String desc;
 
-    private Map<String, Object> sourceConnectorConfig;
+    private String state;
 
-    private String sourceConnectorDesc;
+    private String fromRegion;
 
-    private Map<String, Object> sinkConnectorConfig;
+    private String createUid;
 
-    private String sinkConnectorDesc;
+    private String updateUid;
 
-    private List<RecordPosition> position;
+    private Date createTime;
 
-    private JobState state;
+    private Date updateTime;
+
+    private static final long serialVersionUID = 1L;
 }

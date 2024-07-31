@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.admin.server.web.handler.impl;
 
-import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
-import org.apache.eventmesh.admin.server.web.service.job.EventMeshJobInfoBizService;
-import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
+import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
+import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
+import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
-import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
+import org.apache.eventmesh.common.remote.response.SimpleResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,36 +36,33 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequest, EmptyAckResponse> {
+public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequest, SimpleResponse> {
+    @Autowired
+    private JobInfoBizService jobInfoBizService;
 
     @Autowired
-    EventMeshJobInfoBizService jobInfoBizService;
+    private DBThreadPool executor;
 
     @Autowired
-    DBThreadPool executor;
-
-    @Autowired
-    EventMeshPositionBizService positionBizService;
-
+    private PositionBizService positionBizService;
 
     @Override
-    protected EmptyAckResponse handler(ReportPositionRequest request, Metadata metadata) {
+    protected SimpleResponse handler(ReportPositionRequest request, Metadata metadata) {
+        if (StringUtils.isBlank(request.getJobID())) {
+            log.info("request [{}] illegal job id", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
+        }
         if (request.getDataSourceType() == null) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "illegal data type, it's empty");
+            log.info("request [{}] illegal data type", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "illegal data type, it's empty");
         }
         if (StringUtils.isBlank(request.getJobID())) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
+            log.info("request [{}] illegal job id", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
         }
         if (request.getRecordPositionList() == null || request.getRecordPositionList().isEmpty()) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "illegal record position list, it's empty");
-        }
-        int jobID;
-
-        try {
-            jobID = Integer.parseInt(request.getJobID());
-        } catch (NumberFormatException e) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, String.format("illegal job id [%s] format",
-                request.getJobID()));
+            log.info("request [{}] illegal record position", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "illegal record position list, it's empty");
         }
 
         positionBizService.isValidatePositionRequest(request.getDataSourceType());
@@ -88,8 +85,10 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
                 log.warn("handle position request fail, request [{}]", request, e);
             } finally {
                 try {
-                    if (!jobInfoBizService.updateJobState(jobID, request.getState())) {
-                        log.warn("update job [{}] state to [{}] fail", jobID, request.getState());
+                    JobDetail detail = jobInfoBizService.getJobDetail(request.getJobID());
+                    if (detail != null && !detail.getState().equals(request.getState()) && !jobInfoBizService.updateJobState(request.getJobID(),
+                        request.getState())) {
+                        log.warn("update job [{}] old state [{}] to [{}] fail", request.getJobID(), detail.getState(), request.getState());
                     }
                 } catch (Exception e) {
                     log.warn("update job id [{}] type [{}] state [{}] fail", request.getJobID(),
@@ -97,6 +96,6 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
                 }
             }
         });
-        return new EmptyAckResponse();
+        return SimpleResponse.success();
     }
 }

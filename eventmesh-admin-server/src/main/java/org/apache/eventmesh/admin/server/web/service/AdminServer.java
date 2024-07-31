@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server;
+package org.apache.eventmesh.admin.server.web.service;
 
+import org.apache.eventmesh.admin.server.AdminServerProperties;
+import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
+import org.apache.eventmesh.common.ComponentLifeCycle;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.common.remote.Task;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.PagedList;
 import org.apache.eventmesh.registry.RegisterServerInfo;
 import org.apache.eventmesh.registry.RegistryFactory;
 import org.apache.eventmesh.registry.RegistryService;
@@ -41,8 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class AdminServer implements Admin, ApplicationListener<ApplicationReadyEvent> {
-
+public class AdminServer implements ComponentLifeCycle, ApplicationListener<ApplicationReadyEvent> {
     private final RegistryService registryService;
 
     private final RegisterServerInfo adminServeInfo;
@@ -65,32 +64,6 @@ public class AdminServer implements Admin, ApplicationListener<ApplicationReadyE
         }
         adminServeInfo.setServiceName(name);
         registryService = RegistryFactory.getInstance(configuration.getEventMeshRegistryPluginType());
-    }
-
-
-    @Override
-    public boolean createOrUpdateTask(Task task) {
-        return false;
-    }
-
-    @Override
-    public boolean deleteTask(Long id) {
-        return false;
-    }
-
-    @Override
-    public Task getTask(Long id) {
-        return null;
-    }
-
-    @Override
-    public PagedList<Task> getTaskPaged(Task task) {
-        return null;
-    }
-
-    @Override
-    public void reportHeartbeat(ReportHeartBeatRequest heartBeat) {
-
     }
 
     @Override

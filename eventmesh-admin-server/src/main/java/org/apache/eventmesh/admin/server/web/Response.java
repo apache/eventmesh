@@ -17,35 +17,44 @@
 
 package org.apache.eventmesh.admin.server.web;
 
-public class Response<T> {
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
 
+public class Response<T> {
+    private int code;
     private boolean success;
 
     private String desc;
 
     private T data;
 
-    public boolean isSuccess() {
-        return success;
+    public static Response<Void> success() {
+        Response<Void> response = new Response<>();
+        response.success = true;
+        response.code = ErrorCode.SUCCESS;
+        return response;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public static <T> Response<T> success(T data) {
+        Response<T> response = new Response<>();
+        response.success = true;
+        response.data = data;
+        return response;
     }
 
-    public String getDesc() {
-        return desc;
+    public static Response<Void> fail(int code, String desc) {
+        Response<Void> response = new Response<>();
+        response.success = false;
+        response.code = code;
+        response.desc = desc;
+        return response;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
+    public static <T> Response<T> fail(int code, String desc, T data) {
+        Response<T> response = new Response<>();
+        response.success = false;
+        response.code = code;
+        response.desc = desc;
+        response.data = data;
+        return response;
     }
 }

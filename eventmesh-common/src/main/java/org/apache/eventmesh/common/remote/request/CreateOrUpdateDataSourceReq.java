@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.common.remote.request;
 
-// task : job = 1 : m
-public class Task {
-    private long id;
-    private String name;
+import org.apache.eventmesh.common.remote.datasource.DataSource;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * create or update datasource with custom data source config
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CreateOrUpdateDataSourceReq extends BaseRemoteRequest {
+    private Integer id;
+    private DataSourceType type;
     private String desc;
-    private String uid;
-    private String sourceUser;
-    private String sourcePasswd;
-    private String targetUser;
-    private String targetPasswd;
-    private int sourceType;
-    private int targetType;
-
-
+    private DataSource config;
+    private String region;
+    private String operator;
 }

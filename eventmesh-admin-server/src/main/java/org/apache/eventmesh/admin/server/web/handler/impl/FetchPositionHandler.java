@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.admin.server.web.handler.impl;
 
-import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
-import org.apache.eventmesh.admin.server.web.service.position.EventMeshPositionBizService;
+import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
@@ -41,15 +40,15 @@ public class FetchPositionHandler extends BaseRequestHandler<FetchPositionReques
     DBThreadPool executor;
 
     @Autowired
-    EventMeshPositionBizService positionBizService;
+    PositionBizService positionBizService;
 
     @Override
     protected FetchPositionResponse handler(FetchPositionRequest request, Metadata metadata) {
         if (request.getDataSourceType() == null) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "illegal data type, it's empty");
+            return FetchPositionResponse.failResponse(ErrorCode.BAD_REQUEST, "illegal data type, it's empty");
         }
         if (StringUtils.isBlank(request.getJobID())) {
-            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
+            return FetchPositionResponse.failResponse(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
         }
         return FetchPositionResponse.successResponse(positionBizService.getPosition(request, metadata));
     }
