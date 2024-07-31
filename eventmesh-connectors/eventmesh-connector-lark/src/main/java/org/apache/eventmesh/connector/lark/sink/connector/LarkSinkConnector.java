@@ -111,6 +111,11 @@ public class LarkSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         if (!started.compareAndSet(true, false)) {
             log.info("LarkSinkConnector has not started yet.");

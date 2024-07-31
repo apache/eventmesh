@@ -37,6 +37,8 @@ public class ConnectorRuntimeConfig {
 
     private String region;
 
+    private Map<String, Object> runtimeConfig;
+
     private String sourceConnectorType;
 
     private String sourceConnectorDesc;

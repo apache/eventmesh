@@ -38,7 +38,9 @@ import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.factory.ConnectorPluginFactory;
@@ -56,6 +58,7 @@ import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -207,6 +210,7 @@ public class ConnectorRuntime implements Runtime {
         SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
         SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
         sourceConnectorContext.setSourceConfig(sourceConfig);
+        sourceConnectorContext.setRuntimeConfig(connectorRuntimeConfig.getRuntimeConfig());
         sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
         if (CollectionUtils.isNotEmpty(jobResponse.getPosition())) {
             sourceConnectorContext.setRecordPositionList(jobResponse.getPosition());
@@ -332,15 +336,35 @@ public class ConnectorRuntime implements Runtime {
                         reportVerifyRequest(record, connectorRuntimeConfig, ConnectorStage.SOURCE);
                     }
 
+                    // set a callback for this record
+                    // if used the memory storage callback will be triggered after sink put success
+                    record.setCallback(new SendMessageCallback() {
+                        @Override
+                        public void onSuccess(SendResult result) {
+                            // commit record
+                            sourceConnector.commit(record);
+                            Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
+                            submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                            Optional<SendMessageCallback> callback =
+                                Optional.ofNullable(record.getExtensionObj(CALLBACK_EXTENSION)).map(v -> (SendMessageCallback) v);
+                            callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(record)));
+                        }
+
+                        @Override
+                        public void onException(SendExceptionContext sendExceptionContext) {
+                            // handle exception
+                            sourceConnector.onException(record);
+                            log.error("send record to sink callback exception, process will shut down, record: {}", record, sendExceptionContext.getCause());
+                            try {
+                                stop();
+                            } catch (Exception e) {
+                                log.error("Failed to stop after exception", e);
+                            }
+                        }
+                    });
+
                     queue.put(record);
-                    Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
-                    Optional<SendMessageCallback> callback =
-                        Optional.ofNullable(record.getExtensionObj(CALLBACK_EXTENSION)).map(v -> (SendMessageCallback) v);
-                    // commit record
-                    this.sourceConnector.commit(record);
-                    submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
-                    // TODO:finish the optional callback
-                    // callback.ifPresent(cb -> cb.onSuccess(record));
+
                     offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
                     // update & commit offset
                     updateCommittableOffsets();
@@ -350,13 +374,20 @@ public class ConnectorRuntime implements Runtime {
         }
     }
 
+    private SendResult convertToSendResult(ConnectRecord record) {
+        SendResult result = new SendResult();
+        result.setMessageId(record.getRecordId());
+        if(StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            result.setTopic(record.getExtension("topic"));
+        }
+        return result;
+    }
+
     private void reportVerifyRequest(ConnectRecord record, ConnectorRuntimeConfig connectorRuntimeConfig, ConnectorStage connectorStage) {
-        UUID uuid = UUID.randomUUID();
-        String recordId = uuid.toString();
         String md5Str = md5(record.toString());
         ReportVerifyRequest reportVerifyRequest = new ReportVerifyRequest();
         reportVerifyRequest.setTaskID(connectorRuntimeConfig.getTaskID());
-        reportVerifyRequest.setRecordID(recordId);
+        reportVerifyRequest.setRecordID(record.getRecordId());
         reportVerifyRequest.setRecordSig(md5Str);
         reportVerifyRequest.setConnectorName(
             IPUtils.getLocalAddress() + "_" + connectorRuntimeConfig.getJobID() + "_" + connectorRuntimeConfig.getRegion());

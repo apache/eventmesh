@@ -145,6 +145,11 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         if (this.server != null) {
             this.server.close(res -> {

@@ -192,6 +192,11 @@ public class JdbcSourceConnector extends SourceConnector {
         return "JDBC Source Connector";
     }
 
+    @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
     /**
      * Stops the Connector.
      *

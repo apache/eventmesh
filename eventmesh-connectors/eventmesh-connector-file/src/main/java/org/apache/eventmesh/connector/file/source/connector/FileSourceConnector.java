@@ -87,6 +87,11 @@ public class FileSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         try {
             if (bufferedReader != null) {

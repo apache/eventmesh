@@ -38,6 +38,8 @@ import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang.StringUtils;
@@ -147,6 +149,11 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         executor.shutdown();
         gtidSingleExecutor.shutdown();
@@ -159,7 +166,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>) connectRecord.getData();
             canalConnectRecordList = filterRecord(canalConnectRecordList);
             if (isDdlDatas(canalConnectRecordList)) {
-                doDdl(context, canalConnectRecordList);
+                doDdl(context, canalConnectRecordList, connectRecord);
             } else if (sinkConfig.isGTIDMode()) {
                 doLoadWithGtid(context, sinkConfig, connectRecord);
             } else {
@@ -197,7 +204,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             .collect(Collectors.toList());
     }
 
-    private void doDdl(DbLoadContext context, List<CanalConnectRecord> canalConnectRecordList) {
+    private void doDdl(DbLoadContext context, List<CanalConnectRecord> canalConnectRecordList, ConnectRecord connectRecord) {
         for (final CanalConnectRecord record : canalConnectRecordList) {
             try {
                 Boolean result = jdbcTemplate.execute(new StatementCallback<Boolean>() {
@@ -217,9 +224,30 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     context.getFailedRecords().add(record);
                 }
             } catch (Throwable e) {
+                connectRecord.getCallback().onException(buildSendExceptionContext(connectRecord, e));
                 throw new RuntimeException(e);
             }
         }
+        connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
+    }
+
+    private SendExceptionContext buildSendExceptionContext(ConnectRecord record, Throwable e) {
+        SendExceptionContext sendExceptionContext = new SendExceptionContext();
+        sendExceptionContext.setMessageId(record.getRecordId());
+        sendExceptionContext.setCause(e);
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            sendExceptionContext.setTopic(record.getExtension("topic"));
+        }
+        return sendExceptionContext;
+    }
+
+    private SendResult convertToSendResult(ConnectRecord record) {
+        SendResult result = new SendResult();
+        result.setMessageId(record.getRecordId());
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            result.setTopic(record.getExtension("topic"));
+        }
+        return result;
     }
 
     private void doBefore(List<CanalConnectRecord> canalConnectRecordList, final DbLoadData loadData) {
@@ -291,6 +319,9 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             Exception ex = null;
             try {
                 ex = result.get();
+                if (ex == null) {
+                    connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
+                }
             } catch (Exception e) {
                 ex = e;
             }
@@ -298,14 +329,16 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             if (skipException != null && skipException) {
                 if (ex != null) {
                     // do skip
-                    log.warn("skip exception for data : {} , caused by {}",
+                    log.warn("skip exception will ack data : {} , caused by {}",
                         filteredRows,
                         ExceptionUtils.getFullStackTrace(ex));
                     GtidBatchManager.removeGtidBatch(gtid);
+                    connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
                 }
             } else {
                 if (ex != null) {
                     log.error("sink connector will shutdown by " + ex.getMessage(), ExceptionUtils.getFullStackTrace(ex));
+                    connectRecord.getCallback().onException(buildSendExceptionContext(connectRecord, ex));
                     gtidSingleExecutor.shutdown();
                     System.exit(1);
                 } else {
@@ -314,6 +347,8 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
         } else {
             log.info("Batch received, waiting for other batches.");
+            // ack this record
+            connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
         }
     }
 

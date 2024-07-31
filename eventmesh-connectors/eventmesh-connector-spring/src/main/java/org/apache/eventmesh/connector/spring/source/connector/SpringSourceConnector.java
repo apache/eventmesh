@@ -25,7 +25,7 @@ import org.apache.eventmesh.common.remote.offset.spring.SpringRecordOffset;
 import org.apache.eventmesh.common.remote.offset.spring.SpringRecordPartition;
 import org.apache.eventmesh.connector.spring.source.MessageSendingOperations;
 import org.apache.eventmesh.openconnect.SourceWorker;
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
@@ -93,6 +93,11 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
     @Override
     public String name() {
         return this.sourceConfig.getSourceConnectorConfig().getConnectorName();
+    }
+
+    @Override
+    public void onException(ConnectRecord record) {
+
     }
 
     @Override

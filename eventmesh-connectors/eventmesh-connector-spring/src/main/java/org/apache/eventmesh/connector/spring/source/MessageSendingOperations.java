@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.spring.source;
 
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
 
 /**
  * Operations for sending messages.

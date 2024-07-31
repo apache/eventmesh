@@ -146,6 +146,11 @@ public class PrometheusSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         log.info("prometheus source connector stop.");
     }

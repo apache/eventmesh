@@ -139,6 +139,11 @@ public class JdbcSinkConnector implements Sink {
         return this.sinkConfig.getSinkConnectorConfig().getConnectorName();
     }
 
+    @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
     /**
      * Stops the Connector.
      *

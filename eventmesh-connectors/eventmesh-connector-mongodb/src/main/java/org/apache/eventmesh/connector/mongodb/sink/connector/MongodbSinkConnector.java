@@ -88,6 +88,11 @@ public class MongodbSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() throws Exception {
         this.client.stop();
     }
