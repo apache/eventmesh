@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `event_mesh_data_source` (
   `dataType` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `configuration` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `region` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `region` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `updateUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
