@@ -1,43 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+-->
 
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  -->
 <!DOCTYPE mapper
-    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.apache.eventmesh.admin.server.web.db.mapper.EventMeshMysqlPositionMapper">
 
     <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshMysqlPosition">
-        <id property="id" column="id" jdbcType="INTEGER"/>
-        <result property="jobID" column="jobID" jdbcType="INTEGER"/>
-        <result property="serverUUID" column="serverUUID" jdbcType="VARCHAR"/>
-        <result property="address" column="address" jdbcType="VARCHAR"/>
-        <result property="position" column="position" jdbcType="BIGINT"/>
-        <result property="gtid" column="gtid" jdbcType="VARCHAR"/>
-        <result property="currentGtid" column="currentGtid" jdbcType="VARCHAR"/>
-        <result property="timestamp" column="timestamp" jdbcType="BIGINT"/>
-        <result property="journalName" column="journalName" jdbcType="VARCHAR"/>
-        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="jobID" column="jobID" jdbcType="VARCHAR"/>
+            <result property="serverUUID" column="serverUUID" jdbcType="VARCHAR"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="position" column="position" jdbcType="BIGINT"/>
+            <result property="gtid" column="gtid" jdbcType="VARCHAR"/>
+            <result property="currentGtid" column="currentGtid" jdbcType="VARCHAR"/>
+            <result property="timestamp" column="timestamp" jdbcType="BIGINT"/>
+            <result property="journalName" column="journalName" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id
-        ,jobID,serverUUID,address,
-        position,gtid,currentGtid,timestamp,journalName,
+        id,jobID,serverUUID,
+        address,position,gtid,
+        currentGtid,timestamp,journalName,
         createTime,updateTime
     </sql>
 </mapper>

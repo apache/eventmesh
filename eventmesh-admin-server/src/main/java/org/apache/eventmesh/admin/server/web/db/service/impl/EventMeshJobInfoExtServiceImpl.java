@@ -15,32 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server;
+package org.apache.eventmesh.admin.server.web.db.service.impl;
 
-import org.apache.eventmesh.common.ComponentLifeCycle;
-import org.apache.eventmesh.common.remote.Task;
-import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
-import org.apache.eventmesh.common.utils.PagedList;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
+import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoExtMapper;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 
-/**
- * Admin
- */
-public interface Admin extends ComponentLifeCycle {
+import java.util.List;
 
-    /**
-     * support for web or ops
-     **/
-    boolean createOrUpdateTask(Task task);
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-    boolean deleteTask(Long id);
+@Service
+public class EventMeshJobInfoExtServiceImpl implements EventMeshJobInfoExtService {
+    @Autowired
+    EventMeshJobInfoExtMapper mapper;
 
-    Task getTask(Long id);
-
-    // paged list
-    PagedList<Task> getTaskPaged(Task task);
-
-    /**
-     * support for task
-     */
-    void reportHeartbeat(ReportHeartBeatRequest heartBeat);
+    @Override
+    public int batchSave(List<EventMeshJobInfo> jobs) {
+        return mapper.saveBatch(jobs);
+    }
 }

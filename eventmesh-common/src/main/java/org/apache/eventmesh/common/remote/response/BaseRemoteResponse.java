@@ -27,8 +27,6 @@ import lombok.Setter;
 
 @Getter
 public abstract class BaseRemoteResponse implements IPayload {
-
-    public static final int UNKNOWN = -1;
     @Setter
     private boolean success = true;
     @Setter

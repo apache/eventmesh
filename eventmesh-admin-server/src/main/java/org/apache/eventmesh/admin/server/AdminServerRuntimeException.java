@@ -19,9 +19,8 @@ package org.apache.eventmesh.admin.server;
 
 import lombok.Getter;
 
+@Getter
 public class AdminServerRuntimeException extends RuntimeException {
-
-    @Getter
     private final int code;
 
     public AdminServerRuntimeException(int code, String message) {

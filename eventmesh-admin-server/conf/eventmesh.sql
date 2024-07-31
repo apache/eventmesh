@@ -15,13 +15,6 @@
 -- specific language governing permissions and limitations
 -- under the License.
 
--- --------------------------------------------------------
--- 主机:                           127.0.0.1
--- 服务器版本:                        8.0.36 - MySQL Community Server - GPL
--- 服务器操作系统:                      Win64
--- HeidiSQL 版本:                  11.3.0.6295
--- --------------------------------------------------------
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET NAMES utf8 */;
 /*!50503 SET NAMES utf8mb4 */;
@@ -37,11 +30,12 @@ USE `eventmesh`;
 -- 导出  表 eventmesh.event_mesh_data_source 结构
 CREATE TABLE IF NOT EXISTS `event_mesh_data_source` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `dataType` int unsigned NOT NULL,
+  `dataType` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `configuration` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `createUid` int NOT NULL,
-  `updateUid` int NOT NULL,
+  `region` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `createUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `updateUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
@@ -51,18 +45,22 @@ CREATE TABLE IF NOT EXISTS `event_mesh_data_source` (
 
 -- 导出  表 eventmesh.event_mesh_job_info 结构
 CREATE TABLE IF NOT EXISTS `event_mesh_job_info` (
-  `jobID` int unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `transportType` int unsigned DEFAULT NULL COMMENT 'JobTransportType',
-  `sourceData` int unsigned DEFAULT NULL COMMENT 'data_source表',
-  `targetData` int unsigned DEFAULT NULL,
-  `state` tinyint unsigned NOT NULL COMMENT 'JobState',
-  `jobType` tinyint unsigned NOT NULL COMMENT 'connector,mesh,func,...',
-  `createUid` int unsigned NOT NULL,
-  `updateUid` int unsigned NOT NULL,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `jobID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `desc` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `taskID` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `transportType` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `sourceData` int NOT NULL DEFAULT '0',
+  `targetData` int NOT NULL DEFAULT '0',
+  `state` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `jobType` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `fromRegion` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `createUid` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `updateUid` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`jobID`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `jobID` (`jobID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 数据导出被取消选择。
@@ -70,28 +68,28 @@ CREATE TABLE IF NOT EXISTS `event_mesh_job_info` (
 -- 导出  表 eventmesh.event_mesh_mysql_position 结构
 CREATE TABLE IF NOT EXISTS `event_mesh_mysql_position` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `jobID` int unsigned NOT NULL,
+  `jobID` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `serverUUID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `position` bigint DEFAULT NULL,
   `gtid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `currentGtid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `timestamp` bigint DEFAULT NULL,
-  `journalName` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `journalName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `jobID` (`jobID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
 
 -- 数据导出被取消选择。
 
 -- 导出  表 eventmesh.event_mesh_position_reporter_history 结构
 CREATE TABLE IF NOT EXISTS `event_mesh_position_reporter_history` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `job` int NOT NULL,
+  `job` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `record` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `address` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `job` (`job`),
@@ -105,8 +103,8 @@ CREATE TABLE IF NOT EXISTS `event_mesh_runtime_heartbeat` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `adminAddr` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `runtimeAddr` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `jobID` int unsigned DEFAULT NULL,
-  `reportTime` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'runtime本地上报时间',
+  `jobID` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reportTime` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'runtime本地上报时间',
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -119,12 +117,45 @@ CREATE TABLE IF NOT EXISTS `event_mesh_runtime_heartbeat` (
 -- 导出  表 eventmesh.event_mesh_runtime_history 结构
 CREATE TABLE IF NOT EXISTS `event_mesh_runtime_history` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `job` int NOT NULL,
+  `job` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `address` (`address`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='记录runtime上运行任务的变更';
+
+-- 数据导出被取消选择。
+
+-- 导出  表 eventmesh.event_mesh_task_info 结构
+CREATE TABLE IF NOT EXISTS `event_mesh_task_info` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `taskID` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `desc` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `state` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT 'TaskState',
+  `fromRegion` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `createUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `updateUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `taskID` (`taskID`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 数据导出被取消选择。
+
+-- 导出  表 eventmesh.event_mesh_verify 结构
+CREATE TABLE IF NOT EXISTS `event_mesh_verify` (
+  `id` int NOT NULL,
+  `taskID` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recordID` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recordSig` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `connectorName` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `connectorStage` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `position` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `createTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 数据导出被取消选择。
 

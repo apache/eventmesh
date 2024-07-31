@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.config.connector.offset;
 
-import org.apache.eventmesh.common.remote.job.DataSourceType;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 
 import java.util.Map;
 

@@ -18,6 +18,7 @@
 package org.apache.eventmesh.admin.server.web;
 
 import org.apache.eventmesh.admin.server.AdminServerProperties;
+import org.apache.eventmesh.admin.server.web.service.AdminGrpcServer;
 
 import java.util.concurrent.TimeUnit;
 

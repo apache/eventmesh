@@ -27,30 +27,35 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * event_mesh_job_info
+ * TableName event_mesh_job_info
  */
 @TableName(value = "event_mesh_job_info")
 @Data
 public class EventMeshJobInfo implements Serializable {
-
     @TableId(type = IdType.AUTO)
-    private Integer jobID;
+    private Integer id;
 
-    private String name;
+    private String jobID;
 
-    private Integer transportType;
+    private String desc;
+
+    private String taskID;
+
+    private String transportType;
 
     private Integer sourceData;
 
     private Integer targetData;
 
-    private Integer state;
+    private String state;
 
-    private Integer jobType;
+    private String jobType;
 
-    private Integer createUid;
+    private String fromRegion;
 
-    private Integer updateUid;
+    private String createUid;
+
+    private String updateUid;
 
     private Date createTime;
 

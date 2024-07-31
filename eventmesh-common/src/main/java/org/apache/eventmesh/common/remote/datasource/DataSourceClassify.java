@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.response;
+package org.apache.eventmesh.common.remote.datasource;
 
-/**
- * empty, just mean remote received request
- */
-public class EmptyAckResponse extends BaseRemoteResponse {
-
+public enum DataSourceClassify {
+    // relationship db
+    RDB,
+    MQ,
+    CACHE,
+    TUNNEL;
 }

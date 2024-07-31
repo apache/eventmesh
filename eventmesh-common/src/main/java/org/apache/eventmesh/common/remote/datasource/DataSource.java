@@ -15,11 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.common.remote.datasource;
 
-public class Job {
-    private long id;
-    private long taskID;
-    private JobType type;
-    private JobState state;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import lombok.Getter;
+
+@Getter
+public class DataSource {
+    private final DataSourceType type;
+    private String desc;
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    @JsonSubTypes({
+        @JsonSubTypes.Type(value = MySqlIncDataSourceSourceConf.class, name = "MySqlIncDataSourceSourceConf")
+    })
+    private final DataSourceConf conf;
+    private final Class<? extends DataSourceConf> confClazz;
+
+    public DataSource(DataSourceType type, DataSourceConf conf) {
+        this.type = type;
+        this.conf = conf;
+        this.confClazz = conf.getConfClass();
+    }
+
+
 }
