@@ -38,14 +38,14 @@ import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffsetManagement;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetManagementServiceImpl;
@@ -66,7 +66,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -354,7 +353,8 @@ public class ConnectorRuntime implements Runtime {
                         public void onException(SendExceptionContext sendExceptionContext) {
                             // handle exception
                             sourceConnector.onException(record);
-                            log.error("send record to sink callback exception, process will shut down, record: {}", record, sendExceptionContext.getCause());
+                            log.error("send record to sink callback exception, process will shut down, record: {}", record,
+                                sendExceptionContext.getCause());
                             try {
                                 stop();
                             } catch (Exception e) {
@@ -377,7 +377,7 @@ public class ConnectorRuntime implements Runtime {
     private SendResult convertToSendResult(ConnectRecord record) {
         SendResult result = new SendResult();
         result.setMessageId(record.getRecordId());
-        if(StringUtils.isNotEmpty(record.getExtension("topic"))) {
+        if (StringUtils.isNotEmpty(record.getExtension("topic"))) {
             result.setTopic(record.getExtension("topic"));
         }
         return result;
