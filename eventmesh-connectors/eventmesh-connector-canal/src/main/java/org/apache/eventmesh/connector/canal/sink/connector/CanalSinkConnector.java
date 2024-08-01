@@ -235,7 +235,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         SendExceptionContext sendExceptionContext = new SendExceptionContext();
         sendExceptionContext.setMessageId(record.getRecordId());
         sendExceptionContext.setCause(e);
-        if(org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
             sendExceptionContext.setTopic(record.getExtension("topic"));
         }
         return sendExceptionContext;
@@ -244,7 +244,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     private SendResult convertToSendResult(ConnectRecord record) {
         SendResult result = new SendResult();
         result.setMessageId(record.getRecordId());
-        if(org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
             result.setTopic(record.getExtension("topic"));
         }
         return result;
