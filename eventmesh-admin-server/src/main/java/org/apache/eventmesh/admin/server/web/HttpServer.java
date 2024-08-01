@@ -17,10 +17,30 @@
 
 package org.apache.eventmesh.admin.server.web;
 
+import org.apache.eventmesh.admin.server.web.service.task.TaskBizService;
+import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/eventmesh/admin")
 public class HttpServer {
+    @Autowired
+    private TaskBizService taskService;
+
+    @RequestMapping("/createTask")
+    public ResponseEntity<Response<String>> createOrUpdateTask(@RequestBody CreateTaskRequest task) {
+        String uuid = taskService.createTask(task);
+        return ResponseEntity.ok(Response.success(uuid));
+    }
+
+    public boolean deleteTask(Long id) {
+        return false;
+    }
+
+
 }

@@ -15,10 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.service;
 
-public enum JobType {
-    FULL,
-    INCREASE,
-    STRUCT_SYNC
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
+
+import java.util.List;
+
+/**
+ * ext operator for table event_mesh_job
+ */
+public interface EventMeshJobInfoExtService {
+    int batchSave(List<EventMeshJobInfo> jobs);
 }

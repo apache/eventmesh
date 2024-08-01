@@ -62,6 +62,14 @@ public class JsonUtils {
         return beanClass.cast(obj);
     }
 
+    public static Map<String, Object> objectToMap(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        return OBJECT_MAPPER.convertValue(obj, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
     /**
      * Serialize object to json string.
      *

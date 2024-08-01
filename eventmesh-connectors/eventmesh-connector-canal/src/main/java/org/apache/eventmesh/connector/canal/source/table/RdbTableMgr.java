@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbTableDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLColumnDef;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLTableDef;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.canal.SqlUtils;
 
 import java.sql.JDBCType;
@@ -88,6 +89,7 @@ public class RdbTableMgr extends AbstractComponent {
                         }
                         if (columns == null || columns.isEmpty() || columns.get(table.getTableName()) == null) {
                             log.warn("init db [{}] table [{}] info, and columns are empty", db.getSchemaName(), table.getTableName());
+                            throw new EventMeshException("db [{}] table [{}] columns are empty");
                         } else {
                             LinkedHashMap<String, MySQLColumnDef> cols = new LinkedHashMap<>();
                             columns.get(table.getTableName()).forEach(x -> cols.put(x.getName(), x));
@@ -95,8 +97,9 @@ public class RdbTableMgr extends AbstractComponent {
                         }
 
                         this.tables.put(new RdbSimpleTable(db.getSchemaName(), table.getTableName()), mysqlTable);
-                    } catch (Exception e) {
+                    } catch (SQLException e) {
                         log.error("init rdb table schema [{}] table [{}] fail", db.getSchemaName(), table.getTableName(), e);
+                        throw new EventMeshException(e);
                     }
                 }
 

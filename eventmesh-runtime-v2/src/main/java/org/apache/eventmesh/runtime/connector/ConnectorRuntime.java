@@ -196,12 +196,12 @@ public class ConnectorRuntime implements Runtime {
         }
 
         connectorRuntimeConfig.setSourceConnectorType(jobResponse.getTransportType().getSrc().getName());
-        connectorRuntimeConfig.setSourceConnectorDesc(jobResponse.getSourceConnectorDesc());
-        connectorRuntimeConfig.setSourceConnectorConfig(jobResponse.getSourceConnectorConfig());
+        connectorRuntimeConfig.setSourceConnectorDesc(jobResponse.getConnectorConfig().getSourceConnectorDesc());
+        connectorRuntimeConfig.setSourceConnectorConfig(jobResponse.getConnectorConfig().getSourceConnectorConfig());
 
         connectorRuntimeConfig.setSinkConnectorType(jobResponse.getTransportType().getDst().getName());
-        connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getSinkConnectorDesc());
-        connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getSinkConnectorConfig());
+        connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getConnectorConfig().getSinkConnectorDesc());
+        connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getConnectorConfig().getSinkConnectorConfig());
 
         ConnectorCreateService<?> sourceConnectorCreateService =
             ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSourceConnectorType() + "-Source");

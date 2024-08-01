@@ -27,12 +27,11 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * event_mesh_runtime_heartbeat
+ * TableName event_mesh_runtime_heartbeat
  */
 @TableName(value = "event_mesh_runtime_heartbeat")
 @Data
 public class EventMeshRuntimeHeartbeat implements Serializable {
-
     @TableId(type = IdType.AUTO)
     private Long id;
 
@@ -40,7 +39,7 @@ public class EventMeshRuntimeHeartbeat implements Serializable {
 
     private String runtimeAddr;
 
-    private Integer jobID;
+    private String jobID;
 
     private String reportTime;
 

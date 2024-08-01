@@ -15,17 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote;
+package org.apache.eventmesh.admin.server.web.db.entity;
 
-public enum JobState {
-    INIT, STARTED, RUNNING, PAUSE, COMPLETE, DELETE, FAIL;
-    private static final JobState[] STATES = JobState.values();
+import java.io.Serializable;
+import java.util.Date;
 
-    public static JobState fromIndex(Integer index) {
-        if (index == null || index < 0 || index >= STATES.length) {
-            return null;
-        }
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 
-        return STATES[index];
-    }
+import lombok.Data;
+
+/**
+ * TableName event_mesh_verify
+ */
+@TableName(value = "event_mesh_verify")
+@Data
+public class EventMeshVerify implements Serializable {
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+
+    private String taskID;
+
+    private String recordID;
+
+    private String recordSig;
+
+    private String connectorName;
+
+    private String connectorStage;
+
+    private String position;
+
+    private Date createTime;
+
+    private static final long serialVersionUID = 1L;
 }

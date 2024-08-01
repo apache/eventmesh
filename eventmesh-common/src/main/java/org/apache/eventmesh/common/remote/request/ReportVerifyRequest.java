@@ -19,9 +19,11 @@ package org.apache.eventmesh.common.remote.request;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@ToString
 public class ReportVerifyRequest extends BaseRemoteRequest {
 
     private String taskID;
