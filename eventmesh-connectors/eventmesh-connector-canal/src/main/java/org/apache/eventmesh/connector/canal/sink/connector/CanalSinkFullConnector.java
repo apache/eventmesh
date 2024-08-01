@@ -110,6 +110,11 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void put(List<ConnectRecord> sinkRecords) {
         if (sinkRecords == null || sinkRecords.isEmpty() || sinkRecords.get(0) == null) {
             if (log.isDebugEnabled()) {

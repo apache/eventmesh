@@ -225,6 +225,11 @@ public class ChatGPTSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         Throwable t = this.server.close().cause();
         if (t != null) {

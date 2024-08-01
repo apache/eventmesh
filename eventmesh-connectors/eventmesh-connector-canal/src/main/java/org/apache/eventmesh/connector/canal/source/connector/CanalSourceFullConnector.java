@@ -160,6 +160,11 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public List<ConnectRecord> poll() {
         while (flag.get()) {
             try {

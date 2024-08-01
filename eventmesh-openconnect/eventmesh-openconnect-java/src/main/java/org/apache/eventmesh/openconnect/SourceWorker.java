@@ -32,11 +32,11 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
-import org.apache.eventmesh.openconnect.api.callback.SendExcepionContext;
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
-import org.apache.eventmesh.openconnect.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffsetManagement;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetManagementServiceImpl;
@@ -264,8 +264,8 @@ public class SourceWorker implements ConnectorWorker {
         return result;
     }
 
-    private SendExcepionContext convertToExceptionContext(CloudEvent event, Throwable cause) {
-        SendExcepionContext exceptionContext = new SendExcepionContext();
+    private SendExceptionContext convertToExceptionContext(CloudEvent event, Throwable cause) {
+        SendExceptionContext exceptionContext = new SendExceptionContext();
         exceptionContext.setTopic(event.getId());
         exceptionContext.setMessageId(event.getId());
         exceptionContext.setCause(cause);

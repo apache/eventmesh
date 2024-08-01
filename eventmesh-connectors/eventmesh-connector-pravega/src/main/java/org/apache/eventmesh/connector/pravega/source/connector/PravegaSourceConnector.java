@@ -149,6 +149,11 @@ public class PravegaSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         sourceHandlerMap.forEach((topic, handler) -> {
             readerGroupManager.deleteReaderGroup(topic);
