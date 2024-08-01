@@ -20,6 +20,7 @@ package org.apache.eventmesh.client.tcp.common;
 import static org.apache.eventmesh.common.Constants.CLOUD_EVENTS_PROTOCOL_NAME;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -45,6 +46,14 @@ import io.openmessaging.api.Message;
 
 public class MessageUtils {
 
+    /**
+     * USERAGENT for PUB
+     */
+    public static final String USER_AGENT_PURPOSE_PUB = "pub";
+    /**
+     * USERAGENT for SUB
+     */
+    public static final String USER_AGENT_PURPOSE_SUB = "sub";
     private static final int SEQ_LENGTH = 10;
 
     public static Package hello(UserAgent user) {
@@ -122,11 +131,11 @@ public class MessageUtils {
     }
 
     public static UserAgent generateSubClient(UserAgent agent) {
-        return getUserAgent(agent, EventMeshCommon.USER_AGENT_PURPOSE_SUB);
+        return getUserAgent(agent, USER_AGENT_PURPOSE_SUB);
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
-        return getUserAgent(agent, EventMeshCommon.USER_AGENT_PURPOSE_PUB);
+        return getUserAgent(agent, USER_AGENT_PURPOSE_PUB);
     }
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,
