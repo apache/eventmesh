@@ -25,10 +25,10 @@ import org.apache.eventmesh.common.remote.offset.spring.SpringRecordOffset;
 import org.apache.eventmesh.common.remote.offset.spring.SpringRecordPartition;
 import org.apache.eventmesh.connector.spring.source.MessageSendingOperations;
 import org.apache.eventmesh.openconnect.SourceWorker;
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
@@ -96,6 +96,11 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() throws Exception {
 
     }
@@ -123,6 +128,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
 
     /**
      * Send message.
+     *
      * @param message message to send
      */
     @Override
@@ -136,9 +142,9 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
 
     /**
      * Send message with a callback.
-     * @param message message to send.
-     * @param workerCallback After the user sends the message to the Connector,
-     *                       the SourceWorker will fetch message and invoke.
+     *
+     * @param message        message to send.
+     * @param workerCallback After the user sends the message to the Connector, the SourceWorker will fetch message and invoke.
      */
     @Override
     public void send(Object message, SendMessageCallback workerCallback) {

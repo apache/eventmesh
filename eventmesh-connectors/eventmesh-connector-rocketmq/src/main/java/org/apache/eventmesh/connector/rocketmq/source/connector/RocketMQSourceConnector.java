@@ -207,6 +207,11 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         consumer.unsubscribe(sourceConfig.getConnectorConfig().getTopic());
         consumer.shutdown();

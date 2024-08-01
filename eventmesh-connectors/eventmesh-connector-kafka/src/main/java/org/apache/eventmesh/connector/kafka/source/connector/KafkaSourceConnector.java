@@ -95,6 +95,11 @@ public class KafkaSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         kafkaConsumer.unsubscribe();
     }

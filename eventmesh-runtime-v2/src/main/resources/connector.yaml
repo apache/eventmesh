@@ -18,3 +18,4 @@
 taskID: 1
 jobID: 1
 region: region1
+runtimeConfig: # this used for connector runtime config

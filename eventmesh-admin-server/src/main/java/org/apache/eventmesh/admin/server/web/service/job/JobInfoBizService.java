@@ -50,7 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * for table 'event_mesh_job_info' db operation
- * 2024-05-09 15:51:45
  */
 @Service
 @Slf4j

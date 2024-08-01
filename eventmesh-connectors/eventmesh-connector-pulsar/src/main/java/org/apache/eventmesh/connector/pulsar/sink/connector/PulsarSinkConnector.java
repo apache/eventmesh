@@ -86,6 +86,11 @@ public class PulsarSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         try {
             producer.close();

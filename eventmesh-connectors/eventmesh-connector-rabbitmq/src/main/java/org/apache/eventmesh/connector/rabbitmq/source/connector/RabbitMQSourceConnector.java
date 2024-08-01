@@ -118,6 +118,11 @@ public class RabbitMQSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         if (started) {
             try {

@@ -19,9 +19,9 @@ package org.apache.eventmesh.spring.pub;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.spring.source.connector.SpringSourceConnector;
-import org.apache.eventmesh.openconnect.api.callback.SendExcepionContext;
-import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
-import org.apache.eventmesh.openconnect.api.callback.SendResult;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,8 +53,8 @@ public class SpringPubController {
             }
 
             @Override
-            public void onException(SendExcepionContext sendExcepionContext) {
-                log.info("Spring source worker send message to EventMesh failed!", sendExcepionContext.getCause());
+            public void onException(SendExceptionContext sendExceptionContext) {
+                log.info("Spring source worker send message to EventMesh failed!", sendExceptionContext.getCause());
             }
         });
         return "success!";
