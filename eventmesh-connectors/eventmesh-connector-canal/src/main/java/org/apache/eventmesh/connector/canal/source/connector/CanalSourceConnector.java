@@ -268,6 +268,11 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         if (!running) {
             return;

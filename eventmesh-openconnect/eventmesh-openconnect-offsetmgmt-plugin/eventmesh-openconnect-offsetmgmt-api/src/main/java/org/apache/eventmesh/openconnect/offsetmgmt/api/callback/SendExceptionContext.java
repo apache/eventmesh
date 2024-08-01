@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.callback;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.callback;
 
-public class SendResult {
+public class SendExceptionContext {
 
     private String messageId;
     private String topic;
+    private Throwable cause;
 
-    public SendResult() {
+    public SendExceptionContext() {
     }
 
     public String getMessageId() {
@@ -41,7 +42,11 @@ public class SendResult {
         this.topic = topic;
     }
 
-    public String toString() {
-        return "SendResult[topic=" + this.topic + ", messageId=" + this.messageId + ']';
+    public Throwable getCause() {
+        return this.cause;
+    }
+
+    public void setCause(Throwable cause) {
+        this.cause = cause;
     }
 }

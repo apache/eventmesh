@@ -83,6 +83,11 @@ public class KnativeSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         started.compareAndSet(true, false);
     }

@@ -15,38 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.callback;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.callback;
 
-public class SendExcepionContext {
+/**
+ * Message sending callback interface.
+ */
+public interface SendMessageCallback {
 
-    private String messageId;
-    private String topic;
-    private Throwable cause;
+    void onSuccess(SendResult sendResult);
 
-    public SendExcepionContext() {
-    }
-
-    public String getMessageId() {
-        return this.messageId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public String getTopic() {
-        return this.topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public Throwable getCause() {
-        return this.cause;
-    }
-
-    public void setCause(Throwable cause) {
-        this.cause = cause;
-    }
+    void onException(SendExceptionContext sendExceptionContext);
 }

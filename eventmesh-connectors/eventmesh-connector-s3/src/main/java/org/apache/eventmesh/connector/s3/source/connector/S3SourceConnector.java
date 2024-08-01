@@ -122,6 +122,11 @@ public class S3SourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() throws Exception {
 
     }

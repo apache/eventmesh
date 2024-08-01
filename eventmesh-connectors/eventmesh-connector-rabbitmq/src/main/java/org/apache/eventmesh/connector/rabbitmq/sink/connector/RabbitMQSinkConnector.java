@@ -96,6 +96,11 @@ public class RabbitMQSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         if (started) {
             try {

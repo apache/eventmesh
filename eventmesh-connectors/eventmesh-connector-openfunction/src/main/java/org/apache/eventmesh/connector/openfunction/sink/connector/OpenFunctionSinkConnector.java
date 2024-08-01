@@ -75,6 +75,11 @@ public class OpenFunctionSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
     }
 

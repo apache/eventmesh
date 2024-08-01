@@ -34,8 +34,7 @@ public interface Connector extends ComponentLifeCycle {
     Class<? extends Config> configClass();
 
     /**
-     * This init method is obsolete. For detailed discussion,
-     * please see <a href="https://github.com/apache/eventmesh/issues/4565">here</a>
+     * This init method is obsolete. For detailed discussion, please see <a href="https://github.com/apache/eventmesh/issues/4565">here</a>
      * <p>
      * Initializes the Connector with the provided configuration.
      *
@@ -66,5 +65,13 @@ public interface Connector extends ComponentLifeCycle {
      * @return String name of the Connector
      */
     String name();
+
+    /**
+     * This method will be called when an exception occurs while processing a ConnectRecord object. This method can be used to handle the exception,
+     * such as logging error information, or stopping the connector's operation when an exception occurs.
+     *
+     * @param record The ConnectRecord object that was being processed when the exception occurred
+     */
+    void onException(ConnectRecord record);
 
 }

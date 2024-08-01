@@ -110,6 +110,11 @@ public class PravegaSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         writerMap.forEach((topic, writer) -> writer.close());
         writerMap.clear();

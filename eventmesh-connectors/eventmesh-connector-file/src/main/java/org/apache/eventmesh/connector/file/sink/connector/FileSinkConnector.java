@@ -104,6 +104,11 @@ public class FileSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         outputStream.flush();
         outputStream.close();
