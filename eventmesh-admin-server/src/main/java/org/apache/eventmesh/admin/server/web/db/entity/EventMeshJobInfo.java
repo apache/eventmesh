@@ -37,7 +37,7 @@ public class EventMeshJobInfo implements Serializable {
 
     private String jobID;
 
-    private String desc;
+    private String jobDesc;
 
     private String taskID;
 
@@ -47,11 +47,15 @@ public class EventMeshJobInfo implements Serializable {
 
     private Integer targetData;
 
-    private String state;
+    private String jobState;
 
     private String jobType;
 
+    // job request from region
     private String fromRegion;
+
+    // job actually running region
+    private String runningRegion;
 
     private String createUid;
 

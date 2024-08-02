@@ -30,16 +30,35 @@ import lombok.Data;
  */
 @Data
 public class CreateTaskRequest {
-    private String name;
-    private String desc;
+
+    private String taskId;
+
+    // task name
+    private String taskName;
+
+    // task description
+    private String taskDesc;
+
+    // task owner or updater
     private String uid;
+
     private List<JobDetail> jobs;
-    private String region;
+
+    // task source region
+    private String sourceRegion;
+
+    // task target region
+    private String targetRegion;
+
+    // mark request send by other region admin, default is false
+    private boolean flag = false;
 
     @Data
     public static class JobDetail {
-        private String desc;
 
+        private String jobDesc;
+
+        // full/increase/check
         private JobType jobType;
 
         private DataSource sourceDataSource;
@@ -51,5 +70,11 @@ public class CreateTaskRequest {
         private String sinkConnectorDesc;
 
         private TransportType transportType;
+
+        // job request from region
+        private String fromRegion;
+
+        // job actually running region
+        private String runningRegion;
     }
 }

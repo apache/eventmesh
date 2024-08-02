@@ -150,7 +150,7 @@ public class ConnectorRuntime implements Runtime {
 
     private void initAdminService() {
         // create gRPC channel
-        channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServerAddr()).usePlaintext().build();
+        channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServiceAddr()).usePlaintext().build();
 
         adminServiceStub = AdminServiceGrpc.newStub(channel).withWaitForReady();
 

@@ -41,11 +41,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RuntimeInstance {
 
-    private String adminServerAddr = "127.0.0.1:8081";
+    private String adminServiceAddr;
 
     private Map<String, RegisterServerInfo> adminServerInfoMap = new HashMap<>();
 
-    private final RegistryService registryService;
+    private RegistryService registryService;
 
     private Runtime runtime;
 
@@ -57,29 +57,34 @@ public class RuntimeInstance {
 
     public RuntimeInstance(RuntimeInstanceConfig runtimeInstanceConfig) {
         this.runtimeInstanceConfig = runtimeInstanceConfig;
-        this.registryService = RegistryFactory.getInstance(runtimeInstanceConfig.getRegistryPluginType());
+        if (runtimeInstanceConfig.isRegistryEnabled()) {
+            this.registryService = RegistryFactory.getInstance(runtimeInstanceConfig.getRegistryPluginType());
+        }
     }
 
     public void init() throws Exception {
-        registryService.init();
-        QueryInstances queryInstances = new QueryInstances();
-        queryInstances.setServiceName(runtimeInstanceConfig.getAdminServiceName());
-        queryInstances.setHealth(true);
-        List<RegisterServerInfo> adminServerRegisterInfoList = registryService.selectInstances(queryInstances);
-        if (!adminServerRegisterInfoList.isEmpty()) {
-            adminServerAddr = getRandomAdminServerAddr(adminServerRegisterInfoList);
-        } else {
-            throw new RuntimeException("admin server address is empty, please check");
+        if (registryService != null) {
+            registryService.init();
+            QueryInstances queryInstances = new QueryInstances();
+            queryInstances.setServiceName(runtimeInstanceConfig.getAdminServiceName());
+            queryInstances.setHealth(true);
+            List<RegisterServerInfo> adminServerRegisterInfoList = registryService.selectInstances(queryInstances);
+            if (!adminServerRegisterInfoList.isEmpty()) {
+                adminServiceAddr = getRandomAdminServerAddr(adminServerRegisterInfoList);
+            } else {
+                throw new RuntimeException("admin server address is empty, please check");
+            }
+            // use registry adminServiceAddr value replace config
+            runtimeInstanceConfig.setAdminServiceAddr(adminServiceAddr);
         }
-        runtimeInstanceConfig.setAdminServerAddr(adminServerAddr);
+
         runtimeFactory = initRuntimeFactory(runtimeInstanceConfig);
         runtime = runtimeFactory.createRuntime(runtimeInstanceConfig);
         runtime.init();
     }
 
     public void start() throws Exception {
-        if (!StringUtils.isBlank(adminServerAddr)) {
-
+        if (!StringUtils.isBlank(adminServiceAddr) && registryService != null) {
             registryService.subscribe((event) -> {
                 log.info("runtime receive registry event: {}", event);
                 List<RegisterServerInfo> registerServerInfoList = event.getInstances();
@@ -91,7 +96,6 @@ public class RuntimeInstance {
                     adminServerInfoMap = registerServerInfoMap;
                     updateAdminServerAddr();
                 }
-
             }, runtimeInstanceConfig.getAdminServiceName());
             runtime.start();
             isStarted = true;
@@ -106,14 +110,14 @@ public class RuntimeInstance {
 
     private void updateAdminServerAddr() throws Exception {
         if (isStarted) {
-            if (!adminServerInfoMap.containsKey(adminServerAddr)) {
-                adminServerAddr = getRandomAdminServerAddr(adminServerInfoMap);
-                log.info("admin server address changed to: {}", adminServerAddr);
+            if (!adminServerInfoMap.containsKey(adminServiceAddr)) {
+                adminServiceAddr = getRandomAdminServerAddr(adminServerInfoMap);
+                log.info("admin server address changed to: {}", adminServiceAddr);
                 shutdown();
                 start();
             }
         } else {
-            adminServerAddr = getRandomAdminServerAddr(adminServerInfoMap);
+            adminServiceAddr = getRandomAdminServerAddr(adminServerInfoMap);
         }
     }
 
