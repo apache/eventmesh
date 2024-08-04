@@ -28,6 +28,8 @@ import lombok.NoArgsConstructor;
 @Config(path = "classPath://runtime.yaml")
 public class RuntimeInstanceConfig {
 
+    private boolean registryEnabled;
+
     private String registryServerAddr;
 
     private String registryPluginType;
@@ -36,7 +38,7 @@ public class RuntimeInstanceConfig {
 
     private String adminServiceName;
 
-    private String adminServerAddr;
+    private String adminServiceAddr;
 
     private ComponentType componentType;
 

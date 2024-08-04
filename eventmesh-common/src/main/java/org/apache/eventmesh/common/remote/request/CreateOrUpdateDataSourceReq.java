@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.remote.request;
 
-import org.apache.eventmesh.common.remote.datasource.DataSource;
+import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 
 import lombok.Data;
@@ -29,10 +29,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CreateOrUpdateDataSourceReq extends BaseRemoteRequest {
+
     private Integer id;
     private DataSourceType type;
     private String desc;
-    private DataSource config;
+    private Config config;
     private String region;
     private String operator;
 }

@@ -34,7 +34,7 @@ public class JobDetail {
 
     private String jobID;
 
-    private String desc;
+    private String jobDesc;
 
     private String taskID;
 
@@ -50,7 +50,11 @@ public class JobDetail {
 
     private String updateUid;
 
-    private String region;
+    // job request from region
+    private String fromRegion;
+
+    // job actually running region
+    private String runningRegion;
 
     private DataSource sourceDataSource;
 
