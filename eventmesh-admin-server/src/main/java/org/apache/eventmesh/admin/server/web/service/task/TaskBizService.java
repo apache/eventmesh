@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.admin.server.web.service.task;
 
+import org.apache.eventmesh.admin.server.AdminServerProperties;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshTaskInfoService;
 import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
@@ -24,13 +25,18 @@ import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
 import org.apache.eventmesh.common.remote.TaskState;
 import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TaskBizService {
@@ -40,38 +46,67 @@ public class TaskBizService {
     @Autowired
     private JobInfoBizService jobInfoService;
 
+    @Autowired
+    private AdminServerProperties properties;
+
     @Transactional
     public String createTask(CreateTaskRequest req) {
-        String taskID = UUID.randomUUID().toString();
+        String taskID = req.getTaskId();
+        if (StringUtils.isEmpty(taskID)) {
+            taskID = UUID.randomUUID().toString();
+            req.setTaskId(taskID);
+        }
+
+        String targetRegion = req.getTargetRegion();
+        // not from other admin && target not equals with self region
+        if (!req.isFlag() && !StringUtils.equals(properties.getRegion(), targetRegion)) {
+            List<String> adminServerList = properties.getAdminServerList().get(targetRegion);
+            if (adminServerList == null || adminServerList.isEmpty()) {
+                throw new RuntimeException("No admin server available for region: " + targetRegion);
+            }
+            String targetUrl = adminServerList.get(new Random().nextInt(adminServerList.size())) + "/eventmesh/admin/createTask";
+
+            RestTemplate restTemplate = new RestTemplate();
+            req.setFlag(true);
+            ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, req, String.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Failed to create task on admin server: " + targetUrl);
+            }
+        }
+
+        String finalTaskID = taskID;
         List<JobDetail> jobs = req.getJobs().stream().map(x -> {
             JobDetail job = parse(x);
-            job.setTaskID(taskID);
-            job.setRegion(req.getRegion());
+            job.setTaskID(finalTaskID);
             job.setCreateUid(req.getUid());
             job.setUpdateUid(req.getUid());
             return job;
         }).collect(Collectors.toList());
         jobInfoService.createJobs(jobs);
         EventMeshTaskInfo taskInfo = new EventMeshTaskInfo();
-        taskInfo.setTaskID(taskID);
-        taskInfo.setName(req.getName());
-        taskInfo.setDesc(req.getDesc());
-        taskInfo.setState(TaskState.INIT.name());
+        taskInfo.setTaskID(finalTaskID);
+        taskInfo.setTaskName(req.getTaskName());
+        taskInfo.setTaskDesc(req.getTaskDesc());
+        taskInfo.setTaskState(TaskState.INIT.name());
         taskInfo.setCreateUid(req.getUid());
-        taskInfo.setFromRegion(req.getRegion());
+        taskInfo.setSourceRegion(req.getSourceRegion());
+        taskInfo.setTargetRegion(req.getTargetRegion());
         taskInfoService.save(taskInfo);
-        return taskID;
+        return finalTaskID;
     }
 
     private JobDetail parse(CreateTaskRequest.JobDetail src) {
         JobDetail dst = new JobDetail();
-        dst.setDesc(src.getDesc());
+        dst.setJobDesc(src.getJobDesc());
         dst.setTransportType(src.getTransportType());
         dst.setSourceConnectorDesc(src.getSourceConnectorDesc());
         dst.setSourceDataSource(src.getSourceDataSource());
         dst.setSinkConnectorDesc(src.getSinkConnectorDesc());
         dst.setSinkDataSource(src.getSinkDataSource());
+        // full/increase/check
         dst.setJobType(src.getJobType());
+        dst.setFromRegion(src.getFromRegion());
+        dst.setRunningRegion(src.getRunningRegion());
         return dst;
     }
 }

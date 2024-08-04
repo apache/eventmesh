@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.admin.server.web.service.job;
 
+import org.apache.eventmesh.admin.server.AdminServerProperties;
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
@@ -70,12 +71,15 @@ public class JobInfoBizService {
     @Autowired
     private PositionBizService positionBizService;
 
+    @Autowired
+    private AdminServerProperties properties;
+
     public boolean updateJobState(String jobID, TaskState state) {
         if (jobID == null || state == null) {
             return false;
         }
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
-        jobInfo.setState(state.name());
+        jobInfo.setJobState(state.name());
         return jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("state", TaskState.DELETE.name()));
     }
 
@@ -86,34 +90,40 @@ public class JobInfoBizService {
             return null;
         }
         List<EventMeshJobInfo> entityList = new LinkedList<>();
+
         for (JobDetail job : jobs) {
+            // if running region not equal with admin region continue
+            if (!job.getRunningRegion().equals(properties.getRegion())) {
+                continue;
+            }
             EventMeshJobInfo entity = new EventMeshJobInfo();
-            entity.setState(TaskState.INIT.name());
+            entity.setJobState(TaskState.INIT.name());
             entity.setTaskID(job.getTaskID());
             entity.setJobType(job.getJobType().name());
-            entity.setDesc(job.getDesc());
+            entity.setJobDesc(job.getJobDesc());
             String jobID = UUID.randomUUID().toString();
             entity.setJobID(jobID);
             entity.setTransportType(job.getTransportType().name());
             entity.setCreateUid(job.getCreateUid());
             entity.setUpdateUid(job.getUpdateUid());
-            entity.setFromRegion(job.getRegion());
+            entity.setFromRegion(job.getFromRegion());
+            entity.setRunningRegion(job.getRunningRegion());
             CreateOrUpdateDataSourceReq source = new CreateOrUpdateDataSourceReq();
             source.setType(job.getTransportType().getSrc());
             source.setOperator(job.getCreateUid());
-            source.setRegion(job.getRegion());
+            source.setRegion(job.getSourceDataSource().getRegion());
             source.setDesc(job.getSourceConnectorDesc());
-            source.setConfig(job.getSourceDataSource());
+            source.setConfig(job.getSourceDataSource().getConf());
             EventMeshDataSource createdSource = dataSourceBizService.createDataSource(source);
             entity.setSourceData(createdSource.getId());
 
             CreateOrUpdateDataSourceReq sink = new CreateOrUpdateDataSourceReq();
             sink.setType(job.getTransportType().getDst());
             sink.setOperator(job.getCreateUid());
-            sink.setRegion(job.getRegion());
+            sink.setRegion(job.getSinkDataSource().getRegion());
             sink.setDesc(job.getSinkConnectorDesc());
-            sink.setConfig(job.getSinkDataSource());
-            EventMeshDataSource createdSink = dataSourceBizService.createDataSource(source);
+            sink.setConfig(job.getSinkDataSource().getConf());
+            EventMeshDataSource createdSink = dataSourceBizService.createDataSource(sink);
             entity.setTargetData(createdSink.getId());
 
             entityList.add(entity);
@@ -167,7 +177,7 @@ public class JobInfoBizService {
             detail.setSinkConnectorDesc(target.getDescription());
         }
 
-        TaskState state = TaskState.fromIndex(job.getState());
+        TaskState state = TaskState.fromIndex(job.getJobState());
         if (state == null) {
             throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal job state in db");
         }
