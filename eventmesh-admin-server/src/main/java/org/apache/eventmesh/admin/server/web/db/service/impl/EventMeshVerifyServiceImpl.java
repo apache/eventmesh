@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server;
+package org.apache.eventmesh.admin.server.web.db.service.impl;
 
-import java.util.List;
-import java.util.Map;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshVerify;
+import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshVerifyMapper;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshVerifyService;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Service;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-@ConfigurationProperties("event-mesh.admin-server")
-@Getter
-@Setter
-public class AdminServerProperties {
+/**
+ * event_mesh_verify
+ */
+@Service
+public class EventMeshVerifyServiceImpl extends ServiceImpl<EventMeshVerifyMapper, EventMeshVerify>
+    implements EventMeshVerifyService {
 
-    private int port;
-    private boolean enableSSL;
-    private String configurationPath;
-    private String configurationFile;
-    private String serviceName;
-    private Map<String, List<String>> adminServerList;
-    private String region;
 }
+
+
+
+

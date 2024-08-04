@@ -16,7 +16,9 @@
 #
 
 componentType: CONNECTOR
+registryEnabled: false
 registryServerAddr: 127.0.0.1:8085
 registryPluginType: nacos
 storagePluginType: memory
 adminServiceName: eventmesh-admin
+adminServiceAddr: "127.0.0.1:8085;127.0.0.1:8086"

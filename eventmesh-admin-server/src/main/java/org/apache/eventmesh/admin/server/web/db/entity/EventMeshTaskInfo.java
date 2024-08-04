@@ -37,13 +37,15 @@ public class EventMeshTaskInfo implements Serializable {
 
     private String taskID;
 
-    private String name;
+    private String taskName;
 
-    private String desc;
+    private String taskDesc;
 
-    private String state;
+    private String taskState;
 
-    private String fromRegion;
+    private String sourceRegion;
+
+    private String targetRegion;
 
     private String createUid;
 
