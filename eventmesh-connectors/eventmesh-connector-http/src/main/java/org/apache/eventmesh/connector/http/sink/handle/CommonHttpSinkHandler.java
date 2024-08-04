@@ -21,6 +21,8 @@ import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
@@ -111,9 +113,41 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             // convert ConnectRecord to HttpConnectRecord
             String type = String.format("%s.%s.%s", connectorConfig.getConnectorName(), url.getScheme(), "common");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-            deliver(url, httpConnectRecord);
+            Future<HttpResponse<Buffer>> responseFuture = deliver(url, httpConnectRecord);
+            responseFuture.onComplete(res -> {
+                if (res.succeeded()) {
+                    HttpResponse<Buffer> response = res.result();
+                    if (HttpUtils.is2xxSuccessful(response.statusCode())) {
+                        record.getCallback().onSuccess(convertToSendResult(record));
+                    } else {
+                        record.getCallback().onException(buildSendExceptionContext(record, res.cause()));
+                    }
+                } else {
+                    record.getCallback().onException(buildSendExceptionContext(record, res.cause()));
+                }
+            });
         }
     }
+
+    private SendResult convertToSendResult(ConnectRecord record) {
+        SendResult result = new SendResult();
+        result.setMessageId(record.getRecordId());
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            result.setTopic(record.getExtension("topic"));
+        }
+        return result;
+    }
+
+    private SendExceptionContext buildSendExceptionContext(ConnectRecord record, Throwable e) {
+        SendExceptionContext sendExceptionContext = new SendExceptionContext();
+        sendExceptionContext.setMessageId(record.getRecordId());
+        sendExceptionContext.setCause(e);
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            sendExceptionContext.setTopic(record.getExtension("topic"));
+        }
+        return sendExceptionContext;
+    }
+
 
 
     /**
