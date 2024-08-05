@@ -55,4 +55,7 @@ public class SourceConnectorConfig {
 
     // extra config, e.g. GitHub secret
     private Map<String, String> extraConfig = new HashMap<>();
+
+    // data consistency enabled, default true
+    private boolean dataConsistencyEnabled = true;
 }
