@@ -125,33 +125,32 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             final Map<String, ?> finalOffset = offset;
             Future<HttpResponse<Buffer>> responseFuture = deliver(url, httpConnectRecord);
             responseFuture.onSuccess(res -> {
-                    log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, finalOffset);
-                    // log the response
-                    if (HttpUtils.is2xxSuccessful(res.statusCode())) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                                res.statusCode(), timestamp, finalOffset, res.bodyAsString());
-                        } else {
-                            log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
-                                finalOffset);
-                        }
-                        record.getCallback().onSuccess(convertToSendResult(record));
+                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, finalOffset);
+                // log the response
+                if (HttpUtils.is2xxSuccessful(res.statusCode())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
+                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
                     } else {
-                        if (log.isDebugEnabled()) {
-                            log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                                res.statusCode(), timestamp, finalOffset, res.bodyAsString());
-                        } else {
-                            log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
-                                finalOffset);
-                        }
-                        record.getCallback()
-                            .onException(buildSendExceptionContext(record, new RuntimeException("HTTP response code: " + res.statusCode())));
+                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
+                            finalOffset);
                     }
-                })
-                .onFailure(err -> {
-                    log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err);
-                    record.getCallback().onException(buildSendExceptionContext(record, err));
-                });
+                    record.getCallback().onSuccess(convertToSendResult(record));
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
+                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
+                    } else {
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
+                            finalOffset);
+                    }
+                    record.getCallback()
+                        .onException(buildSendExceptionContext(record, new RuntimeException("HTTP response code: " + res.statusCode())));
+                }
+            }).onFailure(err -> {
+                log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err);
+                record.getCallback().onException(buildSendExceptionContext(record, err));
+            });
         }
     }
 
