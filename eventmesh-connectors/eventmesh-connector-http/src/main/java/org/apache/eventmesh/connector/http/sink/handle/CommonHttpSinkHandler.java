@@ -21,6 +21,8 @@ import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
@@ -111,14 +113,70 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             // convert ConnectRecord to HttpConnectRecord
             String type = String.format("%s.%s.%s", connectorConfig.getConnectorName(), url.getScheme(), "common");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-            deliver(url, httpConnectRecord);
+            // get timestamp and offset
+            Long timestamp = httpConnectRecord.getData().getTimestamp();
+            Map<String, ?> offset = null;
+            try {
+                // May throw NullPointerException.
+                offset = ((HttpRecordOffset) httpConnectRecord.getData().getPosition().getRecordOffset()).getOffsetMap();
+            } catch (NullPointerException e) {
+                // ignore null pointer exception
+            }
+            final Map<String, ?> finalOffset = offset;
+            Future<HttpResponse<Buffer>> responseFuture = deliver(url, httpConnectRecord);
+            responseFuture.onSuccess(res -> {
+                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, finalOffset);
+                // log the response
+                if (HttpUtils.is2xxSuccessful(res.statusCode())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
+                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
+                    } else {
+                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
+                            finalOffset);
+                    }
+                    record.getCallback().onSuccess(convertToSendResult(record));
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
+                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
+                    } else {
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
+                            finalOffset);
+                    }
+                    record.getCallback()
+                        .onException(buildSendExceptionContext(record, new RuntimeException("HTTP response code: " + res.statusCode())));
+                }
+            }).onFailure(err -> {
+                log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err);
+                record.getCallback().onException(buildSendExceptionContext(record, err));
+            });
         }
+    }
+
+    private SendResult convertToSendResult(ConnectRecord record) {
+        SendResult result = new SendResult();
+        result.setMessageId(record.getRecordId());
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            result.setTopic(record.getExtension("topic"));
+        }
+        return result;
+    }
+
+    private SendExceptionContext buildSendExceptionContext(ConnectRecord record, Throwable e) {
+        SendExceptionContext sendExceptionContext = new SendExceptionContext();
+        sendExceptionContext.setMessageId(record.getRecordId());
+        sendExceptionContext.setCause(e);
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            sendExceptionContext.setTopic(record.getExtension("topic"));
+        }
+        return sendExceptionContext;
     }
 
 
     /**
-     * Processes HttpConnectRecord on specified URL while returning its own processing logic.
-     * This method sends the HttpConnectRecord to the specified URL using the WebClient.
+     * Processes HttpConnectRecord on specified URL while returning its own processing logic. This method sends the HttpConnectRecord to the specified
+     * URL using the WebClient.
      *
      * @param url               URI to which the HttpConnectRecord should be sent
      * @param httpConnectRecord HttpConnectRecord to process
@@ -130,48 +188,13 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
         MultiMap headers = HttpHeaders.headers()
             .set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8")
             .set(HttpHeaderNames.ACCEPT, "application/json; charset=utf-8");
-
-        // get timestamp and offset
-        Long timestamp = httpConnectRecord.getData().getTimestamp();
-        Map<String, ?> offset = null;
-        try {
-            // May throw NullPointerException.
-            offset = ((HttpRecordOffset) httpConnectRecord.getData().getPosition().getRecordOffset()).getOffsetMap();
-        } catch (NullPointerException e) {
-            // ignore null pointer exception
-        }
-        final Map<String, ?> finalOffset = offset;
-
         // send the request
         return this.webClient.post(url.getPath())
             .host(url.getHost())
             .port(url.getPort() == -1 ? (Objects.equals(url.getScheme(), "https") ? 443 : 80) : url.getPort())
             .putHeaders(headers)
             .ssl(Objects.equals(url.getScheme(), "https"))
-            .sendJson(httpConnectRecord)
-            .onSuccess(res -> {
-                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, finalOffset);
-                // log the response
-                if (HttpUtils.is2xxSuccessful(res.statusCode())) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
-                    } else {
-                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
-                            finalOffset);
-                    }
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
-                    } else {
-                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
-                            finalOffset);
-                    }
-                }
-
-            })
-            .onFailure(err -> log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err));
+            .sendJson(httpConnectRecord);
     }
 
 
