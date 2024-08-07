@@ -18,10 +18,10 @@
 package org.apache.eventmesh.common.remote.request;
 
 import org.apache.eventmesh.common.remote.TransportType;
-import org.apache.eventmesh.common.remote.datasource.DataSource;
 import org.apache.eventmesh.common.remote.job.JobType;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
@@ -61,11 +61,11 @@ public class CreateTaskRequest {
         // full/increase/check
         private JobType jobType;
 
-        private DataSource sourceDataSource;
+        private Map<String, Object> sourceDataSource;
 
         private String sourceConnectorDesc;
 
-        private DataSource sinkDataSource;
+        private Map<String, Object> sinkDataSource;
 
         private String sinkConnectorDesc;
 

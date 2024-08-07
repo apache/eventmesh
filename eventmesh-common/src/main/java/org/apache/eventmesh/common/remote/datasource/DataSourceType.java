@@ -61,4 +61,13 @@ public enum DataSourceType {
         }
         return TYPES[index];
     }
+
+    public static DataSourceType fromString(String type) {
+        for (DataSourceType dataSourceType : DataSourceType.values()) {
+            if (dataSourceType.name().equalsIgnoreCase(type)) {
+                return dataSourceType;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant for type: " + type);
+    }
 }

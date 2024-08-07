@@ -22,12 +22,17 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshTaskInfoService;
 import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
 import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
+import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.remote.TaskState;
+import org.apache.eventmesh.common.remote.datasource.DataSource;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +45,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TaskBizService {
+
     @Autowired
     private EventMeshTaskInfoService taskInfoService;
 
@@ -76,7 +82,12 @@ public class TaskBizService {
 
         String finalTaskID = taskID;
         List<JobDetail> jobs = req.getJobs().stream().map(x -> {
-            JobDetail job = parse(x);
+            JobDetail job = null;
+            try {
+                job = parse(x);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             job.setTaskID(finalTaskID);
             job.setCreateUid(req.getUid());
             job.setUpdateUid(req.getUid());
@@ -95,14 +106,30 @@ public class TaskBizService {
         return finalTaskID;
     }
 
-    private JobDetail parse(CreateTaskRequest.JobDetail src) {
+    private JobDetail parse(CreateTaskRequest.JobDetail src) throws ClassNotFoundException {
         JobDetail dst = new JobDetail();
         dst.setJobDesc(src.getJobDesc());
         dst.setTransportType(src.getTransportType());
         dst.setSourceConnectorDesc(src.getSourceConnectorDesc());
-        dst.setSourceDataSource(src.getSourceDataSource());
+        Map<String, Object> sourceDataMap = src.getSourceDataSource();
+        DataSource sourceDataSource = new DataSource();
+        sourceDataSource.setType(DataSourceType.fromString(sourceDataMap.get("type").toString()));
+        sourceDataSource.setDesc((String) sourceDataMap.get("desc"));
+        sourceDataSource.setConfClazz((Class<? extends Config>) Class.forName(sourceDataMap.get("confClazz").toString()));
+        sourceDataSource.setConf(JsonUtils.parseObject(JsonUtils.toJSONString(sourceDataMap.get("conf")), sourceDataSource.getConfClazz()));
+        sourceDataSource.setRegion((String) sourceDataMap.get("region"));
+        dst.setSourceDataSource(sourceDataSource);
+
         dst.setSinkConnectorDesc(src.getSinkConnectorDesc());
-        dst.setSinkDataSource(src.getSinkDataSource());
+        Map<String, Object> sinkDataMap = src.getSinkDataSource();
+        DataSource sinkDataSource = new DataSource();
+        sinkDataSource.setType(DataSourceType.fromString(sinkDataMap.get("type").toString()));
+        sinkDataSource.setDesc((String) sinkDataMap.get("desc"));
+        sinkDataSource.setConfClazz((Class<? extends Config>) Class.forName(sinkDataMap.get("confClazz").toString()));
+        sinkDataSource.setConf(JsonUtils.parseObject(JsonUtils.toJSONString(sinkDataMap.get("conf")), sinkDataSource.getConfClazz()));
+        sinkDataSource.setRegion((String) sinkDataMap.get("region"));
+        dst.setSinkDataSource(sinkDataSource);
+
         // full/increase/check
         dst.setJobType(src.getJobType());
         dst.setFromRegion(src.getFromRegion());

@@ -28,6 +28,7 @@
             <result property="dataType" column="dataType" jdbcType="VARCHAR"/>
             <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="configuration" column="configuration" jdbcType="VARCHAR"/>
+            <result property="configurationClass" column="configurationClass" jdbcType="VARCHAR"/>
             <result property="region" column="region" jdbcType="VARCHAR"/>
             <result property="createUid" column="createUid" jdbcType="VARCHAR"/>
             <result property="updateUid" column="updateUid" jdbcType="VARCHAR"/>
@@ -37,7 +38,7 @@
 
     <sql id="Base_Column_List">
         id,dataType,description,
-        configuration,region,createUid,updateUid,
-        createTime,updateTime
+        configuration,configurationClass,region,
+        createUid,updateUid,createTime,updateTime
     </sql>
 </mapper>
