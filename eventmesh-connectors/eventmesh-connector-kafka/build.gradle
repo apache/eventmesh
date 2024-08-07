@@ -19,7 +19,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation 'io.cloudevents:cloudevents-kafka:2.5.0'
-    implementation 'org.apache.kafka:kafka-clients:3.7.1'
+    implementation 'org.apache.kafka:kafka-clients:3.8.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
