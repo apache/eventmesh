@@ -26,13 +26,17 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# http server port
+server:
+  port: 8082
 event-mesh:
   admin-server:
     serviceName: DEFAULT_GROUP@@em_adm_server
+    # grpc server port
     port: 8081
     adminServerList:
       region1:
-        - http://localhost:8081
-      region2:
         - http://localhost:8082
+      region2:
+        - http://localhost:8083
     region: region1

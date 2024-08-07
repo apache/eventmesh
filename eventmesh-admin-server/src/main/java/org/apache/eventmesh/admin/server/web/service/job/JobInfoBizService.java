@@ -27,6 +27,7 @@ import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
 import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
 import org.apache.eventmesh.admin.server.web.service.datasource.DataSourceBizService;
 import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
+import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.remote.TaskState;
 import org.apache.eventmesh.common.remote.TransportType;
 import org.apache.eventmesh.common.remote.datasource.DataSource;
@@ -114,6 +115,7 @@ public class JobInfoBizService {
             source.setRegion(job.getSourceDataSource().getRegion());
             source.setDesc(job.getSourceConnectorDesc());
             source.setConfig(job.getSourceDataSource().getConf());
+            source.setConfigClass(job.getSourceDataSource().getConfClazz().getName());
             EventMeshDataSource createdSource = dataSourceBizService.createDataSource(source);
             entity.setSourceData(createdSource.getId());
 
@@ -123,6 +125,7 @@ public class JobInfoBizService {
             sink.setRegion(job.getSinkDataSource().getRegion());
             sink.setDesc(job.getSinkConnectorDesc());
             sink.setConfig(job.getSinkDataSource().getConf());
+            sink.setConfigClass(job.getSinkDataSource().getConfClazz().getName());
             EventMeshDataSource createdSink = dataSourceBizService.createDataSource(sink);
             entity.setTargetData(createdSink.getId());
 
@@ -141,18 +144,22 @@ public class JobInfoBizService {
         if (jobID == null) {
             return null;
         }
-        EventMeshJobInfo job = jobInfoService.getById(jobID);
+        EventMeshJobInfo job = jobInfoService.getOne(Wrappers.<EventMeshJobInfo>query().eq("jobID", jobID));
         if (job == null) {
             return null;
         }
         JobDetail detail = new JobDetail();
+        detail.setTaskID(job.getTaskID());
         detail.setJobID(job.getJobID());
         EventMeshDataSource source = dataSourceService.getById(job.getSourceData());
         EventMeshDataSource target = dataSourceService.getById(job.getTargetData());
         if (source != null) {
             if (!StringUtils.isBlank(source.getConfiguration())) {
                 try {
-                    detail.setSourceDataSource(JsonUtils.parseObject(source.getConfiguration(), DataSource.class));
+                    DataSource sourceDataSource = new DataSource();
+                    Class<?> configClass = Class.forName(source.getConfigurationClass());
+                    sourceDataSource.setConf((Config) JsonUtils.parseObject(source.getConfiguration(), configClass));
+                    detail.setSourceDataSource(sourceDataSource);
                 } catch (Exception e) {
                     log.warn("parse source config id [{}] fail", job.getSourceData(), e);
                     throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal source data source config");
@@ -168,7 +175,10 @@ public class JobInfoBizService {
         if (target != null) {
             if (!StringUtils.isBlank(target.getConfiguration())) {
                 try {
-                    detail.setSinkDataSource(JsonUtils.parseObject(target.getConfiguration(), DataSource.class));
+                    DataSource sinkDataSource = new DataSource();
+                    Class<?> configClass = Class.forName(target.getConfigurationClass());
+                    sinkDataSource.setConf((Config) JsonUtils.parseObject(target.getConfiguration(), configClass));
+                    detail.setSinkDataSource(sinkDataSource);
                 } catch (Exception e) {
                     log.warn("parse sink config id [{}] fail", job.getSourceData(), e);
                     throw new AdminServerRuntimeException(ErrorCode.BAD_DB_DATA, "illegal target data sink config");

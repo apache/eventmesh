@@ -67,7 +67,7 @@ public class EntryParser {
                             }
                         } else {
                             // if not gtid mode, need check weather the entry is loopback by specified column value
-                            needSync = checkNeedSync(sourceConfig, rowChange.getRowDatas(0));
+                            needSync = checkNeedSync(sourceConfig, rowChange);
                             if (needSync) {
                                 transactionDataBuffer.add(entry);
                             }
@@ -115,9 +115,16 @@ public class EntryParser {
         }
     }
 
-    private static boolean checkNeedSync(CanalSourceConfig sourceConfig, RowData rowData) {
-        Column markedColumn = getColumnIgnoreCase(rowData.getAfterColumnsList(),
-            sourceConfig.getNeedSyncMarkTableColumnName());
+    private static boolean checkNeedSync(CanalSourceConfig sourceConfig, RowChange rowChange) {
+        Column markedColumn = null;
+        CanalEntry.EventType eventType = rowChange.getEventType();
+        if (eventType.equals(CanalEntry.EventType.DELETE) || eventType.equals(CanalEntry.EventType.UPDATE)) {
+            markedColumn = getColumnIgnoreCase(rowChange.getRowDatas(0).getBeforeColumnsList(),
+                sourceConfig.getNeedSyncMarkTableColumnName());
+        } else if (eventType.equals(CanalEntry.EventType.INSERT)) {
+            markedColumn = getColumnIgnoreCase(rowChange.getRowDatas(0).getAfterColumnsList(),
+                sourceConfig.getNeedSyncMarkTableColumnName());
+        }
         if (markedColumn != null) {
             return StringUtils.equalsIgnoreCase(markedColumn.getValue(),
                 sourceConfig.getNeedSyncMarkTableColumnValue());

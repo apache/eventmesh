@@ -76,6 +76,8 @@ public class RuntimeInstance {
             }
             // use registry adminServiceAddr value replace config
             runtimeInstanceConfig.setAdminServiceAddr(adminServiceAddr);
+        } else {
+            adminServiceAddr = runtimeInstanceConfig.getAdminServiceAddr();
         }
 
         runtimeFactory = initRuntimeFactory(runtimeInstanceConfig);
@@ -84,23 +86,25 @@ public class RuntimeInstance {
     }
 
     public void start() throws Exception {
-        if (!StringUtils.isBlank(adminServiceAddr) && registryService != null) {
-            registryService.subscribe((event) -> {
-                log.info("runtime receive registry event: {}", event);
-                List<RegisterServerInfo> registerServerInfoList = event.getInstances();
-                Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
-                for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
-                    registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
-                }
-                if (!registerServerInfoMap.isEmpty()) {
-                    adminServerInfoMap = registerServerInfoMap;
-                    updateAdminServerAddr();
-                }
-            }, runtimeInstanceConfig.getAdminServiceName());
+        if (StringUtils.isBlank(adminServiceAddr)) {
+            throw new RuntimeException("admin server address is empty, please check");
+        } else {
+            if (registryService != null) {
+                registryService.subscribe((event) -> {
+                    log.info("runtime receive registry event: {}", event);
+                    List<RegisterServerInfo> registerServerInfoList = event.getInstances();
+                    Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
+                    for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
+                        registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
+                    }
+                    if (!registerServerInfoMap.isEmpty()) {
+                        adminServerInfoMap = registerServerInfoMap;
+                        updateAdminServerAddr();
+                    }
+                }, runtimeInstanceConfig.getAdminServiceName());
+            }
             runtime.start();
             isStarted = true;
-        } else {
-            throw new RuntimeException("admin server address is empty, please check");
         }
     }
 

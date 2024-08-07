@@ -21,4 +21,4 @@ registryServerAddr: 127.0.0.1:8085
 registryPluginType: nacos
 storagePluginType: memory
 adminServiceName: eventmesh-admin
-adminServiceAddr: "127.0.0.1:8085;127.0.0.1:8086"
+adminServiceAddr: "127.0.0.1:8081;127.0.0.1:8081"

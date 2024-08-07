@@ -29,12 +29,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DataSourceBizService {
+
     @Autowired
     private EventMeshDataSourceService dataSourceService;
 
     public EventMeshDataSource createDataSource(CreateOrUpdateDataSourceReq dataSource) {
         EventMeshDataSource entity = new EventMeshDataSource();
         entity.setConfiguration(JsonUtils.toJSONString(dataSource.getConfig()));
+        entity.setConfigurationClass(dataSource.getConfigClass());
         entity.setDataType(dataSource.getType().name());
         entity.setCreateUid(dataSource.getOperator());
         entity.setUpdateUid(dataSource.getOperator());
