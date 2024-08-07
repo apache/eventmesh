@@ -20,7 +20,7 @@ plugins {
 }
 
 def grpcVersion = '1.65.1'
-def protobufVersion = '3.25.3'
+def protobufVersion = '3.25.4'
 def protocVersion = protobufVersion
 
 def jraftVersion = '1.3.14'
