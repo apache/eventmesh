@@ -45,6 +45,8 @@ public class CommonProtocol implements Protocol {
 
     public static final String PROTOCOL_NAME = "Common";
 
+    private SourceConnectorConfig sourceConnectorConfig;
+
     /**
      * Initialize the protocol
      *
@@ -52,7 +54,7 @@ public class CommonProtocol implements Protocol {
      */
     @Override
     public void initialize(SourceConnectorConfig sourceConnectorConfig) {
-
+        this.sourceConnectorConfig = sourceConnectorConfig;
     }
 
     /**
@@ -77,10 +79,13 @@ public class CommonProtocol implements Protocol {
                     throw new IllegalStateException("Failed to store the request.");
                 }
 
-                // Return 200 OK
-                ctx.response()
-                    .setStatusCode(HttpResponseStatus.OK.code())
-                    .end(CommonResponse.success().toJsonStr());
+                if (!sourceConnectorConfig.isDataConsistencyEnabled()) {
+                    // Return 200 OK
+                    ctx.response()
+                        .setStatusCode(HttpResponseStatus.OK.code())
+                        .end(CommonResponse.success().toJsonStr());
+                }
+
             })
             .failureHandler(ctx -> {
                 log.error("Failed to handle the request. ", ctx.failure());
