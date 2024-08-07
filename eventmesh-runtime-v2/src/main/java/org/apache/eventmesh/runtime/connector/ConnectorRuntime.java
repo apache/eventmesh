@@ -63,9 +63,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -132,6 +135,8 @@ public class ConnectorRuntime implements Runtime {
 
     public static final String CALLBACK_EXTENSION = "callBackExtension";
 
+    private String adminServerAddr;
+
 
     public ConnectorRuntime(RuntimeInstanceConfig runtimeInstanceConfig) {
         this.runtimeInstanceConfig = runtimeInstanceConfig;
@@ -149,8 +154,9 @@ public class ConnectorRuntime implements Runtime {
     }
 
     private void initAdminService() {
+        adminServerAddr = getRandomAdminServerAddr(runtimeInstanceConfig.getAdminServiceAddr());
         // create gRPC channel
-        channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServiceAddr()).usePlaintext().build();
+        channel = ManagedChannelBuilder.forTarget(adminServerAddr).usePlaintext().build();
 
         adminServiceStub = AdminServiceGrpc.newStub(channel).withWaitForReady();
 
@@ -174,6 +180,16 @@ public class ConnectorRuntime implements Runtime {
         };
 
         requestObserver = adminServiceStub.invokeBiStream(responseObserver);
+    }
+
+    private String getRandomAdminServerAddr(String adminServerAddrList) {
+        String[] addresses = adminServerAddrList.split(";");
+        if (addresses.length == 0) {
+            throw new IllegalArgumentException("Admin server address list is empty");
+        }
+        Random random = new Random();
+        int randomIndex = random.nextInt(addresses.length);
+        return addresses[randomIndex];
     }
 
     private void initStorageService() {
@@ -202,6 +218,25 @@ public class ConnectorRuntime implements Runtime {
         connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getConnectorConfig().getSinkConnectorDesc());
         connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getConnectorConfig().getSinkConnectorConfig());
 
+        // spi load offsetMgmtService
+        this.offsetManagement = new RecordOffsetManagement();
+        this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
+        OffsetStorageConfig offsetStorageConfig = new OffsetStorageConfig();
+        offsetStorageConfig.setOffsetStorageAddr(connectorRuntimeConfig.getRuntimeConfig().get("offsetStorageAddr").toString());
+        offsetStorageConfig.setOffsetStorageType(connectorRuntimeConfig.getRuntimeConfig().get("offsetStoragePluginType").toString());
+        offsetStorageConfig.setDataSourceType(jobResponse.getTransportType().getSrc());
+        offsetStorageConfig.setDataSinkType(jobResponse.getTransportType().getDst());
+        Map<String, String> offsetStorageExtensions = new HashMap<>();
+        offsetStorageExtensions.put("jobId", connectorRuntimeConfig.getJobID());
+        offsetStorageConfig.setExtensions(offsetStorageExtensions);
+
+        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig).map(OffsetStorageConfig::getOffsetStorageType)
+            .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
+            .orElse(new DefaultOffsetManagementServiceImpl());
+        this.offsetManagementService.initialize(offsetStorageConfig);
+        this.offsetStorageWriter = new OffsetStorageWriterImpl(offsetManagementService);
+        this.offsetStorageReader = new OffsetStorageReaderImpl(offsetManagementService);
+
         ConnectorCreateService<?> sourceConnectorCreateService =
             ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSourceConnectorType() + "-Source");
         sourceConnector = (Source) sourceConnectorCreateService.create();
@@ -214,20 +249,6 @@ public class ConnectorRuntime implements Runtime {
         if (CollectionUtils.isNotEmpty(jobResponse.getPosition())) {
             sourceConnectorContext.setRecordPositionList(jobResponse.getPosition());
         }
-
-        // spi load offsetMgmtService
-        this.offsetManagement = new RecordOffsetManagement();
-        this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
-        OffsetStorageConfig offsetStorageConfig = sourceConfig.getOffsetStorageConfig();
-        offsetStorageConfig.setDataSourceType(jobResponse.getTransportType().getSrc());
-        offsetStorageConfig.setDataSinkType(jobResponse.getTransportType().getDst());
-        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig).map(OffsetStorageConfig::getOffsetStorageType)
-            .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
-            .orElse(new DefaultOffsetManagementServiceImpl());
-        this.offsetManagementService.initialize(offsetStorageConfig);
-        this.offsetStorageWriter = new OffsetStorageWriterImpl(offsetManagementService);
-        this.offsetStorageReader = new OffsetStorageReaderImpl(offsetManagementService);
-
         sourceConnector.init(sourceConnectorContext);
 
         ConnectorCreateService<?> sinkConnectorCreateService =
@@ -330,6 +351,9 @@ public class ConnectorRuntime implements Runtime {
             // TODO: use producer pub record to storage replace below
             if (connectorRecordList != null && !connectorRecordList.isEmpty()) {
                 for (ConnectRecord record : connectorRecordList) {
+
+                    queue.put(record);
+
                     // if enabled incremental data reporting consistency check
                     if (connectorRuntimeConfig.enableIncrementalDataConsistencyCheck) {
                         reportVerifyRequest(record, connectorRuntimeConfig, ConnectorStage.SOURCE);
@@ -362,8 +386,6 @@ public class ConnectorRuntime implements Runtime {
                             }
                         }
                     });
-
-                    queue.put(record);
 
                     offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
                     // update & commit offset

@@ -34,6 +34,7 @@ public class CreateOrUpdateDataSourceReq extends BaseRemoteRequest {
     private DataSourceType type;
     private String desc;
     private Config config;
+    private String configClass;
     private String region;
     private String operator;
 }

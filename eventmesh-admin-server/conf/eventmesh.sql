@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `event_mesh_data_source` (
   `dataType` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `configuration` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `configurationClass` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `region` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `updateUid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
@@ -134,13 +135,13 @@ CREATE TABLE IF NOT EXISTS `event_mesh_task_info` (
 
 -- export table eventmesh.event_mesh_verify structure
 CREATE TABLE IF NOT EXISTS `event_mesh_verify` (
-  `id` int NOT NULL,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `taskID` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `recordID` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `recordSig` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `connectorName` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `connectorName` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `connectorStage` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `position` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `position` text COLLATE utf8mb4_general_ci DEFAULT NULL,
   `createTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -53,9 +53,9 @@ public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, 
         }
         response.setId(detail.getJobID());
         JobConnectorConfig config = new JobConnectorConfig();
-        config.setSourceConnectorConfig(JsonUtils.objectToMap(detail.getSourceDataSource()));
+        config.setSourceConnectorConfig(JsonUtils.objectToMap(detail.getSourceDataSource().getConf()));
         config.setSourceConnectorDesc(detail.getSourceConnectorDesc());
-        config.setSinkConnectorConfig(JsonUtils.objectToMap(detail.getSinkDataSource()));
+        config.setSinkConnectorConfig(JsonUtils.objectToMap(detail.getSinkDataSource().getConf()));
         config.setSourceConnectorDesc(detail.getSinkConnectorDesc());
         response.setConnectorConfig(config);
         response.setTransportType(detail.getTransportType());
