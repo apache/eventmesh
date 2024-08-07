@@ -44,6 +44,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -163,7 +164,11 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     public void put(List<ConnectRecord> sinkRecords) {
         DbLoadContext context = new DbLoadContext();
         for (ConnectRecord connectRecord : sinkRecords) {
-            List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>) connectRecord.getData();
+            List<CanalConnectRecord> canalConnectRecordList = new ArrayList<>();
+            // deep copy connectRecord data
+            for (CanalConnectRecord record : (List<CanalConnectRecord>) connectRecord.getData()) {
+                canalConnectRecordList.add(SerializationUtils.clone(record));
+            }
             canalConnectRecordList = filterRecord(canalConnectRecordList);
             if (isDdlDatas(canalConnectRecordList)) {
                 doDdl(context, canalConnectRecordList, connectRecord);
@@ -175,7 +180,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                 DbLoadData loadData = new DbLoadData();
                 doBefore(canalConnectRecordList, loadData);
 
-                doLoad(context, sinkConfig, loadData);
+                doLoad(context, sinkConfig, loadData, connectRecord);
 
             }
 
@@ -259,7 +264,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         }
     }
 
-    private void doLoad(DbLoadContext context, CanalSinkConfig sinkConfig, DbLoadData loadData) {
+    private void doLoad(DbLoadContext context, CanalSinkConfig sinkConfig, DbLoadData loadData, ConnectRecord connectRecord) {
         List<List<CanalConnectRecord>> batchDatas = new ArrayList<>();
         for (TableLoadData tableData : loadData.getTables()) {
             if (useBatch) {
@@ -271,7 +276,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
         }
 
-        doTwoPhase(context, sinkConfig, batchDatas, true);
+        doTwoPhase(context, sinkConfig, batchDatas, true, connectRecord);
 
         batchDatas.clear();
 
@@ -289,7 +294,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
         }
 
-        doTwoPhase(context, sinkConfig, batchDatas, true);
+        doTwoPhase(context, sinkConfig, batchDatas, true, connectRecord);
 
         batchDatas.clear();
     }
@@ -390,7 +395,8 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             && StringUtils.equals(source.getSql(), target.getSql());
     }
 
-    private void doTwoPhase(DbLoadContext context, CanalSinkConfig sinkConfig, List<List<CanalConnectRecord>> totalRows, boolean canBatch) {
+    private void doTwoPhase(DbLoadContext context, CanalSinkConfig sinkConfig, List<List<CanalConnectRecord>> totalRows, boolean canBatch,
+        ConnectRecord connectRecord) {
         List<Future<Exception>> results = new ArrayList<>();
         for (List<CanalConnectRecord> rows : totalRows) {
             if (CollectionUtils.isEmpty(rows)) {
@@ -404,6 +410,9 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             Exception ex = null;
             try {
                 ex = result.get();
+                if (ex == null) {
+                    connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
+                }
             } catch (Exception e) {
                 ex = e;
             }
@@ -433,12 +442,14 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                             log.warn("skip exception for data : {} , caused by {}",
                                 retryRecord,
                                 ExceptionUtils.getFullStackTrace(ex));
+                            connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
                         }
                     } catch (Exception ex) {
                         // do skip
                         log.warn("skip exception for data : {} , caused by {}",
                             retryRecord,
                             ExceptionUtils.getFullStackTrace(ex));
+                        connectRecord.getCallback().onSuccess(convertToSendResult(connectRecord));
                     }
                 }
             } else {
@@ -451,6 +462,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                 } catch (Exception ex) {
                     log.error("##load phase two failed!", ex);
                     log.error("sink connector will shutdown by " + ex.getMessage(), ex);
+                    connectRecord.getCallback().onException(buildSendExceptionContext(connectRecord, ex));
                     executor.shutdown();
                     System.exit(1);
                 }

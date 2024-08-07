@@ -16,6 +16,7 @@
 org.apache.eventmesh.common.remote.request.FetchJobRequest
 org.apache.eventmesh.common.remote.response.FetchJobResponse
 org.apache.eventmesh.common.remote.request.ReportPositionRequest
+org.apache.eventmesh.common.remote.request.ReportVerifyRequest
 org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest
 org.apache.eventmesh.common.remote.request.FetchPositionRequest
 org.apache.eventmesh.common.remote.response.FetchPositionResponse
