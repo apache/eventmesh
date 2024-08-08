@@ -19,6 +19,7 @@ package org.apache.eventmesh.admin.server.web;
 
 import org.apache.eventmesh.admin.server.web.service.task.TaskBizService;
 import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
+import org.apache.eventmesh.common.remote.response.CreateTaskResponse;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,8 @@ public class HttpServer {
 
     @RequestMapping(value = "/createTask", method = RequestMethod.POST)
     public ResponseEntity<Object> createOrUpdateTask(@RequestBody CreateTaskRequest task) {
-        String uuid = taskService.createTask(task);
-        return ResponseEntity.ok(JsonUtils.toJSONString(Response.success(uuid)));
+        CreateTaskResponse createTaskResponse = taskService.createTask(task);
+        return ResponseEntity.ok(JsonUtils.toJSONString(Response.success(createTaskResponse)));
     }
 
     public boolean deleteTask(Long id) {
