@@ -56,6 +56,8 @@ public class CreateTaskRequest {
     @Data
     public static class JobDetail {
 
+        private String jobId;
+
         private String jobDesc;
 
         // full/increase/check

@@ -54,6 +54,10 @@ public class JsonUtils {
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
+    public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
+        return OBJECT_MAPPER.convertValue(fromValue, toValueType);
+    }
+
     public static <T> T mapToObject(Map<String, Object> map, Class<T> beanClass) {
         if (map == null) {
             return null;
