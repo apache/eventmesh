@@ -24,8 +24,8 @@ public class HttpRetryConfig {
     // maximum number of retries, default 2, minimum 0
     private int maxRetries = 2;
 
-    // retry interval, default 2000ms
-    private int interval = 2000;
+    // retry interval, default 1000ms
+    private int interval = 1000;
 
     // Default value is false, indicating that only requests with network-level errors will be retried.
     // If set to true, all failed requests will be retried, including network-level errors and non-2xx responses.

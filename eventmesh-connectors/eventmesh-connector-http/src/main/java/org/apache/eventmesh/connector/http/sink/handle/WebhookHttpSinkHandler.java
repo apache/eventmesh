@@ -25,13 +25,16 @@ import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
+import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -214,7 +217,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             String type = String.format("%s.%s.%s", this.getConnectorConfig().getConnectorName(), url.getScheme(), "webhook");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
             // handle the HttpConnectRecord
-            deliver(url, httpConnectRecord);
+            deliver(url, httpConnectRecord, Collections.emptyMap());
         }
     }
 
@@ -225,36 +228,66 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
      *
      * @param url               URI to which the HttpConnectRecord should be sent
      * @param httpConnectRecord HttpConnectRecord to process
+     * @param attributes        additional attributes to be used in processing
      * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes) {
         // send the request
-        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord);
+        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord, attributes);
         // store the received data
         return responseFuture.onComplete(arr -> {
-            // If open retry, return directly and handled by RetryHttpSinkHandler
-            if (sinkConnectorConfig.getRetryConfig().getMaxRetries() > 0) {
-                return;
-            }
-            // create ExportMetadataBuilder
-            HttpResponse<Buffer> response = arr.succeeded() ? arr.result() : null;
+            // get tryEvent from attributes
+            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.NAME);
 
-            HttpExportMetadata httpExportMetadata = HttpExportMetadata.builder()
-                .url(url.toString())
-                .code(response != null ? response.statusCode() : -1)
-                .message(response != null ? response.statusMessage() : arr.cause().getMessage())
-                .receivedTime(LocalDateTime.now())
-                .retriedBy(null)
-                .uuid(httpConnectRecord.getUuid())
-                .retryNum(0)
-                .build();
+            HttpResponse<Buffer> response = null;
+            if (arr.succeeded()) {
+                response = arr.result();
+            } else if (retryEvent != null) {
+                retryEvent.setLastException(arr.cause());
+            }
+
+            // create ExportMetadata
+            HttpExportMetadata httpExportMetadata = buildHttpExportMetadata(url, response, httpConnectRecord, retryEvent);
 
             // create ExportRecord
             HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
             // add the data to the queue
             receivedDataQueue.offer(exportRecord);
         });
+    }
+
+    /**
+     * Builds the HttpExportMetadata object based on the response, HttpConnectRecord, and HttpRetryEvent.
+     *
+     * @param url               the URI to which the HttpConnectRecord was sent
+     * @param response          the response received from the URI
+     * @param httpConnectRecord the HttpConnectRecord that was sent
+     * @param retryEvent        the HttpRetryEvent associated with the request
+     * @return the HttpExportMetadata object
+     */
+    private HttpExportMetadata buildHttpExportMetadata(URI url, HttpResponse<Buffer> response, HttpConnectRecord httpConnectRecord,
+        HttpRetryEvent retryEvent) {
+
+
+        String msg = null;
+        // order of precedence: lastException > response > null
+        if (retryEvent != null && retryEvent.getLastException() != null) {
+            msg = retryEvent.getLimitedExceptionMessage();
+            retryEvent.clearException();
+        } else if (response != null) {
+            msg = response.statusMessage();
+        }
+
+        return HttpExportMetadata.builder()
+            .url(url.toString())
+            .code(response != null ? response.statusCode() : -1)
+            .message(msg)
+            .receivedTime(LocalDateTime.now())
+            .retriedBy(retryEvent != null ? retryEvent.getParentId() : null)
+            .uuid(httpConnectRecord.getUuid())
+            .retryNum(retryEvent != null ? retryEvent.getCurrentRetries() : 0)
+            .build();
     }
 
 

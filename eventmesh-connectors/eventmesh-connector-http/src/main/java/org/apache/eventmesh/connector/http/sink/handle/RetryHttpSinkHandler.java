@@ -20,8 +20,7 @@ package org.apache.eventmesh.connector.http.sink.handle;
 import org.apache.eventmesh.connector.http.sink.config.HttpRetryConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
-import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
-import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
+import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -30,7 +29,9 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,6 @@ import lombok.extern.slf4j.Slf4j;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
-import dev.failsafe.event.ExecutionEvent;
 
 
 @Slf4j
@@ -106,8 +106,17 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                 this.connectorConfig.getConnectorName(), url.getScheme(),
                 this.connectorConfig.getWebhookConfig().isActivate() ? "webhook" : "common");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
+
+            // build the retry event
+            HttpRetryEvent retryEvent = new HttpRetryEvent();
+            retryEvent.setMaxRetries(connectorConfig.getRetryConfig().getMaxRetries());
+
+            // add the retry event to the attributes
+            HashMap<String, Object> attributes = new HashMap<>();
+            attributes.put(HttpRetryEvent.NAME, retryEvent);
+
             // handle the HttpConnectRecord
-            deliver(url, httpConnectRecord);
+            deliver(url, httpConnectRecord, attributes);
         }
     }
 
@@ -118,34 +127,27 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
      *
      * @param url               URI to which the HttpConnectRecord should be sent
      * @param httpConnectRecord HttpConnectRecord to process
+     * @param attributes        additional attributes to pass to the processing chain
      * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes) {
         // Only webhook mode needs to use the UUID to identify the request
         String id = httpConnectRecord.getUuid();
 
         // Build the retry policy
         RetryPolicy<HttpResponse<Buffer>> retryPolicy = retryPolicyBuilder
-            .onSuccess(event -> {
-                if (connectorConfig.getWebhookConfig().isActivate()) {
-                    // convert the result to an HttpExportRecord
-                    HttpExportRecord exportRecord = covertToExportRecord(httpConnectRecord, event, event.getResult(), event.getException(), url, id);
-                    // add the data to the queue
-                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offer(exportRecord);
-                }
-            })
             .onRetry(event -> {
                 if (log.isDebugEnabled()) {
-                    log.warn("Retrying the request to {} for the {} time. HttpConnectRecord= {}", url, event.getAttemptCount(), httpConnectRecord);
+                    log.warn("Retrying the request to {} for the {} time. {}", url, event.getAttemptCount(), httpConnectRecord);
                 } else {
                     log.warn("Retrying the request to {} for the {} time.", url, event.getAttemptCount());
                 }
-                if (connectorConfig.getWebhookConfig().isActivate()) {
-                    HttpExportRecord exportRecord =
-                        covertToExportRecord(httpConnectRecord, event, event.getLastResult(), event.getLastException(), url, id);
-                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offer(exportRecord);
-                }
+                // update the retry event
+                HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.NAME);
+                retryEvent.increaseCurrentRetries();
+                retryEvent.setParentId(id);
+
                 // update the HttpConnectRecord
                 httpConnectRecord.setTime(LocalDateTime.now().toString());
                 httpConnectRecord.setUuid(UUID.randomUUID().toString());
@@ -157,44 +159,15 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                 } else {
                     log.error("Failed to send the request to {} after {} attempts.", url, event.getAttemptCount(), event.getException());
                 }
-                if (connectorConfig.getWebhookConfig().isActivate()) {
-                    HttpExportRecord exportRecord = covertToExportRecord(httpConnectRecord, event, event.getResult(), event.getException(), url, id);
-                    ((WebhookHttpSinkHandler) sinkHandler).getReceivedDataQueue().offer(exportRecord);
-                }
             }).build();
 
         // Handle the HttpConnectRecord with retry
         Failsafe.with(retryPolicy)
-            .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord).toCompletionStage());
+            .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord, attributes).toCompletionStage());
 
         return null;
     }
 
-    /**
-     * Converts the ExecutionCompletedEvent to an HttpExportRecord.
-     *
-     * @param httpConnectRecord HttpConnectRecord
-     * @param event             ExecutionEvent
-     * @param response          the response of the request, may be null
-     * @param e                 the exception thrown during the request, may be null
-     * @param url               the URL the request was sent to
-     * @param id                UUID
-     * @return the converted HttpExportRecord
-     */
-    private HttpExportRecord covertToExportRecord(HttpConnectRecord httpConnectRecord, ExecutionEvent event, HttpResponse<Buffer> response,
-        Throwable e, URI url, String id) {
-
-        HttpExportMetadata httpExportMetadata = HttpExportMetadata.builder()
-            .url(url.toString())
-            .code(response != null ? response.statusCode() : -1)
-            .message(response != null ? response.statusMessage() : e.getMessage())
-            .receivedTime(LocalDateTime.now())
-            .uuid(httpConnectRecord.getUuid())
-            .retriedBy(event.getAttemptCount() > 1 ? id : null)
-            .retryNum(event.getAttemptCount() - 1).build();
-
-        return new HttpExportRecord(httpExportMetadata, response == null ? null : response.bodyAsString());
-    }
 
     /**
      * Cleans up and releases resources used by the HTTP/HTTPS handler.
