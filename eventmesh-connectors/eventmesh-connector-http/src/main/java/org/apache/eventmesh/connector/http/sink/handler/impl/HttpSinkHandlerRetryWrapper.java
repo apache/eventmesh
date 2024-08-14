@@ -15,25 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.handle;
+package org.apache.eventmesh.connector.http.sink.handler.impl;
 
 import org.apache.eventmesh.connector.http.sink.config.HttpRetryConfig;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
+import org.apache.eventmesh.connector.http.sink.handler.AbstractHttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handler.HttpSinkHandler;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.ConnectException;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -43,46 +40,23 @@ import lombok.extern.slf4j.Slf4j;
 
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import dev.failsafe.RetryPolicyBuilder;
 
 
+/**
+ * HttpSinkHandlerRetryWrapper is a wrapper class for the HttpSinkHandler that provides retry functionality for failed HTTP requests.
+ */
 @Slf4j
-public class RetryHttpSinkHandler implements HttpSinkHandler {
+public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
 
-    private final SinkConnectorConfig connectorConfig;
-
-    // Retry policy builder
-    private RetryPolicyBuilder<HttpResponse<Buffer>> retryPolicyBuilder;
-
-    private final List<URI> urls;
+    private final HttpRetryConfig httpRetryConfig;
 
     private final HttpSinkHandler sinkHandler;
 
-
-    public RetryHttpSinkHandler(SinkConnectorConfig connectorConfig, HttpSinkHandler sinkHandler) {
-        this.connectorConfig = connectorConfig;
+    public HttpSinkHandlerRetryWrapper(SinkConnectorConfig sinkConnectorConfig, HttpSinkHandler sinkHandler) {
+        super(sinkConnectorConfig);
         this.sinkHandler = sinkHandler;
-
-        // Initialize retry
-        initRetry();
-
-        // Initialize URLs
-        String[] urlStrings = connectorConfig.getUrls();
-        this.urls = Arrays.stream(urlStrings)
-            .map(URI::create)
-            .collect(Collectors.toList());
+        this.httpRetryConfig = getSinkConnectorConfig().getRetryConfig();
     }
-
-    private void initRetry() {
-        HttpRetryConfig httpRetryConfig = this.connectorConfig.getRetryConfig();
-
-        this.retryPolicyBuilder = RetryPolicy.<HttpResponse<Buffer>>builder()
-            .handleIf(e -> e instanceof ConnectException)
-            .handleResultIf(response -> httpRetryConfig.isRetryOnNonSuccess() && !HttpUtils.is2xxSuccessful(response.statusCode()))
-            .withMaxRetries(httpRetryConfig.getMaxRetries())
-            .withDelay(Duration.ofMillis(httpRetryConfig.getInterval()));
-    }
-
 
     /**
      * Initializes the WebClient for making HTTP requests based on the provided SinkConnectorConfig.
@@ -90,34 +64,6 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
     @Override
     public void start() {
         sinkHandler.start();
-    }
-
-
-    /**
-     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
-     *
-     * @param record the ConnectRecord to process
-     */
-    @Override
-    public void handle(ConnectRecord record) {
-        for (URI url : this.urls) {
-            // convert ConnectRecord to HttpConnectRecord
-            String type = String.format("%s.%s.%s",
-                this.connectorConfig.getConnectorName(), url.getScheme(),
-                this.connectorConfig.getWebhookConfig().isActivate() ? "webhook" : "common");
-            HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-
-            // build the retry event
-            HttpRetryEvent retryEvent = new HttpRetryEvent();
-            retryEvent.setMaxRetries(connectorConfig.getRetryConfig().getMaxRetries());
-
-            // add the retry event to the attributes
-            HashMap<String, Object> attributes = new HashMap<>();
-            attributes.put(HttpRetryEvent.NAME, retryEvent);
-
-            // handle the HttpConnectRecord
-            deliver(url, httpConnectRecord, attributes);
-        }
     }
 
 
@@ -136,7 +82,11 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
         String id = httpConnectRecord.getUuid();
 
         // Build the retry policy
-        RetryPolicy<HttpResponse<Buffer>> retryPolicy = retryPolicyBuilder
+        RetryPolicy<HttpResponse<Buffer>> retryPolicy = RetryPolicy.<HttpResponse<Buffer>>builder()
+            .handleIf(e -> e instanceof ConnectException)
+            .handleResultIf(response -> httpRetryConfig.isRetryOnNonSuccess() && !HttpUtils.is2xxSuccessful(response.statusCode()))
+            .withMaxRetries(httpRetryConfig.getMaxRetries())
+            .withDelay(Duration.ofMillis(httpRetryConfig.getInterval()))
             .onRetry(event -> {
                 if (log.isDebugEnabled()) {
                     log.warn("Retrying the request to {} for the {} time. {}", url, event.getAttemptCount(), httpConnectRecord);
@@ -144,13 +94,16 @@ public class RetryHttpSinkHandler implements HttpSinkHandler {
                     log.warn("Retrying the request to {} for the {} time.", url, event.getAttemptCount());
                 }
                 // update the retry event
-                HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.NAME);
+                HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.remove(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid());
                 retryEvent.increaseCurrentRetries();
                 retryEvent.setParentId(id);
 
                 // update the HttpConnectRecord
                 httpConnectRecord.setTime(LocalDateTime.now().toString());
                 httpConnectRecord.setUuid(UUID.randomUUID().toString());
+
+                // update the attributes
+                attributes.put(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid(), retryEvent);
             })
             .onFailure(event -> {
                 if (log.isDebugEnabled()) {

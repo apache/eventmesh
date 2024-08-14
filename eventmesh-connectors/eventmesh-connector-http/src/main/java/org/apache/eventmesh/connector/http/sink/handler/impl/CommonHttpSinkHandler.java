@@ -15,25 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.handle;
+package org.apache.eventmesh.connector.http.sink.handler.impl;
 
 import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
+import org.apache.eventmesh.connector.http.sink.data.MultiHttpRequestContext;
+import org.apache.eventmesh.connector.http.sink.handler.AbstractHttpSinkHandler;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.Future;
@@ -62,22 +60,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Getter
-public class CommonHttpSinkHandler implements HttpSinkHandler {
-
-    private final SinkConnectorConfig connectorConfig;
-
-    private final List<URI> urls;
+public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
 
     private WebClient webClient;
 
 
     public CommonHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
-        this.connectorConfig = sinkConnectorConfig;
-        // Initialize URLs
-        String[] urlStrings = sinkConnectorConfig.getUrls();
-        this.urls = Arrays.stream(urlStrings)
-            .map(URI::create)
-            .collect(Collectors.toList());
+        super(sinkConnectorConfig);
     }
 
     /**
@@ -93,32 +82,17 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
      * Initializes the WebClient with the provided configuration options.
      */
     private void doInitWebClient() {
+        SinkConnectorConfig sinkConnectorConfig = getSinkConnectorConfig();
         final Vertx vertx = Vertx.vertx();
         WebClientOptions options = new WebClientOptions()
-            .setKeepAlive(this.connectorConfig.isKeepAlive())
-            .setKeepAliveTimeout(this.connectorConfig.getKeepAliveTimeout() / 1000)
-            .setIdleTimeout(this.connectorConfig.getIdleTimeout())
+            .setKeepAlive(sinkConnectorConfig.isKeepAlive())
+            .setKeepAliveTimeout(sinkConnectorConfig.getKeepAliveTimeout() / 1000)
+            .setIdleTimeout(sinkConnectorConfig.getIdleTimeout())
             .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
-            .setConnectTimeout(this.connectorConfig.getConnectionTimeout())
-            .setMaxPoolSize(this.connectorConfig.getMaxConnectionPoolSize());
+            .setConnectTimeout(sinkConnectorConfig.getConnectionTimeout())
+            .setMaxPoolSize(sinkConnectorConfig.getMaxConnectionPoolSize());
         this.webClient = WebClient.create(vertx, options);
     }
-
-    /**
-     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
-     *
-     * @param record the ConnectRecord to process
-     */
-    @Override
-    public void handle(ConnectRecord record) {
-        for (URI url : this.urls) {
-            // convert ConnectRecord to HttpConnectRecord
-            String type = String.format("%s.%s.%s", connectorConfig.getConnectorName(), url.getScheme(), "common");
-            HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-            deliver(url, httpConnectRecord, Collections.emptyMap());
-        }
-    }
-
 
     /**
      * Processes HttpConnectRecord on specified URL while returning its own processing logic. This method sends the HttpConnectRecord to the specified
@@ -181,41 +155,92 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
                 }
 
                 // try callback
-                tryCallback(httpConnectRecord.getData(), e, attributes);
+                tryCallback(httpConnectRecord, e, attributes);
             }).onFailure(err -> {
                 log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err);
 
                 // try callback
-                tryCallback(httpConnectRecord.getData(), err, attributes);
+                tryCallback(httpConnectRecord, err, attributes);
             });
     }
 
     /**
      * Tries to call the callback based on the result of the request.
      *
-     * @param record     the ConnectRecord to process
-     * @param e          the exception thrown during the request, may be null
-     * @param attributes additional attributes to be used in processing
+     * @param httpConnectRecord the HttpConnectRecord to use
+     * @param e                 the exception thrown during the request, may be null
+     * @param attributes        additional attributes to be used in processing
      */
-    private void tryCallback(ConnectRecord record, Throwable e, Map<String, Object> attributes) {
+    private void tryCallback(HttpConnectRecord httpConnectRecord, Throwable e, Map<String, Object> attributes) {
+        // get the retry event
+        HttpRetryEvent retryEvent = getAndUpdateRetryEvent(attributes, httpConnectRecord, e);
+
+        // get the multi http request context
+        MultiHttpRequestContext multiHttpRequestContext = getAndUpdateMultiHttpRequestContext(attributes, retryEvent);
+
+
+        if (multiHttpRequestContext.getRemainingRequests() == 0) {
+            // do callback
+            ConnectRecord record = httpConnectRecord.getData();
+            if (record.getCallback() == null) {
+                if (log.isDebugEnabled()) {
+                    log.warn("ConnectRecord callback is null. Ignoring callback. {}", record);
+                } else {
+                    log.warn("ConnectRecord callback is null. Ignoring callback.");
+                }
+                return;
+            }
+
+            HttpRetryEvent lastFailedEvent = multiHttpRequestContext.getLastFailedEvent();
+            if (lastFailedEvent == null || lastFailedEvent.getLastException() == null) {
+                // success
+                record.getCallback().onSuccess(convertToSendResult(record));
+            } else {
+                // failure
+                record.getCallback().onException(buildSendExceptionContext(record, lastFailedEvent.getLastException()));
+            }
+        }
+    }
+
+
+    /**
+     * Gets and updates the multi http request context based on the provided attributes and HttpConnectRecord.
+     *
+     * @param attributes the attributes to use
+     * @param retryEvent the retry event to use
+     * @return the updated multi http request context
+     */
+    private MultiHttpRequestContext getAndUpdateMultiHttpRequestContext(Map<String, Object> attributes, HttpRetryEvent retryEvent) {
+        // get the multi http request context
+        MultiHttpRequestContext multiHttpRequestContext = (MultiHttpRequestContext) attributes.get(MultiHttpRequestContext.NAME);
+
+        if (retryEvent.getLastException() == null || retryEvent.isMaxRetriesReached()) {
+            // decrement the counter
+            multiHttpRequestContext.decrementRemainingRequests();
+
+            // try set failed event
+            if (retryEvent.getLastException() != null) {
+                multiHttpRequestContext.setLastFailedEvent(retryEvent);
+            }
+        }
+
+        return multiHttpRequestContext;
+    }
+
+    /**
+     * Gets and updates the retry event based on the provided attributes and HttpConnectRecord.
+     *
+     * @param attributes        the attributes to use
+     * @param httpConnectRecord the HttpConnectRecord to use
+     * @param e                 the exception thrown during the request, may be null
+     * @return the updated retry event
+     */
+    private HttpRetryEvent getAndUpdateRetryEvent(Map<String, Object> attributes, HttpConnectRecord httpConnectRecord, Throwable e) {
+        // get the retry event
+        HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid());
         // update the retry event
-        HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.NAME);
-        if (retryEvent != null) {
-            retryEvent.setLastException(e);
-        }
-
-        // check if the callback is null
-        if (record.getCallback() == null) {
-            return;
-        }
-
-        // If no exception, call onSuccess directly
-        if (e == null) {
-            record.getCallback().onSuccess(convertToSendResult(record));
-        } else if (retryEvent == null || retryEvent.isMaxRetriesReached()) {
-            // Determine if you need to continue retrying
-            record.getCallback().onException(buildSendExceptionContext(record, e));
-        }
+        retryEvent.setLastException(e);
+        return retryEvent;
     }
 
 
@@ -250,6 +275,4 @@ public class CommonHttpSinkHandler implements HttpSinkHandler {
             log.warn("WebClient is null, ignore.");
         }
     }
-
-
 }

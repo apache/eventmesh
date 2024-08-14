@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.handle;
+package org.apache.eventmesh.connector.http.sink.handler.impl;
 
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
@@ -26,13 +26,11 @@ import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,8 +62,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
 
-    private final SinkConnectorConfig sinkConnectorConfig;
-
     // the configuration for webhook
     private final HttpWebhookConfig webhookConfig;
 
@@ -89,7 +85,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
 
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
-        this.sinkConnectorConfig = sinkConnectorConfig;
+
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
         int maxQueueSize = this.webhookConfig.getMaxStorageSize();
         this.receivedDataQueue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
@@ -97,9 +93,6 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         doInitExportServer();
     }
 
-    public SynchronizedCircularFifoQueue<HttpExportRecord> getReceivedDataQueue() {
-        return receivedDataQueue;
-    }
 
     /**
      * Initialize the server for exporting the received data
@@ -205,22 +198,6 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         });
     }
 
-    /**
-     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
-     *
-     * @param record the ConnectRecord to process
-     */
-    @Override
-    public void handle(ConnectRecord record) {
-        for (URI url : super.getUrls()) {
-            // convert ConnectRecord to HttpConnectRecord
-            String type = String.format("%s.%s.%s", this.getConnectorConfig().getConnectorName(), url.getScheme(), "webhook");
-            HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-            // handle the HttpConnectRecord
-            deliver(url, httpConnectRecord, Collections.emptyMap());
-        }
-    }
-
 
     /**
      * Processes HttpConnectRecord on specified URL while returning its own processing logic This method sends the HttpConnectRecord to the specified
@@ -238,7 +215,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         // store the received data
         return responseFuture.onComplete(arr -> {
             // get tryEvent from attributes
-            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.NAME);
+            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid());
 
             HttpResponse<Buffer> response = null;
             if (arr.succeeded()) {
@@ -263,7 +240,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
      * @param url               the URI to which the HttpConnectRecord was sent
      * @param response          the response received from the URI
      * @param httpConnectRecord the HttpConnectRecord that was sent
-     * @param retryEvent        the HttpRetryEvent associated with the request
+     * @param retryEvent        the SingleHttpRetryEvent that was used for retries
      * @return the HttpExportMetadata object
      */
     private HttpExportMetadata buildHttpExportMetadata(URI url, HttpResponse<Buffer> response, HttpConnectRecord httpConnectRecord,
@@ -274,7 +251,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         // order of precedence: lastException > response > null
         if (retryEvent != null && retryEvent.getLastException() != null) {
             msg = retryEvent.getLimitedExceptionMessage();
-            retryEvent.clearException();
+            retryEvent.setLastException(null);
         } else if (response != null) {
             msg = response.statusMessage();
         }

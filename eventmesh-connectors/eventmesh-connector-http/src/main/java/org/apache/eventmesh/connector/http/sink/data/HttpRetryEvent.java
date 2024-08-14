@@ -18,13 +18,14 @@
 package org.apache.eventmesh.connector.http.sink.data;
 
 import lombok.Data;
-import lombok.ToString;
 
+/**
+ * Single HTTP retry event
+ */
 @Data
-@ToString
 public class HttpRetryEvent {
 
-    public static final String NAME = "http-retry-event";
+    public static final String PREFIX = "http-retry-event-";
 
     private String parentId;
 
@@ -76,10 +77,4 @@ public class HttpRetryEvent {
         return message;
     }
 
-    /**
-     * Clear the last exception
-     */
-    public void clearException() {
-        this.lastException = null;
-    }
 }
