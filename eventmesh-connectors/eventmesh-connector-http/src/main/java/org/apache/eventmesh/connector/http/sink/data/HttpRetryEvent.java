@@ -34,19 +34,34 @@ public class HttpRetryEvent {
 
     private Throwable lastException;
 
+    /**
+     * Increase the current retries by 1
+     */
     public void increaseCurrentRetries() {
         this.currentRetries++;
     }
 
+    /**
+     * Check if the current retries is greater than or equal to the max retries
+     * @return true if the current retries is greater than or equal to the max retries
+     */
     public boolean isMaxRetriesReached() {
         return this.currentRetries >= this.maxRetries;
     }
 
+    /**
+     * Get the limited exception message with the default limit of 256
+     * @return the limited exception message
+     */
     public String getLimitedExceptionMessage() {
         return getLimitedExceptionMessage(256);
     }
 
-
+    /**
+     * Get the limited exception message with the specified limit
+     * @param maxLimit the maximum limit of the exception message
+     * @return the limited exception message
+     */
     public String getLimitedExceptionMessage(int maxLimit) {
         if (lastException == null) {
             return "";
@@ -61,6 +76,9 @@ public class HttpRetryEvent {
         return message;
     }
 
+    /**
+     * Clear the last exception
+     */
     public void clearException() {
         this.lastException = null;
     }
