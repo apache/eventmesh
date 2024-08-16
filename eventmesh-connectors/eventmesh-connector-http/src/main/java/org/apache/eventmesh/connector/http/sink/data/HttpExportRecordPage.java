@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.http.sink.data;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -27,7 +28,9 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class HttpExportRecordPage {
+public class HttpExportRecordPage implements Serializable {
+
+    private static final long serialVersionUID = 1143791658357035990L;
 
     private int pageNum;
 

@@ -178,7 +178,6 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
         // get the multi http request context
         MultiHttpRequestContext multiHttpRequestContext = getAndUpdateMultiHttpRequestContext(attributes, retryEvent);
 
-
         if (multiHttpRequestContext.getRemainingRequests() == 0) {
             // do callback
             ConnectRecord record = httpConnectRecord.getData();
@@ -192,7 +191,7 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
             }
 
             HttpRetryEvent lastFailedEvent = multiHttpRequestContext.getLastFailedEvent();
-            if (lastFailedEvent == null || lastFailedEvent.getLastException() == null) {
+            if (lastFailedEvent == null) {
                 // success
                 record.getCallback().onSuccess(convertToSendResult(record));
             } else {
@@ -200,6 +199,22 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
                 record.getCallback().onException(buildSendExceptionContext(record, lastFailedEvent.getLastException()));
             }
         }
+    }
+
+    /**
+     * Gets and updates the retry event based on the provided attributes and HttpConnectRecord.
+     *
+     * @param attributes        the attributes to use
+     * @param httpConnectRecord the HttpConnectRecord to use
+     * @param e                 the exception thrown during the request, may be null
+     * @return the updated retry event
+     */
+    private HttpRetryEvent getAndUpdateRetryEvent(Map<String, Object> attributes, HttpConnectRecord httpConnectRecord, Throwable e) {
+        // get the retry event
+        HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
+        // update the retry event
+        retryEvent.setLastException(e);
+        return retryEvent;
     }
 
 
@@ -226,23 +241,6 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
 
         return multiHttpRequestContext;
     }
-
-    /**
-     * Gets and updates the retry event based on the provided attributes and HttpConnectRecord.
-     *
-     * @param attributes        the attributes to use
-     * @param httpConnectRecord the HttpConnectRecord to use
-     * @param e                 the exception thrown during the request, may be null
-     * @return the updated retry event
-     */
-    private HttpRetryEvent getAndUpdateRetryEvent(Map<String, Object> attributes, HttpConnectRecord httpConnectRecord, Throwable e) {
-        // get the retry event
-        HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid());
-        // update the retry event
-        retryEvent.setLastException(e);
-        return retryEvent;
-    }
-
 
     private SendResult convertToSendResult(ConnectRecord record) {
         SendResult result = new SendResult();

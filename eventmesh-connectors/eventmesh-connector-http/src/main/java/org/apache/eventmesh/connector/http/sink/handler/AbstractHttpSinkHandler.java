@@ -78,7 +78,7 @@ public abstract class AbstractHttpSinkHandler implements HttpSinkHandler {
             // add retry event to attributes
             HttpRetryEvent retryEvent = new HttpRetryEvent();
             retryEvent.setMaxRetries(sinkConnectorConfig.getRetryConfig().getMaxRetries());
-            attributes.put(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid(), retryEvent);
+            attributes.put(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId(), retryEvent);
 
             // deliver the record
             deliver(url, httpConnectRecord, attributes);

@@ -28,9 +28,7 @@ import org.apache.eventmesh.connector.http.util.HttpUtils;
 import java.net.ConnectException;
 import java.net.URI;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -78,8 +76,6 @@ public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
      */
     @Override
     public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes) {
-        // Only webhook mode needs to use the UUID to identify the request
-        String id = httpConnectRecord.getUuid();
 
         // Build the retry policy
         RetryPolicy<HttpResponse<Buffer>> retryPolicy = RetryPolicy.<HttpResponse<Buffer>>builder()
@@ -94,27 +90,19 @@ public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
                     log.warn("Retrying the request to {} for the {} time.", url, event.getAttemptCount());
                 }
                 // update the retry event
-                HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.remove(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid());
+                HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
                 retryEvent.increaseCurrentRetries();
-                retryEvent.setParentId(id);
-
-                // update the HttpConnectRecord
-                httpConnectRecord.setTime(LocalDateTime.now().toString());
-                httpConnectRecord.setUuid(UUID.randomUUID().toString());
-
-                // update the attributes
-                attributes.put(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid(), retryEvent);
             })
             .onFailure(event -> {
                 if (log.isDebugEnabled()) {
-                    log.error("Failed to send the request to {} after {} attempts. HttpConnectRecord= {}", url, event.getAttemptCount(),
+                    log.error("Failed to send the request to {} after {} attempts. {}", url, event.getAttemptCount(),
                         httpConnectRecord, event.getException());
                 } else {
                     log.error("Failed to send the request to {} after {} attempts.", url, event.getAttemptCount(), event.getException());
                 }
             }).build();
 
-        // Handle the HttpConnectRecord with retry
+        // Handle the ConnectRecord with retry policy
         Failsafe.with(retryPolicy)
             .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord, attributes).toCompletionStage());
 

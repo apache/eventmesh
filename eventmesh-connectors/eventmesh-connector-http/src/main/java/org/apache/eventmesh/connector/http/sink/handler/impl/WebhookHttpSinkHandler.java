@@ -215,12 +215,12 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         // store the received data
         return responseFuture.onComplete(arr -> {
             // get tryEvent from attributes
-            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getUuid());
+            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
 
             HttpResponse<Buffer> response = null;
             if (arr.succeeded()) {
                 response = arr.result();
-            } else if (retryEvent != null) {
+            } else {
                 retryEvent.setLastException(arr.cause());
             }
 
@@ -246,10 +246,9 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
     private HttpExportMetadata buildHttpExportMetadata(URI url, HttpResponse<Buffer> response, HttpConnectRecord httpConnectRecord,
         HttpRetryEvent retryEvent) {
 
-
         String msg = null;
         // order of precedence: lastException > response > null
-        if (retryEvent != null && retryEvent.getLastException() != null) {
+        if (retryEvent.getLastException() != null) {
             msg = retryEvent.getLimitedExceptionMessage();
             retryEvent.setLastException(null);
         } else if (response != null) {
@@ -261,9 +260,9 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             .code(response != null ? response.statusCode() : -1)
             .message(msg)
             .receivedTime(LocalDateTime.now())
-            .retriedBy(retryEvent != null ? retryEvent.getParentId() : null)
-            .uuid(httpConnectRecord.getUuid())
-            .retryNum(retryEvent != null ? retryEvent.getCurrentRetries() : 0)
+            .httpRecordId(httpConnectRecord.getHttpRecordId())
+            .recordId(httpConnectRecord.getData().getRecordId())
+            .retryNum(retryEvent.getCurrentRetries())
             .build();
     }
 
