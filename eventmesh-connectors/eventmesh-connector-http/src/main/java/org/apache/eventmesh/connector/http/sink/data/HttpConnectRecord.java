@@ -20,30 +20,59 @@ package org.apache.eventmesh.connector.http.sink.data;
 import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 /**
  * a special ConnectRecord for HttpSinkConnector
  */
-@Data
+@Getter
 @Builder
-public class HttpConnectRecord {
+public class HttpConnectRecord implements Serializable {
 
+    private static final long serialVersionUID = 5271462532332251473L;
+
+    /**
+     * The unique identifier for the HttpConnectRecord
+     */
+    private final String httpRecordId = UUID.randomUUID().toString();
+
+    /**
+     * The time when the HttpConnectRecord was created
+     */
+    private LocalDateTime createTime;
+
+    /**
+     * The type of the HttpConnectRecord
+     */
     private String type;
 
-    private String time;
-
-    private String uuid;
-
+    /**
+     * The event id of the HttpConnectRecord
+     */
     private String eventId;
 
+    /**
+     * The ConnectRecord to be sent
+     */
     private ConnectRecord data;
+
+    @Override
+    public String toString() {
+        return "HttpConnectRecord{"
+            + "createTime=" + createTime
+            + ", httpRecordId='" + httpRecordId
+            + ", type='" + type
+            + ", eventId='" + eventId
+            + ", data=" + data
+            + '}';
+    }
 
     /**
      * Convert ConnectRecord to HttpConnectRecord
@@ -62,11 +91,8 @@ public class HttpConnectRecord {
         }
         return HttpConnectRecord.builder()
             .type(type)
-            .time(LocalDateTime.now().toString())
-            .uuid(UUID.randomUUID().toString())
             .eventId(type + "-" + offset)
             .data(record)
             .build();
     }
-
 }

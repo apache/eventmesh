@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.http.sink.data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import lombok.Builder;
@@ -27,7 +28,10 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class HttpExportMetadata {
+public class HttpExportMetadata implements Serializable {
+
+    private static final long serialVersionUID = 1121010466793041920L;
+
     private String url;
 
     private int code;
@@ -36,7 +40,9 @@ public class HttpExportMetadata {
 
     private LocalDateTime receivedTime;
 
-    private String uuid;
+    private String httpRecordId;
+
+    private String recordId;
 
     private String retriedBy;
 
