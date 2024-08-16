@@ -86,7 +86,7 @@ public class HttpSinkConnectorTest {
                     JSONObject requestBody = JSON.parseObject(httpRequest.getBodyAsString());
                     return HttpResponse.response()
                         .withContentType(MediaType.APPLICATION_JSON)
-                        .withStatusCode(200)
+                        .withStatusCode(HttpStatus.SC_OK)
                         .withBody(new JSONObject()
                             .fluentPut("code", 0)
                             .fluentPut("message", "success")
