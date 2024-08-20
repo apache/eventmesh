@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.common.remote.request;
 
+import org.apache.eventmesh.common.remote.JobState;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.apache.eventmesh.common.remote.JobState;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
