@@ -17,19 +17,23 @@
 
 package org.apache.eventmesh.admin.server.web.handler.impl;
 
+import org.apache.eventmesh.admin.server.AdminServerProperties;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
+import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
 import org.apache.eventmesh.admin.server.web.service.verify.VerifyBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
 import org.apache.eventmesh.common.remote.response.SimpleResponse;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestTemplate;
+import java.util.List;
+import java.util.Random;
 
 @Component
 @Slf4j
@@ -37,13 +41,45 @@ public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest,
     @Autowired
     private VerifyBizService verifyService;
 
+    @Autowired
+    JobInfoBizService jobInfoBizService;
+
+    @Autowired
+    private AdminServerProperties properties;
+
     @Override
     protected SimpleResponse handler(ReportVerifyRequest request, Metadata metadata) {
-        if (StringUtils.isAnyBlank(request.getTaskID(), request.getRecordSig(), request.getRecordID(), request.getConnectorStage())) {
+        if (StringUtils.isAnyBlank(request.getTaskID(), request.getJobID(), request.getRecordSig(), request.getRecordID(), request.getConnectorStage())) {
             log.info("report verify request [{}] illegal", request);
-            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id, sign, record id or stage is none");
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id,job id, sign, record id or stage is none");
         }
-        return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify "
-                + "request fail");
+
+        String jobID = request.getJobID();
+        EventMeshJobInfo jobInfo = jobInfoBizService.getJobInfo(jobID);
+        if (jobInfo == null || StringUtils.isBlank(jobInfo.getFromRegion())) {
+            log.info("report verify job info [{}] illegal", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "job info is null or fromRegion is blank,job id:" + jobID);
+        }
+
+        String fromRegion = jobInfo.getFromRegion();
+        String localRegion = properties.getRegion();
+        log.info("report verify request from region:{},localRegion:{},request:{}", fromRegion, localRegion, request);
+        if(fromRegion.equalsIgnoreCase(localRegion)){
+            return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify "
+                    + "request fail");
+        } else {
+            log.info("start transfer report verify to from region admin server. from region:{}", fromRegion);
+            List<String> adminServerList = properties.getAdminServerList().get(fromRegion);
+            if (adminServerList == null || adminServerList.isEmpty()) {
+                throw new RuntimeException("No admin server available for region: " + fromRegion);
+            }
+            String targetUrl = adminServerList.get(new Random().nextInt(adminServerList.size())) + "/eventmesh/admin/reportVerify";
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, request, String.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                return SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify request fail,code:" + response.getStatusCode() + ",msg:" + response.getBody());
+            }
+            return SimpleResponse.success();
+        }
     }
 }

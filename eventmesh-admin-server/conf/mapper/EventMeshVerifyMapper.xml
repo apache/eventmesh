@@ -26,6 +26,7 @@
     <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshVerify">
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="taskID" column="taskID" jdbcType="VARCHAR"/>
+            <result property="jobID" column="jobID" jdbcType="VARCHAR"/>
             <result property="recordID" column="recordID" jdbcType="VARCHAR"/>
             <result property="recordSig" column="recordSig" jdbcType="VARCHAR"/>
             <result property="connectorName" column="connectorName" jdbcType="VARCHAR"/>
@@ -35,7 +36,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,taskID,recordID,
+        id,taskID,jobID,recordID,
         recordSig,connectorName,connectorStage,
         position,createTime
     </sql>

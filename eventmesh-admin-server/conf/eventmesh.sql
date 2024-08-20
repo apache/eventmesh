@@ -102,7 +102,6 @@ CREATE TABLE IF NOT EXISTS `event_mesh_runtime_heartbeat` (
   `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `runtimeAddr` (`runtimeAddr`),
   KEY `jobID` (`jobID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -137,6 +136,7 @@ CREATE TABLE IF NOT EXISTS `event_mesh_task_info` (
 CREATE TABLE IF NOT EXISTS `event_mesh_verify` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `taskID` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `jobID` varchar(50) COLLATE utf8_bin DEFAULT NULL,
   `recordID` varchar(50) COLLATE utf8_bin DEFAULT NULL,
   `recordSig` varchar(50) COLLATE utf8_bin DEFAULT NULL,
   `connectorName` varchar(200) COLLATE utf8_bin DEFAULT NULL,

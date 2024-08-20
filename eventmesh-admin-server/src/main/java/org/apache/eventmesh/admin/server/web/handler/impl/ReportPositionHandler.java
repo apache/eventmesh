@@ -48,6 +48,7 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
 
     @Override
     protected SimpleResponse handler(ReportPositionRequest request, Metadata metadata) {
+        log.info("receive report position request:{}", request);
         if (StringUtils.isBlank(request.getJobID())) {
             log.info("request [{}] illegal job id", request);
             return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");

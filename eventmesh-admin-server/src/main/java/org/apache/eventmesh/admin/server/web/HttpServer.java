@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.admin.server.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.admin.server.web.service.task.TaskBizService;
+import org.apache.eventmesh.admin.server.web.service.verify.VerifyBizService;
 import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
+import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
 import org.apache.eventmesh.common.remote.response.CreateTaskResponse;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
@@ -31,15 +34,34 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/eventmesh/admin")
+@Slf4j
 public class HttpServer {
 
     @Autowired
     private TaskBizService taskService;
 
+    @Autowired
+    private VerifyBizService verifyService;
+
     @RequestMapping(value = "/createTask", method = RequestMethod.POST)
     public ResponseEntity<Object> createOrUpdateTask(@RequestBody CreateTaskRequest task) {
+        log.info("receive http proto create task:{}",task);
         CreateTaskResponse createTaskResponse = taskService.createTask(task);
+        log.info("receive http proto create task result:{}",createTaskResponse);
         return ResponseEntity.ok(JsonUtils.toJSONString(Response.success(createTaskResponse)));
+    }
+
+
+    @RequestMapping(value = "/reportVerify", method = RequestMethod.POST)
+    public ResponseEntity<Object> reportVerify(@RequestBody ReportVerifyRequest request) {
+        log.info("receive http proto report verify request:{}", request);
+        boolean result = verifyService.reportVerifyRecord(request);
+        log.info("receive http proto report verify result:{}", result);
+        if (result) {
+            return ResponseEntity.ok("report verify success.request:" + JsonUtils.toJSONString(request));
+        } else {
+            return ResponseEntity.internalServerError().body("report verify success.request:" + JsonUtils.toJSONString(request));
+        }
     }
 
     public boolean deleteTask(Long id) {
