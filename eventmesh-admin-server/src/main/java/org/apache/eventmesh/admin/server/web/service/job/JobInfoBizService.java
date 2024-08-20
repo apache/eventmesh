@@ -39,18 +39,24 @@ import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.CreateOrUpdateDataSourceReq;
 import org.apache.eventmesh.common.utils.JsonUtils;
+
 import org.apache.commons.lang3.StringUtils;
+
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+
 import lombok.extern.slf4j.Slf4j;
-import javax.annotation.PostConstruct;
 
 /**
  * for table 'event_mesh_job_info' db operation
@@ -166,7 +172,7 @@ public class JobInfoBizService {
         int changed = jobInfoExtService.batchSave(entityList);
         if (changed != jobs.size()) {
             throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of not match expect [%d]",
-                    changed, jobs.size()));
+                changed, jobs.size()));
         }
         return entityList;
     }
@@ -200,7 +206,7 @@ public class JobInfoBizService {
             detail.setSourceConnectorDesc(source.getDescription());
             if (source.getDataType() != null) {
                 detail.setPositions(positionBizService.getPositionByJobID(job.getJobID(),
-                        DataSourceType.getDataSourceType(source.getDataType())));
+                    DataSourceType.getDataSourceType(source.getDataType())));
 
             }
         }
@@ -251,7 +257,8 @@ public class JobInfoBizService {
             // if last heart beat update time have delay three period.print job heart beat delay warn
             long currentTimeStamp = System.currentTimeMillis();
             if (currentTimeStamp - heartbeat.getUpdateTime().getTime() > 3 * heatBeatPeriod) {
-                log.warn("current job heart heart has delay.jobID:{},currentTimeStamp:{},last update time:{}", jobID, currentTimeStamp, heartbeat.getUpdateTime());
+                log.warn("current job heart heart has delay.jobID:{},currentTimeStamp:{},last update time:{}", jobID, currentTimeStamp,
+                    heartbeat.getUpdateTime());
             }
         }
     }

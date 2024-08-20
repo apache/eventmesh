@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.admin.server.web.service.position.impl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshPositionReporterHistoryService;
 import org.apache.eventmesh.admin.server.web.service.position.PositionHandler;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
@@ -25,14 +24,19 @@ import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
 public class HttpPositionHandler extends PositionHandler {
+
     @Autowired
     EventMeshPositionReporterHistoryService historyService;
 

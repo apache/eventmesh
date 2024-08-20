@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class VerifyBizService {
+
     @Autowired
     private EventMeshVerifyService verifyService;
 

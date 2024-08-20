@@ -26,18 +26,23 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
 import org.apache.eventmesh.common.remote.response.SimpleResponse;
+
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
-import java.util.List;
-import java.util.Random;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
 public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest, SimpleResponse> {
+
     @Autowired
     private VerifyBizService verifyService;
 
@@ -49,7 +54,8 @@ public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest,
 
     @Override
     protected SimpleResponse handler(ReportVerifyRequest request, Metadata metadata) {
-        if (StringUtils.isAnyBlank(request.getTaskID(), request.getJobID(), request.getRecordSig(), request.getRecordID(), request.getConnectorStage())) {
+        if (StringUtils.isAnyBlank(request.getTaskID(), request.getJobID(), request.getRecordSig(), request.getRecordID(),
+            request.getConnectorStage())) {
             log.info("report verify request [{}] illegal", request);
             return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id,job id, sign, record id or stage is none");
         }
@@ -64,9 +70,9 @@ public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest,
         String fromRegion = jobInfo.getFromRegion();
         String localRegion = properties.getRegion();
         log.info("report verify request from region:{},localRegion:{},request:{}", fromRegion, localRegion, request);
-        if(fromRegion.equalsIgnoreCase(localRegion)){
+        if (fromRegion.equalsIgnoreCase(localRegion)) {
             return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify "
-                    + "request fail");
+                + "request fail");
         } else {
             log.info("start transfer report verify to from region admin server. from region:{}", fromRegion);
             List<String> adminServerList = properties.getAdminServerList().get(fromRegion);
@@ -77,7 +83,8 @@ public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest,
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, request, String.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
-                return SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify request fail,code:" + response.getStatusCode() + ",msg:" + response.getBody());
+                return SimpleResponse.fail(ErrorCode.INTERNAL_ERR,
+                    "save verify request fail,code:" + response.getStatusCode() + ",msg:" + response.getBody());
             }
             return SimpleResponse.success();
         }

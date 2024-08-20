@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.admin.server.web;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.admin.server.web.service.task.TaskBizService;
 import org.apache.eventmesh.admin.server.web.service.verify.VerifyBizService;
 import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
@@ -32,6 +31,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/eventmesh/admin")
 @Slf4j
@@ -45,9 +46,9 @@ public class HttpServer {
 
     @RequestMapping(value = "/createTask", method = RequestMethod.POST)
     public ResponseEntity<Object> createOrUpdateTask(@RequestBody CreateTaskRequest task) {
-        log.info("receive http proto create task:{}",task);
+        log.info("receive http proto create task:{}", task);
         CreateTaskResponse createTaskResponse = taskService.createTask(task);
-        log.info("receive http proto create task result:{}",createTaskResponse);
+        log.info("receive http proto create task result:{}", createTaskResponse);
         return ResponseEntity.ok(JsonUtils.toJSONString(Response.success(createTaskResponse)));
     }
 

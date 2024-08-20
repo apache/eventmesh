@@ -35,6 +35,7 @@ public enum TransportType {
     HTTP_REDIS(DataSourceType.HTTP, DataSourceType.REDIS),
     HTTP_ROCKETMQ(DataSourceType.HTTP, DataSourceType.ROCKETMQ),
     REDIS_MQ(DataSourceType.REDIS, DataSourceType.ROCKETMQ),
+    HTTP_HTTP(DataSourceType.HTTP, DataSourceType.HTTP),
     ;
     private static final Map<String, TransportType> INDEX_TYPES = new HashMap<>();
     private static final TransportType[] TYPES = TransportType.values();

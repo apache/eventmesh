@@ -17,16 +17,17 @@
 
 package org.apache.eventmesh.common.remote;
 
-import lombok.ToString;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import lombok.ToString;
 
 @ToString
 public enum JobState {
     INIT, RUNNING, COMPLETE, DELETE, FAIL;
     private static final JobState[] STATES_NUM_INDEX = JobState.values();
     private static final Map<String, JobState> STATES_NAME_INDEX = new HashMap<>();
+
     static {
         for (JobState jobState : STATES_NUM_INDEX) {
             STATES_NAME_INDEX.put(jobState.name(), jobState);

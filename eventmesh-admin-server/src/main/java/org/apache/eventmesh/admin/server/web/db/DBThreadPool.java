@@ -42,8 +42,8 @@ public class DBThreadPool {
 
 
     private final ScheduledThreadPoolExecutor checkScheduledExecutor =
-            new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new EventMeshThreadFactory("admin-server-check-scheduled"),
-                    new ThreadPoolExecutor.DiscardOldestPolicy());
+        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new EventMeshThreadFactory("admin-server-check-scheduled"),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
 
     @PreDestroy
     private void destroy() {

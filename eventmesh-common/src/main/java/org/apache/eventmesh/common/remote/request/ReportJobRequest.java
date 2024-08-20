@@ -15,42 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.entity;
-
-import java.io.Serializable;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+package org.apache.eventmesh.common.remote.request;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.apache.eventmesh.common.remote.JobState;
 
-/**
- * TableName event_mesh_verify
- */
-@TableName(value = "event_mesh_verify")
 @Data
-public class EventMeshVerify implements Serializable {
-
-    @TableId(type = IdType.AUTO)
-    private Integer id;
-
-    private String taskID;
+@EqualsAndHashCode(callSuper = true)
+@ToString
+public class ReportJobRequest extends BaseRemoteRequest {
 
     private String jobID;
 
-    private String recordID;
+    private JobState state;
 
-    private String recordSig;
+    private String address;
 
-    private String connectorName;
-
-    private String connectorStage;
-
-    private String position;
-
-    private Date createTime;
-
-    private static final long serialVersionUID = 1L;
 }
