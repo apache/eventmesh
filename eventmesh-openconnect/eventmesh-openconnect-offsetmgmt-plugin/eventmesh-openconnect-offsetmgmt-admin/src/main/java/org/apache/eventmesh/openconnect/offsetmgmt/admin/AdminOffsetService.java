@@ -112,6 +112,8 @@ public class AdminOffsetService implements OffsetManagementService {
 
         reportPositionRequest.setRecordPositionList(recordToSyncList);
 
+        log.debug("start report position request: {}", JsonUtils.toJSONString(reportPositionRequest));
+
         Metadata metadata = Metadata.newBuilder()
             .setType(ReportPositionRequest.class.getSimpleName())
             .build();
@@ -121,6 +123,7 @@ public class AdminOffsetService implements OffsetManagementService {
                 .build())
             .build();
         requestObserver.onNext(payload);
+        log.debug("end report position request: {}", JsonUtils.toJSONString(reportPositionRequest));
 
         for (Map.Entry<RecordPartition, RecordOffset> entry : recordMap.entrySet()) {
             positionStore.remove(entry.getKey());

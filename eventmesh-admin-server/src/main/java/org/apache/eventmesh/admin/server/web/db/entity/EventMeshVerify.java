@@ -32,10 +32,13 @@ import lombok.Data;
 @TableName(value = "event_mesh_verify")
 @Data
 public class EventMeshVerify implements Serializable {
+
     @TableId(type = IdType.AUTO)
     private Integer id;
 
     private String taskID;
+
+    private String jobID;
 
     private String recordID;
 
