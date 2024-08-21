@@ -18,12 +18,14 @@
 package org.apache.eventmesh.connector.canal.sink.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.Constants;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLColumnDef;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLTableDef;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.remote.offset.canal.CanalFullRecordOffset;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.SqlUtils;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
@@ -31,7 +33,10 @@ import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,11 +52,13 @@ import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink> {
+
     private CanalSinkFullConfig config;
     private RdbTableMgr tableMgr;
     private final DateTimeFormatter dataTimePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
@@ -84,19 +91,21 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        this.config = (CanalSinkFullConfig) ((SinkConnectorContext) connectorContext).getSinkConfig();
+        SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
+        CanalSinkConfig canalSinkConfig = (CanalSinkConfig) sinkConnectorContext.getSinkConfig();
+        this.config = ConfigUtil.parse(canalSinkConfig.getSinkConfig(), CanalSinkFullConfig.class);
         init();
     }
 
     private void init() {
-        if (config.getSinkConfig() == null) {
+        if (config.getSinkConnectorConfig() == null) {
             throw new EventMeshException(String.format("[%s] sink config is null", this.getClass()));
         }
-        DatabaseConnection.sinkConfig = this.config.getSinkConfig();
+        DatabaseConnection.sinkConfig = this.config.getSinkConnectorConfig();
         DatabaseConnection.initSinkConnection();
         DatabaseConnection.sinkDataSource.setDefaultAutoCommit(false);
 
-        tableMgr = new RdbTableMgr(this.config.getSinkConfig(), DatabaseConnection.sinkDataSource);
+        tableMgr = new RdbTableMgr(this.config.getSinkConnectorConfig(), DatabaseConnection.sinkDataSource);
     }
 
     @Override
@@ -123,7 +132,9 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             return;
         }
         ConnectRecord record = sinkRecords.get(0);
-        List<Map<String, Object>> data = (List<Map<String, Object>>) record.getData();
+        List<Map<String, Object>> data =
+            JsonUtils.parseTypeReferenceObject((byte[]) record.getData(), new TypeReference<List<Map<String, Object>>>() {
+            });
         if (data == null || data.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("[{}] got rows data is none", this.getClass());
@@ -159,13 +170,16 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
             }
             statement.executeBatch();
             connection.commit();
+            record.getCallback().onSuccess(convertToSendResult(record));
         } catch (SQLException e) {
             log.warn("full sink process schema [{}] table [{}] connector write fail", tableDefinition.getSchemaName(), tableDefinition.getTableName(),
                 e);
             LockSupport.parkNanos(3000 * 1000L);
+            record.getCallback().onException(buildSendExceptionContext(record, e));
         } catch (Exception e) {
             log.error("full sink process schema [{}] table [{}] catch unknown exception", tableDefinition.getSchemaName(),
                 tableDefinition.getTableName(), e);
+            record.getCallback().onException(buildSendExceptionContext(record, e));
             try {
                 if (connection != null && !connection.isClosed()) {
                     connection.rollback();
@@ -191,6 +205,25 @@ public class CanalSinkFullConnector implements Sink, ConnectorCreateService<Sink
                 }
             }
         }
+    }
+
+    private SendExceptionContext buildSendExceptionContext(ConnectRecord record, Throwable e) {
+        SendExceptionContext sendExceptionContext = new SendExceptionContext();
+        sendExceptionContext.setMessageId(record.getRecordId());
+        sendExceptionContext.setCause(e);
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            sendExceptionContext.setTopic(record.getExtension("topic"));
+        }
+        return sendExceptionContext;
+    }
+
+    private SendResult convertToSendResult(ConnectRecord record) {
+        SendResult result = new SendResult();
+        result.setMessageId(record.getRecordId());
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(record.getExtension("topic"))) {
+            result.setTopic(record.getExtension("topic"));
+        }
+        return result;
     }
 
     private void setPrepareParams(PreparedStatement preparedStatement, Map<String, Object> col, List<MySQLColumnDef> columnDefs) throws Exception {

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.http.sink.handler;
 
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.sink.data.MultiHttpRequestContext;
@@ -81,7 +81,7 @@ public abstract class AbstractHttpSinkHandler implements HttpSinkHandler {
             attributes.put(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId(), retryEvent);
 
             // deliver the record
-            deliver(url, httpConnectRecord, attributes);
+            deliver(url, httpConnectRecord, attributes, record);
         }
     }
 

@@ -15,21 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config.connector.rdb.canal;
-
-import org.apache.eventmesh.common.config.connector.SourceConfig;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
-
-import java.util.List;
+package org.apache.eventmesh.common.config.connector.http;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class CanalSourceFullConfig extends SourceConfig {
-    private SourceConnectorConfig sourceConnectorConfig;
-    private List<RecordPosition> startPosition;
-    private int parallel;
-    private int flushSize;
+public class HttpWebhookConfig {
+
+    private boolean activate = false;
+
+    // Path to display/export callback data
+    private String exportPath = "/export";
+
+    private int port;
+
+    // timeunit: ms
+    private int serverIdleTimeout = 5000;
+
+    // max size of the storage queue
+    private int maxStorageSize = 5000;
 }

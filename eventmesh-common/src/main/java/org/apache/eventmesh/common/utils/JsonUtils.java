@@ -58,6 +58,10 @@ public class JsonUtils {
         return OBJECT_MAPPER.convertValue(fromValue, toValueType);
     }
 
+    public static <T> T convertValue(Object fromValue, TypeReference<T> toValueTypeRef) {
+        return OBJECT_MAPPER.convertValue(fromValue, toValueTypeRef);
+    }
+
     public static <T> T mapToObject(Map<String, Object> map, Class<T> beanClass) {
         if (map == null) {
             return null;
@@ -175,6 +179,13 @@ public class JsonUtils {
         } catch (JsonProcessingException e) {
             throw new JsonException("deserialize json string to typeReference error", e);
         }
+    }
+
+    public static <T> T parseTypeReferenceObject(Object object, TypeReference<T> typeReference) {
+        if (object == null) {
+            return null;
+        }
+        return convertValue(object, typeReference);
     }
 
     public static <T> T parseTypeReferenceObject(byte[] text, TypeReference<T> typeReference) {

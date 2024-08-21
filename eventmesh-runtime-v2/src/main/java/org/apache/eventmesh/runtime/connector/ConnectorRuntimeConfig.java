@@ -18,7 +18,10 @@
 package org.apache.eventmesh.runtime.connector;
 
 import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Data;

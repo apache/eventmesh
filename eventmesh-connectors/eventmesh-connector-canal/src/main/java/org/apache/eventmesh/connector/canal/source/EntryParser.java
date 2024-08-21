@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.canal.source;
 
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceIncrementConfig;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.model.EventColumn;
 import org.apache.eventmesh.connector.canal.model.EventColumnIndexComparable;
@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntryParser {
 
-    public static Map<Long, List<CanalConnectRecord>> parse(CanalSourceConfig sourceConfig, List<Entry> datas,
+    public static Map<Long, List<CanalConnectRecord>> parse(CanalSourceIncrementConfig sourceConfig, List<Entry> datas,
         RdbTableMgr tables) {
         List<CanalConnectRecord> recordList = new ArrayList<>();
         List<Entry> transactionDataBuffer = new ArrayList<>();
@@ -90,12 +90,12 @@ public class EntryParser {
         return recordMap;
     }
 
-    private static boolean checkGtidForEntry(Entry entry, CanalSourceConfig sourceConfig) {
+    private static boolean checkGtidForEntry(Entry entry, CanalSourceIncrementConfig sourceConfig) {
         String currentGtid = entry.getHeader().getPropsList().get(0).getValue();
         return currentGtid.contains(sourceConfig.getServerUUID());
     }
 
-    private static void parseRecordListWithEntryBuffer(CanalSourceConfig sourceConfig,
+    private static void parseRecordListWithEntryBuffer(CanalSourceIncrementConfig sourceConfig,
         List<CanalConnectRecord> recordList,
         List<Entry> transactionDataBuffer, RdbTableMgr tables) {
         for (Entry bufferEntry : transactionDataBuffer) {
@@ -115,13 +115,13 @@ public class EntryParser {
         }
     }
 
-    private static boolean checkNeedSync(CanalSourceConfig sourceConfig, RowChange rowChange) {
+    private static boolean checkNeedSync(CanalSourceIncrementConfig sourceConfig, RowChange rowChange) {
         Column markedColumn = null;
         CanalEntry.EventType eventType = rowChange.getEventType();
-        if (eventType.equals(CanalEntry.EventType.DELETE) || eventType.equals(CanalEntry.EventType.UPDATE)) {
+        if (eventType.equals(CanalEntry.EventType.DELETE)) {
             markedColumn = getColumnIgnoreCase(rowChange.getRowDatas(0).getBeforeColumnsList(),
                 sourceConfig.getNeedSyncMarkTableColumnName());
-        } else if (eventType.equals(CanalEntry.EventType.INSERT)) {
+        } else if (eventType.equals(CanalEntry.EventType.INSERT) || eventType.equals(CanalEntry.EventType.UPDATE)) {
             markedColumn = getColumnIgnoreCase(rowChange.getRowDatas(0).getAfterColumnsList(),
                 sourceConfig.getNeedSyncMarkTableColumnName());
         }
@@ -141,7 +141,7 @@ public class EntryParser {
         return null;
     }
 
-    private static List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry,
+    private static List<CanalConnectRecord> internParse(CanalSourceIncrementConfig sourceConfig, Entry entry,
         RdbTableMgr tableMgr) {
         String schemaName = entry.getHeader().getSchemaName();
         String tableName = entry.getHeader().getTableName();
@@ -180,7 +180,7 @@ public class EntryParser {
         return recordList;
     }
 
-    private static CanalConnectRecord internParse(CanalSourceConfig canalSourceConfig, Entry entry,
+    private static CanalConnectRecord internParse(CanalSourceIncrementConfig canalSourceConfig, Entry entry,
         RowChange rowChange, RowData rowData) {
         CanalConnectRecord canalConnectRecord = new CanalConnectRecord();
         canalConnectRecord.setTableName(entry.getHeader().getTableName());

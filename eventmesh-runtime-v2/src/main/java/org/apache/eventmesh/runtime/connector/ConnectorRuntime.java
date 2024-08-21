@@ -31,8 +31,10 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.Ad
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
+import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
+import org.apache.eventmesh.common.remote.request.ReportJobRequest;
 import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
 import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -129,9 +131,13 @@ public class ConnectorRuntime implements Runtime {
 
     private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
 
+    private final ExecutorService reportVerifyExecutor = Executors.newSingleThreadExecutor();
+
     private final BlockingQueue<ConnectRecord> queue;
 
     private volatile boolean isRunning = false;
+
+    private volatile boolean isFailed = false;
 
     public static final String CALLBACK_EXTENSION = "callBackExtension";
 
@@ -207,6 +213,8 @@ public class ConnectorRuntime implements Runtime {
         FetchJobResponse jobResponse = fetchJobConfig();
 
         if (jobResponse == null) {
+            isFailed = true;
+            stop();
             throw new RuntimeException("fetch job config fail");
         }
 
@@ -245,6 +253,7 @@ public class ConnectorRuntime implements Runtime {
         SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
         sourceConnectorContext.setSourceConfig(sourceConfig);
         sourceConnectorContext.setRuntimeConfig(connectorRuntimeConfig.getRuntimeConfig());
+        sourceConnectorContext.setJobType(jobResponse.getType());
         sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
         if (CollectionUtils.isNotEmpty(jobResponse.getPosition())) {
             sourceConnectorContext.setRecordPositionList(jobResponse.getPosition());
@@ -258,7 +267,11 @@ public class ConnectorRuntime implements Runtime {
         SinkConfig sinkConfig = (SinkConfig) ConfigUtil.parse(connectorRuntimeConfig.getSinkConnectorConfig(), sinkConnector.configClass());
         SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
         sinkConnectorContext.setSinkConfig(sinkConfig);
+        sinkConnectorContext.setRuntimeConfig(connectorRuntimeConfig.getRuntimeConfig());
+        sinkConnectorContext.setJobType(jobResponse.getType());
         sinkConnector.init(sinkConnectorContext);
+
+        reportJobRequest(connectorRuntimeConfig.getJobID(), JobState.INIT);
 
     }
 
@@ -306,6 +319,7 @@ public class ConnectorRuntime implements Runtime {
             try {
                 startSinkConnector();
             } catch (Exception e) {
+                isFailed = true;
                 log.error("sink connector [{}] start fail", sinkConnector.name(), e);
                 try {
                     this.stop();
@@ -320,6 +334,7 @@ public class ConnectorRuntime implements Runtime {
             try {
                 startSourceConnector();
             } catch (Exception e) {
+                isFailed = true;
                 log.error("source connector [{}] start fail", sourceConnector.name(), e);
                 try {
                     this.stop();
@@ -329,15 +344,25 @@ public class ConnectorRuntime implements Runtime {
                 throw new RuntimeException(e);
             }
         });
+
+        reportJobRequest(connectorRuntimeConfig.getJobID(), JobState.RUNNING);
     }
 
     @Override
     public void stop() throws Exception {
+        log.info("ConnectorRuntime start stop");
+        isRunning = false;
+        if (isFailed) {
+            reportJobRequest(connectorRuntimeConfig.getJobID(), JobState.FAIL);
+        } else {
+            reportJobRequest(connectorRuntimeConfig.getJobID(), JobState.COMPLETE);
+        }
         sourceConnector.stop();
         sinkConnector.stop();
         sourceService.shutdown();
         sinkService.shutdown();
         heartBeatExecutor.shutdown();
+        reportVerifyExecutor.shutdown();
         requestObserver.onCompleted();
         if (channel != null && !channel.isShutdown()) {
             channel.shutdown();
@@ -351,6 +376,10 @@ public class ConnectorRuntime implements Runtime {
             // TODO: use producer pub record to storage replace below
             if (connectorRecordList != null && !connectorRecordList.isEmpty()) {
                 for (ConnectRecord record : connectorRecordList) {
+                    // check recordUniqueId
+                    if (record.getExtensions() == null || !record.getExtensions().containsKey("recordUniqueId")) {
+                        record.addExtension("recordUniqueId", record.getRecordId());
+                    }
 
                     queue.put(record);
 
@@ -364,10 +393,18 @@ public class ConnectorRuntime implements Runtime {
                     record.setCallback(new SendMessageCallback() {
                         @Override
                         public void onSuccess(SendResult result) {
+                            log.debug("send record to sink callback success, record: {}", record);
                             // commit record
                             sourceConnector.commit(record);
-                            Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
-                            submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                            if (record.getPosition() != null) {
+                                Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
+                                submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                                log.debug("start wait all messages to commit");
+                                offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
+                                // update & commit offset
+                                updateCommittableOffsets();
+                                commitOffsets();
+                            }
                             Optional<SendMessageCallback> callback =
                                 Optional.ofNullable(record.getExtensionObj(CALLBACK_EXTENSION)).map(v -> (SendMessageCallback) v);
                             callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(record)));
@@ -375,6 +412,7 @@ public class ConnectorRuntime implements Runtime {
 
                         @Override
                         public void onException(SendExceptionContext sendExceptionContext) {
+                            isFailed = true;
                             // handle exception
                             sourceConnector.onException(record);
                             log.error("send record to sink callback exception, process will shut down, record: {}", record,
@@ -386,11 +424,6 @@ public class ConnectorRuntime implements Runtime {
                             }
                         }
                     });
-
-                    offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
-                    // update & commit offset
-                    updateCommittableOffsets();
-                    commitOffsets();
                 }
             }
         }
@@ -406,24 +439,48 @@ public class ConnectorRuntime implements Runtime {
     }
 
     private void reportVerifyRequest(ConnectRecord record, ConnectorRuntimeConfig connectorRuntimeConfig, ConnectorStage connectorStage) {
-        String md5Str = md5(record.toString());
-        ReportVerifyRequest reportVerifyRequest = new ReportVerifyRequest();
-        reportVerifyRequest.setTaskID(connectorRuntimeConfig.getTaskID());
-        reportVerifyRequest.setRecordID(record.getRecordId());
-        reportVerifyRequest.setRecordSig(md5Str);
-        reportVerifyRequest.setConnectorName(
-            IPUtils.getLocalAddress() + "_" + connectorRuntimeConfig.getJobID() + "_" + connectorRuntimeConfig.getRegion());
-        reportVerifyRequest.setConnectorStage(connectorStage.name());
-        reportVerifyRequest.setPosition(JsonUtils.toJSONString(record.getPosition()));
+        reportVerifyExecutor.submit(() -> {
+            try {
+                // use record data + recordUniqueId for md5
+                String md5Str = md5(record.getData().toString() + record.getExtension("recordUniqueId"));
+                ReportVerifyRequest reportVerifyRequest = new ReportVerifyRequest();
+                reportVerifyRequest.setTaskID(connectorRuntimeConfig.getTaskID());
+                reportVerifyRequest.setJobID(connectorRuntimeConfig.getJobID());
+                reportVerifyRequest.setRecordID(record.getRecordId());
+                reportVerifyRequest.setRecordSig(md5Str);
+                reportVerifyRequest.setConnectorName(
+                    IPUtils.getLocalAddress() + "_" + connectorRuntimeConfig.getJobID() + "_" + connectorRuntimeConfig.getRegion());
+                reportVerifyRequest.setConnectorStage(connectorStage.name());
+                reportVerifyRequest.setPosition(JsonUtils.toJSONString(record.getPosition()));
 
-        Metadata metadata = Metadata.newBuilder().setType(ReportVerifyRequest.class.getSimpleName()).build();
+                Metadata metadata = Metadata.newBuilder().setType(ReportVerifyRequest.class.getSimpleName()).build();
 
-        Payload request = Payload.newBuilder().setMetadata(metadata)
-            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportVerifyRequest))))
+                Payload request = Payload.newBuilder().setMetadata(metadata)
+                    .setBody(
+                        Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportVerifyRequest))))
+                            .build())
+                    .build();
+
+                requestObserver.onNext(request);
+            } catch (Exception e) {
+                log.error("Failed to report verify request", e);
+            }
+        });
+    }
+
+    private void reportJobRequest(String jobId, JobState jobState) throws InterruptedException {
+        ReportJobRequest reportJobRequest = new ReportJobRequest();
+        reportJobRequest.setJobID(jobId);
+        reportJobRequest.setState(jobState);
+        Metadata metadata = Metadata.newBuilder()
+            .setType(ReportJobRequest.class.getSimpleName())
+            .build();
+        Payload payload = Payload.newBuilder()
+            .setMetadata(metadata)
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportJobRequest))))
                 .build())
             .build();
-
-        requestObserver.onNext(request);
+        requestObserver.onNext(payload);
     }
 
     private String md5(String input) {

@@ -15,16 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import org.apache.eventmesh.common.config.connector.SinkConfig;
+import org.apache.eventmesh.common.remote.job.SyncMode;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class HttpSinkConfig extends SinkConfig {
+public class CanalSinkIncrementConfig extends CanalSinkConfig {
 
-    public SinkConnectorConfig connectorConfig;
+    // batchSize
+    private Integer batchSize = 50;
+
+    // enable batch
+    private Boolean useBatch = true;
+
+    // sink thread size for single channel
+    private Integer poolSize = 5;
+
+    // sync mode: field/row
+    private SyncMode syncMode;
+
+    private boolean isGTIDMode = true;
+
+    private boolean isMariaDB = true;
+
+    // skip sink process exception
+    private Boolean skipException = false;
+
+    public SinkConnectorConfig sinkConnectorConfig;
+
 }
