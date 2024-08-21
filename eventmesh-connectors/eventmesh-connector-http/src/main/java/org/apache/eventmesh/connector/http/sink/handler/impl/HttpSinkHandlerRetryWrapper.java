@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.connector.http.sink.handler.impl;
 
-import org.apache.eventmesh.connector.http.sink.config.HttpRetryConfig;
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpRetryConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.sink.handler.AbstractHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handler.HttpSinkHandler;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.ConnectException;
 import java.net.URI;
@@ -75,7 +76,8 @@ public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
      * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes,
+        ConnectRecord connectRecord) {
 
         // Build the retry policy
         RetryPolicy<HttpResponse<Buffer>> retryPolicy = RetryPolicy.<HttpResponse<Buffer>>builder()
@@ -104,7 +106,7 @@ public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
 
         // Handle the ConnectRecord with retry policy
         Failsafe.with(retryPolicy)
-            .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord, attributes).toCompletionStage());
+            .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord, attributes, connectRecord).toCompletionStage());
 
         return null;
     }

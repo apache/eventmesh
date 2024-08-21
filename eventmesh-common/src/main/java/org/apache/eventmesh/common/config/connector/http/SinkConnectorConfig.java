@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.common.config.connector.http;
 
-import io.vertx.core.http.HttpClientOptions;
 
 import lombok.Data;
 
@@ -29,19 +28,19 @@ public class SinkConnectorConfig {
     private String[] urls;
 
     // keepAlive, default true
-    private boolean keepAlive = HttpClientOptions.DEFAULT_KEEP_ALIVE;
+    private boolean keepAlive = true;
 
     // timeunit: ms, default 60000ms
-    private int keepAliveTimeout = HttpClientOptions.DEFAULT_KEEP_ALIVE_TIMEOUT * 1000; // Keep units consistent
+    private int keepAliveTimeout = 60 * 1000; // Keep units consistent
 
     // timeunit: ms, default 5000ms, recommended scope: 5000ms - 10000ms
     private int connectionTimeout = 5000;
 
     // timeunit: ms, default 5000ms
-    private int idleTimeout;
+    private int idleTimeout = 5000;
 
     // maximum number of HTTP/1 connections a client will pool, default 5
-    private int maxConnectionPoolSize = HttpClientOptions.DEFAULT_MAX_POOL_SIZE;
+    private int maxConnectionPoolSize = 5;
 
     // retry config
     private HttpRetryConfig retryConfig = new HttpRetryConfig();

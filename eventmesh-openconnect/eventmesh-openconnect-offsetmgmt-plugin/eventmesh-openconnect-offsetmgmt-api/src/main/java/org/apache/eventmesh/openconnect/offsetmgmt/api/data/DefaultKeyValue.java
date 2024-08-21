@@ -23,6 +23,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class DefaultKeyValue implements KeyValue {
 
     private final Map<String, Object> properties;

@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.canal.source.connector;
 import org.apache.eventmesh.common.AbstractComponent;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
@@ -33,11 +32,11 @@ import org.apache.eventmesh.connector.canal.source.position.CanalFullPositionMgr
 import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.connector.canal.source.table.RdbSimpleTable;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
+import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -50,8 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CanalSourceFullConnector extends AbstractComponent implements Source {
-
+public class CanalSourceCheckConnector extends AbstractComponent implements Source, ConnectorCreateService<Source> {
     private CanalSourceFullConfig config;
     private CanalFullPositionMgr positionMgr;
     private RdbTableMgr tableMgr;
@@ -122,6 +120,11 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     }
 
     @Override
+    public Source create() {
+        return new CanalSourceCheckConnector();
+    }
+
+    @Override
     public Class<? extends Config> configClass() {
         return CanalSourceFullConfig.class;
     }
@@ -142,8 +145,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
-        CanalSourceConfig canalSourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.config = ConfigUtil.parse(canalSourceConfig.getSourceConfig(), CanalSourceFullConfig.class);
+        this.config = (CanalSourceFullConfig) sourceConnectorContext.getSourceConfig();
         init();
     }
 

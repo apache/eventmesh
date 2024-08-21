@@ -20,8 +20,8 @@ package org.apache.eventmesh.connector.http.sink;
 
 import static org.mockserver.model.HttpRequest.request;
 
-import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpSinkConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 

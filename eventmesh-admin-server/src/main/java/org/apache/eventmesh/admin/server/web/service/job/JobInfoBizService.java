@@ -37,6 +37,7 @@ import org.apache.eventmesh.common.remote.TransportType;
 import org.apache.eventmesh.common.remote.datasource.DataSource;
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.common.remote.job.JobType;
 import org.apache.eventmesh.common.remote.request.CreateOrUpdateDataSourceReq;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
@@ -231,6 +232,8 @@ public class JobInfoBizService {
         }
         detail.setState(state);
         detail.setTransportType(TransportType.getTransportType(job.getTransportType()));
+        detail.setJobType(JobType.fromIndex(job.getJobType()));
+        detail.setJobDesc(job.getJobDesc());
         return detail;
     }
 
