@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.http.sink.handler.impl;
 
-import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.sink.data.MultiHttpRequestContext;
@@ -29,8 +29,11 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.net.URI;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -104,22 +107,25 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
      * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes,
+        ConnectRecord connectRecord) {
         // create headers
+        Map<String, Object> extensionMap = new HashMap<>();
+        Set<String> extensionKeySet = httpConnectRecord.getExtensions().keySet();
+        for (String extensionKey : extensionKeySet) {
+            Object v = httpConnectRecord.getExtensions().getObject(extensionKey);
+            extensionMap.put(extensionKey, v);
+        }
+
         MultiMap headers = HttpHeaders.headers()
             .set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8")
-            .set(HttpHeaderNames.ACCEPT, "application/json; charset=utf-8");
-
+            .set(HttpHeaderNames.ACCEPT, "application/json; charset=utf-8")
+            .set("extension", JsonUtils.toJSONString(extensionMap));
         // get timestamp and offset
-        Long timestamp = httpConnectRecord.getData().getTimestamp();
-        Map<String, ?> offset = null;
-        try {
-            // May throw NullPointerException.
-            offset = ((HttpRecordOffset) httpConnectRecord.getData().getPosition().getRecordOffset()).getOffsetMap();
-        } catch (NullPointerException e) {
-            // ignore null pointer exception
-        }
-        final Map<String, ?> finalOffset = offset;
+        Long timestamp = httpConnectRecord.getCreateTime()
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli();
 
         // send the request
         return this.webClient.post(url.getPath())
@@ -127,40 +133,38 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
             .port(url.getPort() == -1 ? (Objects.equals(url.getScheme(), "https") ? 443 : 80) : url.getPort())
             .putHeaders(headers)
             .ssl(Objects.equals(url.getScheme(), "https"))
-            .sendJson(httpConnectRecord)
+            .sendJson(httpConnectRecord.getData())
             .onSuccess(res -> {
-                log.info("Request sent successfully. Record: timestamp={}, offset={}", timestamp, finalOffset);
+                log.info("Request sent successfully. Record: timestamp={}", timestamp);
 
                 Exception e = null;
 
                 // log the response
                 if (HttpUtils.is2xxSuccessful(res.statusCode())) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Received successful response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
+                        log.debug("Received successful response: statusCode={}. Record: timestamp={}, responseBody={}",
+                            res.statusCode(), timestamp, res.bodyAsString());
                     } else {
-                        log.info("Received successful response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
-                            finalOffset);
+                        log.info("Received successful response: statusCode={}. Record: timestamp={}", res.statusCode(), timestamp);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}, responseBody={}",
-                            res.statusCode(), timestamp, finalOffset, res.bodyAsString());
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, responseBody={}",
+                            res.statusCode(), timestamp, res.bodyAsString());
                     } else {
-                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}, offset={}", res.statusCode(), timestamp,
-                            finalOffset);
+                        log.warn("Received non-2xx response: statusCode={}. Record: timestamp={}", res.statusCode(), timestamp);
                     }
 
                     e = new RuntimeException("Unexpected HTTP response code: " + res.statusCode());
                 }
 
                 // try callback
-                tryCallback(httpConnectRecord, e, attributes);
+                tryCallback(httpConnectRecord, e, attributes, connectRecord);
             }).onFailure(err -> {
-                log.error("Request failed to send. Record: timestamp={}, offset={}", timestamp, finalOffset, err);
+                log.error("Request failed to send. Record: timestamp={}", timestamp, err);
 
                 // try callback
-                tryCallback(httpConnectRecord, err, attributes);
+                tryCallback(httpConnectRecord, err, attributes, connectRecord);
             });
     }
 
@@ -171,7 +175,7 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
      * @param e                 the exception thrown during the request, may be null
      * @param attributes        additional attributes to be used in processing
      */
-    private void tryCallback(HttpConnectRecord httpConnectRecord, Throwable e, Map<String, Object> attributes) {
+    private void tryCallback(HttpConnectRecord httpConnectRecord, Throwable e, Map<String, Object> attributes, ConnectRecord record) {
         // get the retry event
         HttpRetryEvent retryEvent = getAndUpdateRetryEvent(attributes, httpConnectRecord, e);
 
@@ -180,7 +184,6 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
 
         if (multiHttpRequestContext.getRemainingRequests() == 0) {
             // do callback
-            ConnectRecord record = httpConnectRecord.getData();
             if (record.getCallback() == null) {
                 if (log.isDebugEnabled()) {
                     log.warn("ConnectRecord callback is null. Ignoring callback. {}", record);

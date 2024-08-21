@@ -19,20 +19,22 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
+import java.util.Base64;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.handler.BodyHandler;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,12 +71,13 @@ public class CommonProtocol implements Protocol {
             .handler(BodyHandler.create())
             .handler(ctx -> {
                 // Get the payload
-                String payloadStr = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
+                Object payload = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
+                payload = JsonUtils.parseObject(payload.toString(), String.class);
 
                 // Create and store the webhook request
                 Map<String, String> headerMap = ctx.request().headers().entries().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payloadStr);
+                WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payload, ctx);
                 if (!queue.offer(webhookRequest)) {
                     throw new IllegalStateException("Failed to store the request.");
                 }
@@ -110,7 +113,27 @@ public class CommonProtocol implements Protocol {
         ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), request.getPayload());
         connectRecord.addExtension("source", request.getProtocolName());
         connectRecord.addExtension("url", request.getUrl());
-        connectRecord.addExtension("headers", request.getHeaders());
+        request.getHeaders().forEach((k, v) -> {
+            if (k.equalsIgnoreCase("extension")) {
+                JsonObject extension = new JsonObject(v);
+                extension.forEach(e -> connectRecord.addExtension(e.getKey(), e.getValue()));
+            }
+        });
+        // check recordUniqueId
+        if (!connectRecord.getExtensions().containsKey("recordUniqueId")) {
+            connectRecord.addExtension("recordUniqueId", connectRecord.getRecordId());
+        }
+
+        // check data
+        if (connectRecord.getExtensionObj("isBase64") != null) {
+            if (Boolean.parseBoolean(connectRecord.getExtensionObj("isBase64").toString())) {
+                byte[] data = Base64.getDecoder().decode(connectRecord.getData().toString());
+                connectRecord.setData(data);
+            }
+        }
+        if (request.getRoutingContext() != null) {
+            connectRecord.addExtension("routingContext", request.getRoutingContext());
+        }
         return connectRecord;
     }
 }

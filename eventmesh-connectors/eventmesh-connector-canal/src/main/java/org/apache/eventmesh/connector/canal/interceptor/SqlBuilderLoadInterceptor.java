@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.canal.interceptor;
 
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkIncrementConfig;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.dialect.DbDialect;
 import org.apache.eventmesh.connector.canal.model.EventColumn;
@@ -40,7 +40,7 @@ public class SqlBuilderLoadInterceptor {
     @Setter
     private DbDialect dbDialect;
 
-    public boolean before(CanalSinkConfig sinkConfig, CanalConnectRecord record) {
+    public boolean before(CanalSinkIncrementConfig sinkConfig, CanalConnectRecord record) {
         // build sql
         SqlTemplate sqlTemplate = dbDialect.getSqlTemplate();
         EventType type = record.getEventType();
@@ -52,12 +52,12 @@ public class SqlBuilderLoadInterceptor {
 
         if (type.isInsert()) {
             sql = sqlTemplate.getMergeSql(schemaName,
-                    record.getTableName(),
-                    buildColumnNames(record.getKeys()),
-                    buildColumnNames(record.getColumns()),
-                    new String[] {},
-                    true,
-                    shardColumns);
+                record.getTableName(),
+                buildColumnNames(record.getKeys()),
+                buildColumnNames(record.getColumns()),
+                new String[] {},
+                true,
+                shardColumns);
         } else if (type.isUpdate()) {
             boolean existOldKeys = !CollectionUtils.isEmpty(record.getOldKeys());
             boolean rowMode = sinkConfig.getSyncMode().isRow();

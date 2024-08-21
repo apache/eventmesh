@@ -19,9 +19,11 @@ package org.apache.eventmesh.connector.http.sink.data;
 
 import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.KeyValue;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -58,10 +60,9 @@ public class HttpConnectRecord implements Serializable {
      */
     private String eventId;
 
-    /**
-     * The ConnectRecord to be sent
-     */
-    private ConnectRecord data;
+    private Object data;
+
+    private KeyValue extensions;
 
     @Override
     public String toString() {
@@ -71,6 +72,7 @@ public class HttpConnectRecord implements Serializable {
             + ", type='" + type
             + ", eventId='" + eventId
             + ", data=" + data
+            + ", extensions=" + extensions
             + '}';
     }
 
@@ -83,16 +85,34 @@ public class HttpConnectRecord implements Serializable {
     public static HttpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
         Map<String, ?> offsetMap = new HashMap<>();
         if (record != null && record.getPosition() != null && record.getPosition().getRecordOffset() != null) {
-            offsetMap = ((HttpRecordOffset) record.getPosition().getRecordOffset()).getOffsetMap();
+            if (HttpRecordOffset.class.equals(record.getPosition().getRecordOffsetClazz())) {
+                offsetMap = ((HttpRecordOffset) record.getPosition().getRecordOffset()).getOffsetMap();
+            }
         }
         String offset = "0";
         if (!offsetMap.isEmpty()) {
             offset = offsetMap.values().iterator().next().toString();
         }
-        return HttpConnectRecord.builder()
-            .type(type)
-            .eventId(type + "-" + offset)
-            .data(record)
-            .build();
+        if (record.getData() instanceof byte[]) {
+            String data = Base64.getEncoder().encodeToString((byte[]) record.getData());
+            record.addExtension("isBase64", true);
+            return HttpConnectRecord.builder()
+                .type(type)
+                .createTime(LocalDateTime.now())
+                .eventId(type + "-" + offset)
+                .data(data)
+                .extensions(record.getExtensions())
+                .build();
+        } else {
+            record.addExtension("isBase64", false);
+            return HttpConnectRecord.builder()
+                .type(type)
+                .createTime(LocalDateTime.now())
+                .eventId(type + "-" + offset)
+                .data(record.getData())
+                .extensions(record.getExtensions())
+                .build();
+        }
     }
+
 }

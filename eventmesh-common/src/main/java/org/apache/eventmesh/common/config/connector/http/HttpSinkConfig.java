@@ -15,23 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.common.config.connector.http;
+
+import org.apache.eventmesh.common.config.connector.SinkConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class HttpWebhookConfig {
+@EqualsAndHashCode(callSuper = true)
+public class HttpSinkConfig extends SinkConfig {
 
-    private boolean activate = false;
-
-    // Path to display/export callback data
-    private String exportPath = "/export";
-
-    private int port;
-
-    // timeunit: ms
-    private int serverIdleTimeout = 5000;
-
-    // max size of the storage queue
-    private int maxStorageSize = 5000;
+    public SinkConnectorConfig connectorConfig;
 }

@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.http.sink;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpSinkConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.handler.HttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handler.impl.CommonHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handler.impl.HttpSinkHandlerRetryWrapper;
