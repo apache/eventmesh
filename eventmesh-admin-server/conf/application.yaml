@@ -35,8 +35,8 @@ event-mesh:
     # grpc server port
     port: 8081
     adminServerList:
-      region1:
+      R1:
         - http://localhost:8082
-      region2:
-        - http://localhost:8083
-    region: region1
+      R2:
+        - http://localhost:8082
+    region: R1

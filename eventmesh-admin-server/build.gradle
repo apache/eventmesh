@@ -38,6 +38,8 @@ dependencies {
 	implementation "com.alibaba:druid-spring-boot-starter"
     compileOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 }
 

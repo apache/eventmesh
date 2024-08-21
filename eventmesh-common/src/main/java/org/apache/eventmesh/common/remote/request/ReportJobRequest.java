@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.remote.request;
 
+import org.apache.eventmesh.common.remote.JobState;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -24,19 +26,12 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class ReportVerifyRequest extends BaseRemoteRequest {
-
-    private String taskID;
+public class ReportJobRequest extends BaseRemoteRequest {
 
     private String jobID;
 
-    private String recordID;
+    private JobState state;
 
-    private String recordSig;
+    private String address;
 
-    private String connectorName;
-
-    private String connectorStage;
-
-    private String position;
 }
