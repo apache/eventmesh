@@ -19,15 +19,19 @@ package org.apache.eventmesh.admin.server.web.service.job;
 
 import org.apache.eventmesh.admin.server.AdminServerProperties;
 import org.apache.eventmesh.admin.server.AdminServerRuntimeException;
+import org.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHeartbeat;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHeartbeatService;
 import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
 import org.apache.eventmesh.admin.server.web.service.datasource.DataSourceBizService;
 import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.TaskState;
 import org.apache.eventmesh.common.remote.TransportType;
 import org.apache.eventmesh.common.remote.datasource.DataSource;
@@ -38,9 +42,13 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,13 +83,41 @@ public class JobInfoBizService {
     @Autowired
     private AdminServerProperties properties;
 
+    @Autowired
+    EventMeshRuntimeHeartbeatService heartbeatService;
+
+    private final long heatBeatPeriod = Duration.ofMillis(5000).toMillis();
+
+    @Autowired
+    DBThreadPool executor;
+
+    @PostConstruct
+    public void init() {
+        log.info("init check job info scheduled task.");
+        executor.getCheckExecutor().scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                checkJobInfo();
+            }
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
     public boolean updateJobState(String jobID, TaskState state) {
         if (jobID == null || state == null) {
             return false;
         }
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
         jobInfo.setJobState(state.name());
-        return jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("state", TaskState.DELETE.name()));
+        return jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("jobState", JobState.DELETE.name()));
+    }
+
+    public boolean updateJobState(String jobID, JobState state) {
+        if (jobID == null || state == null) {
+            return false;
+        }
+        EventMeshJobInfo jobInfo = new EventMeshJobInfo();
+        jobInfo.setJobState(state.name());
+        return jobInfoService.update(jobInfo, Wrappers.<EventMeshJobInfo>update().eq("jobID", jobID).ne("jobState", JobState.DELETE.name()));
     }
 
     @Transactional
@@ -114,7 +150,8 @@ public class JobInfoBizService {
             source.setOperator(job.getCreateUid());
             source.setRegion(job.getSourceDataSource().getRegion());
             source.setDesc(job.getSourceConnectorDesc());
-            source.setConfig(job.getSourceDataSource().getConf());
+            Config sourceConfig = job.getSourceDataSource().getConf();
+            source.setConfig(sourceConfig);
             source.setConfigClass(job.getSourceDataSource().getConfClazz().getName());
             EventMeshDataSource createdSource = dataSourceBizService.createDataSource(source);
             entity.setSourceData(createdSource.getId());
@@ -124,7 +161,8 @@ public class JobInfoBizService {
             sink.setOperator(job.getCreateUid());
             sink.setRegion(job.getSinkDataSource().getRegion());
             sink.setDesc(job.getSinkConnectorDesc());
-            sink.setConfig(job.getSinkDataSource().getConf());
+            Config sinkConfig = job.getSinkDataSource().getConf();
+            sink.setConfig(sinkConfig);
             sink.setConfigClass(job.getSinkDataSource().getConfClazz().getName());
             EventMeshDataSource createdSink = dataSourceBizService.createDataSource(sink);
             entity.setTargetData(createdSink.getId());
@@ -195,6 +233,36 @@ public class JobInfoBizService {
         detail.setTransportType(TransportType.getTransportType(job.getTransportType()));
         return detail;
     }
+
+    public EventMeshJobInfo getJobInfo(String jobID) {
+        if (jobID == null) {
+            return null;
+        }
+        EventMeshJobInfo job = jobInfoService.getOne(Wrappers.<EventMeshJobInfo>query().eq("jobID", jobID));
+        return job;
+    }
+
+    public void checkJobInfo() {
+        List<EventMeshJobInfo> eventMeshJobInfoList = jobInfoService.list(Wrappers.<EventMeshJobInfo>query().eq("jobState", JobState.RUNNING.name()));
+        log.info("start check job info.to check job size:{}", eventMeshJobInfoList.size());
+        for (EventMeshJobInfo jobInfo : eventMeshJobInfoList) {
+            String jobID = jobInfo.getJobID();
+            if (StringUtils.isEmpty(jobID)) {
+                continue;
+            }
+            EventMeshRuntimeHeartbeat heartbeat = heartbeatService.getOne(Wrappers.<EventMeshRuntimeHeartbeat>query().eq("jobID", jobID));
+            if (heartbeat == null) {
+                continue;
+            }
+            // if last heart beat update time have delay three period.print job heart beat delay warn
+            long currentTimeStamp = System.currentTimeMillis();
+            if (currentTimeStamp - heartbeat.getUpdateTime().getTime() > 3 * heatBeatPeriod) {
+                log.warn("current job heart heart has delay.jobID:{},currentTimeStamp:{},last update time:{}", jobID, currentTimeStamp,
+                    heartbeat.getUpdateTime());
+            }
+        }
+    }
+
 }
 
 

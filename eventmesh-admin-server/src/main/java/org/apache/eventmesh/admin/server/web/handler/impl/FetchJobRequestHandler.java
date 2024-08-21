@@ -56,7 +56,7 @@ public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, 
         config.setSourceConnectorConfig(JsonUtils.objectToMap(detail.getSourceDataSource().getConf()));
         config.setSourceConnectorDesc(detail.getSourceConnectorDesc());
         config.setSinkConnectorConfig(JsonUtils.objectToMap(detail.getSinkDataSource().getConf()));
-        config.setSourceConnectorDesc(detail.getSinkConnectorDesc());
+        config.setSinkConnectorDesc(detail.getSinkConnectorDesc());
         response.setConnectorConfig(config);
         response.setTransportType(detail.getTransportType());
         response.setState(detail.getState());
