@@ -17,15 +17,16 @@
 
 package org.apache.eventmesh.connector.http.sink.handler.impl;
 
+import org.apache.eventmesh.common.config.connector.http.HttpWebhookConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
-import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
 import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -209,9 +210,10 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
      * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes,
+        ConnectRecord connectRecord) {
         // send the request
-        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord, attributes);
+        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord, attributes, connectRecord);
         // store the received data
         return responseFuture.onComplete(arr -> {
             // get tryEvent from attributes
@@ -260,8 +262,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             .code(response != null ? response.statusCode() : -1)
             .message(msg)
             .receivedTime(LocalDateTime.now())
-            .httpRecordId(httpConnectRecord.getHttpRecordId())
-            .recordId(httpConnectRecord.getData().getRecordId())
+            .recordId(httpConnectRecord.getHttpRecordId())
             .retryNum(retryEvent.getCurrentRetries())
             .build();
     }

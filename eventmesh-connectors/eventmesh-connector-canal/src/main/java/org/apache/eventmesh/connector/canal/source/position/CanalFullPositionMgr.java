@@ -60,7 +60,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
 
     @Override
     protected void run() throws Exception {
-        if (config == null || config.getConnectorConfig() == null || config.getConnectorConfig().getDatabases() == null) {
+        if (config == null || config.getSourceConnectorConfig() == null || config.getSourceConnectorConfig().getDatabases() == null) {
             log.info("config or database is null");
             return;
         }
@@ -93,7 +93,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
     }
 
     private void initPositions() {
-        for (RdbDBDefinition database : config.getConnectorConfig().getDatabases()) {
+        for (RdbDBDefinition database : config.getSourceConnectorConfig().getDatabases()) {
             for (RdbTableDefinition table : database.getTables()) {
                 try {
                     RdbSimpleTable simpleTable = new RdbSimpleTable(database.getSchemaName(), table.getTableName());

@@ -35,6 +35,7 @@ dependencies {
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-connectors:eventmesh-connector-canal")
+    implementation project(":eventmesh-connectors:eventmesh-connector-http")
     implementation project(":eventmesh-meta:eventmesh-meta-api")
     implementation project(":eventmesh-meta:eventmesh-meta-nacos")
     implementation project(":eventmesh-registry:eventmesh-registry-api")
