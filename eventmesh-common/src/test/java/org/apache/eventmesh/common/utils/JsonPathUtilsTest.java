@@ -17,34 +17,42 @@
 
 package org.apache.eventmesh.common.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
-import java.util.Map;
-import org.junit.jupiter.api.Test;
 
 public class JsonPathUtilsTest {
 
     @Test
     public void tesTisEmptyJsonObject() {
         String emptyJsonObject = "{}";
-        String jsonObject = "{\"key\": \"value\"}";
-        String emptyJsonArray = "[]";
-        String jsonArray = "[{\"key\": \"value\"}]";
-        String empty = "";
-
         assertTrue(JsonPathUtils.isEmptyJsonObject(emptyJsonObject));
+
+        String jsonObject = "{\"key\": \"value\"}";
         assertFalse(JsonPathUtils.isEmptyJsonObject(jsonObject));
+
+        String emptyJsonArray = "[]";
         assertFalse(JsonPathUtils.isEmptyJsonObject(emptyJsonArray));
+
+        String jsonArray = "[{\"key\": \"value\"}]";
         assertFalse(JsonPathUtils.isEmptyJsonObject(jsonArray));
+
+        String empty = "";
         assertFalse(JsonPathUtils.isEmptyJsonObject(empty));
     }
 
     @Test
     public void testParseStrict() {
-       String json = "{\"key\": \"value\"}";
+        String json = "{\"key\": \"value\"}";
         JsonNode result = JsonPathUtils.parseStrict(json);
         assertNotNull(result);
         assertEquals("value", result.get("key").asText());
@@ -58,7 +66,7 @@ public class JsonPathUtilsTest {
 
     @Test
     public void testBuildJsonString() {
-        Map<String,String> person = new HashMap<>();
+        Map<String, String> person = new HashMap<>();
         person.put("name", "John");
         person.put("age", "30");
         String actual = JsonPathUtils.buildJsonString("person", person);
@@ -72,16 +80,18 @@ public class JsonPathUtilsTest {
         String jsonPath = "$.person[0].name";
         String jsonPath2 = "$.person[*].address.city";
         String jsonPath3 = "person.job[0].title";
-        String jsonPath4 = null;
-        String jsonPath5 = "";
 
         assertTrue(JsonPathUtils.isValidAndDefinite(jsonPath));
         assertFalse(JsonPathUtils.isValidAndDefinite(jsonPath2));
         assertFalse(JsonPathUtils.isValidAndDefinite(jsonPath3));
+
+        String jsonPath4 = null;
+        String jsonPath5 = "";
+
         assertFalse(JsonPathUtils.isValidAndDefinite(jsonPath4));
         assertFalse(JsonPathUtils.isValidAndDefinite(jsonPath5));
-
     }
+
 
     @Test
     public void testGetJsonPathValue() {
@@ -98,18 +108,13 @@ public class JsonPathUtilsTest {
     }
 
     @Test
-    public void testConvertToJsonNode() {
+    public void testConvertToJsonNode() throws JsonProcessingException {
         String jsonString1 = "{\"name\": \"John Doe\", \"age\": 30, \"address\": { \"city\": \"New York\" }}";
-        try {
-            JsonNode node1 = JsonPathUtils.convertToJsonNode(jsonString1);
-            assertEquals("John Doe", node1.get("name").asText());
-            assertEquals("New York", node1.get("address").get("city").asText());
-            assertEquals("30", node1.get("age").asText());
-        } catch (JsonProcessingException ignored) {
 
-        }
-
-
+        JsonNode node1 = JsonPathUtils.convertToJsonNode(jsonString1);
+        assertEquals("John Doe", node1.get("name").asText());
+        assertEquals("New York", node1.get("address").get("city").asText());
+        assertEquals("30", node1.get("age").asText());
     }
 
     @Test
@@ -149,23 +154,18 @@ public class JsonPathUtilsTest {
     }
 
     @Test
-    public void testMatchJsonPathValue() {
+    public void testMatchJsonPathValue() throws JsonProcessingException {
         String jsonString = "{\"name\": \"John Doe\", \"age\": 30, \"address\": { \"city\": \"New York\" }}";
+        String jsonPath1 = "$.name";
+        String result1 = JsonPathUtils.matchJsonPathValue(jsonString, jsonPath1);
+        assertEquals("\"John Doe\"", result1);
 
-        try {
-            String jsonPath1 = "$.name";
-            String result1 = JsonPathUtils.matchJsonPathValue(jsonString, jsonPath1);
-            assertEquals("\"John Doe\"", result1);
+        String jsonPath2 = "$.address.city";
+        String result2 = JsonPathUtils.matchJsonPathValue(jsonString, jsonPath2);
+        assertEquals("\"New York\"", result2);
 
-            String jsonPath2 = "$.address.city";
-            String result2 = JsonPathUtils.matchJsonPathValue(jsonString, jsonPath2);
-            assertEquals("\"New York\"", result2);
-
-            String jsonPath3 = "$.job";
-            String result3 = JsonPathUtils.matchJsonPathValue(jsonString, jsonPath3);
-            assertEquals("null",result3);
-        } catch (JsonProcessingException ignored) {
-
-        }
+        String jsonPath3 = "$.job";
+        String result3 = JsonPathUtils.matchJsonPathValue(jsonString, jsonPath3);
+        assertEquals("null", result3);
     }
 }
