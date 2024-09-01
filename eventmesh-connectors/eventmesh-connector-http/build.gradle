@@ -20,7 +20,7 @@ dependencies {
     implementation project(":eventmesh-common")
 
     implementation 'io.cloudevents:cloudevents-http-vertx:3.0.0'
-    implementation 'io.vertx:vertx-web:4.5.8'
+    implementation 'io.vertx:vertx-web:4.5.9'
     implementation 'io.vertx:vertx-web-client:4.5.9'
     implementation 'dev.failsafe:failsafe:3.3.2'
 
