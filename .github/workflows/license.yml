@@ -38,7 +38,7 @@ jobs:
           java-version: 11
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Check license compatibility
         run: ./gradlew clean checkDeniedLicense
