@@ -24,7 +24,7 @@ updates:
       interval: "monthly"
     ignore:
       - dependency-name: "*"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-patch" ]
       - dependency-name: "software.amazon.awssdk:s3"
         update-types: [ "version-update:semver-patch" ]
       - dependency-name: "com.aliyun:dingtalk"
