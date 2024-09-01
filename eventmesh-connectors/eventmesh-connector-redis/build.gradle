@@ -19,7 +19,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
 
-    implementation 'org.redisson:redisson:3.32.0'
+    implementation 'org.redisson:redisson:3.35.0'
 
     api 'io.cloudevents:cloudevents-json-jackson'
 
