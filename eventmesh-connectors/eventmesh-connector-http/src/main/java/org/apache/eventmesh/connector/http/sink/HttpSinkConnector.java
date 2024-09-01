@@ -18,12 +18,12 @@
 package org.apache.eventmesh.connector.http.sink;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
-import org.apache.eventmesh.connector.http.sink.handle.CommonHttpSinkHandler;
-import org.apache.eventmesh.connector.http.sink.handle.HttpSinkHandler;
-import org.apache.eventmesh.connector.http.sink.handle.RetryHttpSinkHandler;
-import org.apache.eventmesh.connector.http.sink.handle.WebhookHttpSinkHandler;
+import org.apache.eventmesh.common.config.connector.http.HttpSinkConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
+import org.apache.eventmesh.connector.http.sink.handler.HttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handler.impl.CommonHttpSinkHandler;
+import org.apache.eventmesh.connector.http.sink.handler.impl.HttpSinkHandlerRetryWrapper;
+import org.apache.eventmesh.connector.http.sink.handler.impl.WebhookHttpSinkHandler;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -86,7 +86,7 @@ public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
             this.sinkHandler = nonRetryHandler;
         } else if (maxRetries > 0) {
             // Wrap the sink handler with a retry handler
-            this.sinkHandler = new RetryHttpSinkHandler(this.httpSinkConfig.connectorConfig, nonRetryHandler);
+            this.sinkHandler = new HttpSinkHandlerRetryWrapper(this.httpSinkConfig.connectorConfig, nonRetryHandler);
         } else {
             throw new IllegalArgumentException("Max retries must be greater than or equal to 0.");
         }
@@ -105,6 +105,11 @@ public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
     @Override
     public String name() {
         return this.httpSinkConfig.connectorConfig.getConnectorName();
+    }
+
+    @Override
+    public void onException(ConnectRecord record) {
+
     }
 
     @Override

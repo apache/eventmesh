@@ -27,7 +27,7 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String path;
+    private String path = "/";
 
     private int port;
 
@@ -51,8 +51,11 @@ public class SourceConnectorConfig {
     private int batchSize = 10;
 
     // protocol, default CloudEvent
-    private String protocol = "CloudEvent";
+    private String protocol = "Common";
 
     // extra config, e.g. GitHub secret
     private Map<String, String> extraConfig = new HashMap<>();
+
+    // data consistency enabled, default true
+    private boolean dataConsistencyEnabled = false;
 }

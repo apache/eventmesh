@@ -15,14 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.callback;
+package org.apache.eventmesh.common.config.connector.http;
 
-/**
- * Message sending callback interface.
- */
-public interface SendMessageCallback {
+import lombok.Data;
 
-    void onSuccess(SendResult sendResult);
+@Data
+public class HttpWebhookConfig {
 
-    void onException(SendExcepionContext sendExcepionContext);
+    private boolean activate = false;
+
+    // Path to display/export callback data
+    private String exportPath = "/export";
+
+    private int port;
+
+    // timeunit: ms
+    private int serverIdleTimeout = 5000;
+
+    // max size of the storage queue
+    private int maxStorageSize = 5000;
 }

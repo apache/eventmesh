@@ -95,6 +95,11 @@ public class RedisSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() throws Exception {
         this.topic.removeAllListeners();
         this.redissonClient.shutdown();

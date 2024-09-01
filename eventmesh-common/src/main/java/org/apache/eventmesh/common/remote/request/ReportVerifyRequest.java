@@ -28,6 +28,8 @@ public class ReportVerifyRequest extends BaseRemoteRequest {
 
     private String taskID;
 
+    private String jobID;
+
     private String recordID;
 
     private String recordSig;

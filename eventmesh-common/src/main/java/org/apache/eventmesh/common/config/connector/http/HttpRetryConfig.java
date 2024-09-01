@@ -15,38 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.callback;
+package org.apache.eventmesh.common.config.connector.http;
 
-public class SendExcepionContext {
+import lombok.Data;
 
-    private String messageId;
-    private String topic;
-    private Throwable cause;
+@Data
+public class HttpRetryConfig {
+    // maximum number of retries, default 2, minimum 0
+    private int maxRetries = 2;
 
-    public SendExcepionContext() {
-    }
+    // retry interval, default 1000ms
+    private int interval = 1000;
 
-    public String getMessageId() {
-        return this.messageId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public String getTopic() {
-        return this.topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public Throwable getCause() {
-        return this.cause;
-    }
-
-    public void setCause(Throwable cause) {
-        this.cause = cause;
-    }
+    // Default value is false, indicating that only requests with network-level errors will be retried.
+    // If set to true, all failed requests will be retried, including network-level errors and non-2xx responses.
+    private boolean retryOnNonSuccess = false;
 }

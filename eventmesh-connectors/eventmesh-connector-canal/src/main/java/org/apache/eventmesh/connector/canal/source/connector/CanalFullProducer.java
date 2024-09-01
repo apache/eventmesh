@@ -32,6 +32,7 @@ import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -83,6 +84,7 @@ public class CanalFullProducer {
     public void choosePrimaryKey() {
         for (RdbColumnDefinition col : tableDefinition.getColumnDefinitions().values()) {
             if (position.getCurPrimaryKeyCols().get(col.getName()) != null) {
+                // random choose the first primary key from the table
                 choosePrimaryKey.set(col.getName());
                 log.info("schema [{}] table [{}] choose primary key [{}]", tableDefinition.getSchemaName(), tableDefinition.getTableName(),
                     col.getName());
@@ -95,6 +97,7 @@ public class CanalFullProducer {
 
     public void start(AtomicBoolean flag) {
         choosePrimaryKey();
+        // used to page query
         boolean isFirstSelect = true;
         List<Map<String, Object>> rows = new LinkedList<>();
         while (flag.get()) {
@@ -120,6 +123,7 @@ public class CanalFullProducer {
                             continue;
                         }
                         refreshPosition(lastCol);
+                        // may be not reach
                         commitConnectRecord(rows);
                         rows = new LinkedList<>();
                     }
@@ -127,6 +131,7 @@ public class CanalFullProducer {
                     if (lastCol == null || checkIsScanFinish(lastCol)) {
                         log.info("full scan db [{}] table [{}] finish", tableDefinition.getSchemaName(),
                             tableDefinition.getTableName());
+                        // commit the last record if rows.size() < flushSize
                         commitConnectRecord(rows);
                         return;
                     }
@@ -164,7 +169,8 @@ public class CanalFullProducer {
         offset.setPosition(jobRdbFullPosition);
         CanalFullRecordPartition partition = new CanalFullRecordPartition();
         ArrayList<ConnectRecord> records = new ArrayList<>();
-        records.add(new ConnectRecord(partition, offset, System.currentTimeMillis(), rows));
+        byte[] rowsData = JsonUtils.toJSONString(rows).getBytes(StandardCharsets.UTF_8);
+        records.add(new ConnectRecord(partition, offset, System.currentTimeMillis(), rowsData));
         queue.put(records);
     }
 

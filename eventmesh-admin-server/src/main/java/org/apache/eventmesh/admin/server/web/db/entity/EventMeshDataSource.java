@@ -41,6 +41,8 @@ public class EventMeshDataSource implements Serializable {
 
     private String configuration;
 
+    private String configurationClass;
+
     private String region;
 
     private String createUid;

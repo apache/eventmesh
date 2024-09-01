@@ -15,23 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.callback;
 
-import lombok.Data;
+/**
+ * Message sending callback interface.
+ */
+public interface SendMessageCallback {
 
-@Data
-public class HttpWebhookConfig {
+    void onSuccess(SendResult sendResult);
 
-    private boolean activate = false;
-
-    // Path to display/export callback data
-    private String exportPath = "/export";
-
-    private int port;
-
-    // timeunit: ms
-    private int serverIdleTimeout = 5000;
-
-    // max size of the storage queue
-    private int maxStorageSize = 5000;
+    void onException(SendExceptionContext sendExceptionContext);
 }

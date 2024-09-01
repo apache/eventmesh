@@ -18,6 +18,9 @@
 package org.apache.eventmesh.openconnect.api.connector;
 
 import org.apache.eventmesh.common.config.connector.SinkConfig;
+import org.apache.eventmesh.common.remote.job.JobType;
+
+import java.util.Map;
 
 import lombok.Data;
 
@@ -28,5 +31,9 @@ import lombok.Data;
 public class SinkConnectorContext implements ConnectorContext {
 
     public SinkConfig sinkConfig;
+
+    public Map<String, Object> runtimeConfig;
+
+    public JobType jobType;
 
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.common.config.connector.http;
 
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 

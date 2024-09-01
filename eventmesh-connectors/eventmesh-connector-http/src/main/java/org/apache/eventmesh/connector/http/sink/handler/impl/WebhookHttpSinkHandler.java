@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.handle;
+package org.apache.eventmesh.connector.http.sink.handler.impl;
 
+import org.apache.eventmesh.common.config.connector.http.HttpWebhookConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
-import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
-import org.apache.eventmesh.connector.http.sink.config.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
+import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -61,8 +63,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
 
-    private final SinkConnectorConfig sinkConnectorConfig;
-
     // the configuration for webhook
     private final HttpWebhookConfig webhookConfig;
 
@@ -86,7 +86,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
 
     public WebhookHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         super(sinkConnectorConfig);
-        this.sinkConnectorConfig = sinkConnectorConfig;
+
         this.webhookConfig = sinkConnectorConfig.getWebhookConfig();
         int maxQueueSize = this.webhookConfig.getMaxStorageSize();
         this.receivedDataQueue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
@@ -94,9 +94,6 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         doInitExportServer();
     }
 
-    public SynchronizedCircularFifoQueue<HttpExportRecord> getReceivedDataQueue() {
-        return receivedDataQueue;
-    }
 
     /**
      * Initialize the server for exporting the received data
@@ -202,22 +199,6 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         });
     }
 
-    /**
-     * Processes a ConnectRecord by sending it over HTTP or HTTPS. This method should be called for each ConnectRecord that needs to be processed.
-     *
-     * @param record the ConnectRecord to process
-     */
-    @Override
-    public void handle(ConnectRecord record) {
-        for (URI url : super.getUrls()) {
-            // convert ConnectRecord to HttpConnectRecord
-            String type = String.format("%s.%s.%s", this.getConnectorConfig().getConnectorName(), url.getScheme(), "webhook");
-            HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-            // handle the HttpConnectRecord
-            deliver(url, httpConnectRecord);
-        }
-    }
-
 
     /**
      * Processes HttpConnectRecord on specified URL while returning its own processing logic This method sends the HttpConnectRecord to the specified
@@ -225,36 +206,65 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
      *
      * @param url               URI to which the HttpConnectRecord should be sent
      * @param httpConnectRecord HttpConnectRecord to process
+     * @param attributes        additional attributes to be used in processing
      * @return processing chain
      */
     @Override
-    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord) {
+    public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes,
+        ConnectRecord connectRecord) {
         // send the request
-        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord);
+        Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord, attributes, connectRecord);
         // store the received data
         return responseFuture.onComplete(arr -> {
-            // If open retry, return directly and handled by RetryHttpSinkHandler
-            if (sinkConnectorConfig.getRetryConfig().getMaxRetries() > 0) {
-                return;
-            }
-            // create ExportMetadataBuilder
-            HttpResponse<Buffer> response = arr.succeeded() ? arr.result() : null;
+            // get tryEvent from attributes
+            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
 
-            HttpExportMetadata httpExportMetadata = HttpExportMetadata.builder()
-                .url(url.toString())
-                .code(response != null ? response.statusCode() : -1)
-                .message(response != null ? response.statusMessage() : arr.cause().getMessage())
-                .receivedTime(LocalDateTime.now())
-                .retriedBy(null)
-                .uuid(httpConnectRecord.getUuid())
-                .retryNum(0)
-                .build();
+            HttpResponse<Buffer> response = null;
+            if (arr.succeeded()) {
+                response = arr.result();
+            } else {
+                retryEvent.setLastException(arr.cause());
+            }
+
+            // create ExportMetadata
+            HttpExportMetadata httpExportMetadata = buildHttpExportMetadata(url, response, httpConnectRecord, retryEvent);
 
             // create ExportRecord
             HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
             // add the data to the queue
             receivedDataQueue.offer(exportRecord);
         });
+    }
+
+    /**
+     * Builds the HttpExportMetadata object based on the response, HttpConnectRecord, and HttpRetryEvent.
+     *
+     * @param url               the URI to which the HttpConnectRecord was sent
+     * @param response          the response received from the URI
+     * @param httpConnectRecord the HttpConnectRecord that was sent
+     * @param retryEvent        the SingleHttpRetryEvent that was used for retries
+     * @return the HttpExportMetadata object
+     */
+    private HttpExportMetadata buildHttpExportMetadata(URI url, HttpResponse<Buffer> response, HttpConnectRecord httpConnectRecord,
+        HttpRetryEvent retryEvent) {
+
+        String msg = null;
+        // order of precedence: lastException > response > null
+        if (retryEvent.getLastException() != null) {
+            msg = retryEvent.getLimitedExceptionMessage();
+            retryEvent.setLastException(null);
+        } else if (response != null) {
+            msg = response.statusMessage();
+        }
+
+        return HttpExportMetadata.builder()
+            .url(url.toString())
+            .code(response != null ? response.statusCode() : -1)
+            .message(msg)
+            .receivedTime(LocalDateTime.now())
+            .recordId(httpConnectRecord.getHttpRecordId())
+            .retryNum(retryEvent.getCurrentRetries())
+            .build();
     }
 
 

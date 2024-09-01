@@ -20,7 +20,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-registry:eventmesh-registry-api")
     implementation project(":eventmesh-registry:eventmesh-registry-nacos")
-    implementation project(':eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api')
+    implementation project(":eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api")
     implementation "com.alibaba.nacos:nacos-client"
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
@@ -38,6 +38,8 @@ dependencies {
 	implementation "com.alibaba:druid-spring-boot-starter"
     compileOnly 'com.mysql:mysql-connector-j'
 	compileOnly 'org.projectlombok:lombok'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 }
 

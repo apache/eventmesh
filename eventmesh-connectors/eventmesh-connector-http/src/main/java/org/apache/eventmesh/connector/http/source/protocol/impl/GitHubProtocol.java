@@ -132,7 +132,7 @@ public class GitHubProtocol implements Protocol {
                 // Create and store the webhook request
                 Map<String, String> headerMap = headers.entries().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payloadStr);
+                WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payloadStr, ctx);
 
                 if (!queue.offer(webhookRequest)) {
                     throw new IllegalStateException("Failed to store the request.");

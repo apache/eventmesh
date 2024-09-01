@@ -30,8 +30,13 @@ public enum TransportType {
     REDIS_REDIS(DataSourceType.REDIS, DataSourceType.REDIS),
     ROCKETMQ_ROCKETMQ(DataSourceType.ROCKETMQ, DataSourceType.ROCKETMQ),
     MYSQL_HTTP(DataSourceType.MYSQL, DataSourceType.HTTP),
+    ROCKETMQ_HTTP(DataSourceType.ROCKETMQ, DataSourceType.HTTP),
     HTTP_MYSQL(DataSourceType.HTTP, DataSourceType.MYSQL),
-    REDIS_MQ(DataSourceType.REDIS, DataSourceType.ROCKETMQ);
+    HTTP_REDIS(DataSourceType.HTTP, DataSourceType.REDIS),
+    HTTP_ROCKETMQ(DataSourceType.HTTP, DataSourceType.ROCKETMQ),
+    REDIS_MQ(DataSourceType.REDIS, DataSourceType.ROCKETMQ),
+    HTTP_HTTP(DataSourceType.HTTP, DataSourceType.HTTP),
+    ;
     private static final Map<String, TransportType> INDEX_TYPES = new HashMap<>();
     private static final TransportType[] TYPES = TransportType.values();
     private static final String SEPARATOR = "@";

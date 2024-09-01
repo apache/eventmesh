@@ -708,7 +708,7 @@ subprojects {
 
     dependencyManagement {
         dependencies {
-            dependency "org.apache.commons:commons-lang3:3.14.0"
+            dependency "org.apache.commons:commons-lang3:3.17.0"
             dependency "org.apache.commons:commons-collections4:4.4"
             dependency "org.apache.commons:commons-text:1.12.0"
             dependency "commons-io:commons-io:2.16.1"
@@ -733,7 +733,7 @@ subprojects {
             dependency "org.asynchttpclient:async-http-client:2.12.3"
             dependency "org.apache.httpcomponents:httpclient:4.5.14"
 
-            dependency "io.netty:netty-all:4.1.111.Final"
+            dependency "io.netty:netty-all:4.1.112.Final"
 
             dependency "io.dropwizard.metrics:metrics-core:${dropwizardMetricsVersion}"
             dependency "io.dropwizard.metrics:metrics-healthchecks:${dropwizardMetricsVersion}"
@@ -782,7 +782,7 @@ subprojects {
 
             dependency "org.javassist:javassist:3.30.2-GA"
 
-            dependency "com.alibaba.nacos:nacos-client:2.3.3"
+            dependency "com.alibaba.nacos:nacos-client:2.4.1"
 
             dependency 'org.apache.zookeeper:zookeeper:3.9.2'
             dependency "org.apache.curator:curator-client:${curatorVersion}"
@@ -798,7 +798,7 @@ subprojects {
             dependency "com.github.rholder:guava-retrying:2.0.0"
 
             dependency "com.alibaba:druid-spring-boot-starter:1.2.23"
-            dependency "com.baomidou:mybatis-plus-boot-starter:3.5.5"
+            dependency "com.baomidou:mybatis-plus-boot-starter:3.5.7"
             dependency "com.mysql:mysql-connector-j:8.4.0"
             dependency "org.springframework.boot:spring-boot-starter-jetty:2.7.18"
             dependency "org.locationtech.jts:jts-core:1.19.0"

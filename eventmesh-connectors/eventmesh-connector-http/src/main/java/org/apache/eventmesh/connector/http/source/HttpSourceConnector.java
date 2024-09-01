@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -41,6 +42,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.LoggerHandler;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,21 +54,17 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
 
     private int batchSize;
 
+    private Route route;
+
     private Protocol protocol;
 
     private HttpServer server;
 
+    @Getter
     private volatile boolean started = false;
 
+    @Getter
     private volatile boolean destroyed = false;
-
-    public boolean isStarted() {
-        return started;
-    }
-
-    public boolean isDestroyed() {
-        return destroyed;
-    }
 
 
     @Override
@@ -106,7 +104,7 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
 
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
-        final Route route = router.route()
+        route = router.route()
             .path(this.sourceConfig.connectorConfig.getPath())
             .handler(LoggerHandler.create());
 
@@ -136,12 +134,33 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
 
     @Override
     public void commit(ConnectRecord record) {
-
+        if (this.route != null && sourceConfig.getConnectorConfig().isDataConsistencyEnabled()) {
+            this.route.handler(ctx -> {
+                // Return 200 OK
+                ctx.response()
+                    .putHeader("content-type", "application/json")
+                    .setStatusCode(HttpResponseStatus.OK.code())
+                    .end("{\"status\":\"success\",\"recordId\":\"" + record.getRecordId() + "\"}");
+            });
+        }
     }
 
     @Override
     public String name() {
         return this.sourceConfig.getConnectorConfig().getConnectorName();
+    }
+
+    @Override
+    public void onException(ConnectRecord record) {
+        if (this.route != null) {
+            this.route.failureHandler(ctx -> {
+                log.error("Failed to handle the request, recordId {}. ", record.getRecordId(), ctx.failure());
+                // Return Bad Response
+                ctx.response()
+                    .setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+                    .end("{\"status\":\"failed\",\"recordId\":\"" + record.getRecordId() + "\"}");
+            });
+        }
     }
 
     @Override

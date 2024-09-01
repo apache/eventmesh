@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.datasource;
+package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import org.apache.eventmesh.common.config.connector.rdb.canal.SourceConnectorConfig;
 import org.apache.eventmesh.common.remote.job.SyncConsistency;
 import org.apache.eventmesh.common.remote.job.SyncMode;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 import java.util.List;
 
-public class MySqlIncDataSourceSourceConf extends DataSourceConf {
-    @Override
-    public Class<? extends DataSourceConf> getConfClass() {
-        return MySqlIncDataSourceSourceConf.class;
-    }
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CanalSourceIncrementConfig extends CanalSourceConfig {
 
     private String destination;
 
@@ -82,4 +82,5 @@ public class MySqlIncDataSourceSourceConf extends DataSourceConf {
     private String needSyncMarkTableColumnValue = "needSync";
 
     private SourceConnectorConfig sourceConnectorConfig;
+
 }

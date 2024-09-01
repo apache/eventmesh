@@ -15,33 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.callback;
+package org.apache.eventmesh.admin.server.web.db.service.impl;
 
-public class SendResult {
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshVerify;
+import org.apache.eventmesh.admin.server.web.db.mapper.EventMeshVerifyMapper;
+import org.apache.eventmesh.admin.server.web.db.service.EventMeshVerifyService;
 
-    private String messageId;
-    private String topic;
+import org.springframework.stereotype.Service;
 
-    public SendResult() {
-    }
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-    public String getMessageId() {
-        return this.messageId;
-    }
+/**
+ * event_mesh_verify
+ */
+@Service
+public class EventMeshVerifyServiceImpl extends ServiceImpl<EventMeshVerifyMapper, EventMeshVerify>
+    implements EventMeshVerifyService {
 
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public String getTopic() {
-        return this.topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public String toString() {
-        return "SendResult[topic=" + this.topic + ", messageId=" + this.messageId + ']';
-    }
 }
+
+
+
+

@@ -26,6 +26,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CanalSinkFullConfig extends SinkConfig {
-    private SinkConnectorConfig sinkConfig;
+    private SinkConnectorConfig sinkConnectorConfig;
     private String zeroDate;
 }

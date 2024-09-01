@@ -79,6 +79,11 @@ public class RocketMQSinkConnector implements Sink, ConnectorCreateService<Sink>
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         producer.shutdown();
     }

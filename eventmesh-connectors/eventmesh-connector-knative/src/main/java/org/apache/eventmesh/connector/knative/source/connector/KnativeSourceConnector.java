@@ -66,6 +66,11 @@ public class KnativeSourceConnector implements Source {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() {
         started.compareAndSet(true, false);
     }

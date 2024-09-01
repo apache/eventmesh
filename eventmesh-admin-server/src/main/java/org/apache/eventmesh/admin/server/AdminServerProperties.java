@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.admin.server;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Getter;
@@ -32,4 +35,6 @@ public class AdminServerProperties {
     private String configurationPath;
     private String configurationFile;
     private String serviceName;
+    private Map<String, List<String>> adminServerList;
+    private String region;
 }

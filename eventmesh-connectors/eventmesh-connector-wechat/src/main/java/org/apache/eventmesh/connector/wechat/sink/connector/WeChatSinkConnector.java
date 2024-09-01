@@ -116,6 +116,11 @@ public class WeChatSinkConnector implements Sink {
     }
 
     @Override
+    public void onException(ConnectRecord record) {
+
+    }
+
+    @Override
     public void stop() throws IOException {
         isRunning = false;
     }

@@ -120,9 +120,10 @@ public class SynchronizedCircularFifoQueue<E> extends CircularFifoQueue<E> {
      */
     public synchronized List<E> fetchRange(int start, int end, boolean removed) {
 
-        if (start < 0 || end > this.size() || start > end) {
+        if (start < 0 || start > end) {
             throw new IllegalArgumentException("Invalid range");
         }
+        end = Math.min(end, this.size());
 
         Iterator<E> iterator = this.iterator();
         List<E> items = new ArrayList<>(end - start);

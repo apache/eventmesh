@@ -18,11 +18,8 @@
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
 import org.apache.eventmesh.common.config.connector.SourceConfig;
-import org.apache.eventmesh.common.remote.job.SyncConsistency;
-import org.apache.eventmesh.common.remote.job.SyncMode;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
-import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,56 +28,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class CanalSourceConfig extends SourceConfig {
 
-    private String destination;
+    // used to convert canal full/increment/check connector config
+    private Map<String, Object> sourceConfig;
 
-    private Long canalInstanceId;
-
-    private String desc;
-
-    private boolean ddlSync = true;
-
-    private boolean filterTableError = false;
-
-    private Long slaveId;
-
-    private Short clientId;
-
-    private String serverUUID;
-
-    private boolean isMariaDB = true;
-
-    private boolean isGTIDMode = true;
-
-    private Integer batchSize = 10000;
-
-    private Long batchTimeout = -1L;
-
-    private String tableFilter;
-
-    private String fieldFilter;
-
-    private List<RecordPosition> recordPositions;
-
-    // ================================= channel parameter
-    // ================================
-
-    // enable remedy
-    private Boolean enableRemedy = false;
-
-    // sync mode: field/row
-    private SyncMode syncMode;
-
-    // sync consistency
-    private SyncConsistency syncConsistency;
-
-    // ================================= system parameter
-    // ================================
-
-    // Column name of the bidirectional synchronization mark
-    private String needSyncMarkTableColumnName = "needSync";
-
-    // Column value of the bidirectional synchronization mark
-    private String needSyncMarkTableColumnValue = "needSync";
-
-    private SourceConnectorConfig sourceConnectorConfig;
 }

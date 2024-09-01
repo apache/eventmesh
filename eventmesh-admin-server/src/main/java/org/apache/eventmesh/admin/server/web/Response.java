@@ -19,8 +19,15 @@ package org.apache.eventmesh.admin.server.web;
 
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Response<T> {
+
     private int code;
+
     private boolean success;
 
     private String desc;

@@ -15,19 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.config;
+package org.apache.eventmesh.common.config.connector.rdb.canal;
+
+import org.apache.eventmesh.common.remote.job.SyncMode;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class HttpRetryConfig {
-    // maximum number of retries, default 2, minimum 0
-    private int maxRetries = 2;
+@EqualsAndHashCode(callSuper = true)
+public class CanalSinkIncrementConfig extends CanalSinkConfig {
 
-    // retry interval, default 2000ms
-    private int interval = 2000;
+    // batchSize
+    private Integer batchSize = 50;
 
-    // Default value is false, indicating that only requests with network-level errors will be retried.
-    // If set to true, all failed requests will be retried, including network-level errors and non-2xx responses.
-    private boolean retryOnNonSuccess = false;
+    // enable batch
+    private Boolean useBatch = true;
+
+    // sink thread size for single channel
+    private Integer poolSize = 5;
+
+    // sync mode: field/row
+    private SyncMode syncMode;
+
+    private boolean isGTIDMode = true;
+
+    private boolean isMariaDB = true;
+
+    // skip sink process exception
+    private Boolean skipException = false;
+
+    public SinkConnectorConfig sinkConnectorConfig;
+
 }

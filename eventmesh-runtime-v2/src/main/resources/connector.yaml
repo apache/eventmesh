@@ -15,6 +15,9 @@
 # limitations under the License.
 #
 
-taskID: 1
-jobID: 1
+taskID: 9c18a0d2-7a61-482c-8275-34f8c2786cea
+jobID: a01fd5e1-d295-4b89-99bc-0ae23eb85acf
 region: region1
+runtimeConfig: # this used for connector runtime config
+  offsetStoragePluginType: admin
+  offsetStorageAddr: "127.0.0.1:8081;127.0.0.1:8081"

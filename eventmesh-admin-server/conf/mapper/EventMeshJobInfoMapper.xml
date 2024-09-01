@@ -19,31 +19,33 @@
 -->
 
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.apache.eventmesh.admin.server.web.db.mapper.EventMeshJobInfoMapper">
 
     <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo">
-            <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="jobID" column="jobID" jdbcType="VARCHAR"/>
-            <result property="desc" column="desc" jdbcType="VARCHAR"/>
-            <result property="taskID" column="taskID" jdbcType="VARCHAR"/>
-            <result property="transportType" column="transportType" jdbcType="VARCHAR"/>
-            <result property="sourceData" column="sourceData" jdbcType="INTEGER"/>
-            <result property="targetData" column="targetData" jdbcType="INTEGER"/>
-            <result property="state" column="state" jdbcType="VARCHAR"/>
-            <result property="jobType" column="jobType" jdbcType="VARCHAR"/>
-            <result property="fromRegion" column="fromRegion" jdbcType="VARCHAR"/>
-            <result property="createUid" column="createUid" jdbcType="VARCHAR"/>
-            <result property="updateUid" column="updateUid" jdbcType="VARCHAR"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="jobID" column="jobID" jdbcType="VARCHAR"/>
+        <result property="jobDesc" column="desc" jdbcType="VARCHAR"/>
+        <result property="taskID" column="taskID" jdbcType="VARCHAR"/>
+        <result property="transportType" column="transportType" jdbcType="VARCHAR"/>
+        <result property="sourceData" column="sourceData" jdbcType="INTEGER"/>
+        <result property="targetData" column="targetData" jdbcType="INTEGER"/>
+        <result property="jobState" column="state" jdbcType="VARCHAR"/>
+        <result property="jobType" column="jobType" jdbcType="VARCHAR"/>
+        <result property="fromRegion" column="sourceRegion" jdbcType="VARCHAR"/>
+        <result property="runningRegion" column="targetRegion" jdbcType="VARCHAR"/>
+        <result property="createUid" column="createUid" jdbcType="VARCHAR"/>
+        <result property="updateUid" column="updateUid" jdbcType="VARCHAR"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,jobID,desc,
+        id,jobID,jobDesc,
         taskID,transportType,sourceData,
-        targetData,state,jobType,
-        fromRegion,createTime,updateTime
+        targetData,jobState,jobType,
+        fromRegion,runningRegion,createUid,
+        updateUid,createTime,updateTime
     </sql>
 </mapper>
