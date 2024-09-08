@@ -72,6 +72,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
     public void init(Config config) throws Exception {
         // init config for spring source connector
         this.sourceConfig = (SpringSourceConfig) config;
+        doInit();
     }
 
     @Override
@@ -79,6 +80,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         // init config for spring source connector
         this.sourceConfig = (SpringSourceConfig) sourceConnectorContext.getSourceConfig();
+        doInit();
     }
 
     private void doInit() {
