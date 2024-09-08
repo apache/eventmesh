@@ -15,29 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config.connector;
+package org.apache.eventmesh.common.config;
 
-import org.apache.eventmesh.common.config.SourceConstants;
-import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
+/**
+ * Source Constants
+ */
+public class SourceConstants {
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+    /**
+     * Default capacity, default is 1024
+     */
+    public static final int DEFAULT_CAPACITY = 1024;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-public abstract class SourceConfig extends Config {
+    /**
+     * Default poll batch size
+     */
+    public static final int DEFAULT_POLL_BATCH_SIZE = 10;
 
-    private PubSubConfig pubSubConfig;
-
-    private OffsetStorageConfig offsetStorageConfig;
-
-    // Default capacity
-    private int capacity = SourceConstants.DEFAULT_CAPACITY;
-
-    // Default poll timeout (unit: ms)
-    private long pollTimeout = SourceConstants.DEFAULT_POLL_TIMEOUT;
-
-    // Default poll batch size
-    private int pollBatchSize = SourceConstants.DEFAULT_POLL_BATCH_SIZE;
+    /**
+     * Default poll timeout (unit: ms)
+     */
+    public static final long DEFAULT_POLL_TIMEOUT = 5000L;
 
 }

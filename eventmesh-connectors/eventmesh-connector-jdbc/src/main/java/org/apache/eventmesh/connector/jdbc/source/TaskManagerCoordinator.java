@@ -40,16 +40,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TaskManagerCoordinator {
 
-    private static final int BATCH_MAX = 10;
-    private static final int DEFAULT_QUEUE_SIZE = 1 << 13;
+    private final BlockingQueue<ConnectRecord> recordBlockingQueue;
+    private final Map<String, JdbcTaskManager> taskManagerCache = new HashMap<>(8);
+    private final int pollBatchSize;
+    private final long pollTimeout;
 
-    private BlockingQueue<ConnectRecord> recordBlockingQueue = new LinkedBlockingQueue<>(DEFAULT_QUEUE_SIZE);
-    private Map<String, JdbcTaskManager> taskManagerCache = new HashMap<>(8);
 
-    /**
-     * Constructs a new TaskManagerCoordinator.
-     */
-    public TaskManagerCoordinator() {
+    public TaskManagerCoordinator(int capacity, int pollBatchSize, long pollTimeout) {
+        this.recordBlockingQueue = new LinkedBlockingQueue<>(capacity);
+        this.pollBatchSize = pollBatchSize;
+        this.pollTimeout = pollTimeout;
     }
 
     /**
@@ -96,10 +96,13 @@ public class TaskManagerCoordinator {
      * @return A list of ConnectRecords, up to the maximum batch size defined by BATCH_MAX.
      */
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> records = new ArrayList<>(BATCH_MAX);
-        for (int index = 0; index < BATCH_MAX; ++index) {
+        long startTimestamp = System.currentTimeMillis();
+        long remainingTime = pollTimeout;
+
+        List<ConnectRecord> records = new ArrayList<>(pollBatchSize);
+        for (int index = 0; index < pollBatchSize; ++index) {
             try {
-                ConnectRecord record = recordBlockingQueue.poll(3, TimeUnit.SECONDS);
+                ConnectRecord record = recordBlockingQueue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (Objects.isNull(record)) {
                     break;
                 }
@@ -107,6 +110,10 @@ public class TaskManagerCoordinator {
                     log.debug("record:{}", JsonUtils.toJSONString(record));
                 }
                 records.add(record);
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTimestamp;
+                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.spring.source.connector;
 
+import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.spring.SpringSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
@@ -52,13 +53,15 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
 
     private static final String CONNECTOR_PROPERTY_PREFIX = "eventmesh.connector.";
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private ApplicationContext applicationContext;
 
     private SpringSourceConfig sourceConfig;
 
     private BlockingQueue<ConnectRecord> queue;
+
+    private int pollBatchSize;
+
+    private long pollTimeout;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -69,7 +72,6 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
     public void init(Config config) throws Exception {
         // init config for spring source connector
         this.sourceConfig = (SpringSourceConfig) config;
-        this.queue = new LinkedBlockingQueue<>(1000);
     }
 
     @Override
@@ -77,7 +79,12 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         // init config for spring source connector
         this.sourceConfig = (SpringSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.queue = new LinkedBlockingQueue<>(1000);
+    }
+
+    private void doInit() {
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.pollBatchSize = sourceConfig.getPollBatchSize();
+        this.pollTimeout = sourceConfig.getPollTimeout();
     }
 
     @Override
@@ -107,15 +114,21 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+        long startTimestamp = System.currentTimeMillis();
+        long remainingTime = pollTimeout;
 
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        List<ConnectRecord> connectRecords = new ArrayList<>(pollBatchSize);
+        for (int count = 0; count < pollBatchSize; ++count) {
             try {
-                ConnectRecord connectRecord = queue.poll(3, TimeUnit.SECONDS);
+                ConnectRecord connectRecord = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (connectRecord == null) {
                     break;
                 }
                 connectRecords.add(connectRecord);
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTimestamp;
+                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[SpringSourceConnector] Interrupting thread {} due to exception {}",

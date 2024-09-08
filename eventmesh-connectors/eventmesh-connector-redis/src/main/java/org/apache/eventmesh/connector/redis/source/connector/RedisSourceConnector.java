@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.redis.source.connector;
 
+import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.redis.RedisSourceConfig;
 import org.apache.eventmesh.connector.redis.cloudevent.CloudEventCodec;
@@ -40,8 +41,6 @@ import io.cloudevents.CloudEvent;
 
 public class RedisSourceConnector implements Source {
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private RTopic topic;
 
     private RedisSourceConfig sourceConfig;
@@ -49,6 +48,10 @@ public class RedisSourceConnector implements Source {
     private RedissonClient redissonClient;
 
     private BlockingQueue<CloudEvent> queue;
+
+    private int pollBatchSize;
+
+    private long pollTimeout;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -73,7 +76,9 @@ public class RedisSourceConnector implements Source {
         redisConfig.useSingleServer().setAddress(sourceConfig.connectorConfig.getServer());
         redisConfig.setCodec(CloudEventCodec.getInstance());
         this.redissonClient = Redisson.create(redisConfig);
-        this.queue = new LinkedBlockingQueue<>(1000);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.pollBatchSize = sourceConfig.getPollBatchSize();
+        this.pollTimeout = sourceConfig.getPollTimeout();
     }
 
     @Override
@@ -107,15 +112,21 @@ public class RedisSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        long startTimestamp = System.currentTimeMillis();
+        long remainingTime = pollTimeout;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(pollBatchSize);
+        for (int count = 0; count < pollBatchSize; ++count) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
-
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTimestamp;
+                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

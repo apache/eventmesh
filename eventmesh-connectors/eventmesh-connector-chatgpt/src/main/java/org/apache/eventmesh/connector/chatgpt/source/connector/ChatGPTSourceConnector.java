@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.chatgpt.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
@@ -61,7 +62,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ChatGPTSourceConnector implements Source {
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
+    private int pollBatchSize;
+    private long pollTimeout;
 
     private ChatGPTSourceConfig sourceConfig;
     private BlockingQueue<CloudEvent> queue;
@@ -129,7 +131,9 @@ public class ChatGPTSourceConnector implements Source {
         if (StringUtils.isNotEmpty(parsePromptTemplateStr)) {
             this.parseHandler = new ParseHandler(openaiManager, parsePromptTemplateStr);
         }
-        this.queue = new LinkedBlockingQueue<>(1024);
+        this.pollBatchSize = sourceConfig.getPollBatchSize();
+        this.pollTimeout = sourceConfig.getPollTimeout();
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
         router.route().path(this.sourceConfig.connectorConfig.getPath()).method(HttpMethod.POST).handler(BodyHandler.create()).handler(ctx -> {
@@ -239,14 +243,21 @@ public class ChatGPTSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int i = 0; i < DEFAULT_BATCH_SIZE; i++) {
+        long startTimestamp = System.currentTimeMillis();
+        long remainingTime = pollTimeout;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(pollBatchSize);
+        for (int i = 0; i < pollBatchSize; i++) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTimestamp;
+                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

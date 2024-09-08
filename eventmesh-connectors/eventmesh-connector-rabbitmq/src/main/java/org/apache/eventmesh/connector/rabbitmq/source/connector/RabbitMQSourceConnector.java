@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rabbitmq.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mq.rabbitmq.RabbitMQSourceConfig;
 import org.apache.eventmesh.common.config.connector.mq.rabbitmq.SourceConnectorConfig;
@@ -54,9 +55,11 @@ public class RabbitMQSourceConnector implements Source {
 
     private volatile boolean started = false;
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private BlockingQueue<CloudEvent> queue;
+
+    private int pollBatchSize;
+
+    private long pollTimeout;
 
     private final RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
 
@@ -84,7 +87,9 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        this.queue = new LinkedBlockingQueue<>(1000);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.pollBatchSize = sourceConfig.getPollBatchSize();
+        this.pollTimeout = sourceConfig.getPollTimeout();
         this.sourceConfig = (RabbitMQSourceConfig) ((SourceConnectorContext) connectorContext).getSourceConfig();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(sourceConfig.getConnectorConfig().getHost(),
@@ -139,15 +144,21 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        long startTimestamp = System.currentTimeMillis();
+        long remainingTime = pollTimeout;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(pollBatchSize);
+        for (int count = 0; count < pollBatchSize; ++count) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
-
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTimestamp;
+                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }
