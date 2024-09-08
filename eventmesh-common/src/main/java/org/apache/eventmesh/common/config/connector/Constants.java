@@ -30,4 +30,21 @@ public class Constants {
     public static final int DEFAULT_ATTEMPT = 3;
 
     public static final int DEFAULT_PORT = 8080;
+
+    // ======================== Source Constants ========================
+    /**
+     * Default capacity
+     */
+    public static final int DEFAULT_CAPACITY = 1024;
+
+    /**
+     * Default poll batch size
+     */
+    public static final int DEFAULT_POLL_BATCH_SIZE = 10;
+
+    /**
+     * Default poll timeout (unit: ms)
+     */
+    public static final long DEFAULT_POLL_TIMEOUT = 5000L;
+
 }

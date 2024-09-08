@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.chatgpt.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.chatgpt.source.config.ChatGPTSourceConfig;
 import org.apache.eventmesh.connector.chatgpt.source.dto.ChatGPTRequestDTO;
@@ -133,7 +133,7 @@ public class ChatGPTSourceConnector implements Source {
         }
         this.pollBatchSize = sourceConfig.getPollBatchSize();
         this.pollTimeout = sourceConfig.getPollTimeout();
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
         router.route().path(this.sourceConfig.connectorConfig.getPath()).method(HttpMethod.POST).handler(BodyHandler.create()).handler(ctx -> {

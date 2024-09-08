@@ -19,8 +19,8 @@ package org.apache.eventmesh.connector.canal.source.connector;
 
 import org.apache.eventmesh.common.AbstractComponent;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
@@ -140,7 +140,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
         this.tableMgr = new RdbTableMgr(config.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
         this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
         this.pollTimeout = config.getPollTimeout();
-        this.queue = new LinkedBlockingQueue<>(config.getCapacity() > 0 ? config.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(config.getCapacity() > 0 ? config.getCapacity() : Constants.DEFAULT_CAPACITY);
     }
 
     @Override

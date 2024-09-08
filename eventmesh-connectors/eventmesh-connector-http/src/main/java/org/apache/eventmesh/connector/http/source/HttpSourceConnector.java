@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.http.source;
 
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
@@ -96,7 +96,7 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
     private void doInit() {
         // init queue
         this.queue =
-            new LinkedBlockingQueue<>(this.sourceConfig.getCapacity() > 0 ? this.sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+            new LinkedBlockingQueue<>(this.sourceConfig.getCapacity() > 0 ? this.sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
 
         // init poll batch size and timeout
         this.pollBatchSize = this.sourceConfig.getPollBatchSize();

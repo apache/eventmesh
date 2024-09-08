@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.spring.source.connector;
 
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.spring.SpringSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
@@ -84,7 +84,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
     }
 
     private void doInit() {
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
         this.pollBatchSize = sourceConfig.getPollBatchSize();
         this.pollTimeout = sourceConfig.getPollTimeout();
     }

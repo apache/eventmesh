@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.mongodb.source.connector;
 
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.rdb.mongodb.MongodbSourceConfig;
 import org.apache.eventmesh.connector.mongodb.source.client.Impl.MongodbSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.client.MongodbReplicaSetSourceClient;
@@ -71,7 +71,7 @@ public class MongodbSourceConnector implements Source {
     private void doInit() {
         this.pollBatchSize = sourceConfig.getPollBatchSize();
         this.pollTimeout = sourceConfig.getPollTimeout();
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSourceClient(sourceConfig.getConnectorConfig(), queue);

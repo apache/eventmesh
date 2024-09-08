@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.openfunction.source.connector;
 
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.openfunction.OpenFunctionSourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -65,7 +65,7 @@ public class OpenFunctionSourceConnector implements Source {
 
     private void doInit() {
         // init config for openfunction source connector
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
         this.pollBatchSize = sourceConfig.getPollBatchSize();
         this.pollTimeout = sourceConfig.getPollTimeout();
     }

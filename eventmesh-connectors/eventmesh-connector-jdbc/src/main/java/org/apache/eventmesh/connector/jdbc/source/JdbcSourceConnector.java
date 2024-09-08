@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.jdbc.source;
 
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.dialect.DatabaseDialect;
@@ -143,7 +143,7 @@ public class JdbcSourceConnector extends SourceConnector {
 
         this.dispatcher = new EventDispatcher(this.sourceJdbcTaskManager);
 
-        int capacity = this.sourceConfig.getCapacity() > 0 ? this.sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY;
+        int capacity = this.sourceConfig.getCapacity() > 0 ? this.sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY;
         this.taskManagerCoordinator = new TaskManagerCoordinator(capacity, this.sourceConfig.getPollBatchSize(), this.sourceConfig.getPollTimeout());
         this.taskManagerCoordinator.registerTaskManager(SourceJdbcTaskManager.class.getName(), sourceJdbcTaskManager);
         this.taskManagerCoordinator.init();

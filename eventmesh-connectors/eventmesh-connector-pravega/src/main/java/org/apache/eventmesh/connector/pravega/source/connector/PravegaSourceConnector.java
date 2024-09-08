@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.pravega.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.pravega.PravegaSourceConfig;
 import org.apache.eventmesh.connector.pravega.client.PravegaEvent;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -91,7 +91,7 @@ public class PravegaSourceConnector implements Source {
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (PravegaSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
         this.pollBatchSize = sourceConfig.getPollBatchSize();
         this.pollTimeout = sourceConfig.getPollTimeout();
 

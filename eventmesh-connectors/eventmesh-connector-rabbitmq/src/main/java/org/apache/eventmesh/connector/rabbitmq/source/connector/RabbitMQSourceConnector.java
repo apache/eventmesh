@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.rabbitmq.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.mq.rabbitmq.RabbitMQSourceConfig;
 import org.apache.eventmesh.common.config.connector.mq.rabbitmq.SourceConnectorConfig;
 import org.apache.eventmesh.connector.rabbitmq.client.RabbitmqClient;
@@ -87,7 +87,7 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : SourceConstants.DEFAULT_CAPACITY);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
         this.pollBatchSize = sourceConfig.getPollBatchSize();
         this.pollTimeout = sourceConfig.getPollTimeout();
         this.sourceConfig = (RabbitMQSourceConfig) ((SourceConnectorContext) connectorContext).getSourceConfig();

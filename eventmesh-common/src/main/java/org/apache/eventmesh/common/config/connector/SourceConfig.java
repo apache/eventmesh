@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.config.connector;
 
-import org.apache.eventmesh.common.config.SourceConstants;
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 
 import lombok.Data;
@@ -32,12 +31,12 @@ public abstract class SourceConfig extends Config {
     private OffsetStorageConfig offsetStorageConfig;
 
     // Default capacity
-    private int capacity = SourceConstants.DEFAULT_CAPACITY;
+    private int capacity = Constants.DEFAULT_CAPACITY;
 
     // Default poll timeout (unit: ms)
-    private long pollTimeout = SourceConstants.DEFAULT_POLL_TIMEOUT;
+    private long pollTimeout = Constants.DEFAULT_POLL_TIMEOUT;
 
     // Default poll batch size
-    private int pollBatchSize = SourceConstants.DEFAULT_POLL_BATCH_SIZE;
+    private int pollBatchSize = Constants.DEFAULT_POLL_BATCH_SIZE;
 
 }
