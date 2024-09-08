@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.canal.source.connector;
 import org.apache.eventmesh.common.AbstractComponent;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
@@ -59,7 +58,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     private ThreadPoolExecutor executor;
     private BlockingQueue<List<ConnectRecord>> queue;
     private final AtomicBoolean flag = new AtomicBoolean(true);
-    private long pollTimeout;
+    private long maxPollWaitTime;
 
     @Override
     protected void run() throws Exception {
@@ -139,8 +138,8 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
         DatabaseConnection.initSourceConnection();
         this.tableMgr = new RdbTableMgr(config.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
         this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
-        this.pollTimeout = config.getPollTimeout();
-        this.queue = new LinkedBlockingQueue<>(config.getCapacity() > 0 ? config.getCapacity() : Constants.DEFAULT_CAPACITY);
+        this.maxPollWaitTime = config.getPollConfig().getMaxWaitTime();
+        this.queue = new LinkedBlockingQueue<>(config.getPollConfig().getCapacity());
     }
 
     @Override
@@ -170,7 +169,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     public List<ConnectRecord> poll() {
         while (flag.get()) {
             try {
-                List<ConnectRecord> records = queue.poll(pollTimeout, TimeUnit.MILLISECONDS);
+                List<ConnectRecord> records = queue.poll(maxPollWaitTime, TimeUnit.MILLISECONDS);
                 if (records == null || records.isEmpty()) {
                     continue;
                 }

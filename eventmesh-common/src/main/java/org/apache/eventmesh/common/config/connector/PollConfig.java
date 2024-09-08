@@ -17,19 +17,27 @@
 
 package org.apache.eventmesh.common.config.connector;
 
-import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
-
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
+/**
+ * Source Poll Config
+ */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public abstract class SourceConfig extends Config {
+public class PollConfig {
 
-    private PubSubConfig pubSubConfig;
+    /**
+     * Capacity of the poll queue
+     */
+    private int capacity = Constants.DEFAULT_CAPACITY;
 
-    private OffsetStorageConfig offsetStorageConfig;
+    /**
+     * Max batch size of the poll
+     */
+    private int maxBatchSize = Constants.DEFAULT_POLL_BATCH_SIZE;
 
-    private PollConfig pollConfig;
+    /**
+     * Max wait time of the poll
+     */
+    private long maxWaitTime = Constants.DEFAULT_POLL_TIMEOUT;
 
 }

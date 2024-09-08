@@ -42,14 +42,14 @@ public class TaskManagerCoordinator {
 
     private final BlockingQueue<ConnectRecord> recordBlockingQueue;
     private final Map<String, JdbcTaskManager> taskManagerCache = new HashMap<>(8);
-    private final int pollBatchSize;
-    private final long pollTimeout;
+    private final int maxBatchSize;
+    private final long maxPollTimeout;
 
 
-    public TaskManagerCoordinator(int capacity, int pollBatchSize, long pollTimeout) {
+    public TaskManagerCoordinator(int capacity, int maxBatchSize, long maxPollTimeout) {
         this.recordBlockingQueue = new LinkedBlockingQueue<>(capacity);
-        this.pollBatchSize = pollBatchSize;
-        this.pollTimeout = pollTimeout;
+        this.maxBatchSize = maxBatchSize;
+        this.maxPollTimeout = maxPollTimeout;
     }
 
     /**
@@ -96,11 +96,11 @@ public class TaskManagerCoordinator {
      * @return A list of ConnectRecords, up to the maximum batch size defined by BATCH_MAX.
      */
     public List<ConnectRecord> poll() {
-        long startTimestamp = System.currentTimeMillis();
-        long remainingTime = pollTimeout;
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollTimeout;
 
-        List<ConnectRecord> records = new ArrayList<>(pollBatchSize);
-        for (int index = 0; index < pollBatchSize; ++index) {
+        List<ConnectRecord> records = new ArrayList<>(maxBatchSize);
+        for (int index = 0; index < maxBatchSize; ++index) {
             try {
                 ConnectRecord record = recordBlockingQueue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (Objects.isNull(record)) {
@@ -112,8 +112,8 @@ public class TaskManagerCoordinator {
                 records.add(record);
 
                 // calculate elapsed time and update remaining time for next poll
-                long elapsedTime = System.currentTimeMillis() - startTimestamp;
-                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollTimeout > elapsedTime ? maxPollTimeout - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

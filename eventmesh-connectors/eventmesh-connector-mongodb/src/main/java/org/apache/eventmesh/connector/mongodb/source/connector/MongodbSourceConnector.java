@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.mongodb.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.rdb.mongodb.MongodbSourceConfig;
 import org.apache.eventmesh.connector.mongodb.source.client.Impl.MongodbSourceClient;
 import org.apache.eventmesh.connector.mongodb.source.client.MongodbReplicaSetSourceClient;
@@ -45,8 +44,9 @@ public class MongodbSourceConnector implements Source {
 
     private BlockingQueue<CloudEvent> queue;
 
-    private int pollBatchSize;
-    private long pollTimeout;
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     private MongodbSourceClient client;
 
@@ -69,9 +69,9 @@ public class MongodbSourceConnector implements Source {
     }
 
     private void doInit() {
-        this.pollBatchSize = sourceConfig.getPollBatchSize();
-        this.pollTimeout = sourceConfig.getPollTimeout();
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSourceClient(sourceConfig.getConnectorConfig(), queue);
@@ -109,11 +109,11 @@ public class MongodbSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        long startTimestamp = System.currentTimeMillis();
-        long remainingTime = pollTimeout;
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
 
-        List<ConnectRecord> connectRecords = new ArrayList<>(pollBatchSize);
-        for (int count = 0; count < pollBatchSize; ++count) {
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int count = 0; count < maxBatchSize; ++count) {
             try {
                 CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
@@ -122,8 +122,8 @@ public class MongodbSourceConnector implements Source {
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
 
                 // calculate elapsed time and update remaining time for next poll
-                long elapsedTime = System.currentTimeMillis() - startTimestamp;
-                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

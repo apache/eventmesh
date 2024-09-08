@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.pravega.source.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.connector.Constants;
 import org.apache.eventmesh.common.config.connector.pravega.PravegaSourceConfig;
 import org.apache.eventmesh.connector.pravega.client.PravegaEvent;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -70,8 +69,9 @@ public class PravegaSourceConnector implements Source {
 
     private BlockingQueue<CloudEvent> queue;
 
-    private int pollBatchSize;
-    private long pollTimeout;
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors() * 2,
@@ -91,9 +91,9 @@ public class PravegaSourceConnector implements Source {
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (PravegaSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.queue = new LinkedBlockingQueue<>(sourceConfig.getCapacity() > 0 ? sourceConfig.getCapacity() : Constants.DEFAULT_CAPACITY);
-        this.pollBatchSize = sourceConfig.getPollBatchSize();
-        this.pollTimeout = sourceConfig.getPollTimeout();
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
 
         streamManager = StreamManager.create(sourceConfig.getConnectorConfig().getControllerURI());
         ClientConfig.ClientConfigBuilder clientConfigBuilder =
@@ -172,11 +172,11 @@ public class PravegaSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        long startTimestamp = System.currentTimeMillis();
-        long remainingTime = pollTimeout;
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
 
-        List<ConnectRecord> connectRecords = new ArrayList<>(pollBatchSize);
-        for (int count = 0; count < pollBatchSize; ++count) {
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int count = 0; count < maxBatchSize; ++count) {
             try {
                 CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
@@ -185,8 +185,8 @@ public class PravegaSourceConnector implements Source {
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
 
                 // calculate elapsed time and update remaining time for next poll
-                long elapsedTime = System.currentTimeMillis() - startTimestamp;
-                remainingTime = pollTimeout > elapsedTime ? pollTimeout - elapsedTime : 0;
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }
