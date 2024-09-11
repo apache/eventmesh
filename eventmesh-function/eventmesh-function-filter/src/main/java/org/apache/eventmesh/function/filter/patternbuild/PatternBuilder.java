@@ -38,19 +38,33 @@ public class PatternBuilder {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static Pattern build(String jsonStr) {
 
-        Pattern pattern = new Pattern();
-        JsonNode jsonNode = null;
+    public static Pattern build(String jsonStr) {
         try {
-            jsonNode = mapper.readTree(jsonStr);
+            JsonNode jsonNode = mapper.readTree(jsonStr);
+            if (jsonNode.isEmpty() || !jsonNode.isObject()) {
+                return null;
+            }
+            return build(jsonNode);
         } catch (Exception e) {
             throw new JsonException("INVALID_JSON_STRING", e);
         }
+    }
 
-        if (jsonNode.isEmpty() || !jsonNode.isObject()) {
-            return null;
+    public static Pattern build(Map<String, Object> conditionMap) {
+        try {
+            JsonNode jsonNode = mapper.valueToTree(conditionMap);
+            if (jsonNode.isEmpty() || !jsonNode.isObject()) {
+                return null;
+            }
+            return build(jsonNode);
+        } catch (Exception e) {
+            throw new JsonException("INVALID_JSON_STRING", e);
         }
+    }
+
+    public static Pattern build(JsonNode jsonNode) {
+        Pattern pattern = new Pattern();
 
         // iter all json data
         Iterator<Entry<String, JsonNode>> iterator = jsonNode.fields();

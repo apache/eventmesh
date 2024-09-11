@@ -17,17 +17,17 @@
 
 package org.apache.eventmesh.runtime.function;
 
-import org.apache.eventmesh.function.api.AbstractFunctionChain;
-import org.apache.eventmesh.function.api.Function;
+import org.apache.eventmesh.function.api.AbstractEventMeshFunctionChain;
+import org.apache.eventmesh.function.api.EventMeshFunction;
 
 /**
  * ConnectRecord Function Chain.
  */
-public class StringFunctionChain extends AbstractFunctionChain<String, String> {
+public class StringEventMeshFunctionChain extends AbstractEventMeshFunctionChain<String, String> {
 
     @Override
     public String apply(String content) {
-        for (Function<String, String> function : functions) {
+        for (EventMeshFunction<String, String> function : functions) {
             if (content == null) {
                 break;
             }

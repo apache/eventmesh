@@ -18,7 +18,7 @@
 package org.apache.eventmesh.function.transformer;
 
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.function.api.Function;
+import org.apache.eventmesh.function.api.EventMeshFunction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  * 2. Original
  * 3. Template
  */
-public interface Transformer extends Function<String, String> {
+public interface Transformer extends EventMeshFunction<String, String> {
 
     String transform(String json) throws JsonProcessingException;
 

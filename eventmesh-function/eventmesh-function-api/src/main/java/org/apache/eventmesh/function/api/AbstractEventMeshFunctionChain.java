@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * AbstractFunctionChain is an abstract class that implements the {@link Function} interface and provides a framework
- * for chaining multiple {@link Function} instances that operate on inputs of type {@code T} and produce outputs of type
+ * AbstractEventMeshFunctionChain is an abstract class that implements the {@link EventMeshFunction} interface and provides a framework
+ * for chaining multiple {@link EventMeshFunction} instances that operate on inputs of type {@code T} and produce outputs of type
  * {@code R}. This class can be extended to create specific function chains with customized behavior for different
  * data types.
  *
@@ -33,14 +33,14 @@ import java.util.List;
  * @param <T> the type of the input to the function
  * @param <R> the type of the result of the function
  */
-public abstract class AbstractFunctionChain<T, R> implements Function<T, R> {
+public abstract class AbstractEventMeshFunctionChain<T, R> implements EventMeshFunction<T, R> {
 
-    protected final List<Function<T, R>> functions;
+    protected final List<EventMeshFunction<T, R>> functions;
 
     /**
      * Default constructor that initializes an empty function chain.
      */
-    public AbstractFunctionChain() {
+    public AbstractEventMeshFunctionChain() {
         this.functions = new ArrayList<>();
     }
 
@@ -50,27 +50,27 @@ public abstract class AbstractFunctionChain<T, R> implements Function<T, R> {
      *
      * @param functions the initial list of functions to be added to the chain
      */
-    public AbstractFunctionChain(List<Function<T, R>> functions) {
+    public AbstractEventMeshFunctionChain(List<EventMeshFunction<T, R>> functions) {
         this.functions = functions;
     }
 
     /**
-     * Adds a {@link Function} to the beginning of the chain. The function will be executed first when the
+     * Adds a {@link EventMeshFunction} to the beginning of the chain. The function will be executed first when the
      * {@link #apply(Object)} method is called.
      *
      * @param function the function to be added to the beginning of the chain
      */
-    public void addFirst(Function<T, R> function) {
-        functions.add(0, function);
+    public void addFirst(EventMeshFunction<T, R> function) {
+        this.functions.add(0, function);
     }
 
     /**
-     * Adds a {@link Function} to the end of the chain. The function will be executed in sequence after all previously
+     * Adds a {@link EventMeshFunction} to the end of the chain. The function will be executed in sequence after all previously
      * added functions when the {@link #apply(Object)} method is called.
      *
      * @param function the function to be added to the end of the chain
      */
-    public void addLast(Function<T, R> function) {
-        functions.add(function);
+    public void addLast(EventMeshFunction<T, R> function) {
+        this.functions.add(function);
     }
 }

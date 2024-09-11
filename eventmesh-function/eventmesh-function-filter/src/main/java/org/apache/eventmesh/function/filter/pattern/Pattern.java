@@ -18,7 +18,7 @@
 package org.apache.eventmesh.function.filter.pattern;
 
 import org.apache.eventmesh.common.utils.JsonPathUtils;
-import org.apache.eventmesh.function.api.Function;
+import org.apache.eventmesh.function.api.EventMeshFunction;
 import org.apache.eventmesh.function.filter.PatternEntry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.jsonpath.PathNotFoundException;
 
 
-public class Pattern implements Function<String, String> {
+public class Pattern implements EventMeshFunction<String, String> {
 
     private final List<PatternEntry> requiredFieldList = new ArrayList<>();
     private final List<PatternEntry> dataList = new ArrayList<>();

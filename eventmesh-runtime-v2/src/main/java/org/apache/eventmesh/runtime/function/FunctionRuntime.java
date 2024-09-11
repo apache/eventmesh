@@ -21,10 +21,9 @@ import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
-import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.job.JobType;
-import org.apache.eventmesh.function.api.AbstractFunctionChain;
-import org.apache.eventmesh.function.api.Function;
+import org.apache.eventmesh.function.api.AbstractEventMeshFunctionChain;
+import org.apache.eventmesh.function.api.EventMeshFunction;
 import org.apache.eventmesh.function.filter.pattern.Pattern;
 import org.apache.eventmesh.function.filter.patternbuild.PatternBuilder;
 import org.apache.eventmesh.function.transformer.Transformer;
@@ -42,12 +41,17 @@ import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +64,7 @@ public class FunctionRuntime implements Runtime {
 
     private FunctionRuntimeConfig functionRuntimeConfig;
 
-    private AbstractFunctionChain<String, String> functionChain;
+    private AbstractEventMeshFunctionChain<String, String> functionChain;
 
     private Sink sinkConnector;
 
@@ -69,7 +73,6 @@ public class FunctionRuntime implements Runtime {
     private final ExecutorService sourceService = ThreadPoolFactory.createSingleExecutor("eventMesh-sourceService");
 
     private final ExecutorService sinkService = ThreadPoolFactory.createSingleExecutor("eventMesh-sinkService");
-
 
     private volatile boolean isRunning = false;
 
@@ -122,10 +125,7 @@ public class FunctionRuntime implements Runtime {
         sourceConnectorContext.setSourceConfig(sourceConfig);
         sourceConnectorContext.setRuntimeConfig(functionRuntimeConfig.getRuntimeConfig());
         sourceConnectorContext.setJobType(jobType);
-//        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
-//        if (CollectionUtils.isNotEmpty(jobResponse.getPosition())) {
-//            sourceConnectorContext.setRecordPositionList(jobResponse.getPosition());
-//        }
+
         sourceConnector.init(sourceConnectorContext);
     }
 
@@ -167,17 +167,18 @@ public class FunctionRuntime implements Runtime {
         });
     }
 
-    private StringFunctionChain buildFunctionChain(List<Map<String, Object>> functionConfigs) {
-        StringFunctionChain functionChain = new StringFunctionChain();
-        for (Map<String, Object> functionConfig : functionConfigs) {
+    private StringEventMeshFunctionChain buildFunctionChain(List<Map<String, Object>> functionConfigs) {
+        StringEventMeshFunctionChain functionChain = new StringEventMeshFunctionChain();
 
-            String functionType = (String) functionConfig.getOrDefault("functionType", "");
-            if (functionType.isEmpty()) {
+        // build function chain
+        for (Map<String, Object> functionConfig : functionConfigs) {
+            String functionType = String.valueOf(functionConfig.getOrDefault("functionType", ""));
+            if (StringUtils.isEmpty(functionType)) {
                 throw new IllegalArgumentException("'functionType' is required for function");
             }
 
             // build function based on functionType
-            Function<String, String> function;
+            EventMeshFunction<String, String> function;
             switch (functionType) {
                 case "filter":
                     function = buildFilter(functionConfig);
@@ -189,6 +190,7 @@ public class FunctionRuntime implements Runtime {
                     throw new IllegalArgumentException(
                         "Invalid functionType: '" + functionType + "'. Supported functionType: 'filter', 'transformer'");
             }
+
             // add function to functionChain
             functionChain.addLast(function);
         }
@@ -196,18 +198,29 @@ public class FunctionRuntime implements Runtime {
         return functionChain;
     }
 
+
+    @SuppressWarnings("unchecked")
     private Pattern buildFilter(Map<String, Object> functionConfig) {
         // get condition from attributes
-        String condition = (String) functionConfig.get("condition");
+        Object condition = functionConfig.get("condition");
+
         if (condition == null) {
             throw new IllegalArgumentException("'condition' is required for filter function");
         }
-        return PatternBuilder.build(condition);
+
+        if (condition instanceof String) {
+            return PatternBuilder.build(String.valueOf(condition));
+        } else if (condition instanceof Map) {
+            return PatternBuilder.build((Map<String, Object>) condition);
+        } else {
+            throw new IllegalArgumentException("Invalid condition");
+        }
     }
 
     private Transformer buildTransformer(Map<String, Object> functionConfig) {
         // get transformerType from attributes
-        TransformerType transformerType = TransformerType.getItem((String) functionConfig.getOrDefault("transformerType", ""));
+        String transformerTypeStr = String.valueOf(functionConfig.getOrDefault("transformerType", "")).toUpperCase();
+        TransformerType transformerType = TransformerType.getItem(transformerTypeStr);
         if (transformerType == null) {
             throw new IllegalArgumentException(
                 "Invalid transformerType: '" + functionConfig.get("transformerType")
@@ -218,20 +231,20 @@ public class FunctionRuntime implements Runtime {
         TransformerParam transformerParam = new TransformerParam();
         transformerParam.setTransformerType(transformerType);
 
-        String value = (String) functionConfig.getOrDefault("value", "");
-        String template = (String) functionConfig.getOrDefault("template", "");
+        String value = String.valueOf(functionConfig.getOrDefault("value", ""));
+        String template = String.valueOf(functionConfig.getOrDefault("template", ""));
 
         switch (transformerType) {
             case CONSTANT:
                 // check value
-                if (value.isEmpty()) {
+                if (StringUtils.isEmpty(value)) {
                     throw new IllegalArgumentException("'value' is required for constant transformer");
                 }
                 transformerParam.setValue(value);
                 break;
             case TEMPLATE:
                 // check value and template
-                if (value.isEmpty() || template.isEmpty()) {
+                if (StringUtils.isAnyEmpty(value, template)) {
                     throw new IllegalArgumentException("'value' and 'template' are required for template transformer");
                 }
                 transformerParam.setValue(value);
@@ -299,17 +312,12 @@ public class FunctionRuntime implements Runtime {
     public void stop() throws Exception {
         log.info("FunctionRuntime is stopping...");
 
-//        if (isFailed) {
-//            reportJobRequest(connectorRuntimeConfig.getJobID(), JobState.FAIL);
-//        } else {
-//            reportJobRequest(connectorRuntimeConfig.getJobID(), JobState.COMPLETE);
-//        }
-
         isRunning = false;
         sinkConnector.stop();
         sourceConnector.stop();
         sinkService.shutdown();
         sourceService.shutdown();
+
         log.info("FunctionRuntime stopped.");
     }
 }

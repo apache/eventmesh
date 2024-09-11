@@ -29,7 +29,7 @@ package org.apache.eventmesh.function.api;
  * @param <T> the type of the input to the function
  * @param <R> the type of the result of the function
  */
-public interface Function<T, R> {
+public interface EventMeshFunction<T, R> {
 
     /**
      * Applies this function to the given argument within the context of the EventMesh module. This method encapsulates the logic for processing the
