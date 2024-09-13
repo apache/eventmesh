@@ -98,7 +98,7 @@ class ThreadUtilsTest {
     }
 
     @Test
-    void testGetPDWithRealProcessId() {
+    void testGetPIDWithRealProcessId() {
 
         long pid = ThreadUtils.getPID();
         assertTrue(pid > 0);
