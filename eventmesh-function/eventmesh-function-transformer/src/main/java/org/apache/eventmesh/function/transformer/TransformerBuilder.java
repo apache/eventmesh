@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.function.transformer;
 
+import java.util.Map;
+
 public class TransformerBuilder {
 
     public static Transformer buildTransformer(TransformerParam transformerParam) {
@@ -32,9 +34,23 @@ public class TransformerBuilder {
         }
     }
 
-    public static Transformer buildTemplateTransFormer(String jsonContent, String template) {
-        JsonPathParser jsonPathParser = new JsonPathParser(jsonContent);
+    /**
+     * build template transformer
+     * @param jsonContent json content, support string and map, other type will throw IllegalArgumentException
+     * @param template template string
+     * @return transformer
+     */
+    @SuppressWarnings("unchecked")
+    public static Transformer buildTemplateTransFormer(Object jsonContent, String template) {
         Template templateEntry = new Template(template);
+        JsonPathParser jsonPathParser;
+        if (jsonContent instanceof String) {
+            jsonPathParser = new JsonPathParser((String) jsonContent);
+        } else if (jsonContent instanceof Map) {
+            jsonPathParser = new JsonPathParser((Map<String, String>) jsonContent);
+        } else {
+            throw new TransformException("invalid json content");
+        }
         return new TemplateTransformer(jsonPathParser, templateEntry);
     }
 

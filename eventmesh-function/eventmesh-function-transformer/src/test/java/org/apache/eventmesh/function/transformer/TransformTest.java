@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.function.transformer;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -137,6 +140,21 @@ public class TransformTest {
         String output = transformer.transform(EVENT);
         Assertions.assertEquals("Transformers test:data name is test-transformer, constant is constant",
             output);
+    }
+
+    @Test
+    public void testTemplateTransFormerWithStringValueMap() throws JsonProcessingException {
+        Map<String, String> content = Collections.singletonMap("data-name", "$.data.name");
+
+        String template = "Transformers test:data name is ${data-name}";
+        Transformer transform = TransformerBuilder.buildTemplateTransFormer(content, template);
+        String output = transform.transform(EVENT);
+        Assertions.assertEquals("Transformers test:data name is test-transformer", output);
+
+        Transformer transformer1 = TransformerBuilder.buildTemplateTransFormer(content, template);
+        String output1 = transformer1.transform(EVENT);
+        Assertions.assertEquals("Transformers test:data name is test-transformer", output1);
+
     }
 
 }

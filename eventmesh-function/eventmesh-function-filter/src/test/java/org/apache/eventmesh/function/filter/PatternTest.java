@@ -20,6 +20,11 @@ package org.apache.eventmesh.function.filter;
 import org.apache.eventmesh.function.filter.pattern.Pattern;
 import org.apache.eventmesh.function.filter.patternbuild.PatternBuilder;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -142,6 +147,22 @@ public class PatternTest {
         Pattern pattern = PatternBuilder.build(condition);
         Boolean res = pattern.filter(event);
         Assertions.assertEquals(false, res);
+    }
+
+    @Test
+    public void testPrefixFilterMap() {
+        // Create the inner Map representing {prefix=eventmesh.}
+        Map<String, String> innerMap = new HashMap<>();
+        innerMap.put("prefix", "eventmesh.");
+        // Create a List representing [{prefix=eventmesh.}]
+        List<Map<String, String>> sourceList = Collections.singletonList(innerMap);
+        // Create the condition representing {source=[{prefix=eventmesh.}]}
+        Map<String, Object> condition = new HashMap<>();
+        condition.put("source", sourceList);
+
+        Pattern pattern = PatternBuilder.build(condition);
+        Boolean res = pattern.filter(event);
+        Assertions.assertEquals(true, res);
     }
 
 }

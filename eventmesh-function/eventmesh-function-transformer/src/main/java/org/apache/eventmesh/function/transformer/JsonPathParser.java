@@ -36,6 +36,19 @@ public class JsonPathParser {
     }
 
     /**
+     * parser input jsonpath map into variable list
+     *
+     * @param jsonPathMap jsonpath map
+     */
+    public JsonPathParser(Map<String, String> jsonPathMap) {
+        for (Map.Entry<String, String> entry : jsonPathMap.entrySet()) {
+            String name = entry.getKey();
+            String value = entry.getValue();
+            variablesList.add(new Variable(name, value));
+        }
+    }
+
+    /**
      * parser input jsonpath string into variable list
      *
      * @param jsonPathString

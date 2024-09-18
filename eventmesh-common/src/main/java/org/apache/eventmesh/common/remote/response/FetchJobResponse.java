@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.remote.job.JobType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -38,6 +39,8 @@ public class FetchJobResponse extends BaseRemoteResponse {
     private TransportType transportType;
 
     private JobConnectorConfig connectorConfig;
+
+    private List<Map<String, Object>> functionConfigs;
 
     private List<RecordPosition> position;
 

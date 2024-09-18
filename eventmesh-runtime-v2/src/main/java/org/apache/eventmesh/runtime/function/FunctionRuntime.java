@@ -21,14 +21,26 @@ import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
+import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.JobType;
+import org.apache.eventmesh.common.remote.request.FetchJobRequest;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
+import org.apache.eventmesh.common.remote.request.ReportJobRequest;
+import org.apache.eventmesh.common.remote.response.FetchJobResponse;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.function.api.AbstractEventMeshFunctionChain;
 import org.apache.eventmesh.function.api.EventMeshFunction;
 import org.apache.eventmesh.function.filter.pattern.Pattern;
 import org.apache.eventmesh.function.filter.patternbuild.PatternBuilder;
 import org.apache.eventmesh.function.transformer.Transformer;
 import org.apache.eventmesh.function.transformer.TransformerBuilder;
-import org.apache.eventmesh.function.transformer.TransformerParam;
 import org.apache.eventmesh.function.transformer.TransformerType;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -46,12 +58,20 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.UnsafeByteOperations;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,6 +79,16 @@ import lombok.extern.slf4j.Slf4j;
 public class FunctionRuntime implements Runtime {
 
     private final RuntimeInstanceConfig runtimeInstanceConfig;
+
+    private ManagedChannel channel;
+
+    private AdminServiceStub adminServiceStub;
+
+    private AdminServiceBlockingStub adminServiceBlockingStub;
+
+    StreamObserver<Payload> responseObserver;
+
+    StreamObserver<Payload> requestObserver;
 
     private final LinkedBlockingQueue<ConnectRecord> queue;
 
@@ -74,9 +104,13 @@ public class FunctionRuntime implements Runtime {
 
     private final ExecutorService sinkService = ThreadPoolFactory.createSingleExecutor("eventMesh-sinkService");
 
+    private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
+
     private volatile boolean isRunning = false;
 
     private volatile boolean isFailed = false;
+
+    private String adminServerAddr;
 
 
     public FunctionRuntime(RuntimeInstanceConfig runtimeInstanceConfig) {
@@ -90,13 +124,105 @@ public class FunctionRuntime implements Runtime {
         // load function runtime config from local file
         this.functionRuntimeConfig = ConfigService.getInstance().buildConfigInstance(FunctionRuntimeConfig.class);
 
-        // TODO init admin service
+        // init admin service
+        initAdminService();
 
-        // TODO get remote config from admin service and update local config
+        // get remote config from admin service and update local config
+        getAndUpdateRemoteConfig();
 
         // init connector service
         initConnectorService();
+
+        // report status to admin server
+        reportJobRequest(functionRuntimeConfig.getJobID(), JobState.INIT);
     }
+
+    private void initAdminService() {
+        adminServerAddr = getRandomAdminServerAddr(runtimeInstanceConfig.getAdminServiceAddr());
+        // create gRPC channel
+        channel = ManagedChannelBuilder.forTarget(adminServerAddr).usePlaintext().build();
+
+        adminServiceStub = AdminServiceGrpc.newStub(channel).withWaitForReady();
+
+        adminServiceBlockingStub = AdminServiceGrpc.newBlockingStub(channel).withWaitForReady();
+
+        responseObserver = new StreamObserver<Payload>() {
+            @Override
+            public void onNext(Payload response) {
+                log.info("runtime receive message: {} ", response);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                log.error("runtime receive error message: {}", t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                log.info("runtime finished receive message and completed");
+            }
+        };
+
+        requestObserver = adminServiceStub.invokeBiStream(responseObserver);
+    }
+
+    private String getRandomAdminServerAddr(String adminServerAddrList) {
+        String[] addresses = adminServerAddrList.split(";");
+        if (addresses.length == 0) {
+            throw new IllegalArgumentException("Admin server address list is empty");
+        }
+        Random random = new Random();
+        int randomIndex = random.nextInt(addresses.length);
+        return addresses[randomIndex];
+    }
+
+    private void getAndUpdateRemoteConfig() {
+        String jobId = functionRuntimeConfig.getJobID();
+        FetchJobRequest jobRequest = new FetchJobRequest();
+        jobRequest.setJobID(jobId);
+
+        Metadata metadata = Metadata.newBuilder().setType(FetchJobRequest.class.getSimpleName()).build();
+
+        Payload request = Payload.newBuilder().setMetadata(metadata)
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(jobRequest)))).build())
+            .build();
+        Payload response = adminServiceBlockingStub.invoke(request);
+        FetchJobResponse jobResponse = null;
+        if (response.getMetadata().getType().equals(FetchJobResponse.class.getSimpleName())) {
+            jobResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchJobResponse.class);
+        }
+
+        if (jobResponse == null || jobResponse.getErrorCode() != ErrorCode.SUCCESS) {
+            if (jobResponse != null) {
+                log.error("Failed to get remote config from admin server. ErrorCode: {}, Response: {}",
+                    jobResponse.getErrorCode(), jobResponse);
+            } else {
+                log.error("Failed to get remote config from admin server. ");
+            }
+            isFailed = true;
+            try {
+                stop();
+            } catch (Exception e) {
+                log.error("Failed to stop after exception", e);
+            }
+            throw new RuntimeException("Failed to get remote config from admin server.");
+        }
+
+        // update local config
+        // source
+        functionRuntimeConfig.setSourceConnectorType(jobResponse.getTransportType().getSrc().getName());
+        functionRuntimeConfig.setSourceConnectorDesc(jobResponse.getConnectorConfig().getSourceConnectorDesc());
+        functionRuntimeConfig.setSourceConnectorConfig(jobResponse.getConnectorConfig().getSourceConnectorConfig());
+
+        // sink
+        functionRuntimeConfig.setSinkConnectorType(jobResponse.getTransportType().getDst().getName());
+        functionRuntimeConfig.setSinkConnectorDesc(jobResponse.getConnectorConfig().getSinkConnectorDesc());
+        functionRuntimeConfig.setSinkConnectorConfig(jobResponse.getConnectorConfig().getSinkConnectorConfig());
+
+        // function
+        functionRuntimeConfig.setFunctionConfigs(jobResponse.getFunctionConfigs());
+    }
+
 
     private void initConnectorService() throws Exception {
         final JobType jobType = (JobType) functionRuntimeConfig.getRuntimeConfig().get("jobType");
@@ -129,13 +255,48 @@ public class FunctionRuntime implements Runtime {
         sourceConnector.init(sourceConnectorContext);
     }
 
+    private void reportJobRequest(String jobId, JobState jobState) throws InterruptedException {
+        ReportJobRequest reportJobRequest = new ReportJobRequest();
+        reportJobRequest.setJobID(jobId);
+        reportJobRequest.setState(jobState);
+        Metadata metadata = Metadata.newBuilder()
+            .setType(ReportJobRequest.class.getSimpleName())
+            .build();
+        Payload payload = Payload.newBuilder()
+            .setMetadata(metadata)
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportJobRequest))))
+                .build())
+            .build();
+        requestObserver.onNext(payload);
+    }
+
+
     @Override
     public void start() throws Exception {
+        this.isRunning = true;
+
         // build function chain
         this.functionChain = buildFunctionChain(functionRuntimeConfig.getFunctionConfigs());
 
+        // start heart beat
+        this.heartBeatExecutor.scheduleAtFixedRate(() -> {
+
+            ReportHeartBeatRequest heartBeat = new ReportHeartBeatRequest();
+            heartBeat.setAddress(IPUtils.getLocalAddress());
+            heartBeat.setReportedTimeStamp(String.valueOf(System.currentTimeMillis()));
+            heartBeat.setJobID(functionRuntimeConfig.getJobID());
+
+            Metadata metadata = Metadata.newBuilder().setType(ReportHeartBeatRequest.class.getSimpleName()).build();
+
+            Payload request = Payload.newBuilder().setMetadata(metadata)
+                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(heartBeat)))).build())
+                .build();
+
+            requestObserver.onNext(request);
+        }, 5, 5, TimeUnit.SECONDS);
+
         // start sink service
-        sinkService.execute(() -> {
+        this.sinkService.execute(() -> {
             try {
                 startSinkConnector();
             } catch (Exception e) {
@@ -151,7 +312,7 @@ public class FunctionRuntime implements Runtime {
         });
 
         // start source service
-        sourceService.execute(() -> {
+        this.sourceService.execute(() -> {
             try {
                 startSourceConnector();
             } catch (Exception e) {
@@ -165,6 +326,8 @@ public class FunctionRuntime implements Runtime {
                 throw new RuntimeException(e);
             }
         });
+
+        reportJobRequest(functionRuntimeConfig.getJobID(), JobState.RUNNING);
     }
 
     private StringEventMeshFunctionChain buildFunctionChain(List<Map<String, Object>> functionConfigs) {
@@ -203,11 +366,9 @@ public class FunctionRuntime implements Runtime {
     private Pattern buildFilter(Map<String, Object> functionConfig) {
         // get condition from attributes
         Object condition = functionConfig.get("condition");
-
         if (condition == null) {
             throw new IllegalArgumentException("'condition' is required for filter function");
         }
-
         if (condition instanceof String) {
             return PatternBuilder.build(String.valueOf(condition));
         } else if (condition instanceof Map) {
@@ -219,43 +380,44 @@ public class FunctionRuntime implements Runtime {
 
     private Transformer buildTransformer(Map<String, Object> functionConfig) {
         // get transformerType from attributes
-        String transformerTypeStr = String.valueOf(functionConfig.getOrDefault("transformerType", "")).toUpperCase();
+        String transformerTypeStr = String.valueOf(functionConfig.getOrDefault("transformerType", "")).toLowerCase();
         TransformerType transformerType = TransformerType.getItem(transformerTypeStr);
         if (transformerType == null) {
             throw new IllegalArgumentException(
-                "Invalid transformerType: '" + functionConfig.get("transformerType")
-                    + "'. Supported transformerType: 'CONSTANT', 'TEMPLATE', 'ORIGINAL'");
+                "Invalid transformerType: '" + transformerTypeStr
+                    + "'. Supported transformerType: 'constant', 'template', 'original' (case insensitive)");
         }
 
         // build transformer
-        TransformerParam transformerParam = new TransformerParam();
-        transformerParam.setTransformerType(transformerType);
-
-        String value = String.valueOf(functionConfig.getOrDefault("value", ""));
-        String template = String.valueOf(functionConfig.getOrDefault("template", ""));
+        Transformer transformer = null;
 
         switch (transformerType) {
             case CONSTANT:
                 // check value
-                if (StringUtils.isEmpty(value)) {
-                    throw new IllegalArgumentException("'value' is required for constant transformer");
+                String content = String.valueOf(functionConfig.getOrDefault("content", ""));
+                if (StringUtils.isEmpty(content)) {
+                    throw new IllegalArgumentException("'content' is required for constant transformer");
                 }
-                transformerParam.setValue(value);
+                transformer = TransformerBuilder.buildConstantTransformer(content);
                 break;
             case TEMPLATE:
                 // check value and template
-                if (StringUtils.isAnyEmpty(value, template)) {
-                    throw new IllegalArgumentException("'value' and 'template' are required for template transformer");
+                Object valueMap = functionConfig.get("valueMap");
+                String template = String.valueOf(functionConfig.getOrDefault("template", ""));
+                if (valueMap == null || StringUtils.isEmpty(template)) {
+                    throw new IllegalArgumentException("'valueMap' and 'template' are required for template transformer");
                 }
-                transformerParam.setValue(value);
-                transformerParam.setTemplate(template);
+                transformer = TransformerBuilder.buildTemplateTransFormer(valueMap, template);
+                break;
+            case ORIGINAL:
+                // ORIGINAL transformer does not need any parameter
                 break;
             default:
-                // ORIGINAL doesn't need value and template
-                break;
+                throw new IllegalArgumentException(
+                    "Invalid transformerType: '" + transformerType + "', supported transformerType: 'CONSTANT', 'TEMPLATE', 'ORIGINAL'");
         }
 
-        return TransformerBuilder.buildTransformer(transformerParam);
+        return transformer;
     }
 
 
@@ -313,10 +475,23 @@ public class FunctionRuntime implements Runtime {
         log.info("FunctionRuntime is stopping...");
 
         isRunning = false;
+
+        if (isFailed) {
+            reportJobRequest(functionRuntimeConfig.getJobID(), JobState.FAIL);
+        } else {
+            reportJobRequest(functionRuntimeConfig.getJobID(), JobState.COMPLETE);
+        }
+
         sinkConnector.stop();
         sourceConnector.stop();
         sinkService.shutdown();
         sourceService.shutdown();
+        heartBeatExecutor.shutdown();
+
+        requestObserver.onCompleted();
+        if (channel != null && !channel.isShutdown()) {
+            channel.shutdown();
+        }
 
         log.info("FunctionRuntime stopped.");
     }

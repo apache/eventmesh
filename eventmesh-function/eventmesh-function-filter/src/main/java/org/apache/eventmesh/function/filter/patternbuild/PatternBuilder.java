@@ -59,7 +59,7 @@ public class PatternBuilder {
             }
             return build(jsonNode);
         } catch (Exception e) {
-            throw new JsonException("INVALID_JSON_STRING", e);
+            throw new JsonException("INVALID_MAP", e);
         }
     }
 
