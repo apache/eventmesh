@@ -219,8 +219,8 @@ public class FunctionRuntime implements Runtime {
         functionRuntimeConfig.setSinkConnectorDesc(jobResponse.getConnectorConfig().getSinkConnectorDesc());
         functionRuntimeConfig.setSinkConnectorConfig(jobResponse.getConnectorConfig().getSinkConnectorConfig());
 
-        // function
-        functionRuntimeConfig.setFunctionConfigs(jobResponse.getFunctionConfigs());
+        // TODO: update functionConfigs
+
     }
 
 
@@ -255,7 +255,7 @@ public class FunctionRuntime implements Runtime {
         sourceConnector.init(sourceConnectorContext);
     }
 
-    private void reportJobRequest(String jobId, JobState jobState) throws InterruptedException {
+    private void reportJobRequest(String jobId, JobState jobState) {
         ReportJobRequest reportJobRequest = new ReportJobRequest();
         reportJobRequest.setJobID(jobId);
         reportJobRequest.setState(jobState);
@@ -460,8 +460,13 @@ public class FunctionRuntime implements Runtime {
                         // Apply function chain to data
                         String data = functionChain.apply((String) connectRecord.getData());
                         if (data != null) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Function chain applied. Original data: {}, Transformed data: {}", connectRecord.getData(), data);
+                            }
                             connectRecord.setData(data);
                             this.queue.put(connectRecord);
+                        } else if (log.isDebugEnabled()) {
+                            log.debug("Data filtered out by function chain. Original data: {}", connectRecord.getData());
                         }
                     }
                 }
