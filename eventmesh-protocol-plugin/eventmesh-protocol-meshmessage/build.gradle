@@ -18,10 +18,10 @@
 dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     implementation "io.cloudevents:cloudevents-core"
-    implementation ("io.grpc:grpc-protobuf:1.65.1") {
+    implementation ("io.grpc:grpc-protobuf:1.66.0") {
         exclude group: "com.google.protobuf", module: "protobuf-java"
     }
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java:3.25.4")
     implementation "io.cloudevents:cloudevents-protobuf"
 
     testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
