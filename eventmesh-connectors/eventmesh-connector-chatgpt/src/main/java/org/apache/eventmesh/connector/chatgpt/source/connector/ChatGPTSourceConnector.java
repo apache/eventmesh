@@ -61,8 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ChatGPTSourceConnector implements Source {
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private ChatGPTSourceConfig sourceConfig;
     private BlockingQueue<CloudEvent> queue;
     private HttpServer server;
@@ -78,6 +76,9 @@ public class ChatGPTSourceConnector implements Source {
 
     private static final String APPLICATION_JSON = "application/json";
     private static final String TEXT_PLAIN = "text/plain";
+
+    private int maxBatchSize;
+    private long maxPollWaitTime;
 
 
     @Override
@@ -129,7 +130,9 @@ public class ChatGPTSourceConnector implements Source {
         if (StringUtils.isNotEmpty(parsePromptTemplateStr)) {
             this.parseHandler = new ParseHandler(openaiManager, parsePromptTemplateStr);
         }
-        this.queue = new LinkedBlockingQueue<>(1024);
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
         final Vertx vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
         router.route().path(this.sourceConfig.connectorConfig.getPath()).method(HttpMethod.POST).handler(BodyHandler.create()).handler(ctx -> {
@@ -239,14 +242,21 @@ public class ChatGPTSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int i = 0; i < DEFAULT_BATCH_SIZE; i++) {
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int i = 0; i < maxBatchSize; i++) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

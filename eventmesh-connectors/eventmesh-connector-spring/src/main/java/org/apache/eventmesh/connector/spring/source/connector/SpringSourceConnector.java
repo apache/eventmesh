@@ -52,13 +52,15 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
 
     private static final String CONNECTOR_PROPERTY_PREFIX = "eventmesh.connector.";
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private ApplicationContext applicationContext;
 
     private SpringSourceConfig sourceConfig;
 
     private BlockingQueue<ConnectRecord> queue;
+
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -69,7 +71,7 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
     public void init(Config config) throws Exception {
         // init config for spring source connector
         this.sourceConfig = (SpringSourceConfig) config;
-        this.queue = new LinkedBlockingQueue<>(1000);
+        doInit();
     }
 
     @Override
@@ -77,7 +79,13 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         // init config for spring source connector
         this.sourceConfig = (SpringSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.queue = new LinkedBlockingQueue<>(1000);
+        doInit();
+    }
+
+    private void doInit() {
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
     }
 
     @Override
@@ -107,15 +115,21 @@ public class SpringSourceConnector implements Source, MessageSendingOperations, 
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
 
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int count = 0; count < maxBatchSize; ++count) {
             try {
-                ConnectRecord connectRecord = queue.poll(3, TimeUnit.SECONDS);
+                ConnectRecord connectRecord = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (connectRecord == null) {
                     break;
                 }
                 connectRecords.add(connectRecord);
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 Thread currentThread = Thread.currentThread();
                 log.warn("[SpringSourceConnector] Interrupting thread {} due to exception {}",
