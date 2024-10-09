@@ -19,8 +19,8 @@ package org.apache.eventmesh.connector.http.sink.handler.impl;
 
 import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.http.sink.data.HttpAttemptEvent;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
-import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.sink.data.MultiHttpRequestContext;
 import org.apache.eventmesh.connector.http.sink.handler.AbstractHttpSinkHandler;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
@@ -176,13 +176,14 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
      * @param attributes        additional attributes to be used in processing
      */
     private void tryCallback(HttpConnectRecord httpConnectRecord, Throwable e, Map<String, Object> attributes, ConnectRecord record) {
-        // get the retry event
-        HttpRetryEvent retryEvent = getAndUpdateRetryEvent(attributes, httpConnectRecord, e);
+        // get and update the attempt event
+        HttpAttemptEvent attemptEvent = (HttpAttemptEvent) attributes.get(HttpAttemptEvent.PREFIX + httpConnectRecord.getHttpRecordId());
+        attemptEvent.updateEvent(e);
 
-        // get the multi http request context
-        MultiHttpRequestContext multiHttpRequestContext = getAndUpdateMultiHttpRequestContext(attributes, retryEvent);
+        // get and update the multiHttpRequestContext
+        MultiHttpRequestContext multiHttpRequestContext = getAndUpdateMultiHttpRequestContext(attributes, attemptEvent);
 
-        if (multiHttpRequestContext.getRemainingRequests() == 0) {
+        if (multiHttpRequestContext.isAllRequestsProcessed()) {
             // do callback
             if (record.getCallback() == null) {
                 if (log.isDebugEnabled()) {
@@ -193,7 +194,8 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
                 return;
             }
 
-            HttpRetryEvent lastFailedEvent = multiHttpRequestContext.getLastFailedEvent();
+            // get the last failed event
+            HttpAttemptEvent lastFailedEvent = multiHttpRequestContext.getLastFailedEvent();
             if (lastFailedEvent == null) {
                 // success
                 record.getCallback().onSuccess(convertToSendResult(record));
@@ -204,41 +206,26 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
         }
     }
 
-    /**
-     * Gets and updates the retry event based on the provided attributes and HttpConnectRecord.
-     *
-     * @param attributes        the attributes to use
-     * @param httpConnectRecord the HttpConnectRecord to use
-     * @param e                 the exception thrown during the request, may be null
-     * @return the updated retry event
-     */
-    private HttpRetryEvent getAndUpdateRetryEvent(Map<String, Object> attributes, HttpConnectRecord httpConnectRecord, Throwable e) {
-        // get the retry event
-        HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
-        // update the retry event
-        retryEvent.setLastException(e);
-        return retryEvent;
-    }
-
 
     /**
      * Gets and updates the multi http request context based on the provided attributes and HttpConnectRecord.
      *
-     * @param attributes the attributes to use
-     * @param retryEvent the retry event to use
+     * @param attributes   the attributes to use
+     * @param attemptEvent the HttpAttemptEvent to use
      * @return the updated multi http request context
      */
-    private MultiHttpRequestContext getAndUpdateMultiHttpRequestContext(Map<String, Object> attributes, HttpRetryEvent retryEvent) {
+    private MultiHttpRequestContext getAndUpdateMultiHttpRequestContext(Map<String, Object> attributes, HttpAttemptEvent attemptEvent) {
         // get the multi http request context
         MultiHttpRequestContext multiHttpRequestContext = (MultiHttpRequestContext) attributes.get(MultiHttpRequestContext.NAME);
 
-        if (retryEvent.getLastException() == null || retryEvent.isMaxRetriesReached()) {
+        // Check if the current attempted event has completed
+        if (attemptEvent.isComplete()) {
             // decrement the counter
             multiHttpRequestContext.decrementRemainingRequests();
 
-            // try set failed event
-            if (retryEvent.getLastException() != null) {
-                multiHttpRequestContext.setLastFailedEvent(retryEvent);
+            if (attemptEvent.getLastException() != null) {
+                // if all attempts are exhausted, set the last failed event
+                multiHttpRequestContext.setLastFailedEvent(attemptEvent);
             }
         }
 

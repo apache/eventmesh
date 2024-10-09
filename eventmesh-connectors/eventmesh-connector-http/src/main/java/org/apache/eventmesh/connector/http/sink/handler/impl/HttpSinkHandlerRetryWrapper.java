@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.http.sink.handler.impl;
 import org.apache.eventmesh.common.config.connector.http.HttpRetryConfig;
 import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
-import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.sink.handler.AbstractHttpSinkHandler;
 import org.apache.eventmesh.connector.http.sink.handler.HttpSinkHandler;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
@@ -51,10 +50,38 @@ public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
 
     private final HttpSinkHandler sinkHandler;
 
+    private final RetryPolicy<HttpResponse<Buffer>> retryPolicy;
+
     public HttpSinkHandlerRetryWrapper(SinkConnectorConfig sinkConnectorConfig, HttpSinkHandler sinkHandler) {
         super(sinkConnectorConfig);
         this.sinkHandler = sinkHandler;
         this.httpRetryConfig = getSinkConnectorConfig().getRetryConfig();
+        this.retryPolicy = buildRetryPolicy();
+    }
+
+    private RetryPolicy<HttpResponse<Buffer>> buildRetryPolicy() {
+        return RetryPolicy.<HttpResponse<Buffer>>builder()
+            .handleIf(e -> e instanceof ConnectException)
+            .handleResultIf(response -> httpRetryConfig.isRetryOnNonSuccess() && !HttpUtils.is2xxSuccessful(response.statusCode()))
+            .withMaxRetries(httpRetryConfig.getMaxRetries())
+            .withDelay(Duration.ofMillis(httpRetryConfig.getInterval()))
+            .onRetry(event -> {
+                if (log.isDebugEnabled()) {
+                    log.warn("Failed to deliver message after {} attempts. Retrying in {} ms. Error: {}",
+                        event.getAttemptCount(), httpRetryConfig.getInterval(), event.getLastException());
+                } else {
+                    log.warn("Failed to deliver message after {} attempts. Retrying in {} ms.",
+                        event.getAttemptCount(), httpRetryConfig.getInterval());
+                }
+            }).onFailure(event -> {
+                if (log.isDebugEnabled()) {
+                    log.error("Failed to deliver message after {} attempts. Error: {}",
+                        event.getAttemptCount(), event.getException());
+                } else {
+                    log.error("Failed to deliver message after {} attempts.",
+                        event.getAttemptCount());
+                }
+            }).build();
     }
 
     /**
@@ -78,36 +105,8 @@ public class HttpSinkHandlerRetryWrapper extends AbstractHttpSinkHandler {
     @Override
     public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes,
         ConnectRecord connectRecord) {
-
-        // Build the retry policy
-        RetryPolicy<HttpResponse<Buffer>> retryPolicy = RetryPolicy.<HttpResponse<Buffer>>builder()
-            .handleIf(e -> e instanceof ConnectException)
-            .handleResultIf(response -> httpRetryConfig.isRetryOnNonSuccess() && !HttpUtils.is2xxSuccessful(response.statusCode()))
-            .withMaxRetries(httpRetryConfig.getMaxRetries())
-            .withDelay(Duration.ofMillis(httpRetryConfig.getInterval()))
-            .onRetry(event -> {
-                if (log.isDebugEnabled()) {
-                    log.warn("Retrying the request to {} for the {} time. {}", url, event.getAttemptCount(), httpConnectRecord);
-                } else {
-                    log.warn("Retrying the request to {} for the {} time.", url, event.getAttemptCount());
-                }
-                // update the retry event
-                HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
-                retryEvent.increaseCurrentRetries();
-            })
-            .onFailure(event -> {
-                if (log.isDebugEnabled()) {
-                    log.error("Failed to send the request to {} after {} attempts. {}", url, event.getAttemptCount(),
-                        httpConnectRecord, event.getException());
-                } else {
-                    log.error("Failed to send the request to {} after {} attempts.", url, event.getAttemptCount(), event.getException());
-                }
-            }).build();
-
-        // Handle the ConnectRecord with retry policy
         Failsafe.with(retryPolicy)
             .getStageAsync(() -> sinkHandler.deliver(url, httpConnectRecord, attributes, connectRecord).toCompletionStage());
-
         return null;
     }
 
