@@ -24,9 +24,12 @@ import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.retry.api.conf.RetryConfiguration;
 import org.apache.eventmesh.retry.api.strategy.RetryStrategy;
+
 import java.util.Objects;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,22 +50,21 @@ public class KafkaRetryStrategyImpl implements RetryStrategy {
         String bizSeqNo = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO.getKey())).toString();
         String uniqueId = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID.getKey())).toString();
         CloudEvent retryEvent = CloudEventBuilder.from(event)
-//            .withExtension(ProtocolKey.TOPIC, topic)
-            .withSubject(topic)
-            .build();
+                .withSubject(topic)
+                .build();
         Producer producer = configuration.getProducer();
         producer.publish(retryEvent, new SendCallback() {
 
             @Override
             public void onSuccess(SendResult sendResult) {
                 log.info("consumer:{} consume success,, bizSeqno:{}, uniqueId:{}",
-                    consumerGroupName, bizSeqNo, uniqueId);
+                        consumerGroupName, bizSeqNo, uniqueId);
             }
 
             @Override
             public void onException(OnExceptionContext context) {
                 log.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
-                    consumerGroupName, bizSeqNo, uniqueId, context.getException());
+                        consumerGroupName, bizSeqNo, uniqueId, context.getException());
             }
         });
     }
