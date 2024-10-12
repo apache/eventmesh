@@ -30,7 +30,7 @@ public class FunctionRuntimeFactory implements RuntimeFactory {
 
     @Override
     public Runtime createRuntime(RuntimeInstanceConfig runtimeInstanceConfig) {
-        return null;
+        return new FunctionRuntime(runtimeInstanceConfig);
     }
 
     @Override
