@@ -83,14 +83,12 @@ public class HttpSinkConnectorTest {
                 httpRequest -> {
                     // Increase the number of requests received
                     counter.incrementAndGet();
-                    JSONObject requestBody = JSON.parseObject(httpRequest.getBodyAsString());
                     return HttpResponse.response()
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(HttpStatus.SC_OK)
                         .withBody(new JSONObject()
                             .fluentPut("code", 0)
                             .fluentPut("message", "success")
-                            .fluentPut("data", requestBody.getJSONObject("data").get("data"))
                             .toJSONString()
                         ); // .withDelay(TimeUnit.SECONDS, 10);
                 }
