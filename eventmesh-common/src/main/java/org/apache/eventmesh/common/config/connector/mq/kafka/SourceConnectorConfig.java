@@ -32,5 +32,4 @@ public class SourceConnectorConfig {
     private String enableAutoCommit = "false";
     private String sessionTimeoutMS = "10000";
     private String maxPollRecords = "1000";
-    private int pollTimeOut = 100;
 }

@@ -17,34 +17,27 @@
 
 package org.apache.eventmesh.common.config.connector;
 
-public class Constants {
+import lombok.Data;
 
-    public static final String ENV_TARGET = "connectorTarget";
-
-    public static final String ENV_PORT = "connectorPort";
-
-    public static final String ENV_SOURCE_CONFIG_FILE = "sourceConnectorConf";
-
-    public static final String ENV_SINK_CONFIG_FILE = "sinkConnectorConf";
-
-    public static final int DEFAULT_ATTEMPT = 3;
-
-    public static final int DEFAULT_PORT = 8080;
-
-    // ======================== Source Constants ========================
-    /**
-     * Default capacity
-     */
-    public static final int DEFAULT_CAPACITY = 1024;
+/**
+ * Source Poll Config
+ */
+@Data
+public class PollConfig {
 
     /**
-     * Default poll batch size
+     * Capacity of the poll queue
      */
-    public static final int DEFAULT_POLL_BATCH_SIZE = 10;
+    private int capacity = Constants.DEFAULT_CAPACITY;
 
     /**
-     * Default poll timeout (unit: ms)
+     * Max batch size of the poll
      */
-    public static final long DEFAULT_POLL_TIMEOUT = 5000L;
+    private int maxBatchSize = Constants.DEFAULT_POLL_BATCH_SIZE;
+
+    /**
+     * Max wait time of the poll
+     */
+    private long maxWaitTime = Constants.DEFAULT_POLL_TIMEOUT;
 
 }
