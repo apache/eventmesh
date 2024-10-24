@@ -17,5 +17,40 @@
 
 package org.apache.eventmesh.runtime.function;
 
+import org.apache.eventmesh.common.config.Config;
+
+import java.util.List;
+import java.util.Map;
+
+
+import lombok.Data;
+
+@Data
+@Config(path = "classPath://function.yaml")
 public class FunctionRuntimeConfig {
+
+    private String functionRuntimeInstanceId;
+
+    private String taskID;
+
+    private String jobID;
+
+    private String region;
+
+    private Map<String, Object> runtimeConfig;
+
+    private String sourceConnectorType;
+
+    private String sourceConnectorDesc;
+
+    private Map<String, Object> sourceConnectorConfig;
+
+    private String sinkConnectorType;
+
+    private String sinkConnectorDesc;
+
+    private Map<String, Object> sinkConnectorConfig;
+
+    private List<Map<String, Object>> functionConfigs;
+
 }
