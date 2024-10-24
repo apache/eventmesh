@@ -17,41 +17,82 @@
 
 package org.apache.eventmesh.connector.http.sink.data;
 
-import lombok.Data;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Single HTTP retry event
+ * Single HTTP attempt event
  */
-@Data
-public class HttpRetryEvent {
+public class HttpAttemptEvent {
 
-    public static final String PREFIX = "http-retry-event-";
+    public static final String PREFIX = "http-attempt-event-";
 
-    private String parentId;
+    private final int maxAttempts;
 
-    private int maxRetries;
-
-    private int currentRetries;
+    private final AtomicInteger attempts;
 
     private Throwable lastException;
 
-    /**
-     * Increase the current retries by 1
-     */
-    public void increaseCurrentRetries() {
-        this.currentRetries++;
+
+    public HttpAttemptEvent(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+        this.attempts = new AtomicInteger(0);
     }
 
     /**
-     * Check if the current retries is greater than or equal to the max retries
-     * @return true if the current retries is greater than or equal to the max retries
+     * Increment the attempts
      */
-    public boolean isMaxRetriesReached() {
-        return this.currentRetries >= this.maxRetries;
+    public void incrementAttempts() {
+        attempts.incrementAndGet();
+    }
+
+    /**
+     * Update the event, incrementing the attempts and setting the last exception
+     *
+     * @param exception the exception to update, can be null
+     */
+    public void updateEvent(Throwable exception) {
+        // increment the attempts
+        incrementAttempts();
+
+        // update the last exception
+        lastException = exception;
+    }
+
+    /**
+     * Check if the attempts are less than the maximum attempts
+     *
+     * @return true if the attempts are less than the maximum attempts, false otherwise
+     */
+    public boolean canAttempt() {
+        return attempts.get() < maxAttempts;
+    }
+
+    public boolean isComplete() {
+        if (attempts.get() == 0) {
+            // No start yet
+            return false;
+        }
+
+        // If no attempt can be made or the last exception is null, the event completed
+        return !canAttempt() || lastException == null;
+    }
+
+
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
+
+    public int getAttempts() {
+        return attempts.get();
+    }
+
+    public Throwable getLastException() {
+        return lastException;
     }
 
     /**
      * Get the limited exception message with the default limit of 256
+     *
      * @return the limited exception message
      */
     public String getLimitedExceptionMessage() {
@@ -60,6 +101,7 @@ public class HttpRetryEvent {
 
     /**
      * Get the limited exception message with the specified limit
+     *
      * @param maxLimit the maximum limit of the exception message
      * @return the limited exception message
      */
