@@ -42,9 +42,11 @@ public class MongodbSourceConnector implements Source {
 
     private MongodbSourceConfig sourceConfig;
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private BlockingQueue<CloudEvent> queue;
+
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     private MongodbSourceClient client;
 
@@ -67,7 +69,9 @@ public class MongodbSourceConnector implements Source {
     }
 
     private void doInit() {
-        this.queue = new LinkedBlockingQueue<>(1000);
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
         String connectorType = sourceConfig.getConnectorConfig().getConnectorType();
         if (connectorType.equals(ClusterType.STANDALONE.name())) {
             this.client = new MongodbStandaloneSourceClient(sourceConfig.getConnectorConfig(), queue);
@@ -105,15 +109,21 @@ public class MongodbSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int count = 0; count < maxBatchSize; ++count) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
-
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }
