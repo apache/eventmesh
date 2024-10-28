@@ -44,13 +44,7 @@ public class SourceConnectorConfig {
      */
     private int maxFormAttributeSize = 1024 * 1024;
 
-    // max size of the queue, default 1000
-    private int maxStorageSize = 1000;
-
-    // batch size, default 10
-    private int batchSize = 10;
-
-    // protocol, default CloudEvent
+    // protocol, default Common
     private String protocol = "Common";
 
     // extra config, e.g. GitHub secret

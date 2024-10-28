@@ -18,11 +18,12 @@
 package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
-import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.CloudEventUtil;
+
+import java.util.concurrent.BlockingQueue;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.http.vertx.VertxMessageFactory;
@@ -60,7 +61,7 @@ public class CloudEventProtocol implements Protocol {
      * @param queue queue info
      */
     @Override
-    public void setHandler(Route route, SynchronizedCircularFifoQueue<Object> queue) {
+    public void setHandler(Route route, BlockingQueue<Object> queue) {
         route.method(HttpMethod.POST)
             .handler(ctx -> VertxMessageFactory.createReader(ctx.request())
                 .map(reader -> {

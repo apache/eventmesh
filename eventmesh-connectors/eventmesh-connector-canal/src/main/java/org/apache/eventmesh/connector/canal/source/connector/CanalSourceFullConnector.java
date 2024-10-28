@@ -56,8 +56,9 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     private CanalFullPositionMgr positionMgr;
     private RdbTableMgr tableMgr;
     private ThreadPoolExecutor executor;
-    private final BlockingQueue<List<ConnectRecord>> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<List<ConnectRecord>> queue;
     private final AtomicBoolean flag = new AtomicBoolean(true);
+    private long maxPollWaitTime;
 
     @Override
     protected void run() throws Exception {
@@ -137,6 +138,8 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
         DatabaseConnection.initSourceConnection();
         this.tableMgr = new RdbTableMgr(config.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
         this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
+        this.maxPollWaitTime = config.getPollConfig().getMaxWaitTime();
+        this.queue = new LinkedBlockingQueue<>(config.getPollConfig().getCapacity());
     }
 
     @Override
@@ -166,7 +169,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     public List<ConnectRecord> poll() {
         while (flag.get()) {
             try {
-                List<ConnectRecord> records = queue.poll(5, TimeUnit.SECONDS);
+                List<ConnectRecord> records = queue.poll(maxPollWaitTime, TimeUnit.MILLISECONDS);
                 if (records == null || records.isEmpty()) {
                     continue;
                 }

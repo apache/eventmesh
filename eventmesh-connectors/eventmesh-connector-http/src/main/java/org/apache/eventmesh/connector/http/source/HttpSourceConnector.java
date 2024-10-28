@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.http.source;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
 import org.apache.eventmesh.connector.http.source.protocol.ProtocolFactory;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -30,8 +29,9 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -50,9 +50,11 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
 
     private HttpSourceConfig sourceConfig;
 
-    private SynchronizedCircularFifoQueue<Object> queue;
+    private BlockingQueue<Object> queue;
 
-    private int batchSize;
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     private Route route;
 
@@ -92,11 +94,11 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
 
     private void doInit() {
         // init queue
-        int maxQueueSize = this.sourceConfig.getConnectorConfig().getMaxStorageSize();
-        this.queue = new SynchronizedCircularFifoQueue<>(maxQueueSize);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
 
-        // init batch size
-        this.batchSize = this.sourceConfig.getConnectorConfig().getBatchSize();
+        // init poll batch size and timeout
+        this.maxBatchSize = this.sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = this.sourceConfig.getPollConfig().getMaxWaitTime();
 
         // init protocol
         String protocolName = this.sourceConfig.getConnectorConfig().getProtocol();
@@ -183,20 +185,29 @@ public class HttpSourceConnector implements Source, ConnectorCreateService<Sourc
 
     @Override
     public List<ConnectRecord> poll() {
-        // if queue is empty, return empty list
-        if (queue.isEmpty()) {
-            return Collections.emptyList();
-        }
+        // record current time
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
+
         // poll from queue
-        List<ConnectRecord> connectRecords = new ArrayList<>(batchSize);
-        for (int i = 0; i < batchSize; i++) {
-            Object obj = queue.poll();
-            if (obj == null) {
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int i = 0; i < maxBatchSize; i++) {
+            try {
+                Object obj = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
+                if (obj == null) {
+                    break;
+                }
+                // convert to ConnectRecord
+                ConnectRecord connectRecord = protocol.convertToConnectRecord(obj);
+                connectRecords.add(connectRecord);
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
+            } catch (Exception e) {
+                log.error("Failed to poll from queue.", e);
                 break;
             }
-            // convert to ConnectRecord
-            ConnectRecord connectRecord = protocol.convertToConnectRecord(obj);
-            connectRecords.add(connectRecord);
         }
         return connectRecords;
     }
