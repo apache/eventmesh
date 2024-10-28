@@ -21,11 +21,11 @@ import org.apache.eventmesh.common.config.connector.http.HttpWebhookConfig;
 import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
+import org.apache.eventmesh.connector.http.sink.data.HttpAttemptEvent;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportMetadata;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 import org.apache.eventmesh.connector.http.sink.data.HttpExportRecordPage;
-import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.apache.commons.lang3.StringUtils;
@@ -216,18 +216,14 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
         Future<HttpResponse<Buffer>> responseFuture = super.deliver(url, httpConnectRecord, attributes, connectRecord);
         // store the received data
         return responseFuture.onComplete(arr -> {
-            // get tryEvent from attributes
-            HttpRetryEvent retryEvent = (HttpRetryEvent) attributes.get(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId());
+            // get HttpAttemptEvent
+            HttpAttemptEvent attemptEvent = (HttpAttemptEvent) attributes.get(HttpAttemptEvent.PREFIX + httpConnectRecord.getHttpRecordId());
 
-            HttpResponse<Buffer> response = null;
-            if (arr.succeeded()) {
-                response = arr.result();
-            } else {
-                retryEvent.setLastException(arr.cause());
-            }
+            // get the response
+            HttpResponse<Buffer> response = arr.succeeded() ? arr.result() : null;
 
             // create ExportMetadata
-            HttpExportMetadata httpExportMetadata = buildHttpExportMetadata(url, response, httpConnectRecord, retryEvent);
+            HttpExportMetadata httpExportMetadata = buildHttpExportMetadata(url, response, httpConnectRecord, attemptEvent);
 
             // create ExportRecord
             HttpExportRecord exportRecord = new HttpExportRecord(httpExportMetadata, arr.succeeded() ? arr.result().bodyAsString() : null);
@@ -242,17 +238,16 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
      * @param url               the URI to which the HttpConnectRecord was sent
      * @param response          the response received from the URI
      * @param httpConnectRecord the HttpConnectRecord that was sent
-     * @param retryEvent        the SingleHttpRetryEvent that was used for retries
+     * @param attemptEvent      the HttpAttemptEvent that was used to send the HttpConnectRecord
      * @return the HttpExportMetadata object
      */
     private HttpExportMetadata buildHttpExportMetadata(URI url, HttpResponse<Buffer> response, HttpConnectRecord httpConnectRecord,
-        HttpRetryEvent retryEvent) {
+        HttpAttemptEvent attemptEvent) {
 
         String msg = null;
         // order of precedence: lastException > response > null
-        if (retryEvent.getLastException() != null) {
-            msg = retryEvent.getLimitedExceptionMessage();
-            retryEvent.setLastException(null);
+        if (attemptEvent.getLastException() != null) {
+            msg = attemptEvent.getLimitedExceptionMessage();
         } else if (response != null) {
             msg = response.statusMessage();
         }
@@ -263,7 +258,7 @@ public class WebhookHttpSinkHandler extends CommonHttpSinkHandler {
             .message(msg)
             .receivedTime(LocalDateTime.now())
             .recordId(httpConnectRecord.getHttpRecordId())
-            .retryNum(retryEvent.getCurrentRetries())
+            .retryNum(attemptEvent.getAttempts() - 1)
             .build();
     }
 
