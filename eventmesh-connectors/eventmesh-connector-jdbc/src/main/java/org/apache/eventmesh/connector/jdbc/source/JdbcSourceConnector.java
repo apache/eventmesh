@@ -142,7 +142,9 @@ public class JdbcSourceConnector extends SourceConnector {
 
         this.dispatcher = new EventDispatcher(this.sourceJdbcTaskManager);
 
-        this.taskManagerCoordinator = new TaskManagerCoordinator();
+        this.taskManagerCoordinator = new TaskManagerCoordinator(sourceConfig.getPollConfig().getCapacity(),
+            sourceConfig.getPollConfig().getMaxBatchSize(),
+            sourceConfig.getPollConfig().getMaxWaitTime());
         this.taskManagerCoordinator.registerTaskManager(SourceJdbcTaskManager.class.getName(), sourceJdbcTaskManager);
         this.taskManagerCoordinator.init();
     }
@@ -209,9 +211,6 @@ public class JdbcSourceConnector extends SourceConnector {
 
     @Override
     public List<ConnectRecord> poll() {
-
-        List<ConnectRecord> connectRecords = this.taskManagerCoordinator.poll();
-
-        return connectRecords;
+        return this.taskManagerCoordinator.poll();
     }
 }
