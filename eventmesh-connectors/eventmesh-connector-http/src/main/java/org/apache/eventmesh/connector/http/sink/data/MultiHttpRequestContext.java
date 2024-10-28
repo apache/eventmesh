@@ -34,10 +34,9 @@ public class MultiHttpRequestContext {
 
     /**
      * The last failed event.
-     * If there are no retries or retries are not enabled, it will be null.
      * If retries occur but still fail, it will be logged, and only the last one will be retained.
      */
-    private HttpRetryEvent lastFailedEvent;
+    private HttpAttemptEvent lastFailedEvent;
 
     public MultiHttpRequestContext(int remainingEvents) {
         this.remainingRequests = new AtomicInteger(remainingEvents);
@@ -50,15 +49,24 @@ public class MultiHttpRequestContext {
         remainingRequests.decrementAndGet();
     }
 
+    /**
+     * Check if all requests have been processed.
+     *
+     * @return true if all requests have been processed, false otherwise.
+     */
+    public boolean isAllRequestsProcessed() {
+        return remainingRequests.get() == 0;
+    }
+
     public int getRemainingRequests() {
         return remainingRequests.get();
     }
 
-    public HttpRetryEvent getLastFailedEvent() {
+    public HttpAttemptEvent getLastFailedEvent() {
         return lastFailedEvent;
     }
 
-    public void setLastFailedEvent(HttpRetryEvent lastFailedEvent) {
+    public void setLastFailedEvent(HttpAttemptEvent lastFailedEvent) {
         this.lastFailedEvent = lastFailedEvent;
     }
 }
