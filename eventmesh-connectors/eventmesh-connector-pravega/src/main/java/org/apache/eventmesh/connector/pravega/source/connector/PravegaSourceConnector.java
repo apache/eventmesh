@@ -57,8 +57,6 @@ public class PravegaSourceConnector implements Source {
 
     private static final AtomicBoolean started = new AtomicBoolean(false);
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private PravegaSourceConfig sourceConfig;
 
     private StreamManager streamManager;
@@ -70,6 +68,10 @@ public class PravegaSourceConnector implements Source {
     private final Map<String, PravegaSourceHandler> sourceHandlerMap = new ConcurrentHashMap<>();
 
     private BlockingQueue<CloudEvent> queue;
+
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     private final ThreadPoolExecutor executor = ThreadPoolFactory.createThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors() * 2,
@@ -89,7 +91,9 @@ public class PravegaSourceConnector implements Source {
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (PravegaSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.queue = new LinkedBlockingQueue<>(1000);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
 
         streamManager = StreamManager.create(sourceConfig.getConnectorConfig().getControllerURI());
         ClientConfig.ClientConfigBuilder clientConfigBuilder =
@@ -168,15 +172,21 @@ public class PravegaSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int count = 0; count < maxBatchSize; ++count) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
-
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

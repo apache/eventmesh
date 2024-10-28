@@ -30,4 +30,7 @@ public abstract class SourceConfig extends Config {
 
     private OffsetStorageConfig offsetStorageConfig;
 
+    // Polling configuration, e.g. capacity, batch size, wait time, etc.
+    private PollConfig pollConfig = new PollConfig();
+
 }
