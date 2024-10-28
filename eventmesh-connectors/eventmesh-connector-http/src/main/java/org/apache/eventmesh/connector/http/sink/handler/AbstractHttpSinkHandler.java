@@ -18,8 +18,8 @@
 package org.apache.eventmesh.connector.http.sink.handler;
 
 import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
+import org.apache.eventmesh.connector.http.sink.data.HttpAttemptEvent;
 import org.apache.eventmesh.connector.http.sink.data.HttpConnectRecord;
-import org.apache.eventmesh.connector.http.sink.data.HttpRetryEvent;
 import org.apache.eventmesh.connector.http.sink.data.MultiHttpRequestContext;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
@@ -75,10 +75,9 @@ public abstract class AbstractHttpSinkHandler implements HttpSinkHandler {
                 this.sinkConnectorConfig.getWebhookConfig().isActivate() ? "webhook" : "common");
             HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
 
-            // add retry event to attributes
-            HttpRetryEvent retryEvent = new HttpRetryEvent();
-            retryEvent.setMaxRetries(sinkConnectorConfig.getRetryConfig().getMaxRetries());
-            attributes.put(HttpRetryEvent.PREFIX + httpConnectRecord.getHttpRecordId(), retryEvent);
+            // add AttemptEvent to the attributes
+            HttpAttemptEvent attemptEvent = new HttpAttemptEvent(this.sinkConnectorConfig.getRetryConfig().getMaxRetries() + 1);
+            attributes.put(HttpAttemptEvent.PREFIX + httpConnectRecord.getHttpRecordId(), attemptEvent);
 
             // deliver the record
             deliver(url, httpConnectRecord, attributes, record);
