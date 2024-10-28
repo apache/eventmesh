@@ -54,9 +54,11 @@ public class RabbitMQSourceConnector implements Source {
 
     private volatile boolean started = false;
 
-    private static final int DEFAULT_BATCH_SIZE = 10;
-
     private BlockingQueue<CloudEvent> queue;
+
+    private int maxBatchSize;
+
+    private long maxPollWaitTime;
 
     private final RabbitmqConnectionFactory rabbitmqConnectionFactory = new RabbitmqConnectionFactory();
 
@@ -84,7 +86,9 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
-        this.queue = new LinkedBlockingQueue<>(1000);
+        this.queue = new LinkedBlockingQueue<>(sourceConfig.getPollConfig().getCapacity());
+        this.maxBatchSize = sourceConfig.getPollConfig().getMaxBatchSize();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
         this.sourceConfig = (RabbitMQSourceConfig) ((SourceConnectorContext) connectorContext).getSourceConfig();
         this.rabbitmqClient = new RabbitmqClient(rabbitmqConnectionFactory);
         this.connection = rabbitmqClient.getConnection(sourceConfig.getConnectorConfig().getHost(),
@@ -139,15 +143,21 @@ public class RabbitMQSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        List<ConnectRecord> connectRecords = new ArrayList<>(DEFAULT_BATCH_SIZE);
-        for (int count = 0; count < DEFAULT_BATCH_SIZE; ++count) {
+        long startTime = System.currentTimeMillis();
+        long remainingTime = maxPollWaitTime;
+
+        List<ConnectRecord> connectRecords = new ArrayList<>(maxBatchSize);
+        for (int count = 0; count < maxBatchSize; ++count) {
             try {
-                CloudEvent event = queue.poll(3, TimeUnit.SECONDS);
+                CloudEvent event = queue.poll(remainingTime, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     break;
                 }
-
                 connectRecords.add(CloudEventUtil.convertEventToRecord(event));
+
+                // calculate elapsed time and update remaining time for next poll
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
             } catch (InterruptedException e) {
                 break;
             }

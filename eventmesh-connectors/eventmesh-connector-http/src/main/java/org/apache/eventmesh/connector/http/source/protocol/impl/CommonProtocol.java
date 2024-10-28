@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.connector.http.common.SynchronizedCircularFifoQueue;
 import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
@@ -28,6 +27,7 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -66,7 +66,7 @@ public class CommonProtocol implements Protocol {
      * @param queue queue info
      */
     @Override
-    public void setHandler(Route route, SynchronizedCircularFifoQueue<Object> queue) {
+    public void setHandler(Route route, BlockingQueue<Object> queue) {
         route.method(HttpMethod.POST)
             .handler(BodyHandler.create())
             .handler(ctx -> {
