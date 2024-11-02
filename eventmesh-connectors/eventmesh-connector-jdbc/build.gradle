@@ -41,7 +41,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-spi")
-    implementation 'com.zendesk:mysql-binlog-connector-java:0.29.2'
+    implementation 'com.zendesk:mysql-binlog-connector-java:0.30.1'
     compileOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
