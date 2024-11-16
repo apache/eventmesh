@@ -60,11 +60,11 @@ public class StandaloneBroker {
     public MessageEntity putMessage(String topicName, CloudEvent message) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
         if (!messageContainer.containsKey(topicMetadata)) {
-            throw new RuntimeException("The topic is not created");
+            throw new RuntimeException(String.format("The topic:%s is not created", topicName));
         }
         Channel channel = messageContainer.get(topicMetadata);
         if (channel.isClosed()) {
-            throw new RuntimeException("The topic is not subscribed");
+            throw new RuntimeException(String.format("The topic:%s is not subscribed", topicName));
         }
         MessageEntity messageEntity = new MessageEntity(new TopicMetadata(topicName), message);
         channel.getProvider().onData(messageEntity);
@@ -135,12 +135,12 @@ public class StandaloneBroker {
     public void subscribed(String topicName, Subscribe subscribe) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
         if (subscribeContainer.containsKey(topicMetadata)) {
-            log.warn("the topic already subscribed");
+            log.warn("the topic:{} already subscribed", topicName);
             return;
         }
         Channel channel = getMessageContainer().get(topicMetadata);
         if (channel == null) {
-            log.warn("the topic is not created");
+            log.warn("the topic:{} is not created", topicName);
             return;
         }
         channel.setEventHandler(subscribe);
