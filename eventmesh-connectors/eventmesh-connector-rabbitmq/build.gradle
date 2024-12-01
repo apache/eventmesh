@@ -20,7 +20,7 @@ dependencies {
     api project(":eventmesh-openconnect:eventmesh-openconnect-java")
     implementation project(":eventmesh-common")
     // rabbitmq
-    implementation 'com.rabbitmq:amqp-client:5.22.0'
+    implementation 'com.rabbitmq:amqp-client:5.23.0'
 
     implementation 'io.cloudevents:cloudevents-json-jackson'
 
