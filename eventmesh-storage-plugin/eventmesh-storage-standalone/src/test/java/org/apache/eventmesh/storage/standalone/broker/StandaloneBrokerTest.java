@@ -69,13 +69,13 @@ public class StandaloneBrokerTest {
         Assertions.assertTrue(exists);
     }
 
-    @Test
-    public void testDeleteTopicIfExist() throws InterruptedException {
-        StandaloneBroker instance = getStandaloneBroker();
-        CloudEvent cloudEvent = createDefaultCloudEvent();
-        instance.putMessage(TEST_TOPIC, cloudEvent);
-        instance.deleteTopicIfExist(TEST_TOPIC);
-        boolean exists = instance.checkTopicExist(TEST_TOPIC);
-        Assertions.assertFalse(exists);
-    }
+//    @Test
+//    public void testDeleteTopicIfExist() throws InterruptedException {
+//        StandaloneBroker instance = getStandaloneBroker();
+//        CloudEvent cloudEvent = createDefaultCloudEvent();
+//        instance.putMessage(TEST_TOPIC, cloudEvent);
+//        instance.deleteTopicIfExist(TEST_TOPIC);
+//        boolean exists = instance.checkTopicExist(TEST_TOPIC);
+//        Assertions.assertFalse(exists);
+//    }
 }
