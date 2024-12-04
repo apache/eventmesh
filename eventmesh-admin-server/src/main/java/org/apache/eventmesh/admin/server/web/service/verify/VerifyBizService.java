@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class VerifyBizService {
+
     @Autowired
     private EventMeshVerifyService verifyService;
 
@@ -35,6 +36,7 @@ public class VerifyBizService {
         verify.setRecordSig(request.getRecordSig());
         verify.setPosition(request.getPosition());
         verify.setTaskID(request.getTaskID());
+        verify.setJobID(request.getJobID());
         verify.setConnectorName(request.getConnectorName());
         verify.setConnectorStage(request.getConnectorStage());
         return verifyService.save(verify);

@@ -21,10 +21,11 @@ import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -33,9 +34,18 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 @Mapper
 public interface EventMeshJobInfoExtMapper extends BaseMapper<EventMeshJobInfo> {
-    @Insert("insert into event_mesh_job_info(`taskID`,`state`,`jobType`) values"
-        + "<foreach collection= 'jobs' item='job' separator=','>(#{job.taskID},#{job.state},#{job.jobType})</foreach>")
-    @Options(useGeneratedKeys = true, keyProperty = "jobID")
+
+    @Insert("<script>"
+        + "insert into event_mesh_job_info(jobID, jobDesc, taskID, transportType, sourceData, "
+        + "targetData, jobState, jobType, fromRegion, runningRegion, "
+        + "createUid, updateUid) values"
+        + "<foreach collection= 'jobs' item='job' separator=','>"
+        + "(#{job.jobID}, #{job.jobDesc}, #{job.taskID}, #{job.transportType}, "
+        + "#{job.sourceData}, #{job.targetData}, #{job.jobState}, #{job.jobType}, "
+        + "#{job.fromRegion}, #{job.runningRegion}, #{job.createUid}, #{job.updateUid})"
+        + "</foreach>"
+        + "</script>")
+    @Transactional(rollbackFor = Exception.class)
     int saveBatch(@Param("jobs") List<EventMeshJobInfo> jobInfoList);
 }
 

@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id 'com.gradle.develocity' version '3.17.5'
+    id 'com.gradle.develocity' version '3.18.1'
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
 }
 
@@ -47,8 +47,6 @@ include 'eventmesh-common'
 include 'eventmesh-starter'
 include 'eventmesh-examples'
 include 'eventmesh-spi'
-include 'eventmesh-filter'
-include 'eventmesh-transformer'
 
 include 'eventmesh-openconnect:eventmesh-openconnect-java'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
@@ -132,4 +130,9 @@ include 'eventmesh-admin-server'
 include 'eventmesh-registry'
 include 'eventmesh-registry:eventmesh-registry-api'
 include 'eventmesh-registry:eventmesh-registry-nacos'
+
+include 'eventmesh-function'
+include 'eventmesh-function:eventmesh-function-api'
+include 'eventmesh-function:eventmesh-function-filter'
+include 'eventmesh-function:eventmesh-function-transformer'
 

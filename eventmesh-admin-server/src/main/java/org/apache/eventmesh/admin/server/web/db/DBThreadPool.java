@@ -20,6 +20,7 @@ package org.apache.eventmesh.admin.server.web.db;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -39,22 +40,43 @@ public class DBThreadPool {
             new LinkedBlockingQueue<>(1000), new EventMeshThreadFactory("admin-server-db"),
             new ThreadPoolExecutor.DiscardOldestPolicy());
 
+
+    private final ScheduledThreadPoolExecutor checkScheduledExecutor =
+        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new EventMeshThreadFactory("admin-server-check-scheduled"),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
+
     @PreDestroy
     private void destroy() {
         if (!executor.isShutdown()) {
             try {
                 executor.shutdown();
                 if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-                    log.info("wait heart beat handler thread pool shutdown timeout, it will shutdown immediately");
+                    log.info("wait handler thread pool shutdown timeout, it will shutdown immediately");
                     executor.shutdownNow();
                 }
             } catch (InterruptedException e) {
-                log.warn("wait heart beat handler thread pool shutdown fail");
+                log.warn("wait handler thread pool shutdown fail");
+            }
+        }
+
+        if (!checkScheduledExecutor.isShutdown()) {
+            try {
+                checkScheduledExecutor.shutdown();
+                if (!checkScheduledExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.info("wait scheduled thread pool shutdown timeout, it will shutdown immediately");
+                    checkScheduledExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                log.warn("wait scheduled thread pool shutdown fail");
             }
         }
     }
 
     public ThreadPoolExecutor getExecutors() {
         return executor;
+    }
+
+    public ScheduledThreadPoolExecutor getCheckExecutor() {
+        return checkScheduledExecutor;
     }
 }

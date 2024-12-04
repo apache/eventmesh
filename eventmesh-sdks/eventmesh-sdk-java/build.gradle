@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.65.1'
+def grpcVersion = '1.68.0'
 
 dependencies {
     api(project(":eventmesh-common")) {
@@ -54,7 +54,7 @@ dependencies {
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "com.google.protobuf:protobuf-java-util:3.25.3"
+    implementation "com.google.protobuf:protobuf-java-util:3.25.4"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

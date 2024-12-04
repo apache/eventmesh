@@ -45,7 +45,7 @@ public class KafkaSourceConnector implements Source {
 
     private KafkaConsumer<String, String> kafkaConsumer;
 
-    private int pollTimeOut = 100;
+    private long maxPollWaitTime;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -75,7 +75,7 @@ public class KafkaSourceConnector implements Source {
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, sourceConfig.getConnectorConfig().getMaxPollRecords());
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, sourceConfig.getConnectorConfig().getAutoCommitIntervalMS());
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sourceConfig.getConnectorConfig().getSessionTimeoutMS());
-        this.pollTimeOut = sourceConfig.getConnectorConfig().getPollTimeOut();
+        this.maxPollWaitTime = sourceConfig.getPollConfig().getMaxWaitTime();
         this.kafkaConsumer = new KafkaConsumer<>(props);
     }
 
@@ -106,7 +106,7 @@ public class KafkaSourceConnector implements Source {
 
     @Override
     public List<ConnectRecord> poll() {
-        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(pollTimeOut));
+        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(maxPollWaitTime));
         List<ConnectRecord> connectRecords = new ArrayList<>(records.count());
         for (ConsumerRecord<String, String> record : records) {
             Long timestamp = System.currentTimeMillis();

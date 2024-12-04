@@ -27,7 +27,7 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String path;
+    private String path = "/";
 
     private int port;
 
@@ -44,15 +44,12 @@ public class SourceConnectorConfig {
      */
     private int maxFormAttributeSize = 1024 * 1024;
 
-    // max size of the queue, default 1000
-    private int maxStorageSize = 1000;
-
-    // batch size, default 10
-    private int batchSize = 10;
-
-    // protocol, default CloudEvent
-    private String protocol = "CloudEvent";
+    // protocol, default Common
+    private String protocol = "Common";
 
     // extra config, e.g. GitHub secret
     private Map<String, String> extraConfig = new HashMap<>();
+
+    // data consistency enabled, default true
+    private boolean dataConsistencyEnabled = false;
 }

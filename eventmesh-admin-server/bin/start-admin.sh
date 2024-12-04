@@ -56,34 +56,34 @@ function extract_java_version {
 #}
 
 function get_pid {
-	local ppid=""
-	if [ -f ${EVENTMESH_ADMIN_HOME}/bin/pid-admin.file ]; then
-		ppid=$(cat ${EVENTMESH_ADMIN_HOME}/bin/pid-admin.file)
-		# If the process does not exist, it indicates that the previous process terminated abnormally.
+        local ppid=""
+        if [ -f ${EVENTMESH_ADMIN_HOME}/bin/pid-admin.file ]; then
+                ppid=$(cat ${EVENTMESH_ADMIN_HOME}/bin/pid-admin.file)
+                # If the process does not exist, it indicates that the previous process terminated abnormally.
     if [ ! -d /proc/$ppid ]; then
       # Remove the residual file.
       rm ${EVENTMESH_ADMIN_HOME}/bin/pid-admin.file
       echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
       ppid=""
     fi
-	else
-		if [[ $OS =~ Msys ]]; then
-			# There is a Bug on Msys that may not be able to kill the identified process
-			ppid=`jps -v | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
-		elif [[ $OS =~ Darwin ]]; then
-			# Known problem: grep Java may not be able to accurately identify Java processes
-			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | grep -Ev "^root" |awk -F ' ' {'print $2'})
-		else
-		  if [ $DOCKER ]; then
-		    # No need to exclude root user in Docker containers.
-		    ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_ADMIN_HOME | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | awk -F ' ' {'print $2'})
-		  else
+        else
+                if [[ $OS =~ Msys ]]; then
+                        # There is a Bug on Msys that may not be able to kill the identified process
+                        ppid=`jps -v | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
+                elif [[ $OS =~ Darwin ]]; then
+                        # Known problem: grep Java may not be able to accurately identify Java processes
+                        ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+                else
+                  if [ $DOCKER ]; then
+                    # No need to exclude root user in Docker containers.
+                    ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_ADMIN_HOME | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | awk -F ' ' {'print $2'})
+                  else
         # It is required to identify the process as accurately as possible on Linux.
         ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_ADMIN_HOME | grep -i "org.apache.eventmesh.admin.server.ExampleAdminServer" | grep -Ev "^root" | awk -F ' ' {'print $2'})
       fi
-		fi
-	fi
-	echo "$ppid";
+                fi
+        fi
+        echo "$ppid";
 }
 
 #===========================================================================================
@@ -136,8 +136,7 @@ export JAVA_HOME
 
 GC_LOG_FILE="${EVENTMESH_ADMIN_LOG_HOME}/eventmesh_admin_gc_%p.log"
 
-#JAVA_OPT="${JAVA_OPT} -server -Xms2048M -Xmx4096M -Xmn2048m -XX:SurvivorRatio=4"
-JAVA_OPT=`cat ${EVENTMESH_ADMIN_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
+JAVA_OPT="${JAVA_OPT} -server -Xms1g -Xmx1g"
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
 JAVA_OPT="${JAVA_OPT} -verbose:gc"
 if [[ "$JAVA_VERSION" == "8" ]]; then
@@ -172,7 +171,7 @@ JAVA_OPT="${JAVA_OPT} -DeventMeshPluginDir=${EVENTMESH_ADMIN_HOME}/plugin"
 #            echo "proxy is running already"
 #            exit 9;
 #        else
-#	    echo "err pid$pid, rm pid.file"
+#           echo "err pid$pid, rm pid.file"
 #            rm pid.file
 #        fi
 #fi
@@ -183,8 +182,8 @@ if [[ $pid == "ERROR"* ]]; then
   exit 9
 fi
 if [ -n "$pid" ]; then
-	echo -e "ERROR\t The server is already running (pid=$pid), there is no need to execute start.sh again."
-	exit 9
+        echo -e "ERROR\t The server is already running (pid=$pid), there is no need to execute start.sh again."
+        exit 9
 fi
 
 make_logs_dir
@@ -193,9 +192,9 @@ echo "Using Java version: $JAVA_VERSION, path: $JAVA" >> ${EVENTMESH_ADMIN_LOG_H
 
 EVENTMESH_ADMIN_MAIN=org.apache.eventmesh.admin.server.ExampleAdminServer
 if [ $DOCKER ]; then
-	$JAVA $JAVA_OPT -classpath ${EVENTMESH_ADMIN_HOME}/conf:${EVENTMESH_ADMIN_HOME}/apps/*:${EVENTMESH_ADMIN_HOME}/lib/* $EVENTMESH_ADMIN_MAIN >> ${EVENTMESH_ADMIN_LOG_HOME}/eventmesh-admin.out
+        $JAVA $JAVA_OPT -classpath ${EVENTMESH_ADMIN_HOME}/conf:${EVENTMESH_ADMIN_HOME}/apps/*:${EVENTMESH_ADMIN_HOME}/lib/* $EVENTMESH_ADMIN_MAIN >> ${EVENTMESH_ADMIN_LOG_HOME}/eventmesh-admin.out
 else
-	$JAVA $JAVA_OPT -classpath ${EVENTMESH_ADMIN_HOME}/conf:${EVENTMESH_ADMIN_HOME}/apps/*:${EVENTMESH_ADMIN_HOME}/lib/* $EVENTMESH_ADMIN_MAIN >> ${EVENTMESH_ADMIN_LOG_HOME}/eventmesh-admin.out 2>&1 &
+        $JAVA $JAVA_OPT -classpath ${EVENTMESH_ADMIN_HOME}/conf:${EVENTMESH_ADMIN_HOME}/apps/*:${EVENTMESH_ADMIN_HOME}/lib/* $EVENTMESH_ADMIN_MAIN >> ${EVENTMESH_ADMIN_LOG_HOME}/eventmesh-admin.out 2>&1 &
 echo $!>${EVENTMESH_ADMIN_HOME}/bin/pid-admin.file
 fi
 exit 0

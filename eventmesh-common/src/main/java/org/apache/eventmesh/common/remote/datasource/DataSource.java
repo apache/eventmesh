@@ -17,27 +17,30 @@
 
 package org.apache.eventmesh.common.remote.datasource;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class DataSource {
-    private final DataSourceType type;
+
+    private DataSourceType type;
+
     private String desc;
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     @JsonSubTypes({
-        @JsonSubTypes.Type(value = MySqlIncDataSourceSourceConf.class, name = "MySqlIncDataSourceSourceConf")
+        @JsonSubTypes.Type(value = CanalSourceConfig.class, name = "CanalSourceConfig"),
+        @JsonSubTypes.Type(value = CanalSinkConfig.class, name = "CanalSinkConfig")
     })
-    private final DataSourceConf conf;
-    private final Class<? extends DataSourceConf> confClazz;
+    private Config conf;
 
-    public DataSource(DataSourceType type, DataSourceConf conf) {
-        this.type = type;
-        this.conf = conf;
-        this.confClazz = conf.getConfClass();
-    }
+    private Class<? extends Config> confClazz;
 
+    private String region;
 
 }

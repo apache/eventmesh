@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.canal.source.connector;
 import org.apache.eventmesh.common.AbstractComponent;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceFullConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
@@ -32,11 +33,11 @@ import org.apache.eventmesh.connector.canal.source.position.CanalFullPositionMgr
 import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.connector.canal.source.table.RdbSimpleTable;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
-import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -49,27 +50,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CanalSourceFullConnector extends AbstractComponent implements Source, ConnectorCreateService<Source> {
+public class CanalSourceFullConnector extends AbstractComponent implements Source {
+
     private CanalSourceFullConfig config;
     private CanalFullPositionMgr positionMgr;
     private RdbTableMgr tableMgr;
     private ThreadPoolExecutor executor;
-    private final BlockingQueue<List<ConnectRecord>> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<List<ConnectRecord>> queue;
     private final AtomicBoolean flag = new AtomicBoolean(true);
+    private long maxPollWaitTime;
 
     @Override
     protected void run() throws Exception {
         this.tableMgr.start();
         this.positionMgr.start();
         if (positionMgr.isFinished()) {
-            log.info("connector [{}] has finished the job", config.getConnectorConfig().getConnectorName());
+            log.info("connector [{}] has finished the job", config.getSourceConnectorConfig().getConnectorName());
             return;
         }
         executor = new ThreadPoolExecutor(config.getParallel(), config.getParallel(), 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new EventMeshThreadFactory("canal-source-full"));
         List<CanalFullProducer> producers = new LinkedList<>();
-        if (config.getConnectorConfig().getDatabases() != null) {
-            for (RdbDBDefinition db : config.getConnectorConfig().getDatabases()) {
+        if (config.getSourceConnectorConfig().getDatabases() != null) {
+            for (RdbDBDefinition db : config.getSourceConnectorConfig().getDatabases()) {
                 for (RdbTableDefinition table : db.getTables()) {
                     try {
                         log.info("it will create producer of db [{}] table [{}]", db.getSchemaName(), table.getTableName());
@@ -120,11 +123,6 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     }
 
     @Override
-    public Source create() {
-        return new CanalSourceFullConnector();
-    }
-
-    @Override
     public Class<? extends Config> configClass() {
         return CanalSourceFullConfig.class;
     }
@@ -136,16 +134,19 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     }
 
     private void init() {
-        DatabaseConnection.sourceConfig = this.config.getConnectorConfig();
+        DatabaseConnection.sourceConfig = this.config.getSourceConnectorConfig();
         DatabaseConnection.initSourceConnection();
-        this.tableMgr = new RdbTableMgr(config.getConnectorConfig(), DatabaseConnection.sourceDataSource);
+        this.tableMgr = new RdbTableMgr(config.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
         this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
+        this.maxPollWaitTime = config.getPollConfig().getMaxWaitTime();
+        this.queue = new LinkedBlockingQueue<>(config.getPollConfig().getCapacity());
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
-        this.config = (CanalSourceFullConfig) sourceConnectorContext.getSourceConfig();
+        CanalSourceConfig canalSourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
+        this.config = ConfigUtil.parse(canalSourceConfig.getSourceConfig(), CanalSourceFullConfig.class);
         init();
     }
 
@@ -156,7 +157,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
 
     @Override
     public String name() {
-        return this.config.getConnectorConfig().getConnectorName();
+        return this.config.getSourceConnectorConfig().getConnectorName();
     }
 
     @Override
@@ -168,7 +169,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     public List<ConnectRecord> poll() {
         while (flag.get()) {
             try {
-                List<ConnectRecord> records = queue.poll(5, TimeUnit.SECONDS);
+                List<ConnectRecord> records = queue.poll(maxPollWaitTime, TimeUnit.MILLISECONDS);
                 if (records == null || records.isEmpty()) {
                     continue;
                 }

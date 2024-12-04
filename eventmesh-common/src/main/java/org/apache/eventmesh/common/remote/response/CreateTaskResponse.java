@@ -17,5 +17,17 @@
 
 package org.apache.eventmesh.common.remote.response;
 
+import org.apache.eventmesh.common.remote.request.CreateTaskRequest;
+
+import java.util.List;
+
+import lombok.Data;
+
+@Data
 public class CreateTaskResponse extends BaseRemoteResponse {
+
+    private String taskId;
+
+    private List<CreateTaskRequest.JobDetail> jobIdList;
+
 }

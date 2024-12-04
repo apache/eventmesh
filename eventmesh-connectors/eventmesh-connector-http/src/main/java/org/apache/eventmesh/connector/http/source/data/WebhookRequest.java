@@ -20,6 +20,8 @@ package org.apache.eventmesh.connector.http.source.data;
 import java.io.Serializable;
 import java.util.Map;
 
+import io.vertx.ext.web.RoutingContext;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,5 +43,7 @@ public class WebhookRequest implements Serializable {
     private Map<String, String> headers;
 
     private Object payload;
+
+    private RoutingContext routingContext;
 
 }

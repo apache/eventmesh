@@ -20,8 +20,8 @@ package org.apache.eventmesh.connector.http.sink;
 
 import static org.mockserver.model.HttpRequest.request;
 
-import org.apache.eventmesh.connector.http.sink.config.HttpSinkConfig;
-import org.apache.eventmesh.connector.http.sink.config.HttpWebhookConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpSinkConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpWebhookConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
@@ -83,14 +83,12 @@ public class HttpSinkConnectorTest {
                 httpRequest -> {
                     // Increase the number of requests received
                     counter.incrementAndGet();
-                    JSONObject requestBody = JSON.parseObject(httpRequest.getBodyAsString());
                     return HttpResponse.response()
                         .withContentType(MediaType.APPLICATION_JSON)
-                        .withStatusCode(200)
+                        .withStatusCode(HttpStatus.SC_OK)
                         .withBody(new JSONObject()
                             .fluentPut("code", 0)
                             .fluentPut("message", "success")
-                            .fluentPut("data", requestBody.getJSONObject("data").get("data"))
                             .toJSONString()
                         ); // .withDelay(TimeUnit.SECONDS, 10);
                 }

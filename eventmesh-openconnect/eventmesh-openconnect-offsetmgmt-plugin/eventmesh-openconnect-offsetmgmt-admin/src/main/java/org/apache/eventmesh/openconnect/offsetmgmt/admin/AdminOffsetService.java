@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -111,6 +112,8 @@ public class AdminOffsetService implements OffsetManagementService {
 
         reportPositionRequest.setRecordPositionList(recordToSyncList);
 
+        log.debug("start report position request: {}", JsonUtils.toJSONString(reportPositionRequest));
+
         Metadata metadata = Metadata.newBuilder()
             .setType(ReportPositionRequest.class.getSimpleName())
             .build();
@@ -120,6 +123,7 @@ public class AdminOffsetService implements OffsetManagementService {
                 .build())
             .build();
         requestObserver.onNext(payload);
+        log.debug("end report position request: {}", JsonUtils.toJSONString(reportPositionRequest));
 
         for (Map.Entry<RecordPartition, RecordOffset> entry : recordMap.entrySet()) {
             positionStore.remove(entry.getKey());
@@ -236,7 +240,7 @@ public class AdminOffsetService implements OffsetManagementService {
         this.dataSourceType = offsetStorageConfig.getDataSourceType();
         this.dataSinkType = offsetStorageConfig.getDataSinkType();
 
-        this.adminServerAddr = offsetStorageConfig.getOffsetStorageAddr();
+        this.adminServerAddr = getRandomAdminServerAddr(offsetStorageConfig.getOffsetStorageAddr());
         this.channel = ManagedChannelBuilder.forTarget(adminServerAddr)
             .usePlaintext()
             .build();
@@ -273,5 +277,15 @@ public class AdminOffsetService implements OffsetManagementService {
         }
         this.jobState = TaskState.RUNNING;
         this.jobId = offsetStorageConfig.getExtensions().get("jobId");
+    }
+
+    private String getRandomAdminServerAddr(String adminServerAddrList) {
+        String[] addresses = adminServerAddrList.split(";");
+        if (addresses.length == 0) {
+            throw new IllegalArgumentException("Admin server address list is empty");
+        }
+        Random random = new Random();
+        int randomIndex = random.nextInt(addresses.length);
+        return addresses[randomIndex];
     }
 }

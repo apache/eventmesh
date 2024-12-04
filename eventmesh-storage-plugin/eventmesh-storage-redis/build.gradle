@@ -20,7 +20,7 @@ dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     // redisson
-    implementation 'org.redisson:redisson:3.32.0'
+    implementation 'org.redisson:redisson:3.38.1'
 
     // netty
     implementation 'io.netty:netty-all'
@@ -29,7 +29,7 @@ dependencies {
     api 'io.cloudevents:cloudevents-json-jackson'
 
     // test dependencies
-    testImplementation 'com.github.fppt:jedis-mock:1.1.2'
+    testImplementation 'com.github.fppt:jedis-mock:1.1.3'
     testImplementation "org.mockito:mockito-core"
 
     compileOnly 'org.projectlombok:lombok'

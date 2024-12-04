@@ -22,13 +22,16 @@ import org.apache.eventmesh.common.remote.job.SyncMode;
 import org.apache.eventmesh.connector.canal.model.EventColumn;
 import org.apache.eventmesh.connector.canal.model.EventType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
 
 @Data
-public class CanalConnectRecord {
+public class CanalConnectRecord implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String schemaName;
 

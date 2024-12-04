@@ -26,10 +26,11 @@
     <resultMap id="BaseResultMap" type="org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo">
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="taskID" column="taskID" jdbcType="VARCHAR"/>
-            <result property="name" column="name" jdbcType="VARCHAR"/>
-            <result property="desc" column="desc" jdbcType="VARCHAR"/>
-            <result property="state" column="state" jdbcType="VARCHAR"/>
-            <result property="fromRegion" column="fromRegion" jdbcType="VARCHAR"/>
+            <result property="taskName" column="taskName" jdbcType="VARCHAR"/>
+            <result property="taskDesc" column="taskDesc" jdbcType="VARCHAR"/>
+            <result property="taskState" column="taskState" jdbcType="VARCHAR"/>
+            <result property="sourceRegion" column="sourceRegion" jdbcType="VARCHAR"/>
+            <result property="targetRegion" column="targetRegion" jdbcType="VARCHAR"/>
             <result property="createUid" column="createUid" jdbcType="VARCHAR"/>
             <result property="updateUid" column="updateUid" jdbcType="VARCHAR"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
@@ -37,8 +38,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,taskID,name,
-        desc,state,fromRegion,
+        id,taskID,taskName,
+        taskDesc,taskState,sourceRegion,targetRegion,
         createUid,updateUid,createTime,
         updateTime
     </sql>
