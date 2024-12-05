@@ -48,6 +48,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -175,9 +177,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     .childHandler(new HttpsServerInitializer(useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null))
                     .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
-                log.info("HTTPServer[port={}] started.", this.getPort());
+                int port = eventMeshHttpConfiguration.getProtocolConfiguration().getUnifiedPort();
+                log.info("HTTPServer[port={}] started.", port);
 
-                bootstrap.bind(this.getPort())
+                bootstrap.bind(port)
                     .channel()
                     .closeFuture()
                     .sync();

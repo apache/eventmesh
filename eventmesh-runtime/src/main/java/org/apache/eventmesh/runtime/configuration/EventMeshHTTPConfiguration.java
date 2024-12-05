@@ -24,11 +24,13 @@ import org.apache.eventmesh.common.config.ConfigField;
 import java.util.Collections;
 import java.util.List;
 
+import inet.ipaddr.IPAddress;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import inet.ipaddr.IPAddress;
+import org.apache.eventmesh.runtime.configuration.ProtocolConfiguration;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -37,7 +39,27 @@ import inet.ipaddr.IPAddress;
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     @ConfigField(field = "http.port", notNull = true, beNumber = true)
+    @Deprecated
     private int httpServerPort = 10105;
+
+    @ConfigField(field = "protocol")
+    private ProtocolConfiguration protocolConfiguration = new ProtocolConfiguration();
+
+    public int getHttpServerPort() {
+        return protocolConfiguration.getHttpPort();
+    }
+
+    public void setHttpServerPort(int port) {
+        this.httpServerPort = port;
+        this.protocolConfiguration.setHttpPort(port);
+    }
+
+    public boolean isHttpEnabled() {
+        return protocolConfiguration.isHttpEnabled();
+    }
+
+    @ConfigField(field = "http.path")
+    private String eventMeshServerHttpPath = "/eventmesh";
 
     @ConfigField(field = "batchmsg.batch.enabled")
     private boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;

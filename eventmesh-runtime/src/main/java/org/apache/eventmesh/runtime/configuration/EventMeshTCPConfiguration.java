@@ -33,7 +33,24 @@ import lombok.NoArgsConstructor;
 public class EventMeshTCPConfiguration extends CommonConfiguration {
 
     @ConfigField(field = "tcp.port")
+    @Deprecated
     private int eventMeshTcpServerPort = 10000;
+
+    @ConfigField(field = "protocol")
+    private ProtocolConfiguration protocolConfiguration = new ProtocolConfiguration();
+
+    public int getEventMeshTcpServerPort() {
+        return protocolConfiguration.getTcpPort();
+    }
+
+    public void setEventMeshTcpServerPort(int port) {
+        this.eventMeshTcpServerPort = port;
+        this.protocolConfiguration.setTcpPort(port);
+    }
+
+    public boolean isTcpEnabled() {
+        return protocolConfiguration.isTcpEnabled();
+    }
 
     @ConfigField(field = "tcp.allIdleSeconds")
     private int eventMeshTcpIdleAllSeconds = 60;
