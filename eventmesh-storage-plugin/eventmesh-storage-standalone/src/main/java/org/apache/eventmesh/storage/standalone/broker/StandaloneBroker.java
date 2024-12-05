@@ -60,9 +60,12 @@ public class StandaloneBroker {
     public MessageEntity putMessage(String topicName, CloudEvent message) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
         if (!messageContainer.containsKey(topicMetadata)) {
-            createTopic(topicName);
+            throw new RuntimeException(String.format("The topic:%s is not created", topicName));
         }
         Channel channel = messageContainer.get(topicMetadata);
+        if (channel.isClosed()) {
+            throw new RuntimeException(String.format("The topic:%s is not subscribed", topicName));
+        }
         MessageEntity messageEntity = new MessageEntity(new TopicMetadata(topicName), message);
         channel.getProvider().onData(messageEntity);
         return messageEntity;
@@ -70,15 +73,7 @@ public class StandaloneBroker {
 
     public Channel createTopic(String topicName) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        return messageContainer.computeIfAbsent(topicMetadata, k -> {
-            Subscribe subscribe = subscribeContainer.get(topicMetadata);
-            if (subscribe == null) {
-                throw new IllegalStateException("the topic not exist subscribe ");
-            }
-            Channel channel = new Channel(topicMetadata, subscribe);
-            channel.start();
-            return channel;
-        });
+        return messageContainer.computeIfAbsent(topicMetadata, k -> new Channel(topicMetadata));
     }
 
     /**
@@ -139,10 +134,17 @@ public class StandaloneBroker {
 
     public void subscribed(String topicName, Subscribe subscribe) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        if (getMessageContainer().containsKey(topicMetadata)) {
-            log.warn("the topic already subscribed");
+        if (subscribeContainer.containsKey(topicMetadata)) {
+            log.warn("the topic:{} already subscribed", topicName);
             return;
         }
+        Channel channel = getMessageContainer().get(topicMetadata);
+        if (channel == null) {
+            log.warn("the topic:{} is not created", topicName);
+            return;
+        }
+        channel.setEventHandler(subscribe);
+        channel.start();
         subscribeContainer.put(topicMetadata, subscribe);
     }
 
