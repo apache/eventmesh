@@ -40,7 +40,6 @@ public class RuntimeInstanceStarter {
                     long start = System.currentTimeMillis();
                     runtimeInstance.shutdown();
                     long end = System.currentTimeMillis();
-
                     log.info("runtime shutdown cost {}ms", end - start);
                 } catch (Exception e) {
                     log.error("exception when shutdown {}", e.getMessage(), e);

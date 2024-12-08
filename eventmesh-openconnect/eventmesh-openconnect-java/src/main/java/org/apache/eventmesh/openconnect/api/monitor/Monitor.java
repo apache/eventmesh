@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.openconnect.api.monitor;
 
-import java.util.Random;
+/**
+ * Monitor Interface.
+ * All monitors should implement this interface.
+ */
+public interface Monitor {
+    void recordProcess(long timeCost);
 
-public class RuntimeUtils {
+    void recordProcess(int recordCount, long timeCost);
 
-    public static String getRandomAdminServerAddr(String adminServerAddrList) {
-        String[] addresses = adminServerAddrList.split(";");
-        if (addresses.length == 0) {
-            throw new IllegalArgumentException("Admin server address list is empty");
-        }
-        Random random = new Random();
-        int randomIndex = random.nextInt(addresses.length);
-        return addresses[randomIndex];
-    }
-
+    void printMetrics();
 }

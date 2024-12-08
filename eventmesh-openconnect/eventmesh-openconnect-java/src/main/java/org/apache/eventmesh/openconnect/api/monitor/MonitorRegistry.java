@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.openconnect.api.monitor;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
-public class RuntimeUtils {
+import lombok.Getter;
 
-    public static String getRandomAdminServerAddr(String adminServerAddrList) {
-        String[] addresses = adminServerAddrList.split(";");
-        if (addresses.length == 0) {
-            throw new IllegalArgumentException("Admin server address list is empty");
-        }
-        Random random = new Random();
-        int randomIndex = random.nextInt(addresses.length);
-        return addresses[randomIndex];
+public class MonitorRegistry {
+
+    @Getter
+    private static final List<Monitor> monitors = new ArrayList<>();
+
+    public static void registerMonitor(Monitor monitor) {
+        monitors.add(monitor);
     }
 
 }
