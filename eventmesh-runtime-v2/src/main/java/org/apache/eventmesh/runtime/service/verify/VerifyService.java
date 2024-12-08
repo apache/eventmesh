@@ -87,7 +87,7 @@ public class VerifyService {
     public void reportVerifyRequest(ConnectRecord record, ConnectorStage connectorStage) {
         reportVerifyExecutor.submit(() -> {
             try {
-                byte[] data = (byte[])record.getData();
+                byte[] data = (byte[]) record.getData();
                 // use record data + recordUniqueId for md5
                 String md5Str = md5(Arrays.toString(data) + record.getExtension("recordUniqueId"));
                 ReportVerifyRequest reportVerifyRequest = new ReportVerifyRequest();
@@ -96,17 +96,17 @@ public class VerifyService {
                 reportVerifyRequest.setRecordID(record.getExtension("recordUniqueId"));
                 reportVerifyRequest.setRecordSig(md5Str);
                 reportVerifyRequest.setConnectorName(
-                        IPUtils.getLocalAddress() + "_" + connectorRuntimeConfig.getJobID() + "_" + connectorRuntimeConfig.getRegion());
+                    IPUtils.getLocalAddress() + "_" + connectorRuntimeConfig.getJobID() + "_" + connectorRuntimeConfig.getRegion());
                 reportVerifyRequest.setConnectorStage(connectorStage.name());
                 reportVerifyRequest.setPosition(JsonUtils.toJSONString(record.getPosition()));
 
                 Metadata metadata = Metadata.newBuilder().setType(ReportVerifyRequest.class.getSimpleName()).build();
 
                 Payload request = Payload.newBuilder().setMetadata(metadata)
-                        .setBody(
-                                Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportVerifyRequest))))
-                                        .build())
-                        .build();
+                    .setBody(
+                        Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportVerifyRequest))))
+                            .build())
+                    .build();
                 requestObserver.onNext(request);
             } catch (Exception e) {
                 log.error("Failed to report verify request", e);
