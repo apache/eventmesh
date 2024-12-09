@@ -15,20 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.runtime.service.monitor;
 
-import java.util.Random;
+import org.apache.eventmesh.common.enums.ConnectorStage;
+import org.apache.eventmesh.openconnect.api.monitor.AbstractConnectorMonitor;
 
-public class RuntimeUtils {
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-    public static String getRandomAdminServerAddr(String adminServerAddrList) {
-        String[] addresses = adminServerAddrList.split(";");
-        if (addresses.length == 0) {
-            throw new IllegalArgumentException("Admin server address list is empty");
-        }
-        Random random = new Random();
-        int randomIndex = random.nextInt(addresses.length);
-        return addresses[randomIndex];
+@Slf4j
+@Getter
+@Setter
+public class SourceMonitor extends AbstractConnectorMonitor {
+
+    private String connectorStage = ConnectorStage.SOURCE.name();
+
+    public SourceMonitor(String taskId, String jobId, String ip) {
+        super(taskId, jobId, ip);
     }
 
+    @Override
+    public void recordProcess(int recordCount, long timeCost) {
+        super.recordProcess(recordCount, timeCost);
+    }
+
+    @Override
+    public void printMetrics() {
+        super.printMetrics();
+    }
 }
