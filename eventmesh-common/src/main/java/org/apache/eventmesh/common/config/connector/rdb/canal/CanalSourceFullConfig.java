@@ -30,6 +30,8 @@ import lombok.EqualsAndHashCode;
 public class CanalSourceFullConfig extends SourceConfig {
     private SourceConnectorConfig sourceConnectorConfig;
     private List<RecordPosition> startPosition;
-    private int parallel;
-    private int flushSize;
+    private int parallel = 2;
+    private int flushSize = 20;
+    private Integer pagePerSecond = 1;
+    private Integer recordPerSecond = 100;
 }

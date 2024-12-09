@@ -27,13 +27,13 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLTableDe
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.canal.SqlUtils;
 
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 
 public class RdbTableMgr extends AbstractComponent {
+
     private final JdbcConfig config;
     private final Map<RdbSimpleTable, RdbTableDefinition> tables = new HashMap<>();
     private final DataSource dataSource;
@@ -85,7 +86,7 @@ public class RdbTableMgr extends AbstractComponent {
                         if (primaryKeys == null || primaryKeys.isEmpty() || primaryKeys.get(table.getTableName()) == null) {
                             log.warn("init db [{}] table [{}] info, and primary keys are empty", db.getSchemaName(), table.getTableName());
                         } else {
-                            mysqlTable.setPrimaryKeys(new HashSet<>(primaryKeys.get(table.getTableName())));
+                            mysqlTable.setPrimaryKeys(primaryKeys.get(table.getTableName()));
                         }
                         if (columns == null || columns.isEmpty() || columns.get(table.getTableName()) == null) {
                             log.warn("init db [{}] table [{}] info, and columns are empty", db.getSchemaName(), table.getTableName());
@@ -116,25 +117,26 @@ public class RdbTableMgr extends AbstractComponent {
             + ".CONSTRAINT_CATALOG and L.CONSTRAINT_SCHEMA = R.CONSTRAINT_SCHEMA and L.CONSTRAINT_NAME = R"
             + ".CONSTRAINT_NAME where L.TABLE_SCHEMA = ? and L.TABLE_NAME in " + prepareTables + " and R"
             + ".CONSTRAINT_TYPE IN ('PRIMARY KEY') order by L.ORDINAL_POSITION asc";
-        try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+            PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, schema);
             SqlUtils.setInClauseParameters(statement, 2, tables);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet == null) {
-                return null;
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs == null) {
+                    return null;
+                }
+                while (rs.next()) {
+                    String tableName = rs.getString("TABLE_NAME");
+                    String colName = rs.getString("COLUMN_NAME");
+                    primaryKeys.compute(tableName, (k, v) -> {
+                        if (v == null) {
+                            v = new LinkedList<>();
+                        }
+                        v.add(colName);
+                        return v;
+                    });
+                }
             }
-            while (resultSet.next()) {
-                String tableName = resultSet.getString("TABLE_NAME");
-                String colName = resultSet.getString("COLUMN_NAME");
-                primaryKeys.compute(tableName, (k, v) -> {
-                    if (v == null) {
-                        v = new LinkedList<>();
-                    }
-                    v.add(colName);
-                    return v;
-                });
-            }
-            resultSet.close();
         }
         return primaryKeys;
     }
@@ -146,22 +148,27 @@ public class RdbTableMgr extends AbstractComponent {
             + "COLLATION_NAME,COLUMN_TYPE,COLUMN_DEFAULT,COLUMN_COMMENT,ORDINAL_POSITION,EXTRA from "
             + "INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = ? and TABLE_NAME in " + prepareTables + " order by " + "ORDINAL_POSITION asc";
         Map<String, List<MySQLColumnDef>> cols = new LinkedHashMap<>();
-        try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            conn = dataSource.getConnection();
+            statement = conn.prepareStatement(sql);
             statement.setString(1, schema);
             SqlUtils.setInClauseParameters(statement, 2, tables);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet == null) {
+            rs = statement.executeQuery();
+            if (rs == null) {
                 return null;
             }
-            while (resultSet.next()) {
-                String dataType = resultSet.getString("DATA_TYPE");
+            while (rs.next()) {
+                String dataType = rs.getString("DATA_TYPE");
                 JDBCType jdbcType = SqlUtils.toJDBCType(dataType);
                 MySQLColumnDef col = new MySQLColumnDef();
                 col.setJdbcType(jdbcType);
                 col.setType(CanalMySQLType.valueOfCode(dataType));
-                String colName = resultSet.getString("COLUMN_NAME");
+                String colName = rs.getString("COLUMN_NAME");
                 col.setName(colName);
-                String tableName = resultSet.getString("TABLE_NAME");
+                String tableName = rs.getString("TABLE_NAME");
                 cols.compute(tableName, (k, v) -> {
                     if (v == null) {
                         v = new LinkedList<>();
@@ -170,7 +177,30 @@ public class RdbTableMgr extends AbstractComponent {
                     return v;
                 });
             }
-            resultSet.close();
+        } catch (SQLException e) {
+            log.error("init rdb table schema [{}] tables fail", schema, e);
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    log.error("close result set fail", e);
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    log.error("close prepare statement fail", e);
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    log.error("close db connection fail", e);
+                }
+            }
         }
         return cols;
     }

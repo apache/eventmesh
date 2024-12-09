@@ -64,6 +64,7 @@ public class SqlBuilderLoadInterceptor {
             String[] keyColumns = null;
             String[] otherColumns = null;
             if (existOldKeys) {
+                // update table xxx set pk = newPK where pk = oldPk
                 keyColumns = buildColumnNames(record.getOldKeys());
                 otherColumns = buildColumnNames(record.getUpdatedColumns(), record.getKeys());
             } else {
@@ -71,17 +72,19 @@ public class SqlBuilderLoadInterceptor {
                 otherColumns = buildColumnNames(record.getUpdatedColumns());
             }
 
-            if (rowMode && !existOldKeys) {
-                sql = sqlTemplate.getMergeSql(schemaName,
-                    record.getTableName(),
-                    keyColumns,
-                    otherColumns,
-                    new String[] {},
-                    true,
-                    shardColumns);
-            } else {
-                sql = sqlTemplate.getUpdateSql(schemaName, record.getTableName(), keyColumns, otherColumns, true, shardColumns);
-            }
+            // not support the column default not null for merge sql
+            // if (rowMode && !existOldKeys) {
+            //     sql = sqlTemplate.getMergeSql(schemaName,
+            //         record.getTableName(),
+            //         keyColumns,
+            //         otherColumns,
+            //         new String[] {},
+            //         true,
+            //         shardColumns);
+            // } else {
+            //     sql = sqlTemplate.getUpdateSql(schemaName, record.getTableName(), keyColumns, otherColumns, true, shardColumns);
+            // }
+            sql = sqlTemplate.getUpdateSql(schemaName, record.getTableName(), keyColumns, otherColumns, true, shardColumns);
         } else if (type.isDelete()) {
             sql = sqlTemplate.getDeleteSql(schemaName,
                 record.getTableName(),

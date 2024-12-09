@@ -680,7 +680,7 @@ public class CanalSinkIncrementConnector implements Sink, ConnectorCreateService
                                     } catch (Exception e) {
                                         // rollback
                                         status.setRollbackOnly();
-                                        throw new RuntimeException("Failed to execute batch with GTID", e);
+                                        throw new RuntimeException("Failed to execute batch ", e);
                                     } finally {
                                         lobCreator.close();
                                     }
