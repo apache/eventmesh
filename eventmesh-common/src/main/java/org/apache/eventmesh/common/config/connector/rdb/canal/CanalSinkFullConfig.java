@@ -28,4 +28,5 @@ import lombok.EqualsAndHashCode;
 public class CanalSinkFullConfig extends SinkConfig {
     private SinkConnectorConfig sinkConnectorConfig;
     private String zeroDate;
+    private int parallel = 2;
 }

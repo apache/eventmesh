@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.canal.source.position;
 
 import org.apache.eventmesh.common.AbstractComponent;
-import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceFullConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceCheckConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.JobRdbFullPosition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbColumnDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
@@ -34,7 +34,6 @@ import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,13 +47,13 @@ import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CanalFullPositionMgr extends AbstractComponent {
+public class CanalCheckPositionMgr extends AbstractComponent {
 
-    private final CanalSourceFullConfig config;
+    private final CanalSourceCheckConfig config;
     private final Map<RdbSimpleTable, JobRdbFullPosition> positions = new LinkedHashMap<>();
     private final RdbTableMgr tableMgr;
 
-    public CanalFullPositionMgr(CanalSourceFullConfig config, RdbTableMgr tableMgr) {
+    public CanalCheckPositionMgr(CanalSourceCheckConfig config, RdbTableMgr tableMgr) {
         this.config = config;
         this.tableMgr = tableMgr;
     }
@@ -154,8 +153,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
     private long queryCurTableRowCount(DataSource datasource, MySQLTableDef tableDefinition) throws SQLException {
         String sql = "select `AVG_ROW_LENGTH`,`DATA_LENGTH` from information_schema.TABLES where `TABLE_SCHEMA`='" + tableDefinition.getSchemaName()
             + "' and `TABLE_NAME`='" + tableDefinition.getTableName() + "'";
-        try (Connection conn = datasource.getConnection(); Statement statement = conn.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+        try (Statement statement = datasource.getConnection().createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
             long result = 0L;
             if (resultSet.next()) {
                 long avgRowLength = resultSet.getLong("AVG_ROW_LENGTH");
@@ -203,7 +201,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
         appendPrePrimaryKey(prePrimary, builder);
         String sql = builder.toString();
         log.info("fetch min primary sql [{}]", sql);
-        try (Connection conn = dataSource.getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
             setValue2Statement(statement, prePrimary, tableDefinition);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -228,7 +226,7 @@ public class CanalFullPositionMgr extends AbstractComponent {
         appendPrePrimaryKey(prePrimary, builder);
         String sql = builder.toString();
         log.info("fetch max primary sql [{}]", sql);
-        try (Connection conn = dataSource.getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = dataSource.getConnection().prepareStatement(sql)) {
             setValue2Statement(statement, prePrimary, tableDefinition);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {

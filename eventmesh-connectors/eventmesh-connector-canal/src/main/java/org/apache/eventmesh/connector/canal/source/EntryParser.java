@@ -69,6 +69,7 @@ public class EntryParser {
                             // if not gtid mode, need check weather the entry is loopback by specified column value
                             needSync = checkNeedSync(sourceConfig, rowChange);
                             if (needSync) {
+                                log.debug("entry evenType {}|rowChange {}", rowChange.getEventType(), rowChange);
                                 transactionDataBuffer.add(entry);
                             }
                         }
@@ -76,14 +77,27 @@ public class EntryParser {
                     case TRANSACTIONEND:
                         parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer, tables);
                         if (!recordList.isEmpty()) {
-                            recordMap.put(entry.getHeader().getLogfileOffset(), recordList);
+                            List<CanalConnectRecord> transactionEndList = new ArrayList<>(recordList);
+                            recordMap.put(entry.getHeader().getLogfileOffset(), transactionEndList);
                         }
+                        recordList.clear();
                         transactionDataBuffer.clear();
                         break;
                     default:
                         break;
                 }
             }
+
+            // add last data in transactionDataBuffer, in case no TRANSACTIONEND
+            parseRecordListWithEntryBuffer(sourceConfig, recordList, transactionDataBuffer, tables);
+            if (!recordList.isEmpty()) {
+                List<CanalConnectRecord> transactionEndList = new ArrayList<>(recordList);
+                CanalConnectRecord lastCanalConnectRecord = transactionEndList.get(transactionEndList.size() - 1);
+                recordMap.put(lastCanalConnectRecord.getBinLogOffset(), transactionEndList);
+            }
+            recordList.clear();
+            transactionDataBuffer.clear();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -118,6 +132,9 @@ public class EntryParser {
     private static boolean checkNeedSync(CanalSourceIncrementConfig sourceConfig, RowChange rowChange) {
         Column markedColumn = null;
         CanalEntry.EventType eventType = rowChange.getEventType();
+        if (StringUtils.isEmpty(sourceConfig.getNeedSyncMarkTableColumnName())) {
+            return true;
+        }
         if (eventType.equals(CanalEntry.EventType.DELETE)) {
             markedColumn = getColumnIgnoreCase(rowChange.getRowDatas(0).getBeforeColumnsList(),
                 sourceConfig.getNeedSyncMarkTableColumnName());

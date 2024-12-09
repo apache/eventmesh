@@ -30,6 +30,7 @@ public class JobRdbFullPosition {
     private String tableName;
     private String primaryKeyRecords;
     private long maxCount;
+    private long handledRecordCount = 0;
     private boolean finished;
     private BigDecimal percent;
 }
