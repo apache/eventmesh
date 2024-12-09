@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.common.remote.request;
 
-import java.util.Random;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-public class RuntimeUtils {
-
-    public static String getRandomAdminServerAddr(String adminServerAddrList) {
-        String[] addresses = adminServerAddrList.split(";");
-        if (addresses.length == 0) {
-            throw new IllegalArgumentException("Admin server address list is empty");
-        }
-        Random random = new Random();
-        int randomIndex = random.nextInt(addresses.length);
-        return addresses[randomIndex];
-    }
-
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString
+public class ReportMonitorRequest extends BaseRemoteRequest {
+    private String taskID;
+    private String jobID;
+    private String address;
+    private String connectorStage;
+    private String transportType;
+    private long totalReqNum;
+    private long totalTimeCost;
+    private long maxTimeCost;
+    private long avgTimeCost;
+    private double tps;
 }
