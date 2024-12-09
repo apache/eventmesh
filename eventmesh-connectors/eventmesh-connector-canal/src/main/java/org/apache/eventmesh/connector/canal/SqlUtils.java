@@ -780,8 +780,8 @@ public class SqlUtils {
                 long nanos = ((Timestamp) value).getNanos();
                 return Instant.ofEpochMilli(((Timestamp) value).getTime() - (nanos / 1000000)).plusNanos(nanos).atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
-            } else if (value instanceof java.sql.Date) {
-                return ((java.sql.Date) value).toLocalDate().atTime(0, 0);
+            } else if (value instanceof Date) {
+                return ((Date) value).toLocalDate().atTime(0, 0);
             } else {
                 if (!(value instanceof Time)) {
                     return ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();

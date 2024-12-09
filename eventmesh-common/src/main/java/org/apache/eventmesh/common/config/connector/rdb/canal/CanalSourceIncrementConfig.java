@@ -32,17 +32,17 @@ public class CanalSourceIncrementConfig extends CanalSourceConfig {
 
     private String destination;
 
-    private Long canalInstanceId;
+    private Long canalInstanceId = 1L;
 
-    private String desc;
+    private String desc = "canalSourceInstance";
 
-    private boolean ddlSync = true;
+    private boolean ddlSync = false;
 
     private boolean filterTableError = false;
 
     private Long slaveId;
 
-    private Short clientId;
+    private Short clientId = 1;
 
     private String serverUUID;
 
@@ -67,19 +67,19 @@ public class CanalSourceIncrementConfig extends CanalSourceConfig {
     private Boolean enableRemedy = false;
 
     // sync mode: field/row
-    private SyncMode syncMode;
+    private SyncMode syncMode = SyncMode.ROW;
 
     // sync consistency
-    private SyncConsistency syncConsistency;
+    private SyncConsistency syncConsistency = SyncConsistency.BASE;
 
     // ================================= system parameter
     // ================================
 
     // Column name of the bidirectional synchronization mark
-    private String needSyncMarkTableColumnName = "needSync";
+    private String needSyncMarkTableColumnName;
 
     // Column value of the bidirectional synchronization mark
-    private String needSyncMarkTableColumnValue = "needSync";
+    private String needSyncMarkTableColumnValue;
 
     private SourceConnectorConfig sourceConnectorConfig;
 

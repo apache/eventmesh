@@ -27,10 +27,8 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.RdbTableDefinition;
 import org.apache.eventmesh.common.config.connector.rdb.canal.mysql.MySQLTableDef;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.source.position.CanalFullPositionMgr;
-import org.apache.eventmesh.connector.canal.source.position.TableFullPosition;
 import org.apache.eventmesh.connector.canal.source.table.RdbSimpleTable;
 import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
@@ -47,6 +45,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -56,9 +56,9 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     private CanalFullPositionMgr positionMgr;
     private RdbTableMgr tableMgr;
     private ThreadPoolExecutor executor;
-    private BlockingQueue<List<ConnectRecord>> queue;
+    private final BlockingQueue<List<ConnectRecord>> queue = new LinkedBlockingQueue<>(10000);
     private final AtomicBoolean flag = new AtomicBoolean(true);
-    private long maxPollWaitTime;
+    private RateLimiter globalLimiter;
 
     @Override
     protected void run() throws Exception {
@@ -87,10 +87,11 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
                             throw new EventMeshException(String.format("db [%s] table [%s] have none table definition info",
                                 db.getSchemaName(), table.getTableName()));
                         }
-
-                        producers.add(new CanalFullProducer(queue, DatabaseConnection.sourceDataSource, (MySQLTableDef) tableDefinition,
-                            JsonUtils.parseObject(position.getPrimaryKeyRecords(), TableFullPosition.class),
-                            config.getFlushSize()));
+                        CanalFullProducer producer =
+                            new CanalFullProducer(queue, DatabaseConnection.sourceDataSource, (MySQLTableDef) tableDefinition,
+                                position, config.getFlushSize(), config.getPagePerSecond());
+                        producer.setRecordLimiter(globalLimiter);
+                        producers.add(producer);
                     } catch (Exception e) {
                         log.error("create schema [{}] table [{}] producers fail", db.getSchemaName(),
                             table.getTableName(), e);
@@ -138,8 +139,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
         DatabaseConnection.initSourceConnection();
         this.tableMgr = new RdbTableMgr(config.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
         this.positionMgr = new CanalFullPositionMgr(config, tableMgr);
-        this.maxPollWaitTime = config.getPollConfig().getMaxWaitTime();
-        this.queue = new LinkedBlockingQueue<>(config.getPollConfig().getCapacity());
+        this.globalLimiter = RateLimiter.create(config.getRecordPerSecond());
     }
 
     @Override
@@ -169,7 +169,7 @@ public class CanalSourceFullConnector extends AbstractComponent implements Sourc
     public List<ConnectRecord> poll() {
         while (flag.get()) {
             try {
-                List<ConnectRecord> records = queue.poll(maxPollWaitTime, TimeUnit.MILLISECONDS);
+                List<ConnectRecord> records = queue.poll(2, TimeUnit.SECONDS);
                 if (records == null || records.isEmpty()) {
                     continue;
                 }

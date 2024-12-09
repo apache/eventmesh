@@ -15,22 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config.connector.rdb.canal.mysql;
+package org.apache.eventmesh.common.config.connector.rdb.canal;
 
-import org.apache.eventmesh.common.config.connector.rdb.canal.RdbTableDefinition;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 import java.util.List;
-import java.util.Map;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/**
- * Description:
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class MySQLTableDef extends RdbTableDefinition {
-    private List<String> primaryKeys;
-    private Map<String, MySQLColumnDef> columnDefinitions;
+public class CanalSourceCheckConfig extends SourceConfig {
+    private SourceConnectorConfig sourceConnectorConfig;
+    private List<RecordPosition> startPosition;
+    private int parallel;
+    private int flushSize;
+    private int executePeriod = 3600;
+    private Integer pagePerSecond = 1;
+    private Integer recordPerSecond = 100;
 }
