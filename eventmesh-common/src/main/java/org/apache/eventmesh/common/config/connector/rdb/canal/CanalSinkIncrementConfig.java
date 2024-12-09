@@ -36,9 +36,9 @@ public class CanalSinkIncrementConfig extends CanalSinkConfig {
     private Integer poolSize = 5;
 
     // sync mode: field/row
-    private SyncMode syncMode;
+    private SyncMode syncMode = SyncMode.ROW;
 
-    private boolean isGTIDMode = true;
+    private boolean isGTIDMode = false;
 
     private boolean isMariaDB = true;
 

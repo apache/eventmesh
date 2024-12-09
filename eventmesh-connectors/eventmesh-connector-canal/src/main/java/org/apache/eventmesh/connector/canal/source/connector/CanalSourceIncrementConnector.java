@@ -20,6 +20,9 @@ package org.apache.eventmesh.connector.canal.source.connector;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceIncrementConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.RdbDBDefinition;
+import org.apache.eventmesh.common.config.connector.rdb.canal.RdbTableDefinition;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
@@ -38,6 +41,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,6 +52,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.otter.canal.instance.core.CanalInstance;
 import com.alibaba.otter.canal.instance.core.CanalInstanceGenerator;
 import com.alibaba.otter.canal.instance.manager.CanalInstanceWithManager;
@@ -89,6 +95,12 @@ public class CanalSourceIncrementConnector implements Source {
 
     private RdbTableMgr tableMgr;
 
+    private static final String SQL_SELECT_RDB_VERSION = "select version() as rdb_version";
+
+    private static final String SQL_SELECT_SERVER_UUID_IN_MARIADB = "SELECT @@global.server_id as server_uuid";
+
+    private static final String SQL_SHOW_SERVER_UUID_IN_MYSQL = "SELECT @@server_uuid as server_uuid";
+
     @Override
     public Class<? extends Config> configClass() {
         return CanalSourceConfig.class;
@@ -108,13 +120,24 @@ public class CanalSourceIncrementConnector implements Source {
         if (sourceConnectorContext.getRecordPositionList() != null) {
             this.sourceConfig.setRecordPositions(sourceConnectorContext.getRecordPositionList());
         }
+        // filter: your_database\\.your_table; .*\\..* (all database & table)
+        tableFilter = buildTableFilters(sourceConfig);
 
-        if (StringUtils.isNotEmpty(sourceConfig.getTableFilter())) {
-            tableFilter = sourceConfig.getTableFilter();
-        }
         if (StringUtils.isNotEmpty(sourceConfig.getFieldFilter())) {
             fieldFilter = sourceConfig.getFieldFilter();
         }
+        DatabaseConnection.sourceConfig = sourceConfig.getSourceConnectorConfig();
+        DatabaseConnection.initSourceConnection();
+
+        DataSourceType dataSourceType = checkRDBDataSourceType(DatabaseConnection.sourceDataSource);
+        String serverUUID = queryServerUUID(DatabaseConnection.sourceDataSource, dataSourceType);
+        if (StringUtils.isNotEmpty(serverUUID)) {
+            log.info("init source increment connector, serverUUID: {}", serverUUID);
+            sourceConfig.setServerUUID(serverUUID);
+        } else {
+            log.warn("get source data source serverUUID empty please check");
+        }
+        tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
 
         canalServer = CanalServerWithEmbedded.instance();
 
@@ -152,9 +175,74 @@ public class CanalSourceIncrementConnector implements Source {
                 return instance;
             }
         });
-        DatabaseConnection.sourceConfig = sourceConfig.getSourceConnectorConfig();
-        DatabaseConnection.initSourceConnection();
-        tableMgr = new RdbTableMgr(sourceConfig.getSourceConnectorConfig(), DatabaseConnection.sourceDataSource);
+    }
+
+    private String queryServerUUID(DruidDataSource sourceDataSource, DataSourceType dataSourceType) {
+        String serverUUID = "";
+        try {
+            String queryServerUUIDSql;
+            if (DataSourceType.MariaDB.equals(dataSourceType)) {
+                queryServerUUIDSql = SQL_SELECT_SERVER_UUID_IN_MARIADB;
+            } else {
+                queryServerUUIDSql = SQL_SHOW_SERVER_UUID_IN_MYSQL;
+            }
+            log.info("execute sql '{}' start.", queryServerUUIDSql);
+            try (PreparedStatement preparedStatement = sourceDataSource.getConnection().prepareStatement(queryServerUUIDSql)) {
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (resultSet.next()) {
+                    log.info("execute sql '{}' result:{}", queryServerUUIDSql, resultSet);
+                    serverUUID = resultSet.getString("server_uuid");
+                    log.info("execute sql '{}',query server_uuid result:{}", queryServerUUIDSql, serverUUID);
+                    return serverUUID;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("select server_uuid failed,data source:{}", sourceDataSource, e);
+            throw new RuntimeException("select server_uuid failed");
+        }
+        return serverUUID;
+    }
+
+    // check is mariadb or mysql
+    private DataSourceType checkRDBDataSourceType(DruidDataSource sourceDataSource) {
+        try {
+            log.info("execute sql '{}' start.", SQL_SELECT_RDB_VERSION);
+            try (PreparedStatement preparedStatement = sourceDataSource.getConnection().prepareStatement(SQL_SELECT_RDB_VERSION)) {
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (resultSet.next()) {
+                    log.info("execute sql '{}' result:{}", SQL_SELECT_RDB_VERSION, resultSet);
+                    String rdbVersion = resultSet.getString("rdb_version");
+                    if (StringUtils.isNotBlank(rdbVersion)) {
+                        if (rdbVersion.toLowerCase().contains(DataSourceType.MariaDB.getName().toLowerCase())) {
+                            return DataSourceType.MariaDB;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("select rdb version failed,data source:{}", sourceDataSource, e);
+            throw new RuntimeException("select rdb version failed");
+        }
+        return DataSourceType.MYSQL;
+    }
+
+    private String buildTableFilters(CanalSourceIncrementConfig sourceConfig) {
+        StringBuilder tableFilterBuilder = new StringBuilder();
+        Set<RdbDBDefinition> dbDefinitions = sourceConfig.getSourceConnectorConfig().getDatabases();
+        for (RdbDBDefinition dbDefinition : dbDefinitions) {
+            Set<RdbTableDefinition> tableDefinitions = dbDefinition.getTables();
+            for (RdbTableDefinition rdbTableDefinition : tableDefinitions) {
+                if (tableFilterBuilder.length() > 0) {
+                    tableFilterBuilder.append(",");
+                }
+                String dbName = rdbTableDefinition.getSchemaName();
+                String tableName = rdbTableDefinition.getTableName();
+                tableFilterBuilder.append(dbName);
+                tableFilterBuilder.append("\\.");
+                tableFilterBuilder.append(tableName);
+            }
+        }
+        return tableFilterBuilder.toString();
     }
 
     private Canal buildCanal(CanalSourceIncrementConfig sourceConfig) {
@@ -254,14 +342,7 @@ public class CanalSourceIncrementConnector implements Source {
 
     @Override
     public void commit(ConnectRecord record) {
-        long batchId = Long.parseLong(record.getExtension("messageId"));
-        int batchIndex = record.getExtension("batchIndex", Integer.class);
-        int totalBatches = record.getExtension("totalBatches", Integer.class);
-        if (batchIndex == totalBatches - 1) {
-            log.debug("ack records batchIndex:{}, totalBatches:{}, batchId:{}",
-                batchIndex, totalBatches, batchId);
-            canalServer.ack(clientIdentity, batchId);
-        }
+
     }
 
     @Override
@@ -362,10 +443,10 @@ public class CanalSourceIncrementConnector implements Source {
                     result.add(connectRecord);
                 }
             }
-        } else {
-            // for the message has been filtered need ack message
-            canalServer.ack(clientIdentity, message.getId());
+            log.debug("message {} has been processed", message);
         }
+        log.debug("ack message, messageId {}", message.getId());
+        canalServer.ack(clientIdentity, message.getId());
 
         return result;
     }

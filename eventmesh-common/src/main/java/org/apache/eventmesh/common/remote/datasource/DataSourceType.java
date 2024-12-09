@@ -27,6 +27,7 @@ import lombok.ToString;
 @ToString
 public enum DataSourceType {
     MYSQL("MySQL", DataSourceDriverType.MYSQL, DataSourceClassify.RDB),
+    MariaDB("MariaDB", DataSourceDriverType.MariaDB, DataSourceClassify.RDB),
     REDIS("Redis", DataSourceDriverType.REDIS, DataSourceClassify.CACHE),
     ROCKETMQ("RocketMQ", DataSourceDriverType.ROCKETMQ, DataSourceClassify.MQ),
     HTTP("HTTP", DataSourceDriverType.HTTP, DataSourceClassify.TUNNEL);
