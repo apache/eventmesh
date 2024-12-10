@@ -21,10 +21,10 @@ import org.apache.eventmesh.admin.server.AdminServerProperties;
 import org.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import org.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
 import org.apache.eventmesh.admin.server.web.service.job.JobInfoBizService;
-import org.apache.eventmesh.admin.server.web.service.verify.VerifyBizService;
+import org.apache.eventmesh.admin.server.web.service.monitor.MonitorBizService;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.request.ReportVerifyRequest;
+import org.apache.eventmesh.common.remote.request.ReportMonitorRequest;
 import org.apache.eventmesh.common.remote.response.SimpleResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,10 +42,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest, SimpleResponse> {
+public class ReportMonitorHandler extends BaseRequestHandler<ReportMonitorRequest, SimpleResponse> {
 
     @Autowired
-    private VerifyBizService verifyService;
+    private MonitorBizService monitorService;
 
     @Autowired
     JobInfoBizService jobInfoBizService;
@@ -54,38 +54,42 @@ public class ReportVerifyHandler extends BaseRequestHandler<ReportVerifyRequest,
     private AdminServerProperties properties;
 
     @Override
-    protected SimpleResponse handler(ReportVerifyRequest request, Metadata metadata) {
-        if (StringUtils.isAnyBlank(request.getTaskID(), request.getJobID(), request.getRecordSig(), request.getRecordID(),
-            request.getConnectorStage())) {
-            log.info("report verify request [{}] illegal", request);
-            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id,job id, sign, record id or stage is none");
+    protected SimpleResponse handler(ReportMonitorRequest request, Metadata metadata) {
+        if (StringUtils.isAnyBlank(request.getTaskID(), request.getJobID(), request.getAddress())) {
+            log.info("report monitor request [{}] illegal", request);
+            return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "request task id,job id or address is none");
         }
 
         String jobID = request.getJobID();
         EventMeshJobInfo jobInfo = jobInfoBizService.getJobInfo(jobID);
         if (jobInfo == null || StringUtils.isBlank(jobInfo.getFromRegion())) {
-            log.info("report verify job info [{}] illegal", request);
+            log.info("report monitor job info [{}] illegal", request);
             return SimpleResponse.fail(ErrorCode.BAD_REQUEST, "job info is null or fromRegion is blank,job id:" + jobID);
         }
-
         String fromRegion = jobInfo.getFromRegion();
+        String transportType = jobInfo.getTransportType();
+        if (StringUtils.isEmpty(request.getTransportType())) {
+            request.setTransportType(transportType);
+        }
         String localRegion = properties.getRegion();
-        log.info("report verify request from region:{},localRegion:{},request:{}", fromRegion, localRegion, request);
+        log.info("report monitor request from region:{},localRegion:{},request:{}", fromRegion, localRegion, request);
         if (fromRegion.equalsIgnoreCase(localRegion)) {
-            return verifyService.reportVerifyRecord(request) ? SimpleResponse.success() : SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save verify "
-                + "request fail");
+            return monitorService.reportMonitorRecord(request) ? SimpleResponse.success() :
+                SimpleResponse.fail(ErrorCode.INTERNAL_ERR, "save monitor "
+                    + "request fail");
         } else {
-            log.info("start transfer report verify to from region admin server. from region:{}", fromRegion);
             List<String> adminServerList = Arrays.asList(properties.getAdminServerList().get(fromRegion).split(";"));
             if (adminServerList == null || adminServerList.isEmpty()) {
                 throw new RuntimeException("No admin server available for region: " + fromRegion);
             }
-            String targetUrl = adminServerList.get(new Random().nextInt(adminServerList.size())) + "/eventmesh/admin/reportVerify";
+            String targetUrl = adminServerList.get(new Random().nextInt(adminServerList.size())) + "/eventmesh/admin/reportMonitor";
+            log.info("start transfer monitor request to from region admin server. from region:{}, targetUrl:{}", fromRegion, targetUrl);
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, request, String.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
+                log.error("transfer monitor request to from region admin server error. from region:{}, targetUrl:{}", fromRegion, targetUrl);
                 return SimpleResponse.fail(ErrorCode.INTERNAL_ERR,
-                    "save verify request fail,code:" + response.getStatusCode() + ",msg:" + response.getBody());
+                    "save monitor request fail,code:" + response.getStatusCode() + ",msg:" + response.getBody());
             }
             return SimpleResponse.success();
         }

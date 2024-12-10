@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.service;
+package org.apache.eventmesh.common.remote.request;
 
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
-import org.apache.eventmesh.common.remote.request.QueryTaskInfoRequest;
-import org.apache.eventmesh.common.remote.response.QueryTaskInfoResponse;
+import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 
-import java.util.List;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString
+public class RecordPositionRequest extends BaseRemoteRequest {
 
-/**
- * event_mesh_task_info
- */
-public interface EventMeshTaskInfoService extends IService<EventMeshTaskInfo> {
+    private String fullJobID;
 
-    List<QueryTaskInfoResponse> queryTaskInfo(QueryTaskInfoRequest taskInfoRequest);
+    private String increaseJobID;
+    // prepare to update job state to current state
+    private JobState updateState;
 
-    // boolean deleteTaskByTaskID(String taskID);
+    private String address;
 
+    private DataSourceType dataSourceType;
 }

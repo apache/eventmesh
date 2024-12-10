@@ -19,7 +19,7 @@ package org.apache.eventmesh.admin.server.web.service.position;
 
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 
-public abstract class PositionHandler implements IReportPositionHandler, IFetchPositionHandler {
+public abstract class PositionHandler implements IReportPositionHandler, IFetchPositionHandler, IRecordPositionHandler {
 
     protected abstract DataSourceType getSourceType();
 }

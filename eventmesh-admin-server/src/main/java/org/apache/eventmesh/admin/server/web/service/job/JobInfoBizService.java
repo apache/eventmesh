@@ -28,6 +28,7 @@ import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtServi
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
 import org.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHeartbeatService;
 import org.apache.eventmesh.admin.server.web.pojo.JobDetail;
+import org.apache.eventmesh.admin.server.web.pojo.TaskDetail;
 import org.apache.eventmesh.admin.server.web.service.datasource.DataSourceBizService;
 import org.apache.eventmesh.admin.server.web.service.position.PositionBizService;
 import org.apache.eventmesh.common.config.connector.Config;
@@ -171,7 +172,7 @@ public class JobInfoBizService {
             entityList.add(entity);
         }
         int changed = jobInfoExtService.batchSave(entityList);
-        if (changed != jobs.size()) {
+        if (changed != entityList.size()) {
             throw new AdminServerRuntimeException(ErrorCode.INTERNAL_ERR, String.format("create [%d] jobs of not match expect [%d]",
                 changed, jobs.size()));
         }
@@ -241,8 +242,14 @@ public class JobInfoBizService {
         if (jobID == null) {
             return null;
         }
-        EventMeshJobInfo job = jobInfoService.getOne(Wrappers.<EventMeshJobInfo>query().eq("jobID", jobID));
-        return job;
+        return jobInfoService.getOne(Wrappers.<EventMeshJobInfo>query().eq("jobID", jobID));
+    }
+
+    public List<EventMeshJobInfo> getJobsByTaskID(String taskID) {
+        if (taskID == null) {
+            return null;
+        }
+        return jobInfoService.list(Wrappers.<EventMeshJobInfo>query().eq("taskID", taskID));
     }
 
     public void checkJobInfo() {
@@ -253,18 +260,40 @@ public class JobInfoBizService {
             if (StringUtils.isEmpty(jobID)) {
                 continue;
             }
-            EventMeshRuntimeHeartbeat heartbeat = heartbeatService.getOne(Wrappers.<EventMeshRuntimeHeartbeat>query().eq("jobID", jobID));
-            if (heartbeat == null) {
+            List<EventMeshRuntimeHeartbeat> heartbeatList = heartbeatService.list((Wrappers.<EventMeshRuntimeHeartbeat>query().eq("jobID", jobID)));
+            if (heartbeatList == null || heartbeatList.size() == 0) {
                 continue;
             }
             // if last heart beat update time have delay three period.print job heart beat delay warn
             long currentTimeStamp = System.currentTimeMillis();
-            if (currentTimeStamp - heartbeat.getUpdateTime().getTime() > 3 * heatBeatPeriod) {
+            if (currentTimeStamp - heartbeatList.get(0).getUpdateTime().getTime() > 3 * heatBeatPeriod) {
                 log.warn("current job heart heart has delay.jobID:{},currentTimeStamp:{},last update time:{}", jobID, currentTimeStamp,
-                    heartbeat.getUpdateTime());
+                    heartbeatList.get(0).getUpdateTime());
             }
         }
     }
+
+    public TaskDetail getTaskDetail(String taskID, DataSourceType dataSourceType) {
+        TaskDetail taskDetail = new TaskDetail();
+        List<EventMeshJobInfo> jobInfoList = getJobsByTaskID(taskID);
+        if (jobInfoList == null || jobInfoList.size() == 0) {
+            return taskDetail;
+        }
+        for (EventMeshJobInfo jobInfo : jobInfoList) {
+            TransportType currentTransportType = TransportType.getTransportType(jobInfo.getTransportType());
+            JobType jobType = JobType.fromIndex(jobInfo.getJobType());
+            if (currentTransportType.getSrc().equals(dataSourceType)) {
+                if (jobType.name().equalsIgnoreCase(JobType.FULL.name())) {
+                    taskDetail.setFullTask(jobInfo);
+                }
+                if (jobType.name().equalsIgnoreCase(JobType.INCREASE.name())) {
+                    taskDetail.setIncreaseTask(jobInfo);
+                }
+            }
+        }
+        return taskDetail;
+    }
+
 
 }
 

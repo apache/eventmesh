@@ -15,23 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.service;
+package org.apache.eventmesh.admin.server.constants;
 
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
-import org.apache.eventmesh.common.remote.request.QueryTaskInfoRequest;
-import org.apache.eventmesh.common.remote.response.QueryTaskInfoResponse;
+public class AdminServerConstants {
+    public static final String CONF_ENV = "configurationPath";
 
-import java.util.List;
+    public static final String EVENTMESH_CONF_HOME = System.getProperty(CONF_ENV, System.getenv(CONF_ENV));
 
-import com.baomidou.mybatisplus.extension.service.IService;
-
-/**
- * event_mesh_task_info
- */
-public interface EventMeshTaskInfoService extends IService<EventMeshTaskInfo> {
-
-    List<QueryTaskInfoResponse> queryTaskInfo(QueryTaskInfoRequest taskInfoRequest);
-
-    // boolean deleteTaskByTaskID(String taskID);
-
+    public static final String EVENTMESH_CONF_FILE = "eventmesh-admin.properties";
 }
