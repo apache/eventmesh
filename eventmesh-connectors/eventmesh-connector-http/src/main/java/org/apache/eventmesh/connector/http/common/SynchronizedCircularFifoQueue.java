@@ -142,6 +142,7 @@ public class SynchronizedCircularFifoQueue<E> extends CircularFifoQueue<E> {
             count++;
         }
         return items;
+
     }
 
 
