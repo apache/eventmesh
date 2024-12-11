@@ -15,23 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.service;
+package org.apache.eventmesh.admin.server.web.service.position;
 
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
-import org.apache.eventmesh.common.remote.request.QueryTaskInfoRequest;
-import org.apache.eventmesh.common.remote.response.QueryTaskInfoResponse;
-
-import java.util.List;
-
-import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
+import org.apache.eventmesh.common.remote.request.RecordPositionRequest;
 
 /**
- * event_mesh_task_info
+ * IRecordPositionHandler
  */
-public interface EventMeshTaskInfoService extends IService<EventMeshTaskInfo> {
+public interface IRecordPositionHandler {
 
-    List<QueryTaskInfoResponse> queryTaskInfo(QueryTaskInfoRequest taskInfoRequest);
-
-    // boolean deleteTaskByTaskID(String taskID);
+    boolean handler(RecordPositionRequest request, Metadata metadata);
 
 }

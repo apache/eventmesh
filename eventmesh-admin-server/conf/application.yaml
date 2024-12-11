@@ -21,6 +21,24 @@ spring:
     username: //db_username
     password: //db_password
     driver-class-name: com.mysql.cj.jdbc.Driver
+    initialSize: 1
+    minIdle: 1
+    maxActive: 20
+    maxWait: 10000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: false
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat
+    connectionProperties: "druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000"
+# secret keys
+sysPubKey:
+appPrivKey:
+
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   configuration:
@@ -35,8 +53,6 @@ event-mesh:
     # grpc server port
     port: 8081
     adminServerList:
-      R1:
-        - http://localhost:8082
-      R2:
-        - http://localhost:8082
+      R1: http://localhost:8082;http://localhost:8082
+      R2: http://localhost:8092;http://localhost:8092
     region: R1

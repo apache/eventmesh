@@ -15,23 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.service;
+package org.apache.eventmesh.common.remote.task;
 
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
-import org.apache.eventmesh.common.remote.request.QueryTaskInfoRequest;
-import org.apache.eventmesh.common.remote.response.QueryTaskInfoResponse;
+import java.io.Serializable;
+import java.util.Date;
 
-import java.util.List;
+import lombok.Data;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-
-/**
- * event_mesh_task_info
- */
-public interface EventMeshTaskInfoService extends IService<EventMeshTaskInfo> {
-
-    List<QueryTaskInfoResponse> queryTaskInfo(QueryTaskInfoRequest taskInfoRequest);
-
-    // boolean deleteTaskByTaskID(String taskID);
+@Data
+public class TaskMonitor implements Serializable {
+    private String taskID;
+    private String jobID;
+    private String address;
+    private String transportType;
+    private String connectorStage;
+    private long totalReqNum;
+    private long totalTimeCost;
+    private long maxTimeCost;
+    private long avgTimeCost;
+    private double tps;
+    private Date createTime;
+    private static final long serialVersionUID = 1L;
 
 }

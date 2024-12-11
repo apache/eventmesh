@@ -17,17 +17,22 @@
 
 package org.apache.eventmesh.admin.server;
 
-import org.apache.eventmesh.admin.server.constatns.AdminServerConstants;
+import org.apache.eventmesh.admin.server.constants.AdminServerConstants;
 import org.apache.eventmesh.common.config.ConfigService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-@SpringBootApplication(scanBasePackages = "org.apache.eventmesh.admin.server")
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@SpringBootApplication(scanBasePackages = "org.apache.eventmesh.admin.server", exclude = {DataSourceAutoConfiguration.class})
 public class ExampleAdminServer {
 
     public static void main(String[] args) throws Exception {
         ConfigService.getInstance().setConfigPath(AdminServerConstants.EVENTMESH_CONF_HOME).setRootConfig(AdminServerConstants.EVENTMESH_CONF_FILE);
         SpringApplication.run(ExampleAdminServer.class);
+        log.info("wedts-admin start success.");
     }
 }
