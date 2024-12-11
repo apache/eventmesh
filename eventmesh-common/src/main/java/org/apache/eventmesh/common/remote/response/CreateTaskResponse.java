@@ -24,7 +24,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class CreateTaskResponse extends BaseRemoteResponse {
+public class CreateTaskResponse {
 
     private String taskId;
 

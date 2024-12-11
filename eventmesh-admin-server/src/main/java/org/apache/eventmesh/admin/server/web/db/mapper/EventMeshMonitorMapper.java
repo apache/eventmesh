@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.service;
+package org.apache.eventmesh.admin.server.web.db.mapper;
 
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
-import org.apache.eventmesh.common.remote.request.QueryTaskInfoRequest;
-import org.apache.eventmesh.common.remote.response.QueryTaskInfoResponse;
+import org.apache.eventmesh.admin.server.web.db.entity.EventMeshMonitor;
 
-import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * event_mesh_task_info
+ * event_mesh_monitor
+ * Entity org.apache.eventmesh.admin.server.web.db.entity.EventMeshMonitor
  */
-public interface EventMeshTaskInfoService extends IService<EventMeshTaskInfo> {
-
-    List<QueryTaskInfoResponse> queryTaskInfo(QueryTaskInfoRequest taskInfoRequest);
-
-    // boolean deleteTaskByTaskID(String taskID);
+@Mapper
+public interface EventMeshMonitorMapper extends BaseMapper<EventMeshMonitor> {
 
 }
+
+
+
+

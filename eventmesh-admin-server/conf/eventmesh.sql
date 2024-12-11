@@ -146,6 +146,39 @@ CREATE TABLE IF NOT EXISTS `event_mesh_verify` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+-- eventmesh.event_mesh_weredis_position definition
+CREATE TABLE `event_mesh_weredis_position` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `jobID` varchar(50) COLLATE utf8_bin NOT NULL DEFAULT '',
+  `address` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `clusterName` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `partitionName` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `masterReplid` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `host` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `replOffset` bigint(20) NOT NULL DEFAULT '-1',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `jobID` (`jobID`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=DYNAMIC;
+
+
+CREATE TABLE `event_mesh_monitor` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `taskID` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `jobID` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `address` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `transportType` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `connectorStage` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `totalReqNum` bigint DEFAULT NULL,
+  `totalTimeCost` bigint DEFAULT NULL,
+  `maxTimeCost` bigint DEFAULT NULL,
+  `avgTimeCost` bigint DEFAULT NULL,
+  `tps` double DEFAULT NULL,
+  `createTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

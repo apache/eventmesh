@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
+import org.apache.eventmesh.common.remote.request.RecordPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 
 import java.util.ArrayList;
@@ -57,5 +58,10 @@ public class HttpPositionHandler extends PositionHandler {
         // mock http position fetch request
         List<RecordPosition> recordPositionList = new ArrayList<>();
         return recordPositionList;
+    }
+
+    @Override
+    public boolean handler(RecordPositionRequest request, Metadata metadata) {
+        return true;
     }
 }
