@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.trace;
 
+import java.util.Objects;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 
@@ -130,7 +131,7 @@ public class Trace {
 
         // add trace info
         for (String entry : cloudEvent.getExtensionNames()) {
-            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : cloudEvent.getExtension(entry).toString());
+            span.setAttribute(entry, cloudEvent.getExtension(entry) == null ? "" : Objects.requireNonNull(cloudEvent.getExtension(entry).toString()));
         }
         return span;
     }
