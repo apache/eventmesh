@@ -93,7 +93,8 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
             .setIdleTimeout(sinkConnectorConfig.getIdleTimeout())
             .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
             .setConnectTimeout(sinkConnectorConfig.getConnectionTimeout())
-            .setMaxPoolSize(sinkConnectorConfig.getMaxConnectionPoolSize());
+            .setMaxPoolSize(sinkConnectorConfig.getMaxConnectionPoolSize())
+            .setPipelining(sinkConnectorConfig.isParallelized());
         this.webClient = WebClient.create(vertx, options);
     }
 
@@ -108,7 +109,7 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
      */
     @Override
     public Future<HttpResponse<Buffer>> deliver(URI url, HttpConnectRecord httpConnectRecord, Map<String, Object> attributes,
-        ConnectRecord connectRecord) {
+                                                ConnectRecord connectRecord) {
         // create headers
         Map<String, Object> extensionMap = new HashMap<>();
         Set<String> extensionKeySet = httpConnectRecord.getExtensions().keySet();
@@ -203,6 +204,9 @@ public class CommonHttpSinkHandler extends AbstractHttpSinkHandler {
                 // failure
                 record.getCallback().onException(buildSendExceptionContext(record, lastFailedEvent.getLastException()));
             }
+        } else {
+            log.warn("still have requests to process, size {}|attempt num {}",
+                multiHttpRequestContext.getRemainingRequests(), attemptEvent.getAttempts());
         }
     }
 
