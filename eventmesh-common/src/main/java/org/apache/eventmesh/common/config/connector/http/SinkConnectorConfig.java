@@ -39,14 +39,23 @@ public class SinkConnectorConfig {
     // timeunit: ms, default 5000ms
     private int idleTimeout = 5000;
 
-    // maximum number of HTTP/1 connections a client will pool, default 5
-    private int maxConnectionPoolSize = 5;
+    // maximum number of HTTP/1 connections a client will pool, default 50
+    private int maxConnectionPoolSize = 50;
 
     // retry config
     private HttpRetryConfig retryConfig = new HttpRetryConfig();
 
     // webhook config
     private HttpWebhookConfig webhookConfig = new HttpWebhookConfig();
+
+    private String deliveryStrategy = "ROUND_ROBIN";
+
+    private boolean skipDeliverException = false;
+
+    // managed pipelining param, default true
+    private boolean isParallelized = true;
+
+    private int parallelism = 2;
 
 
     /**

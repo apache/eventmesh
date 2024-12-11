@@ -15,34 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.sink.data;
+package org.apache.eventmesh.connector.http.sink.handler;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
-import lombok.Builder;
-import lombok.Data;
-
-/**
- * Metadata for an HTTP export operation.
- */
-@Data
-@Builder
-public class HttpExportMetadata implements Serializable {
-
-    private static final long serialVersionUID = 1121010466793041920L;
-
-    private String url;
-
-    private int code;
-
-    private String message;
-
-    private LocalDateTime receivedTime;
-
-    private String recordId;
-
-    private String retriedBy;
-
-    private int retryNum;
+public enum HttpDeliveryStrategy {
+    ROUND_ROBIN,
+    BROADCAST
 }
