@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.http.sink;
 
+import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSinkConfig;
 import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
@@ -32,6 +33,10 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -44,6 +49,12 @@ public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     @Getter
     private HttpSinkHandler sinkHandler;
+
+    private ThreadPoolExecutor executor;
+
+    private final LinkedBlockingQueue<ConnectRecord> queue = new LinkedBlockingQueue<>(10000);
+
+    private final AtomicBoolean isStart = new AtomicBoolean(true);
 
     @Override
     public Class<? extends Config> configClass() {
@@ -90,11 +101,30 @@ public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
         } else {
             throw new IllegalArgumentException("Max retries must be greater than or equal to 0.");
         }
+        boolean isParallelized = this.httpSinkConfig.connectorConfig.isParallelized();
+        int parallelism = isParallelized ? this.httpSinkConfig.connectorConfig.getParallelism() : 1;
+        executor = new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(), new EventMeshThreadFactory("http-sink-handler"));
     }
 
     @Override
     public void start() throws Exception {
         this.sinkHandler.start();
+        for (int i = 0; i < this.httpSinkConfig.connectorConfig.getParallelism(); i++) {
+            executor.execute(() -> {
+                while (isStart.get()) {
+                    ConnectRecord connectRecord = null;
+                    try {
+                        connectRecord = queue.poll(2, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (connectRecord != null) {
+                        sinkHandler.handle(connectRecord);
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -114,7 +144,18 @@ public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     @Override
     public void stop() throws Exception {
+        isStart.set(false);
+        while (!queue.isEmpty()) {
+            ConnectRecord record = queue.poll();
+            this.sinkHandler.handle(record);
+        }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         this.sinkHandler.stop();
+        log.info("All tasks completed, start shut down http sink connector");
     }
 
     @Override
@@ -125,8 +166,7 @@ public class HttpSinkConnector implements Sink, ConnectorCreateService<Sink> {
                     log.warn("ConnectRecord data is null, ignore.");
                     continue;
                 }
-                // Handle the ConnectRecord
-                this.sinkHandler.handle(sinkRecord);
+                queue.put(sinkRecord);
             } catch (Exception e) {
                 log.error("Failed to sink message via HTTP. ", e);
             }

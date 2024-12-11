@@ -57,7 +57,7 @@ public class CloudEventProtocol implements Protocol {
     /**
      * Handle the protocol message for CloudEvent.
      *
-     * @param route     route
+     * @param route route
      * @param queue queue info
      */
     @Override

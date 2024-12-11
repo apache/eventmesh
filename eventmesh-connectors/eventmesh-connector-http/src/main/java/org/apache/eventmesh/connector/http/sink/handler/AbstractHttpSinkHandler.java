@@ -30,30 +30,31 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
+
 /**
  * AbstractHttpSinkHandler is an abstract class that provides a base implementation for HttpSinkHandler.
  */
 public abstract class AbstractHttpSinkHandler implements HttpSinkHandler {
 
+    @Getter
     private final SinkConnectorConfig sinkConnectorConfig;
 
+    @Getter
     private final List<URI> urls;
+
+    private final HttpDeliveryStrategy deliveryStrategy;
+
+    private int roundRobinIndex = 0;
 
     protected AbstractHttpSinkHandler(SinkConnectorConfig sinkConnectorConfig) {
         this.sinkConnectorConfig = sinkConnectorConfig;
+        this.deliveryStrategy = HttpDeliveryStrategy.valueOf(sinkConnectorConfig.getDeliveryStrategy());
         // Initialize URLs
         String[] urlStrings = sinkConnectorConfig.getUrls();
         this.urls = Arrays.stream(urlStrings)
             .map(URI::create)
             .collect(Collectors.toList());
-    }
-
-    public SinkConnectorConfig getSinkConnectorConfig() {
-        return sinkConnectorConfig;
-    }
-
-    public List<URI> getUrls() {
-        return urls;
     }
 
     /**
@@ -65,23 +66,38 @@ public abstract class AbstractHttpSinkHandler implements HttpSinkHandler {
     public void handle(ConnectRecord record) {
         // build attributes
         Map<String, Object> attributes = new ConcurrentHashMap<>();
-        attributes.put(MultiHttpRequestContext.NAME, new MultiHttpRequestContext(urls.size()));
 
-        // send the record to all URLs
-        for (URI url : urls) {
-            // convert ConnectRecord to HttpConnectRecord
-            String type = String.format("%s.%s.%s",
-                this.sinkConnectorConfig.getConnectorName(), url.getScheme(),
-                this.sinkConnectorConfig.getWebhookConfig().isActivate() ? "webhook" : "common");
-            HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
-
-            // add AttemptEvent to the attributes
-            HttpAttemptEvent attemptEvent = new HttpAttemptEvent(this.sinkConnectorConfig.getRetryConfig().getMaxRetries() + 1);
-            attributes.put(HttpAttemptEvent.PREFIX + httpConnectRecord.getHttpRecordId(), attemptEvent);
-
-            // deliver the record
-            deliver(url, httpConnectRecord, attributes, record);
+        switch (deliveryStrategy) {
+            case ROUND_ROBIN:
+                attributes.put(MultiHttpRequestContext.NAME, new MultiHttpRequestContext(1));
+                URI url = urls.get(roundRobinIndex);
+                roundRobinIndex = (roundRobinIndex + 1) % urls.size();
+                sendRecordToUrl(record, attributes, url);
+                break;
+            case BROADCAST:
+                for (URI broadcastUrl : urls) {
+                    attributes.put(MultiHttpRequestContext.NAME, new MultiHttpRequestContext(urls.size()));
+                    sendRecordToUrl(record, attributes, broadcastUrl);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown delivery strategy: " + deliveryStrategy);
         }
+    }
+
+    private void sendRecordToUrl(ConnectRecord record, Map<String, Object> attributes, URI url) {
+        // convert ConnectRecord to HttpConnectRecord
+        String type = String.format("%s.%s.%s",
+            this.sinkConnectorConfig.getConnectorName(), url.getScheme(),
+            this.sinkConnectorConfig.getWebhookConfig().isActivate() ? "webhook" : "common");
+        HttpConnectRecord httpConnectRecord = HttpConnectRecord.convertConnectRecord(record, type);
+
+        // add AttemptEvent to the attributes
+        HttpAttemptEvent attemptEvent = new HttpAttemptEvent(this.sinkConnectorConfig.getRetryConfig().getMaxRetries() + 1);
+        attributes.put(HttpAttemptEvent.PREFIX + httpConnectRecord.getHttpRecordId(), attemptEvent);
+
+        // deliver the record
+        deliver(url, httpConnectRecord, attributes, record);
     }
 
 }
