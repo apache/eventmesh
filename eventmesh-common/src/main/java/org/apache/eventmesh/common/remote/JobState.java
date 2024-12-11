@@ -24,7 +24,7 @@ import lombok.ToString;
 
 @ToString
 public enum JobState {
-    INIT, RUNNING, COMPLETE, DELETE, FAIL;
+    INIT, RUNNING, COMPLETE, DELETE, FAIL, PAUSE;
     private static final JobState[] STATES_NUM_INDEX = JobState.values();
     private static final Map<String, JobState> STATES_NAME_INDEX = new HashMap<>();
 

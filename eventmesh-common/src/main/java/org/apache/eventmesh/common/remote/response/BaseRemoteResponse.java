@@ -26,7 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public abstract class BaseRemoteResponse implements IPayload {
+public abstract class BaseRemoteResponse<T> implements IPayload {
     @Setter
     private boolean success = true;
     @Setter
@@ -35,6 +35,8 @@ public abstract class BaseRemoteResponse implements IPayload {
     private String desc;
 
     private Map<String, String> header = new HashMap<>();
+    @Setter
+    private T data;
 
     public void addHeader(String key, String value) {
         if (key == null || value == null) {

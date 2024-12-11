@@ -15,23 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.web.db.service;
+package org.apache.eventmesh.common.remote.request;
 
-import org.apache.eventmesh.admin.server.web.db.entity.EventMeshTaskInfo;
-import org.apache.eventmesh.common.remote.request.QueryTaskInfoRequest;
-import org.apache.eventmesh.common.remote.response.QueryTaskInfoResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.List;
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class QueryTaskInfoRequest {
 
-import com.baomidou.mybatisplus.extension.service.IService;
+    private String taskDesc;
 
-/**
- * event_mesh_task_info
- */
-public interface EventMeshTaskInfoService extends IService<EventMeshTaskInfo> {
+    private String taskID;
 
-    List<QueryTaskInfoResponse> queryTaskInfo(QueryTaskInfoRequest taskInfoRequest);
+    private String jobType;
 
-    // boolean deleteTaskByTaskID(String taskID);
+    private String sourceDataID;
+
+    private String targetDataID;
+
+    private String ip;
+
+    private String sourceTableName;
+
+    private String taskMathID;
+
+    private Integer currentPage;
+
+    private Integer pageSize;
 
 }

@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.server.constatns;
+package org.apache.eventmesh.admin.server.web.config;
 
-public class AdminServerConstants {
-    public static final String CONF_ENV = "configurationPath";
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-    public static final String EVENTMESH_CONF_HOME = System.getProperty(CONF_ENV, System.getenv(CONF_ENV));
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 
-    public static final String EVENTMESH_CONF_FILE = "eventmesh-admin.properties";
+@Configuration
+public class MybatisPlusConfig {
+
+    @Bean
+    public MybatisPlusInterceptor paginationInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        PaginationInnerInterceptor pageInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
+        pageInterceptor.setMaxLimit(500L);
+        interceptor.addInnerInterceptor(pageInterceptor);
+        return interceptor;
+    }
+
 }

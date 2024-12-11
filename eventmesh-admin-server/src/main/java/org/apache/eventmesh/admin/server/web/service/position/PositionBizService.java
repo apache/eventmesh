@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.remote.datasource.DataSourceType;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
+import org.apache.eventmesh.common.remote.request.RecordPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 
 import java.util.List;
@@ -79,5 +80,11 @@ public class PositionBizService {
         FetchPositionRequest request = new FetchPositionRequest();
         request.setJobID(jobID);
         return handler.handler(request, null);
+    }
+
+    public boolean recordPosition(RecordPositionRequest request, Metadata metadata) {
+        isValidatePositionRequest(request.getDataSourceType());
+        IRecordPositionHandler handler = factory.getHandler(request.getDataSourceType());
+        return handler.handler(request, metadata);
     }
 }
