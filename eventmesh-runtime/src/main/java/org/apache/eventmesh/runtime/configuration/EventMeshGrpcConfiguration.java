@@ -33,7 +33,24 @@ import lombok.NoArgsConstructor;
 public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
     @ConfigField(field = "grpc.port", notNull = true, beNumber = true)
+    @Deprecated
     private int grpcServerPort = 10205;
+
+    @ConfigField(field = "protocol")
+    private ProtocolConfiguration protocolConfiguration = new ProtocolConfiguration();
+
+    public int getGrpcServerPort() {
+        return protocolConfiguration.getGrpcPort();
+    }
+
+    public void setGrpcServerPort(int port) {
+        this.grpcServerPort = port;
+        this.protocolConfiguration.setGrpcPort(port);
+    }
+
+    public boolean isGrpcEnabled() {
+        return protocolConfiguration.isGrpcEnabled();
+    }
 
     @ConfigField(field = "session.expiredInMills")
     private int eventMeshSessionExpiredInMills = 60000;
