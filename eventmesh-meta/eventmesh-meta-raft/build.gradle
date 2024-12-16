@@ -40,6 +40,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation "com.alipay.sofa:jraft-core:${jraftVersion}"
     implementation "com.alipay.sofa:rpc-grpc-impl:${jraftVersion}"
+    implementation group: 'com.caucho', name: 'hessian', version: '4.0.63'
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 

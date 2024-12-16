@@ -21,6 +21,7 @@ import static org.apache.eventmesh.meta.raft.EventOperation.DELETE;
 import static org.apache.eventmesh.meta.raft.EventOperation.GET;
 import static org.apache.eventmesh.meta.raft.EventOperation.PUT;
 
+import org.apache.eventmesh.meta.raft.serialize.EventMeshHessianSerializer;
 import org.apache.eventmesh.meta.raft.snapshot.MetaSnapshotFile;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +38,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.alipay.remoting.exception.CodecException;
-import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.Closure;
 import com.alipay.sofa.jraft.Iterator;
 import com.alipay.sofa.jraft.Status;
@@ -121,7 +121,7 @@ public class MetaStateMachine extends StateMachineAdapter {
                 // Have to parse FetchAddRequest from this user log.
                 final ByteBuffer data = iter.getData();
                 try {
-                    eventOperation = SerializerManager.getSerializer(SerializerManager.Hessian2)
+                    eventOperation = EventMeshHessianSerializer.getInstance()
                         .deserialize(data.array(), EventOperation.class.getName());
                 } catch (final CodecException e) {
                     e.printStackTrace(System.err);
