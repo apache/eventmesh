@@ -18,13 +18,13 @@
 package org.apache.eventmesh.meta.raft;
 
 import org.apache.eventmesh.meta.raft.rpc.RequestResponse;
+import org.apache.eventmesh.meta.raft.serialize.EventMeshHessianSerializer;
 
 import org.apache.commons.lang.StringUtils;
 
 import java.nio.ByteBuffer;
 
 import com.alipay.remoting.exception.CodecException;
-import com.alipay.remoting.serialization.SerializerManager;
 import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.entity.Task;
 import com.alipay.sofa.jraft.error.RaftError;
@@ -51,7 +51,7 @@ public class JraftMetaServiceImpl implements JraftMetaService {
         try {
             closure.setEventOperation(opreation);
             final Task task = new Task();
-            task.setData(ByteBuffer.wrap(SerializerManager.getSerializer(SerializerManager.Hessian2).serialize(opreation)));
+            task.setData(ByteBuffer.wrap(EventMeshHessianSerializer.getInstance().serialize(opreation)));
             task.setDone(closure);
             this.server.getNode().apply(task);
         } catch (CodecException e) {
