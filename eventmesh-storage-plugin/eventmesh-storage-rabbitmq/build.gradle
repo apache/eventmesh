@@ -19,12 +19,12 @@ dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-common")
     // rabbitmq
-    implementation 'com.rabbitmq:amqp-client:5.22.0'
+    implementation 'com.rabbitmq:amqp-client:5.23.0'
 
     testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     testImplementation project(":eventmesh-common")
     // rabbitmq
-    testImplementation 'com.rabbitmq:amqp-client:5.22.0'
+    testImplementation 'com.rabbitmq:amqp-client:5.23.0'
 
     implementation 'io.cloudevents:cloudevents-json-jackson'
     testImplementation 'io.cloudevents:cloudevents-json-jackson'
