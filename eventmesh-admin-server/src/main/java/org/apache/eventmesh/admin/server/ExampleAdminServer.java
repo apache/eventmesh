@@ -33,6 +33,6 @@ public class ExampleAdminServer {
     public static void main(String[] args) throws Exception {
         ConfigService.getInstance().setConfigPath(AdminServerConstants.EVENTMESH_CONF_HOME).setRootConfig(AdminServerConstants.EVENTMESH_CONF_FILE);
         SpringApplication.run(ExampleAdminServer.class);
-        log.info("wedts-admin start success.");
+        log.info("admin start success.");
     }
 }
