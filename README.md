@@ -185,21 +185,14 @@ Each contributor has played an important role in promoting the robust developmen
 - [Contributing Guideline](https://eventmesh.apache.org/community/contribute/contribute)
 - [Good First Issues](https://github.com/apache/eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 
-Here is the [List of Contributors](https://github.com/apache/eventmesh/graphs/contributors), thank you all! :)
-
-<a href="https://github.com/apache/eventmesh/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=apache/eventmesh&max=2000" />
-</a>
-
 
 ## CNCF Landscape
 
 <div align="center">
 
-<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>
-<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
+<img src="https://landscape.cncf.io/images/cncf-landscape-horizontal-color.svg" width="200"/>
 
-Apache EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF Cloud Native Landscape.</a>
+Apache EventMesh enriches the <a href="https://landscape.cncf.io/embed/embed.html?base-path=&key=serverless--framework&headers=true&category-header=true&category-in-subcategory=false&title-uppercase=false&title-alignment=left&title-font-family=sans-serif&title-font-size=13&style=shadowed&bg-color=%233e79b0&fg-color=%23ffffff&item-modal=false&item-name=false&size=md&items-alignment=left" style="width:100%;height:100%;display:block;border:none;">CNCF Cloud Native Landscape.</a>
 
 </div>
 
