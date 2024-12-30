@@ -116,7 +116,7 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
 
         grpcRetryer = new GrpcRetryer(this);
 
-        int serverPort = eventMeshGrpcConfiguration.getGrpcServerPort();
+        int serverPort = eventMeshGrpcConfiguration.getProtocolConfiguration().getUnifiedPort();
 
         server = ServerBuilder.forPort(serverPort)
             .addService(new ConsumerService(this, sendMsgExecutor, replyMsgExecutor))
@@ -175,7 +175,7 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()
-                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getGrpcServerPort();
+                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getProtocolConfiguration().getUnifiedPort();
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
             eventMeshRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
             eventMeshRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName() + "-"
@@ -192,7 +192,7 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
 
     private void unRegister() throws Exception {
         String endPoints = IPUtils.getLocalAddress()
-            + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getGrpcServerPort();
+            + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.getProtocolConfiguration().getUnifiedPort();
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName());
