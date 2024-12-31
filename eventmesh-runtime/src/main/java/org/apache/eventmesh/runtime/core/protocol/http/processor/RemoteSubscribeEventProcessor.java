@@ -141,34 +141,6 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             }
         }
 
-        // validate URL
-        // try {
-        // if (!IPUtils.isValidDomainOrIp(url, eventMeshHttpConfiguration.getEventMeshIpv4BlackList(),
-        // eventMeshHttpConfiguration.getEventMeshIpv6BlackList())) {
-        // httpLogger.error("subscriber url {} is not valid", url);
-        // handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-        // responseBodyMap, null);
-        // return;
-        // }
-        // } catch (Exception e) {
-        // httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
-        // handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-        // responseBodyMap, null);
-        // return;
-        // }
-        //
-        // CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.getHttpClientPool().getClient();
-        // // obtain webhook delivery agreement for Abuse Protection
-        // boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(closeableHttpClient,
-        // url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin());
-        //
-        // if (!isWebhookAllowed) {
-        // httpLogger.error("subscriber url {} is not allowed by the target system", url);
-        // handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-        // responseBodyMap, null);
-        // return;
-        // }
-
         long startTime = System.currentTimeMillis();
         try {
             // local subscription url
