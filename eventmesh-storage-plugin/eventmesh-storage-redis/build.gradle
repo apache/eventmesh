@@ -20,7 +20,7 @@ dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     // redisson
-    implementation 'org.redisson:redisson:3.38.1'
+    implementation 'org.redisson:redisson:3.41.0'
 
     // netty
     implementation 'io.netty:netty-all'
