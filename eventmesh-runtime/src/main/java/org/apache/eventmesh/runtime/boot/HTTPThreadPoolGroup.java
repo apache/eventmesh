@@ -41,8 +41,6 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
     private ThreadPoolExecutor pushMsgExecutor;
     @Getter
     private ThreadPoolExecutor clientManageExecutor;
-    @Getter
-    private ThreadPoolExecutor webhookExecutor;
 
     public HTTPThreadPoolGroup(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
@@ -85,11 +83,6 @@ public class HTTPThreadPoolGroup implements ThreadPoolGroup {
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
             eventMeshHttpConfiguration.getEventMeshServerReplyMsgThreadNum(),
             new LinkedBlockingQueue<>(100), "eventMesh-replyMsg", true);
-
-        webhookExecutor = ThreadPoolFactory.createThreadPoolExecutor(
-            eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
-            eventMeshHttpConfiguration.getEventMeshServerWebhookThreadNum(),
-            new LinkedBlockingQueue<>(100), "eventMesh-webhook", true);
     }
 
     @Override

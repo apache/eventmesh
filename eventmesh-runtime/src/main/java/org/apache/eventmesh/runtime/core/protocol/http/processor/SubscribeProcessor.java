@@ -37,7 +37,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.runtime.util.WebhookUtil;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -138,17 +137,6 @@ public class SubscribeProcessor extends AbstractHttpRequestProcessor {
             completeResponse(request, asyncContext, subscribeResponseHeader,
                 EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
                 EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url,
-                SubscribeResponseBody.class);
-            return;
-        }
-
-        // obtain webhook delivery agreement for Abuse Protection
-        if (!WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.getHttpClientPool().getClient(),
-            url, eventMeshHttpConfiguration.getEventMeshWebhookOrigin())) {
-            log.error("subscriber url {} is not allowed by the target system", url);
-            completeResponse(request, asyncContext, subscribeResponseHeader,
-                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR,
-                EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url,
                 SubscribeResponseBody.class);
             return;
         }
