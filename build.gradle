@@ -174,10 +174,7 @@ tasks.register('dist') {
              "eventmesh-spi",
              "eventmesh-starter",
              "eventmesh-storage-plugin:eventmesh-storage-api",
-             "eventmesh-trace-plugin:eventmesh-trace-api",
-             "eventmesh-webhook:eventmesh-webhook-api",
-             "eventmesh-webhook:eventmesh-webhook-admin",
-             "eventmesh-webhook:eventmesh-webhook-receive"]
+             "eventmesh-trace-plugin:eventmesh-trace-api"]
     doLast {
         includedProjects.each {
             def subProject = findProject(it)

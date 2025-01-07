@@ -33,7 +33,6 @@ public class GetConfigurationResponse {
     private boolean eventMeshServerRegistryEnable;
     private String eventMeshName;
     private String sysID;
-    private String eventMeshWebhookOrigin;
     private String namesrvAddr;
 
     private int eventMeshTcpServerPort;
@@ -54,7 +53,6 @@ public class GetConfigurationResponse {
         @JsonProperty("eventMeshCluster") String eventMeshCluster,
         @JsonProperty("eventMeshServerIp") String eventMeshServerIp,
         @JsonProperty("eventMeshName") String eventMeshName,
-        @JsonProperty("eventMeshWebhookOrigin") String eventMeshWebhookOrigin,
         @JsonProperty("eventMeshServerSecurityEnable") boolean eventMeshServerSecurityEnable,
         @JsonProperty("eventMeshServerRegistryEnable") boolean eventMeshServerRegistryEnable,
 
@@ -77,7 +75,6 @@ public class GetConfigurationResponse {
         this.eventMeshCluster = eventMeshCluster;
         this.eventMeshServerIp = eventMeshServerIp;
         this.eventMeshName = eventMeshName;
-        this.eventMeshWebhookOrigin = eventMeshWebhookOrigin;
         this.eventMeshServerSecurityEnable = eventMeshServerSecurityEnable;
         this.eventMeshServerRegistryEnable = eventMeshServerRegistryEnable;
 
