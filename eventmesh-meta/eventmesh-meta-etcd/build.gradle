@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    implementation ("io.etcd:jetcd-core:0.3.0")
+    implementation ("io.etcd:jetcd-core:0.8.4")
     implementation project(":eventmesh-meta:eventmesh-meta-api")
     implementation project(":eventmesh-common")
     testImplementation "org.mockito:mockito-core"
