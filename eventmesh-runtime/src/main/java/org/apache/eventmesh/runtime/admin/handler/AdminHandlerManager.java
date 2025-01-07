@@ -18,15 +18,11 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.runtime.admin.handler.v1.ConfigurationHandlerV1;
-import org.apache.eventmesh.runtime.admin.handler.v1.DeleteWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.EventHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.GrpcClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.HTTPClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.v1.InsertWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.MetaHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.QueryRecommendEventMeshHandler;
-import org.apache.eventmesh.runtime.admin.handler.v1.QueryWebHookConfigByIdHandler;
-import org.apache.eventmesh.runtime.admin.handler.v1.QueryWebHookConfigByManufacturerHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.RedirectClientByPathHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.RedirectClientBySubSystemHandler;
@@ -38,7 +34,6 @@ import org.apache.eventmesh.runtime.admin.handler.v1.ShowClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.ShowListenClientByTopicHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.TCPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.v1.TopicHandler;
-import org.apache.eventmesh.runtime.admin.handler.v1.UpdateWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.v2.ConfigurationHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
@@ -46,11 +41,8 @@ import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventMeshHttpHandler;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
-import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,8 +59,6 @@ public class AdminHandlerManager {
 
     private MetaStorage eventMeshMetaStorage;
 
-    private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
-
     private final Map<String, HttpHandler> httpHandlerMap = new ConcurrentHashMap<>();
 
     public AdminHandlerManager(EventMeshServer eventMeshServer) {
@@ -77,7 +67,6 @@ public class AdminHandlerManager {
         this.eventMeshGrpcServer = eventMeshServer.getEventMeshGrpcServer();
         this.eventMeshHTTPServer = eventMeshServer.getEventMeshHTTPServer();
         this.eventMeshMetaStorage = eventMeshServer.getMetaStorage();
-        this.adminWebHookConfigOperationManage = eventMeshTCPServer.getAdminWebHookConfigOperationManage();
     }
 
     public void registerHttpHandler() {
@@ -102,14 +91,6 @@ public class AdminHandlerManager {
         initHandler(new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType()));
         initHandler(new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType()));
         initHandler(new MetaHandler(eventMeshMetaStorage));
-        if (Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
-            WebHookConfigOperation webHookConfigOperation = adminWebHookConfigOperationManage.getWebHookConfigOperation();
-            initHandler(new InsertWebHookConfigHandler(webHookConfigOperation));
-            initHandler(new UpdateWebHookConfigHandler(webHookConfigOperation));
-            initHandler(new DeleteWebHookConfigHandler(webHookConfigOperation));
-            initHandler(new QueryWebHookConfigByIdHandler(webHookConfigOperation));
-            initHandler(new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation));
-        }
 
         // v2 endpoints
         initHandler(new ConfigurationHandler(

@@ -37,7 +37,6 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.util.WebhookUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -210,13 +209,6 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         HttpEntity httpEntity = new UrlEncodedFormEntity(body, Constants.DEFAULT_CHARSET);
 
         builder.setEntity(httpEntity);
-
-        // for CloudEvents Webhook spec
-        String urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
-            .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
-
-        WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
-            eventMeshHttpConfiguration.getEventMeshWebhookOrigin(), urlAuthType);
 
         eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordPushMsg();
 

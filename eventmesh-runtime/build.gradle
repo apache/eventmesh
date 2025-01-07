@@ -65,17 +65,12 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-webhook")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
-
-    implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
     implementation project(":eventmesh-retry:eventmesh-retry-api")
 

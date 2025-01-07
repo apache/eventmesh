@@ -88,7 +88,5 @@ public class EventMeshTCPConfigurationTest {
         Assertions.assertTrue(config.isEventMeshServerSecurityEnable());
         Assertions.assertTrue(config.isEventMeshServerMetaStorageEnable());
         Assertions.assertTrue(config.isEventMeshServerTraceEnable());
-
-        Assertions.assertEquals("eventmesh.idc-succeed!!!", config.getEventMeshWebhookOrigin());
     }
 }

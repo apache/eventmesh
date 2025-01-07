@@ -98,9 +98,6 @@ public class CommonConfiguration {
     private List<String> eventMeshProvideServerProtocols;
 
     @ConfigField(reload = true)
-    private String eventMeshWebhookOrigin;
-
-    @ConfigField(reload = true)
     private String meshGroup;
 
     @ConfigField(field = "server.retry.plugin.type")
@@ -122,7 +119,6 @@ public class CommonConfiguration {
     private boolean eventMeshRegistryPluginEnabled = false;
 
     public void reload() {
-        this.eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 
         if (Strings.isNullOrEmpty(this.eventMeshServerIp)) {
             this.eventMeshServerIp = IPUtils.getLocalAddress();

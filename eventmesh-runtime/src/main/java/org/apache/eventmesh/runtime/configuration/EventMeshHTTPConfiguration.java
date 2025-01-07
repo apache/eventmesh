@@ -66,9 +66,6 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     @ConfigField(field = "retry.threads.num")
     private int eventMeshServerRetryThreadNum = 2;
 
-    @ConfigField(field = "")
-    private int eventMeshServerWebhookThreadNum = 4;
-
     @ConfigField(field = "pull.metaStorage.interval")
     private int eventMeshServerPullMetaStorageInterval = 30000;
 

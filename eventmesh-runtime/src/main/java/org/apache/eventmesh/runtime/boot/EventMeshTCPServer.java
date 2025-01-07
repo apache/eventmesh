@@ -45,7 +45,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance.EventMesh
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.TcpRetryer;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMetricsManager;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -73,8 +72,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
     private ClientSessionGroupMapping clientSessionGroupMapping;
 
     private TcpRetryer tcpRetryer;
-
-    private AdminWebHookConfigOperationManager adminWebHookConfigOperationManage;
 
     private RateLimiter rateLimiter;
     private EventMeshRebalanceService eventMeshRebalanceService;
@@ -111,9 +108,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
             eventMeshRebalanceService = new EventMeshRebalanceService(this, new EventMeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
-
-        adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManager();
-        adminWebHookConfigOperationManage.init();
 
         registerTCPRequestProcessor();
 
@@ -251,14 +245,6 @@ public class EventMeshTCPServer extends AbstractTCPServer {
 
     public EventMeshRebalanceService getEventMeshRebalanceService() {
         return eventMeshRebalanceService;
-    }
-
-    public AdminWebHookConfigOperationManager getAdminWebHookConfigOperationManage() {
-        return adminWebHookConfigOperationManage;
-    }
-
-    public void setAdminWebHookConfigOperationManage(AdminWebHookConfigOperationManager adminWebHookConfigOperationManage) {
-        this.adminWebHookConfigOperationManage = adminWebHookConfigOperationManage;
     }
 
     public Acl getAcl() {
