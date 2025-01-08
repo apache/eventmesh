@@ -24,6 +24,7 @@ def isCiServer = System.getenv().containsKey("CI")
 
 develocity {
     server = "https://develocity.apache.org"
+    projectId = "eventmesh"
     buildScan {
         uploadInBackground = !isCiServer
         publishing.onlyIf { it.isAuthenticated() }
