@@ -23,7 +23,7 @@ plugins {
 def isCiServer = System.getenv().containsKey("CI")
 
 develocity {
-    server = "https://ge.apache.org"
+    server = "https://develocity.apache.org"
     buildScan {
         uploadInBackground = !isCiServer
         publishing.onlyIf { false }
