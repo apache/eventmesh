@@ -16,12 +16,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-i_eg="sh client_manage.sh -i 10.255.34.160 24591"
+i_eg="sh client_manage.sh -i 127.0.0.1 24591"
 s_eg="sh client_manage.sh -s 5319"
-r_eg="sh client_manage.sh -r 9876 10.255.1.143 10000"
+r_eg="sh client_manage.sh -r 9876 127.0.0.1 10000"
 a_eg="sh client_manage.sh -a"
-x_eg="sh client_manage.sh -x 10.255.34.160 24591 10.255.1.143 10000"
-y_eg="sh client_manage.sh -y bq-bypass 10.255.1.143 10000"
+x_eg="sh client_manage.sh -x 127.0.0.1 24591 127.0.0.1 10000"
+y_eg="sh client_manage.sh -y bq-bypass 127.0.0.1 10000"
 
 function printEg() {
         echo "param error."

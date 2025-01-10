@@ -58,7 +58,7 @@ public abstract class TCPClient implements Closeable {
 
     protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
 
-    protected String host = "10.255.34.120";
+    protected String host = "127.0.0.1";
 
     protected int port = 10000;
 

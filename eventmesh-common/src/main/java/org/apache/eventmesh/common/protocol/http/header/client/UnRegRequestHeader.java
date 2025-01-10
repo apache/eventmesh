@@ -61,7 +61,7 @@ public class UnRegRequestHeader extends Header {
     private String username = "username";
 
     // PASSWD of the requester
-    private String passwd = "user@123";
+    private String passwd = "default";
 
     public static UnRegRequestHeader buildHeader(Map<String, Object> headerParam) {
         HttpConvertsUtils httpConvertsUtils = new HttpConvertsUtils();

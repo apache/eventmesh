@@ -36,10 +36,10 @@ public class RemotingHelperTest {
 
     @Test
     public void testString2SocketAddress() {
-        String addr = "10.1.1.1:11002";
+        String addr = "127.0.0.1:8080";
         InetSocketAddress address = (InetSocketAddress) RemotingHelper.string2SocketAddress(addr);
         Assertions.assertNotNull(address);
-        Assertions.assertEquals("10.1.1.1:11002", address.getHostString() + ":" + address.getPort());
+        Assertions.assertEquals("127.0.0.1:8080", address.getHostString() + ":" + address.getPort());
     }
 
     @Test
