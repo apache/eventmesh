@@ -59,7 +59,7 @@ connectors.eventmesh-operator.eventmesh/connector-rocketmq created
 # View the created Service.
 kubectl get service
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-runtime-cluster-service   ClusterIP   10.109.209.72   <none>        10000/TCP   17s
+runtime-cluster-service   ClusterIP   127.0.0.1   <none>        10000/TCP   17s
 
 # Delete CR
 make delete
