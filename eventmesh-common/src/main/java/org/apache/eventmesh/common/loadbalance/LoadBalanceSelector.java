@@ -21,7 +21,9 @@ package org.apache.eventmesh.common.loadbalance;
  * LoadBalance Interface
  *
  * <p> see {@link RandomLoadBalanceSelector}
+ * <p> see {@link WeightRandomLoadBalanceSelector}
  * <p> see {@link WeightRoundRobinLoadBalanceSelector}
+ * <p> see {@link SourceIPHashLoadBalanceSelector}
  *
  * @param <T> Target type
  */

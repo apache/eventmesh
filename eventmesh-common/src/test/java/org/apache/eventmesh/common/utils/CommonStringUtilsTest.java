@@ -15,29 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.loadbalance;
+package org.apache.eventmesh.common.utils;
 
-public enum LoadBalanceType {
+import org.junit.Assert;
+import org.junit.Test;
 
-    RANDOM(0, "random load balance strategy"),
-    WEIGHT_ROUND_ROBIN(1, "weight round robin load balance strategy"),
-    WEIGHT_RANDOM(2, "weight random load balance strategy"),
-    SOURCE_IP_HASH(3, "source IP hash load balance strategy");
+public class CommonStringUtilsTest {
 
-    private final int code;
-    private final String desc;
-
-    LoadBalanceType(int code, String desc) {
-        this.code = code;
-        this.desc = desc;
+    @Test
+    public void testEqualsAll() {
+        Assert.assertTrue(CommonStringUtils.equalsAll(null, null));
+        Assert.assertTrue(CommonStringUtils.equalsAll(null, null, null));
+        Assert.assertTrue(CommonStringUtils.equalsAll("", "", ""));
+        Assert.assertTrue(CommonStringUtils.equalsAll("abc", "abc", "abc"));
+        Assert.assertFalse(CommonStringUtils.equalsAll(null, "abc", "def"));
+        Assert.assertFalse(CommonStringUtils.equalsAll("abc", "def", "ghi"));
     }
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
 }
