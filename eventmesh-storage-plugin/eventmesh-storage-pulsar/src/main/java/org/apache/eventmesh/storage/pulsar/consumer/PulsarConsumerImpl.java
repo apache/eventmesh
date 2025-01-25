@@ -31,6 +31,7 @@ import org.apache.eventmesh.storage.pulsar.constant.PulsarConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pulsar.client.api.AuthenticationFactory;
 import org.apache.pulsar.client.api.ClientBuilder;
+import org.apache.pulsar.client.api.DeadLetterPolicy;
 import org.apache.pulsar.client.api.MessageListener;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
@@ -119,12 +121,25 @@ public class PulsarConsumerImpl implements Consumer {
         };
 
         SubscriptionType type = SubscriptionType.Shared;
+        
+        String subscriptionName = properties.getProperty(Constants.CONSUMER_GROUP);
 
         String consumerKey = topic + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CONSUMER_GROUP)
             + PulsarConstant.KEY_SEPARATOR + properties.getProperty(Constants.CLIENT_ADDRESS);
+        
+        String dlqTopic = subTopic + subscriptionName + "-DLQ";
+        
+        String retryTopic = subTopic + subscriptionName + "-RETRY";
+        
         org.apache.pulsar.client.api.Consumer<byte[]> consumer = pulsarClient.newConsumer()
             .topic(subTopic)
-            .subscriptionName(properties.getProperty(Constants.CONSUMER_GROUP))
+            .enableRetry(true)
+            .deadLetterPolicy(DeadLetterPolicy.builder()
+                    .deadLetterTopic(dlqTopic)
+                    .retryLetterTopic(retryTopic)
+                    .maxRedeliverCount(3)
+                    .build())
+            .subscriptionName(subscriptionName)
             .subscriptionMode(SubscriptionMode.Durable)
             .subscriptionType(type)
             .messageListener(
@@ -140,6 +155,12 @@ public class PulsarConsumerImpl implements Consumer {
                             String.format("Failed to unsubscribe the topic:%s with exception: %s", subTopic, ex.getMessage()));
                     } catch (EventDeserializationException ex) {
                         log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
+                    } catch (Exception e) {
+                        try {
+                            ackConsumer.reconsumeLater(msg, 1000L, TimeUnit.MILLISECONDS);
+                        } catch (PulsarClientException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 })
             .subscribe();
