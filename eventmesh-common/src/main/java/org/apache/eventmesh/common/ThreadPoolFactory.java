@@ -42,13 +42,13 @@ public abstract class ThreadPoolFactory {
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
         final String threadName, final boolean isDaemon) {
-        return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue,
+        return new LogThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue,
             new EventMeshThreadFactory(threadName, isDaemon));
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
         ThreadFactory threadFactory) {
-        return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, threadFactory);
+        return new LogThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, threadFactory);
     }
 
     public static ScheduledExecutorService createSingleScheduledExecutor(final String threadName) {
