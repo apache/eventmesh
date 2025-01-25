@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshCloudEventBuilder;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.enums.EventMeshDataContentType;
 import org.apache.eventmesh.common.enums.EventMeshProtocolType;
