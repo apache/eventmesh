@@ -756,7 +756,7 @@ subprojects {
 
             dependency "org.junit.jupiter:junit-jupiter:5.11.0"
             dependency "org.junit-pioneer:junit-pioneer:1.9.1"
-            dependency "org.assertj:assertj-core:3.26.3"
+            dependency "org.assertj:assertj-core:3.27.3"
 
             dependency "org.mockito:mockito-core:${mockitoVersion}"
             dependency "org.mockito:mockito-inline:${mockitoVersion}"
