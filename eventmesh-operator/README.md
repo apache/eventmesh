@@ -91,6 +91,6 @@ eventmesh-runtime-0-a-0   1/1     Running   0          12m
 
 kubectl get pods -o wide
 NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
-connector-rocketmq-0      1/1     Running   0          13m   10.244.0.21   minikube   <none>           <none>
-eventmesh-runtime-0-a-0   1/1     Running   0          13m   10.244.0.20   minikube   <none>           <none>
+connector-rocketmq-0      1/1     Running   0          13m   127.0.0.1   minikube   <none>           <none>
+eventmesh-runtime-0-a-0   1/1     Running   0          13m   127.0.0.1   minikube   <none>           <none>
 ```
