@@ -41,7 +41,7 @@ github:
     merge: false
     rebase: false
   protected_branches:
-    master:
+    develop:
       required_status_checks:
         strict: false
         contexts:
