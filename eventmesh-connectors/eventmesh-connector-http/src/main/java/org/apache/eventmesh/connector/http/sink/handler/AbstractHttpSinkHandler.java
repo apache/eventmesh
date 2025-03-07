@@ -75,10 +75,9 @@ public abstract class AbstractHttpSinkHandler implements HttpSinkHandler {
                 sendRecordToUrl(record, attributes, url);
                 break;
             case BROADCAST:
-                for (URI broadcastUrl : urls) {
-                    attributes.put(MultiHttpRequestContext.NAME, new MultiHttpRequestContext(urls.size()));
-                    sendRecordToUrl(record, attributes, broadcastUrl);
-                }
+                attributes.put(MultiHttpRequestContext.NAME, new MultiHttpRequestContext(urls.size()));
+                // send the record to all URLs
+                urls.forEach(url0 -> sendRecordToUrl(record, attributes, url0));
                 break;
             default:
                 throw new IllegalArgumentException("Unknown delivery strategy: " + deliveryStrategy);
