@@ -41,7 +41,7 @@ sourceConnectorConfig:
     hostname: localhost
     port: 3306
     user: root
-    password: xxxx
+    password: default
     initialStatements:
     connectTimeout: 10
   mysqlConfig:
