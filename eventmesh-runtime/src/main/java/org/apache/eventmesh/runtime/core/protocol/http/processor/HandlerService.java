@@ -163,14 +163,16 @@ public class HandlerService {
      */
     private void sendPersistentResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response, boolean isClose) {
         ReferenceCountUtil.release(httpRequest);
-        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
-            if (!f.isSuccess()) {
-                HTTP_LOGGER.warn("send response to [{}] fail, will close this channel",
-                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
-                if (isClose) {
-                    f.channel().close();
+        ctx.channel().eventLoop().execute(() -> {
+            ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+                if (!f.isSuccess()) {
+                    HTTP_LOGGER.warn("send response to [{}] fail, will close this channel",
+                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                    if (isClose) {
+                        f.channel().close();
+                    }
                 }
-            }
+            });
         });
     }
 
@@ -179,12 +181,14 @@ public class HandlerService {
      */
     private void sendShortResponse(ChannelHandlerContext ctx, HttpRequest httpRequest, HttpResponse response) {
         ReferenceCountUtil.release(httpRequest);
-        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
-            if (!f.isSuccess()) {
-                HTTP_LOGGER.warn("send response to [{}] with short-lived connection fail, will close this channel",
-                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
-            }
-        }).addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().eventLoop().execute(() -> {
+            ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+                if (!f.isSuccess()) {
+                    HTTP_LOGGER.warn("send response to [{}] with short-lived connection fail, will close this channel",
+                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                }
+            }).addListener(ChannelFutureListener.CLOSE);
+        });
     }
 
     private HttpEventWrapper parseHttpRequest(HttpRequest httpRequest) throws IOException {
