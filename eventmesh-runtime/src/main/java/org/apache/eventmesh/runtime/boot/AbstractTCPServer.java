@@ -311,7 +311,7 @@ public class AbstractTCPServer extends AbstractRemotingServer {
                 Package res = new Package();
                 res.setHeader(new Header(getReplyCommand(cmd), OPStatus.FAIL.getCode(), e.toString(),
                     pkg.getHeader().getSeq()));
-                ctx.writeAndFlush(res);
+                ctx.channel().eventLoop().execute(() -> ctx.writeAndFlush(res));
             } catch (Exception ex) {
                 log.warn("writeToClient failed", ex);
             }

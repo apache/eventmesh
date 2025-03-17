@@ -95,7 +95,9 @@ public abstract class AbstractHttpHandler implements HttpHandler {
      * Use {@link HttpResponseUtils#buildHttpResponse} to build {@link HttpResponse} param.
      */
     protected void write(ChannelHandlerContext ctx, HttpResponse response) {
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().eventLoop().execute(() -> {
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        });
     }
 
     @Override

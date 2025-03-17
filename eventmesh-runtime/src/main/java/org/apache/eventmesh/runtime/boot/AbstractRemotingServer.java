@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 
 import java.util.concurrent.TimeUnit;
 
+import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -76,7 +77,7 @@ public abstract class AbstractRemotingServer implements RemotingServer {
     }
 
     private void buildWorkerGroup(final String threadPrefix) {
-        workerGroup = new NioEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
+        workerGroup = new DefaultEventLoopGroup(MAX_THREADS, new EventMeshThreadFactory(threadPrefix + "-worker"));
     }
 
     protected void initProducerManager() throws Exception {
