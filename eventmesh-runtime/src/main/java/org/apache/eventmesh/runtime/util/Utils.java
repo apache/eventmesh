@@ -64,8 +64,8 @@ public class Utils {
                     new Exception("the session has been closed"));
                 return;
             }
-            ctx.writeAndFlush(pkg).addListener(
-                (ChannelFutureListener) future -> {
+            ctx.channel().eventLoop().execute(() -> {
+                ctx.writeAndFlush(pkg).addListener((ChannelFutureListener) future -> {
                     if (!future.isSuccess()) {
                         logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
                     } else {
@@ -77,6 +77,7 @@ public class Utils {
                         }
                     }
                 });
+            });
         } catch (Exception e) {
             log.error("exception while sending message to client", e);
         }

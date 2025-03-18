@@ -245,16 +245,19 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             HttpHeaderNames.CONTENT_TYPE, String.format("text/plain; charset=%s", EventMeshConstants.DEFAULT_CHARSET));
         responseHeaders.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         responseHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().eventLoop().execute(() -> {
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        });
     }
 
     public void sendResponse(final ChannelHandlerContext ctx, final DefaultFullHttpResponse response) {
-        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
-            if (!f.isSuccess()) {
-                log.warn("send response to [{}] fail, will close this channel", RemotingHelper.parseChannelRemoteAddr(f.channel()));
-                f.channel().close();
-            }
+        ctx.channel().eventLoop().execute(() -> {
+            ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+                if (!f.isSuccess()) {
+                    log.warn("send response to [{}] fail, will close this channel", RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                    f.channel().close();
+                }
+            });
         });
     }
 

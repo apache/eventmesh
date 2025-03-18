@@ -170,11 +170,16 @@ public class EventMeshAdminServer extends AbstractHTTPServer {
                     httpHandlerOpt.get().handle(httpRequest, ctx);
                 } catch (Exception e) {
                     log.error("admin server channelRead error", e);
-                    ctx.writeAndFlush(HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(e.getMessage()), ctx,
-                        HttpHeaderValues.APPLICATION_JSON, HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.channel().eventLoop().execute(() -> {
+                        ctx.writeAndFlush(HttpResponseUtils.buildHttpResponse(Objects.requireNonNull(e.getMessage()), ctx,
+                            HttpHeaderValues.APPLICATION_JSON, HttpResponseStatus.INTERNAL_SERVER_ERROR)).addListener(ChannelFutureListener.CLOSE);
+                    });
                 }
             } else {
-                ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
+                ctx.channel().eventLoop().execute(() -> {
+                        ctx.writeAndFlush(HttpResponseUtils.createNotFound()).addListener(ChannelFutureListener.CLOSE);
+                    }
+                );
             }
         }
     }

@@ -95,13 +95,15 @@ public class EventMeshTcp2Client {
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
         eventMeshTcpMetricsManager.eventMesh2clientMsgNumIncrement(IPUtils.parseChannelRemoteAddr(ctx.channel()));
         log.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-        ctx.writeAndFlush(pkg).addListener((ChannelFutureListener) future -> {
-            Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
-            try {
-                mapping.closeSession(ctx);
-            } catch (Exception e) {
-                log.warn("close session failed!", e);
-            }
+        ctx.channel().eventLoop().execute(() -> {
+            ctx.writeAndFlush(pkg).addListener((ChannelFutureListener) future -> {
+                Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
+                try {
+                    mapping.closeSession(ctx);
+                } catch (Exception e) {
+                    log.warn("close session failed!", e);
+                }
+            });
         });
     }
 
