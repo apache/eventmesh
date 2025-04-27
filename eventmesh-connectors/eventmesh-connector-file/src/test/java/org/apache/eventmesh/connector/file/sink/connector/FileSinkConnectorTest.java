@@ -49,7 +49,6 @@ public class FileSinkConnectorTest {
         fileSinkConnector.put(connectRecords);
         fileSinkConnector.stop();
 
-        // 验证文件是否存在
         Calendar calendar = Calendar.getInstance(Locale.CHINA);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
@@ -60,14 +59,11 @@ public class FileSinkConnectorTest {
             String.valueOf(day));
         Assertions.assertTrue(Files.exists(topicPath), "Directory for topic should exist");
 
-        // 查找是否有文件
         Path outputPath = Files.list(topicPath)
             .filter(path -> path.toString().contains("test-topic"))
             .findFirst()
             .orElseThrow(() -> new RuntimeException("No output file found with 'test-topic' in the name"));
 
-
-        // 验证文件内容
         List<String> lines = Files.readAllLines(outputPath, StandardCharsets.UTF_8);
         String actualContent = String.join("\n", lines);
         Assertions.assertEquals(content, actualContent);
