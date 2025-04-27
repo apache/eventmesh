@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.connector.file.sink.connector;
 
 
@@ -24,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -32,11 +32,12 @@ import java.util.Locale;
 
 import org.apache.eventmesh.common.config.connector.file.FileSinkConfig;
 import org.apache.eventmesh.common.config.connector.file.SinkConnectorConfig;
-
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+
 
 public class FileSinkConnectorTest {
 
