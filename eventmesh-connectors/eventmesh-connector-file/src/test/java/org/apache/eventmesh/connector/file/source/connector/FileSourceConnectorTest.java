@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.file;
+package org.apache.eventmesh.connector.file.source.connector;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
