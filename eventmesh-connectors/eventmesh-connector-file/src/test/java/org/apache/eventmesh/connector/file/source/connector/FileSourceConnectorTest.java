@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.config.connector.file.FileSourceConfig;
 import org.apache.eventmesh.common.config.connector.file.SourceConnectorConfig;
-import org.apache.eventmesh.connector.file.source.connector.FileSourceConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.nio.charset.StandardCharsets;

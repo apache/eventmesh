@@ -21,6 +21,10 @@ package org.apache.eventmesh.connector.file.sink.connector;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.common.config.connector.file.FileSinkConfig;
+import org.apache.eventmesh.common.config.connector.file.SinkConnectorConfig;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,10 +33,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
-import org.apache.eventmesh.common.config.connector.file.FileSinkConfig;
-import org.apache.eventmesh.common.config.connector.file.SinkConnectorConfig;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
