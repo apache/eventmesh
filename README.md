@@ -67,48 +67,6 @@ This section of the guide will show you the steps to deploy EventMesh from [Loca
 
 This section guides the launch of EventMesh according to the default configuration, if you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/introduction).
 
-### Deployment Event Store
-
-> EventMesh supports [multiple Event Stores](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status), the default storage mode is `standalone`, and does not rely on other event stores as layers.
-
-### Run EventMesh Runtime locally
-
-#### 1. Download EventMesh
-
-Download the latest version of the Binary Distribution from the [EventMesh Download](https://eventmesh.apache.org/download/) page and extract it:
-
-```shell
-wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
-tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
-cd apache-eventmesh-1.10.0
-```
-
-#### 2. Run EventMesh
-
-Execute the `start.sh` script to start the EventMesh Runtime server.
-
-```shell
-bash bin/start.sh
-```
-
-View the output log:
-
-```shell
-tail -n 50 -f logs/eventmesh.out
-```
-
-When the log output shows server `state:RUNNING`, it means EventMesh Runtime has started successfully.
-
-You can stop the run with the following command:
-
-```shell
-bash bin/stop.sh
-```
-
-When the script prints `shutdown server ok!`, it means EventMesh Runtime has stopped.
-
-### Run EventMesh Runtime in Docker
-
 #### 1. Pull EventMesh Image
 
 Use the following command line to download the latest version of [EventMesh](https://hub.docker.com/r/apache/eventmesh):
@@ -117,67 +75,67 @@ Use the following command line to download the latest version of [EventMesh](htt
 sudo docker pull apache/eventmesh:latest
 ```
 
-#### 2. Run and Manage EventMesh Container
+#### 2. Run EventMesh Runtime
 
 Use the following command to start the EventMesh container:
 
 ```shell
 sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
 ```
-
-
-Enter the container:
+#### 3. Creating Topics
+Creating a topic is the first step in using EventMesh. You need to send an HTTP POST request to create a topic.
+Example Request
+```shell
+POST /eventmesh/topic/create HTTP/1.1  
+Host: localhost:10105  
+Content-Type: application/json  
+  
+{  
+  "topic": "example-topic"  
+}
+```
+#### 4. Subscribing to Topics
+After creating a topic, you can subscribe to it to receive messages. EventMesh provides two subscription methods: local subscription and remote subscription.
 
 ```shell
-sudo docker exec -it eventmesh /bin/bash
+POST /eventmesh/subscribe/local HTTP/1.1  
+Host: localhost:10105  
+Content-Type: application/json  
+{  
+  "url": "http://localhost:8080/callback",  
+  "consumerGroup": "example-consumer-group",  
+  "topic": [  
+    {  
+      "topic": "example-topic",  
+      "mode": "CLUSTERING",  
+      "type": "SYNC"  
+    }  
+  ]  
+}
 ```
-
-view the log:
-
+#### 5. Sending Messages
+EventMesh provides multiple message sending methods, including asynchronous sending, synchronous sending, and batch sending.
 ```shell
-cd logs
-tail -n 50 -f eventmesh.out
+POST /eventmesh/publish HTTP/1.1  
+Host: localhost:10105  
+Content-Type: application/json    
+eventmesh-message-topic: example-topic 
+{  
+  "content": "Hello, EventMesh!"  
+}
 ```
-
-### Run EventMesh Runtime in Kubernetes
-
-#### 1. Deploy operator
-
-Run the following commands(To delete a deployment, simply replace `deploy` with `undeploy`):
-
+#### 6. Unsubscribing
+When you no longer need to receive messages for a topic, you can unsubscribe.
 ```shell
-$ cd eventmesh-operator && make deploy
+POST /eventmesh/unsubscribe/local HTTP/1.1  
+Host: localhost:10105  
+Content-Type: application/json  
+{  
+  "url": "http://localhost:8080/callback",  
+  "consumerGroup": "example-consumer-group",  
+  "topics": ["example-topic"]  
+}
 ```
-
-Run `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh`to see the status of the deployed eventmesh-operator.
-
-```shell
-$ kubectl get pods
-NAME                                  READY   STATUS    RESTARTS   AGE
-eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
-
-$ kubectl get crd | grep eventmesh-operator.eventmesh
-connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
-runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
-```
-
-#### 2. Deploy EventMesh Runtime
-
-Execute the following command to deploy runtime, connector-rocketmq (To delete, simply replace `create` with `delete`):  
-
-```shell
-$ make create
-```
-
-Run `kubectl get pods` to see if the deployment was successful.
-
-```shell
-NAME                                  READY   STATUS    RESTARTS   AGE
-connector-rocketmq-0                  1/1     Running   0          9s
-eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
-eventmesh-runtime-0-a-0               1/1     Running   0          15s
-```
-
 ## Contributing
 
 [![GitHub repo Good Issues for newbies](https://img.shields.io/github/issues/apache/eventmesh/good%20first%20issue?style=flat&logo=github&logoColor=green&label=Good%20First%20issues)](https://github.com/apache/eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) [![GitHub Help Wanted issues](https://img.shields.io/github/issues/apache/eventmesh/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20issues)](https://github.com/apache/eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub Help Wanted PRs](https://img.shields.io/github/issues-pr/apache/eventmesh/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20PRs)](https://github.com/apache/eventmesh/pulls?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub repo Issues](https://img.shields.io/github/issues/apache/eventmesh?style=flat&logo=github&logoColor=red&label=Issues)](https://github.com/apache/eventmesh/issues?q=is%3Aopen)
