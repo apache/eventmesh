@@ -31,7 +31,8 @@ public class EventMeshStartup {
     public static void main(String[] args) throws Exception {
         try {
             ConfigService.getInstance()
-                .setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                //.setConfigPath(EventMeshConstants.EVENTMESH_CONF_HOME + File.separator)
+                    .setConfigPath("eventmesh-runtime/conf")
                 .setRootConfig(EventMeshConstants.EVENTMESH_CONF_FILE);
 
             EventMeshServer server = new EventMeshServer();
