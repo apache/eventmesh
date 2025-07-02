@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.connector.mcp.sink.data;
 
-import org.apache.eventmesh.connector.http.sink.data.HttpAttemptEvent;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,7 +39,9 @@ public class MultiMcpRequestContext {
      * The last failed event.
      * If retries occur but still fail, it will be logged, and only the last one will be retained.
      */
-    private HttpAttemptEvent lastFailedEvent;
+    @Getter
+    @Setter
+    private McpAttemptEvent lastFailedEvent;
 
     public MultiMcpRequestContext(int remainingEvents) {
         this.remainingRequests = new AtomicInteger(remainingEvents);
@@ -64,11 +67,4 @@ public class MultiMcpRequestContext {
         return remainingRequests.get();
     }
 
-    public HttpAttemptEvent getLastFailedEvent() {
-        return lastFailedEvent;
-    }
-
-    public void setLastFailedEvent(HttpAttemptEvent lastFailedEvent) {
-        this.lastFailedEvent = lastFailedEvent;
-    }
 }

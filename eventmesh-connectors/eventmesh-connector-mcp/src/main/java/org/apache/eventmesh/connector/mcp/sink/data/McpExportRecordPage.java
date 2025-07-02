@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.mcp.sink.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.apache.eventmesh.connector.http.sink.data.HttpExportRecord;
 
 import java.io.Serializable;
 import java.util.List;
@@ -37,6 +36,6 @@ public class McpExportRecordPage implements Serializable {
 
     private int pageSize;
 
-    private List<HttpExportRecord> pageItems;
+    private List<McpExportRecord> pageItems;
 
 }

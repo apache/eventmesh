@@ -1,6 +1,7 @@
 package org.apache.eventmesh.connector.mcp.server;
 
 import org.apache.eventmesh.connector.mcp.config.McpServerConfig;
+import org.apache.eventmesh.connector.mcp.sink.McpSinkConnector;
 import org.apache.eventmesh.connector.mcp.source.McpSourceConnector;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
@@ -12,6 +13,11 @@ public class McpConnectServer {
         if (serverConfig.isSourceEnable()) {
             Application mcpSourceApp = new Application();
             mcpSourceApp.run(McpSourceConnector.class);
+        }
+
+        if (serverConfig.isSinkEnable()) {
+            Application httpSinkApp = new Application();
+            httpSinkApp.run(McpSinkConnector.class);
         }
     }
 }

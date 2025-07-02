@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "com.google.guava:guava"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation ("io.grpc:grpc-protobuf:1.68.0") {
-        exclude group: "com.google.protobuf", module: "protobuf-java"
-    }
-    implementation("com.google.protobuf:protobuf-java:3.25.4")
-    implementation 'io.netty:netty-common:4.1.114.Final'
-    implementation 'io.netty:netty-buffer:4.1.114.Final'
-    implementation 'io.netty:netty-transport:4.1.114.Final'
-    implementation 'io.netty:netty-handler:4.1.114.Final'
-    implementation 'io.netty:netty-codec-http:4.1.114.Final'
+package org.apache.eventmesh.common.config.connector.mcp;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.apache.eventmesh.common.config.connector.SinkConfig;
+import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class HttpSinkConfig extends SinkConfig {
+
+    public SinkConnectorConfig connectorConfig;
 }

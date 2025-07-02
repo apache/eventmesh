@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     Mcp://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,10 +21,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.v1.CloudEventBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.http.HttpProtocolConstant;
+import org.apache.eventmesh.protocol.mcp.McpProtocolConstant;
+import org.apache.eventmesh.common.protocol.mcp.McpEventWrapper;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -35,70 +35,64 @@ import java.util.UUID;
 
 public class McpRequestProtocolResolver {
 
-    public static CloudEvent buildEvent(HttpEventWrapper httpEventWrapper) throws ProtocolHandleException {
-
+    public static CloudEvent buildEvent(McpEventWrapper mcpEventWrapper) throws ProtocolHandleException {
         try {
             CloudEventBuilder builder = new CloudEventBuilder();
 
-            Map<String, Object> requestHeaderMap = httpEventWrapper.getHeaderMap();
+            Map<String, Object> requestHeaderMap = mcpEventWrapper.getHeaderMap();
+            Map<String, Object> sysHeaderMap = mcpEventWrapper.getSysHeaderMap();
 
-            Map<String, Object> sysHeaderMap = httpEventWrapper.getSysHeaderMap();
+            String id = sysHeaderMap.getOrDefault(McpProtocolConstant.CONSTANTS_KEY_ID, UUID.randomUUID()).toString();
+            String source = sysHeaderMap.getOrDefault(McpProtocolConstant.CONSTANTS_KEY_SOURCE,
+                    McpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
+            String type = sysHeaderMap.getOrDefault(McpProtocolConstant.CONSTANTS_KEY_TYPE,
+                    McpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
+            String subject = sysHeaderMap.getOrDefault(McpProtocolConstant.CONSTANTS_KEY_SUBJECT,
+                    McpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
-            String id = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_ID, UUID.randomUUID()).toString();
+            String dataContentType = requestHeaderMap.getOrDefault(McpProtocolConstant.CONSTANTS_DATA_CONTENT_TYPE,
+                    McpProtocolConstant.CONSTANTS_APPLICATION_JSON).toString();
 
-            String source = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE,
-                HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
-
-            String type = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_TYPE,
-                HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
-
-            String subject = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT,
-                HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
-
-            String dataContentType = requestHeaderMap.getOrDefault(HttpProtocolConstant.DATA_CONTENT_TYPE,
-                HttpProtocolConstant.APPLICATION_JSON).toString();
-            // with attributes
+            // Set basic CloudEvent attributes
             builder.withId(id)
-                .withType(type)
-                .withSource(URI.create(HttpProtocolConstant.CONSTANTS_KEY_SOURCE + ":" + source))
-                .withSubject(subject)
-                .withDataContentType(dataContentType);
+                    .withType(type)
+                    .withSource(URI.create(source))
+                    .withSubject(subject)
+                    .withDataContentType(dataContentType);
 
-            // with extensions
-            for (Map.Entry<String, Object> extension : sysHeaderMap.entrySet()) {
-                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extension.getKey())
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extension.getKey())
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extension.getKey())
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extension.getKey())) {
+            // Set extensions
+            for (Map.Entry<String, Object> entry : sysHeaderMap.entrySet()) {
+                String key = entry.getKey();
+                if (key.equalsIgnoreCase(McpProtocolConstant.CONSTANTS_KEY_ID)
+                        || key.equalsIgnoreCase(McpProtocolConstant.CONSTANTS_KEY_SOURCE)
+                        || key.equalsIgnoreCase(McpProtocolConstant.CONSTANTS_KEY_TYPE)
+                        || key.equalsIgnoreCase(McpProtocolConstant.CONSTANTS_KEY_SUBJECT)) {
                     continue;
                 }
-                String lowerExtensionKey = extension.getKey().toLowerCase(Locale.getDefault());
-                builder.withExtension(lowerExtensionKey, sysHeaderMap.get(extension.getKey()).toString());
+                builder.withExtension(key.toLowerCase(Locale.ROOT), entry.getValue().toString());
             }
 
-            byte[] requestBody = httpEventWrapper.getBody();
-
-            if (StringUtils.equals(dataContentType, HttpProtocolConstant.APPLICATION_JSON)) {
-                Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
-                    new TypeReference<HashMap<String, Object>>() {
-                    });
-
-                String requestURI = httpEventWrapper.getRequestURI();
+            // Handle body
+            byte[] requestBody = mcpEventWrapper.getBody();
+            if (StringUtils.equals(dataContentType, McpProtocolConstant.CONSTANTS_APPLICATION_JSON)) {
+                Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(
+                        new String(requestBody, StandardCharsets.UTF_8),
+                        new TypeReference<HashMap<String, Object>>() {}
+                );
 
                 Map<String, Object> data = new HashMap<>();
-                data.put(HttpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
-                data.put(HttpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
-                data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
-                data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
-                // with data
-                builder = builder.withData(JsonUtils.toJSONString(data).getBytes(StandardCharsets.UTF_8));
-            } else if (StringUtils.equals(dataContentType, HttpProtocolConstant.PROTOBUF)) {
-                // with data
-                builder = builder.withData(requestBody);
+                data.put(McpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
+                data.put(McpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
+
+                builder.withData(JsonUtils.toJSONString(data).getBytes(StandardCharsets.UTF_8));
+            } else {
+                builder.withData(requestBody);
             }
+
             return builder.build();
         } catch (Exception e) {
-            throw new ProtocolHandleException(e.getMessage(), e);
+            throw new ProtocolHandleException("Failed to build CloudEvent from McpEventWrapper", e);
         }
     }
+
 }

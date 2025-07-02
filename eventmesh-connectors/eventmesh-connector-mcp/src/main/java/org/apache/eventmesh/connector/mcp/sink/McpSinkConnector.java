@@ -24,16 +24,13 @@ import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSinkConfig;
 import org.apache.eventmesh.common.config.connector.http.SinkConnectorConfig;
-import org.apache.eventmesh.connector.http.sink.handler.HttpSinkHandler;
-import org.apache.eventmesh.connector.http.sink.handler.impl.CommonHttpSinkHandler;
-import org.apache.eventmesh.connector.http.sink.handler.impl.HttpSinkHandlerRetryWrapper;
-import org.apache.eventmesh.connector.http.sink.handler.impl.WebhookHttpSinkHandler;
+import org.apache.eventmesh.connector.mcp.sink.handler.McpSinkHandler;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
+import org.apache.eventmesh.common.config.connector.mcp.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -47,7 +44,7 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
     private HttpSinkConfig httpSinkConfig;
 
     @Getter
-    private HttpSinkHandler sinkHandler;
+    private McpSinkHandler sinkHandler;
 
     private ThreadPoolExecutor executor;
 
