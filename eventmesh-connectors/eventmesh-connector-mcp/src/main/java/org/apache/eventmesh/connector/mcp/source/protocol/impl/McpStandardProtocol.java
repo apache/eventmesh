@@ -15,7 +15,6 @@ import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
