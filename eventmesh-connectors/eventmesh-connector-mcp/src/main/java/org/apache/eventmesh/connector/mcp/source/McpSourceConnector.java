@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.connector.mcp.source.data.McpResponse;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.connector.mcp.source.protocol.ProtocolFactory;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -123,9 +124,9 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         this.server.listen(res -> {
             if (res.succeeded()) {
                 this.started = true;
-                log.info("HttpSourceConnector started on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                log.info("McpSourceConnector started on port: {}", this.sourceConfig.getConnectorConfig().getPort());
             } else {
-                log.error("HttpSourceConnector failed to start on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                log.error("McpSourceConnector failed to start on port: {}", this.sourceConfig.getConnectorConfig().getPort());
                 throw new EventMeshException("failed to start Vertx server", res.cause());
             }
         });
@@ -134,13 +135,13 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
     @Override
     public void commit(ConnectRecord record) {
         if (sourceConfig.getConnectorConfig().isDataConsistencyEnabled()) {
-            log.debug("HttpSourceConnector commit record: {}", record.getRecordId());
+            log.debug("McpSourceConnector commit record: {}", record.getRecordId());
             RoutingContext routingContext = (RoutingContext) record.getExtensionObj("routingContext");
             if (routingContext != null) {
                 routingContext.response()
                     .putHeader("content-type", "application/json")
                     .setStatusCode(HttpResponseStatus.OK.code())
-                    .end(CommonResponse.success().toJsonStr());
+                    .end(McpResponse.success(null, "0").toJsonStr());// todo set session and outputs
             } else {
                 log.error("Failed to commit the record, routingContext is null, recordId: {}", record.getRecordId());
             }
@@ -171,15 +172,15 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
             this.server.close(res -> {
                     if (res.succeeded()) {
                         this.destroyed = true;
-                        log.info("HttpSourceConnector stopped on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                        log.info("McpSourceConnector stopped on port: {}", this.sourceConfig.getConnectorConfig().getPort());
                     } else {
-                        log.error("HttpSourceConnector failed to stop on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                        log.error("McpSourceConnector failed to stop on port: {}", this.sourceConfig.getConnectorConfig().getPort());
                         throw new EventMeshException("failed to stop Vertx server", res.cause());
                     }
                 }
             );
         } else {
-            log.warn("HttpSourceConnector server is null, ignore.");
+            log.warn("McpSourceConnector server is null, ignore.");
         }
     }
 

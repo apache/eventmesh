@@ -16,6 +16,9 @@
  */
 
 dependencies {
+    api project(":eventmesh-openconnect:eventmesh-openconnect-java")
+    implementation project(":eventmesh-common")
+
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     implementation "io.cloudevents:cloudevents-core"
     implementation "com.google.guava:guava"
@@ -23,10 +26,22 @@ dependencies {
     implementation ("io.grpc:grpc-protobuf:1.68.0") {
         exclude group: "com.google.protobuf", module: "protobuf-java"
     }
+    implementation 'io.cloudevents:cloudevents-http-vertx:3.0.0'
+    implementation 'io.vertx:vertx-web:4.5.8'
+    implementation 'io.vertx:vertx-web-client:4.5.9'
+    implementation 'dev.failsafe:failsafe:3.3.2'
+
+
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.4'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5-fluent:5.4'
+    testImplementation 'org.mock-server:mockserver-netty:5.15.0'
+
     implementation("com.google.protobuf:protobuf-java:3.25.4")
     implementation 'io.netty:netty-common:4.1.114.Final'
     implementation 'io.netty:netty-buffer:4.1.114.Final'
     implementation 'io.netty:netty-transport:4.1.114.Final'
     implementation 'io.netty:netty-handler:4.1.114.Final'
     implementation 'io.netty:netty-codec-http:4.1.114.Final'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }

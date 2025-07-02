@@ -10,10 +10,12 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.mcp.source.data.McpRequest;
+import org.apache.eventmesh.connector.mcp.source.data.McpResponse;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class McpStandardProtocol implements Protocol {
-    public static final String PROTOCOL_NAME = "Common";
+    public static final String PROTOCOL_NAME = "Mcp";
 
     private SourceConnectorConfig sourceConnectorConfig;
 
@@ -54,10 +56,10 @@ public class McpStandardProtocol implements Protocol {
                     Object payload = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
                     payload = JsonUtils.parseObject(payload.toString(), String.class);
 
-                    // Create and store the webhook request
+                    // Create and store the mcp request
                     Map<String, String> headerMap = ctx.request().headers().entries().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                    WebhookRequest webhookRequest = new WebhookRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, payload, ctx);
+                    McpRequest webhookRequest = new McpRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, true, payload, ctx);
                     if (!queue.offer(webhookRequest)) {
                         throw new IllegalStateException("Failed to store the request.");
                     }
@@ -66,7 +68,7 @@ public class McpStandardProtocol implements Protocol {
                         // Return 200 OK
                         ctx.response()
                                 .setStatusCode(HttpResponseStatus.OK.code())
-                                .end(CommonResponse.success().toJsonStr());
+                                .end(McpResponse.success(null, "0").toJsonStr());
                     }
 
                 })
@@ -76,7 +78,7 @@ public class McpStandardProtocol implements Protocol {
                     // Return Bad Response
                     ctx.response()
                             .setStatusCode(ctx.statusCode())
-                            .end(CommonResponse.base(ctx.failure().getMessage()).toJsonStr());
+                            .end(McpResponse.base(null, "0", ctx.failure().getMessage()).toJsonStr()); // todo
                 });
 
     }
@@ -90,10 +92,9 @@ public class McpStandardProtocol implements Protocol {
     @Override
     public ConnectRecord convertToConnectRecord(Object message) {
         McpRequest request = (McpRequest) message;
-        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), request.getPayload());
+        ConnectRecord connectRecord = new ConnectRecord(null, null, System.currentTimeMillis(), request.getInputs());
         connectRecord.addExtension("source", request.getProtocolName());
-        connectRecord.addExtension("url", request.getUrl());
-        request.getHeaders().forEach((k, v) -> {
+        request.getMetadata().forEach((k, v) -> {
             if (k.equalsIgnoreCase("extension")) {
                 JsonObject extension = new JsonObject(v);
                 extension.forEach(e -> connectRecord.addExtension(e.getKey(), e.getValue()));

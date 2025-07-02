@@ -26,7 +26,7 @@ pubSubConfig:
     passWord: httpPassWord
 connectorConfig:
     connectorName: mcpSource
-    path: /mcp/message
+    path: /test
     port: 7091
     idleTimeout: 5000   # timeunit: ms
     maxFormAttributeSize: 1048576 # timeunit: byte, default: 1048576(1MB). This applies only when handling form data submissions.

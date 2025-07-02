@@ -26,7 +26,7 @@ public class McpRequest implements Serializable {
 
     private Boolean stream;
 
-    private List<Object> inputs;
+    private Object inputs;
 
     private RoutingContext routingContext;
 }
