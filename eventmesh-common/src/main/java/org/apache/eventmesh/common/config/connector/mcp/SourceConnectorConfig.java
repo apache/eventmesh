@@ -27,7 +27,7 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String path = "/mcp";
+    private String path = "/";
 
     private int port;
 

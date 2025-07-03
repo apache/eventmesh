@@ -1,5 +1,6 @@
 package org.apache.eventmesh.connector.mcp.source.protocol.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
@@ -7,7 +8,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
+import org.apache.eventmesh.common.config.connector.mcp.SourceConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.mcp.source.data.McpRequest;
 import org.apache.eventmesh.connector.mcp.source.data.McpResponse;
@@ -52,22 +53,23 @@ public class McpStandardProtocol implements Protocol {
                 .handler(BodyHandler.create())
                 .handler(ctx -> {
                     // Get the payload
-                    Object payload = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
-                    payload = JsonUtils.parseObject(payload.toString(), String.class);
+                    String jsonStr = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
+                    Map<String, Object> payloadMap = JsonUtils.parseObject(jsonStr, new TypeReference<Map<String, Object>>() {});
 
                     // Create and store the mcp request
                     Map<String, String> headerMap = ctx.request().headers().entries().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                    McpRequest webhookRequest = new McpRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, true, payload, ctx);
-                    if (!queue.offer(webhookRequest)) {
+                    McpRequest mcpRequest = new McpRequest(PROTOCOL_NAME, ctx.request().absoluteURI(), headerMap, true, payloadMap, ctx);
+                    if (!queue.offer(mcpRequest)) {
                         throw new IllegalStateException("Failed to store the request.");
                     }
 
-                    if (!sourceConnectorConfig.isDataConsistencyEnabled()) {
+                    if (sourceConnectorConfig.isDataConsistencyEnabled()) {
                         // Return 200 OK
                         ctx.response()
                                 .setStatusCode(HttpResponseStatus.OK.code())
-                                .end(McpResponse.success(null, "0").toJsonStr());
+                                .end(McpResponse.success(payloadMap.get("inputs"), (String) payloadMap.get("session_id")).toJsonStr());
+                                //.end(McpResponse.success(null, "0").toJsonStr());
                     }
 
                 })

@@ -20,11 +20,10 @@ package org.apache.eventmesh.common.config.connector.mcp;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
-import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class HttpSourceConfig extends SourceConfig {
+public class McpSourceConfig extends SourceConfig {
 
     public SourceConnectorConfig connectorConfig;
 }

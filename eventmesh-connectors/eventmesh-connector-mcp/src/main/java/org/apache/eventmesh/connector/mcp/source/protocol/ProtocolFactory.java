@@ -1,6 +1,6 @@
 package org.apache.eventmesh.connector.mcp.source.protocol;
 
-import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
+import org.apache.eventmesh.common.config.connector.mcp.SourceConnectorConfig;
 import org.apache.eventmesh.connector.mcp.source.protocol.impl.McpStandardProtocol;
 
 import java.util.Optional;

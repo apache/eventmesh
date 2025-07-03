@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
+import org.apache.eventmesh.common.config.connector.mcp.McpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.connector.mcp.source.data.McpResponse;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
@@ -48,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class McpSourceConnector implements Source, ConnectorCreateService<Source> {
 
-    private HttpSourceConfig sourceConfig;
+    private McpSourceConfig sourceConfig;
 
     private BlockingQueue<Object> queue;
 
@@ -69,7 +70,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     @Override
     public Class<? extends Config> configClass() {
-        return HttpSourceConfig.class;
+        return McpSourceConfig.class;
     }
 
     @Override
@@ -79,14 +80,14 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     @Override
     public void init(Config config) {
-        this.sourceConfig = (HttpSourceConfig) config;
+        this.sourceConfig = (McpSourceConfig) config;
         doInit();
     }
 
     @Override
     public void init(ConnectorContext connectorContext) {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
-        this.sourceConfig = (HttpSourceConfig) sourceConnectorContext.getSourceConfig();
+        this.sourceConfig = (McpSourceConfig) sourceConnectorContext.getSourceConfig();
         doInit();
     }
 

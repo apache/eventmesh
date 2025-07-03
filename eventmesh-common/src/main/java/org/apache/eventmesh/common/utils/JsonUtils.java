@@ -162,6 +162,17 @@ public class JsonUtils {
         }
     }
 
+    public static <T> T parseObject(String text, TypeReference<T> typeReference) {
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readValue(text, typeReference);
+        } catch (JsonProcessingException e) {
+            throw new JsonException("deserialize json string to object error", e);
+        }
+    }
+
     /**
      * parse json string to object.
      *
