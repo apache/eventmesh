@@ -4,6 +4,7 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.eventmesh.connector.mcp.session.MCPSession;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -17,15 +18,42 @@ import java.util.Map;
 public class McpRequest implements Serializable {
     private static final long serialVersionUID = -483500600756490500L;
 
-    private String protocolName;
-
+    private String protocol;
+    private String absoluteURI;
+    private Map<String, String> headerMap;
+    private boolean isStreaming;
+    private Map<String, Object> payloadMap;
+    private RoutingContext ctx;
     private String sessionId;
+    private String protocolVersion;
+    private MCPSession session;
 
-    private Map<String, String> metadata;
+    // 构造器，为了兼容原有代码
+    public McpRequest(String protocol, String absoluteURI, Map<String, String> headerMap,
+                      boolean isStreaming, Map<String, Object> payloadMap, RoutingContext ctx) {
+        this.protocol = protocol;
+        this.absoluteURI = absoluteURI;
+        this.headerMap = headerMap;
+        this.isStreaming = isStreaming;
+        this.payloadMap = payloadMap;
+        this.ctx = ctx;
+    }
 
-    private Boolean stream;
+    // 为了兼容原有代码，保留这些方法
+    public String getProtocolName() {
+        return protocol;
+    }
 
-    private Object inputs;
+    public Object getInputs() {
+        return payloadMap != null ? payloadMap.get("inputs") : null;
+    }
 
-    private RoutingContext routingContext;
+    public Map<String, Object> getMetadata() {
+        return payloadMap != null ? (Map<String, Object>) payloadMap.get("metadata") : null;
+    }
+
+    public RoutingContext getRoutingContext() {
+        return ctx;
+    }
 }
+
