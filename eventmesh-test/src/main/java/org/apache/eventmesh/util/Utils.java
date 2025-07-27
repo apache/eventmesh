@@ -14,7 +14,7 @@ import java.util.Properties;
 public class Utils {
 
     /**
-     * 获取本地IP地址
+     * Get local IP address
      *
      * @throws SocketException
      */
@@ -27,7 +27,7 @@ public class Utils {
     }
 
     /**
-     * 判断操作系统是否是Windows
+     * Determine whether the operating system is Windows
      *
      * @return
      */
@@ -42,9 +42,9 @@ public class Utils {
     }
 
     /**
-     * 获取Linux下的IP地址
+     * Get local IP address under Linux system
      *
-     * @return IP地址
+     * @return IP address
      * @throws SocketException
      */
     private static String getLinuxLocalIp() throws SocketException {

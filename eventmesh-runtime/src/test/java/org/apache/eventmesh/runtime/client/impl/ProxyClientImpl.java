@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package client.impl;
+package org.apache.eventmesh.runtime.client.impl;
 
+<<<<<<<< HEAD:eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/impl/ProxyClientImpl.java
 import client.ProxyClient;
 import client.PubClient;
 import client.SubClient;
@@ -24,6 +25,18 @@ import client.common.UserAgentUtils;
 import client.hook.ReceiveMsgHook;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+========
+import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+
+import org.apache.eventmesh.runtime.client.api.EventMeshClient;
+import org.apache.eventmesh.runtime.client.api.PubClient;
+import org.apache.eventmesh.runtime.client.api.SubClient;
+import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+>>>>>>>> c12ebebc1 ([ISSUE #442] Fix findings filtered by Checkstyle workflow (#443)):eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/impl/EventMeshClientImpl.java
 
 public class ProxyClientImpl implements ProxyClient {
     protected UserAgent agent;
@@ -75,14 +88,18 @@ public class ProxyClientImpl implements ProxyClient {
         this.subClient.heartbeat();
     }
 
+<<<<<<<< HEAD:eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/impl/ProxyClientImpl.java
     public Package justSubscribe(String serviceId, String scenario, String dcn) throws Exception {
         return this.subClient.justSubscribe(serviceId, scenario, dcn);
     }
 
+========
+>>>>>>>> c12ebebc1 ([ISSUE #442] Fix findings filtered by Checkstyle workflow (#443)):eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/impl/EventMeshClientImpl.java
     public Package listen() throws Exception {
         return this.subClient.listen();
     }
 
+<<<<<<<< HEAD:eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/impl/ProxyClientImpl.java
     public Package justUnsubscribe(String serviceId, String scenario, String dcn) throws Exception {
         return this.subClient.justUnsubscribe(serviceId, scenario, dcn);
     }
@@ -95,8 +112,19 @@ public class ProxyClientImpl implements ProxyClient {
     @Override
     public Package justUnsubscribe(String topic) throws Exception {
         return this.subClient.justUnsubscribe(topic);
+========
+    @Override
+    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode,
+        SubcriptionType subcriptionType) throws Exception {
+        return this.subClient.justSubscribe(topic, subscriptionMode, subcriptionType);
     }
 
+    @Override
+    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
+        SubcriptionType subcriptionType) throws Exception {
+        return this.subClient.justUnsubscribe(topic, subscriptionMode, subcriptionType);
+>>>>>>>> c12ebebc1 ([ISSUE #442] Fix findings filtered by Checkstyle workflow (#443)):eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/impl/EventMeshClientImpl.java
+    }
 
     public void registerSubBusiHandler(ReceiveMsgHook handler) throws Exception {
         this.subClient.registerBusiHandler(handler);
@@ -109,10 +137,10 @@ public class ProxyClientImpl implements ProxyClient {
     @Override
     public String toString() {
         return "AccessClientImpl{" +
-                "accessHost='" + accessHost + '\'' +
-                ", accessPort=" + accessPort +
-                ", agent=" + agent +
-                '}';
+            "accessHost='" + accessHost + '\'' +
+            ", accessPort=" + accessPort +
+            ", agent=" + agent +
+            '}';
     }
 
     @Deprecated
