@@ -18,6 +18,7 @@
 package cn.webank.eventmesh.client.tcp.impl;
 
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/impl/DefaultWemqAccessClient.java
 import cn.webank.eventmesh.client.tcp.SimplePubClient;
 import cn.webank.eventmesh.client.tcp.SimpleSubClient;
 import cn.webank.eventmesh.client.tcp.WemqAccessClient;
@@ -32,6 +33,18 @@ import cn.webank.eventmesh.common.protocol.tcp.Package;
  * C 客户端的模拟器
  */
 public class DefaultWemqAccessClient implements WemqAccessClient {
+========
+import com.webank.eventmesh.client.tcp.SimplePubClient;
+import com.webank.eventmesh.client.tcp.SimpleSubClient;
+import com.webank.eventmesh.client.tcp.EventMeshClient;
+import com.webank.eventmesh.client.tcp.common.AsyncRRCallback;
+import com.webank.eventmesh.client.tcp.common.MessageUtils;
+import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+
+public class DefaultEventMeshClient implements EventMeshClient {
+>>>>>>>> 4ed546fd7 ([ISSUE #265]rename wemq and access to eventmesh):eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/impl/DefaultEventMeshClient.java
     protected UserAgent agent;
     private String accessHost;
     private int accessPort;
@@ -39,7 +52,7 @@ public class DefaultWemqAccessClient implements WemqAccessClient {
     private SimplePubClient pubClient;
     private SimpleSubClient subClient;
 
-    public DefaultWemqAccessClient(String accessHost, int accessPort, UserAgent agent) {
+    public DefaultEventMeshClient(String accessHost, int accessPort, UserAgent agent) {
         this.accessHost = accessHost;
         this.accessPort = accessPort;
         this.agent = agent;
@@ -123,7 +136,7 @@ public class DefaultWemqAccessClient implements WemqAccessClient {
 
     @Override
     public String toString() {
-        return "DefaultWemqAccessClient{" +
+        return "DefaultEventMeshClient{" +
                 "accessHost='" + accessHost + '\'' +
                 ", accessPort=" + accessPort +
                 ", agent=" + agent +

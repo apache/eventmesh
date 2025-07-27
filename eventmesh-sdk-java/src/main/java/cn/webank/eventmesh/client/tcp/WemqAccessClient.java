@@ -21,7 +21,7 @@ import cn.webank.eventmesh.client.tcp.common.AsyncRRCallback;
 import cn.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 
-public interface WemqAccessClient {
+public interface EventMeshClient {
 
     Package rr(Package msg, long timeout) throws Exception;
 
