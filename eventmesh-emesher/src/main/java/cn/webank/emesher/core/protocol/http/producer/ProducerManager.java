@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/producer/ProducerManager.java
 package cn.webank.emesher.core.protocol.http.producer;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
 import cn.webank.emesher.core.consumergroup.ProducerGroupConf;
+========
+package com.webank.runtime.core.protocol.http.producer;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.core.consumergroup.ProducerGroupConf;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/producer/ProducerManager.java
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

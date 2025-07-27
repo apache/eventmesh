@@ -15,9 +15,15 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/session/SessionContext.java
 package cn.webank.emesher.core.protocol.tcp.client.session;
 
 import cn.webank.emesher.constants.ProxyConstants;
+========
+package com.webank.runtime.core.protocol.tcp.client.session;
+
+import com.webank.runtime.constants.ProxyConstants;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/session/SessionContext.java
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.concurrent.ConcurrentHashMap;

@@ -15,9 +15,15 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/metrics/http/TopicMetrics.java
 package cn.webank.emesher.metrics.http;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
+========
+package com.webank.runtime.metrics.http;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/metrics/http/TopicMetrics.java
 import com.codahale.metrics.MetricRegistry;
 
 public class TopicMetrics {

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/util/ProxyUtil.java
 package cn.webank.emesher.util;
 
 
@@ -23,6 +24,16 @@ import cn.webank.emesher.constants.ProxyVersion;
 import cn.webank.eventmesh.common.ThreadUtil;
 import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+========
+package com.webank.runtime.util;
+
+
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.constants.ProxyVersion;
+import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/util/ProxyUtil.java
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

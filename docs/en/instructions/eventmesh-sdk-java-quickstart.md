@@ -1,6 +1,6 @@
 ## How to run eventmesh-sdk-java demo
 
-> Eventmesh-sdk-java , as the client, communicated with eventmesh-emesher, used to complete the sending and receiving of message.  
+> Eventmesh-sdk-java , as the client, communicated with eventmesh-runtime, used to complete the sending and receiving of message.  
 >
 > Eventmesh-sdk-java supports sync msg, async msg and broadcast msg. Sync msg means the producer sends msg which need the consumer supplies the response msg, Async msg means the producer just sends msg and does not care reply msg.Broadcast msg means the producer send msg once and all the consumer subscribed the broadcast topic will receive the msg. 
 >

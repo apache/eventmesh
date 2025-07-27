@@ -15,12 +15,21 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/task/MessageAckTask.java
 package cn.webank.emesher.core.protocol.tcp.client.task;
 
 import cn.webank.emesher.boot.ProxyTCPServer;
 import cn.webank.emesher.core.protocol.tcp.client.session.push.ClientAckContext;
 import cn.webank.eventmesh.common.protocol.tcp.Command;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
+========
+package com.webank.runtime.core.protocol.tcp.client.task;
+
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/task/MessageAckTask.java
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

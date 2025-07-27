@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/processor/SendSyncMessageProcessor.java
 package cn.webank.emesher.core.protocol.http.processor;
 
 import cn.webank.defibus.client.impl.producer.RRCallback;
@@ -37,6 +38,30 @@ import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import cn.webank.emesher.util.ProxyUtil;
+========
+package com.webank.runtime.core.protocol.http.processor;
+
+import com.webank.defibus.client.impl.producer.RRCallback;
+import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.runtime.core.protocol.http.async.CompleteHandler;
+import com.webank.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import com.webank.runtime.core.protocol.http.producer.ProxyProducer;
+import com.webank.runtime.core.protocol.http.producer.SendMessageContext;
+import com.webank.eventmesh.common.Constants;
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.LiteMessage;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
+import com.webank.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/processor/SendSyncMessageProcessor.java
 import com.alibaba.fastjson.JSON;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;

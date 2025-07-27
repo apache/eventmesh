@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/group/ClientGroupWrapper.java
 package cn.webank.emesher.core.protocol.tcp.client.group;
+========
+package com.webank.runtime.core.protocol.tcp.client.group;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/group/ClientGroupWrapper.java
 
 import cn.webank.defibus.client.common.DeFiBusClientConfig;
 import cn.webank.defibus.client.impl.producer.RRCallback;
@@ -32,6 +36,26 @@ import cn.webank.emesher.core.protocol.tcp.client.session.send.UpStreamMsgContex
 import cn.webank.emesher.metrics.tcp.ProxyTcpMonitor;
 import cn.webank.emesher.util.ProxyUtil;
 import com.alibaba.fastjson.JSON;
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/group/ClientGroupWrapper.java
+========
+import com.webank.defibus.client.common.DeFiBusClientConfig;
+import com.webank.defibus.client.impl.producer.RRCallback;
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.runtime.configuration.AccessConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.plugin.MQConsumerWrapper;
+import com.webank.runtime.core.plugin.MQProducerWrapper;
+import com.webank.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
+import com.webank.runtime.core.protocol.tcp.client.session.Session;
+import com.webank.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
+import com.webank.runtime.core.protocol.tcp.client.session.push.retry.ProxyTcpRetryer;
+import com.webank.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
+import com.webank.runtime.metrics.tcp.ProxyTcpMonitor;
+import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.runtime.patch.ProxyConsumeConcurrentlyStatus;
+import com.webank.runtime.patch.ProxyMessageListenerConcurrently;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/group/ClientGroupWrapper.java
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;

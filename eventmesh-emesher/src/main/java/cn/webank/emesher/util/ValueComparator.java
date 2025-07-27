@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/util/ValueComparator.java
 package cn.webank.emesher.util;
+========
+package com.webank.runtime.util;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/util/ValueComparator.java
 
 import java.util.Comparator;
 import java.util.Map;

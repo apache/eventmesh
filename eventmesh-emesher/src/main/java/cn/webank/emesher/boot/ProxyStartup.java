@@ -15,12 +15,21 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/ProxyStartup.java
 package cn.webank.emesher.boot;
 
 import cn.webank.emesher.configuration.AccessConfiguration;
 import cn.webank.emesher.configuration.ConfigurationWraper;
 import cn.webank.emesher.configuration.ProxyConfiguration;
 import cn.webank.emesher.constants.ProxyConstants;
+========
+package com.webank.runtime.boot;
+
+import com.webank.runtime.configuration.AccessConfiguration;
+import com.webank.runtime.configuration.ConfigurationWraper;
+import com.webank.runtime.configuration.ProxyConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/ProxyStartup.java
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

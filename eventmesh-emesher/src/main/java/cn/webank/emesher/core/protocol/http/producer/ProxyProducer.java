@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/producer/ProxyProducer.java
 package cn.webank.emesher.core.protocol.http.producer;
 
 import cn.webank.defibus.client.common.DeFiBusClientConfig;
@@ -26,6 +27,15 @@ import cn.webank.emesher.core.consumergroup.ProducerGroupConf;
 import cn.webank.eventmesh.common.ThreadUtil;
 import cn.webank.emesher.util.ProxyUtil;
 import org.apache.commons.lang3.StringUtils;
+========
+package com.webank.runtime.core.protocol.http.producer;
+
+import com.webank.defibus.client.impl.producer.RRCallback;
+import com.webank.runtime.configuration.ProxyConfiguration;
+import com.webank.runtime.core.consumergroup.ProducerGroupConf;
+import com.webank.runtime.core.plugin.MQProducerWrapper;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/producer/ProxyProducer.java
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.SendCallback;

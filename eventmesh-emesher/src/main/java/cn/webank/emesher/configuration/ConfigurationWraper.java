@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/configuration/ConfigurationWraper.java
 package cn.webank.emesher.configuration;
+========
+package com.webank.runtime.configuration;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/configuration/ConfigurationWraper.java
 
 import cn.webank.eventmesh.common.ThreadPoolFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +53,7 @@ public class ConfigurationWraper {
     }
 
     private void init() {
-        load();
+//        load();
         if (this.reload) {
             configLoader.scheduleAtFixedRate(new Runnable() {
                 @Override

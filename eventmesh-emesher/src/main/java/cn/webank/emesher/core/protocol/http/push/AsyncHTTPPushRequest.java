@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/push/AsyncHTTPPushRequest.java
 package cn.webank.emesher.core.protocol.http.push;
 
 import cn.webank.emesher.constants.ProxyConstants;
@@ -27,6 +28,20 @@ import cn.webank.eventmesh.common.protocol.http.common.ProtocolKey;
 import cn.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
 import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.emesher.util.ProxyUtil;
+========
+package com.webank.runtime.core.protocol.http.push;
+
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.consumer.HandleMsgContext;
+import com.webank.eventmesh.common.Constants;
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
+import com.webank.eventmesh.common.protocol.http.common.ClientRetCode;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/push/AsyncHTTPPushRequest.java
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;

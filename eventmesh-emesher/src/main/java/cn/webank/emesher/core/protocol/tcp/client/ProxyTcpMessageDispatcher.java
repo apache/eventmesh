@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/ProxyTcpMessageDispatcher.java
 package cn.webank.emesher.core.protocol.tcp.client;
 
 import cn.webank.emesher.boot.ProxyTCPServer;
@@ -31,6 +32,24 @@ import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
 import cn.webank.eventmesh.common.protocol.tcp.Command;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.emesher.util.ProxyUtil;
+========
+package com.webank.runtime.core.protocol.tcp.client;
+
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.runtime.core.protocol.tcp.client.session.SessionState;
+import com.webank.runtime.core.protocol.tcp.client.task.GoodbyeTask;
+import com.webank.runtime.core.protocol.tcp.client.task.HeartBeatTask;
+import com.webank.runtime.core.protocol.tcp.client.task.HelloTask;
+import com.webank.runtime.core.protocol.tcp.client.task.ListenTask;
+import com.webank.runtime.core.protocol.tcp.client.task.MessageAckTask;
+import com.webank.runtime.core.protocol.tcp.client.task.MessageTransferTask;
+import com.webank.runtime.core.protocol.tcp.client.task.SubscribeTask;
+import com.webank.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/ProxyTcpMessageDispatcher.java
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;

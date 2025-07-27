@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/constants/ProxyVersion.java
 package cn.webank.emesher.constants;
+========
+package com.webank.runtime.constants;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/constants/ProxyVersion.java
 
 public class ProxyVersion {
 

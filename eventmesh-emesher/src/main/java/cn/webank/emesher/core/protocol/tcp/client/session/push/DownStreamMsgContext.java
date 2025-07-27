@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/session/push/DownStreamMsgContext.java
 package cn.webank.emesher.core.protocol.tcp.client.session.push;
 
 import cn.webank.defibus.common.DeFiBusConstant;
@@ -26,6 +27,17 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyContext;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
+========
+package com.webank.runtime.core.protocol.tcp.client.session.push;
+
+import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.plugin.MQConsumerWrapper;
+import com.webank.runtime.core.protocol.tcp.client.session.Session;
+import com.webank.runtime.util.ServerGlobal;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/session/push/DownStreamMsgContext.java
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

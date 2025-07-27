@@ -16,7 +16,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/util/ServerGlobal.java
 package cn.webank.emesher.util;
+========
+package com.webank.runtime.util;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/util/ServerGlobal.java
 
 import java.util.concurrent.atomic.AtomicLong;
 

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/admin/controller/ClientManageController.java
 package cn.webank.emesher.admin.controller;
 
 import cn.webank.emesher.boot.ProxyTCPServer;
@@ -27,6 +28,20 @@ import cn.webank.emesher.core.protocol.tcp.client.session.Session;
 import cn.webank.emesher.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
 import cn.webank.emesher.util.ProxyUtil;
+========
+package com.webank.runtime.admin.controller;
+
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.tcp.client.ProxyTcp2Client;
+import com.webank.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
+import com.webank.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
+import com.webank.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
+import com.webank.runtime.core.protocol.tcp.client.session.Session;
+import com.webank.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
+import com.webank.runtime.util.ProxyUtil;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/admin/controller/ClientManageController.java
 import com.alibaba.fastjson.JSON;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;

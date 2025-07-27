@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/group/dispatch/DownstreamDispatchStrategy.java
 package cn.webank.emesher.core.protocol.tcp.client.group.dispatch;
 
 
 import cn.webank.emesher.core.protocol.tcp.client.session.Session;
+========
+package com.webank.runtime.core.protocol.tcp.client.group.dispatch;
+
+
+import com.webank.runtime.core.protocol.tcp.client.session.Session;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/group/dispatch/DownstreamDispatchStrategy.java
 
 import java.util.Set;
 

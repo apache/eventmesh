@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/processor/inf/HttpRequestProcessor.java
 package cn.webank.emesher.core.protocol.http.processor.inf;
 
 import cn.webank.emesher.core.protocol.http.async.AsyncContext;
 import cn.webank.eventmesh.common.command.HttpCommand;
+========
+package com.webank.runtime.core.protocol.http.processor.inf;
+
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.eventmesh.common.command.HttpCommand;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/processor/inf/HttpRequestProcessor.java
 import io.netty.channel.ChannelHandlerContext;
 
 public interface HttpRequestProcessor {

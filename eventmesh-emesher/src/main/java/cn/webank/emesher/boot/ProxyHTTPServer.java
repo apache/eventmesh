@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/ProxyHTTPServer.java
 package cn.webank.emesher.boot;
+========
+package com.webank.runtime.boot;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/ProxyHTTPServer.java
 
 import cn.webank.emesher.common.ServiceState;
 import cn.webank.emesher.configuration.ProxyConfiguration;
@@ -35,6 +39,19 @@ import cn.webank.eventmesh.common.ThreadPoolFactory;
 import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.emesher.metrics.http.HTTPMetricsServer;
 import com.google.common.eventbus.EventBus;
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/ProxyHTTPServer.java
+========
+import com.webank.runtime.common.ServiceState;
+import com.webank.runtime.configuration.ProxyConfiguration;
+import com.webank.runtime.core.protocol.http.consumer.ConsumerManager;
+import com.webank.runtime.core.protocol.http.processor.*;
+import com.webank.runtime.core.protocol.http.producer.ProducerManager;
+import com.webank.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
+import com.webank.runtime.core.protocol.http.retry.HttpRetryer;
+import com.webank.runtime.metrics.http.HTTPMetricsServer;
+import com.webank.eventmesh.common.ThreadPoolFactory;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/ProxyHTTPServer.java
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

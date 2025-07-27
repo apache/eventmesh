@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/task/HelloTask.java
 package cn.webank.emesher.core.protocol.tcp.client.task;
 
 import cn.webank.emesher.boot.ProxyTCPServer;
@@ -26,6 +27,19 @@ import cn.webank.eventmesh.common.protocol.tcp.OPStatus;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
 import cn.webank.emesher.util.Utils;
+========
+package com.webank.runtime.core.protocol.tcp.client.task;
+
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.runtime.common.ServiceState;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.tcp.client.session.Session;
+import com.webank.eventmesh.common.protocol.tcp.Header;
+import com.webank.eventmesh.common.protocol.tcp.OPStatus;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.runtime.util.Utils;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/task/HelloTask.java
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;

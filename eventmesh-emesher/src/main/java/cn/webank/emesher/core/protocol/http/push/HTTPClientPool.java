@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/push/HTTPClientPool.java
 package cn.webank.emesher.core.protocol.http.push;
+========
+package com.webank.runtime.core.protocol.http.push;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/push/HTTPClientPool.java
 
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;

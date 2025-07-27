@@ -15,12 +15,21 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/processor/AdminMetricsProcessor.java
 package cn.webank.emesher.core.protocol.http.processor;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
 import cn.webank.emesher.core.protocol.http.async.AsyncContext;
 import cn.webank.emesher.core.protocol.http.processor.inf.HttpRequestProcessor;
 import cn.webank.eventmesh.common.command.HttpCommand;
+========
+package com.webank.runtime.core.protocol.http.processor;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import com.webank.eventmesh.common.command.HttpCommand;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/processor/AdminMetricsProcessor.java
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

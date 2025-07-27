@@ -15,12 +15,21 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/consumer/ConsumerManager.java
 package cn.webank.emesher.core.protocol.http.consumer;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
 import cn.webank.emesher.core.consumergroup.ConsumerGroupConf;
 import cn.webank.emesher.core.consumergroup.event.ConsumerGroupStateEvent;
 import cn.webank.emesher.core.consumergroup.event.ConsumerGroupTopicConfChangeEvent;
+========
+package com.webank.runtime.core.protocol.http.consumer;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.core.consumergroup.ConsumerGroupConf;
+import com.webank.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
+import com.webank.runtime.core.consumergroup.event.ConsumerGroupTopicConfChangeEvent;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/consumer/ConsumerManager.java
 import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

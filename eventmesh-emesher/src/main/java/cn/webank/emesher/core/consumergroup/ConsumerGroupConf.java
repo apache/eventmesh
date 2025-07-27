@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/consumergroup/ConsumerGroupConf.java
 package cn.webank.emesher.core.consumergroup;
+========
+package com.webank.runtime.core.consumergroup;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/consumergroup/ConsumerGroupConf.java
 
 import com.google.common.collect.Maps;
 

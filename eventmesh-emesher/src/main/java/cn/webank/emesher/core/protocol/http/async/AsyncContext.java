@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/async/AsyncContext.java
 package cn.webank.emesher.core.protocol.http.async;
+========
+package com.webank.runtime.core.protocol.http.async;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/async/AsyncContext.java
 
 import com.google.common.base.Preconditions;
 

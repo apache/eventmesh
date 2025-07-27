@@ -15,9 +15,15 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/retry/HttpRetryer.java
 package cn.webank.emesher.core.protocol.http.retry;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
+========
+package com.webank.runtime.core.protocol.http.retry;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/retry/HttpRetryer.java
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

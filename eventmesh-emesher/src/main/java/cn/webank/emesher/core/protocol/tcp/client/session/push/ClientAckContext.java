@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/session/push/ClientAckContext.java
 package cn.webank.emesher.core.protocol.tcp.client.session.push;
 
 import cn.webank.defibus.common.DeFiBusConstant;
@@ -24,6 +25,18 @@ import cn.webank.emesher.util.ProxyUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyContext;
+========
+package com.webank.runtime.core.protocol.tcp.client.session.push;
+
+import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.defibus.consumer.DeFiBusPushConsumer;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.plugin.MQConsumerWrapper;
+import com.webank.runtime.util.ProxyUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/session/push/ClientAckContext.java
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
 import org.apache.rocketmq.common.message.MessageExt;

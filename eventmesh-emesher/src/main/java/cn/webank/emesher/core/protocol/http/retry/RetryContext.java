@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/retry/RetryContext.java
 package cn.webank.emesher.core.protocol.http.retry;
+========
+package com.webank.runtime.core.protocol.http.retry;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/retry/RetryContext.java
 
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;

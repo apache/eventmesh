@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/processor/BatchSendMessageProcessor.java
 package cn.webank.emesher.core.protocol.http.processor;
 
 import cn.webank.defibus.common.DeFiBusConstant;
@@ -33,6 +34,26 @@ import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
 import cn.webank.emesher.util.ProxyUtil;
+========
+package com.webank.runtime.core.protocol.http.processor;
+
+import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import com.webank.runtime.core.protocol.http.producer.ProxyProducer;
+import com.webank.runtime.core.protocol.http.producer.SendMessageContext;
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchResponseBody;
+import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
+import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/processor/BatchSendMessageProcessor.java
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

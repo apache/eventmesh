@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/metrics/MonitorMetricConstants.java
 package cn.webank.emesher.metrics;
+========
+package com.webank.runtime.metrics;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/metrics/MonitorMetricConstants.java
 
 public class MonitorMetricConstants {
     public static final String PROXY_MONITOR_FORMAT_COMMON = "{\"protocol\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";

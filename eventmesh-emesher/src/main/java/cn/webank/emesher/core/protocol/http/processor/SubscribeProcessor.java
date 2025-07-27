@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/processor/SubscribeProcessor.java
 package cn.webank.emesher.core.protocol.http.processor;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
@@ -24,6 +25,17 @@ import cn.webank.emesher.core.protocol.http.processor.inf.HttpRequestProcessor;
 import cn.webank.eventmesh.common.IPUtil;
 import cn.webank.eventmesh.common.command.HttpCommand;
 import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
+========
+package com.webank.runtime.core.protocol.http.processor;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/processor/SubscribeProcessor.java
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;

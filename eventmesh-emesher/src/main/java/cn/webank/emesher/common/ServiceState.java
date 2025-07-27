@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/common/ServiceState.java
 package cn.webank.emesher.common;
+========
+package com.webank.runtime.common;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/common/ServiceState.java
 
 public enum ServiceState {
 

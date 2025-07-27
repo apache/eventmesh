@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/common/Pair.java
 package cn.webank.emesher.common;
+========
+package com.webank.runtime.common;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/common/Pair.java
 
 public class Pair<T1, T2> {
     private T1 object1;

@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/push/HTTPMessageHandler.java
 package cn.webank.emesher.core.protocol.http.push;
 
 import cn.webank.emesher.core.protocol.http.consumer.HandleMsgContext;
 import cn.webank.emesher.core.protocol.http.consumer.ProxyConsumer;
 import cn.webank.eventmesh.common.ThreadPoolFactory;
+========
+package com.webank.runtime.core.protocol.http.push;
+
+import com.webank.runtime.core.protocol.http.consumer.HandleMsgContext;
+import com.webank.runtime.core.protocol.http.consumer.ProxyConsumer;
+import com.webank.eventmesh.common.ThreadPoolFactory;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/push/HTTPMessageHandler.java
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.MapUtils;

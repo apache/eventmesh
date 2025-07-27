@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/configuration/ProxyConfiguration.java
 package cn.webank.emesher.configuration;
+========
+package com.webank.runtime.configuration;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/configuration/ProxyConfiguration.java
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.RateLimiter;

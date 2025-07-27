@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/AbrstractHTTPServer.java
 package cn.webank.emesher.boot;
+========
+package com.webank.runtime.boot;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/AbrstractHTTPServer.java
 
 import cn.webank.emesher.common.Pair;
 import cn.webank.emesher.constants.ProxyConstants;
@@ -32,6 +36,23 @@ import cn.webank.eventmesh.common.protocol.http.header.Header;
 import cn.webank.emesher.metrics.http.HTTPMetricsServer;
 import cn.webank.emesher.util.ProxyUtil;
 import com.google.common.base.Preconditions;
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/AbrstractHTTPServer.java
+========
+import com.webank.runtime.common.Pair;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import com.webank.runtime.metrics.http.HTTPMetricsServer;
+import com.webank.runtime.util.ProxyUtil;
+import com.webank.eventmesh.common.ThreadPoolFactory;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.body.Body;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
+import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.header.Header;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/AbrstractHTTPServer.java
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;

@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/consumergroup/event/ConsumerGroupInstanceChangeEvent.java
 package cn.webank.emesher.core.consumergroup.event;
+========
+package com.webank.runtime.core.consumergroup.event;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/consumergroup/event/ConsumerGroupInstanceChangeEvent.java
 
 public class ConsumerGroupInstanceChangeEvent {
 }

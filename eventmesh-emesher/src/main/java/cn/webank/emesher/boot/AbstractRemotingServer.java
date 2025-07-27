@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/AbstractRemotingServer.java
 package cn.webank.emesher.boot;
+========
+package com.webank.runtime.boot;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/AbstractRemotingServer.java
 
 import cn.webank.eventmesh.common.ThreadUtil;
 import io.netty.channel.EventLoopGroup;

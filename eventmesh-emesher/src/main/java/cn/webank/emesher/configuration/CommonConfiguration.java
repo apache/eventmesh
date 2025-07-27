@@ -15,9 +15,16 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/configuration/CommonConfiguration.java
 package cn.webank.emesher.configuration;
 
 import com.google.common.base.Preconditions;
+========
+package com.webank.runtime.configuration;
+
+import com.google.common.base.Preconditions;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/configuration/CommonConfiguration.java
 import org.apache.commons.lang3.StringUtils;
 
 public class CommonConfiguration {

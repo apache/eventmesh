@@ -15,11 +15,21 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/boot/ProxyServer.java
 package cn.webank.emesher.boot;
 
 import cn.webank.emesher.common.ServiceState;
 import cn.webank.emesher.configuration.AccessConfiguration;
 import cn.webank.emesher.configuration.ProxyConfiguration;
+========
+package com.webank.runtime.boot;
+
+import com.webank.runtime.common.ServiceState;
+import com.webank.runtime.configuration.AccessConfiguration;
+import com.webank.runtime.configuration.ProxyConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/boot/ProxyServer.java
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

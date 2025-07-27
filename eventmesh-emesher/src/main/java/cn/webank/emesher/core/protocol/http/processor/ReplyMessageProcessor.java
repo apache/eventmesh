@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/processor/ReplyMessageProcessor.java
 package cn.webank.emesher.core.protocol.http.processor;
 
 import cn.webank.defibus.common.DeFiBusConstant;
@@ -36,6 +37,29 @@ import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.ReplyMessageResponseHeader;
 import cn.webank.emesher.util.ProxyUtil;
+========
+package com.webank.runtime.core.protocol.http.processor;
+
+import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.runtime.core.protocol.http.async.CompleteHandler;
+import com.webank.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import com.webank.runtime.core.protocol.http.producer.ProxyProducer;
+import com.webank.runtime.core.protocol.http.producer.SendMessageContext;
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.LiteMessage;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.message.ReplyMessageResponseBody;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
+import com.webank.eventmesh.common.protocol.http.header.message.ReplyMessageResponseHeader;
+import com.webank.runtime.util.ProxyUtil;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/processor/ReplyMessageProcessor.java
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;

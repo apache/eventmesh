@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/session/SessionState.java
 package cn.webank.emesher.core.protocol.tcp.client.session;
+========
+package com.webank.runtime.core.protocol.tcp.client.session;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/session/SessionState.java
 
 public enum SessionState {
     CREATED,

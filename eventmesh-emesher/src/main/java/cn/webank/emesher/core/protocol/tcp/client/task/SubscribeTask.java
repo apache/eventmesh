@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/tcp/client/task/SubscribeTask.java
 package cn.webank.emesher.core.protocol.tcp.client.task;
 
 import cn.webank.emesher.boot.ProxyTCPServer;
@@ -25,6 +26,18 @@ import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.eventmesh.common.protocol.tcp.Subscription;
 import cn.webank.emesher.util.ProxyUtil;
 import cn.webank.emesher.util.Utils;
+========
+package com.webank.runtime.core.protocol.tcp.client.task;
+
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.Header;
+import com.webank.eventmesh.common.protocol.tcp.OPStatus;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.Subscription;
+import com.webank.runtime.util.ProxyUtil;
+import com.webank.runtime.util.Utils;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/tcp/client/task/SubscribeTask.java
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

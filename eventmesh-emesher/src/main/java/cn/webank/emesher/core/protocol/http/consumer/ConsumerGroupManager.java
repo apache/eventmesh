@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/consumer/ConsumerGroupManager.java
 package cn.webank.emesher.core.protocol.http.consumer;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
 import cn.webank.emesher.core.consumergroup.ConsumerGroupConf;
+========
+package com.webank.runtime.core.protocol.http.consumer;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.core.consumergroup.ConsumerGroupConf;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/consumer/ConsumerGroupManager.java
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/producer/SendMessageContext.java
 package cn.webank.emesher.core.protocol.http.producer;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
 import cn.webank.emesher.core.protocol.http.retry.RetryContext;
 import cn.webank.eventmesh.common.Constants;
+========
+package com.webank.runtime.core.protocol.http.producer;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.core.protocol.http.retry.RetryContext;
+import com.webank.eventmesh.common.Constants;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/producer/SendMessageContext.java
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;

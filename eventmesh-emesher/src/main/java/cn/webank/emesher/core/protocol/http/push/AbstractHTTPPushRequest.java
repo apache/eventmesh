@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-emesher/src/main/java/cn/webank/emesher/core/protocol/http/push/AbstractHTTPPushRequest.java
 package cn.webank.emesher.core.protocol.http.push;
 
 import cn.webank.emesher.boot.ProxyHTTPServer;
@@ -23,6 +24,16 @@ import cn.webank.emesher.constants.ProxyConstants;
 import cn.webank.emesher.core.protocol.http.consumer.HandleMsgContext;
 import cn.webank.emesher.core.protocol.http.retry.HttpRetryer;
 import cn.webank.emesher.core.protocol.http.retry.RetryContext;
+========
+package com.webank.runtime.core.protocol.http.push;
+
+import com.webank.runtime.boot.ProxyHTTPServer;
+import com.webank.runtime.configuration.ProxyConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.http.consumer.HandleMsgContext;
+import com.webank.runtime.core.protocol.http.retry.HttpRetryer;
+import com.webank.runtime.core.protocol.http.retry.RetryContext;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/core/protocol/http/push/AbstractHTTPPushRequest.java
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
