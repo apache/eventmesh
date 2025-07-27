@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/conf/LiteClientConfig.java
 package cn.webank.eventmesh.client.http.conf;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
+========
+package org.apache.eventmesh.client.http.conf;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/conf/LiteClientConfig.java
 
 public class LiteClientConfig {
 

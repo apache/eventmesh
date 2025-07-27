@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/producer/RRCallback.java
 package cn.webank.eventmesh.client.http.producer;
+========
+package org.apache.eventmesh.client.http.producer;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/producer/RRCallback.java
 
 
 import cn.webank.eventmesh.common.LiteMessage;

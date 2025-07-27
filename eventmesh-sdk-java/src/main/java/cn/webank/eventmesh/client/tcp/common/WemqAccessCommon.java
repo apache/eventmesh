@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/common/WemqAccessCommon.java
 package cn.webank.eventmesh.client.tcp.common;
+========
+package org.apache.eventmesh.client.tcp.common;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/tcp/common/EventMeshCommon.java
 
 <<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/common/WemqAccessCommon.java
 /**

@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/http/RequestParam.java
 package cn.webank.eventmesh.client.http.http;
+========
+package org.apache.eventmesh.client.http.http;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/http/RequestParam.java
 
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;

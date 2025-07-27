@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/consumer/HandleResult.java
 package cn.webank.eventmesh.client.http.consumer;
+========
+package org.apache.eventmesh.client.http.consumer;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/consumer/HandleResult.java
 
 public enum HandleResult {
     OK,

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/impl/DefaultWemqAccessClient.java
 package cn.webank.eventmesh.client.tcp.impl;
 
 
@@ -40,6 +41,17 @@ import com.webank.eventmesh.client.tcp.EventMeshClient;
 import com.webank.eventmesh.client.tcp.common.AsyncRRCallback;
 import com.webank.eventmesh.client.tcp.common.MessageUtils;
 import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
+========
+package org.apache.eventmesh.client.tcp.impl;
+
+
+import org.apache.eventmesh.client.tcp.SimplePubClient;
+import org.apache.eventmesh.client.tcp.SimpleSubClient;
+import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/tcp/impl/DefaultEventMeshClient.java
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 

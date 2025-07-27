@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/producer/LiteProducer.java
 package cn.webank.eventmesh.client.http.producer;
 
 import cn.webank.eventmesh.client.http.AbstractLiteClient;
@@ -31,6 +32,25 @@ import cn.webank.eventmesh.common.protocol.http.common.ProtocolKey;
 import cn.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
 import cn.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
+========
+package org.apache.eventmesh.client.http.producer;
+
+import org.apache.eventmesh.client.http.AbstractLiteClient;
+import org.apache.eventmesh.client.http.EventMeshRetObj;
+import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.http.HttpUtil;
+import org.apache.eventmesh.client.http.http.RequestParam;
+import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
+import com.webank.eventmesh.common.Constants;
+import com.webank.eventmesh.common.LiteMessage;
+import com.webank.eventmesh.common.EventMeshException;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/producer/LiteProducer.java
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.HttpMethod;

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/producer/RRCallbackResponseHandlerAdapter.java
 package cn.webank.eventmesh.client.http.producer;
 
 import cn.webank.eventmesh.client.http.ProxyRetObj;
@@ -23,6 +24,16 @@ import cn.webank.eventmesh.common.LiteMessage;
 import cn.webank.eventmesh.common.ProxyException;
 import cn.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import cn.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+========
+package org.apache.eventmesh.client.http.producer;
+
+import org.apache.eventmesh.client.http.EventMeshRetObj;
+import com.webank.eventmesh.common.Constants;
+import com.webank.eventmesh.common.LiteMessage;
+import com.webank.eventmesh.common.EventMeshException;
+import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/producer/RRCallbackResponseHandlerAdapter.java
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpResponse;

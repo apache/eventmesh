@@ -1,3 +1,4 @@
+<<<<<<<< HEAD:eventmesh-sdk-java/src/test/java/cn/webank/eventmesh/client/tcp/demo/SyncResponse.java
 package cn.webank.eventmesh.client.tcp.demo;
 
 import cn.webank.eventmesh.client.tcp.WemqAccessClient;
@@ -6,6 +7,16 @@ import cn.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import cn.webank.eventmesh.client.tcp.impl.DefaultWemqAccessClient;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+========
+package org.apache.eventmesh.client.tcp.demo;
+
+import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/test/java/org/apache/eventmesh/client/tcp/demo/SyncResponse.java
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -15,8 +15,13 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/http/HttpUtil.java
 package cn.webank.eventmesh.client.http.http;
 import cn.webank.eventmesh.common.Constants;
+========
+package org.apache.eventmesh.client.http.http;
+import com.webank.eventmesh.common.Constants;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/http/HttpUtil.java
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.collections4.MapUtils;

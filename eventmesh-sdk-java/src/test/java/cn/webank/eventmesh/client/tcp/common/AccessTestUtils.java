@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:eventmesh-sdk-java/src/test/java/cn/webank/eventmesh/client/tcp/common/AccessTestUtils.java
 package cn.webank.eventmesh.client.tcp.common;
+========
+package org.apache.eventmesh.client.tcp.common;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/test/java/org/apache/eventmesh/client/tcp/common/EventMeshTestUtils.java
 
 <<<<<<<< HEAD:eventmesh-sdk-java/src/test/java/cn/webank/eventmesh/client/tcp/common/AccessTestUtils.java
 import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
@@ -20,9 +24,12 @@ import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.webank.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.*;
 import static com.webank.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+<<<<<<<< HEAD:eventmesh-sdk-java/src/test/java/cn/webank/eventmesh/client/tcp/common/AccessTestUtils.java
 >>>>>>>> 4ed546fd7 ([ISSUE #265]rename wemq and access to eventmesh):eventmesh-sdk-java/src/test/java/cn/webank/eventmesh/client/tcp/common/EventMeshTestUtils.java
+========
+import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.*;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/test/java/org/apache/eventmesh/client/tcp/common/EventMeshTestUtils.java
 
 public class EventMeshTestUtils {
     private static final int seqLength = 10;

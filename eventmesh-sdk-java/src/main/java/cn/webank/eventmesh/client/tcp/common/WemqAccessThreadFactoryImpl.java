@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/common/WemqAccessThreadFactoryImpl.java
 package cn.webank.eventmesh.client.tcp.common;
+========
+package org.apache.eventmesh.client.tcp.common;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/tcp/common/EventMeshThreadFactoryImpl.java
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;

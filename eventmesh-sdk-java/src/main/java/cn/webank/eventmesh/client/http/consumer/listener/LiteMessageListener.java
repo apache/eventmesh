@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/consumer/listener/LiteMessageListener.java
 package cn.webank.eventmesh.client.http.consumer.listener;
 
 import cn.webank.eventmesh.client.http.consumer.HandleResult;
 import cn.webank.eventmesh.client.http.consumer.context.LiteConsumeContext;
 import cn.webank.eventmesh.common.LiteMessage;
+========
+package org.apache.eventmesh.client.http.consumer.listener;
+
+import org.apache.eventmesh.client.http.consumer.HandleResult;
+import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
+import com.webank.eventmesh.common.LiteMessage;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/consumer/listener/LiteMessageListener.java
 
 public interface LiteMessageListener {
 

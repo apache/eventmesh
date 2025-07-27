@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/http/RemotingServer.java
 package cn.webank.eventmesh.client.http;
 import cn.webank.eventmesh.client.http.consumer.HandleResult;
 import cn.webank.eventmesh.client.http.consumer.context.LiteConsumeContext;
@@ -32,6 +33,25 @@ import cn.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
 import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.eventmesh.common.protocol.http.header.Header;
 import cn.webank.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
+========
+package org.apache.eventmesh.client.http;
+import org.apache.eventmesh.client.http.consumer.HandleResult;
+import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
+import org.apache.eventmesh.client.http.consumer.listener.LiteMessageListener;
+import com.webank.eventmesh.common.Constants;
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.LiteMessage;
+import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.body.Body;
+import com.webank.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
+import com.webank.eventmesh.common.protocol.http.common.ClientRetCode;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.header.Header;
+import com.webank.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/RemotingServer.java
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;

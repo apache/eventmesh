@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/impl/SimpleSubClientImpl.java
 package cn.webank.eventmesh.client.tcp.impl;
 
 import cn.webank.eventmesh.client.tcp.SimpleSubClient;
@@ -25,6 +26,18 @@ import cn.webank.eventmesh.client.tcp.common.TcpClient;
 import cn.webank.eventmesh.client.tcp.common.WemqAccessCommon;
 import cn.webank.eventmesh.common.protocol.tcp.Command;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+========
+package org.apache.eventmesh.client.tcp.impl;
+
+import org.apache.eventmesh.client.tcp.SimpleSubClient;
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.client.tcp.common.RequestContext;
+import org.apache.eventmesh.client.tcp.common.TcpClient;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/tcp/impl/SimpleSubClientImpl.java
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

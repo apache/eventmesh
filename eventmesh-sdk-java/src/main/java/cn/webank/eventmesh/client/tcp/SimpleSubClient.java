@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-sdk-java/src/main/java/cn/webank/eventmesh/client/tcp/SimpleSubClient.java
 package cn.webank.eventmesh.client.tcp;
 
 
 import cn.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+========
+package org.apache.eventmesh.client.tcp;
+
+
+import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/tcp/SimpleSubClient.java
 
 /**
  * Created by nanoxiong on 2017/4/26.
