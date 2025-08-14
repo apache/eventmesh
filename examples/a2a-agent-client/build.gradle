@@ -1,0 +1,99 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'org.apache.eventmesh.examples'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation project(':eventmesh-runtime')
+    implementation project(':eventmesh-common')
+    implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-a2a')
+    
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+    implementation 'ch.qos.logback:logback-classic:1.4.7'
+    
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+application {
+    mainClass = 'org.apache.eventmesh.examples.a2a.SimpleA2AAgent'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title': 'EventMesh A2A Agent Client Example',
+            'Implementation-Version': version,
+            'Implementation-Vendor': 'Apache EventMesh',
+            'Main-Class': 'org.apache.eventmesh.examples.a2a.SimpleA2AAgent'
+        )
+    }
+    
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// 创建可执行JAR
+task executableJar(type: Jar) {
+    archiveClassifier = 'executable'
+    manifest {
+        attributes(
+            'Implementation-Title': 'EventMesh A2A Agent Client Example',
+            'Implementation-Version': version,
+            'Implementation-Vendor': 'Apache EventMesh',
+            'Main-Class': 'org.apache.eventmesh.examples.a2a.SimpleA2AAgent'
+        )
+    }
+    
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// 创建Docker镜像
+task dockerBuild(type: Exec) {
+    dependsOn executableJar
+    commandLine 'docker', 'build', '-t', 'eventmesh-a2a-agent:latest', '.'
+}
+
+// 运行示例
+task runExample(type: JavaExec) {
+    dependsOn classes
+    mainClass = 'org.apache.eventmesh.examples.a2a.SimpleA2AAgent'
+    classpath = sourceSets.main.runtimeClasspath
+    
+    // 设置系统属性
+    systemProperty 'logback.configurationFile', 'src/main/resources/logback.xml'
+    systemProperty 'eventmesh.a2a.enabled', 'true'
+}

@@ -1,0 +1,82 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'org.apache.eventmesh'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    api project(':eventmesh-common')
+    api project(':eventmesh-protocol-plugin:eventmesh-protocol-api')
+    
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+    
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title': 'EventMesh A2A Protocol Plugin',
+            'Implementation-Version': version,
+            'Implementation-Vendor': 'Apache EventMesh',
+            'Automatic-Module-Name': 'org.apache.eventmesh.protocol.a2a'
+        )
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = 'EventMesh A2A Protocol Plugin'
+                description = 'Agent-to-Agent Communication Protocol for EventMesh'
+                url = 'https://eventmesh.apache.org'
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'eventmesh'
+                        name = 'Apache EventMesh'
+                        email = 'dev@eventmesh.apache.org'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/apache/eventmesh.git'
+                    developerConnection = 'scm:git:https://github.com/apache/eventmesh.git'
+                    url = 'https://github.com/apache/eventmesh'
+                }
+            }
+        }
+    }
+}
