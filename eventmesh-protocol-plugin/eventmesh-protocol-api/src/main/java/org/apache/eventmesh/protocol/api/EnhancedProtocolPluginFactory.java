@@ -22,6 +22,7 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,12 +69,8 @@ public class EnhancedProtocolPluginFactory {
             
             log.info("Initializing protocol plugins...");
             
-            // Pre-load all available protocol adaptors
-            List<ProtocolAdaptor> adaptors = EventMeshExtensionFactory.getExtensions(ProtocolAdaptor.class);
-            
-            for (ProtocolAdaptor adaptor : adaptors) {
-                registerProtocolAdaptor(adaptor);
-            }
+            // Protocol adaptors will be registered on-demand when first accessed
+            log.debug("Enhanced protocol plugin factory initialized");
             
             initialized = true;
             log.info("Initialized {} protocol plugins", PROTOCOL_ADAPTOR_MAP.size());
@@ -193,7 +190,7 @@ public class EnhancedProtocolPluginFactory {
         REGISTRY_LOCK.readLock().lock();
         try {
             return PROTOCOL_ADAPTOR_MAP.values().stream()
-                .sorted(Comparator.comparing(ProtocolAdaptor::getPriority).reversed())
+                .sorted((a, b) -> Integer.compare(b.getPriority(), a.getPriority()))
                 .collect(Collectors.toList());
         } finally {
             REGISTRY_LOCK.readLock().unlock();
@@ -250,7 +247,7 @@ public class EnhancedProtocolPluginFactory {
         try {
             return PROTOCOL_ADAPTOR_MAP.values().stream()
                 .filter(adaptor -> adaptor.getCapabilities().contains(capability))
-                .sorted(Comparator.comparing(ProtocolAdaptor::getPriority).reversed())
+                .sorted((a, b) -> Integer.compare(b.getPriority(), a.getPriority()))
                 .collect(Collectors.toList());
         } finally {
             REGISTRY_LOCK.readLock().unlock();

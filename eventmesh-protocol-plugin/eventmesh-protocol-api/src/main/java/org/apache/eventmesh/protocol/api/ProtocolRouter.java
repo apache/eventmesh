@@ -254,7 +254,7 @@ public class ProtocolRouter {
         // A2A messages
         addRoutingRule("a2a-messages",
             message -> {
-                if (message instanceof org.apache.eventmesh.common.protocol.http.message.RequestMessage) {
+                if (message != null && message.getClass().getSimpleName().equals("RequestMessage")) {
                     try {
                         String content = message.toString();
                         return content.contains("\"protocol\":\"A2A\"") || content.contains("A2A");
