@@ -15,13 +15,9 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "com.google.guava:guava"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation ("io.grpc:grpc-protobuf:1.68.0") {
-        exclude group: "com.google.protobuf", module: "protobuf-java"
-    }
-    implementation("com.google.protobuf:protobuf-java:3.25.4")
+package org.apache.eventmesh.connector.mcp.sink.handler;
+
+public enum McpDeliveryStrategy {
+    ROUND_ROBIN,
+    BROADCAST
 }

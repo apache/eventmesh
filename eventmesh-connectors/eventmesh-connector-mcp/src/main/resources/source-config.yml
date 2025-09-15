@@ -20,10 +20,10 @@ pubSubConfig:
     subject: TopicTest
     idc: FT
     env: PRD
-    group: httpSource
+    group: mcpSource
     appId: 5032
-    userName: httpSourceUser
-    passWord: httpPassWord
+    userName: mcpSourceUser
+    passWord: mcpPassWord
 connectorConfig:
     connectorName: mcpSource
     path: /test
@@ -35,8 +35,3 @@ connectorConfig:
         streamType: chunked
         contentType: application/json
         reconnection: true
-sessionConfig:
-    sessionStorage: redis
-    redisHost: 127.0.0.1
-    redisPort: 6379
-    sessionTimeout: 10m

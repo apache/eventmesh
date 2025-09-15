@@ -15,38 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mcp.source.data;
+package org.apache.eventmesh.connector.mcp.sink.data;
 
 import java.io.Serializable;
-import java.util.Map;
-
-import io.vertx.ext.web.RoutingContext;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * Mcp Protocol Request.
+ * Represents an MCP export record containing metadata and data to be exported.
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class McpRequest implements Serializable {
+public class McpExportRecord implements Serializable {
 
-    private static final long serialVersionUID = -483500600756490500L;
+    private static final long serialVersionUID = 6010283911452947157L;
 
-    private String protocolName;
+    private McpExportMetadata metadata;
 
-    private String sessionId;
-
-    // 元信息，用于携带请求的附加信息，如用户 ID、时间戳、调用方信息、模型版本、语言设置等。服务端可以据此做日志、权限判断、模型路由等操作
-    private Map<String, String> metadata;
-
-    // 用户输入内容，通常是一个 List，每个元素是一个 Map，表示一轮对话，例如：
-    //[{"role":"user","content":"你好"}, {"role":"assistant","content":"你好呀"}]。
-    private Object inputs;
-
-    private RoutingContext routingContext;
-
+    private Object data;
 }
