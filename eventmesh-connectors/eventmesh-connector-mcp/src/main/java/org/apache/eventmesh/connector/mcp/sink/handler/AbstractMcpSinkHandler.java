@@ -71,7 +71,7 @@ public abstract class AbstractMcpSinkHandler implements McpSinkHandler {
 
         // add AttemptEvent to the attributes
         McpAttemptEvent attemptEvent = new McpAttemptEvent(this.sinkConnectorConfig.getRetryConfig().getMaxRetries() + 1);
-        attributes.put(McpAttemptEvent.PREFIX + mcpConnectRecord.getHttpRecordId(), attemptEvent);
+        attributes.put(McpAttemptEvent.PREFIX + mcpConnectRecord.getMcpRecordId(), attemptEvent);
 
         // deliver the record
         deliver(url, mcpConnectRecord, attributes, record);

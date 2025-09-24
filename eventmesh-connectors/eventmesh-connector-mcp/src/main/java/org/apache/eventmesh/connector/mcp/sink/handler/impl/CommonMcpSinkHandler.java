@@ -176,7 +176,7 @@ public class CommonMcpSinkHandler extends AbstractMcpSinkHandler {
      */
     private void tryCallback(McpConnectRecord mcpConnectRecord, Throwable e, Map<String, Object> attributes, ConnectRecord record) {
         // get and update the attempt event
-        McpAttemptEvent attemptEvent = (McpAttemptEvent) attributes.get(McpAttemptEvent.PREFIX + mcpConnectRecord.getHttpRecordId());
+        McpAttemptEvent attemptEvent = (McpAttemptEvent) attributes.get(McpAttemptEvent.PREFIX + mcpConnectRecord.getMcpRecordId());
         attemptEvent.updateEvent(e);
 
         // get and update the multiHttpRequestContext
