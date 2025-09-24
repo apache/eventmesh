@@ -32,7 +32,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 /**
- * a special ConnectRecord for HttpSinkConnector
+ * a special ConnectRecord for McpSinkConnector
  */
 @Getter
 @Builder
@@ -41,22 +41,22 @@ public class McpConnectRecord implements Serializable {
     private static final long serialVersionUID = 5271462532332251473L;
 
     /**
-     * The unique identifier for the HttpConnectRecord
+     * The unique identifier for the McpConnectRecord
      */
-    private final String httpRecordId = UUID.randomUUID().toString();
+    private final String mcpRecordId = UUID.randomUUID().toString();
 
     /**
-     * The time when the HttpConnectRecord was created
+     * The time when the McpConnectRecord was created
      */
     private LocalDateTime createTime;
 
     /**
-     * The type of the HttpConnectRecord
+     * The type of the McpConnectRecord
      */
     private String type;
 
     /**
-     * The event id of the HttpConnectRecord
+     * The event id of the McpConnectRecord
      */
     private String eventId;
 
@@ -66,9 +66,9 @@ public class McpConnectRecord implements Serializable {
 
     @Override
     public String toString() {
-        return "HttpConnectRecord{"
+        return "McpConnectRecord{"
                 + "createTime=" + createTime
-                + ", httpRecordId='" + httpRecordId
+                + ", mcpRecordId='" + mcpRecordId
                 + ", type='" + type
                 + ", eventId='" + eventId
                 + ", data=" + data
@@ -77,10 +77,10 @@ public class McpConnectRecord implements Serializable {
     }
 
     /**
-     * Convert ConnectRecord to HttpConnectRecord
+     * Convert ConnectRecord to McpConnectRecord
      *
      * @param record the ConnectRecord to convert
-     * @return the converted HttpConnectRecord
+     * @return the converted McpConnectRecord
      */
     public static McpConnectRecord convertConnectRecord(ConnectRecord record, String type) {
         Map<String, ?> offsetMap = new HashMap<>();
