@@ -22,12 +22,14 @@ import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import io.cloudevents.CloudEvent;
 
 /**
- * Protocol transformer SPI interface, all protocol plugin should implementation.
+ * Enhanced Protocol transformer SPI interface with lifecycle management and performance optimizations.
  *
  * <p>All protocol stored in EventMesh is {@link CloudEvent}.
  *
@@ -35,6 +37,22 @@ import io.cloudevents.CloudEvent;
  */
 @EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.PROTOCOL)
 public interface ProtocolAdaptor<T extends ProtocolTransportObject> {
+
+    /**
+     * Initialize the protocol adaptor.
+     * Called once during plugin loading.
+     */
+    default void initialize() {
+        // Default implementation does nothing
+    }
+
+    /**
+     * Destroy the protocol adaptor.
+     * Called during plugin unloading.
+     */
+    default void destroy() {
+        // Default implementation does nothing
+    }
 
     /**
      * transform protocol to {@link CloudEvent}.
@@ -66,5 +84,52 @@ public interface ProtocolAdaptor<T extends ProtocolTransportObject> {
      * @return protocol type, protocol type should not be null
      */
     String getProtocolType();
+
+    /**
+     * Get protocol priority.
+     * Higher values indicate higher priority.
+     *
+     * @return protocol priority (0-100, default: 50)
+     */
+    default int getPriority() {
+        return 50;
+    }
+
+    /**
+     * Check if protocol supports batch processing.
+     *
+     * @return true if supports batch processing
+     */
+    default boolean supportsBatchProcessing() {
+        return true;
+    }
+
+    /**
+     * Get protocol version.
+     *
+     * @return protocol version
+     */
+    default String getVersion() {
+        return "1.0";
+    }
+
+    /**
+     * Get protocol capabilities.
+     *
+     * @return set of capabilities
+     */
+    default Set<String> getCapabilities() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Validate protocol message before processing.
+     *
+     * @param protocol input protocol
+     * @return true if valid
+     */
+    default boolean isValid(T protocol) {
+        return protocol != null;
+    }
 
 }
