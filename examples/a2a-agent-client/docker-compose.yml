@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # EventMesh服务器
+  eventmesh-server:
+    image: apache/eventmesh:latest
+    container_name: eventmesh-server
+    ports:
+      - "10105:10105"  # gRPC端口
+      - "10106:10106"  # HTTP端口
+      - "10107:10107"  # TCP端口
+    environment:
+      - EVENTMESH_PROTOCOL_A2A_ENABLED=true
+    volumes:
+      - ./conf:/opt/eventmesh/conf
+    networks:
+      - eventmesh-network
+
+  # A2A智能体客户端1 - 任务执行器
+  a2a-agent-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: a2a-agent-task-executor
+    environment:
+      - AGENT_ID=task-executor-001
+      - AGENT_TYPE=task-executor
+      - AGENT_CAPABILITIES=data-processing,image-analysis,text-generation
+      - EVENTMESH_SERVER_HOST=eventmesh-server
+      - EVENTMESH_SERVER_PORT=10105
+    depends_on:
+      - eventmesh-server
+    networks:
+      - eventmesh-network
+    restart: unless-stopped
+
+  # A2A智能体客户端2 - 数据提供者
+  a2a-agent-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: a2a-agent-data-provider
+    environment:
+      - AGENT_ID=data-provider-001
+      - AGENT_TYPE=data-provider
+      - AGENT_CAPABILITIES=data-collection,data-storage,data-retrieval
+      - EVENTMESH_SERVER_HOST=eventmesh-server
+      - EVENTMESH_SERVER_PORT=10105
+    depends_on:
+      - eventmesh-server
+    networks:
+      - eventmesh-network
+    restart: unless-stopped
+
+  # A2A智能体客户端3 - 分析引擎
+  a2a-agent-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: a2a-agent-analytics-engine
+    environment:
+      - AGENT_ID=analytics-engine-001
+      - AGENT_TYPE=analytics-engine
+      - AGENT_CAPABILITIES=ml-inference,statistical-analysis,prediction
+      - EVENTMESH_SERVER_HOST=eventmesh-server
+      - EVENTMESH_SERVER_PORT=10105
+    depends_on:
+      - eventmesh-server
+    networks:
+      - eventmesh-network
+    restart: unless-stopped
+
+networks:
+  eventmesh-network:
+    driver: bridge

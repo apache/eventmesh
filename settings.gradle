@@ -106,6 +106,7 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-http'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpcmessage'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-a2a'
 
 include 'eventmesh-metrics-plugin'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-api'
