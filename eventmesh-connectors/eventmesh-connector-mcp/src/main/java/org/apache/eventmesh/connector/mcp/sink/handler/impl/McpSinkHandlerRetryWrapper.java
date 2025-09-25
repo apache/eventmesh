@@ -109,7 +109,7 @@ public class McpSinkHandlerRetryWrapper extends AbstractMcpSinkHandler {
 
 
     /**
-     * Cleans up and releases resources used by the Mcp/McpS handler.
+     * Cleans up and releases resources used by the Mcp handler.
      */
     @Override
     public void stop() {
