@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.connector.mcp.sink.data;
 
-import java.io.Serializable;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * Represents an MCP export record containing metadata and data to be exported.

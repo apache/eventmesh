@@ -17,6 +17,20 @@
 
 package org.apache.eventmesh.http.demo.sub;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.model.RequestParam;
 import org.apache.eventmesh.client.http.util.HttpUtils;
@@ -32,22 +46,11 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import io.netty.handler.codec.http.HttpMethod;
-import org.apache.http.util.EntityUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RemoteSubscribeInstance {
 
     static final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -70,7 +73,7 @@ public class RemoteSubscribeInstance {
         body.put("topic", Collections.singletonList(item));
 
         String json = JsonUtils.toJSONString(body);
-        // 2) 直接用 HttpPost
+        // 2) use HttpPost
         HttpPost post = new HttpPost("http://127.0.0.1:10105/eventmesh/subscribe/local");
         post.setHeader("Content-Type", "application/json");
         post.setHeader("env", "prod");
@@ -84,8 +87,8 @@ public class RemoteSubscribeInstance {
 
         try (CloseableHttpResponse resp = httpClient.execute(post)) {
             String respBody = EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
-            System.out.println(resp.getStatusLine());
-            System.out.println(respBody);
+            log.info("respStatusLine:{}", resp.getStatusLine());
+            log.info("respBody:{}", respBody);
         }
     }
 

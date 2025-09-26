@@ -19,7 +19,6 @@ package org.apache.eventmesh.common.config.connector.mcp;
 
 
 import lombok.Data;
-import org.apache.eventmesh.common.config.connector.mcp.McpRetryConfig;
 
 @Data
 public class SinkConnectorConfig {

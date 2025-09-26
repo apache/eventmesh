@@ -30,9 +30,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.mcp.SinkConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.connector.mcp.sink.data.McpAttemptEvent;
 import org.apache.eventmesh.connector.mcp.sink.data.McpConnectRecord;
-import org.apache.eventmesh.connector.http.util.HttpUtils;
 import org.apache.eventmesh.connector.mcp.sink.data.MultiMcpRequestContext;
 import org.apache.eventmesh.connector.mcp.sink.handler.AbstractMcpSinkHandler;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  * Common MCP Sink Handler implementation to handle ConnectRecords by sending them over MCP to configured URLs.

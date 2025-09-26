@@ -22,8 +22,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.EventMeshThreadFactory;
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.connector.mcp.SinkConnectorConfig;
 import org.apache.eventmesh.common.config.connector.mcp.McpSinkConfig;
+import org.apache.eventmesh.common.config.connector.mcp.SinkConnectorConfig;
 import org.apache.eventmesh.connector.mcp.sink.handler.McpSinkHandler;
 import org.apache.eventmesh.connector.mcp.sink.handler.impl.CommonMcpSinkHandler;
 import org.apache.eventmesh.connector.mcp.sink.handler.impl.McpSinkHandlerRetryWrapper;
@@ -40,6 +40,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
 @Slf4j
 public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
@@ -50,9 +51,7 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     private ThreadPoolExecutor executor;
 
-    private final LinkedBlockingQueue<ConnectRecord> queue = new LinkedBlockingQueue<>(10000);
-
-    private final AtomicBoolean isStart = new AtomicBoolean(true);
+    private final AtomicBoolean isStart = new AtomicBoolean(false);
 
     @Override
     public Class<? extends Config> configClass() {
@@ -96,30 +95,25 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
         } else {
             throw new IllegalArgumentException("Max retries must be greater than or equal to 0.");
         }
+
         boolean isParallelized = this.mcpSinkConfig.connectorConfig.isParallelized();
         int parallelism = isParallelized ? this.mcpSinkConfig.connectorConfig.getParallelism() : 1;
-        executor = new ThreadPoolExecutor(parallelism, parallelism, 0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(), new EventMeshThreadFactory("mcp-sink-handler"));
+
+        // Use the executor's built-in queue with a reasonable capacity
+        executor = new ThreadPoolExecutor(
+                parallelism,
+                parallelism,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(10000), // Built-in queue with capacity
+                new EventMeshThreadFactory("mcp-sink-handler")
+        );
     }
 
     @Override
     public void start() throws Exception {
         this.sinkHandler.start();
-        for (int i = 0; i < this.mcpSinkConfig.connectorConfig.getParallelism(); i++) {
-            executor.execute(() -> {
-                while (isStart.get()) {
-                    ConnectRecord connectRecord = null;
-                    try {
-                        connectRecord = queue.poll(2, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    if (connectRecord != null) {
-                        sinkHandler.handle(connectRecord);
-                    }
-                }
-            });
-        }
+        isStart.set(true);
     }
 
     @Override
@@ -140,30 +134,54 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
     @Override
     public void stop() throws Exception {
         isStart.set(false);
-        while (!queue.isEmpty()) {
-            ConnectRecord record = queue.poll();
-            this.sinkHandler.handle(record);
-        }
+
+        log.info("Stopping mcp sink connector, shutting down executor...");
+        executor.shutdown();
+
         try {
-            Thread.sleep(50);
+            // Wait for existing tasks to complete
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                log.warn("Executor did not terminate gracefully, forcing shutdown");
+                executor.shutdownNow();
+                // Wait a bit more for tasks to respond to being cancelled
+                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    log.error("Executor did not terminate after forced shutdown");
+                }
+            }
         } catch (InterruptedException e) {
+            log.warn("Interrupted while waiting for executor termination");
+            executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
+
+        log.info("All tasks completed, stopping mcp sink handler");
         this.sinkHandler.stop();
-        log.info("All tasks completed, start shut down mcp sink connector");
     }
 
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
+        if (!isStart.get()) {
+            log.warn("Connector is not started, ignoring sink records");
+            return;
+        }
+
         for (ConnectRecord sinkRecord : sinkRecords) {
+            if (Objects.isNull(sinkRecord)) {
+                log.warn("ConnectRecord data is null, ignore.");
+                continue;
+            }
+
             try {
-                if (Objects.isNull(sinkRecord)) {
-                    log.warn("ConnectRecord data is null, ignore.");
-                    continue;
-                }
-                queue.put(sinkRecord);
+                // Use executor.submit() instead of custom queue
+                executor.submit(() -> {
+                    try {
+                        sinkHandler.handle(sinkRecord);
+                    } catch (Exception e) {
+                        log.error("Failed to handle sink record via mcp", e);
+                    }
+                });
             } catch (Exception e) {
-                log.error("Failed to sink message via mcp. ", e);
+                log.error("Failed to submit sink record to executor", e);
             }
         }
     }

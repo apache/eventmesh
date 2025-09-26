@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.common.config.connector.mcp;
 
-import lombok.Data;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import lombok.Data;
 
 @Data
 public class SourceConnectorConfig {

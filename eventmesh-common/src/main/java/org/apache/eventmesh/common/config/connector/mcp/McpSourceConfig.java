@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.common.config.connector.mcp;
 
+import org.apache.eventmesh.common.config.connector.SourceConfig;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.eventmesh.common.config.connector.SourceConfig;
+
 
 @Data
 @EqualsAndHashCode(callSuper = true)

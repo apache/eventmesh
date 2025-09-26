@@ -17,6 +17,12 @@
 
 package org.apache.eventmesh.connector.mcp.source.protocol.impl;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.handler.BodyHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.connector.mcp.SourceConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -29,14 +35,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
-
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.handler.BodyHandler;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Common Protocol. This class represents the common webhook protocol. The processing method of this class does not perform any other operations
