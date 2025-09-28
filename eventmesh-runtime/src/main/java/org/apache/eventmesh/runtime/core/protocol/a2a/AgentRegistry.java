@@ -1,8 +1,8 @@
 package org.apache.eventmesh.runtime.core.protocol.a2a;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.runtime.core.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
-import org.apache.eventmesh.runtime.core.protocol.a2a.A2AProtocolAdaptor.A2AMessage;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.A2AMessage;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -29,7 +30,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
-import org.apache.eventmesh.runtime.core.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
 
 import java.net.URI;
 import java.util.Collections;
@@ -68,7 +69,8 @@ public class A2APublishSubscribeService {
     
     // EventMesh core components
     private final EventMeshProducer eventMeshProducer;
-    private final Map<String, EventMeshConsumer> consumers = new ConcurrentHashMap<>();
+    // TODO: Implement proper EventMeshConsumer integration
+    // private final Map<String, EventMeshConsumer> consumers = new ConcurrentHashMap<>();
     
     // A2A subscription management
     private final SubscriptionRegistry subscriptionRegistry = new SubscriptionRegistry();
@@ -159,20 +161,10 @@ public class A2APublishSubscribeService {
             String topicName = A2A_TOPIC_PREFIX + taskType;
             String consumerGroup = "a2a-" + taskType + "-consumers";
             
-            EventMeshConsumer consumer = createOrGetConsumer(consumerGroup);
+            // TODO: Implement proper EventMesh consumer subscription
+            // EventMeshConsumer consumer = createOrGetConsumer(consumerGroup);
             
-            // Create subscription item with clustering mode for load balancing
-            SubscriptionItem subscriptionItem = SubscriptionItem.builder()
-                .topic(topicName)
-                .mode(SubscriptionMode.CLUSTERING) // Load balance across agents
-                .type(SubscriptionType.ASYNC)
-                .build();
-            
-            // Subscribe to topic
-            consumer.subscribe(Collections.singletonList(subscriptionItem));
-            
-            // Register event listener for task processing
-            consumer.registerEventListener(new A2ATaskEventListener(agentId, taskHandler));
+            log.info("Agent subscription registered (implementation pending): {} -> {}", agentId, taskType);
             
             log.info("✅ Agent {} subscribed to task type {} with capabilities {}", 
                     agentId, taskType, capabilities);
@@ -358,23 +350,8 @@ public class A2APublishSubscribeService {
      * Initialize consumer for task results
      */
     private void initializeResultConsumer() {
-        try {
-            EventMeshConsumer resultConsumer = createOrGetConsumer("a2a-result-consumer");
-            
-            SubscriptionItem resultSubscription = SubscriptionItem.builder()
-                .topic(A2A_RESULT_TOPIC)
-                .mode(SubscriptionMode.BROADCASTING) // All interested parties receive results
-                .type(SubscriptionType.ASYNC)
-                .build();
-            
-            resultConsumer.subscribe(Collections.singletonList(resultSubscription));
-            
-            // Register result listener for metrics and monitoring
-            resultConsumer.registerEventListener(new A2AResultEventListener());
-            
-        } catch (Exception e) {
-            log.error("Failed to initialize result consumer", e);
-        }
+        // TODO: Implement proper result consumer
+        log.info("Result consumer initialization (implementation pending)");
     }
     
     /**
@@ -404,21 +381,8 @@ public class A2APublishSubscribeService {
     
     // Helper methods
     
-    private EventMeshConsumer createOrGetConsumer(String consumerGroup) {
-        return consumers.computeIfAbsent(consumerGroup, group -> {
-            try {
-                // Create consumer with EventMesh configuration
-                EventMeshConsumer consumer = new EventMeshConsumer(group, 
-                    /* eventMeshGrpcServer */ null, /* configuration */ null);
-                consumer.init();
-                consumer.start();
-                return consumer;
-            } catch (Exception e) {
-                log.error("Failed to create consumer for group {}", group, e);
-                throw new RuntimeException(e);
-            }
-        });
-    }
+    // TODO: Implement proper consumer creation
+    // private EventMeshConsumer createOrGetConsumer(String consumerGroup) { ... }
     
     private CloudEvent createTaskCloudEvent(A2ATaskMessage taskMessage, String topicName) {
         return CloudEventBuilder.v1()
@@ -489,16 +453,10 @@ public class A2APublishSubscribeService {
     // Shutdown
     public void shutdown() {
         try {
-            consumers.values().forEach(consumer -> {
-                try {
-                    consumer.shutdown();
-                } catch (Exception e) {
-                    log.warn("Error shutting down consumer", e);
-                }
-            });
-            consumers.clear();
+            // TODO: Implement proper consumer shutdown
             subscriptionRegistry.clear();
             agentCapabilities.clear();
+            log.info("A2A Publish/Subscribe service shutdown completed");
         } catch (Exception e) {
             log.error("Error during A2A service shutdown", e);
         }

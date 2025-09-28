@@ -1,8 +1,8 @@
 package org.apache.eventmesh.examples.a2a;
 
 import org.apache.eventmesh.runtime.core.protocol.a2a.A2AProtocolProcessor;
-import org.apache.eventmesh.runtime.core.protocol.a2a.A2AProtocolAdaptor.A2AMessage;
-import org.apache.eventmesh.runtime.core.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.A2AMessage;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
 import org.apache.eventmesh.runtime.core.protocol.a2a.CollaborationManager;
 import org.apache.eventmesh.runtime.core.protocol.a2a.CollaborationManager.WorkflowDefinition;
 import org.apache.eventmesh.runtime.core.protocol.a2a.CollaborationManager.WorkflowStep;
