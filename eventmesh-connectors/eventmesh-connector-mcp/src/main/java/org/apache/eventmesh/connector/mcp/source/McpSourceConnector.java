@@ -1,3 +1,5 @@
+package org.apache.eventmesh.connector.mcp.source;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,31 +17,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mcp.source;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.*;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.handler.LoggerHandler;
-
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
-
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mcp.McpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.connector.mcp.source.data.McpResponse;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.connector.mcp.source.protocol.ProtocolFactory;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -50,12 +33,27 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.LoggerHandler;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * MCP Source Connector for EventMesh
+ * Implements MCP protocol server allowing AI clients to interact with EventMesh via MCP protocol
+ */
 @Slf4j
 public class McpSourceConnector implements Source, ConnectorCreateService<Source> {
 
@@ -71,16 +69,15 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     private HttpServer server;
 
+    private Vertx vertx;
+
+    private McpToolRegistry toolRegistry;
+
     @Getter
     private volatile boolean started = false;
 
     @Getter
     private volatile boolean destroyed = false;
-
-    private final Map<String, HttpServerResponse> sseSessions = new ConcurrentHashMap<>();
-
-    private WebClient webClient;
-
 
     @Override
     public Class<? extends Config> configClass() {
@@ -105,198 +102,401 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         doInit();
     }
 
+    /**
+     * Initialize the connector
+     */
     private void doInit() {
-        // init queue
+        log.info("Initializing MCP Source Connector...");
+
+        // Initialize queue
         int maxQueueSize = this.sourceConfig.getConnectorConfig().getMaxStorageSize();
         this.queue = new LinkedBlockingQueue<>(maxQueueSize);
 
-        // init batch size
+        // Initialize batch size
         this.batchSize = this.sourceConfig.getConnectorConfig().getBatchSize();
 
-        // init protocol
         String protocolName = this.sourceConfig.getConnectorConfig().getProtocol();
         this.protocol = ProtocolFactory.getInstance(this.sourceConfig.connectorConfig, protocolName);
 
-        final Vertx vertx = Vertx.vertx();
+        // Initialize tool registry
+        this.toolRegistry = new McpToolRegistry();
+        registerDefaultTools();
+
+        // Initialize Vertx and router
+        this.vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
 
-        final String path = this.sourceConfig.connectorConfig.getPath();
-        final int idleMs = this.sourceConfig.connectorConfig.getIdleTimeout();
-        final long heartbeatMs = (idleMs > 0) ? Math.max(1000L, idleMs / 2L) : 15000L;
-        final String rpcPath = path.endsWith("/") ? (path + "rpc") : (path + "/rpc");
+        final String basePath = this.sourceConfig.connectorConfig.getPath();
 
-        this.webClient = WebClient.create(vertx);
+        log.info("Configuring MCP routes with base path: {}", basePath);
 
-        router.options(path).handler(ctx -> {
-            addCors(ctx.response());
-            ctx.response().setStatusCode(204).end();
+        // Configure CORS (must be before all routes)
+        router.route().handler(ctx -> {
+            ctx.response()
+                    .putHeader(HEADER_CORS_ALLOW_ORIGIN, CORS_ALLOW_ALL)
+                    .putHeader(HEADER_CORS_ALLOW_METHODS, CORS_ALLOWED_METHODS)
+                    .putHeader(HEADER_CORS_ALLOW_HEADERS, CORS_ALLOWED_HEADERS)
+                    .putHeader(HEADER_CORS_EXPOSE_HEADERS, CORS_EXPOSED_HEADERS);
+
+            if (HTTP_METHOD_OPTIONS.equals(ctx.request().method().name())) {
+                ctx.response().setStatusCode(HTTP_STATUS_NO_CONTENT).end();
+            } else {
+                ctx.next();
+            }
         });
 
-        router.get(path)
-                .order(-1)
+        // Body handler
+        router.route().handler(BodyHandler.create());
+
+        // Main endpoint - handles both JSON-RPC and SSE requests
+        router.post(basePath)
                 .handler(LoggerHandler.create())
                 .handler(ctx -> {
-                    HttpServerResponse res = ctx.response();
-                    addCors(res);
-                    res.putHeader("Content-Type", "text/event-stream");
-                    res.putHeader("Cache-Control", "no-cache");
-                    res.putHeader("Connection", "keep-alive");
-                    res.setChunked(true);
+                    String contentType = ctx.request().getHeader(HEADER_CONTENT_TYPE);
+                    String accept = ctx.request().getHeader(HEADER_ACCEPT);
 
-                    String sid = ctx.request().getHeader("Mcp-Session-Id");
-                    if (sid == null || sid.isEmpty()) sid = "default";
-                    sseSessions.put(sid, res);
+                    log.info("Request to {} - Content-Type: {}, Accept: {}",
+                            basePath, contentType, accept);
 
-                    writeSseComment(res, "mcp-sse ready");
-
-                    long timerId = vertx.setPeriodic(heartbeatMs, t ->
-                            writeSseComment(res, "keepalive " + System.currentTimeMillis())
-                    );
-
-                    final String sid0 = sid;
-                    ctx.request().connection()
-                            .closeHandler(v -> { vertx.cancelTimer(timerId); sseSessions.remove(sid0); })
-                            .exceptionHandler(ex -> { vertx.cancelTimer(timerId); sseSessions.remove(sid0); });
+                    // Determine if it's an SSE request or JSON-RPC request
+                    if (CONTENT_TYPE_SSE.startsWith(accept != null ? accept : "")) {
+                        handleSseRequest(ctx);
+                    } else {
+                        handleJsonRpcRequest(ctx);
+                    }
                 });
 
-        router.post(rpcPath).handler(LoggerHandler.create()).handler(ctx -> {
-            addCors(ctx.response());
-            String sid = ctx.request().getHeader("Mcp-Session-Id");
-            if (sid == null || sid.isEmpty()) sid = "default";
-            HttpServerResponse sse = sseSessions.get(sid);
-            if (sse == null) {
-                ctx.response().setStatusCode(409).putHeader("Content-Type","application/json")
-                        .end(new JsonObject().put("error", "no sse session for sid " + sid).encode());
-                return;
-            }
+        // GET request for SSE support
+        router.get(basePath)
+                .handler(ctx -> {
+                    log.info("GET request to {} - treating as SSE", basePath);
+                    handleSseRequest(ctx);
+                });
 
-            ctx.request().body().onSuccess(buf -> {
-                JsonObject root;
-                try {
-                    root = buf.toJsonObject();
-                } catch (Exception e) {
-                    ctx.response().setStatusCode(400).end("{\"error\":\"bad json\"}");
-                    return;
-                }
-
-                String jsonrpc = root.getString("jsonrpc", "");
-                String method  = root.getString("method", "");
-                Object idVal   = root.getValue("id");
-                String idRaw   = toRawJson(idVal);
-
-                if (!"2.0".equals(jsonrpc)) {
-                    writeSseMessage(sse, jsonRpcError(idRaw, -32600, "Invalid Request"));
-                    ctx.response().setStatusCode(200).end("{\"ok\":true}");
-                    return;
-                }
-
-                if ("initialize".equals(method)) {
-                    String result = new JsonObject()
-                            .put("protocolVersion", "2025-03-26")
-                            .put("capabilities", new JsonObject())
-                            .encode();
-                    writeSseMessage(sse, jsonRpcResult(idRaw, result));
-                    ctx.response().setStatusCode(200).end("{\"ok\":true}");
-                    return;
-                }
-
-                if ("tools/list".equals(method)) {
-                    JsonObject inputSchema = new JsonObject()
-                            .put("type", "object")
-                            .put("properties", new JsonObject()
-                                    .put("body", new JsonObject().put("type", "object"))
-                                    .put("headers", new JsonObject().put("type", "object")))
-                            .put("required", new JsonArray().add("body"));
-
-                    JsonObject tool = new JsonObject()
-                            .put("name", "callConnector")
-                            .put("description", "POST body to " + path)
-                            .put("inputSchema", inputSchema);
-
-                    String toolsJson = new JsonObject().put("tools", new JsonArray().add(tool)).encode();
-                    writeSseMessage(sse, jsonRpcResult(idRaw, toolsJson));
-                    ctx.response().setStatusCode(200).end("{\"ok\":true}");
-                    return;
-                }
-
-                if ("tools/call".equals(method)) {
-                    JsonObject params     = root.getJsonObject("params", new JsonObject());
-                    String toolName       = params.getString("name", "");
-                    JsonObject arguments  = params.getJsonObject("arguments", new JsonObject());
-                    JsonObject bodyObj    = arguments.getJsonObject("body", new JsonObject());
-                    JsonObject headersObj = arguments.getJsonObject("headers", new JsonObject());
-
-                    if (!"callConnector".equals(toolName)) {
-                        writeSseMessage(sse, jsonRpcError(idRaw, -32601, "Unknown tool"));
-                        ctx.response().setStatusCode(200).end("{\"ok\":true}");
-                        return;
-                    }
-
-                    int port = this.sourceConfig.connectorConfig.getPort();
-
-                    var req = webClient.post(port, "127.0.0.1", path);
-
-                    for (String key : headersObj.fieldNames()) {
-                        req.putHeader(key, String.valueOf(headersObj.getValue(key)));
-                    }
-                    req.putHeader("Content-Type", "application/json");
-
-                    req.sendBuffer(Buffer.buffer(bodyObj.encode()), ar -> {
-                        int code;
-                        String respText;
-                        boolean isError;
-                        if (ar.succeeded()) {
-                            HttpResponse<Buffer> resp = ar.result();
-                            code = resp.statusCode();
-                            respText = resp.bodyAsString();
-                            isError = code >= 400;
-                        } else {
-                            code = 500;
-                            respText = String.valueOf(ar.cause());
-                            isError = true;
-                        }
-
-                        JsonObject result = new JsonObject()
-                                .put("content", new JsonArray().add(
-                                        new JsonObject().put("type","text")
-                                                .put("text", "HTTP " + code + "\n" + respText)))
-                                .put("isError", isError);
-
-                        writeSseMessage(sse, jsonRpcResult(idRaw, result.encode()));
-                    });
-
-                    ctx.response().setStatusCode(200).end("{\"ok\":true}");
-                    return;
-                }
-
-                writeSseMessage(sse, jsonRpcError(idRaw, -32601, "Method not found"));
-                ctx.response().setStatusCode(200).end("{\"ok\":true}");
-            }).onFailure(err -> ctx.response().setStatusCode(400).end());
+        // Health check endpoint
+        router.get(basePath + ENDPOINT_HEALTH).handler(ctx -> {
+            JsonObject health = new JsonObject()
+                    .put(KEY_STATUS, VALUE_STATUS_UP)
+                    .put(KEY_CONNECTOR, DEFAULT_CONNECTOR_NAME)
+                    .put(KEY_TOOLS, toolRegistry.getToolCount());
+            ctx.response()
+                    .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .end(health.encode());
         });
 
-        route = router.route()
+        this.route = router.route()
                 .path(this.sourceConfig.connectorConfig.getPath())
                 .handler(LoggerHandler.create());
+
 
         // set protocol handler
         this.protocol.setHandler(route, queue);
 
-        // create server
+        // Create server
         this.server = vertx.createHttpServer(new HttpServerOptions()
-                .setPort(this.sourceConfig.connectorConfig.getPort())
-                .setMaxFormAttributeSize(this.sourceConfig.connectorConfig.getMaxFormAttributeSize())
-                .setIdleTimeout(this.sourceConfig.connectorConfig.getIdleTimeout())
-                .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)).requestHandler(router);
+                        .setPort(this.sourceConfig.connectorConfig.getPort())
+                        .setHandle100ContinueAutomatically(true)
+                        .setIdleTimeout(DEFAULT_IDLE_TIMEOUT_MS)
+                        .setIdleTimeoutUnit(TimeUnit.MILLISECONDS))
+                .requestHandler(router);
+
+        log.info("MCP Source Connector initialized on http://127.0.0.1:{}{}",
+                this.sourceConfig.connectorConfig.getPort(), basePath);
     }
+
+    /**
+     * Register default MCP tools
+     */
+    private void registerDefaultTools() {
+        // Echo tool
+        toolRegistry.registerTool(
+                TOOL_ECHO,
+                TOOL_DESC_ECHO,
+                createEchoSchema(),
+                args -> {
+                    String message = args.getString(PARAM_MESSAGE, DEFAULT_NO_MESSAGE);
+                    return createTextContent("Echo: " + message);
+                }
+        );
+
+        // EventMesh message sending tool (example)
+        toolRegistry.registerTool(
+                TOOL_SEND_MESSAGE,
+                TOOL_DESC_SEND_MESSAGE,
+                createSendMessageSchema(),
+                args -> {
+                    String topic = args.getString(PARAM_TOPIC);
+                    String message = args.getString(PARAM_MESSAGE);
+
+                    // TODO: Implement actual EventMesh message sending logic
+                    // Messages can be queued and processed by poll() method
+
+                    return createTextContent(
+                            String.format("Message sent to topic '%s': %s", topic, message)
+                    );
+                }
+        );
+
+        log.info("Registered {} MCP tools", toolRegistry.getToolCount());
+    }
+
+    /**
+     * Handle JSON-RPC request (HTTP mode)
+     * @param ctx Routing context
+     */
+    private void handleJsonRpcRequest(RoutingContext ctx) {
+        String body = ctx.body().asString();
+        log.info("<<< JSON-RPC Request: {}", body);
+
+        try {
+            JsonObject request = new JsonObject(body);
+            JsonObject response = handleMcpRequest(request);
+
+            if (response != null) {
+                log.info(">>> JSON-RPC Response: {}", response.encode());
+                ctx.response()
+                        .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                        .end(response.encode());
+            } else {
+                // Notification messages don't need response
+                ctx.response().setStatusCode(HTTP_STATUS_NO_CONTENT).end();
+            }
+
+        } catch (Exception e) {
+            log.error("Error handling JSON-RPC request", e);
+            JsonObject error = createErrorResponse(null, ERROR_INTERNAL,
+                    "Internal error: " + e.getMessage());
+            ctx.response()
+                    .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .setStatusCode(HTTP_STATUS_INTERNAL_ERROR)
+                    .end(error.encode());
+        }
+    }
+
+    /**
+     * Handle SSE request (Server-Sent Events mode)
+     * @param ctx Routing context
+     */
+    private void handleSseRequest(RoutingContext ctx) {
+        log.info("Establishing SSE connection...");
+
+        ctx.response()
+                .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_SSE)
+                .putHeader(HEADER_CACHE_CONTROL, CACHE_CONTROL_NO_CACHE)
+                .putHeader(HEADER_CONNECTION, CONNECTION_KEEP_ALIVE)
+                .putHeader(HEADER_X_ACCEL_BUFFERING, X_ACCEL_BUFFERING_NO)
+                .setChunked(true);
+
+        // Send connection established event
+        ctx.response().write(SSE_EVENT_OPEN);
+        ctx.response().write(SSE_DATA_OPEN);
+
+        log.info("SSE connection established");
+
+        // Heartbeat (optional)
+        long timerId = vertx.setPeriodic(DEFAULT_HEARTBEAT_INTERVAL_MS, id -> {
+            if (!ctx.response().closed()) {
+                ctx.response().write(SSE_HEARTBEAT);
+            } else {
+                vertx.cancelTimer(id);
+            }
+        });
+
+        ctx.request().connection().closeHandler(v -> {
+            log.info("SSE connection closed");
+            vertx.cancelTimer(timerId);
+        });
+    }
+
+    /**
+     * Handle MCP JSON-RPC request
+     * @param request JSON-RPC request object
+     * @return JSON-RPC response object, or null for notifications
+     */
+    private JsonObject handleMcpRequest(JsonObject request) {
+        String method = request.getString(KEY_METHOD, "");
+        Object id = request.getValue(KEY_ID);
+        JsonObject params = request.getJsonObject(KEY_PARAMS);
+
+        log.info("Handling MCP method: {}", method);
+
+        switch (method) {
+            case METHOD_INITIALIZE:
+                return handleInitialize(id, params);
+            case METHOD_NOTIFICATIONS_INITIALIZED:
+                log.info("Client sent initialized notification");
+                return null; // Notifications don't need response
+            case METHOD_TOOLS_LIST:
+                return handleToolsList(id);
+            case METHOD_TOOLS_CALL:
+                return handleToolsCall(id, params);
+            case METHOD_PING:
+                return createSuccessResponse(id, new JsonObject());
+            default:
+                return createErrorResponse(id, ERROR_METHOD_NOT_FOUND,
+                        "Method not found: " + method);
+        }
+    }
+
+    /**
+     * Handle initialize method
+     * @param id Request ID
+     * @param params Request parameters
+     * @return Initialize response
+     */
+    private JsonObject handleInitialize(Object id, JsonObject params) {
+        String clientVersion = params != null ?
+                params.getString(KEY_PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION)
+                : DEFAULT_PROTOCOL_VERSION;
+
+        log.info("Initialize - Protocol version: {}", clientVersion);
+
+        JsonObject result = new JsonObject()
+                .put(KEY_PROTOCOL_VERSION, clientVersion)
+                .put(KEY_SERVER_INFO, new JsonObject()
+                        .put(KEY_NAME, DEFAULT_SERVER_NAME)
+                        .put(KEY_VERSION, DEFAULT_SERVER_VERSION))
+                .put(KEY_CAPABILITIES, new JsonObject()
+                        .put(KEY_TOOLS, new JsonObject()));
+
+        return createSuccessResponse(id, result);
+    }
+
+    /**
+     * Handle tools/list method
+     * @param id Request ID
+     * @return Tools list response
+     */
+    private JsonObject handleToolsList(Object id) {
+        JsonArray tools = toolRegistry.getToolsArray();
+        JsonObject result = new JsonObject().put(KEY_TOOLS, tools);
+        return createSuccessResponse(id, result);
+    }
+
+    /**
+     * Handle tools/call method
+     * @param id Request ID
+     * @param params Tool call parameters
+     * @return Tool execution result
+     */
+    private JsonObject handleToolsCall(Object id, JsonObject params) {
+        if (params == null) {
+            return createErrorResponse(id, ERROR_INVALID_PARAMS, "Invalid params");
+        }
+
+        String toolName = params.getString(KEY_NAME);
+        JsonObject arguments = params.getJsonObject("arguments", new JsonObject());
+
+        log.info("Calling tool: {} with arguments: {}", toolName, arguments);
+
+        try {
+            JsonObject content = toolRegistry.executeTool(toolName, arguments);
+            JsonObject result = new JsonObject()
+                    .put(KEY_CONTENT, new JsonArray().add(content));
+
+            return createSuccessResponse(id, result);
+
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(id, ERROR_INVALID_PARAMS, e.getMessage());
+        } catch (Exception e) {
+            log.error("Tool execution error", e);
+            return createErrorResponse(id, ERROR_INTERNAL,
+                    "Tool execution failed: " + e.getMessage());
+        }
+    }
+
+    // ========== JSON-RPC Response Builders ==========
+
+    /**
+     * Create a success response
+     * @param id Request ID
+     * @param result Result object
+     * @return JSON-RPC success response
+     */
+    private JsonObject createSuccessResponse(Object id, JsonObject result) {
+        return new JsonObject()
+                .put(KEY_JSONRPC, VALUE_JSONRPC_VERSION)
+                .put(KEY_ID, id)
+                .put(KEY_RESULT, result);
+    }
+
+    /**
+     * Create an error response
+     * @param id Request ID
+     * @param code Error code
+     * @param message Error message
+     * @return JSON-RPC error response
+     */
+    private JsonObject createErrorResponse(Object id, int code, String message) {
+        return new JsonObject()
+                .put(KEY_JSONRPC, VALUE_JSONRPC_VERSION)
+                .put(KEY_ID, id)
+                .put(KEY_ERROR, new JsonObject()
+                        .put(KEY_ERROR_CODE, code)
+                        .put(KEY_ERROR_MESSAGE, message));
+    }
+
+    // ========== Schema Creation Helpers ==========
+
+    /**
+     * Create JSON schema for echo tool
+     * @return Echo tool input schema
+     */
+    private JsonObject createEchoSchema() {
+        return new JsonObject()
+                .put(KEY_TYPE, VALUE_TYPE_OBJECT)
+                .put(KEY_PROPERTIES, new JsonObject()
+                        .put(PARAM_MESSAGE, new JsonObject()
+                                .put(KEY_TYPE, VALUE_TYPE_STRING)
+                                .put(KEY_DESCRIPTION, PARAM_DESC_MESSAGE)))
+                .put(KEY_REQUIRED, new JsonArray().add(PARAM_MESSAGE));
+    }
+
+    /**
+     * Create JSON schema for send message tool
+     * @return Send message tool input schema
+     */
+    private JsonObject createSendMessageSchema() {
+        return new JsonObject()
+                .put(KEY_TYPE, VALUE_TYPE_OBJECT)
+                .put(KEY_PROPERTIES, new JsonObject()
+                        .put(PARAM_TOPIC, new JsonObject()
+                                .put(KEY_TYPE, VALUE_TYPE_STRING)
+                                .put(KEY_DESCRIPTION, PARAM_DESC_TOPIC))
+                        .put(PARAM_MESSAGE, new JsonObject()
+                                .put(KEY_TYPE, VALUE_TYPE_STRING)
+                                .put(KEY_DESCRIPTION, PARAM_DESC_MESSAGE_CONTENT)))
+                .put(KEY_REQUIRED, new JsonArray().add(PARAM_TOPIC).add(PARAM_MESSAGE));
+    }
+
+    /**
+     * Create text content object
+     * @param text Text content
+     * @return MCP text content object
+     */
+    private JsonObject createTextContent(String text) {
+        return new JsonObject()
+                .put(KEY_TYPE, VALUE_TYPE_TEXT)
+                .put(KEY_TEXT, text);
+    }
+
+    // ========== Source Interface Implementation ==========
 
     @Override
     public void start() {
         this.server.listen(res -> {
             if (res.succeeded()) {
                 this.started = true;
-                log.info("McpSourceConnector started on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                log.info("McpSourceConnector started on port: {}",
+                        this.sourceConfig.getConnectorConfig().getPort());
+                log.info("MCP endpoints available at:");
+                log.info("  - POST {} (JSON-RPC)", this.sourceConfig.connectorConfig.getPath());
+                log.info("  - GET {} (SSE)", this.sourceConfig.connectorConfig.getPath());
+                log.info("  - GET {}{} (Health check)",
+                        this.sourceConfig.connectorConfig.getPath(), ENDPOINT_HEALTH);
             } else {
-                log.error("McpSourceConnector failed to start on port: {}", this.sourceConfig.getConnectorConfig().getPort());
+                log.error("McpSourceConnector failed to start on port: {}",
+                        this.sourceConfig.getConnectorConfig().getPort());
                 throw new EventMeshException("failed to start Vertx server", res.cause());
             }
         });
@@ -306,15 +506,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
     public void commit(ConnectRecord record) {
         if (sourceConfig.getConnectorConfig().isDataConsistencyEnabled()) {
             log.debug("McpSourceConnector commit record: {}", record.getRecordId());
-            RoutingContext routingContext = (RoutingContext) record.getExtensionObj("routingContext");
-            if (routingContext != null) {
-                routingContext.response()
-                        .putHeader("content-type", "application/json")
-                        .setStatusCode(HttpResponseStatus.OK.code())
-                        .end(McpResponse.success().toJsonStr());
-            } else {
-                log.error("Failed to commit the record, routingContext is null, recordId: {}", record.getRecordId());
-            }
+            // MCP protocol processing doesn't require additional commit logic
         }
     }
 
@@ -325,42 +517,38 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     @Override
     public void onException(ConnectRecord record) {
-        if (this.route != null) {
-            this.route.failureHandler(ctx -> {
-                log.error("Failed to handle the request, recordId {}. ", record.getRecordId(), ctx.failure());
-                // Return Bad Response
-                ctx.response()
-                        .setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
-                        .end("{\"status\":\"failed\",\"recordId\":\"" + record.getRecordId() + "\"}");
-            });
-        }
+        log.error("Exception occurred for record: {}", record.getRecordId());
+        // MCP errors are already handled via JSON-RPC error responses
     }
 
     @Override
     public void stop() {
         if (this.server != null) {
             this.server.close(res -> {
-                        if (res.succeeded()) {
-                            this.destroyed = true;
-                            log.info("McpSourceConnector stopped on port: {}", this.sourceConfig.getConnectorConfig().getPort());
-                        } else {
-                            log.error("McpSourceConnector failed to stop on port: {}", this.sourceConfig.getConnectorConfig().getPort());
-                            throw new EventMeshException("failed to stop Vertx server", res.cause());
-                        }
-                    }
-            );
+                if (res.succeeded()) {
+                    this.destroyed = true;
+                    log.info("McpSourceConnector stopped on port: {}",
+                            this.sourceConfig.getConnectorConfig().getPort());
+                } else {
+                    log.error("McpSourceConnector failed to stop on port: {}",
+                            this.sourceConfig.getConnectorConfig().getPort());
+                    throw new EventMeshException("failed to stop Vertx server", res.cause());
+                }
+            });
         } else {
             log.warn("McpSourceConnector server is null, ignore.");
+        }
+
+        if (this.vertx != null) {
+            this.vertx.close();
         }
     }
 
     @Override
     public List<ConnectRecord> poll() {
         long startTime = System.currentTimeMillis();
-        long maxPollWaitTime = 5000;
-        long remainingTime = maxPollWaitTime;
+        long remainingTime = MAX_POLL_WAIT_TIME_MS;
 
-        // poll from queue
         List<ConnectRecord> connectRecords = new ArrayList<>(batchSize);
         for (int i = 0; i < batchSize; i++) {
             try {
@@ -368,51 +556,19 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
                 if (obj == null) {
                     break;
                 }
-                // convert to ConnectRecord
+
+                // Convert MCP tool calls to ConnectRecord
                 ConnectRecord connectRecord = protocol.convertToConnectRecord(obj);
                 connectRecords.add(connectRecord);
 
-                // calculate elapsed time and update remaining time for next poll
                 long elapsedTime = System.currentTimeMillis() - startTime;
-                remainingTime = maxPollWaitTime > elapsedTime ? maxPollWaitTime - elapsedTime : 0;
+                remainingTime = MAX_POLL_WAIT_TIME_MS > elapsedTime
+                        ? MAX_POLL_WAIT_TIME_MS - elapsedTime : 0;
             } catch (Exception e) {
                 log.error("Failed to poll from queue.", e);
                 throw new RuntimeException(e);
             }
-
         }
         return connectRecords;
     }
-
-    private static void addCors(HttpServerResponse res) {
-        res.putHeader("Access-Control-Allow-Origin", "*");
-        res.putHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-        res.putHeader("Access-Control-Allow-Headers",
-                "Authorization,Content-Type,Accept,Mcp-Protocol-Version,Mcp-Session-Id");
-    }
-
-    private static void writeSseComment(HttpServerResponse res, String text) {
-        res.write(": " + text + "\n\n");
-    }
-
-    private static void writeSseMessage(HttpServerResponse res, String jsonLine) {
-        res.write("event: message\n");
-        res.write("data: " + jsonLine + "\n\n");
-    }
-
-    private static String toRawJson(Object idVal) {
-        if (idVal == null) return "null";
-        if (idVal instanceof Number || idVal instanceof Boolean) return idVal.toString();
-        return "\"" + String.valueOf(idVal).replace("\\","\\\\").replace("\"","\\\"") + "\"";
-    }
-
-    private static String jsonRpcResult(String idRaw, String resultJson) {
-        return "{\"jsonrpc\":\"2.0\",\"id\":" + idRaw + ",\"result\":" + resultJson + "}";
-    }
-
-    private static String jsonRpcError(String idRaw, int code, String message) {
-        return "{\"jsonrpc\":\"2.0\",\"id\":" + idRaw + ",\"error\":{\"code\":" + code + ",\"message\":\"" + message + "\"}}";
-    }
-
-
 }
