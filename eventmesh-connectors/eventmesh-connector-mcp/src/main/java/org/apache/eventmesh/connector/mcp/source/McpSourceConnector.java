@@ -219,7 +219,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
                 }
         );
 
-        // EventMesh message sending tool (example)
+        // EventMesh message sending tool
         toolRegistry.registerTool(
                 TOOL_SEND_MESSAGE,
                 TOOL_DESC_SEND_MESSAGE,
