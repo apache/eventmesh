@@ -105,7 +105,7 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
                 parallelism,
                 0L,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(10000), // Built-in queue with capacity
+                new LinkedBlockingQueue<>(), // Built-in queue with capacity
                 new EventMeshThreadFactory("mcp-sink-handler")
         );
     }
@@ -154,7 +154,6 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
             Thread.currentThread().interrupt();
         }
 
-        log.info("All tasks completed, stopping mcp sink handler");
         this.sinkHandler.stop();
     }
 
@@ -170,6 +169,7 @@ public class McpSinkConnector implements Sink, ConnectorCreateService<Sink> {
                 log.warn("ConnectRecord data is null, ignore.");
                 continue;
             }
+            log.info("McpSinkConnector put record: {}", sinkRecord);
 
             try {
                 // Use executor.submit() instead of custom queue

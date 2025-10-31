@@ -35,3 +35,4 @@ connectorConfig:
         streamType: chunked
         contentType: application/json
         reconnection: true
+    forwardPath: /forward

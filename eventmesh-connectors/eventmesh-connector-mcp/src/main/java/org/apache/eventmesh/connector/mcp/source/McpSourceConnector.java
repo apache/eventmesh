@@ -19,10 +19,14 @@ package org.apache.eventmesh.connector.mcp.source;
 
 import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.*;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.WebClient;
+import lombok.var;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mcp.McpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.connector.mcp.source.data.McpRequest;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.connector.mcp.source.protocol.ProtocolFactory;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -32,7 +36,9 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +69,8 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     private int batchSize;
 
+    private String forwardPath;
+
     private Route route;
 
     private Protocol protocol;
@@ -70,6 +78,8 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
     private HttpServer server;
 
     private Vertx vertx;
+
+    private WebClient webClient;
 
     private McpToolRegistry toolRegistry;
 
@@ -125,10 +135,11 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         // Initialize Vertx and router
         this.vertx = Vertx.vertx();
         final Router router = Router.router(vertx);
+        this.webClient = WebClient.create(vertx);
+
 
         final String basePath = this.sourceConfig.connectorConfig.getPath();
-
-        log.info("Configuring MCP routes with base path: {}", basePath);
+        this.forwardPath = this.sourceConfig.connectorConfig.getForwardPath();
 
         // Configure CORS (must be before all routes)
         router.route().handler(ctx -> {
@@ -155,9 +166,6 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
                     String contentType = ctx.request().getHeader(HEADER_CONTENT_TYPE);
                     String accept = ctx.request().getHeader(HEADER_ACCEPT);
 
-                    log.info("Request to {} - Content-Type: {}, Accept: {}",
-                            basePath, contentType, accept);
-
                     // Determine if it's an SSE request or JSON-RPC request
                     if (CONTENT_TYPE_SSE.startsWith(accept != null ? accept : "")) {
                         handleSseRequest(ctx);
@@ -168,10 +176,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
         // GET request for SSE support
         router.get(basePath)
-                .handler(ctx -> {
-                    log.info("GET request to {} - treating as SSE", basePath);
-                    handleSseRequest(ctx);
-                });
+                .handler(this::handleSseRequest);
 
         // Health check endpoint
         router.get(basePath + ENDPOINT_HEALTH).handler(ctx -> {
@@ -184,6 +189,8 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
                     .end(health.encode());
         });
 
+        Route forwardRoute = router.route().path(forwardPath).handler(LoggerHandler.create());
+
         this.route = router.route()
                 .path(this.sourceConfig.connectorConfig.getPath())
                 .handler(LoggerHandler.create());
@@ -191,6 +198,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
         // set protocol handler
         this.protocol.setHandler(route, queue);
+        this.protocol.setHandler(forwardRoute, queue);
 
         // Create server
         this.server = vertx.createHttpServer(new HttpServerOptions()
@@ -210,8 +218,8 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
     private void registerDefaultTools() {
         // Echo tool
         toolRegistry.registerTool(
-                TOOL_ECHO,
-                TOOL_DESC_ECHO,
+                "echo",
+                "Echo back the input message",
                 createEchoSchema(),
                 args -> {
                     String message = args.getString(PARAM_MESSAGE, DEFAULT_NO_MESSAGE);
@@ -221,15 +229,28 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
         // EventMesh message sending tool
         toolRegistry.registerTool(
-                TOOL_SEND_MESSAGE,
-                TOOL_DESC_SEND_MESSAGE,
+                "sendEventMeshMessage",
+                "Send a message to EventMesh",
                 createSendMessageSchema(),
                 args -> {
                     String topic = args.getString(PARAM_TOPIC);
-                    String message = args.getString(PARAM_MESSAGE);
+                    Object message = args.getString(PARAM_MESSAGE);
 
-                    // TODO: Implement actual EventMesh message sending logic
-                    // Messages can be queued and processed by poll() method
+                    webClient.post(this.sourceConfig.connectorConfig.getPort(), "127.0.0.1", this.forwardPath)
+                            .putHeader(CORS_EXPOSED_HEADERS, CONTENT_TYPE_JSON_PLAIN)
+                            .sendBuffer(Buffer.buffer(
+                                    new JsonObject()
+                                            .put("type","mcp.tools.call")
+                                            .put("tool", "sendEventMeshMessage")
+                                            .put("arguments", new JsonObject().put("message", message).put("topic", topic))
+                                            .encode()
+                            ), ar -> {
+                                if (ar.succeeded()) {
+                                    log.info("forwarded tools/call to {} OK, status={}", forwardPath, ar.result().statusCode());
+                                } else {
+                                    log.warn("forward tools/call failed: {}", ar.cause().toString());
+                                }
+                            });
 
                     return createTextContent(
                             String.format("Message sent to topic '%s': %s", topic, message)
@@ -246,14 +267,12 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
      */
     private void handleJsonRpcRequest(RoutingContext ctx) {
         String body = ctx.body().asString();
-        log.info("<<< JSON-RPC Request: {}", body);
 
         try {
             JsonObject request = new JsonObject(body);
             JsonObject response = handleMcpRequest(request);
 
             if (response != null) {
-                log.info(">>> JSON-RPC Response: {}", response.encode());
                 ctx.response()
                         .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                         .end(response.encode());
@@ -263,7 +282,6 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
             }
 
         } catch (Exception e) {
-            log.error("Error handling JSON-RPC request", e);
             JsonObject error = createErrorResponse(null, ERROR_INTERNAL,
                     "Internal error: " + e.getMessage());
             ctx.response()
@@ -278,8 +296,6 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
      * @param ctx Routing context
      */
     private void handleSseRequest(RoutingContext ctx) {
-        log.info("Establishing SSE connection...");
-
         ctx.response()
                 .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_SSE)
                 .putHeader(HEADER_CACHE_CONTROL, CACHE_CONTROL_NO_CACHE)
@@ -291,8 +307,6 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         ctx.response().write(SSE_EVENT_OPEN);
         ctx.response().write(SSE_DATA_OPEN);
 
-        log.info("SSE connection established");
-
         // Heartbeat (optional)
         long timerId = vertx.setPeriodic(DEFAULT_HEARTBEAT_INTERVAL_MS, id -> {
             if (!ctx.response().closed()) {
@@ -303,7 +317,6 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         });
 
         ctx.request().connection().closeHandler(v -> {
-            log.info("SSE connection closed");
             vertx.cancelTimer(timerId);
         });
     }
@@ -318,13 +331,10 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         Object id = request.getValue(KEY_ID);
         JsonObject params = request.getJsonObject(KEY_PARAMS);
 
-        log.info("Handling MCP method: {}", method);
-
         switch (method) {
             case METHOD_INITIALIZE:
                 return handleInitialize(id, params);
             case METHOD_NOTIFICATIONS_INITIALIZED:
-                log.info("Client sent initialized notification");
                 return null; // Notifications don't need response
             case METHOD_TOOLS_LIST:
                 return handleToolsList(id);
@@ -348,8 +358,6 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         String clientVersion = params != null ?
                 params.getString(KEY_PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION)
                 : DEFAULT_PROTOCOL_VERSION;
-
-        log.info("Initialize - Protocol version: {}", clientVersion);
 
         JsonObject result = new JsonObject()
                 .put(KEY_PROTOCOL_VERSION, clientVersion)

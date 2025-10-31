@@ -57,5 +57,7 @@ public class SourceConnectorConfig {
     private Map<String, String> extraConfig = new HashMap<>();
 
     // data consistency enabled, default true
-    private boolean dataConsistencyEnabled = true;
+    private boolean dataConsistencyEnabled = false;
+
+    private String forwardPath;
 }

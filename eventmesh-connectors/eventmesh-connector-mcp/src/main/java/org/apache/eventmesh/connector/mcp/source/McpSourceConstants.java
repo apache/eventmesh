@@ -388,40 +388,6 @@ public final class McpSourceConstants {
      */
     public static final String X_ACCEL_BUFFERING_NO = "no";
 
-    // ========== Tool Names ==========
-
-    /**
-     * Echo tool name
-     */
-    public static final String TOOL_ECHO = "echo";
-
-    /**
-     * Get current timestamp tool name
-     */
-    public static final String TOOL_GET_TIMESTAMP = "getCurrentTimestamp";
-
-    /**
-     * Send EventMesh message tool name
-     */
-    public static final String TOOL_SEND_MESSAGE = "sendEventMeshMessage";
-
-    // ========== Tool Descriptions ==========
-
-    /**
-     * Echo tool description
-     */
-    public static final String TOOL_DESC_ECHO = "Echo back the input message";
-
-    /**
-     * Get timestamp tool description
-     */
-    public static final String TOOL_DESC_TIMESTAMP = "Get current Unix timestamp in milliseconds";
-
-    /**
-     * Send message tool description
-     */
-    public static final String TOOL_DESC_SEND_MESSAGE = "Send a message to EventMesh";
-
     // ========== Tool Parameter Names ==========
 
     /**

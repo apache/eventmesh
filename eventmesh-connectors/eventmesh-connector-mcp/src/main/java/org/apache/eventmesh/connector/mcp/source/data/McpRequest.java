@@ -41,7 +41,7 @@ public class McpRequest implements Serializable {
     private static final long serialVersionUID = -483500600756490500L;
 
     /**
-     * Protocol name (should be "MCP")
+     * Protocol name
      */
     private String protocolName;
 
@@ -51,22 +51,17 @@ public class McpRequest implements Serializable {
     private String sessionId;
 
     /**
-     * JSON-RPC request ID
-     */
-    private Object requestId;
-
-    /**
-     * MCP method name (e.g., "initialize", "tools/call")
+     * MCP method name
      */
     private String method;
 
     /**
-     * Tool name (for tools/call method)
+     * Tool name
      */
     private String toolName;
 
     /**
-     * Tool arguments (for tools/call method)
+     * Tool arguments
      */
     private JsonObject arguments;
 
@@ -91,79 +86,7 @@ public class McpRequest implements Serializable {
     private String errorMessage;
 
     /**
-     * Additional metadata
-     */
-    @Builder.Default
-    private Map<String, String> metadata = new HashMap<>();
-
-    /**
-     * Request input data
-     */
-    private Object inputs;
-
-    /**
      * Vert.x routing context for HTTP response handling
      */
     private transient RoutingContext routingContext;
-
-    /**
-     * Add a metadata entry
-     *
-     * @param key Metadata key
-     * @param value Metadata value
-     */
-    public void addMetadata(String key, String value) {
-        if (this.metadata == null) {
-            this.metadata = new HashMap<>();
-        }
-        this.metadata.put(key, value);
-    }
-
-    /**
-     * Get metadata value by key
-     *
-     * @param key Metadata key
-     * @return Metadata value, or null if not found
-     */
-    public String getMetadata(String key) {
-        return this.metadata != null ? this.metadata.get(key) : null;
-    }
-
-    /**
-     * Check if this is a tool call request
-     *
-     * @return true if this is a tools/call request
-     */
-    public boolean isToolCall() {
-        return "tools/call".equals(this.method);
-    }
-
-    /**
-     * Check if this is an initialize request
-     *
-     * @return true if this is an initialize request
-     */
-    public boolean isInitialize() {
-        return "initialize".equals(this.method);
-    }
-
-    /**
-     * Convert to a simple map representation
-     *
-     * @return Map containing key request information
-     */
-    public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("protocolName", protocolName);
-        map.put("sessionId", sessionId);
-        map.put("requestId", requestId);
-        map.put("method", method);
-        map.put("toolName", toolName);
-        map.put("timestamp", timestamp);
-        map.put("success", success);
-        if (errorMessage != null) {
-            map.put("errorMessage", errorMessage);
-        }
-        return map;
-    }
 }

@@ -53,16 +53,16 @@ public class McpStandardProtocol implements Protocol {
     public static final String PROTOCOL_NAME = "MCP";
 
     // Extension keys
-    private static final String EXTENSION_PROTOCOL = "protocol";
-    private static final String EXTENSION_SESSION_ID = "sessionId";
-    private static final String EXTENSION_TOOL_NAME = "toolName";
-    private static final String EXTENSION_METHOD = "method";
-    private static final String EXTENSION_REQUEST_ID = "requestId";
-    private static final String EXTENSION_SUCCESS = "success";
-    private static final String EXTENSION_ERROR_MESSAGE = "errorMessage";
-    private static final String EXTENSION_ROUTING_CONTEXT = "routingContext";
-    private static final String EXTENSION_IS_BASE64 = "isBase64";
-    private static final String METADATA_EXTENSION_KEY = "extension";
+    private static final String EXTENSION_PROTOCOL        = "protocol";
+    private static final String EXTENSION_SESSION_ID      = "sessionid";
+    private static final String EXTENSION_TOOL_NAME       = "toolname";
+    private static final String EXTENSION_METHOD          = "method";          // ok
+    private static final String EXTENSION_REQUEST_ID      = "requestid";
+    private static final String EXTENSION_SUCCESS         = "success";         // ok
+    private static final String EXTENSION_ERROR_MESSAGE   = "errormessage";
+    private static final String EXTENSION_ROUTING_CONTEXT = "routingcontext";
+    private static final String EXTENSION_IS_BASE64       = "isbase64";
+    private static final String METADATA_EXTENSION_KEY    = "extension";
 
     private SourceConnectorConfig sourceConnectorConfig;
 
@@ -92,7 +92,6 @@ public class McpStandardProtocol implements Protocol {
                     try {
                         // Parse the request body
                         String bodyString = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
-                        log.debug("Received MCP request: {}", bodyString);
 
                         // Try to parse as JSON
                         JsonObject requestJson;
@@ -108,17 +107,9 @@ public class McpStandardProtocol implements Protocol {
                         }
 
                         // Extract JSON-RPC fields
-                        String method = requestJson.getString("method", "");
-                        Object requestId = requestJson.getValue("id");
-                        JsonObject params = requestJson.getJsonObject("params");
-
-                        // Extract headers as metadata
-                        Map<String, String> metadata = ctx.request().headers().entries().stream()
-                                .collect(Collectors.toMap(
-                                        Map.Entry::getKey,
-                                        Map.Entry::getValue,
-                                        (v1, v2) -> v1 // Keep first value if duplicate keys
-                                ));
+                        String method = requestJson.getString("type", "");
+                        String toolName = requestJson.getString("tool", "");
+                        JsonObject params = requestJson.getJsonObject("arguments");
 
                         // Generate session ID if not present
                         String sessionId = ctx.request().getHeader("Mcp-Session-Id");
@@ -129,11 +120,9 @@ public class McpStandardProtocol implements Protocol {
                         // Create MCP request based on method type
                         McpRequest mcpRequest = createMcpRequest(
                                 method,
-                                requestId,
                                 params,
                                 sessionId,
-                                metadata,
-                                bodyString,
+                                toolName,
                                 ctx
                         );
 
@@ -179,41 +168,30 @@ public class McpStandardProtocol implements Protocol {
      * Create MCP request from parsed JSON-RPC data
      *
      * @param method JSON-RPC method name
-     * @param requestId JSON-RPC request ID
      * @param params JSON-RPC params
      * @param sessionId Session identifier
-     * @param metadata Request metadata (headers)
-     * @param rawBody Raw request body
+     * @param tool Tool name
      * @param ctx Routing context
      * @return Constructed McpRequest
      */
     private McpRequest createMcpRequest(
             String method,
-            Object requestId,
             JsonObject params,
             String sessionId,
-            Map<String, String> metadata,
-            String rawBody,
+            String tool,
             io.vertx.ext.web.RoutingContext ctx) {
 
         McpRequest.McpRequestBuilder builder = McpRequest.builder()
                 .protocolName(PROTOCOL_NAME)
                 .sessionId(sessionId)
-                .requestId(requestId)
                 .method(method)
+                .toolName(tool)
                 .timestamp(System.currentTimeMillis())
-                .inputs(rawBody)
                 .routingContext(ctx);
 
-        // Set metadata
-        if (metadata != null && !metadata.isEmpty()) {
-            builder.metadata(metadata);
-        } else {
-            builder.metadata(new HashMap<>());
-        }
 
         // Handle different method types
-        if ("tools/call".equals(method) && params != null) {
+        if ("mcp.tools.call".equals(method) && params != null) {
             // Tool call request
             String toolName = params.getString("name");
             JsonObject arguments = params.getJsonObject("arguments", new JsonObject());
@@ -222,16 +200,13 @@ public class McpStandardProtocol implements Protocol {
                     .arguments(arguments)
                     .success(false); // Will be set to true after execution
 
-            log.debug("Created tool call request: tool={}, id={}", toolName, requestId);
 
         } else if ("initialize".equals(method)) {
             // Initialize request
-            log.debug("Created initialize request: id={}", requestId);
             builder.success(true);
 
         } else {
             // Other methods
-            log.debug("Created generic MCP request: method={}, id={}", method, requestId);
             builder.success(true);
         }
 
@@ -279,11 +254,6 @@ public class McpStandardProtocol implements Protocol {
             connectRecord.addExtension(EXTENSION_SESSION_ID, request.getSessionId());
         }
 
-        // Add request ID
-        if (request.getRequestId() != null) {
-            connectRecord.addExtension(EXTENSION_REQUEST_ID, String.valueOf(request.getRequestId()));
-        }
-
         // Add method
         if (request.getMethod() != null) {
             connectRecord.addExtension(EXTENSION_METHOD, request.getMethod());
@@ -302,26 +272,6 @@ public class McpStandardProtocol implements Protocol {
             connectRecord.addExtension(EXTENSION_ERROR_MESSAGE, request.getErrorMessage());
         }
 
-        // Add metadata from request
-        if (request.getMetadata() != null) {
-            request.getMetadata().forEach((key, value) -> {
-                try {
-                    // Handle nested extension objects
-                    if (METADATA_EXTENSION_KEY.equalsIgnoreCase(key)) {
-                        JsonObject extension = new JsonObject(value);
-                        extension.forEach(entry ->
-                                connectRecord.addExtension(entry.getKey(), entry.getValue())
-                        );
-                    } else {
-                        connectRecord.addExtension(key, value);
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to add metadata: key={}, error={}", key, e.getMessage());
-                    connectRecord.addExtension(key, value);
-                }
-            });
-        }
-
         // Handle Base64 decoding if needed
         handleBase64Decoding(connectRecord);
 
@@ -329,9 +279,6 @@ public class McpStandardProtocol implements Protocol {
         if (request.getRoutingContext() != null) {
             connectRecord.addExtension(EXTENSION_ROUTING_CONTEXT, request.getRoutingContext());
         }
-
-        log.debug("Converted MCP request to ConnectRecord: method={}, tool={}, id={}",
-                request.getMethod(), request.getToolName(), request.getRequestId());
 
         return connectRecord;
     }
@@ -341,24 +288,16 @@ public class McpStandardProtocol implements Protocol {
      * Priority: result > arguments > inputs
      */
     private Object extractData(McpRequest request) {
-        // 1. If tool execution succeeded, use result
         if (request.isSuccess() && request.getResult() != null) {
             return request.getResult().encode();
         }
 
-        // 2. If tool call, use arguments
         if (request.getArguments() != null) {
             return request.getArguments().encode();
         }
 
-        // 3. Use inputs (raw request body)
-        if (request.getInputs() != null) {
-            return request.getInputs();
-        }
-
-        // 4. Fallback: create minimal info
-        return String.format("{\"method\":\"%s\",\"timestamp\":%d}",
-                request.getMethod(), request.getTimestamp());
+        return String.format("{\"tool\":\"%s\",\"timestamp\":%d}",
+                request.getToolName(), request.getTimestamp());
     }
 
     /**
@@ -399,15 +338,6 @@ public class McpStandardProtocol implements Protocol {
      * @return Generated session ID
      */
     private String generateSessionId() {
-        return "mcp-session-" + UUID.randomUUID().toString();
-    }
-
-    /**
-     * Get protocol name
-     *
-     * @return Protocol name
-     */
-    public String getProtocolName() {
-        return PROTOCOL_NAME;
+        return "mcp-session-" + UUID.randomUUID();
     }
 }
