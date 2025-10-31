@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.connector.mcp.source.data;
 
+import java.io.Serializable;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * MCP Protocol Request
