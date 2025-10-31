@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     Mcp://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.connector.mcp.sink.handler.impl;
 
-import dev.failsafe.Failsafe;
-import dev.failsafe.RetryPolicy;
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.client.HttpResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.mcp.McpRetryConfig;
 import org.apache.eventmesh.common.config.connector.mcp.SinkConnectorConfig;
 import org.apache.eventmesh.connector.http.util.HttpUtils;
@@ -36,6 +30,12 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpResponse;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * McpSinkHandlerRetryWrapper is a wrapper class for the McpSinkHandler that provides retry functionality for failed Mcp requests.
