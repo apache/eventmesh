@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.mcp.sink.handler;
 
-import lombok.Getter;
 import org.apache.eventmesh.common.config.connector.mcp.SinkConnectorConfig;
 import org.apache.eventmesh.connector.mcp.sink.data.McpAttemptEvent;
 import org.apache.eventmesh.connector.mcp.sink.data.McpConnectRecord;
@@ -30,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import lombok.Getter;
 
 public abstract class AbstractMcpSinkHandler implements McpSinkHandler {
     @Getter
