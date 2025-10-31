@@ -1,5 +1,3 @@
-package org.apache.eventmesh.connector.mcp.source;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,12 +15,86 @@ package org.apache.eventmesh.connector.mcp.source;
  * limitations under the License.
  */
 
-import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.*;
+package org.apache.eventmesh.connector.mcp.source;
+
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CACHE_CONTROL_NO_CACHE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CONNECTION_KEEP_ALIVE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CONTENT_TYPE_JSON;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CONTENT_TYPE_JSON_PLAIN;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CONTENT_TYPE_SSE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CORS_ALLOWED_HEADERS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CORS_ALLOWED_METHODS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CORS_ALLOW_ALL;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.CORS_EXPOSED_HEADERS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_CONNECTOR_NAME;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_HEARTBEAT_INTERVAL_MS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_IDLE_TIMEOUT_MS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_NO_MESSAGE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_PROTOCOL_VERSION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_SERVER_NAME;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.DEFAULT_SERVER_VERSION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.ENDPOINT_HEALTH;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.ERROR_INTERNAL;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.ERROR_INVALID_PARAMS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.ERROR_METHOD_NOT_FOUND;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_ACCEPT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CACHE_CONTROL;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CONNECTION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CONTENT_TYPE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CORS_ALLOW_HEADERS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CORS_ALLOW_METHODS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CORS_ALLOW_ORIGIN;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_CORS_EXPOSE_HEADERS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HEADER_X_ACCEL_BUFFERING;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HTTP_METHOD_OPTIONS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HTTP_STATUS_INTERNAL_ERROR;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.HTTP_STATUS_NO_CONTENT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_CAPABILITIES;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_CONNECTOR;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_CONTENT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_DESCRIPTION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_ERROR;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_ERROR_CODE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_ERROR_MESSAGE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_ID;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_JSONRPC;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_METHOD;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_NAME;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_PARAMS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_PROPERTIES;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_PROTOCOL_VERSION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_REQUIRED;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_RESULT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_SERVER_INFO;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_STATUS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_TEXT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_TOOLS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_TYPE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.KEY_VERSION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.MAX_POLL_WAIT_TIME_MS;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.METHOD_INITIALIZE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.METHOD_NOTIFICATIONS_INITIALIZED;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.METHOD_PING;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.METHOD_TOOLS_CALL;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.METHOD_TOOLS_LIST;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.PARAM_DESC_MESSAGE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.PARAM_DESC_MESSAGE_CONTENT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.PARAM_DESC_TOPIC;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.PARAM_MESSAGE;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.PARAM_TOPIC;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.SSE_DATA_OPEN;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.SSE_EVENT_OPEN;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.SSE_HEARTBEAT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.VALUE_JSONRPC_VERSION;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.VALUE_STATUS_UP;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.VALUE_TYPE_OBJECT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.VALUE_TYPE_STRING;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.VALUE_TYPE_TEXT;
+import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.X_ACCEL_BUFFERING_NO;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mcp.McpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.connector.mcp.source.data.McpRequest;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.connector.mcp.source.protocol.ProtocolFactory;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -32,33 +104,29 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 
 /**
- * MCP Source Connector for EventMesh
- * Implements MCP protocol server allowing AI clients to interact with EventMesh via MCP protocol
+ * MCP Source Connector for EventMesh Implements MCP protocol server allowing AI clients to interact with EventMesh via MCP protocol
  */
 @Slf4j
 public class McpSourceConnector implements Source, ConnectorCreateService<Source> {
@@ -137,17 +205,16 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         final Router router = Router.router(vertx);
         this.webClient = WebClient.create(vertx);
 
-
         final String basePath = this.sourceConfig.connectorConfig.getPath();
         this.forwardPath = this.sourceConfig.connectorConfig.getForwardPath();
 
         // Configure CORS (must be before all routes)
         router.route().handler(ctx -> {
             ctx.response()
-                    .putHeader(HEADER_CORS_ALLOW_ORIGIN, CORS_ALLOW_ALL)
-                    .putHeader(HEADER_CORS_ALLOW_METHODS, CORS_ALLOWED_METHODS)
-                    .putHeader(HEADER_CORS_ALLOW_HEADERS, CORS_ALLOWED_HEADERS)
-                    .putHeader(HEADER_CORS_EXPOSE_HEADERS, CORS_EXPOSED_HEADERS);
+                .putHeader(HEADER_CORS_ALLOW_ORIGIN, CORS_ALLOW_ALL)
+                .putHeader(HEADER_CORS_ALLOW_METHODS, CORS_ALLOWED_METHODS)
+                .putHeader(HEADER_CORS_ALLOW_HEADERS, CORS_ALLOWED_HEADERS)
+                .putHeader(HEADER_CORS_EXPOSE_HEADERS, CORS_EXPOSED_HEADERS);
 
             if (HTTP_METHOD_OPTIONS.equals(ctx.request().method().name())) {
                 ctx.response().setStatusCode(HTTP_STATUS_NO_CONTENT).end();
@@ -161,40 +228,39 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
         // Main endpoint - handles both JSON-RPC and SSE requests
         router.post(basePath)
-                .handler(LoggerHandler.create())
-                .handler(ctx -> {
-                    String contentType = ctx.request().getHeader(HEADER_CONTENT_TYPE);
-                    String accept = ctx.request().getHeader(HEADER_ACCEPT);
+            .handler(LoggerHandler.create())
+            .handler(ctx -> {
+                String contentType = ctx.request().getHeader(HEADER_CONTENT_TYPE);
+                String accept = ctx.request().getHeader(HEADER_ACCEPT);
 
-                    // Determine if it's an SSE request or JSON-RPC request
-                    if (CONTENT_TYPE_SSE.startsWith(accept != null ? accept : "")) {
-                        handleSseRequest(ctx);
-                    } else {
-                        handleJsonRpcRequest(ctx);
-                    }
-                });
+                // Determine if it's an SSE request or JSON-RPC request
+                if (CONTENT_TYPE_SSE.startsWith(accept != null ? accept : "")) {
+                    handleSseRequest(ctx);
+                } else {
+                    handleJsonRpcRequest(ctx);
+                }
+            });
 
         // GET request for SSE support
         router.get(basePath)
-                .handler(this::handleSseRequest);
+            .handler(this::handleSseRequest);
 
         // Health check endpoint
         router.get(basePath + ENDPOINT_HEALTH).handler(ctx -> {
             JsonObject health = new JsonObject()
-                    .put(KEY_STATUS, VALUE_STATUS_UP)
-                    .put(KEY_CONNECTOR, DEFAULT_CONNECTOR_NAME)
-                    .put(KEY_TOOLS, toolRegistry.getToolCount());
+                .put(KEY_STATUS, VALUE_STATUS_UP)
+                .put(KEY_CONNECTOR, DEFAULT_CONNECTOR_NAME)
+                .put(KEY_TOOLS, toolRegistry.getToolCount());
             ctx.response()
-                    .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .end(health.encode());
+                .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                .end(health.encode());
         });
 
         Route forwardRoute = router.route().path(forwardPath).handler(LoggerHandler.create());
 
         this.route = router.route()
-                .path(this.sourceConfig.connectorConfig.getPath())
-                .handler(LoggerHandler.create());
-
+            .path(this.sourceConfig.connectorConfig.getPath())
+            .handler(LoggerHandler.create());
 
         // set protocol handler
         this.protocol.setHandler(route, queue);
@@ -202,14 +268,14 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
         // Create server
         this.server = vertx.createHttpServer(new HttpServerOptions()
-                        .setPort(this.sourceConfig.connectorConfig.getPort())
-                        .setHandle100ContinueAutomatically(true)
-                        .setIdleTimeout(DEFAULT_IDLE_TIMEOUT_MS)
-                        .setIdleTimeoutUnit(TimeUnit.MILLISECONDS))
-                .requestHandler(router);
+                .setPort(this.sourceConfig.connectorConfig.getPort())
+                .setHandle100ContinueAutomatically(true)
+                .setIdleTimeout(DEFAULT_IDLE_TIMEOUT_MS)
+                .setIdleTimeoutUnit(TimeUnit.MILLISECONDS))
+            .requestHandler(router);
 
         log.info("MCP Source Connector initialized on http://127.0.0.1:{}{}",
-                this.sourceConfig.connectorConfig.getPort(), basePath);
+            this.sourceConfig.connectorConfig.getPort(), basePath);
     }
 
     /**
@@ -218,44 +284,44 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
     private void registerDefaultTools() {
         // Echo tool
         toolRegistry.registerTool(
-                "echo",
-                "Echo back the input message",
-                createEchoSchema(),
-                args -> {
-                    String message = args.getString(PARAM_MESSAGE, DEFAULT_NO_MESSAGE);
-                    return createTextContent("Echo: " + message);
-                }
+            "echo",
+            "Echo back the input message",
+            createEchoSchema(),
+            args -> {
+                String message = args.getString(PARAM_MESSAGE, DEFAULT_NO_MESSAGE);
+                return createTextContent("Echo: " + message);
+            }
         );
 
         // EventMesh message sending tool
         toolRegistry.registerTool(
-                "sendEventMeshMessage",
-                "Send a message to EventMesh",
-                createSendMessageSchema(),
-                args -> {
-                    String topic = args.getString(PARAM_TOPIC);
-                    Object message = args.getString(PARAM_MESSAGE);
+            "sendEventMeshMessage",
+            "Send a message to EventMesh",
+            createSendMessageSchema(),
+            args -> {
+                String topic = args.getString(PARAM_TOPIC);
+                Object message = args.getString(PARAM_MESSAGE);
 
-                    webClient.post(this.sourceConfig.connectorConfig.getPort(), "127.0.0.1", this.forwardPath)
-                            .putHeader(CORS_EXPOSED_HEADERS, CONTENT_TYPE_JSON_PLAIN)
-                            .sendBuffer(Buffer.buffer(
-                                    new JsonObject()
-                                            .put("type","mcp.tools.call")
-                                            .put("tool", "sendEventMeshMessage")
-                                            .put("arguments", new JsonObject().put("message", message).put("topic", topic))
-                                            .encode()
-                            ), ar -> {
-                                if (ar.succeeded()) {
-                                    log.info("forwarded tools/call to {} OK, status={}", forwardPath, ar.result().statusCode());
-                                } else {
-                                    log.warn("forward tools/call failed: {}", ar.cause().toString());
-                                }
-                            });
+                webClient.post(this.sourceConfig.connectorConfig.getPort(), "127.0.0.1", this.forwardPath)
+                    .putHeader(CORS_EXPOSED_HEADERS, CONTENT_TYPE_JSON_PLAIN)
+                    .sendBuffer(Buffer.buffer(
+                        new JsonObject()
+                            .put("type", "mcp.tools.call")
+                            .put("tool", "sendEventMeshMessage")
+                            .put("arguments", new JsonObject().put("message", message).put("topic", topic))
+                            .encode()
+                    ), ar -> {
+                        if (ar.succeeded()) {
+                            log.info("forwarded tools/call to {} OK, status={}", forwardPath, ar.result().statusCode());
+                        } else {
+                            log.warn("forward tools/call failed: {}", ar.cause().toString());
+                        }
+                    });
 
-                    return createTextContent(
-                            String.format("Message sent to topic '%s': %s", topic, message)
-                    );
-                }
+                return createTextContent(
+                    String.format("Message sent to topic '%s': %s", topic, message)
+                );
+            }
         );
 
         log.info("Registered {} MCP tools", toolRegistry.getToolCount());
@@ -263,6 +329,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     /**
      * Handle JSON-RPC request (HTTP mode)
+     *
      * @param ctx Routing context
      */
     private void handleJsonRpcRequest(RoutingContext ctx) {
@@ -274,8 +341,8 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
             if (response != null) {
                 ctx.response()
-                        .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                        .end(response.encode());
+                    .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .end(response.encode());
             } else {
                 // Notification messages don't need response
                 ctx.response().setStatusCode(HTTP_STATUS_NO_CONTENT).end();
@@ -283,25 +350,26 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
         } catch (Exception e) {
             JsonObject error = createErrorResponse(null, ERROR_INTERNAL,
-                    "Internal error: " + e.getMessage());
+                "Internal error: " + e.getMessage());
             ctx.response()
-                    .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .setStatusCode(HTTP_STATUS_INTERNAL_ERROR)
-                    .end(error.encode());
+                .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                .setStatusCode(HTTP_STATUS_INTERNAL_ERROR)
+                .end(error.encode());
         }
     }
 
     /**
      * Handle SSE request (Server-Sent Events mode)
+     *
      * @param ctx Routing context
      */
     private void handleSseRequest(RoutingContext ctx) {
         ctx.response()
-                .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_SSE)
-                .putHeader(HEADER_CACHE_CONTROL, CACHE_CONTROL_NO_CACHE)
-                .putHeader(HEADER_CONNECTION, CONNECTION_KEEP_ALIVE)
-                .putHeader(HEADER_X_ACCEL_BUFFERING, X_ACCEL_BUFFERING_NO)
-                .setChunked(true);
+            .putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_SSE)
+            .putHeader(HEADER_CACHE_CONTROL, CACHE_CONTROL_NO_CACHE)
+            .putHeader(HEADER_CONNECTION, CONNECTION_KEEP_ALIVE)
+            .putHeader(HEADER_X_ACCEL_BUFFERING, X_ACCEL_BUFFERING_NO)
+            .setChunked(true);
 
         // Send connection established event
         ctx.response().write(SSE_EVENT_OPEN);
@@ -323,6 +391,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     /**
      * Handle MCP JSON-RPC request
+     *
      * @param request JSON-RPC request object
      * @return JSON-RPC response object, or null for notifications
      */
@@ -344,34 +413,36 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
                 return createSuccessResponse(id, new JsonObject());
             default:
                 return createErrorResponse(id, ERROR_METHOD_NOT_FOUND,
-                        "Method not found: " + method);
+                    "Method not found: " + method);
         }
     }
 
     /**
      * Handle initialize method
-     * @param id Request ID
+     *
+     * @param id     Request ID
      * @param params Request parameters
      * @return Initialize response
      */
     private JsonObject handleInitialize(Object id, JsonObject params) {
-        String clientVersion = params != null ?
-                params.getString(KEY_PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION)
-                : DEFAULT_PROTOCOL_VERSION;
+        String clientVersion = params != null
+            ? params.getString(KEY_PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION)
+            : DEFAULT_PROTOCOL_VERSION;
 
         JsonObject result = new JsonObject()
-                .put(KEY_PROTOCOL_VERSION, clientVersion)
-                .put(KEY_SERVER_INFO, new JsonObject()
-                        .put(KEY_NAME, DEFAULT_SERVER_NAME)
-                        .put(KEY_VERSION, DEFAULT_SERVER_VERSION))
-                .put(KEY_CAPABILITIES, new JsonObject()
-                        .put(KEY_TOOLS, new JsonObject()));
+            .put(KEY_PROTOCOL_VERSION, clientVersion)
+            .put(KEY_SERVER_INFO, new JsonObject()
+                .put(KEY_NAME, DEFAULT_SERVER_NAME)
+                .put(KEY_VERSION, DEFAULT_SERVER_VERSION))
+            .put(KEY_CAPABILITIES, new JsonObject()
+                .put(KEY_TOOLS, new JsonObject()));
 
         return createSuccessResponse(id, result);
     }
 
     /**
      * Handle tools/list method
+     *
      * @param id Request ID
      * @return Tools list response
      */
@@ -383,7 +454,8 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     /**
      * Handle tools/call method
-     * @param id Request ID
+     *
+     * @param id     Request ID
      * @param params Tool call parameters
      * @return Tool execution result
      */
@@ -400,7 +472,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         try {
             JsonObject content = toolRegistry.executeTool(toolName, arguments);
             JsonObject result = new JsonObject()
-                    .put(KEY_CONTENT, new JsonArray().add(content));
+                .put(KEY_CONTENT, new JsonArray().add(content));
 
             return createSuccessResponse(id, result);
 
@@ -409,7 +481,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
         } catch (Exception e) {
             log.error("Tool execution error", e);
             return createErrorResponse(id, ERROR_INTERNAL,
-                    "Tool execution failed: " + e.getMessage());
+                "Tool execution failed: " + e.getMessage());
         }
     }
 
@@ -417,75 +489,80 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
     /**
      * Create a success response
-     * @param id Request ID
+     *
+     * @param id     Request ID
      * @param result Result object
      * @return JSON-RPC success response
      */
     private JsonObject createSuccessResponse(Object id, JsonObject result) {
         return new JsonObject()
-                .put(KEY_JSONRPC, VALUE_JSONRPC_VERSION)
-                .put(KEY_ID, id)
-                .put(KEY_RESULT, result);
+            .put(KEY_JSONRPC, VALUE_JSONRPC_VERSION)
+            .put(KEY_ID, id)
+            .put(KEY_RESULT, result);
     }
 
     /**
      * Create an error response
-     * @param id Request ID
-     * @param code Error code
+     *
+     * @param id      Request ID
+     * @param code    Error code
      * @param message Error message
      * @return JSON-RPC error response
      */
     private JsonObject createErrorResponse(Object id, int code, String message) {
         return new JsonObject()
-                .put(KEY_JSONRPC, VALUE_JSONRPC_VERSION)
-                .put(KEY_ID, id)
-                .put(KEY_ERROR, new JsonObject()
-                        .put(KEY_ERROR_CODE, code)
-                        .put(KEY_ERROR_MESSAGE, message));
+            .put(KEY_JSONRPC, VALUE_JSONRPC_VERSION)
+            .put(KEY_ID, id)
+            .put(KEY_ERROR, new JsonObject()
+                .put(KEY_ERROR_CODE, code)
+                .put(KEY_ERROR_MESSAGE, message));
     }
 
     // ========== Schema Creation Helpers ==========
 
     /**
      * Create JSON schema for echo tool
+     *
      * @return Echo tool input schema
      */
     private JsonObject createEchoSchema() {
         return new JsonObject()
-                .put(KEY_TYPE, VALUE_TYPE_OBJECT)
-                .put(KEY_PROPERTIES, new JsonObject()
-                        .put(PARAM_MESSAGE, new JsonObject()
-                                .put(KEY_TYPE, VALUE_TYPE_STRING)
-                                .put(KEY_DESCRIPTION, PARAM_DESC_MESSAGE)))
-                .put(KEY_REQUIRED, new JsonArray().add(PARAM_MESSAGE));
+            .put(KEY_TYPE, VALUE_TYPE_OBJECT)
+            .put(KEY_PROPERTIES, new JsonObject()
+                .put(PARAM_MESSAGE, new JsonObject()
+                    .put(KEY_TYPE, VALUE_TYPE_STRING)
+                    .put(KEY_DESCRIPTION, PARAM_DESC_MESSAGE)))
+            .put(KEY_REQUIRED, new JsonArray().add(PARAM_MESSAGE));
     }
 
     /**
      * Create JSON schema for send message tool
+     *
      * @return Send message tool input schema
      */
     private JsonObject createSendMessageSchema() {
         return new JsonObject()
-                .put(KEY_TYPE, VALUE_TYPE_OBJECT)
-                .put(KEY_PROPERTIES, new JsonObject()
-                        .put(PARAM_TOPIC, new JsonObject()
-                                .put(KEY_TYPE, VALUE_TYPE_STRING)
-                                .put(KEY_DESCRIPTION, PARAM_DESC_TOPIC))
-                        .put(PARAM_MESSAGE, new JsonObject()
-                                .put(KEY_TYPE, VALUE_TYPE_STRING)
-                                .put(KEY_DESCRIPTION, PARAM_DESC_MESSAGE_CONTENT)))
-                .put(KEY_REQUIRED, new JsonArray().add(PARAM_TOPIC).add(PARAM_MESSAGE));
+            .put(KEY_TYPE, VALUE_TYPE_OBJECT)
+            .put(KEY_PROPERTIES, new JsonObject()
+                .put(PARAM_TOPIC, new JsonObject()
+                    .put(KEY_TYPE, VALUE_TYPE_STRING)
+                    .put(KEY_DESCRIPTION, PARAM_DESC_TOPIC))
+                .put(PARAM_MESSAGE, new JsonObject()
+                    .put(KEY_TYPE, VALUE_TYPE_STRING)
+                    .put(KEY_DESCRIPTION, PARAM_DESC_MESSAGE_CONTENT)))
+            .put(KEY_REQUIRED, new JsonArray().add(PARAM_TOPIC).add(PARAM_MESSAGE));
     }
 
     /**
      * Create text content object
+     *
      * @param text Text content
      * @return MCP text content object
      */
     private JsonObject createTextContent(String text) {
         return new JsonObject()
-                .put(KEY_TYPE, VALUE_TYPE_TEXT)
-                .put(KEY_TEXT, text);
+            .put(KEY_TYPE, VALUE_TYPE_TEXT)
+            .put(KEY_TEXT, text);
     }
 
     // ========== Source Interface Implementation ==========
@@ -496,15 +573,15 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
             if (res.succeeded()) {
                 this.started = true;
                 log.info("McpSourceConnector started on port: {}",
-                        this.sourceConfig.getConnectorConfig().getPort());
+                    this.sourceConfig.getConnectorConfig().getPort());
                 log.info("MCP endpoints available at:");
                 log.info("  - POST {} (JSON-RPC)", this.sourceConfig.connectorConfig.getPath());
                 log.info("  - GET {} (SSE)", this.sourceConfig.connectorConfig.getPath());
                 log.info("  - GET {}{} (Health check)",
-                        this.sourceConfig.connectorConfig.getPath(), ENDPOINT_HEALTH);
+                    this.sourceConfig.connectorConfig.getPath(), ENDPOINT_HEALTH);
             } else {
                 log.error("McpSourceConnector failed to start on port: {}",
-                        this.sourceConfig.getConnectorConfig().getPort());
+                    this.sourceConfig.getConnectorConfig().getPort());
                 throw new EventMeshException("failed to start Vertx server", res.cause());
             }
         });
@@ -536,10 +613,10 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
                 if (res.succeeded()) {
                     this.destroyed = true;
                     log.info("McpSourceConnector stopped on port: {}",
-                            this.sourceConfig.getConnectorConfig().getPort());
+                        this.sourceConfig.getConnectorConfig().getPort());
                 } else {
                     log.error("McpSourceConnector failed to stop on port: {}",
-                            this.sourceConfig.getConnectorConfig().getPort());
+                        this.sourceConfig.getConnectorConfig().getPort());
                     throw new EventMeshException("failed to stop Vertx server", res.cause());
                 }
             });
@@ -571,7 +648,7 @@ public class McpSourceConnector implements Source, ConnectorCreateService<Source
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
                 remainingTime = MAX_POLL_WAIT_TIME_MS > elapsedTime
-                        ? MAX_POLL_WAIT_TIME_MS - elapsedTime : 0;
+                    ? MAX_POLL_WAIT_TIME_MS - elapsedTime : 0;
             } catch (Exception e) {
                 log.error("Failed to poll from queue.", e);
                 throw new RuntimeException(e);
