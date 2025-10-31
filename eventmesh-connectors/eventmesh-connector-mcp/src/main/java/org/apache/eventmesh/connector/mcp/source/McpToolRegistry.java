@@ -1,5 +1,3 @@
-package org.apache.eventmesh.connector.mcp.source;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,12 +15,15 @@ package org.apache.eventmesh.connector.mcp.source;
  * limitations under the License.
  */
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import lombok.extern.slf4j.Slf4j;
+package org.apache.eventmesh.connector.mcp.source;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * MCP Tool Registry
