@@ -19,10 +19,6 @@ package org.apache.eventmesh.connector.mcp.source;
 
 import static org.apache.eventmesh.connector.mcp.source.McpSourceConstants.*;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.client.WebClient;
-import lombok.var;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mcp.McpSourceConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
@@ -43,18 +39,22 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 
 /**
  * MCP Source Connector for EventMesh
