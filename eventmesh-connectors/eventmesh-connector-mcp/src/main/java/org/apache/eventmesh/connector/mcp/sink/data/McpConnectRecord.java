@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector.mcp.sink.data;
 
-import lombok.Builder;
-import lombok.Getter;
 import org.apache.eventmesh.common.remote.offset.http.HttpRecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.KeyValue;
@@ -29,6 +27,9 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import lombok.Builder;
+import lombok.Getter;
 
 /**
  * a special ConnectRecord for McpSinkConnector
