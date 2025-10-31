@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.connector.mcp.source.protocol;
 
-import io.vertx.ext.web.Route;
 import org.apache.eventmesh.common.config.connector.mcp.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 import java.util.concurrent.BlockingQueue;
+
+import io.vertx.ext.web.Route;
 
 /**
  * Protocol Interface.
