@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.mcp.sink.data;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * Metadata for an MCP export operation.
