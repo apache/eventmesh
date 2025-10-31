@@ -17,28 +17,24 @@
 
 package org.apache.eventmesh.connector.mcp.source.protocol.impl;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.handler.BodyHandler;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.connector.mcp.SourceConnectorConfig;
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.connector.mcp.source.data.McpRequest;
 import org.apache.eventmesh.connector.mcp.source.data.McpResponse;
 import org.apache.eventmesh.connector.mcp.source.protocol.Protocol;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.handler.BodyHandler;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * MCP Standard Protocol Implementation
