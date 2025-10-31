@@ -30,12 +30,14 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 
-import dev.failsafe.Failsafe;
-import dev.failsafe.RetryPolicy;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
+
 import lombok.extern.slf4j.Slf4j;
+
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 
 /**
  * McpSinkHandlerRetryWrapper is a wrapper class for the McpSinkHandler that provides retry functionality for failed Mcp requests.
