@@ -15,5 +15,6 @@
 # limitations under the License.
 #
 
-sourceEnable: true
-sinkEnable: true
+
+MCP-Source=org.apache.eventmesh.connector.mcp.source.McpSourceConnector
+MCP-Sink=org.apache.eventmesh.connector.mcp.sink.McpSinkConnector

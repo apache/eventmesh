@@ -15,5 +15,24 @@
 # limitations under the License.
 #
 
-sourceEnable: true
-sinkEnable: true
+pubSubConfig:
+    meshAddress: 127.0.0.1:10000
+    subject: TopicTest
+    idc: FT
+    env: PRD
+    group: mcpSource
+    appId: 5032
+    userName: mcpSourceUser
+    passWord: mcpPassWord
+connectorConfig:
+    connectorName: mcpSource
+    path: /test
+    port: 7091
+    idleTimeout: 5000   # timeunit: ms
+    maxFormAttributeSize: 1048576 # timeunit: byte, default: 1048576(1MB). This applies only when handling form data submissions.
+    protocol: MCP # Case insensitive, default: CloudEvent, options: CloudEvent, GitHub, Common
+    extraConfig: # extra config for different protocol, e.g. GitHub secret
+        streamType: chunked
+        contentType: application/json
+        reconnection: true
+    forwardPath: /forward
