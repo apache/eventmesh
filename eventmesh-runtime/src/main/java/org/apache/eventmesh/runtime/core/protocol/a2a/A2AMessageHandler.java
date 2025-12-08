@@ -1,9 +1,9 @@
 package org.apache.eventmesh.runtime.core.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
-import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.A2AMessage;
+import org.apache.eventmesh.protocol.a2a.A2AMessage;
 import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
-import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.MessageMetadata;
+import org.apache.eventmesh.protocol.a2a.MessageMetadata;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.util.Map;

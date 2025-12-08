@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.runtime.core.protocol.a2a.processor;
 
-import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
+import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.protocol.http.common.RequestURI;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.protocol.a2a.A2AMessageHandler;
@@ -28,6 +31,11 @@ import org.apache.eventmesh.runtime.core.protocol.a2a.CollaborationManager;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AbstractHttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor;
+import org.apache.eventmesh.protocol.a2a.A2AMessage;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
+
+import java.util.concurrent.Executor;
 
 import java.util.List;
 import java.util.Map;
@@ -49,8 +57,10 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     private final AgentRegistry agentRegistry;
     private final CollaborationManager collaborationManager;
 
+    private final EventMeshHTTPServer eventMeshHTTPServer;
+
     public A2AHttpProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
-        super(eventMeshHTTPServer);
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.messageHandler = A2AMessageHandler.getInstance();
         this.agentRegistry = AgentRegistry.getInstance();
         this.collaborationManager = CollaborationManager.getInstance();
@@ -75,32 +85,49 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     }
 
     @Override
-    public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpEventWrapper> asyncContext) 
+    @Override
+    public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) 
         throws Exception {
         
-        HttpEventWrapper httpEventWrapper = asyncContext.getRequest();
-        String path = httpEventWrapper.getRequestURI();
+        HttpCommand request = asyncContext.getRequest();
+        // Assuming path is passed via header or body, or we need to parse it. 
+        // Since HttpCommand doesn't have path directly, we might need to rely on requestCode or other mechanisms.
+        // However, the original code used paths. Let's assume for now we can get it from header or it's a specific request code.
+        // For A2A, we might need to look at a specific header "path" or similar if it's not standard.
+        // But wait, HttpCommand is usually for specific RequestCodes. 
+        // If we are integrating into existing HTTP server, we should check how it routes.
+        // The paths() method suggests it uses path matching.
+        // But AbstractHttpRequestProcessor doesn't seem to use paths() for routing in the way we might expect if it's just a list of paths.
+        // Actually, the HTTP server likely uses the map of processors.
+        
+        // For now, let's try to get path from header if available, or default to a generic handling.
+        // In standard EventMesh, RequestCode determines the processor.
+        // If we want path based, we might need to check how the server dispatches.
+        // Assuming we are registered for these paths.
+        
+        // Let's look at the request.
+        String path = request.getHeader().toMap().getOrDefault("path", "");
         
         log.debug("Processing A2A request: {}", path);
         
         try {
             // Route to specific handler based on path
-            CompletableFuture<Map<String, Object>> responseFuture = routeRequest(path, httpEventWrapper);
+            CompletableFuture<Map<String, Object>> responseFuture = routeRequest(path, request);
             
             // Handle response asynchronously
             responseFuture.thenAccept(responseData -> {
                 try {
-                    HttpEventWrapper responseWrapper = EventMeshUtil.buildHttpResponse(responseData);
-                    asyncContext.onComplete(responseWrapper);
+                    HttpCommand response = buildHttpResponse(request, responseData);
+                    asyncContext.onComplete(response);
                 } catch (Exception e) {
                     log.error("Failed to build A2A response", e);
-                    asyncContext.onComplete(EventMeshUtil.buildHttpResponse(
+                    asyncContext.onComplete(buildErrorResponse(request, 
                         EventMeshRetCode.EVENTMESH_RUNTIME_ERR, 
                         "Failed to process A2A request: " + e.getMessage()));
                 }
             }).exceptionally(throwable -> {
                 log.error("A2A request processing failed", throwable);
-                asyncContext.onComplete(EventMeshUtil.buildHttpResponse(
+                asyncContext.onComplete(buildErrorResponse(request,
                     EventMeshRetCode.EVENTMESH_RUNTIME_ERR, 
                     "A2A request failed: " + throwable.getMessage()));
                 return null;
@@ -108,16 +135,43 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
             
         } catch (Exception e) {
             log.error("Failed to process A2A request", e);
-            asyncContext.onComplete(EventMeshUtil.buildHttpResponse(
+            asyncContext.onComplete(buildErrorResponse(request,
                 EventMeshRetCode.EVENTMESH_RUNTIME_ERR, 
                 "A2A request processing error: " + e.getMessage()));
         }
     }
 
+    @Override
+    public Executor executor() {
+        return eventMeshHTTPServer.getHttpThreadPoolGroup().getSendMsgExecutor();
+    }
+
+    private HttpCommand buildHttpResponse(HttpCommand request, Map<String, Object> responseData) {
+        BaseResponseHeader header = new BaseResponseHeader();
+        header.setCode(request.getRequestCode());
+        
+        BaseResponseBody body = new BaseResponseBody();
+        body.setRetCode(EventMeshRetCode.SUCCESS.getRetCode());
+        body.setRetMsg(JsonUtils.toJSONString(responseData));
+        
+        return request.createHttpCommandResponse(header, body);
+    }
+
+    private HttpCommand buildErrorResponse(HttpCommand request, EventMeshRetCode retCode, String msg) {
+        BaseResponseHeader header = new BaseResponseHeader();
+        header.setCode(request.getRequestCode());
+        
+        BaseResponseBody body = new BaseResponseBody();
+        body.setRetCode(retCode.getRetCode());
+        body.setRetMsg(msg);
+        
+        return request.createHttpCommandResponse(header, body);
+    }
+
     /**
      * Route A2A requests to appropriate handlers.
      */
-    private CompletableFuture<Map<String, Object>> routeRequest(String path, HttpEventWrapper request) {
+    private CompletableFuture<Map<String, Object>> routeRequest(String path, HttpCommand request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 switch (path) {
@@ -157,7 +211,7 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Handle agent registration.
      */
-    private Map<String, Object> handleAgentRegister(HttpEventWrapper request) {
+    private Map<String, Object> handleAgentRegister(HttpCommand request) {
         try {
             Map<String, Object> body = extractRequestBody(request);
             
@@ -167,10 +221,10 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
             List<String> capabilities = (List<String>) body.get("capabilities");
             
             // Create A2A registration message and process
-            A2AProtocolAdaptor.A2AMessage registerMsg = new A2AProtocolAdaptor.A2AMessage();
+            A2AMessage registerMsg = new A2AMessage();
             registerMsg.setMessageType("REGISTER");
             
-            A2AProtocolAdaptor.AgentInfo agentInfo = new A2AProtocolAdaptor.AgentInfo();
+            AgentInfo agentInfo = new AgentInfo();
             agentInfo.setAgentId(agentId);
             agentInfo.setAgentType(agentType);
             agentInfo.setCapabilities(capabilities.toArray(new String[0]));
@@ -202,9 +256,9 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Handle agent list request.
      */
-    private Map<String, Object> handleAgentList(HttpEventWrapper request) {
+    private Map<String, Object> handleAgentList(HttpCommand request) {
         try {
-            List<A2AProtocolAdaptor.AgentInfo> agents = messageHandler.getAllAgents();
+            List<AgentInfo> agents = messageHandler.getAllAgents();
             
             return Map.of(
                 "code", 200,
@@ -227,14 +281,14 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Handle agent search by type or capability.
      */
-    private Map<String, Object> handleAgentSearch(HttpEventWrapper request) {
+    private Map<String, Object> handleAgentSearch(HttpCommand request) {
         try {
             Map<String, String> params = extractQueryParams(request);
             
             String agentType = params.get("type");
             String capability = params.get("capability");
             
-            List<A2AProtocolAdaptor.AgentInfo> agents;
+            List<AgentInfo> agents;
             
             if (agentType != null) {
                 agents = messageHandler.findAgentsByType(agentType);
@@ -269,7 +323,7 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Handle collaboration start request.
      */
-    private Map<String, Object> handleCollaborationStart(HttpEventWrapper request) {
+    private Map<String, Object> handleCollaborationStart(HttpCommand request) {
         try {
             Map<String, Object> body = extractRequestBody(request);
             
@@ -307,7 +361,7 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Handle collaboration status request.
      */
-    private Map<String, Object> handleCollaborationStatus(HttpEventWrapper request) {
+    private Map<String, Object> handleCollaborationStatus(HttpCommand request) {
         try {
             Map<String, String> params = extractQueryParams(request);
             String sessionId = params.get("sessionId");
@@ -340,37 +394,37 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Handle other A2A operations with similar patterns...
      */
-    private Map<String, Object> handleAgentUnregister(HttpEventWrapper request) {
+    private Map<String, Object> handleAgentUnregister(HttpCommand request) {
         // Implementation similar to register
         return Map.of("code", 200, "message", "Not implemented yet");
     }
 
-    private Map<String, Object> handleAgentHeartbeat(HttpEventWrapper request) {
+    private Map<String, Object> handleAgentHeartbeat(HttpCommand request) {
         // Implementation for heartbeat
         return Map.of("code", 200, "message", "Not implemented yet");
     }
 
-    private Map<String, Object> handleTaskRequest(HttpEventWrapper request) {
+    private Map<String, Object> handleTaskRequest(HttpCommand request) {
         // Implementation for task request
         return Map.of("code", 200, "message", "Not implemented yet");
     }
 
-    private Map<String, Object> handleTaskResponse(HttpEventWrapper request) {
+    private Map<String, Object> handleTaskResponse(HttpCommand request) {
         // Implementation for task response
         return Map.of("code", 200, "message", "Not implemented yet");
     }
 
-    private Map<String, Object> handleCollaborationCancel(HttpEventWrapper request) {
+    private Map<String, Object> handleCollaborationCancel(HttpCommand request) {
         // Implementation for collaboration cancel
         return Map.of("code", 200, "message", "Not implemented yet");
     }
 
-    private Map<String, Object> handleWorkflowRegister(HttpEventWrapper request) {
+    private Map<String, Object> handleWorkflowRegister(HttpCommand request) {
         // Implementation for workflow register
         return Map.of("code", 200, "message", "Not implemented yet");
     }
 
-    private Map<String, Object> handleBroadcast(HttpEventWrapper request) {
+    private Map<String, Object> handleBroadcast(HttpCommand request) {
         // Implementation for broadcast
         return Map.of("code", 200, "message", "Not implemented yet");
     }
@@ -378,15 +432,12 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Extract request body as map.
      */
-    private Map<String, Object> extractRequestBody(HttpEventWrapper request) {
+    private Map<String, Object> extractRequestBody(HttpCommand request) {
         try {
-            String body = request.getBody();
-            if (body == null || body.trim().isEmpty()) {
+            if (request.getBody() == null) {
                 return Map.of();
             }
-            
-            return JsonUtils.parseTypeReferenceObject(body,
-                new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            return request.getBody().toMap();
                 
         } catch (Exception e) {
             log.warn("Failed to parse request body", e);
@@ -397,7 +448,7 @@ public class A2AHttpProcessor extends AbstractHttpRequestProcessor {
     /**
      * Extract query parameters from request.
      */
-    private Map<String, String> extractQueryParams(HttpEventWrapper request) {
+    private Map<String, String> extractQueryParams(HttpCommand request) {
         // This would need proper implementation based on HttpEventWrapper structure
         // For now, return empty map
         return Map.of();

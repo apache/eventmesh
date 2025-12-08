@@ -1,6 +1,7 @@
 package org.apache.eventmesh.runtime.core.protocol.a2a;
 
 import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
+import org.apache.eventmesh.protocol.a2a.A2AMessage;
 import org.apache.eventmesh.runtime.core.protocol.a2a.pubsub.A2APublishSubscribeService;
 import org.apache.eventmesh.runtime.core.protocol.a2a.pubsub.A2ATaskRequest;
 import org.apache.eventmesh.runtime.core.protocol.a2a.pubsub.A2ATaskMessage;

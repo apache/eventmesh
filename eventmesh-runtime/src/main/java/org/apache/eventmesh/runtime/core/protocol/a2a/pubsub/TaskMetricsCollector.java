@@ -47,21 +47,21 @@ public class TaskMetricsCollector {
      */
     public void recordTaskPublished(String taskType) {
         totalTasksPublished.incrementAndGet();
-        getTaskTypeMetrics(taskType).published.increment();
+        getOrCreateTaskTypeMetrics(taskType).published.increment();
     }
     
     /**
      * Record task publish failed
      */
     public void recordTaskPublishFailed(String taskType) {
-        getTaskTypeMetrics(taskType).publishFailed.increment();
+        getOrCreateTaskTypeMetrics(taskType).publishFailed.increment();
     }
     
     /**
      * Record task started processing
      */
     public void recordTaskStarted(String taskType) {
-        getTaskTypeMetrics(taskType).started.increment();
+        getOrCreateTaskTypeMetrics(taskType).started.increment();
     }
     
     /**
@@ -69,7 +69,7 @@ public class TaskMetricsCollector {
      */
     public void recordTaskCompleted(String taskType, long processingTimeMs) {
         totalTasksCompleted.incrementAndGet();
-        TaskTypeMetrics metrics = getTaskTypeMetrics(taskType);
+        TaskTypeMetrics metrics = getOrCreateTaskTypeMetrics(taskType);
         metrics.completed.increment();
         
         // Update processing time stats
@@ -81,7 +81,7 @@ public class TaskMetricsCollector {
      */
     public void recordTaskFailed(String taskType) {
         totalTasksFailed.incrementAndGet();
-        getTaskTypeMetrics(taskType).failed.increment();
+        getOrCreateTaskTypeMetrics(taskType).failed.increment();
     }
     
     /**
@@ -89,7 +89,7 @@ public class TaskMetricsCollector {
      */
     public void recordTaskTimeout(String taskType) {
         totalTasksTimeout.incrementAndGet();
-        getTaskTypeMetrics(taskType).timeout.increment();
+        getOrCreateTaskTypeMetrics(taskType).timeout.increment();
     }
     
     /**
@@ -121,7 +121,7 @@ public class TaskMetricsCollector {
     /**
      * Get metrics for a specific task type
      */
-    private TaskTypeMetrics getTaskTypeMetrics(String taskType) {
+    private TaskTypeMetrics getOrCreateTaskTypeMetrics(String taskType) {
         return taskTypeMetrics.computeIfAbsent(taskType, k -> new TaskTypeMetrics());
     }
     

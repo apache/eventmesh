@@ -1,17 +1,16 @@
 package org.apache.eventmesh.runtime.core.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
-import org.apache.eventmesh.common.protocol.http.HttpMessage;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
-import org.apache.eventmesh.common.protocol.http.message.RequestMessage;
-import org.apache.eventmesh.common.protocol.http.message.ResponseMessage;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.A2AMessage;
+import org.apache.eventmesh.protocol.a2a.A2AMessage;
+import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor;
 import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.AgentInfo;
-import org.apache.eventmesh.protocol.a2a.A2AProtocolAdaptor.MessageMetadata;
+import org.apache.eventmesh.protocol.a2a.MessageMetadata;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -307,5 +306,36 @@ public class A2AProtocolProcessor {
      */
     public A2AProtocolAdaptor getProtocolAdaptor() {
         return protocolAdaptor;
+    }
+
+    public static class RequestMessage implements ProtocolTransportObject {
+        private final String content;
+
+        public RequestMessage(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return content;
+        }
+    }
+
+    public static class ResponseMessage {
+        private final Object header;
+        private final Object body;
+
+        public ResponseMessage(Object header, Object body) {
+            this.header = header;
+            this.body = body;
+        }
+
+        public Object getHeader() {
+            return header;
+        }
+
+        public Object getBody() {
+            return body;
+        }
     }
 }

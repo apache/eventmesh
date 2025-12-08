@@ -148,10 +148,10 @@ public class A2AGrpcService {
             );
             
             // Build success response with session ID
-            Response response = Response.newBuilder()
-                .setRespCode(StatusCode.SUCCESS.getRetCode())
-                .setRespMsg("Collaboration started successfully")
-                .setRespTime(System.currentTimeMillis())
+            Response response = Response.builder()
+                .respCode(StatusCode.SUCCESS.getRetCode())
+                .respMsg("Collaboration started successfully")
+                .respTime(String.valueOf(System.currentTimeMillis()))
                 .build();
             
             responseObserver.onNext(response);
@@ -287,8 +287,7 @@ public class A2AGrpcService {
             .putAttributes("agentId", 
                 CloudEvent.CloudEventAttributeValue.newBuilder()
                     .setCeString(agentId).build())
-            .setData(com.google.protobuf.ByteString.copyFromUtf8(
-                "{\"status\":\"subscribed\",\"eventTypes\":\"" + eventTypes + "\"}"))
+            .setData(("{\"status\":\"subscribed\",\"eventTypes\":\"" + eventTypes + "\"}").getBytes(java.nio.charset.StandardCharsets.UTF_8))
             .build();
         
         responseObserver.onNext(confirmationEvent);
@@ -322,21 +321,18 @@ public class A2AGrpcService {
      * Build success response.
      */
     private Response buildSuccessResponse(String message) {
-        return Response.newBuilder()
-            .setRespCode(StatusCode.SUCCESS.getRetCode())
-            .setRespMsg(message)
-            .setRespTime(System.currentTimeMillis())
+        return Response.builder()
+            .respCode(StatusCode.SUCCESS.getRetCode())
+            .respMsg(message)
+            .respTime(String.valueOf(System.currentTimeMillis()))
             .build();
     }
 
-    /**
-     * Build error response.
-     */
     private Response buildErrorResponse(String errorMessage) {
-        return Response.newBuilder()
-            .setRespCode(StatusCode.EVENTMESH_RUNTIME_ERR.getRetCode())
-            .setRespMsg(errorMessage)
-            .setRespTime(System.currentTimeMillis())
+        return Response.builder()
+            .respCode(StatusCode.EVENTMESH_RUNTIME_ERR.getRetCode())
+            .respMsg(errorMessage)
+            .respTime(String.valueOf(System.currentTimeMillis()))
             .build();
     }
 }

@@ -147,4 +147,30 @@ public class Client {
             .append(",registerTime=").append("}");
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Client client = (Client) o;
+        return java.util.Objects.equals(env, client.env)
+            && java.util.Objects.equals(idc, client.idc)
+            && java.util.Objects.equals(consumerGroup, client.consumerGroup)
+            && java.util.Objects.equals(topic, client.topic)
+            && java.util.Objects.equals(url, client.url)
+            && java.util.Objects.equals(sys, client.sys)
+            && java.util.Objects.equals(ip, client.ip)
+            && java.util.Objects.equals(pid, client.pid)
+            && java.util.Objects.equals(hostname, client.hostname)
+            && java.util.Objects.equals(apiVersion, client.apiVersion);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(env, idc, consumerGroup, topic, url, sys, ip, pid, hostname, apiVersion);
+    }
 }
