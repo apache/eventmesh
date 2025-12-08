@@ -16,4 +16,4 @@
 #
 
 sourceEnable: true
-sinkEnable: true
+sinkEnable: false

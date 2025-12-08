@@ -32,21 +32,64 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import io.netty.handler.codec.http.HttpMethod;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RemoteSubscribeInstance {
 
     static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    public static void main(String[] args) {
-        subscribeRemote();
+    public static void main(String[] args) throws IOException {
+        subscribeLocal();
+        //subscribeRemote();
         // unsubscribeRemote();
+    }
+
+    private static void subscribeLocal() throws IOException {
+        SubscriptionItem item = new SubscriptionItem();
+        item.setTopic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC);
+        item.setMode(SubscriptionMode.CLUSTERING);
+        item.setType(SubscriptionType.ASYNC);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("url", "http://127.0.0.1:8088/sub/test");
+        body.put("consumerGroup", "EventMeshTest-consumerGroup");
+        body.put("topic", Collections.singletonList(item));
+
+        String json = JsonUtils.toJSONString(body);
+        // 2) use HttpPost
+        HttpPost post = new HttpPost("http://127.0.0.1:10105/eventmesh/subscribe/local");
+        post.setHeader("Content-Type", "application/json");
+        post.setHeader("env", "prod");
+        post.setHeader("idc", "default");
+        post.setHeader("sys", "http-client-demo");
+        post.setHeader("username", "eventmesh");
+        post.setHeader("passwd", "eventmesh");
+        post.setHeader("ip", IPUtils.getLocalAddress());
+        post.setHeader("language", "JAVA");
+        post.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
+
+        try (CloseableHttpResponse resp = httpClient.execute(post)) {
+            String respBody = EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
+            log.info("respStatusLine:{}", resp.getStatusLine());
+            log.info("respBody:{}", respBody);
+        }
     }
 
     private static void subscribeRemote() {

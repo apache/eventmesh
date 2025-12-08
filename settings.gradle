@@ -76,6 +76,7 @@ include 'eventmesh-connectors:eventmesh-connector-wechat'
 include 'eventmesh-connectors:eventmesh-connector-http'
 include 'eventmesh-connectors:eventmesh-connector-chatgpt'
 include 'eventmesh-connectors:eventmesh-connector-canal'
+include 'eventmesh-connectors:eventmesh-connector-mcp'
 
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
