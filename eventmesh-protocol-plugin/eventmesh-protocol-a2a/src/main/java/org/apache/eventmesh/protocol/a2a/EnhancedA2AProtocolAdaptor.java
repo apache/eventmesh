@@ -1,7 +1,6 @@
 package org.apache.eventmesh.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.protocol.a2a.mcp.McpMethods;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
@@ -25,9 +24,8 @@ import lombok.extern.slf4j.Slf4j;
  * Enhanced A2A Protocol Adaptor that implements MCP (Model Context Protocol) over CloudEvents.
  * 
  * This adaptor supports:
- * 1. Standard MCP JSON-RPC 2.0 messages (preferred).
- * 2. Legacy A2A JSON messages (backward compatibility).
- * 3. Delegation to standard CloudEvents/HTTP protocols.
+ * 1. Standard MCP JSON-RPC 2.0 messages.
+ * 2. Delegation to standard CloudEvents/HTTP protocols.
  */
 @Slf4j
 public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTransportObject> {
@@ -95,13 +93,8 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             if (node != null && node.has("jsonrpc") && "2.0".equals(node.get("jsonrpc").asText())) {
                  return convertMcpToCloudEvent(node, content);
             }
-
-            // 2. Check for Legacy A2A
-            if (node != null && node.has("protocol") && "A2A".equals(node.get("protocol").asText())) {
-                 return convertLegacyA2AToCloudEvent(node, content);
-            }
             
-            // 3. Delegation
+            // 2. Delegation
             if (protocol.getClass().getName().contains("Http") && httpAdaptor != null) {
                 return httpAdaptor.toCloudEvent(protocol);
             } else if (cloudEventsAdaptor != null) {
@@ -136,8 +129,6 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                  for (JsonNode item : node) {
                      if (item.has("jsonrpc")) {
                          events.add(convertMcpToCloudEvent(item, item.toString()));
-                     } else if (item.has("protocol") && "A2A".equals(item.get("protocol").asText())) {
-                         events.add(convertLegacyA2AToCloudEvent(item, item.toString()));
                      }
                  }
                  if (!events.isEmpty()) {
@@ -235,8 +226,8 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             if (!content.contains("{")) return false;
             
             JsonNode node = objectMapper.readTree(content);
-            // Valid if JSON-RPC or A2A Legacy
-            if (node.has("jsonrpc") || (node.has("protocol") && "A2A".equals(node.get("protocol").asText()))) {
+            // Valid if JSON-RPC
+            if (node.has("jsonrpc")) {
                 return true;
             }
         } catch (Exception e) {
@@ -256,7 +247,7 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     }
 
     /**
-     * Converts a modern MCP JSON-RPC message to CloudEvent.
+     * Converts a modern MCP / A2A JSON-RPC message to CloudEvent.
      * Distinguishes between Requests and Responses for Event-Driven Async RPC pattern.
      */
     private CloudEvent convertMcpToCloudEvent(JsonNode node, String content) throws ProtocolHandleException {
@@ -277,33 +268,46 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                 .withExtension("protocolversion", PROTOCOL_VERSION);
 
             if (isRequest) {
-                // MCP Request -> Event
+                // JSON-RPC Request -> Event
                 String method = node.get("method").asText();
-                ceType = "org.apache.eventmesh.a2a." + method.replace("/", ".") + ".req";
+                
+                // Determine suffix based on operation type
+                String suffix = ".req";
+                if (A2AProtocolConstants.OP_SEND_STREAMING_MESSAGE.equals(method)) {
+                    suffix = ".stream";
+                }
+                
+                ceType = "org.apache.eventmesh.a2a." + method.replace("/", ".") + suffix;
                 mcpType = "request";
                 
                 builder.withExtension("a2amethod", method);
                 
-                // Extract optional params for routing
+                // Extract optional params for routing and sequencing
                 if (node.has("params")) {
                     JsonNode params = node.get("params");
-                     if (params.has("_agentId")) {
-                         builder.withExtension("targetagent", params.get("_agentId").asText());
-                     }
+                    
+                    // 1. Pub/Sub Routing (Priority): Broadcast to a Topic
+                    if (params.has("_topic")) {
+                        builder.withSubject(params.get("_topic").asText());
+                    }
+                    // 2. P2P Routing (Fallback): Unicast to specific Agent
+                    else if (params.has("_agentId")) {
+                        builder.withExtension("targetagent", params.get("_agentId").asText());
+                    }
+                    
+                    // 3. Sequencing for Streaming
+                    if (params.has("_seq")) {
+                        builder.withExtension("seq", params.get("_seq").asText());
+                    }
                 }
             } else if (isResponse) {
-                // MCP Response -> Event
+                // JSON-RPC Response -> Event
                 // We map the RPC ID to correlationId so the requester can match it
                 ceType = "org.apache.eventmesh.a2a.common.response";
                 mcpType = "response";
                 correlationId = id;
                 
                 builder.withExtension("collaborationid", correlationId);
-                
-                // If the response payload contains routing hint (not standard JSON-RPC but useful for A2A)
-                // We might need to know who sent the request to route back. 
-                // In a real system, the EventMesh runtime handles 'reply-to'.
-                // Here we just wrap the data.
             } else {
                 // Notification or invalid
                 ceType = "org.apache.eventmesh.a2a.unknown";
@@ -317,34 +321,7 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             return builder.build();
             
         } catch (Exception e) {
-            throw new ProtocolHandleException("Failed to convert MCP message to CloudEvent", e);
-        }
-    }
-
-    /**
-     * Converts legacy A2A format to CloudEvent.
-     */
-    private CloudEvent convertLegacyA2AToCloudEvent(JsonNode node, String content) throws ProtocolHandleException {
-        try {
-            A2AMessageInfo a2aInfo = extractA2AInfo(node);
-            
-            CloudEventBuilder builder = CloudEventBuilder.v1()
-                .withId(generateMessageId())
-                .withSource(java.net.URI.create("eventmesh-a2a"))
-                .withType("org.apache.eventmesh.a2a.legacy." + a2aInfo.messagetype.toLowerCase())
-                .withData(content.getBytes(StandardCharsets.UTF_8))
-                .withExtension("protocol", PROTOCOL_TYPE)
-                .withExtension("protocolversion", PROTOCOL_VERSION)
-                .withExtension("messagetype", a2aInfo.messagetype); // Legacy
-
-            if (a2aInfo.sourceagentId != null) builder.withExtension("sourceagent", a2aInfo.sourceagentId);
-            if (a2aInfo.targetagentId != null) builder.withExtension("targetagent", a2aInfo.targetagentId);
-            if (a2aInfo.collaborationid != null) builder.withExtension("collaborationid", a2aInfo.collaborationid);
-            
-            return builder.build();
-                
-        } catch (Exception e) {
-            throw new ProtocolHandleException("Failed to convert Legacy A2A message to CloudEvent", e);
+            throw new ProtocolHandleException("Failed to convert MCP/A2A message to CloudEvent", e);
         }
     }
 
@@ -366,35 +343,11 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
         }
     }
 
-    private A2AMessageInfo extractA2AInfo(JsonNode node) {
-        A2AMessageInfo info = new A2AMessageInfo();
-        try {
-            if (node.has("messageType")) info.messagetype = node.get("messageType").asText();
-            if (node.has("sourceAgent") && node.get("sourceAgent").has("agentId")) {
-                info.sourceagentId = node.get("sourceAgent").get("agentId").asText();
-            }
-            if (node.has("targetAgent") && node.get("targetAgent").has("agentId")) {
-                info.targetagentId = node.get("targetAgent").get("agentId").asText();
-            }
-            if (node.has("metadata") && node.get("metadata").has("correlationId")) {
-                info.collaborationid = node.get("metadata").get("correlationId").asText();
-            }
-        } catch (Exception ignored) {}
-        return info;
-    }
-
     private String getTargetProtocol(CloudEvent cloudEvent) {
         String protocolDesc = (String) cloudEvent.getExtension("protocolDesc");
         if (protocolDesc != null) return protocolDesc;
         if (cloudEvent.getType().contains("http")) return "http";
         return "cloudevents";
-    }
-
-    private static class A2AMessageInfo {
-        String messagetype = "UNKNOWN";
-        String sourceagentId;
-        String targetagentId;
-        String collaborationid;
     }
     
     private static class SimpleA2AProtocolTransportObject implements ProtocolTransportObject {

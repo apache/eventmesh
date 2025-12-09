@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **EventMesh A2A (Agent-to-Agent) Protocol** is a specialized, high-performance protocol plugin designed to enable asynchronous communication, collaboration, and task coordination between autonomous agents. 
+The **EventMesh A2A (Agent-to-Agent) Protocol** is a specialized, high-performance protocol plugin designed to enable asynchronous communication, collaboration, and task coordination between autonomous agents.
 
 With the release of v2.0, A2A adopts the **MCP (Model Context Protocol)** architecture, transforming EventMesh into a robust **Agent Collaboration Bus**. It bridges the gap between synchronous LLM-based tool calls (JSON-RPC 2.0) and asynchronous Event-Driven Architectures (EDA), enabling scalable, distributed, and decoupled agent systems.
 
@@ -13,19 +13,30 @@ With the release of v2.0, A2A adopts the **MCP (Model Context Protocol)** archit
 - **Event-Driven**: Maps synchronous RPC calls to asynchronous **Request/Response Event Streams**, leveraging EventMesh's high-concurrency processing capabilities.
 - **Transport Agnostic**: All MCP messages are encapsulated within standard **CloudEvents** envelopes, running over any transport layer supported by EventMesh (HTTP, TCP, gRPC, Kafka).
 
-### 2. Hybrid Architecture Design
-- **Dual-Mode Support**: 
-    - **Modern Mode**: Supports standard JSON-RPC 2.0 messages for LLM applications.
-    - **Legacy Mode**: Maintains compatibility with the old A2A protocol (based on `messageType` and FIPA verbs) to ensure smooth migration for existing businesses.
-- **Automatic Detection**: The protocol adaptor intelligently selects the processing mode based on message content characteristics (e.g., `jsonrpc` field).
+### 2. Dual-Mode Support (Hybrid Architecture)
+
+A2A Protocol features a unique **Dual-Mode** architecture that simultaneously supports:
+
+1.  **JSON-RPC 2.0 (MCP Mode)**:
+    *   **Target**: LLMs, Scripts (Python/JS), LangChain integration.
+    *   **Benefit**: Extremely low barrier to entry. Clients send simple JSON objects; the adaptor automatically wraps them in CloudEvents.
+2.  **Native CloudEvents (Power Mode)**:
+    *   **Target**: EventMesh native apps, Knative, Serverless functions.
+    *   **Benefit**: Full control over event metadata. Allows pass-through of custom or binary data.
+
+**Mechanism**: The `EnhancedA2AProtocolAdaptor` intelligently detects the payload format. If `jsonrpc: "2.0"` is present, it engages the MCP translation engine; otherwise, it treats the payload as a standard CloudEvent (delegating to the underlying CloudEvents adaptor).
+
+### 3. Native Pub/Sub Semantics
+- **O(1) Broadcast**: Publishers send messages once to a Topic, and EventMesh efficiently fans out to all subscribers.
+- **Decoupling**: Solves the scalability issues of traditional P2P Webhook callbacks.
+- **Isolation**: Provides backpressure isolation between publishers and subscribers.
 
 ### 3. High Performance & Routing
-- **Batch Processing**: Natively supports JSON-RPC Batch requests. EventMesh automatically splits them into parallel event streams, significantly increasing throughput.
-- **Intelligent Routing**: Extracts routing hints from MCP request parameters (e.g., `_agentId`) and automatically injects them into CloudEvents extension attributes (`targetagent`), enabling zero-decoding routing.
+- **Batch Processing**: Natively supports JSON-RPC Batch requests. EventMesh automatically splits them into parallel event streams.
+- **Intelligent Routing**: Extracts routing hints (`_agentId` for P2P, `_topic` for Pub/Sub) from MCP parameters and injects them into CloudEvents attributes for zero-decoding routing.
 
-### 4. CloudEvents Integration
-- **Type Mapping**: Automatically maps MCP methods to CloudEvent Types (e.g., `tools/call` -> `org.apache.eventmesh.a2a.tools.call.req`).
-- **Context Propagation**: Uses CloudEvents Extensions to pass tracing context (like `traceparent`), enabling cross-agent distributed tracing.
+### 4. Streaming Support
+- **Sequencing**: Preserves message order for streaming operations (`message/sendStream`) using sequence IDs.
 
 ## Architecture
 
@@ -37,8 +48,8 @@ With the release of v2.0, A2A adopts the **MCP (Model Context Protocol)** archit
 │              (MCP over CloudEvents Architecture)            │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │ MCP/JSON-RPC│  │ Legacy A2A  │  │  Protocol   │         │
-│  │   Handler   │  │   Handler   │  │  Delegator  │         │
+│  │ MCP/JSON-RPC│  │ Native      │  │  Protocol   │         │
+│  │   Handler   │  │ Pub/Sub     │  │  Delegator  │         │
 │  └─────────────┘  └─────────────┘  └─────────────┘         │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -58,16 +69,17 @@ With the release of v2.0, A2A adopts the **MCP (Model Context Protocol)** archit
 
 To support the MCP Request/Response model within an event-driven architecture, A2A defines the following mapping rules:
 
-| MCP Concept | CloudEvent Mapping | Description | 
+| MCP Concept | CloudEvent Mapping | Description |
 | :--- | :--- | :--- |
-| **Request** (`tools/call`) | `type`: `org.apache.eventmesh.a2a.tools.call.req` <br> `mcptype`: `request` | This is a request event. |
-| **Response** (`result`) | `type`: `org.apache.eventmesh.a2a.common.response` <br> `mcptype`: `response` | This is a response event. |
-| **Correlation** (`id`) | `extension`: `collaborationid` / `id` | Used to link the Response back to the Request. |
-| **Target** | `extension`: `targetagent` | The routing target Agent ID. |
+| **Request** (`tools/call`) | `type`: `org.apache.eventmesh.a2a.tools.call.req` <br> `mcptype`: `request` | Request event. |
+| **Response** (`result`) | `type`: `org.apache.eventmesh.a2a.common.response` <br> `mcptype`: `response` | Response event. |
+| **Correlation** (`id`) | `extension`: `collaborationid` / `id` | Links Response to Request. |
+| **P2P Target** | `extension`: `targetagent` | Routing target Agent ID. |
+| **Pub/Sub Topic** | `subject`: `<topic_name>` | Broadcast Topic. |
 
 ## Protocol Message Format
 
-### 1. MCP Request (JSON-RPC 2.0)
+### 1. MCP Request (P2P)
 
 ```json
 {
@@ -75,128 +87,57 @@ To support the MCP Request/Response model within an event-driven architecture, A
   "method": "tools/call",
   "params": {
     "name": "get_weather",
-    "arguments": {
-      "city": "Shanghai"
-    },
-    "_agentId": "weather-service" // Routing hint
+    "_agentId": "weather-service" // P2P Routing
   },
-  "id": "req-123456"
+  "id": "req-123"
 }
 ```
 
-**Converted CloudEvent:**
-- `id`: `req-123456`
-- `type`: `org.apache.eventmesh.a2a.tools.call.req`
-- `source`: `eventmesh-a2a`
-- `extension: a2amethod`: `tools/call`
-- `extension: mcptype`: `request`
-- `extension: targetagent`: `weather-service`
-
-### 2. MCP Response (JSON-RPC 2.0)
+### 2. MCP Request (Pub/Sub)
 
 ```json
 {
   "jsonrpc": "2.0",
-  "result": {
-    "content": [
-      {
-        "type": "text",
-        "text": "Shanghai: 25°C, Sunny"
-      }
-    ]
-  },
-  "id": "req-123456"
-}
-```
-
-**Converted CloudEvent:**
-- `id`: `uuid-new-event-id`
-- `type`: `org.apache.eventmesh.a2a.common.response`
-- `extension: collaborationid`: `req-123456` (Correlation ID)
-- `extension: mcptype`: `response`
-
-### 3. Legacy A2A Message (Compatibility Mode)
-
-```json
-{
-  "protocol": "A2A",
-  "messageType": "PROPOSE",
-  "sourceAgent": { "agentId": "agent-001" },
-  "payload": { "task": "data-process" }
+  "method": "market/update",
+  "params": {
+    "price": 50000,
+    "_topic": "market.btc" // Pub/Sub Routing
+  }
 }
 ```
 
 ## Usage Guide
 
-### 1. Initiate MCP Call (As Client)
-
-You only need to send a standard JSON-RPC format message to EventMesh:
+### 1. Initiate Call (Client)
 
 ```java
 // 1. Construct MCP Request JSON
-String mcpRequest = "{"
-    "jsonrpc": \"2.0\","
-    "method": \"tools/call\","
-    "params": { \"name\": \"weather\", \"_agentId\": \"weather-agent\" },"
-    "id": \"req-001\""
+String mcpRequest = "{" +
+    "\"jsonrpc\": \"2.0\"," +
+    "\"method\": \"tools/call\"," +
+    "\"params\": { \"name\": \"weather\", \"_agentId\": \"weather-agent\" }," +
+    "\"id\": \"req-001\"" +
     "}";
 
 // 2. Send via EventMesh SDK
 eventMeshProducer.publish(new A2AProtocolTransportObject(mcpRequest));
 ```
 
-### 2. Handle Request (As Server)
+### 2. Handle Request (Server)
 
-Subscribe to the corresponding topic, process the business logic, and send back the response:
-
-```java
-// 1. Subscribe to MCP Request Topic
-eventMeshConsumer.subscribe("org.apache.eventmesh.a2a.tools.call.req");
-
-// 2. Handle incoming message...
-public void handle(CloudEvent event) {
-    // Unpack Request
-    String reqJson = new String(event.getData().toBytes());
-    // ... Execute business logic ...
-    
-    // 3. Construct Response
-    String mcpResponse = "{"
-        "jsonrpc": \"2.0\","
-        "result": { \"text\": \"Sunny\" },"
-        "id": \"" + event.getId() + "\"" + // Must echo Request ID
-        "}";
-        
-    // 4. Send back to EventMesh
-    eventMeshProducer.publish(new A2AProtocolTransportObject(mcpResponse));
-}
-```
-
-## Extensions
-
-### Custom MCP Methods
-
-A2A protocol does not restrict method names. You can define your own business methods, such as `agents/negotiate` or `tasks/submit`. EventMesh will automatically map them to CloudEvent types like `org.apache.eventmesh.a2a.agents.negotiate.req`.
-
-### Integration with LangChain / AutoGen
-
-Since A2A is compatible with standard JSON-RPC 2.0, you can easily write adaptors to convert LangChain tool calls into EventMesh messages, thereby endowing your LLM applications with distributed, asynchronous communication capabilities.
+Subscribe to the topic `org.apache.eventmesh.a2a.tools.call.req`, process logic, and send back response with matching `id`.
 
 ## Version History
 
 - **v2.0.0**: Fully Embraced MCP (Model Context Protocol)
   - Introduced `EnhancedA2AProtocolAdaptor` supporting JSON-RPC 2.0.
   - Implemented Async RPC over CloudEvents pattern.
-  - Supported automatic Request/Response identification and semantic mapping.
-  - Maintained full compatibility with Legacy A2A protocol.
+  - Added **Native Pub/Sub** support via `_topic` parameter.
+  - Added **Streaming** support via `_seq` parameter.
 
 ## Contribution
 
-Welcome to contribute code and documentation! Please refer to the following steps:
-
-1. Fork the project repository
-2. Create a feature branch
-3. Submit code changes
-4. Create a Pull Request
+Welcome to contribute code and documentation!
 
 ## License
 

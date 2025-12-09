@@ -108,17 +108,6 @@ public class EnhancedA2AProtocolAdaptorTest {
     }
     
     @Test
-    public void testLegacyA2AMessageProcessing() throws ProtocolHandleException {
-        String json = "{\"protocol\":\"A2A\",\"messageType\":\"PROPOSE\",\"sourceAgent\":{\"agentId\":\"agent1\"}}";
-        ProtocolTransportObject obj = new MockProtocolTransportObject(json);
-
-        CloudEvent event = adaptor.toCloudEvent(obj);
-        Assertions.assertEquals("A2A", event.getExtension("protocol"));
-        Assertions.assertEquals("PROPOSE", event.getExtension("messagetype"));
-        Assertions.assertEquals("org.apache.eventmesh.a2a.legacy.propose", event.getType());
-    }
-
-    @Test
     public void testInvalidJsonProcessing() {
         String json = "{invalid-json}";
         ProtocolTransportObject obj = new MockProtocolTransportObject(json);
@@ -149,6 +138,46 @@ public class EnhancedA2AProtocolAdaptorTest {
         ProtocolTransportObject obj = adaptor.fromCloudEvent(event);
         Assertions.assertNotNull(obj);
         Assertions.assertEquals("{\"some\":\"data\"}", obj.toString());
+    }
+
+    @Test
+    public void testA2AGetTaskProcessing() throws ProtocolHandleException {
+        // Test standard A2A "Get Task" operation
+        String json = "{\"jsonrpc\": \"2.0\", \"method\": \"task/get\", \"params\": {\"taskId\": \"task-123\"}, \"id\": \"req-002\"}";
+        ProtocolTransportObject obj = new MockProtocolTransportObject(json);
+
+        CloudEvent event = adaptor.toCloudEvent(obj);
+        Assertions.assertNotNull(event);
+        Assertions.assertEquals("task/get", event.getExtension("a2amethod"));
+        Assertions.assertEquals("org.apache.eventmesh.a2a.task.get.req", event.getType());
+    }
+
+    @Test
+    public void testA2AStreamingMessageProcessing() throws ProtocolHandleException {
+        // Test standard A2A "Send Streaming Message" operation
+        // Should map to .stream suffix
+        String json = "{\"jsonrpc\": \"2.0\", \"method\": \"message/sendStream\", \"params\": {\"chunk\": \"data...\"}, \"id\": \"stream-001\"}";
+        ProtocolTransportObject obj = new MockProtocolTransportObject(json);
+
+        CloudEvent event = adaptor.toCloudEvent(obj);
+        Assertions.assertNotNull(event);
+        Assertions.assertEquals("message/sendStream", event.getExtension("a2amethod"));
+        Assertions.assertEquals("org.apache.eventmesh.a2a.message.sendStream.stream", event.getType());
+    }
+
+    @Test
+    public void testMcpPubSubRouting() throws ProtocolHandleException {
+        // Test Pub/Sub Broadcast routing using _topic
+        String json = "{\"jsonrpc\": \"2.0\", \"method\": \"market/update\", \"params\": {\"symbol\": \"BTC\", \"price\": 50000, \"_topic\": \"market.crypto.btc\"}, \"id\": \"pub-001\"}";
+        ProtocolTransportObject obj = new MockProtocolTransportObject(json);
+
+        CloudEvent event = adaptor.toCloudEvent(obj);
+        Assertions.assertNotNull(event);
+        Assertions.assertEquals("market/update", event.getExtension("a2amethod"));
+        // Verify Subject is set for Pub/Sub
+        Assertions.assertEquals("market.crypto.btc", event.getSubject());
+        // Verify Target Agent is NOT set (Broadcast)
+        Assertions.assertNull(event.getExtension("targetagent"));
     }
 
     private static class MockProtocolTransportObject implements ProtocolTransportObject {
