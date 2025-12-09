@@ -33,16 +33,18 @@ public class ObjectConverterTest {
 
     @Test
     public void testConvert() {
-        ObjectConverter converter = new ObjectConverter();
-        ConvertInfo convertInfo = new ConvertInfo();
-        ConfigInfo configInfo = new ConfigInfo();
         Properties properties = new Properties();
         properties.put("name", "test");
         properties.put("age", "18");
+
+        ConfigInfo configInfo = new ConfigInfo();
+
+        ConvertInfo convertInfo = new ConvertInfo();
         convertInfo.setProperties(properties);
         convertInfo.setConfigInfo(configInfo);
         convertInfo.setClazz(User.class);
-        
+
+        ObjectConverter converter = new ObjectConverter();
         Object converted = converter.convert(convertInfo);
         Assertions.assertTrue(converted instanceof User);
         User user = (User) converted;
@@ -52,12 +54,13 @@ public class ObjectConverterTest {
 
     @Test
     public void testConvertWithField() throws NoSuchFieldException {
-        ObjectConverter converter = new ObjectConverter();
-        ConvertInfo convertInfo = new ConvertInfo();
-        ConfigInfo configInfo = new ConfigInfo();
         Properties properties = new Properties();
         properties.put("name", "test");
         properties.put("age", "18");
+
+        ConfigInfo configInfo = new ConfigInfo();
+
+        ConvertInfo convertInfo = new ConvertInfo();
         convertInfo.setProperties(properties);
         convertInfo.setConfigInfo(configInfo);
         
@@ -65,6 +68,7 @@ public class ObjectConverterTest {
         convertInfo.setField(field);
         convertInfo.setClazz(User.class);
 
+        ObjectConverter converter = new ObjectConverter();
         Object converted = converter.convert(convertInfo);
         Assertions.assertTrue(converted instanceof User);
         User user = (User) converted;
