@@ -52,14 +52,16 @@ public class ObjectConverter implements ConvertValue<Object> {
     private String reloadMethodName;
 
     private void init(ConfigInfo configInfo) {
-        String prefix = configInfo.getPrefix();
-        if (Objects.nonNull(prefix)) {
-            this.prefix = prefix.endsWith(".") ? prefix : prefix + ".";
+        if (configInfo != null) {
+            String prefix = configInfo.getPrefix();
+            if (Objects.nonNull(prefix)) {
+                this.prefix = prefix.endsWith(".") ? prefix : prefix + ".";
+            }
+            this.hump = Objects.equals(configInfo.getHump(), ConfigInfo.HUMP_ROD) ? '_' : '.';
+            this.convertInfo.setHump(this.hump);
+            this.reloadMethodName = configInfo.getReloadMethodName();
         }
-        this.hump = Objects.equals(configInfo.getHump(), ConfigInfo.HUMP_ROD) ? '_' : '.';
         this.clazz = convertInfo.getClazz();
-        this.convertInfo.setHump(this.hump);
-        this.reloadMethodName = configInfo.getReloadMethodName();
     }
 
     @Override
