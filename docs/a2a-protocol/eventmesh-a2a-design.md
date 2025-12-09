@@ -32,20 +32,20 @@ Traditional A2A implementations often rely on HTTP Webhooks (`POST /inbox`) for 
 
 ```mermaid
 graph LR
-    Publisher[Publisher Agent] -->|1. Publish (Once)| Bus[EventMesh Bus]
+    Publisher["Publisher Agent"] -->|1. Publish (Once)| Bus["EventMesh Bus"]
     
-    subgraph Fanout_Layer [EventMesh Fanout Layer]
-        Queue[Topic Queue]
+    subgraph FanoutLayer ["EventMesh Fanout Layer"]
+        Queue["Topic Queue"]
     end
     
     Bus --> Queue
     
-    Queue -->|Push| Sub1[Subscriber 1]
-    Queue -->|Push| Sub2[Subscriber 2]
-    Queue -->|Push| Sub3[Subscriber 3]
+    Queue -->|"Push"| Sub1["Subscriber 1"]
+    Queue -->|"Push"| Sub2["Subscriber 2"]
+    Queue -->|"Push"| Sub3["Subscriber 3"]
     
     style Bus fill:#f9f,stroke:#333
-    style Fanout_Layer fill:#ccf,stroke:#333
+    style FanoutLayer fill:#ccf,stroke:#333
 ```
 
 ### 2.1 Hybrid Protocol Support (JSON-RPC & CloudEvents)
@@ -70,14 +70,17 @@ A2A Protocol introduces a unique **Hybrid Architecture** that bridges the gap be
 
 ```mermaid
 graph TD
-    Client[Client Agent / LLM] -- "JSON-RPC Request" --> EM[EventMesh Runtime]
-    EM -- "CloudEvent (Request)" --> Server[Server Agent / Tool]
+    Client["Client Agent / LLM"] -- "JSON-RPC Request" --> EM
+    
+    subgraph Runtime ["EventMesh Runtime"]
+        EM["Core Processor"]
+        Plugin["A2A Protocol Plugin"]
+        EM -.- Plugin
+    end
+    
+    EM -- "CloudEvent (Request)" --> Server["Server Agent / Tool"]
     Server -- "CloudEvent (Response)" --> EM
     EM -- "JSON-RPC Response" --> Client
-    
-    subgraph Runtime [EventMesh Runtime]
-        Plugin[A2A Protocol Plugin]
-    end
     
     style EM fill:#f9f,stroke:#333,stroke-width:4px
     style Plugin fill:#ccf,stroke:#333,stroke-width:2px
@@ -136,39 +139,132 @@ To support MCP on an Event Bus, synchronous RPC concepts are mapped to asynchron
 
 ## 5. Usage Examples
 
-### 5.1 Sending a Tool Call (Request)
+### 5.1 JSON-RPC 2.0 (MCP) Mode
 
-**Raw Payload:**
+This mode is ideal for LLMs, scripts, and simple integrations where you want to send raw JSON without worrying about CloudEvent headers.
+
+#### 5.1.1 Sending a Tool Call (RPC Request)
+
+**Client Sends (Raw JSON):**
 ```json
 {
   "jsonrpc": "2.0",
   "method": "tools/call",
   "params": {
-    "name": "weather_service",
-    "arguments": { "city": "New York" }
+    "name": "weather",
+    "city": "Shanghai",
+    "_agentId": "weather-agent"
   },
-  "id": "msg-101"
+  "id": "req-101"
 }
 ```
 
-### 5.2 Pub/Sub Broadcast
+**EventMesh Converts to:**
+*   **Type**: `org.apache.eventmesh.a2a.tools.call.req`
+*   **Extension (targetagent)**: `weather-agent`
+*   **Extension (mcptype)**: `request`
 
-**Raw Payload:**
+#### 5.1.2 Pub/Sub Broadcast (Notification)
+
+**Client Sends (Raw JSON):**
 ```json
 {
   "jsonrpc": "2.0",
-  "method": "market/update",
+  "method": "notifications/alert",
   "params": {
-    "symbol": "BTC",
-    "price": 50000,
-    "_topic": "market.crypto.btc"
+    "message": "System Maintenance in 10 mins",
+    "_topic": "system.alerts"
   }
 }
 ```
 
-**Generated CloudEvent:**
-*   `subject`: `market.crypto.btc`
-*   `targetagent`: (Empty)
+**EventMesh Converts to:**
+*   **Type**: `org.apache.eventmesh.a2a.notifications.alert`
+*   **Subject**: `system.alerts`
+*   **Extension (mcptype)**: `notification`
+
+#### 5.1.3 Java SDK Example (MCP Mode)
+
+```java
+// See eventmesh-examples/src/main/java/org/apache/eventmesh/a2a/demo/mcp/McpCaller.java
+
+Map<String, Object> request = new HashMap<>();
+request.put("jsonrpc", "2.0");
+request.put("method", "tools/call");
+request.put("params", Map.of("name", "weather", "_agentId", "weather-agent"));
+request.put("id", UUID.randomUUID().toString());
+
+CloudEvent event = CloudEventBuilder.v1()
+    .withType("org.apache.eventmesh.a2a.tools.call.req")
+    .withData(JsonUtils.toJSONString(request).getBytes())
+    .withExtension("protocol", "A2A") // Critical to trigger A2A adaptor
+    .build();
+
+producer.publish(event);
+```
+
+### 5.2 Native CloudEvents Mode
+
+This mode provides full control over all CloudEvent attributes and is recommended for robust, typed applications using the EventMesh SDK.
+
+#### 5.2.1 Native RPC Request
+
+**Client Sends (CloudEvent):**
+```json
+{
+  "specversion": "1.0",
+  "type": "com.example.rpc.request",
+  "source": "my-app",
+  "id": "evt-123",
+  "data": "...",
+  "protocol": "A2A",
+  "targetagent": "target-agent-001"
+}
+```
+
+**Java SDK Example:**
+```java
+// See eventmesh-examples/src/main/java/org/apache/eventmesh/a2a/demo/ce/CloudEventsCaller.java
+
+CloudEvent event = CloudEventBuilder.v1()
+    .withId(UUID.randomUUID().toString())
+    .withSource(URI.create("ce-client"))
+    .withType("com.example.rpc.request")
+    .withData("application/text", "RPC Payload".getBytes())
+    .withExtension("protocol", "A2A")
+    .withExtension("targetagent", "target-agent-001") // Explicit routing
+    .build();
+
+producer.publish(event);
+```
+
+#### 5.2.2 Native Pub/Sub
+
+**Client Sends (CloudEvent):**
+```json
+{
+  "specversion": "1.0",
+  "type": "com.example.notification",
+  "source": "my-app",
+  "subject": "broadcast.topic",
+  "protocol": "A2A"
+}
+```
+
+#### 5.2.3 Native Streaming
+
+**Client Sends (CloudEvent):**
+```json
+{
+  "specversion": "1.0",
+  "type": "com.example.stream",
+  "source": "my-app",
+  "subject": "stream-topic",
+  "protocol": "A2A",
+  "sessionid": "session-555",
+  "seq": "1"
+}
+```
 
 ## 6. Future Roadmap
 
