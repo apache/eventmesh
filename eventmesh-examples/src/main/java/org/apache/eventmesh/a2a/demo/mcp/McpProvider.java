@@ -20,23 +20,15 @@ package org.apache.eventmesh.a2a.demo.mcp;
 import org.apache.eventmesh.a2a.demo.A2AAbstractDemo;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.utils.JsonUtils;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,7 +45,7 @@ public class McpProvider extends A2AAbstractDemo {
         try (EventMeshHttpConsumer consumer = new EventMeshHttpConsumer(config)) {
             
             // Subscribe to relevant topics
-            List<SubscriptionItem> topicList = new ArrayList<>();
+            final List<SubscriptionItem> topicList = new ArrayList<>();
             
             // 1. Subscribe to Broadcast Topic (for Pub/Sub pattern)
             SubscriptionItem pubSubItem = new SubscriptionItem();

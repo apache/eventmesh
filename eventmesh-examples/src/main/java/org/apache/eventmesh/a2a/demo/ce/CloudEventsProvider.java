@@ -39,7 +39,8 @@ public class CloudEventsProvider extends A2AAbstractDemo {
         EventMeshHttpClientConfig config = initEventMeshHttpClientConfig("CloudEventsProviderGroup");
         try (EventMeshHttpConsumer consumer = new EventMeshHttpConsumer(config)) {
             
-            List<SubscriptionItem> topicList = new ArrayList<>();
+            // Subscribe to relevant topics
+            final List<SubscriptionItem> topicList = new ArrayList<>();
             
             // 1. Subscribe to RPC Topic
             SubscriptionItem rpcItem = new SubscriptionItem();

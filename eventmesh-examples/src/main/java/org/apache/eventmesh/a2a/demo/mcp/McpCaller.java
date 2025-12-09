@@ -62,21 +62,24 @@ public class McpCaller extends A2AAbstractDemo {
      * A2A Protocol maps this to P2P routing using '_agentId' or similar.
      */
     private static void sendMcpRpc(EventMeshHttpProducer producer) throws Exception {
-        String requestId = UUID.randomUUID().toString();
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", "weather");
-        params.put("city", "Shanghai");
-        params.put("_agentId", "weather-agent"); // Target Agent
-
-        Map<String, Object> request = new HashMap<>();
-        request.put("jsonrpc", "2.0");
-        request.put("method", "tools/call");
-        request.put("params", params);
-        request.put("id", requestId);
-
-        CloudEvent event = buildMcpEvent(request, "org.apache.eventmesh.a2a.tools.call.req", "request");
+        final String requestId = UUID.randomUUID().toString();
+        Map<String, Object> requestParams = new HashMap<>();
+        requestParams.put("name", "get_weather");
+        requestParams.put("city", "Beijing");
         
-        log.info("Sending MCP RPC Request: {}", request);
+        String targetAgent = "weather-service-01";
+        requestParams.put("_agentId", targetAgent); // Routing hint
+
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("jsonrpc", "2.0");
+        requestMap.put("method", "tools/call");
+        requestMap.put("params", requestParams);
+        
+        requestMap.put("id", requestId);
+
+        CloudEvent event = buildMcpEvent(requestMap, "org.apache.eventmesh.a2a.tools.call.req", "request");
+        
+        log.info("Sending MCP RPC Request: {}", requestMap);
         producer.publish(event);
     }
 

@@ -21,7 +21,6 @@ import org.apache.eventmesh.a2a.demo.A2AAbstractDemo;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.ExampleConstants;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
