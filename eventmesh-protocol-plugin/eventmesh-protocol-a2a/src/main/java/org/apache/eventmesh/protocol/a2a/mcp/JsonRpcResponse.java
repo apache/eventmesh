@@ -23,6 +23,7 @@ import java.io.Serializable;
  * Represents a standard JSON-RPC 2.0 Response object.
  */
 public class JsonRpcResponse implements Serializable {
+
     private String jsonrpc = "2.0";
     private Object result;
     private JsonRpcError error;

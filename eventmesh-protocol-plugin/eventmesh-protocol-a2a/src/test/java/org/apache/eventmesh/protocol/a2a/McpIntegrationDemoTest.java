@@ -26,11 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import io.cloudevents.CloudEvent;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +58,7 @@ public class McpIntegrationDemoTest {
         // ==========================================
         String requestId = UUID.randomUUID().toString();
         String targetAgent = "weather-service-01";
-        
+
         // Construct MCP JSON-RPC Request
         Map<String, Object> requestParams = new HashMap<>();
         requestParams.put("name", "get_weather");
@@ -99,7 +99,7 @@ public class McpIntegrationDemoTest {
         JsonNode receivedNode = objectMapper.readTree(receivedContent);
 
         System.out.println("[Server] Received: " + receivedContent);
-        
+
         // Verify content matches
         Assertions.assertEquals("tools/call", receivedNode.get("method").asText());
         Assertions.assertEquals(requestId, receivedNode.get("id").asText());
@@ -145,6 +145,7 @@ public class McpIntegrationDemoTest {
     }
 
     private static class MockProtocolTransportObject implements ProtocolTransportObject {
+
         private final String content;
 
         public MockProtocolTransportObject(String content) {

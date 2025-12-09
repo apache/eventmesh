@@ -22,23 +22,23 @@ package org.apache.eventmesh.protocol.a2a;
  * Reference: https://a2a-protocol.org/latest/specification/#3-a2a-protocol-operations
  */
 public class A2AProtocolConstants {
-    
+
     // Core Messaging
     public static final String OP_SEND_MESSAGE = "message/send";
     public static final String OP_SEND_STREAMING_MESSAGE = "message/sendStream";
-    
+
     // Task Management
     public static final String OP_GET_TASK = "task/get";
     public static final String OP_LIST_TASKS = "task/list";
     public static final String OP_CANCEL_TASK = "task/cancel";
     public static final String OP_SUBSCRIBE_TASK = "task/subscribe";
-    
+
     // Notifications
     public static final String OP_NOTIFICATION_CONFIG_SET = "notification/config/set";
     public static final String OP_NOTIFICATION_CONFIG_GET = "notification/config/get";
     public static final String OP_NOTIFICATION_CONFIG_LIST = "notification/config/list";
     public static final String OP_NOTIFICATION_CONFIG_DELETE = "notification/config/delete";
-    
+
     // Discovery
     public static final String OP_GET_AGENT_CARD = "agent/card/get";
 
@@ -46,10 +46,11 @@ public class A2AProtocolConstants {
      * Checks if the method is a standard A2A Protocol operation.
      */
     public static boolean isStandardOperation(String method) {
-        if (method == null) return false;
-        return method.startsWith("message/") || 
-               method.startsWith("task/") || 
-               method.startsWith("notification/") || 
-               method.startsWith("agent/");
+        if (method == null)
+            return false;
+        return method.startsWith("message/") ||
+            method.startsWith("task/") ||
+            method.startsWith("notification/") ||
+            method.startsWith("agent/");
     }
 }

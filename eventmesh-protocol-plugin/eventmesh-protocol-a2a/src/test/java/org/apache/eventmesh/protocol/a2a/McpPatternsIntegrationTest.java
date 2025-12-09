@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import io.cloudevents.CloudEvent;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -78,10 +78,10 @@ public class McpPatternsIntegrationTest {
         // 3. Verify Routing Logic (Simulating EventMesh Router)
         // The router looks at the 'subject' to determine dispatch targets.
         Assertions.assertEquals(topic, event.getSubject());
-        
+
         // Verify it is NOT a point-to-point message (no targetagent)
         Assertions.assertNull(event.getExtension("targetagent"));
-        
+
         // Verify payload integrity
         Assertions.assertEquals("market/update", event.getExtension("a2amethod"));
         Assertions.assertEquals("request", event.getExtension("mcptype"));
@@ -110,7 +110,7 @@ public class McpPatternsIntegrationTest {
 
             String json = objectMapper.writeValueAsString(chunkMsg);
             ProtocolTransportObject transport = new MockProtocolTransportObject(json);
-            
+
             CloudEvent chunkEvent = adaptor.toCloudEvent(transport);
             receivedChunks.add(chunkEvent);
         }
@@ -127,11 +127,12 @@ public class McpPatternsIntegrationTest {
         // Verify Chunk 3
         CloudEvent c3 = receivedChunks.get(2);
         Assertions.assertEquals("3", c3.getExtension("seq"));
-        
+
         // In a real app, the receiver would collect these, sort by 'seq', and merge.
     }
 
     private static class MockProtocolTransportObject implements ProtocolTransportObject {
+
         private final String content;
 
         public MockProtocolTransportObject(String content) {

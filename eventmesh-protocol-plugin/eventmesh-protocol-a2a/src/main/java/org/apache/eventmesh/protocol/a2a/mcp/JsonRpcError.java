@@ -24,11 +24,13 @@ import java.io.Serializable;
  * Reference: https://www.jsonrpc.org/specification#error_object
  */
 public class JsonRpcError implements Serializable {
+
     private int code;
     private String message;
     private Object data;
 
-    public JsonRpcError() {}
+    public JsonRpcError() {
+    }
 
     public JsonRpcError(int code, String message, Object data) {
         this.code = code;

@@ -24,12 +24,12 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class EnhancedA2AProtocolAdaptorTest {
 
@@ -54,7 +54,7 @@ public class EnhancedA2AProtocolAdaptorTest {
         Assertions.assertEquals("org.apache.eventmesh.a2a.tools.call.req", event.getType());
         Assertions.assertEquals("req-001", event.getId()); // ID should be preserved
     }
-    
+
     @Test
     public void testMcpResponseProcessing() throws ProtocolHandleException {
         // Standard MCP JSON-RPC Response
@@ -106,12 +106,12 @@ public class EnhancedA2AProtocolAdaptorTest {
         Assertions.assertEquals("1", events.get(0).getId());
         Assertions.assertEquals("2", events.get(1).getId());
     }
-    
+
     @Test
     public void testInvalidJsonProcessing() {
         String json = "{invalid-json}";
         ProtocolTransportObject obj = new MockProtocolTransportObject(json);
-        
+
         Assertions.assertThrows(ProtocolHandleException.class, () -> {
             adaptor.toCloudEvent(obj);
         });
@@ -121,8 +121,6 @@ public class EnhancedA2AProtocolAdaptorTest {
     public void testNullProtocolObject() {
         Assertions.assertFalse(adaptor.isValid(null));
     }
-
-
 
     @Test
     public void testFromCloudEventMcp() throws ProtocolHandleException {
@@ -168,7 +166,8 @@ public class EnhancedA2AProtocolAdaptorTest {
     @Test
     public void testMcpPubSubRouting() throws ProtocolHandleException {
         // Test Pub/Sub Broadcast routing using _topic
-        String json = "{\"jsonrpc\": \"2.0\", \"method\": \"market/update\", \"params\": {\"symbol\": \"BTC\", \"price\": 50000, \"_topic\": \"market.crypto.btc\"}, \"id\": \"pub-001\"}";
+        String json =
+            "{\"jsonrpc\": \"2.0\", \"method\": \"market/update\", \"params\": {\"symbol\": \"BTC\", \"price\": 50000, \"_topic\": \"market.crypto.btc\"}, \"id\": \"pub-001\"}";
         ProtocolTransportObject obj = new MockProtocolTransportObject(json);
 
         CloudEvent event = adaptor.toCloudEvent(obj);
@@ -181,6 +180,7 @@ public class EnhancedA2AProtocolAdaptorTest {
     }
 
     private static class MockProtocolTransportObject implements ProtocolTransportObject {
+
         private final String content;
 
         public MockProtocolTransportObject(String content) {

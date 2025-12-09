@@ -24,12 +24,14 @@ import java.util.Map;
  * Represents a standard JSON-RPC 2.0 Request object, aligned with MCP specifications.
  */
 public class JsonRpcRequest implements Serializable {
+
     private String jsonrpc = "2.0";
     private String method;
     private Map<String, Object> params;
     private Object id; // Can be String, Number, or Null
 
-    public JsonRpcRequest() {}
+    public JsonRpcRequest() {
+    }
 
     public JsonRpcRequest(String method, Map<String, Object> params, Object id) {
         this.method = method;
