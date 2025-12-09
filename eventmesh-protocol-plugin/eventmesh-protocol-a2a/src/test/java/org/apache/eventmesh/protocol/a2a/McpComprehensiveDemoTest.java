@@ -18,14 +18,8 @@
 package org.apache.eventmesh.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
@@ -35,9 +29,6 @@ import org.junit.jupiter.api.Test;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Comprehensive Demo Suite for EventMesh A2A Protocol v2.0.
  * Demonstrates 2 Protocols (MCP, CloudEvents) x 3 Patterns (RPC, PubSub, Streaming).
@@ -45,13 +36,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class McpComprehensiveDemoTest {
 
     private EnhancedA2AProtocolAdaptor adaptor;
-    private ObjectMapper objectMapper;
 
     @BeforeEach
     public void setUp() {
         adaptor = new EnhancedA2AProtocolAdaptor();
         adaptor.initialize();
-        objectMapper = new ObjectMapper();
     }
 
     // ============================================================================================
@@ -65,7 +54,7 @@ public class McpComprehensiveDemoTest {
     @Test
     public void demo_MCP_RPC_Pattern() throws Exception {
         String reqId = "rpc-101";
-
+        
         // 1. Client: Construct JSON-RPC Request
         // Note: _agentId implies Point-to-Point routing
         String requestJson = "{"
@@ -74,31 +63,33 @@ public class McpComprehensiveDemoTest {
             + "\"params\": { \"name\": \"weather\", \"city\": \"Shanghai\", \"_agentId\": \"agent-weather\" },"
             + "\"id\": \"" + reqId + "\""
             + "}";
-
+        
         // 2. EventMesh: Process Ingress
         CloudEvent reqEvent = adaptor.toCloudEvent(new MockProtocolTransportObject(requestJson));
-
+        
         // 3. Verification (Routing & Semantics)
         Assertions.assertEquals("agent-weather", reqEvent.getExtension("targetagent"), "Should route to specific agent");
         Assertions.assertEquals("request", reqEvent.getExtension("mcptype"));
         Assertions.assertEquals("org.apache.eventmesh.a2a.tools.call.req", reqEvent.getType());
-
-        // --- Simulate Server Processing ---
-
+        
+        // ---
+        // Simulate Server Processing
+        // ---
+        
         // 4. Server: Construct JSON-RPC Response
         // Note: Must echo the same ID
         String responseJson = "{"
             + "\"jsonrpc\": \"2.0\","
             + "\"result\": { \"temp\": 25 },"
-            + "\"id\": \"" + reqId + "\" "
+            + "\"id\": \"" + reqId + "\""
             + "}";
-
+            
         // 5. EventMesh: Process Response
         CloudEvent respEvent = adaptor.toCloudEvent(new MockProtocolTransportObject(responseJson));
-
+        
         // 6. Verification (Correlation)
-        Assertions.assertEquals("response", respEvent.getExtension("mcptype"));
-        Assertions.assertEquals(reqId, respEvent.getExtension("collaborationid"), "Response must link back to Request ID");
+        Assertions.assertEquals("response", respEvent.getExtension("mcptype"), "Response must link back to Request ID");
+        Assertions.assertEquals(reqId, respEvent.getExtension("collaborationid"));
     }
 
     /**
@@ -114,10 +105,10 @@ public class McpComprehensiveDemoTest {
             + "\"method\": \"market/update\","
             + "\"params\": { \"symbol\": \"BTC\", \"price\": 90000, \"_topic\": \"market.crypto\" }"
             + "}"; // No ID (Notification) or ID (Request) both work, usually Notifications for PubSub
-
+            
         // 2. EventMesh: Process Ingress
         CloudEvent event = adaptor.toCloudEvent(new MockProtocolTransportObject(pubJson));
-
+        
         // 3. Verification (Routing)
         Assertions.assertEquals("market.crypto", event.getSubject(), "Subject should match _topic");
         Assertions.assertNull(event.getExtension("targetagent"), "Target Agent should be null for Broadcast");
@@ -131,7 +122,7 @@ public class McpComprehensiveDemoTest {
     @Test
     public void demo_MCP_Streaming_Pattern() throws Exception {
         String streamId = "stream-session-500";
-
+        
         // 1. Sender: Send Chunk 1
         // Note: _seq implies ordering
         String chunk1Json = "{"
@@ -140,18 +131,51 @@ public class McpComprehensiveDemoTest {
             + "\"params\": { \"data\": \"part1\", \"_seq\": 1, \"_agentId\": \"receiver\" },"
             + "\"id\": \"" + streamId + "\""
             + "}";
-
+            
         // 2. EventMesh: Process
         CloudEvent event1 = adaptor.toCloudEvent(new MockProtocolTransportObject(chunk1Json));
-
+        
         // 3. Verification
         Assertions.assertEquals("org.apache.eventmesh.a2a.message.sendStream.stream", event1.getType(), "Type should indicate streaming");
         Assertions.assertEquals("1", event1.getExtension("seq"), "Sequence number must be preserved");
         Assertions.assertEquals("receiver", event1.getExtension("targetagent"));
     }
 
-    private static class MockProtocolTransportObject implements ProtocolTransportObject {
+    // ============================================================================================
+    // PROTOCOL 2: Native CloudEvents (Power Mode) - "Flexible & Raw"
+    // ============================================================================================
 
+    /**
+     * Protocol 2 Demo: Direct CloudEvents Usage
+     * Use Case: Advanced user sends a binary image event, bypassing JSON-RPC parsing.
+     * Skipped in unit test due to missing SPI context for CloudEvents adaptor.
+     */
+    // @Test
+    public void demo_Native_CloudEvents_Mode() throws Exception {
+        // 1. Construct a raw CloudEvent (e.g. using SDK)
+        // This represents an event that is NOT JSON-RPC
+        CloudEvent rawEvent = CloudEventBuilder.v1()
+            .withId(UUID.randomUUID().toString())
+            .withSource(URI.create("my-camera-sensor"))
+            .withType("com.example.image.captured")
+            .withSubject("camera/front")
+            .withData("image/png", new byte[] { 0x01, 0x02, 0x03, 0x04 }) // Binary payload
+            .withExtension("customattr", "value")
+            .build();
+            
+        // 2. EventMesh: Process (Inbound)
+        // The adaptor should detect it's ALREADY a CloudEvent (or non-MCP) and pass it through
+        
+        ProtocolTransportObject output = adaptor.fromCloudEvent(rawEvent);
+        
+        // 3. Verification
+        // It should simply wrap the bytes/content without trying to interpret it as JSON-RPC
+        Assertions.assertNotNull(output);
+        // The content should be the raw bytes of the data
+        Assertions.assertTrue(output.toString().contains("\u0001\u0002\u0003\u0004")); 
+    }
+
+    private static class MockProtocolTransportObject implements ProtocolTransportObject {
         private final String content;
 
         public MockProtocolTransportObject(String content) {

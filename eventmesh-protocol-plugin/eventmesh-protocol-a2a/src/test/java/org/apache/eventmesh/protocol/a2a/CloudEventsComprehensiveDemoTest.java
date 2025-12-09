@@ -18,7 +18,6 @@
 package org.apache.eventmesh.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

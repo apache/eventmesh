@@ -18,10 +18,7 @@
 package org.apache.eventmesh.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -56,23 +53,24 @@ public class McpIntegrationDemoTest {
         // ==========================================
         // 1. Client Side: Construct and Send Request
         // ==========================================
-        String requestId = UUID.randomUUID().toString();
-        String targetAgent = "weather-service-01";
-
+        
         // Construct MCP JSON-RPC Request
         Map<String, Object> requestParams = new HashMap<>();
         requestParams.put("name", "get_weather");
         requestParams.put("city", "Beijing");
+        
+        String targetAgent = "weather-service-01";
         requestParams.put("_agentId", targetAgent); // Routing hint
 
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("jsonrpc", "2.0");
         requestMap.put("method", "tools/call");
         requestMap.put("params", requestParams);
+        
+        String requestId = UUID.randomUUID().toString();
         requestMap.put("id", requestId);
 
         String requestJson = objectMapper.writeValueAsString(requestMap);
-        System.out.println("[Client] Sending Request: " + requestJson);
 
         // Client uses Adaptor to wrap into CloudEvent
         ProtocolTransportObject clientTransport = new MockProtocolTransportObject(requestJson);
@@ -98,8 +96,6 @@ public class McpIntegrationDemoTest {
         String receivedContent = serverReceivedObj.toString();
         JsonNode receivedNode = objectMapper.readTree(receivedContent);
 
-        System.out.println("[Server] Received: " + receivedContent);
-
         // Verify content matches
         Assertions.assertEquals("tools/call", receivedNode.get("method").asText());
         Assertions.assertEquals(requestId, receivedNode.get("id").asText());
@@ -118,7 +114,6 @@ public class McpIntegrationDemoTest {
         responseMap.put("id", receivedNode.get("id").asText()); // Must echo ID
 
         String responseJson = objectMapper.writeValueAsString(responseMap);
-        System.out.println("[Server] Sending Response: " + responseJson);
 
         // Server uses Adaptor to wrap Response
         ProtocolTransportObject serverResponseTransport = new MockProtocolTransportObject(responseJson);
@@ -136,8 +131,6 @@ public class McpIntegrationDemoTest {
         // Client receives responseEvent
         ProtocolTransportObject clientReceivedObj = adaptor.fromCloudEvent(responseEvent);
         JsonNode clientResponseNode = objectMapper.readTree(clientReceivedObj.toString());
-
-        System.out.println("[Client] Received Response: " + clientReceivedObj.toString());
 
         // Verify final result
         Assertions.assertEquals(requestId, clientResponseNode.get("id").asText());

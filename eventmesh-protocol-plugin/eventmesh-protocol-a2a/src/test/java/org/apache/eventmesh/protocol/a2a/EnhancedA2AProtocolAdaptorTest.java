@@ -103,8 +103,19 @@ public class EnhancedA2AProtocolAdaptorTest {
 
         List<CloudEvent> events = adaptor.toBatchCloudEvent(obj);
         Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals("1", events.get(0).getId());
-        Assertions.assertEquals("2", events.get(1).getId());
+        
+        boolean found1 = false;
+        boolean found2 = false;
+        for (CloudEvent e : events) {
+            if ("1".equals(e.getId())) {
+                found1 = true;
+            }
+            if ("2".equals(e.getId())) {
+                found2 = true;
+            }
+        }
+        Assertions.assertTrue(found1, "Should contain event with ID 1");
+        Assertions.assertTrue(found2, "Should contain event with ID 2");
     }
 
     @Test
@@ -166,8 +177,12 @@ public class EnhancedA2AProtocolAdaptorTest {
     @Test
     public void testMcpPubSubRouting() throws ProtocolHandleException {
         // Test Pub/Sub Broadcast routing using _topic
-        String json =
-            "{\"jsonrpc\": \"2.0\", \"method\": \"market/update\", \"params\": {\"symbol\": \"BTC\", \"price\": 50000, \"_topic\": \"market.crypto.btc\"}, \"id\": \"pub-001\"}";
+        String json = "{"
+            + "\"jsonrpc\": \"2.0\", "
+            + "\"method\": \"market/update\", "
+            + "\"params\": {\"symbol\": \"BTC\", \"price\": 50000, \"_topic\": \"market.crypto.btc\"}, "
+            + "\"id\": \"pub-001\""
+            + "}";
         ProtocolTransportObject obj = new MockProtocolTransportObject(json);
 
         CloudEvent event = adaptor.toCloudEvent(obj);

@@ -18,7 +18,6 @@
 package org.apache.eventmesh.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +54,6 @@ public class McpPatternsIntegrationTest {
         // Multiple Subscribers (simulated) receive it based on the Subject.
 
         String topic = "market.crypto.btc";
-        String broadcastId = UUID.randomUUID().toString();
 
         // 1. Publisher constructs message
         Map<String, Object> params = new HashMap<>();
@@ -67,6 +65,8 @@ public class McpPatternsIntegrationTest {
         pubMessage.put("jsonrpc", "2.0");
         pubMessage.put("method", "market/update");
         pubMessage.put("params", params);
+        
+        String broadcastId = UUID.randomUUID().toString();
         pubMessage.put("id", broadcastId);
 
         String json = objectMapper.writeValueAsString(pubMessage);

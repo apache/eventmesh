@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import io.cloudevents.CloudEvent;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -242,8 +243,8 @@ public class ProtocolRouter {
         
         // gRPC messages  
         addRoutingRule("grpc-messages",
-            message -> message.getClass().getName().contains("Grpc") || 
-                      message.getClass().getName().contains("CloudEvent"),
+            message -> message.getClass().getName().contains("Grpc")
+                || message.getClass().getName().contains("CloudEvent"),
             "cloudevents");
         
         // TCP messages

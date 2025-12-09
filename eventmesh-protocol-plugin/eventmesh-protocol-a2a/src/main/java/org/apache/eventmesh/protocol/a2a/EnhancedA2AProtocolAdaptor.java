@@ -18,7 +18,6 @@
 package org.apache.eventmesh.protocol.a2a;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
@@ -28,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import io.cloudevents.CloudEvent;
@@ -41,8 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Enhanced A2A Protocol Adaptor that implements MCP (Model Context Protocol) over CloudEvents.
- * 
- * This adaptor supports:
+ *
+ * <p>This adaptor supports:
  * 1. Standard MCP JSON-RPC 2.0 messages.
  * 2. Delegation to standard CloudEvents/HTTP protocols.
  */
@@ -106,6 +104,7 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                     node = objectMapper.readTree(content);
                 }
             } catch (Exception ignored) {
+                // ignore
             }
 
             // 1. Check for MCP / JSON-RPC 2.0
@@ -141,6 +140,7 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                     node = objectMapper.readTree(content);
                 }
             } catch (Exception ignored) {
+                // ignore
             }
 
             // Check if this is a Batch (JSON Array)
@@ -161,8 +161,9 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                 try {
                     return cloudEventsAdaptor.toBatchCloudEvent(protocol);
                 } catch (Exception e) {
-                    if (httpAdaptor != null)
+                    if (httpAdaptor != null) {
                         return httpAdaptor.toBatchCloudEvent(protocol);
+                    }
                 }
             }
 
@@ -233,19 +234,22 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             "mcp-jsonrpc",
             "agent-communication",
             "workflow-orchestration",
-            "collaboration");
+            "collaboration"
+        );
     }
 
     @Override
     public boolean isValid(ProtocolTransportObject protocol) {
-        if (protocol == null)
+        if (protocol == null) {
             return false;
+        }
 
         try {
             String content = protocol.toString();
             // Fast fail
-            if (!content.contains("{"))
+            if (!content.contains("{")) {
                 return false;
+            }
 
             JsonNode node = objectMapper.readTree(content);
             // Valid if JSON-RPC
@@ -256,18 +260,20 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             // ignore
         }
 
-        if (cloudEventsAdaptor != null && cloudEventsAdaptor.isValid(protocol))
+        if (cloudEventsAdaptor != null && cloudEventsAdaptor.isValid(protocol)) {
             return true;
-        if (httpAdaptor != null && httpAdaptor.isValid(protocol))
+        }
+        if (httpAdaptor != null && httpAdaptor.isValid(protocol)) {
             return true;
+        }
 
         return false;
     }
 
     private boolean isA2ACloudEvent(CloudEvent cloudEvent) {
-        return PROTOCOL_TYPE.equals(cloudEvent.getExtension("protocol")) ||
-            cloudEvent.getType().startsWith("org.apache.eventmesh.a2a") ||
-            cloudEvent.getExtension("a2amethod") != null;
+        return PROTOCOL_TYPE.equals(cloudEvent.getExtension("protocol"))
+            || cloudEvent.getType().startsWith("org.apache.eventmesh.a2a")
+            || cloudEvent.getExtension("a2amethod") != null;
     }
 
     /**
@@ -277,7 +283,8 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     private CloudEvent convertMcpToCloudEvent(JsonNode node, String content) throws ProtocolHandleException {
         try {
             boolean isRequest = node.has("method");
-            boolean isResponse = node.has("result") || node.has("error");
+            boolean isResponse = node.has("result")
+                || node.has("error");
 
             String id = node.has("id") ? node.get("id").asText() : generateMessageId();
             String ceType;
@@ -306,16 +313,15 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
                 builder.withExtension("a2amethod", method);
 
-                // Extract optional params for routing and sequencing
+                // Extract optional params for routing
                 if (node.has("params")) {
                     JsonNode params = node.get("params");
 
                     // 1. Pub/Sub Routing (Priority): Broadcast to a Topic
                     if (params.has("_topic")) {
                         builder.withSubject(params.get("_topic").asText());
-                    }
-                    // 2. P2P Routing (Fallback): Unicast to specific Agent
-                    else if (params.has("_agentId")) {
+                    } else if (params.has("_agentId")) {
+                        // 2. P2P Routing (Fallback): Unicast to specific Agent
                         builder.withExtension("targetagent", params.get("_agentId").asText());
                     }
 
@@ -356,6 +362,7 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
                 try {
                     return cloudEventsAdaptor.fromCloudEvent(cloudEvent);
                 } catch (Exception ignored) {
+                    // ignore
                 }
             }
 
@@ -369,26 +376,34 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     }
 
     private String getTargetProtocol(CloudEvent cloudEvent) {
-        String protocolDesc = (String) cloudEvent.getExtension("protocolDesc");
-        if (protocolDesc != null)
-            return protocolDesc;
-        if (cloudEvent.getType().contains("http"))
+        if (cloudEvent == null) {
+            return "cloudevents";
+        }
+        Object protocolDescObj = cloudEvent.getExtension("protocolDesc");
+        if (protocolDescObj instanceof String) {
+            return (String) protocolDescObj;
+        }
+        String type = cloudEvent.getType();
+        if (type != null && type.contains("http")) {
             return "http";
+        }
         return "cloudevents";
     }
 
     private static class SimpleA2AProtocolTransportObject implements ProtocolTransportObject {
-
         private final String content;
         private final CloudEvent sourceCloudEvent;
+
         public SimpleA2AProtocolTransportObject(String content, CloudEvent sourceCloudEvent) {
             this.content = content;
             this.sourceCloudEvent = sourceCloudEvent;
         }
+
         @Override
         public String toString() {
             return content;
         }
+
         public CloudEvent getSourceCloudEvent() {
             return sourceCloudEvent;
         }

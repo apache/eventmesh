@@ -21,8 +21,6 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -324,11 +322,25 @@ public class EnhancedProtocolPluginFactory {
             this.capabilities = capabilities != null ? capabilities : Collections.emptySet();
         }
 
-        public String getType() { return type; }
-        public String getVersion() { return version; }
-        public int getPriority() { return priority; }
-        public boolean supportsBatch() { return supportsBatch; }
-        public java.util.Set<String> getCapabilities() { return capabilities; }
+        public String getType() { 
+            return type; 
+        }
+
+        public String getVersion() { 
+            return version; 
+        }
+
+        public int getPriority() { 
+            return priority; 
+        }
+
+        public boolean supportsBatch() { 
+            return supportsBatch; 
+        }
+
+        public java.util.Set<String> getCapabilities() { 
+            return capabilities; 
+        }
 
         @Override
         public String toString() {
