@@ -31,7 +31,7 @@ Traditional A2A implementations often rely on HTTP Webhooks (`POST /inbox`) for 
 **EventMesh A2A** solves this by introducing **Native Pub/Sub** capabilities:
 
 ```mermaid
-graph LR
+flowchart LR
     Publisher["Publisher Agent"] -->|1. Publish (Once)| Bus["EventMesh Bus"]
     
     subgraph FanoutLayer ["EventMesh Fanout Layer"]
