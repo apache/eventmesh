@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A {@link Timer} optimized for approximated I/O timeout scheduling.
  *
- * <h3>Tick Duration</h3>
+ * <h2>Tick Duration</h2>
  * <p>
  * As described with 'approximated', this timer does not execute the scheduled
  * {@link TimerTask} on time.  {@link HashedWheelTimer}, on every tick, will
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * the default tick duration is 100 milliseconds, and you will not need to try
  * different configurations in most cases.
  *
- * <h3>Ticks per Wheel (Wheel Size)</h3>
+ * <h2>Ticks per Wheel (Wheel Size)</h2>
  * <p>
  * {@link HashedWheelTimer} maintains a data structure called 'wheel'.
  * To put simply, a wheel is a hash table of {@link TimerTask}s whose hash
@@ -63,14 +63,14 @@ import org.slf4j.LoggerFactory;
  * (i.e. the size of the wheel) is 512.  You could specify a larger value
  * if you are going to schedule a lot of timeouts.
  *
- * <h3>Do not create many instances.</h3>
+ * <h2>Do not create many instances.</h2>
  * <p>
  * {@link HashedWheelTimer} creates a new thread whenever it is instantiated and
  * started.  Therefore, you should make sure to create only one instance and
  * share it across your application.  One of the common mistakes, that makes
  * your application unresponsive, is to create a new instance for every connection.
  *
- * <h3>Implementation Details</h3>
+ * <h2>Implementation Details</h2>
  * <p>
  * {@link HashedWheelTimer} is based on
  * <a href="http://cseweb.ucsd.edu/users/varghese/">George Varghese</a> and

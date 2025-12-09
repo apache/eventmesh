@@ -28,7 +28,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,28 +81,28 @@ public class SubscriptionManager {
                 localClients = localClientInfoMapping.get(groupTopicKey);
             }
 
+            Client newClient = new Client();
+            newClient.setEnv(clientInfo.getEnv());
+            newClient.setIdc(clientInfo.getIdc());
+            newClient.setSys(clientInfo.getSys());
+            newClient.setIp(clientInfo.getIp());
+            newClient.setPid(clientInfo.getPid());
+            newClient.setConsumerGroup(consumerGroup);
+            newClient.setTopic(subscription.getTopic());
+            newClient.setUrl(url);
+            newClient.setLastUpTime(new Date());
+
             boolean isContains = false;
             for (final Client localClient : localClients) {
-                // TODO: compare the whole Client would be better?
-                if (StringUtils.equals(localClient.getUrl(), url)) {
+                if (localClient.equals(newClient)) {
                     isContains = true;
-                    localClient.setLastUpTime(new Date());
+                    localClient.setLastUpTime(newClient.getLastUpTime());
                     break;
                 }
             }
 
             if (!isContains) {
-                Client client = new Client();
-                client.setEnv(clientInfo.getEnv());
-                client.setIdc(clientInfo.getIdc());
-                client.setSys(clientInfo.getSys());
-                client.setIp(clientInfo.getIp());
-                client.setPid(clientInfo.getPid());
-                client.setConsumerGroup(consumerGroup);
-                client.setTopic(subscription.getTopic());
-                client.setUrl(url);
-                client.setLastUpTime(new Date());
-                localClients.add(client);
+                localClients.add(newClient);
             }
         }
     }
@@ -143,9 +143,8 @@ public class SubscriptionManager {
 
             consumerGroupTopicConf.getUrls().add(url);
             if (!consumerGroupTopicConf.getIdcUrls().containsKey(clientInfo.getIdc())) {
-                consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new ArrayList<>());
+                consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new CopyOnWriteArrayList<>());
             }
-            // TODO: idcUrl list is not thread-safe
             consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
         }
     }

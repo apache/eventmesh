@@ -109,7 +109,7 @@ public class Session {
     @Getter
     private SessionContext sessionContext = new SessionContext(this);
 
-    private boolean listenRspSend;
+    private volatile boolean listenRspSend;
 
     private final ReentrantLock listenRspLock = new ReentrantLock();
 
@@ -261,17 +261,22 @@ public class Session {
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {
         if (!listenRspSend && listenRspLock.tryLock()) {
-            if (header == null) {
-                header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
+            try {
+                if (listenRspSend) {
+                    return;
+                }
+                if (header == null) {
+                    header = new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", null);
+                }
+                Package msg = new Package();
+                msg.setHeader(header);
+
+                // TODO: if startTime is modified
+                Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
+                listenRspSend = true;
+            } finally {
+                listenRspLock.unlock();
             }
-            Package msg = new Package();
-            msg.setHeader(header);
-
-            // TODO: if startTime is modified
-            Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
-            listenRspSend = true;
-
-            listenRspLock.unlock();
         }
     }
 
