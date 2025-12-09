@@ -70,17 +70,14 @@ A2A Protocol introduces a unique **Hybrid Architecture** that bridges the gap be
 
 ```mermaid
 graph TD
-    Client["Client Agent / LLM"] -- "JSON-RPC Request" --> EM
-    
-    subgraph Runtime ["EventMesh Runtime"]
-        EM["Core Processor"]
-        Plugin["A2A Protocol Plugin"]
-        EM -.- Plugin
-    end
-    
+    Client["Client Agent / LLM"] -- "JSON-RPC Request" --> EM["EventMesh Runtime"]
     EM -- "CloudEvent (Request)" --> Server["Server Agent / Tool"]
     Server -- "CloudEvent (Response)" --> EM
     EM -- "JSON-RPC Response" --> Client
+    
+    subgraph Runtime ["EventMesh Runtime"]
+        Plugin["A2A Protocol Plugin"]
+    end
     
     style EM fill:#f9f,stroke:#333,stroke-width:4px
     style Plugin fill:#ccf,stroke:#333,stroke-width:2px
