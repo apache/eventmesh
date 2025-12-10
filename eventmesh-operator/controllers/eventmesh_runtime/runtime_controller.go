@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -78,7 +79,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
 	// Watch for changes to secondary resource Pods and requeue the owner runtime
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
@@ -101,92 +101,90 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the EventMeshOperator object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	r.Logger.Info("eventMeshRuntime start reconciling",
-		"Namespace", req.Namespace, "Namespace", req.Name)
+		"Namespace", req.Namespace, "Name", req.Name)
 
 	eventMeshRuntime := &eventmeshoperatorv1.Runtime{}
 	err := r.Client.Get(context.TODO(), req.NamespacedName, eventMeshRuntime)
 	if err != nil {
-		// If it's a not found exception, it means the cr has been deleted.
 		if errors.IsNotFound(err) {
 			r.Logger.Info("eventMeshRuntime resource not found. Ignoring since object must be deleted.")
-			return reconcile.Result{}, err
+			return reconcile.Result{}, nil
 		}
 		r.Logger.Error(err, "Failed to get eventMeshRuntime")
 		return reconcile.Result{}, err
 	}
 	r.Logger.Info("get eventMeshRuntime object", "name", eventMeshRuntime.Name)
 
+	var groupNum int
 	if eventMeshRuntime.Status.Size == 0 {
-		GroupNum = eventMeshRuntime.Spec.Size
+		groupNum = eventMeshRuntime.Spec.Size
 	} else {
-		GroupNum = eventMeshRuntime.Status.Size
+		groupNum = eventMeshRuntime.Status.Size
 	}
 
 	replicaPerGroup := eventMeshRuntime.Spec.ReplicaPerGroup
-	r.Logger.Info("GroupNum=" + strconv.Itoa(GroupNum) + ", replicaPerGroup=" + strconv.Itoa(replicaPerGroup))
+	r.Logger.Info("GroupNum=" + strconv.Itoa(groupNum) + ", replicaPerGroup=" + strconv.Itoa(replicaPerGroup))
 
-	for groupIndex := 0; groupIndex < GroupNum; groupIndex++ {
-		r.Logger.Info("Check eventMeshRuntime cluster " + strconv.Itoa(groupIndex+1) + "/" + strconv.Itoa(GroupNum))
-		runtimeDep := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
+	for groupIndex := 0; groupIndex < groupNum; groupIndex++ {
+		r.Logger.Info("Check eventMeshRuntime cluster " + strconv.Itoa(groupIndex+1) + "/" + strconv.Itoa(groupNum))
+		
+		// 1. Reconcile Service
+		service := r.getEventMeshRuntimeService(eventMeshRuntime, groupIndex)
+		foundService := &corev1.Service{}
+		err = r.Client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, foundService)
+		if err != nil && errors.IsNotFound(err) {
+			r.Logger.Info("Creating a new eventMeshRuntime Service.", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
+			err = r.Client.Create(context.TODO(), service)
+			if err != nil {
+				r.Logger.Error(err, "Failed to create new Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
+				return reconcile.Result{}, err
+			}
+		} else if err != nil {
+			r.Logger.Error(err, "Failed to get eventMeshRuntime Service.")
+			return reconcile.Result{}, err
+		}
 
-		// Check if the statefulSet already exists, if not create a new one
-		found := &appsv1.StatefulSet{}
+		// 2. Reconcile StatefulSet
+		runtimeSts := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex)
+		foundSts := &appsv1.StatefulSet{}
 		err = r.Client.Get(context.TODO(), types.NamespacedName{
-			Name:      runtimeDep.Name,
-			Namespace: runtimeDep.Namespace,
-		}, found)
+			Name:      runtimeSts.Name,
+			Namespace: runtimeSts.Namespace,
+		}, foundSts)
+		
 		if err != nil && errors.IsNotFound(err) {
 			r.Logger.Info("Creating a new eventMeshRuntime StatefulSet.",
-				"StatefulSet.Namespace", runtimeDep.Namespace,
-				"StatefulSet.Name", runtimeDep.Name)
-			err = r.Client.Create(context.TODO(), runtimeDep)
+				"StatefulSet.Namespace", runtimeSts.Namespace,
+				"StatefulSet.Name", runtimeSts.Name)
+			err = r.Client.Create(context.TODO(), runtimeSts)
 			if err != nil {
 				r.Logger.Error(err, "Failed to create new StatefulSet",
-					"StatefulSet.Namespace", runtimeDep.Namespace,
-					"StatefulSet.Name", runtimeDep.Name)
+					"StatefulSet.Namespace", runtimeSts.Namespace,
+					"StatefulSet.Name", runtimeSts.Name)
+				return reconcile.Result{}, err
 			}
-			time.Sleep(time.Duration(3) * time.Second)
 		} else if err != nil {
 			r.Logger.Error(err, "Failed to get eventMeshRuntime StatefulSet.")
-		}
-	}
-	if eventMeshRuntime.Spec.AllowRestart {
-		for groupIndex := 0; groupIndex < eventMeshRuntime.Spec.Size; groupIndex++ {
-			runtimeName := eventMeshRuntime.Name + "-" + strconv.Itoa(groupIndex)
-			r.Logger.Info("update eventMeshRuntime", "runtimeName", runtimeName)
-			// update
-			deployment := r.getEventMeshRuntimeStatefulSet(eventMeshRuntime, groupIndex, 0)
-			found := &appsv1.StatefulSet{}
-			err = r.Client.Get(context.TODO(), types.NamespacedName{
-				Name:      deployment.Name,
-				Namespace: deployment.Namespace,
-			}, found)
-			if err != nil {
-				r.Logger.Error(err, "Failed to get eventMeshRuntime StatefulSet.")
-			} else {
-				err = r.Client.Update(context.TODO(), found)
+			return reconcile.Result{}, err
+		} else {
+			// Update if needed
+			if eventMeshRuntime.Spec.AllowRestart {
+				// Simple update logic: overwrite spec
+				r.Logger.Info("Updating eventMeshRuntime StatefulSet", "Name", foundSts.Name)
+				runtimeSts.ResourceVersion = foundSts.ResourceVersion
+				err = r.Client.Update(context.TODO(), runtimeSts)
 				if err != nil {
-					r.Logger.Error(err, "Failed to update eventMeshRuntime "+runtimeName,
-						"StatefulSet.Namespace", found.Namespace, "StatefulSet.Name", found.Name)
-				} else {
-					r.Logger.Info("Successfully update "+runtimeName,
-						"StatefulSet.Namespace", found.Namespace, "StatefulSet.Name", found.Name)
+					r.Logger.Error(err, "Failed to update eventMeshRuntime StatefulSet", "Name", foundSts.Name)
+					return reconcile.Result{}, err
 				}
-				time.Sleep(time.Duration(1) * time.Second)
 			}
 		}
 	}
+
 	podList := &corev1.PodList{}
-	labelSelector := labels.SelectorFromSet(getLabels())
+	labelSelector := labels.SelectorFromSet(getLabels(eventMeshRuntime.Name))
 	listOps := &client.ListOptions{
 		Namespace:     eventMeshRuntime.Namespace,
 		LabelSelector: labelSelector,
@@ -199,48 +197,37 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	}
 
 	podNames := getRuntimePodNames(podList.Items)
-	r.Logger.Info(fmt.Sprintf("Status.Nodes = %s", eventMeshRuntime.Status.Nodes))
-	r.Logger.Info(fmt.Sprintf("podNames = %s", podNames))
-	// Ensure every pod is in running phase
-	for _, pod := range podList.Items {
-		if !reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
-			r.Logger.Info("pod " + pod.Name + " phase is " + string(pod.Status.Phase) + ", wait for a moment...")
-		}
+	
+	// Update Status
+	var needsUpdate bool
+	if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
+		eventMeshRuntime.Status.Size = eventMeshRuntime.Spec.Size
+		needsUpdate = true
 	}
-
-	if podNames != nil {
+	if !reflect.DeepEqual(podNames, eventMeshRuntime.Status.Nodes) {
 		eventMeshRuntime.Status.Nodes = podNames
-		r.Logger.Info(fmt.Sprintf("eventMeshRuntime.Status.Nodes = %s", eventMeshRuntime.Status.Nodes))
-		// Update status.Size if needed
-		if eventMeshRuntime.Spec.Size != eventMeshRuntime.Status.Size {
-			r.Logger.Info("eventMeshRuntime.Status.Size = " + strconv.Itoa(eventMeshRuntime.Status.Size))
-			r.Logger.Info("eventMeshRuntime.Spec.Size = " + strconv.Itoa(eventMeshRuntime.Spec.Size))
-			eventMeshRuntime.Status.Size = eventMeshRuntime.Spec.Size
-			err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
-			if err != nil {
-				r.Logger.Error(err, "Failed to update eventMeshRuntime Size status.")
-			}
-		}
-
-		// Update status.Nodes if needed
-		if !reflect.DeepEqual(podNames, eventMeshRuntime.Status.Nodes) {
-			err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
-			if err != nil {
-				r.Logger.Error(err, "Failed to update eventMeshRuntime Nodes status.")
-			}
-		}
-	} else {
-		r.Logger.Error(err, "Not found eventmesh runtime pods")
+		needsUpdate = true
 	}
 
+	if needsUpdate {
+		r.Logger.Info("Updating eventMeshRuntime status")
+		err = r.Client.Status().Update(context.TODO(), eventMeshRuntime)
+		if err != nil {
+			r.Logger.Error(err, "Failed to update eventMeshRuntime status.")
+			return reconcile.Result{}, err
+		}
+	}
+
+	// Update global state
 	runningEventMeshRuntimeNum := getRunningRuntimeNum(podList.Items)
-	if runningEventMeshRuntimeNum == eventMeshRuntime.Spec.Size {
-		share.IsEventMeshRuntimeInitialized = true
+	// We check if total running pods match expected total replicas
+	totalExpectedReplicas := groupNum * replicaPerGroup
+	if runningEventMeshRuntimeNum == totalExpectedReplicas {
+		// share.IsEventMeshRuntimeInitialized = true (Removed as per refactor)
 	}
 
 	r.Logger.Info("Successful reconciliation!")
-
-	return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
+	return reconcile.Result{RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
 }
 
 func getRunningRuntimeNum(pods []corev1.Pod) int {
@@ -261,25 +248,23 @@ func getRuntimePodNames(pods []corev1.Pod) []string {
 	return podNames
 }
 
-var GroupNum = 0
-
-func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshoperatorv1.Runtime, groupIndex int, replicaIndex int) *appsv1.StatefulSet {
-	var statefulSetName string
-	var a int32 = 1
-	var c = &a
-	if replicaIndex == 0 {
-		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-a"
-	} else {
-		statefulSetName = runtime.Name + "-" + strconv.Itoa(groupIndex) + "-r-" + strconv.Itoa(replicaIndex)
-	}
-	label := getLabels()
+func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshoperatorv1.Runtime, groupIndex int) *appsv1.StatefulSet {
+	// Naming: <runtimeName>-<groupIndex>
+	statefulSetName := fmt.Sprintf("%s-%d", runtime.Name, groupIndex)
+	serviceName := fmt.Sprintf("%s-%d-headless", runtime.Name, groupIndex)
+	
+	replicas := int32(runtime.Spec.ReplicaPerGroup)
+	label := getLabels(runtime.Name)
+	
 	deployment := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      statefulSetName,
 			Namespace: runtime.Namespace,
+			Labels:    label,
 		},
 		Spec: appsv1.StatefulSetSpec{
-			Replicas: c,
+			ServiceName: serviceName,
+			Replicas:    &replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: label,
 			},
@@ -297,23 +282,62 @@ func (r *RuntimeReconciler) getEventMeshRuntimeStatefulSet(runtime *eventmeshope
 					NodeSelector:      runtime.Spec.RuntimePodTemplate.Template.Spec.NodeSelector,
 					PriorityClassName: runtime.Spec.RuntimePodTemplate.Template.Spec.PriorityClassName,
 					HostNetwork:       runtime.Spec.RuntimePodTemplate.Template.Spec.HostNetwork,
-					Containers: []corev1.Container{{
-						Resources:       runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Resources,
-						Image:           runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Image,
-						Name:            runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Name,
-						SecurityContext: getContainerSecurityContext(runtime),
-						ImagePullPolicy: runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].ImagePullPolicy,
-						Ports:           runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Ports,
-						VolumeMounts:    runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].VolumeMounts,
-					}},
-					Volumes:         runtime.Spec.RuntimePodTemplate.Template.Spec.Volumes,
-					SecurityContext: getRuntimePodSecurityContext(runtime),
+					Containers:        runtime.Spec.RuntimePodTemplate.Template.Spec.Containers, // Use all containers
+					Volumes:           runtime.Spec.RuntimePodTemplate.Template.Spec.Volumes,
+					SecurityContext:   getRuntimePodSecurityContext(runtime),
 				},
 			},
 		},
 	}
+	// Manually set security context for the first container if not set, for backward compatibility or strict override
+	if len(deployment.Spec.Template.Spec.Containers) > 0 {
+		if deployment.Spec.Template.Spec.Containers[0].SecurityContext == nil {
+			deployment.Spec.Template.Spec.Containers[0].SecurityContext = getContainerSecurityContext(runtime)
+		}
+	}
+
 	_ = controllerutil.SetControllerReference(runtime, deployment, r.Scheme)
 	return deployment
+}
+
+func (r *RuntimeReconciler) getEventMeshRuntimeService(runtime *eventmeshoperatorv1.Runtime, groupIndex int) *corev1.Service {
+	serviceName := fmt.Sprintf("%s-%d-headless", runtime.Name, groupIndex)
+	label := getLabels(runtime.Name)
+
+	var ports []corev1.ServicePort
+	// Extract ports from the first container
+	if len(runtime.Spec.RuntimePodTemplate.Template.Spec.Containers) > 0 {
+		for _, port := range runtime.Spec.RuntimePodTemplate.Template.Spec.Containers[0].Ports {
+			ports = append(ports, corev1.ServicePort{
+				Name:       port.Name,
+				Port:       port.ContainerPort,
+				TargetPort: intstr.FromInt(int(port.ContainerPort)),
+			})
+		}
+	}
+	// Fallback if no ports defined, though ideally CR should have them
+	if len(ports) == 0 {
+		ports = append(ports, corev1.ServicePort{
+			Name:       "grpc",
+			Port:       10000,
+			TargetPort: intstr.FromInt(10000),
+		})
+	}
+
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      serviceName,
+			Namespace: runtime.Namespace,
+			Labels:    label,
+		},
+		Spec: corev1.ServiceSpec{
+			ClusterIP: "None", // Headless Service
+			Selector:  label,
+			Ports:     ports,
+		},
+	}
+	_ = controllerutil.SetControllerReference(runtime, svc, r.Scheme)
+	return svc
 }
 
 func getRuntimePodSecurityContext(runtime *eventmeshoperatorv1.Runtime) *corev1.PodSecurityContext {
@@ -332,6 +356,9 @@ func getContainerSecurityContext(runtime *eventmeshoperatorv1.Runtime) *corev1.S
 	return &securityContext
 }
 
-func getLabels() map[string]string {
-	return map[string]string{"app": "eventmesh-runtime"}
+func getLabels(name string) map[string]string {
+	return map[string]string{
+		"app":      "eventmesh-runtime",
+		"instance": name,
+	}
 }
