@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -101,40 +102,65 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the EventMeshOperator object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	r.Logger.Info("connectors start reconciling",
-		"Namespace", req.Namespace, "Namespace", req.Name)
+		"Namespace", req.Namespace, "Name", req.Name)
 
 	connector := &eventmeshoperatorv1.Connectors{}
 	err := r.Client.Get(context.TODO(), req.NamespacedName, connector)
 	if err != nil {
-		// If it's a not found exception, it means the cr has been deleted.
 		if errors.IsNotFound(err) {
 			r.Logger.Info("connector resource not found. Ignoring since object must be deleted.")
-			return reconcile.Result{}, err
+			return reconcile.Result{}, nil
 		}
 		r.Logger.Error(err, "Failed to get connector")
 		return reconcile.Result{}, err
 	}
 
-	for {
-		if share.IsEventMeshRuntimeInitialized {
+	// Dependency Check: Check if Runtime is ready
+	runtimeList := &eventmeshoperatorv1.RuntimeList{}
+	listOps := &client.ListOptions{Namespace: connector.Namespace}
+	err = r.Client.List(context.TODO(), runtimeList, listOps)
+	if err != nil {
+		r.Logger.Error(err, "Failed to list Runtimes for dependency check")
+		return reconcile.Result{}, err
+	}
+
+	runtimeReady := false
+	for _, runtime := range runtimeList.Items {
+		// Simple check: if at least one runtime has size > 0
+		if runtime.Status.Size > 0 {
+			runtimeReady = true
 			break
-		} else {
-			r.Logger.Info("connector Waiting for runtime ready...")
-			time.Sleep(time.Duration(share.WaitForRuntimePodNameReadyInSecond) * time.Second)
 		}
 	}
 
+	if !runtimeReady {
+		r.Logger.Info("Connector waiting for EventMesh Runtime to be ready...")
+		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
+	}
+
+	// 1. Reconcile Service
+	connectorService := r.getConnectorService(connector)
+	foundService := &corev1.Service{}
+	err = r.Client.Get(context.TODO(), types.NamespacedName{
+		Name:      connectorService.Name,
+		Namespace: connectorService.Namespace,
+	}, foundService)
+	if err != nil && errors.IsNotFound(err) {
+		r.Logger.Info("Creating a new Connector Service.", "Namespace", connectorService.Namespace, "Name", connectorService.Name)
+		err = r.Client.Create(context.TODO(), connectorService)
+		if err != nil {
+			r.Logger.Error(err, "Failed to create new Connector Service")
+			return reconcile.Result{}, err
+		}
+	} else if err != nil {
+		r.Logger.Error(err, "Failed to get Connector Service")
+		return reconcile.Result{}, err
+	}
+
+	// 2. Reconcile StatefulSet
 	connectorStatefulSet := r.getConnectorStatefulSet(connector)
-	// Check if the statefulSet already exists, if not create a new one
 	found := &appsv1.StatefulSet{}
 	err = r.Client.Get(context.TODO(), types.NamespacedName{
 		Name:      connectorStatefulSet.Name,
@@ -148,83 +174,74 @@ func (r ConnectorsReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 			r.Logger.Error(err, "Failed to create new Connector StatefulSet",
 				"StatefulSet.Namespace", connectorStatefulSet.Namespace,
 				"StatefulSet.Name", connectorStatefulSet.Name)
+			return reconcile.Result{}, err
 		}
-		time.Sleep(time.Duration(3) * time.Second)
 	} else if err != nil {
 		r.Logger.Error(err, "Failed to list Connector StatefulSet.")
+		return reconcile.Result{}, err
 	}
 
 	podList := &corev1.PodList{}
-	labelSelector := labels.SelectorFromSet(getLabels())
-	listOps := &client.ListOptions{
+	labelSelector := labels.SelectorFromSet(getLabels(connector.Name))
+	podListOps := &client.ListOptions{
 		Namespace:     connector.Namespace,
 		LabelSelector: labelSelector,
 	}
-	err = r.Client.List(context.TODO(), podList, listOps)
+	err = r.Client.List(context.TODO(), podList, podListOps)
 	if err != nil {
 		r.Logger.Error(err, "Failed to list pods.", "Connector.Namespace", connector.Namespace,
 			"Connector.Name", connector.Name)
 		return reconcile.Result{}, err
 	}
 	podNames := getConnectorPodNames(podList.Items)
-	r.Logger.Info(fmt.Sprintf("Status.Nodes = %s", connector.Status.Nodes))
-	r.Logger.Info(fmt.Sprintf("podNames = %s", podNames))
-	// Ensure every pod is in running phase
-	for _, pod := range podList.Items {
-		if !reflect.DeepEqual(pod.Status.Phase, corev1.PodRunning) {
-			r.Logger.Info("pod " + pod.Name + " phase is " + string(pod.Status.Phase) + ", wait for a moment...")
-		}
+	
+	// Update Status
+	var needsUpdate bool
+	if connector.Spec.Size != connector.Status.Size {
+		connector.Status.Size = connector.Spec.Size
+		needsUpdate = true
+	}
+	if !reflect.DeepEqual(podNames, connector.Status.Nodes) {
+		connector.Status.Nodes = podNames
+		needsUpdate = true
 	}
 
-	if podNames != nil {
-		connector.Status.Nodes = podNames
-		r.Logger.Info(fmt.Sprintf("Connector.Status.Nodes = %s", connector.Status.Nodes))
-		// Update status.Size if needed
-		if connector.Spec.Size != connector.Status.Size {
-			r.Logger.Info("Connector.Status.Size = " + strconv.Itoa(connector.Status.Size))
-			r.Logger.Info("Connector.Spec.Size = " + strconv.Itoa(connector.Spec.Size))
-			connector.Status.Size = connector.Spec.Size
-			err = r.Client.Status().Update(context.TODO(), connector)
-			if err != nil {
-				r.Logger.Error(err, "Failed to update Connector Size status.")
-			}
+	if needsUpdate {
+		r.Logger.Info("Updating connector status")
+		err = r.Client.Status().Update(context.TODO(), connector)
+		if err != nil {
+			r.Logger.Error(err, "Failed to update Connector status.")
+			return reconcile.Result{}, err
 		}
-
-		// Update status.Nodes if needed
-		if !reflect.DeepEqual(podNames, connector.Status.Nodes) {
-			err = r.Client.Status().Update(context.TODO(), connector)
-			if err != nil {
-				r.Logger.Error(err, "Failed to update Connector Nodes status.")
-			}
-		}
-	} else {
-		r.Logger.Error(err, "Not found connector Pods name")
 	}
 
 	r.Logger.Info("Successful reconciliation!")
-	return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
+	return reconcile.Result{RequeueAfter: time.Duration(share.RequeueAfterSecond) * time.Second}, nil
 }
 
 func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperatorv1.Connectors) *appsv1.StatefulSet {
+	replica := int32(connector.Spec.Size)
+	serviceName := fmt.Sprintf("%s-service", connector.Name)
+	label := getLabels(connector.Name)
 
-	var replica = int32(connector.Spec.Size)
 	connectorDep := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      connector.Name,
 			Namespace: connector.Namespace,
+			Labels:    label,
 		},
 		Spec: appsv1.StatefulSetSpec{
-			ServiceName: fmt.Sprintf("%s-service", connector.Name),
+			ServiceName: serviceName,
 			Replicas:    &replica,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: getLabels(),
+				MatchLabels: label,
 			},
 			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
 				Type: appsv1.RollingUpdateStatefulSetStrategyType,
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: getLabels(),
+					Labels: label,
 				},
 				Spec: corev1.PodSpec{
 					HostNetwork:        connector.Spec.HostNetwork,
@@ -235,23 +252,63 @@ func (r ConnectorsReconciler) getConnectorStatefulSet(connector *eventmeshoperat
 					NodeSelector:       connector.Spec.NodeSelector,
 					PriorityClassName:  connector.Spec.PriorityClassName,
 					ImagePullSecrets:   connector.Spec.ImagePullSecrets,
-					Containers: []corev1.Container{{
-						Resources:       connector.Spec.ConnectorContainers[0].Resources,
-						Image:           connector.Spec.ConnectorContainers[0].Image,
-						Name:            connector.Spec.ConnectorContainers[0].Name,
-						SecurityContext: getConnectorContainerSecurityContext(connector),
-						ImagePullPolicy: connector.Spec.ImagePullPolicy,
-						VolumeMounts:    connector.Spec.ConnectorContainers[0].VolumeMounts,
-					}},
-					Volumes:         connector.Spec.Volumes,
-					SecurityContext: getConnectorPodSecurityContext(connector),
+					Containers:         connector.Spec.ConnectorContainers, // Use all containers
+					Volumes:            connector.Spec.Volumes,
+					SecurityContext:    getConnectorPodSecurityContext(connector),
 				},
 			},
 		},
 	}
+	
+	// Manually set security context for first container if needed
+	if len(connectorDep.Spec.Template.Spec.Containers) > 0 {
+		if connectorDep.Spec.Template.Spec.Containers[0].SecurityContext == nil {
+			connectorDep.Spec.Template.Spec.Containers[0].SecurityContext = getConnectorContainerSecurityContext(connector)
+		}
+	}
+
 	_ = controllerutil.SetControllerReference(connector, connectorDep, r.Scheme)
 
 	return connectorDep
+}
+
+func (r ConnectorsReconciler) getConnectorService(connector *eventmeshoperatorv1.Connectors) *corev1.Service {
+	serviceName := fmt.Sprintf("%s-service", connector.Name)
+	label := getLabels(connector.Name)
+
+	var ports []corev1.ServicePort
+	if len(connector.Spec.ConnectorContainers) > 0 {
+		for _, port := range connector.Spec.ConnectorContainers[0].Ports {
+			ports = append(ports, corev1.ServicePort{
+				Name:       port.Name,
+				Port:       port.ContainerPort,
+				TargetPort: intstr.FromInt(int(port.ContainerPort)),
+			})
+		}
+	}
+	// Fallback port if none
+	if len(ports) == 0 {
+		ports = append(ports, corev1.ServicePort{
+			Name:       "http",
+			Port:       8080,
+			TargetPort: intstr.FromInt(8080),
+		})
+	}
+
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      serviceName,
+			Namespace: connector.Namespace,
+			Labels:    label,
+		},
+		Spec: corev1.ServiceSpec{
+			ClusterIP: "None", // Headless
+			Selector:  label,
+			Ports:     ports,
+		},
+	}
+	_ = controllerutil.SetControllerReference(connector, svc, r.Scheme)
+	return svc
 }
 
 func getConnectorContainerSecurityContext(connector *eventmeshoperatorv1.Connectors) *corev1.SecurityContext {
@@ -262,8 +319,11 @@ func getConnectorContainerSecurityContext(connector *eventmeshoperatorv1.Connect
 	return &securityContext
 }
 
-func getLabels() map[string]string {
-	return map[string]string{"app": "eventmesh-connector"}
+func getLabels(name string) map[string]string {
+	return map[string]string{
+		"app":      "eventmesh-connector",
+		"instance": name,
+	}
 }
 
 func getConnectorPodSecurityContext(connector *eventmeshoperatorv1.Connectors) *corev1.PodSecurityContext {

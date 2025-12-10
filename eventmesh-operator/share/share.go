@@ -17,11 +17,6 @@
 
 package share
 
-var (
-	// IsEventMeshRuntimeInitialized is whether the runtime list is initialized
-	IsEventMeshRuntimeInitialized = false
-)
-
 const (
 	// WaitForRuntimePodNameReadyInSecond is the time connector sleep for waiting runtime ready in second
 	WaitForRuntimePodNameReadyInSecond = 1
