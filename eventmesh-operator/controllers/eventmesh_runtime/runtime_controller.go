@@ -223,7 +223,7 @@ func (r *RuntimeReconciler) Reconcile(ctx context.Context, req reconcile.Request
 	// We check if total running pods match expected total replicas
 	totalExpectedReplicas := groupNum * replicaPerGroup
 	if runningEventMeshRuntimeNum == totalExpectedReplicas {
-		share.IsEventMeshRuntimeInitialized = true
+		// share.IsEventMeshRuntimeInitialized = true (Removed as per refactor)
 	}
 
 	r.Logger.Info("Successful reconciliation!")
