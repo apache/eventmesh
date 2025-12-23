@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<Configuration status="info" monitorInterval="60">
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{1.}(%F:%L) - %m%n" ></PatternLayout>
+        </Console>
+
+        <RollingFile name="proxyAppender" fileName="../logs/proxy.log"
+                     filePattern="../logs/proxy.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="httpMonitorAppender" fileName="../logs/http-monitor.log"
+                     filePattern="../logs/http-monitor.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="tcpMonitorAppender" fileName="../logs/tcp-monitor.log"
+                     filePattern="../logs/tcp-monitor.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="appMonitorAppender" fileName="../logs/app-monitor.log"
+                     filePattern="../logs/app-monitor.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="defibusAppender" fileName="../logs/defibus.log"
+                     filePattern="../logs/defibus.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="messageAppender" fileName="../logs/message.log"
+                     filePattern="../logs/message.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="batchMessageAppender" fileName="../logs/batchmsg.log"
+                     filePattern="../logs/batchmsg.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="httpAppender" fileName="../logs/http.log"
+                     filePattern="../logs/http.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="registryAppender" fileName="../logs/registry.log"
+                     filePattern="../logs/registry.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="cmdAppender" fileName="../logs/cmd.log"
+                     filePattern="../logs/cmd.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="sessionAppender" fileName="../logs/session.log"
+                     filePattern="../logs/session.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="subscribeAppender" fileName="../logs/subscribe.log"
+                     filePattern="../logs/subscribe.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="mssAppender" fileName="../logs/mss.log"
+                     filePattern="../logs/mss.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="8">
+                <Delete basePath="../logs" maxDepth="1" followLinks="true">
+                    <IfFileName glob="*.log.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="retryAppender" fileName="../logs/retry.log"
+                     filePattern="../logs/retry.%d{yyyy-MM-dd_HH}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %t %c{1}(%F:%L) - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <AsyncRoot level="info" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncRoot>
+
+        <AsyncLogger name="retry" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="httpMonitor" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="httpMonitorAppender"/>
+<!--            <AppenderRef ref="console"/>-->
+        </AsyncLogger>
+
+        <AsyncLogger name="tcpMonitor" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+<!--            <AppenderRef ref="console"/>-->
+        </AsyncLogger>
+
+        <AsyncLogger name="appMonitor" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="appMonitorAppender"/>
+<!--            <AppenderRef ref="console"/>-->
+        </AsyncLogger>
+
+        <AsyncLogger name="cmd" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="message" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="batchMessage" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="http" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="httpAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="registry" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="cn.webank.emesher" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="cn.webank.defibus" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="org.apache.rocketmq" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="RocketmqClient" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="RocketmqRemoting" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="RocketmqCommon" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="defibusAppender"/>
+<!--            <AppenderRef ref="console"/>-->
+        </AsyncLogger>
+
+        <AsyncLogger name="sessionLogger" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="subscribeLogger" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="proxyAppender"/>
+            <AppenderRef ref="console"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="mssLogger" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="mssAppender"/>
+<!--            <AppenderRef ref="console"/>-->
+        </AsyncLogger>
+
+        <AsyncLogger name="cn.webank.mss" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="mssAppender"/>
+<!--            <AppenderRef ref="console"/>-->
+        </AsyncLogger>
+    </Loggers>
+</Configuration>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
