@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.68.0'
+def grpcVersion = '1.71.0'
 
 dependencies {
     api(project(":eventmesh-common")) {
