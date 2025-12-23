@@ -26,12 +26,12 @@ public class SubscriptionModeConverter implements Converter<String, Subscription
     @Override
     public SubscriptionMode convert(String value) {
        if(value==null || value.trim().isEmpty()){
-        return null;
+        return SubscriptionMode.UNRECOGNIZED;
        }
        try{
         return SubscriptionMode.valueOf(value.trim().toUpperCase());
        }catch (IllegalArgumentException e ){
-          return null;
+         return SubscriptionMode.UNRECOGNIZED;
        }
     }
 
