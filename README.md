@@ -27,7 +27,7 @@
 
 ### EventMesh Architecture
 
-![EventMesh Architecture](resources/eventmesh-architecture-6.jpeg)
+![EventMesh Architecture](resources/eventmesh-architecture-6.png)
 
 ## Features
 
