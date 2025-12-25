@@ -16,5 +16,6 @@
  */
 
 dependencies {
+    implementation project(":eventmesh-function:eventmesh-function-api")
     implementation project(":eventmesh-common")
 }

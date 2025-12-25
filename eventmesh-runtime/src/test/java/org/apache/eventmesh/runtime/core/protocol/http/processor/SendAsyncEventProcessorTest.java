@@ -31,6 +31,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.function.api.Router;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+import org.apache.eventmesh.runtime.a2a.A2APublishSubscribeService;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
@@ -94,6 +95,8 @@ public class SendAsyncEventProcessorTest {
     @Mock
     private RouterEngine routerEngine;
     @Mock
+    private A2APublishSubscribeService a2aService;
+    @Mock
     private HandlerService.HandlerSpecific handlerSpecific;
     @Mock
     private ChannelHandlerContext ctx;
@@ -130,6 +133,8 @@ public class SendAsyncEventProcessorTest {
         when(eventMeshServer.getFilterEngine()).thenReturn(filterEngine);
         when(eventMeshServer.getTransformerEngine()).thenReturn(transformerEngine);
         when(eventMeshServer.getRouterEngine()).thenReturn(routerEngine);
+        when(eventMeshServer.getA2APublishSubscribeService()).thenReturn(a2aService);
+        when(a2aService.process(any(CloudEvent.class))).thenAnswer(i -> i.getArgument(0));
 
         processor = new SendAsyncEventProcessor(eventMeshHTTPServer);
     }
@@ -181,7 +186,8 @@ public class SendAsyncEventProcessorTest {
             processor.handler(handlerSpecific, httpRequest);
 
             // Verify
-            // 1. Filter/Transformer/Router should be queried
+            verify(a2aService).process(any(CloudEvent.class)); // Verify A2A service is called
+            
             verify(filterEngine).getFilterPattern("testGroup-testTopic");
             verify(transformerEngine).getTransformer("testGroup-testTopic");
             verify(routerEngine).getRouter("testGroup-testTopic");
@@ -241,11 +247,10 @@ public class SendAsyncEventProcessorTest {
             processor.handler(handlerSpecific, httpRequest);
 
             // Verify
+            verify(a2aService).process(any(CloudEvent.class)); // Verify A2A service is called
             verify(handlerSpecific, times(0)).sendErrorResponse(any(), any(), any(), any());
 
-            // Verify send called
             verify(eventMeshProducer).send(any(SendMessageContext.class), any(SendCallback.class));
-            // Verify router was called
             verify(router).route(anyString());
         }
     }

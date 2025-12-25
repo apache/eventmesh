@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-common")
+package org.apache.eventmesh.openconnect.api.connector;
+
+import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
+
+import io.cloudevents.CloudEvent;
+
+public interface ConnectorEventPublisher {
+    void publish(CloudEvent event, SendMessageCallback callback) throws Exception;
 }
