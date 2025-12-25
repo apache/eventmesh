@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.api.AsyncConsumeContext;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
@@ -34,10 +37,12 @@ import org.apache.eventmesh.openconnect.api.connector.Connector;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.EgressProcessor;
+import org.apache.eventmesh.runtime.core.protocol.IngressProcessor;
+import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
@@ -56,6 +61,9 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
     private ConnectorWorker worker;
     private Connector connector;
     private MQProducerWrapper producer;
+    private MQConsumerWrapper consumer;
+    private IngressProcessor ingressProcessor;
+    private EgressProcessor egressProcessor;
 
     public EventMeshConnectorBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
@@ -67,6 +75,16 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
         if (!config.isEventMeshConnectorPluginEnable()) {
             return;
         }
+        
+        this.ingressProcessor = new IngressProcessor(
+            eventMeshServer.getFilterEngine(),
+            eventMeshServer.getTransformerEngine(),
+            eventMeshServer.getRouterEngine()
+        );
+        this.egressProcessor = new EgressProcessor(
+            eventMeshServer.getFilterEngine(),
+            eventMeshServer.getTransformerEngine()
+        );
 
         String type = config.getEventMeshConnectorPluginType();
         String name = config.getEventMeshConnectorPluginName();
@@ -86,6 +104,41 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
 
         if (Application.isSink(connector.getClass())) {
             worker = new SinkWorker((Sink) connector, (SinkConfig) connectorConfig);
+            ((SinkWorker) worker).setEmbedded(true);
+
+            SinkConfig sinkConfig = (SinkConfig) connectorConfig;
+            consumer = new MQConsumerWrapper(config.getEventMeshStoragePluginType());
+            Properties props = new Properties();
+            props.put(EventMeshConstants.CONSUMER_GROUP, sinkConfig.getPubSubConfig().getGroup());
+            props.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
+                sinkConfig.getPubSubConfig().getGroup(), config.getEventMeshCluster()));
+            props.put(EventMeshConstants.EVENT_MESH_IDC, config.getEventMeshIDC());
+            consumer.init(props);
+            
+            consumer.subscribe(sinkConfig.getPubSubConfig().getSubject());
+
+            consumer.registerEventListener(new EventListener() {
+                @Override
+                public void consume(CloudEvent event, AsyncConsumeContext context) {
+                    try {
+                        // 1. Egress Pipeline
+                        String pipelineKey = sinkConfig.getPubSubConfig().getGroup() + "-" + event.getSubject();
+                        event = egressProcessor.process(event, pipelineKey);
+                        
+                        if (event == null) {
+                            context.commit(EventMeshAction.CommitMessage);
+                            return;
+                        }
+
+                        ((SinkWorker) worker).handle(event);
+                        context.commit(EventMeshAction.CommitMessage);
+                    } catch (Exception e) {
+                        log.error("Error in Sink processing", e);
+                        context.commit(EventMeshAction.ReconsumeLater);
+                    }
+                }
+            });
+
         } else if (Application.isSource(connector.getClass())) {
             worker = new SourceWorker((Source) connector, (SourceConfig) connectorConfig);
             
@@ -101,39 +154,16 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
             
             ((SourceWorker) worker).setPublisher((event, callback) -> {
                 try {
-                    // 1. Filter
+                    // 1. Ingress Pipeline
                     String pipelineKey = sourceConfig.getPubSubConfig().getGroup() + "-" + event.getSubject();
-                    org.apache.eventmesh.function.filter.pattern.Pattern filterPattern = 
-                        eventMeshServer.getFilterEngine().getFilterPattern(pipelineKey);
+                    event = ingressProcessor.process(event, pipelineKey);
                     
-                    if (filterPattern != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                        if (!filterPattern.filter(content)) {
-                            SendResult result = new SendResult();
-                            result.setTopic(event.getSubject());
-                            result.setMessageId(event.getId());
-                            callback.onSuccess(result);
-                            return;
-                        }
-                    }
-
-                    // 2. Transformer
-                    org.apache.eventmesh.function.transformer.Transformer transformer = 
-                        eventMeshServer.getTransformerEngine().getTransformer(pipelineKey);
-                    if (transformer != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                        String transformedContent = transformer.transform(content);
-                        event = CloudEventBuilder.from(event)
-                                .withData(transformedContent.getBytes(java.nio.charset.StandardCharsets.UTF_8))
-                                .build();
-                    }
-
-                    // 3. Router
-                    Router router = eventMeshServer.getRouterEngine().getRouter(pipelineKey);
-                    if (router != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                        String newTopic = router.route(content);
-                        event = CloudEventBuilder.from(event).withSubject(newTopic).build();
+                    if (event == null) {
+                        SendResult result = new SendResult();
+                        result.setTopic(event.getSubject());
+                        result.setMessageId(event.getId());
+                        callback.onSuccess(result);
+                        return;
                     }
 
                     // 4. Storage
@@ -175,6 +205,9 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
         if (producer != null) {
             producer.start();
         }
+        if (consumer != null) {
+            consumer.start();
+        }
         if (worker != null) {
             worker.start();
         }
@@ -187,6 +220,9 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
         }
         if (producer != null) {
             producer.shutdown();
+        }
+        if (consumer != null) {
+            consumer.shutdown();
         }
     }
 }

@@ -5,30 +5,40 @@ The EventMesh Unified Runtime consolidates the capabilities of the core EventMes
 
 ## 2. Architecture: The Unified Processing Pipeline
 
-The system implements a symmetrical processing chain for both event production (Ingress) and consumption (Egress).
+The system implements a symmetrical processing chain for both event production (Ingress) and consumption (Egress), but the entry/exit points differ based on the client type (SDK vs. Connector).
 
 ### 2.1 Ingress Pipeline (Production)
-Applies when an event is received from a **Source Connector** or an **SDK Producer**.
+
+**Entry Points:**
+*   **SDK Client**: Interacts with the Runtime via **Protocol Servers** (TCP/HTTP/gRPC). The Protocol Server receives the request and passes the event to the pipeline.
+*   **Source Connector**: Loaded directly into the Runtime as a **Plugin**. The Source Connector pulls data from external systems and internally injects events into the pipeline.
 
 **Flow:**
-`[Source: SDK/Connector] -> [Filter] -> [Transformer] -> [Router] -> [Storage]`
+`[Entry: Protocol Server (SDK) OR Source Plugin (Connector)] -> [Filter] -> [Transformer] -> [Router] -> [Storage]`
 
-1.  **Source**: Event received via TCP/HTTP/gRPC or pulled by a Source Connector.
+1.  **Entry**:
+    *   **SDK**: Request received by `EventMeshTCPServer`, `EventMeshHTTPServer`, or `EventMeshGrpcServer`.
+    *   **Connector**: `SourceWorker` pulls data and converts it to a CloudEvent.
 2.  **Filter**: The `FilterEngine` evaluates the event against configured rules. If unmatched, the event is dropped.
 3.  **Transformer**: The `TransformerEngine` transforms the event payload (e.g., JSON manipulation) if a rule exists.
 4.  **Router**: The `RouterEngine` determines the target topic/destination.
 5.  **Storage**: The processed event is persisted to the Storage Plugin (RocketMQ, Kafka, etc.).
 
 ### 2.2 Egress Pipeline (Consumption)
-Applies when an event is pushed to a **Sink Connector** or an **SDK Consumer**.
+
+**Exit Points:**
+*   **SDK Client**: The Runtime pushes events to connected SDK clients via the active **Protocol Server** connection.
+*   **Sink Connector**: Loaded directly into the Runtime as a **Plugin**. The Runtime passes events to the `SinkWorker`, which writes to external systems.
 
 **Flow:**
-`[Storage] -> [Filter] -> [Transformer] -> [Sink: SDK/Connector]`
+`[Storage] -> [Filter] -> [Transformer] -> [Exit: Protocol Server (SDK) OR Sink Plugin (Connector)]`
 
 1.  **Storage**: Event retrieved from the storage queue.
 2.  **Filter**: Evaluated against the consumer group's filter rules.
 3.  **Transformer**: Payload transformed according to the consumer group's needs.
-4.  **Sink**: The event is pushed to the connected SDK client or the Sink Connector.
+4.  **Exit**:
+    *   **SDK**: Event pushed to client via TCP/HTTP/gRPC session.
+    *   **Connector**: Event passed to `SinkWorker` for external delivery.
 
 ## 3. Configuration
 
