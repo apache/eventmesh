@@ -35,6 +35,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.EgressProcessor;
+import org.apache.eventmesh.runtime.core.protocol.IngressProcessor;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
@@ -124,6 +126,9 @@ public class ClientGroupWrapper {
 
     private final MQProducerWrapper mqProducerWrapper;
 
+    private final IngressProcessor ingressProcessor;
+    private final EgressProcessor egressProcessor;
+
     public ClientGroupWrapper(String sysId, String group,
         EventMeshTCPServer eventMeshTCPServer,
         DownstreamDispatchStrategy downstreamDispatchStrategy) {
@@ -138,6 +143,16 @@ public class ClientGroupWrapper {
         this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
+        
+        this.ingressProcessor = new IngressProcessor(
+            eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
+            eventMeshTCPServer.getEventMeshServer().getTransformerEngine(),
+            eventMeshTCPServer.getEventMeshServer().getRouterEngine()
+        );
+        this.egressProcessor = new EgressProcessor(
+            eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
+            eventMeshTCPServer.getEventMeshServer().getTransformerEngine()
+        );
     }
 
     public ConcurrentHashMap<String, Map<String, Session>> getTopic2sessionInGroupMapping() {
@@ -170,41 +185,15 @@ public class ClientGroupWrapper {
         String pipelineKey = group + "-" + topic;
 
         try {
-             // 1. Filter
-             org.apache.eventmesh.function.filter.pattern.Pattern filterPattern = 
-                 eventMeshTCPServer.getEventMeshServer().getFilterEngine().getFilterPattern(pipelineKey);
-             if (filterPattern != null && event.getData() != null) {
-                 String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                 if (!filterPattern.filter(content)) {
-                      // Filtered out
-                      SendResult result = new SendResult();
-                      result.setTopic(topic);
-                      result.setMessageId(event.getId());
-                      sendCallback.onSuccess(result);
-                      return true;
-                 }
-             }
-             
-             // 2. Transformer
-             org.apache.eventmesh.function.transformer.Transformer transformer = 
-                 eventMeshTCPServer.getEventMeshServer().getTransformerEngine().getTransformer(pipelineKey);
-             if (transformer != null && event.getData() != null) {
-                 String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                 String transformedContent = transformer.transform(content);
-                 event = CloudEventBuilder.from(event)
-                         .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
-                         .build();
-             }
-             
-             // 3. Router
-             org.apache.eventmesh.function.api.Router router = eventMeshTCPServer.getEventMeshServer().getRouterEngine().getRouter(pipelineKey);
-             if (router != null && event.getData() != null) {
-                 String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                 String newTopic = router.route(content);
-                 event = CloudEventBuilder.from(event)
-                         .withSubject(newTopic)
-                         .build();
-             }
+            event = ingressProcessor.process(event, pipelineKey);
+            if (event == null) {
+                // Filtered out
+                SendResult result = new SendResult();
+                result.setTopic(topic);
+                result.setMessageId(upStreamMsgContext.getEvent().getId());
+                sendCallback.onSuccess(result);
+                return true;
+            }
         } catch (Exception e) {
              log.error("Ingress pipeline exception", e);
              // Fail request
@@ -502,23 +491,10 @@ public class ClientGroupWrapper {
                 // Egress Pipeline: Filter -> Transformer
                 try {
                     String pipelineKey = group + "-" + topic;
-                    org.apache.eventmesh.function.filter.pattern.Pattern filterPattern = 
-                        eventMeshTCPServer.getEventMeshServer().getFilterEngine().getFilterPattern(pipelineKey);
-                    if (filterPattern != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                        if (!filterPattern.filter(content)) {
-                             ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
-                             return;
-                        }
-                    }
-                    org.apache.eventmesh.function.transformer.Transformer transformer = 
-                        eventMeshTCPServer.getEventMeshServer().getTransformerEngine().getTransformer(pipelineKey);
-                    if (transformer != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                        String transformedContent = transformer.transform(content);
-                        event = CloudEventBuilder.from(event)
-                                .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
-                                .build();
+                    event = egressProcessor.process(event, pipelineKey);
+                    if (event == null) {
+                         ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
+                         return;
                     }
                 } catch (Exception e) {
                     log.error("Egress pipeline exception", e);
@@ -634,23 +610,10 @@ public class ClientGroupWrapper {
                 // Egress Pipeline: Filter -> Transformer
                 try {
                     String pipelineKey = group + "-" + topic;
-                    org.apache.eventmesh.function.filter.pattern.Pattern filterPattern = 
-                        eventMeshTCPServer.getEventMeshServer().getFilterEngine().getFilterPattern(pipelineKey);
-                    if (filterPattern != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                        if (!filterPattern.filter(content)) {
-                             ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
-                             return;
-                        }
-                    }
-                    org.apache.eventmesh.function.transformer.Transformer transformer = 
-                        eventMeshTCPServer.getEventMeshServer().getTransformerEngine().getTransformer(pipelineKey);
-                    if (transformer != null && event.getData() != null) {
-                        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-                        String transformedContent = transformer.transform(content);
-                        event = CloudEventBuilder.from(event)
-                                .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
-                                .build();
+                    event = egressProcessor.process(event, pipelineKey);
+                    if (event == null) {
+                         ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
+                         return;
                     }
                 } catch (Exception e) {
                     log.error("Egress pipeline exception", e);
