@@ -48,6 +48,8 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import org.apache.eventmesh.openconnect.api.connector.ConnectorEventPublisher;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -55,6 +57,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -94,15 +97,19 @@ public class SourceWorker implements ConnectorWorker {
         ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-startService");
 
     private final BlockingQueue<ConnectRecord> queue;
-    private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
+    private EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
+    private ConnectorEventPublisher publisher;
 
     private volatile boolean isRunning = false;
+
+    public void setPublisher(ConnectorEventPublisher publisher) {
+        this.publisher = publisher;
+    }
 
     public SourceWorker(Source source, SourceConfig config) {
         this.source = source;
         this.config = config;
         queue = new LinkedBlockingQueue<>(1000);
-        eventMeshTCPClient = buildEventMeshPubClient(config);
     }
 
     private EventMeshTCPClient<CloudEvent> buildEventMeshPubClient(SourceConfig config) {
@@ -142,7 +149,12 @@ public class SourceWorker implements ConnectorWorker {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        eventMeshTCPClient.init();
+        
+        if (this.publisher == null) {
+            this.eventMeshTCPClient = buildEventMeshPubClient(config);
+            this.eventMeshTCPClient.init();
+        }
+
         // spi load offsetMgmtService
         this.offsetManagement = new RecordOffsetManagement();
         this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
@@ -198,16 +210,42 @@ public class SourceWorker implements ConnectorWorker {
             // retry until MAX_RETRY_TIMES is reached
             while (retryTimes < MAX_RETRY_TIMES) {
                 try {
-                    Package sendResult = eventMeshTCPClient.publish(event, 3000);
-                    if (sendResult.getHeader().getCode() == OPStatus.SUCCESS.getCode()) {
-                        // publish success
-                        // commit record
+                    if (this.publisher != null) {
+                        CountDownLatch latch = new CountDownLatch(1);
+                        final Throwable[] exception = new Throwable[1];
+                        publisher.publish(event, new SendMessageCallback() {
+                            @Override
+                            public void onSuccess(SendResult result) {
+                                latch.countDown();
+                            }
+
+                            @Override
+                            public void onException(SendExceptionContext context) {
+                                exception[0] = context.getCause();
+                                latch.countDown();
+                            }
+                        });
+                        latch.await();
+                        if (exception[0] != null) {
+                            throw exception[0];
+                        }
+                        
                         this.source.commit(connectRecord);
                         submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
                         callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));
                         break;
+                    } else {
+                        Package sendResult = eventMeshTCPClient.publish(event, 3000);
+                        if (sendResult.getHeader().getCode() == OPStatus.SUCCESS.getCode()) {
+                            // publish success
+                            // commit record
+                            this.source.commit(connectRecord);
+                            submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                            callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));
+                            break;
+                        }
+                        throw new EventMeshException("failed to send record.");
                     }
-                    throw new EventMeshException("failed to send record.");
                 } catch (Throwable t) {
                     retryTimes++;
                     log.error("{} failed to send record to {}, retry times = {}, failed record {}, throw {}",

@@ -240,6 +240,10 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         final SendMessageContext sendMessageContext = new SendMessageContext(bizNo, event, eventMeshProducer, eventMeshHTTPServer);
         eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsg();
 
+        // process A2A logic
+        event = eventMeshHTTPServer.getEventMeshServer().getA2APublishSubscribeService().process(event);
+        sendMessageContext.setEvent(event);
+
         final long startTime = System.currentTimeMillis();
         boolean isFiltered = true;
         try {

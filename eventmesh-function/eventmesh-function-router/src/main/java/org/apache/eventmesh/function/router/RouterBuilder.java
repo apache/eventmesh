@@ -15,6 +15,26 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-common")
+package org.apache.eventmesh.function.router;
+
+import org.apache.eventmesh.function.api.Router;
+
+public class RouterBuilder {
+
+    public static Router build(String routerConfig) {
+        return new DefaultRouter(routerConfig);
+    }
+
+    private static class DefaultRouter implements Router {
+        private final String targetTopic;
+
+        public DefaultRouter(String targetTopic) {
+            this.targetTopic = targetTopic;
+        }
+
+        @Override
+        public String route(String json) {
+            return targetTopic;
+        }
+    }
 }

@@ -118,6 +118,15 @@ public class CommonConfiguration {
     @ConfigField(field = "registry.plugin.enabled")
     private boolean eventMeshRegistryPluginEnabled = false;
 
+    @ConfigField(field = "connector.plugin.type")
+    private String eventMeshConnectorPluginType;
+
+    @ConfigField(field = "connector.plugin.name")
+    private String eventMeshConnectorPluginName;
+
+    @ConfigField(field = "connector.plugin.enabled")
+    private boolean eventMeshConnectorPluginEnable = false;
+
     public void reload() {
 
         if (Strings.isNullOrEmpty(this.eventMeshServerIp)) {

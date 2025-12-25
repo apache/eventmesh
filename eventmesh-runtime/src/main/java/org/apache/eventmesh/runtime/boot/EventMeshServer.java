@@ -27,6 +27,7 @@ import org.apache.eventmesh.common.utils.AssertUtils;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
+import org.apache.eventmesh.runtime.a2a.A2APublishSubscribeService;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerTopicManager;
@@ -93,6 +94,22 @@ public class EventMeshServer {
 
     private EventMeshMetricsManager eventMeshMetricsManager;
 
+    @Getter
+    private FilterEngine filterEngine;
+
+    @Getter
+    private TransformerEngine transformerEngine;
+
+    @Getter
+    private RouterEngine routerEngine;
+
+    @Getter
+    private A2APublishSubscribeService a2aPublishSubscribeService;
+
+    public A2APublishSubscribeService getA2APublishSubscribeService() {
+        return a2aPublishSubscribeService;
+    }
+
     public EventMeshServer() {
 
         // Initialize configuration
@@ -130,6 +147,9 @@ public class EventMeshServer {
         // HTTP Admin Server always enabled
         BOOTSTRAP_LIST.add(new EventMeshAdminBootstrap(this));
 
+        // Connector Bootstrap
+        BOOTSTRAP_LIST.add(new EventMeshConnectorBootstrap(this));
+
         List<String> metricsPluginTypes = configuration.getEventMeshMetricsPluginType();
         if (CollectionUtils.isNotEmpty(metricsPluginTypes)) {
             List<MetricsRegistry> metricsRegistries = metricsPluginTypes.stream().map(metric -> MetricsPluginFactory.getMetricsRegistry(metric))
@@ -146,6 +166,19 @@ public class EventMeshServer {
         if (configuration.isEventMeshServerMetaStorageEnable()) {
             metaStorage.init();
         }
+
+        // filter and transformer engine init
+        filterEngine = new FilterEngine(metaStorage);
+        filterEngine.start();
+        transformerEngine = new TransformerEngine(metaStorage);
+        transformerEngine.start();
+        routerEngine = new RouterEngine(metaStorage);
+        routerEngine.start();
+
+        // a2a service init
+        a2aPublishSubscribeService = new A2APublishSubscribeService(this);
+        a2aPublishSubscribeService.init();
+
         if (configuration.isEventMeshServerTraceEnable()) {
             trace.init();
         }
@@ -215,6 +248,7 @@ public class EventMeshServer {
             eventMeshBootstrap.start();
         }
 
+        a2aPublishSubscribeService.start();
         producerTopicManager.start();
 
         serviceState = ServiceState.RUNNING;
@@ -231,6 +265,14 @@ public class EventMeshServer {
 
         if (configuration != null && configuration.isEventMeshServerMetaStorageEnable()) {
             metaStorage.shutdown();
+        }
+
+        filterEngine.shutdown();
+        transformerEngine.shutdown();
+        routerEngine.shutdown();
+
+        if (a2aPublishSubscribeService != null) {
+            a2aPublishSubscribeService.shutdown();
         }
 
         storageResource.release();
