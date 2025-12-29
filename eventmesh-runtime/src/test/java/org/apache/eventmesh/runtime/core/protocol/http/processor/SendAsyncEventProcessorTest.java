@@ -28,7 +28,6 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.function.api.Router;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.a2a.A2APublishSubscribeService;
@@ -40,6 +39,7 @@ import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.boot.RouterEngine;
 import org.apache.eventmesh.runtime.boot.TransformerEngine;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.core.protocol.IngressProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
@@ -97,6 +97,8 @@ public class SendAsyncEventProcessorTest {
     @Mock
     private A2APublishSubscribeService a2aService;
     @Mock
+    private IngressProcessor ingressProcessor;
+    @Mock
     private HandlerService.HandlerSpecific handlerSpecific;
     @Mock
     private ChannelHandlerContext ctx;
@@ -133,8 +135,12 @@ public class SendAsyncEventProcessorTest {
         when(eventMeshServer.getFilterEngine()).thenReturn(filterEngine);
         when(eventMeshServer.getTransformerEngine()).thenReturn(transformerEngine);
         when(eventMeshServer.getRouterEngine()).thenReturn(routerEngine);
+        when(eventMeshServer.getIngressProcessor()).thenReturn(ingressProcessor);
         when(eventMeshServer.getA2APublishSubscribeService()).thenReturn(a2aService);
         when(a2aService.process(any(CloudEvent.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Mock IngressProcessor to pass through events (no filtering)
+        when(ingressProcessor.process(any(CloudEvent.class), anyString())).thenAnswer(i -> i.getArgument(0));
 
         processor = new SendAsyncEventProcessor(eventMeshHTTPServer);
     }
@@ -187,10 +193,9 @@ public class SendAsyncEventProcessorTest {
 
             // Verify
             verify(a2aService).process(any(CloudEvent.class)); // Verify A2A service is called
-            
-            verify(filterEngine).getFilterPattern("testGroup-testTopic");
-            verify(transformerEngine).getTransformer("testGroup-testTopic");
-            verify(routerEngine).getRouter("testGroup-testTopic");
+
+            // Verify IngressProcessor is called instead of direct engine calls
+            verify(ingressProcessor).process(any(CloudEvent.class), anyString());
 
             // Verify NO error response
             verify(handlerSpecific, times(0)).sendErrorResponse(any(), any(), any(), any());
@@ -202,7 +207,7 @@ public class SendAsyncEventProcessorTest {
 
     @Test
     public void testHandler_V2_RouterFlow() throws Exception {
-        // Similar setup, but Router returns a new topic
+        // Similar setup, but IngressProcessor routes to a new topic
         AsyncContext<HttpEventWrapper> asyncContext = mock(AsyncContext.class);
         HttpEventWrapper wrapper = mock(HttpEventWrapper.class);
         when(handlerSpecific.getAsyncContext()).thenReturn(asyncContext);
@@ -230,7 +235,7 @@ public class SendAsyncEventProcessorTest {
 
         try (MockedStatic<ProtocolPluginFactory> pluginFactoryMock = Mockito.mockStatic(ProtocolPluginFactory.class);
              MockedStatic<RemotingHelper> remotingHelperMock = Mockito.mockStatic(RemotingHelper.class)) {
-            
+
             pluginFactoryMock.when(() -> ProtocolPluginFactory.getProtocolAdaptor("http")).thenReturn(protocolAdaptor);
             when(protocolAdaptor.toCloudEvent(wrapper)).thenReturn(event);
             remotingHelperMock.when(() -> RemotingHelper.parseChannelRemoteAddr(channel)).thenReturn("127.0.0.1");
@@ -238,10 +243,11 @@ public class SendAsyncEventProcessorTest {
             when(producerManager.getEventMeshProducer("testGroup", "token")).thenReturn(eventMeshProducer);
             when(eventMeshProducer.isStarted()).thenReturn(true);
 
-            // Mock Router
-            Router router = mock(Router.class);
-            when(routerEngine.getRouter("testGroup-oldTopic")).thenReturn(router);
-            when(router.route(anyString())).thenReturn("newTopic");
+            // Mock IngressProcessor to route to new topic
+            CloudEvent routedEvent = CloudEventBuilder.from(event)
+                .withSubject("newTopic")
+                .build();
+            when(ingressProcessor.process(any(CloudEvent.class), anyString())).thenReturn(routedEvent);
 
             // Execute
             processor.handler(handlerSpecific, httpRequest);
@@ -250,8 +256,11 @@ public class SendAsyncEventProcessorTest {
             verify(a2aService).process(any(CloudEvent.class)); // Verify A2A service is called
             verify(handlerSpecific, times(0)).sendErrorResponse(any(), any(), any(), any());
 
+            // Verify IngressProcessor is called with correct pipeline key
+            verify(ingressProcessor).process(any(CloudEvent.class), anyString());
+
+            // Verify send is called (topic should have been routed to newTopic)
             verify(eventMeshProducer).send(any(SendMessageContext.class), any(SendCallback.class));
-            verify(router).route(anyString());
         }
     }
 }

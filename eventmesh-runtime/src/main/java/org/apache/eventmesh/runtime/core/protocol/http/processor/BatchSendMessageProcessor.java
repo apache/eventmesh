@@ -39,6 +39,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import org.apache.eventmesh.runtime.core.protocol.BatchProcessResult;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
@@ -239,53 +240,89 @@ public class BatchSendMessageProcessor extends AbstractHttpRequestProcessor {
         long delta = eventSize;
         summaryMetrics.recordSendBatchMsg(delta);
 
+        // Create BatchProcessResult to track success/filtered/failed counts
+        final BatchProcessResult batchResult = new BatchProcessResult(eventList.size());
+        final String finalBatchId = batchId;  // Make batchId effectively final for inner classes
+
         if (httpConfiguration.isEventMeshServerBatchMsgBatchEnabled()) {
             for (List<CloudEvent> eventlist : topicBatchMessageMappings.values()) {
                 // TODO: Implementation in API. Consider whether to put it in the plug-in.
                 CloudEvent event = null;
                 // TODO: Detect the maximum length of messages for different producers.
-                final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
+                final SendMessageContext sendMessageContext = new SendMessageContext(finalBatchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                     @Override
                     public void onSuccess(SendResult sendResult) {
+                        batchResult.incrementSuccess();
                     }
 
                     @Override
                     public void onException(OnExceptionContext context) {
-                        BATCH_MSG_LOGGER.warn("", context.getException());
+                        batchResult.incrementFailed(event != null ? event.getId() : "unknown");
+                        BATCH_MSG_LOGGER.warn("Batch message send failed: {}", event != null ? event.getId() : "unknown",
+                            context.getException());
                         eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     }
 
                 });
             }
         } else {
+            // Process each event individually with Ingress Pipeline
             for (CloudEvent event : eventList) {
-                final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer, eventMeshHTTPServer);
-                batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+                String messageId = event.getId();
+                String topic = event.getSubject();
+                try {
+                    // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+                    String pipelineKey = producerGroup + "-" + topic;
+                    CloudEvent processedEvent = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor()
+                        .process(event, pipelineKey);
 
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-
+                    if (processedEvent == null) {
+                        // Message filtered by pipeline
+                        batchResult.incrementFiltered();
+                        BATCH_MSG_LOGGER.info("Batch message filtered by pipeline: batchId={}, messageId={}, topic={}",
+                            finalBatchId, messageId, topic);
+                        continue;
                     }
 
-                    @Override
-                    public void onException(OnExceptionContext context) {
-                        BATCH_MSG_LOGGER.warn("", context.getException());
-                        eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
-                    }
+                    // Topic may have been changed by Router
+                    final String finalTopic = processedEvent.getSubject();
+                    final SendMessageContext sendMessageContext = new SendMessageContext(finalBatchId, processedEvent,
+                        batchEventMeshProducer, eventMeshHTTPServer);
 
-                });
+                    batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
+
+                        @Override
+                        public void onSuccess(SendResult sendResult) {
+                            batchResult.incrementSuccess();
+                        }
+
+                        @Override
+                        public void onException(OnExceptionContext context) {
+                            batchResult.incrementFailed(messageId);
+                            BATCH_MSG_LOGGER.warn("Batch message send failed: batchId={}, messageId={}, topic={}",
+                                finalBatchId, messageId, finalTopic, context.getException());
+                            eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
+                        }
+
+                    });
+                } catch (Exception e) {
+                    batchResult.incrementFailed(messageId);
+                    BATCH_MSG_LOGGER.error("Batch message pipeline exception: batchId={}, messageId={}, topic={}",
+                        finalBatchId, messageId, topic, e);
+                }
             }
         }
 
         long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         summaryMetrics.recordBatchSendMsgCost(elapsed);
 
-        BATCH_MSG_LOGGER.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
-            batchId, elapsed, eventSize, topicBatchMessageMappings.keySet());
-        completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.SUCCESS, null,
-            SendMessageBatchResponseBody.class);
+        BATCH_MSG_LOGGER.info("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|result={}|topics={}",
+            finalBatchId, elapsed, batchResult.toSummary(), topicBatchMessageMappings.keySet());
+
+        completeResponse(request, asyncContext, sendMessageBatchResponseHeader, EventMeshRetCode.SUCCESS,
+            batchResult.toSummary(), SendMessageBatchResponseBody.class);
         return;
     }
 
