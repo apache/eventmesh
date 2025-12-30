@@ -15,6 +15,20 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-common")
+package org.apache.eventmesh.function.router;
+
+import org.apache.eventmesh.function.api.Router;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class RouterBuilderTest {
+
+    @Test
+    public void testBuild() {
+        String targetTopic = "targetTopic";
+        Router router = RouterBuilder.build(targetTopic);
+        Assertions.assertNotNull(router);
+        Assertions.assertEquals(targetTopic, router.route("{}"));
+    }
 }

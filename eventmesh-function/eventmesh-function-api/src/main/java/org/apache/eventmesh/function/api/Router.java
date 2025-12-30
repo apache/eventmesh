@@ -15,6 +15,24 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-common")
+package org.apache.eventmesh.function.api;
+
+import org.apache.eventmesh.common.exception.EventMeshException;
+
+/**
+ * EventMesh router interface, used to route messages to different topics or destinations.
+ */
+public interface Router extends EventMeshFunction<String, String> {
+
+    String route(String json);
+
+    @Override
+    default String apply(String content) {
+        try {
+            return route(content);
+        } catch (Exception e) {
+            throw new EventMeshException("Failed to route content", e);
+        }
+    }
+
 }
