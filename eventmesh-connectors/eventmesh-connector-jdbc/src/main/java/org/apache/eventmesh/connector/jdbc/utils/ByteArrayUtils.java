@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.connector.jdbc.utils;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ByteArrayUtils {
 
-    private static final char[] HEX_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    private final char[] HEX_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     /**
      * Converts a byte array into a hexadecimal string.
@@ -28,7 +31,7 @@ public class ByteArrayUtils {
      * @return the hexadecimal string representation of the byte array
      * @throws NullPointerException if the byte array is null
      */
-    public static String bytesToHexString(byte[] bytes) {
+    public String bytesToHexString(byte[] bytes) {
         if (bytes == null) {
             throw new NullPointerException("Parameter to be converted can not be null");
         }
@@ -50,7 +53,7 @@ public class ByteArrayUtils {
      * @return the resulting byte array
      * @throws IllegalArgumentException if the supplied character array contains an odd number of hex characters
      */
-    public static byte[] hexStringToBytes(String str) {
+    public byte[] hexStringToBytes(String str) {
         final char[] chars = str.toCharArray();
         if (chars.length % 2 != 0) {
             throw new IllegalArgumentException("The supplied character array must contain an even number of hex chars.");
@@ -66,7 +69,7 @@ public class ByteArrayUtils {
         return response;
     }
 
-    private static byte toByte(final char[] chars, final int pos) {
+    private byte toByte(final char[] chars, final int pos) {
         int response = Character.digit(chars[pos], 16);
         if (response < 0 || response > 15) {
             throw new IllegalArgumentException("Non-hex character '" + chars[pos] + "' at index=" + pos);
