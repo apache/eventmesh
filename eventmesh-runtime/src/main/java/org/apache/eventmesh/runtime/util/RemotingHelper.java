@@ -24,9 +24,12 @@ import java.net.SocketAddress;
 
 import io.netty.channel.Channel;
 
-public abstract class RemotingHelper {
+import lombok.experimental.UtilityClass;
 
-    public static String exceptionSimpleDesc(final Throwable e) {
+@UtilityClass
+public class RemotingHelper {
+
+    public String exceptionSimpleDesc(final Throwable e) {
         final StringBuilder sb = new StringBuilder();
         if (e != null) {
             sb.append(e);
@@ -40,14 +43,14 @@ public abstract class RemotingHelper {
         return sb.toString();
     }
 
-    public static SocketAddress string2SocketAddress(final String addr) {
+    public SocketAddress string2SocketAddress(final String addr) {
         final int split = addr.lastIndexOf(':');
         final String host = addr.substring(0, split);
         final String port = addr.substring(split + 1);
         return new InetSocketAddress(host, Integer.parseInt(port));
     }
 
-    public static String parseChannelRemoteAddr(final Channel channel) {
+    public String parseChannelRemoteAddr(final Channel channel) {
         if (channel == null) {
             return "";
         }
@@ -66,7 +69,7 @@ public abstract class RemotingHelper {
         return "";
     }
 
-    public static String parseChannelLocalAddr(final Channel channel) {
+    public String parseChannelLocalAddr(final Channel channel) {
         if (channel == null) {
             return "";
         }
@@ -85,7 +88,7 @@ public abstract class RemotingHelper {
         return "";
     }
 
-    public static String parseSocketAddressAddr(final InetSocketAddress socketAddress) {
+    public String parseSocketAddressAddr(final InetSocketAddress socketAddress) {
         return socketAddress != null ? socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort() : "";
     }
 

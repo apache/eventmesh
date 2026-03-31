@@ -21,10 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Assert
  */
-public final class AssertUtils {
+@UtilityClass
+public class AssertUtils {
 
     /**
      * Assert obj is not null
@@ -32,7 +35,7 @@ public final class AssertUtils {
      * @param obj  Object to test
      * @param message error message
      */
-    public static void notNull(final Object obj, final String message) {
+    public void notNull(final Object obj, final String message) {
         isTrue(Objects.nonNull(obj), message);
     }
 
@@ -42,7 +45,7 @@ public final class AssertUtils {
      * @param condition  boolean to test
      * @param message error message
      */
-    public static void isTrue(final Boolean condition, final String message) {
+    public void isTrue(final Boolean condition, final String message) {
         if (!Boolean.TRUE.equals(condition)) {
             throw new IllegalArgumentException(message);
         }
@@ -54,7 +57,7 @@ public final class AssertUtils {
      * @param str  String to test
      * @param message error message
      */
-    public static void notBlank(final String str, final String message) {
+    public void notBlank(final String str, final String message) {
         isTrue(StringUtils.isNoneBlank(str), message);
     }
 

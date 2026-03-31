@@ -19,9 +19,12 @@ package org.apache.eventmesh.admin.server.web.utils;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class JdbcUtils {
 
-    public static DruidDataSource createDruidDataSource(String url, String userName, String passWord) {
+    public DruidDataSource createDruidDataSource(String url, String userName, String passWord) {
         DruidDataSource dataSource = new DruidDataSource();
         dataSource.setUrl(url);
         dataSource.setUsername(userName);

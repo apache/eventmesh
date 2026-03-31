@@ -34,11 +34,14 @@ import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class HttpRequestUtil {
 
-    private static final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
+    private final DefaultHttpDataFactory DEFAULT_HTTP_DATA_FACTORY = new DefaultHttpDataFactory(false);
 
-    public static <T> Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest, @Nullable Supplier<T> start, @Nullable Consumer<T> end)
+    public <T> Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest, @Nullable Supplier<T> start, @Nullable Consumer<T> end)
         throws IOException {
         T t = null;
         if (!Objects.isNull(start)) {
@@ -58,11 +61,11 @@ public class HttpRequestUtil {
         return httpRequestBody;
     }
 
-    public static Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
+    public Map<String, Object> parseHttpRequestBody(final HttpRequest httpRequest) throws IOException {
         return parseHttpRequestBody(httpRequest, null, null);
     }
 
-    private static void decodeHttpRequestBody(HttpRequest httpRequest, Map<String, Object> httpRequestBody) throws IOException {
+    private void decodeHttpRequestBody(HttpRequest httpRequest, Map<String, Object> httpRequestBody) throws IOException {
         final HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(DEFAULT_HTTP_DATA_FACTORY, httpRequest);
         for (final InterfaceHttpData param : decoder.getBodyHttpDatas()) {
             if (InterfaceHttpData.HttpDataType.Attribute == param.getHttpDataType()) {
@@ -84,7 +87,7 @@ public class HttpRequestUtil {
      * @param queryString the query string to convert to a map
      * @return a map containing the key-value pairs from the query string
      */
-    public static Map<String, String> queryStringToMap(String queryString) {
+    public Map<String, String> queryStringToMap(String queryString) {
         if (queryString == null) {
             return new HashMap<>();
         }
@@ -103,7 +106,7 @@ public class HttpRequestUtil {
     /**
      * Get the value of a query parameter in URI query string.
      */
-    public static String getQueryParam(HttpRequest httpRequest, String key, String defaultValue) {
+    public String getQueryParam(HttpRequest httpRequest, String key, String defaultValue) {
         List<String> values = new QueryStringDecoder(httpRequest.uri()).parameters().get(key);
         return values != null ? values.get(0) : defaultValue;
     }
@@ -111,7 +114,7 @@ public class HttpRequestUtil {
     /**
      * Get the value of a query parameter in body.
      */
-    public static String getBodyParam(HttpRequest httpRequest, String key) throws IOException {
+    public String getBodyParam(HttpRequest httpRequest, String key) throws IOException {
         HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(httpRequest);
         Attribute attribute = (Attribute) decoder.getBodyHttpData(key);
         return attribute.getValue();

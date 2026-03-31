@@ -19,9 +19,12 @@ package org.apache.eventmesh.runtime.util;
 
 import java.util.Random;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class RuntimeUtils {
 
-    public static String getRandomAdminServerAddr(String adminServerAddrList) {
+    public String getRandomAdminServerAddr(String adminServerAddrList) {
         String[] addresses = adminServerAddrList.split(";");
         if (addresses.length == 0) {
             throw new IllegalArgumentException("Admin server address list is empty");
