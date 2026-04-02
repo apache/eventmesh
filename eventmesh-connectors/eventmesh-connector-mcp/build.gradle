@@ -23,7 +23,7 @@ dependencies {
     implementation "io.cloudevents:cloudevents-core"
     implementation "com.google.guava:guava"
     implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation ("io.grpc:grpc-protobuf:1.68.0") {
+    implementation ("io.grpc:grpc-protobuf:1.80.0") {
         exclude group: "com.google.protobuf", module: "protobuf-java"
     }
     implementation 'io.cloudevents:cloudevents-http-vertx:3.0.0'
