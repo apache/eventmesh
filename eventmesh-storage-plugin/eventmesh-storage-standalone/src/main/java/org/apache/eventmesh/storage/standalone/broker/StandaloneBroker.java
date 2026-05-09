@@ -130,6 +130,7 @@ public class StandaloneBroker {
         Channel channel = createTopicIfAbsent(topicName);
         channel.shutdown();
         messageContainer.remove(topicMetadata);
+        subscribeContainer.remove(topicMetadata);
     }
 
     public void subscribed(String topicName, Subscribe subscribe) {
