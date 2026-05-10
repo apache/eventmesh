@@ -45,9 +45,8 @@ public class SyncRequest {
             .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
-        try {
-            final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, EventMeshMessage.class);
+        try (final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();

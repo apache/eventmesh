@@ -48,18 +48,19 @@ public class AsyncPublish {
                 .port(eventMeshTcpPort)
                 .userAgent(userAgent)
                 .build();
-            final EventMeshTCPClient<CloudEvent> client =
-                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
-            client.init();
+            try (final EventMeshTCPClient<CloudEvent> client =
+                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class)) {
+                client.init();
 
-            for (int i = 0; i < 2; i++) {
-                CloudEvent event = EventMeshTestUtils.generateCloudEventV1Async();
-                log.info("begin send async msg[{}]: {}", i, event);
-                client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                for (int i = 0; i < 2; i++) {
+                    CloudEvent event = EventMeshTestUtils.generateCloudEventV1Async();
+                    log.info("begin send async msg[{}]: {}", i, event);
+                    client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-                ThreadUtils.sleep(1, TimeUnit.SECONDS);
+                    ThreadUtils.sleep(1, TimeUnit.SECONDS);
+                }
+                ThreadUtils.sleep(2, TimeUnit.SECONDS);
             }
-            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("AsyncPublish failed", e);
         }
