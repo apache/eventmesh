@@ -22,6 +22,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.function.filter.pattern.Pattern;
+import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import java.util.HashMap;
@@ -39,9 +41,15 @@ public class FilterEngineTest {
     @Mock
     private MetaStorage metaStorage;
 
+    @Mock
+    private ProducerManager producerManager;
+
+    @Mock
+    private ConsumerManager consumerManager;
+
     @Test
     public void testStartAndGetFilter() {
-        FilterEngine filterEngine = new FilterEngine(metaStorage);
+        FilterEngine filterEngine = new FilterEngine(metaStorage, producerManager, consumerManager);
 
         // Mock MetaData
         Map<String, String> filterMetaData = new HashMap<>();

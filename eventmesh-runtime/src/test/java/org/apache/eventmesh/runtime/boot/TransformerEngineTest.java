@@ -22,6 +22,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.function.transformer.Transformer;
+import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
+import org.apache.eventmesh.runtime.core.protocol.producer.ProducerManager;
 import org.apache.eventmesh.runtime.meta.MetaStorage;
 
 import java.util.HashMap;
@@ -39,9 +41,15 @@ public class TransformerEngineTest {
     @Mock
     private MetaStorage metaStorage;
 
+    @Mock
+    private ProducerManager producerManager;
+
+    @Mock
+    private ConsumerManager consumerManager;
+
     @Test
     public void testStartAndGetTransformer() throws Exception {
-        TransformerEngine transformerEngine = new TransformerEngine(metaStorage);
+        TransformerEngine transformerEngine = new TransformerEngine(metaStorage, producerManager, consumerManager);
 
         // Mock MetaData
         Map<String, String> transformerMetaData = new HashMap<>();
