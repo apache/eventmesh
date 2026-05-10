@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.protocol.a2a;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
@@ -25,10 +29,6 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
 
 /**
  * Validates Agent Card JSON against the A2A Agent Card JSON Schema.
