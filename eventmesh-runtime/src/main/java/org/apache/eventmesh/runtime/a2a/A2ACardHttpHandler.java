@@ -20,6 +20,12 @@ package org.apache.eventmesh.runtime.a2a;
 import org.apache.eventmesh.protocol.a2a.AgentIdentity;
 import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,12 +41,6 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * HTTP handler for A2A Agent Card Registry API.

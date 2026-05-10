@@ -42,18 +42,19 @@ public class AsyncPublish {
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         try {
-            UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+            final UserAgent userAgent = EventMeshTestUtils.generateClient1();
             try (final EventMeshTCPClient<CloudEvent> client =
-                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class)) {
+                     EventMeshTCPClientFactory.createEventMeshTCPClient(
+                         EventMeshTCPClientConfig.builder()
+                             .host(eventMeshIp)
+                             .port(eventMeshTcpPort)
+                             .userAgent(userAgent)
+                             .build(),
+                         CloudEvent.class)) {
                 client.init();
 
                 for (int i = 0; i < 2; i++) {
-                    CloudEvent event = EventMeshTestUtils.generateCloudEventV1Async();
+                    final CloudEvent event = EventMeshTestUtils.generateCloudEventV1Async();
                     log.info("begin send async msg[{}]: {}", i, event);
                     client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 

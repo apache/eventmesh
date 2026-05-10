@@ -23,18 +23,17 @@ import org.apache.eventmesh.protocol.a2a.AgentIdentity;
 import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A2APublishSubscribeService: Manages A2A Agent Card Registry and processes A2A events.
