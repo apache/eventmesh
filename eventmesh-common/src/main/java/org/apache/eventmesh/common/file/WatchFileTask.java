@@ -26,8 +26,8 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +38,7 @@ public class WatchFileTask extends Thread {
 
     private final transient WatchService watchService;
 
-    private final transient List<FileChangeListener> fileChangeListeners = new ArrayList<>();
+    private final transient List<FileChangeListener> fileChangeListeners = new CopyOnWriteArrayList<>();
 
     private transient volatile boolean watch = true;
 
@@ -46,6 +46,7 @@ public class WatchFileTask extends Thread {
 
     public WatchFileTask(String directoryPath) {
         this.directoryPath = directoryPath;
+        setDaemon(true);
         final Path path = Paths.get(directoryPath);
         if (!path.toFile().exists()) {
             throw new IllegalArgumentException("file directory not exist: " + directoryPath);
@@ -74,9 +75,17 @@ public class WatchFileTask extends Thread {
     }
 
     public void addFileChangeListener(FileChangeListener fileChangeListener) {
-        if (fileChangeListener != null) {
+        if (fileChangeListener != null && !fileChangeListeners.contains(fileChangeListener)) {
             fileChangeListeners.add(fileChangeListener);
         }
+    }
+
+    public void removeFileChangeListener(FileChangeListener fileChangeListener) {
+        fileChangeListeners.remove(fileChangeListener);
+    }
+
+    public boolean hasFileChangeListener() {
+        return !fileChangeListeners.isEmpty();
     }
 
     public void shutdown() {
@@ -114,7 +123,9 @@ public class WatchFileTask extends Thread {
                     log.debug("[WatchFileTask] file watch is interrupted");
                 }
             } catch (Exception ex) {
-                log.error("[WatchFileTask] an exception occurred during file listening : ", ex);
+                if (watch) {
+                    log.error("[WatchFileTask] an exception occurred during file listening : ", ex);
+                }
             }
         }
     }
