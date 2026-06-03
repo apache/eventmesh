@@ -52,7 +52,9 @@ public class ConfigMonitorServiceTest {
     /**
      * Simple config object for testing hot-reload scenarios.
      */
+    @Config(prefix = "test")
     public static class TestMonitorConfig {
+        @ConfigField(field = "key")
         private String name = "init";
 
         public String getName() {
@@ -61,6 +63,30 @@ public class ConfigMonitorServiceTest {
 
         public void setName(String name) {
             this.name = name;
+        }
+    }
+
+    public static class TestMonitorHolder {
+
+        private TestMonitorConfig config;
+
+        public TestMonitorConfig getConfig() {
+            return config;
+        }
+
+        public void setConfig(TestMonitorConfig config) {
+            this.config = config;
+        }
+    }
+
+    @Config(prefix = "test", path = "monitor-test.properties", monitor = true)
+    public static class BuildConfigMonitorConfig {
+
+        @ConfigField(field = "key")
+        private String name = "init";
+
+        public String getName() {
+            return name;
         }
     }
 
@@ -226,32 +252,49 @@ public class ConfigMonitorServiceTest {
         String updatedValue = "test-value-updated";
         writeProperty(tempFile, "test.key", originalValue);
 
+        TestMonitorHolder holder = new TestMonitorHolder();
         TestMonitorConfig config = new TestMonitorConfig();
-        config.setName(originalValue);
+        holder.setConfig(config);
 
-        ConfigInfo configInfo = buildConfigInfo(tempFile.toString(), config);
+        ConfigInfo configInfo = buildConfigInfo(tempFile.toString(), holder);
         configMonitorService.monitor(configInfo);
 
         // Simulate file content changed externally
         writeProperty(tempFile, "test.key", updatedValue);
 
-        // Build change context and trigger onChanged
-        FileChangeContext changeContext = new FileChangeContext();
-        changeContext.setDirectoryPath(tempFile.getParent().toString());
-        changeContext.setFileName(tempFile.getFileName().toString());
-
-        // Get internal listener and trigger change notification
-        // Simulate WatchFileManager notification behavior via support + onChanged
-        if (ConfigMonitorService.support(changeContext)) {
-            // 通过 ConfigService 触发 load（模拟 WatchFileManager 调用路径）
-            ConfigMonitorService.load(configInfo);
-        }
-
-        // Verify object field updated (depends on ConfigService reload)
-        // Note: ConfigService.getConfig reads real file, config.getName() should reflect latest value
-        // In actual hot-reload, reload() re-reads file and injects into corresponding field
+        waitUntil(() -> updatedValue.equals(holder.getConfig().getName()));
+        Assertions.assertEquals(updatedValue, holder.getConfig().getName());
 
         Files.deleteIfExists(tempFile);
+    }
+
+    @Test
+    @DisplayName("buildConfigInstance() - monitor=true 时文件变更更新原配置对象")
+    void testBuildConfigInstanceMonitor() throws Exception {
+        Path tempDir = Files.createTempDirectory("test-build-monitor");
+        Path tempFile = tempDir.resolve("monitor-test.properties");
+        writeProperty(tempFile, "test.key", "before");
+
+        try {
+            ConfigService.getInstance().setConfigPath(tempDir.toString());
+            BuildConfigMonitorConfig config = ConfigService.getInstance().buildConfigInstance(BuildConfigMonitorConfig.class);
+            Assertions.assertEquals("before", config.getName());
+
+            writeProperty(tempFile, "test.key", "after");
+
+            waitUntil(() -> "after".equals(config.getName()));
+            Assertions.assertEquals("after", config.getName());
+
+            writeProperty(tempFile, "test.key", "final");
+
+            waitUntil(() -> "final".equals(config.getName()));
+            Assertions.assertEquals("final", config.getName());
+        } finally {
+            ConfigService.getInstance().setConfigPath(null);
+        }
+
+        Files.deleteIfExists(tempFile);
+        Files.deleteIfExists(tempDir);
     }
 
     /**
@@ -314,11 +357,14 @@ public class ConfigMonitorServiceTest {
     private ConfigInfo buildConfigInfo(String filePath, Object instance) throws Exception {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setFilePath(filePath);
+        configInfo.setPath(ConfigService.FILE_PATH_PREFIX + filePath);
+        configInfo.setClazz(TestMonitorConfig.class);
+        configInfo.setPrefix("test");
         configInfo.setInstance(instance);
 
-        // Find first String field in instance and set as objectField
+        // Find first TestMonitorConfig field in instance and set as objectField
         // Simulates real ConfigInfo initialization in ConfigService.populateConfigForObject
-        Field objectField = findFirstField(instance.getClass(), String.class);
+        Field objectField = findFirstField(instance.getClass(), TestMonitorConfig.class);
         if (objectField != null) {
             objectField.setAccessible(true);
             configInfo.setObjectField(objectField);
@@ -349,5 +395,21 @@ public class ConfigMonitorServiceTest {
             props.setProperty(key, value);
             props.store(os, "test properties");
         }
+    }
+
+    private void waitUntil(Check check) throws Exception {
+        long deadline = System.currentTimeMillis() + 15_000;
+        while (System.currentTimeMillis() < deadline) {
+            if (check.success()) {
+                return;
+            }
+            Thread.sleep(100);
+        }
+        Assertions.fail("condition was not met before timeout");
+    }
+
+    private interface Check {
+
+        boolean success();
     }
 }

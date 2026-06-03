@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.common.file;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class WatchFileManager {
 
     private static final AtomicBoolean CLOSED = new AtomicBoolean(false);
 
-    private static final Map<String, WatchFileTask> WATCH_FILE_TASK_MAP = new HashMap<>();
+    private static final Map<String, WatchFileTask> WATCH_FILE_TASK_MAP = new ConcurrentHashMap<>();
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -38,13 +38,24 @@ public class WatchFileManager {
     }
 
     public static void registerFileChangeListener(String directoryPath, FileChangeListener listener) {
-        WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
-        if (task == null) {
-            task = new WatchFileTask(directoryPath);
-            task.start();
-            WATCH_FILE_TASK_MAP.put(directoryPath, task);
-        }
+        WatchFileTask task = WATCH_FILE_TASK_MAP.computeIfAbsent(directoryPath, path -> {
+            WatchFileTask watchFileTask = new WatchFileTask(path);
+            watchFileTask.start();
+            return watchFileTask;
+        });
         task.addFileChangeListener(listener);
+    }
+
+    public static void deregisterFileChangeListener(String directoryPath, FileChangeListener listener) {
+        WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
+        if (task != null) {
+            task.removeFileChangeListener(listener);
+            if (task.hasFileChangeListener()) {
+                return;
+            }
+            WATCH_FILE_TASK_MAP.remove(directoryPath, task);
+            task.shutdown();
+        }
     }
 
     public static void deregisterFileChangeListener(String directoryPath) {
