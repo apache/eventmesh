@@ -25,31 +25,31 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class Base64Utils {
-    private static final int CACHE_SIZE = 1024;
+    private final int CACHE_SIZE = 1024;
 
-    public Base64Utils() {
-    }
-
-    public static byte[] decode(String base64) throws Exception {
+    public byte[] decode(String base64) throws Exception {
         return Base64.decode(base64.toCharArray());
     }
 
-    public static String encode(byte[] bytes) throws Exception {
+    public String encode(byte[] bytes) throws Exception {
         return new String(Base64.encode(bytes));
     }
 
-    public static String encodeFile(String filePath) throws Exception {
+    public String encodeFile(String filePath) throws Exception {
         byte[] bytes = fileToByte(filePath);
         return encode(bytes);
     }
 
-    public static void decodeToFile(String filePath, String base64) throws Exception {
+    public void decodeToFile(String filePath, String base64) throws Exception {
         byte[] bytes = decode(base64);
         byteArrayToFile(bytes, filePath);
     }
 
-    public static byte[] fileToByte(String filePath) throws Exception {
+    public byte[] fileToByte(String filePath) throws Exception {
         byte[] data = new byte[0];
         File file = new File(filePath);
         if (file.exists()) {
@@ -71,7 +71,7 @@ public class Base64Utils {
         return data;
     }
 
-    public static void byteArrayToFile(byte[] bytes, String filePath) throws Exception {
+    public void byteArrayToFile(byte[] bytes, String filePath) throws Exception {
         InputStream in = new ByteArrayInputStream(bytes);
         File destFile = new File(filePath);
         if (!destFile.getParentFile().exists()) {

@@ -25,16 +25,19 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.experimental.UtilityClass;
+
 @SuppressWarnings("all")
+@UtilityClass
 public class ByteArrayUtils {
 
-    public static <T> Optional<byte[]> objectToBytes(T obj) throws IOException {
+    public <T> Optional<byte[]> objectToBytes(T obj) throws IOException {
         String s = JsonUtils.toJSONString(obj);
         byte[] bytes = s.getBytes(Constants.DEFAULT_CHARSET);
         return Optional.ofNullable(bytes);
     }
 
-    public static <T> Optional<T> bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
+    public <T> Optional<T> bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
         T t = JsonUtils.parseTypeReferenceObject(new String(bytes, Constants.DEFAULT_CHARSET), new TypeReference<T>() {
         });
         return Optional.ofNullable(t);

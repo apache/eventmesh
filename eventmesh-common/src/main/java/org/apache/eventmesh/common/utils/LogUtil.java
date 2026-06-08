@@ -54,11 +54,11 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class LogUtil {
+public class LogUtil {
 
-    private static final String FQCN = LogUtil.class.getName();
+    private final String FQCN = LogUtil.class.getName();
 
-    public static void debug(Logger logger, String format, Supplier<?> objectSupplier) {
+    public void debug(Logger logger, String format, Supplier<?> objectSupplier) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -66,7 +66,7 @@ public final class LogUtil {
         builder.addArgument(objectSupplier).log(format);
     }
 
-    public static void debug(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
+    public void debug(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
         final LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -74,7 +74,7 @@ public final class LogUtil {
         builder.addArgument(objectSupplier).setCause(t).log(format);
     }
 
-    public static void debug(Logger logger, String format, Supplier<?>... objectSuppliers) {
+    public void debug(Logger logger, String format, Supplier<?>... objectSuppliers) {
         LoggingEventBuilder builder = logger.atDebug();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -85,7 +85,7 @@ public final class LogUtil {
         builder.log(format);
     }
 
-    public static void info(Logger logger, String format, Supplier<?> objectSupplier) {
+    public void info(Logger logger, String format, Supplier<?> objectSupplier) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -93,7 +93,7 @@ public final class LogUtil {
         builder.addArgument(objectSupplier).log(format);
     }
 
-    public static void info(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
+    public void info(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
         final LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -101,7 +101,7 @@ public final class LogUtil {
         builder.addArgument(objectSupplier).setCause(t).log(format);
     }
 
-    public static void info(Logger logger, String format, Supplier<?>... objectSuppliers) {
+    public void info(Logger logger, String format, Supplier<?>... objectSuppliers) {
         LoggingEventBuilder builder = logger.atInfo();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -112,7 +112,7 @@ public final class LogUtil {
         builder.log(format);
     }
 
-    public static void warn(Logger logger, String format, Supplier<?> objectSupplier) {
+    public void warn(Logger logger, String format, Supplier<?> objectSupplier) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -120,7 +120,7 @@ public final class LogUtil {
         builder.addArgument(objectSupplier).log(format);
     }
 
-    public static void warn(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
+    public void warn(Logger logger, String format, Supplier<?> objectSupplier, Throwable t) {
         final LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
@@ -128,7 +128,7 @@ public final class LogUtil {
         builder.addArgument(objectSupplier).setCause(t).log(format);
     }
 
-    public static void warn(Logger logger, String format, Supplier<?>... objectSuppliers) {
+    public void warn(Logger logger, String format, Supplier<?>... objectSuppliers) {
         LoggingEventBuilder builder = logger.atWarn();
         if (builder instanceof CallerBoundaryAware) {
             ((CallerBoundaryAware) builder).setCallerBoundary(FQCN);
