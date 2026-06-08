@@ -42,24 +42,26 @@ public class AsyncPublish {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         try {
             final UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
-            final EventMeshTCPClient<EventMeshMessage> client =
-                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
-            client.init();
+            try (final EventMeshTCPClient<EventMeshMessage> client =
+                     EventMeshTCPClientFactory.createEventMeshTCPClient(
+                         EventMeshTCPClientConfig.builder()
+                             .host(eventMeshIp)
+                             .port(eventMeshTcpPort)
+                             .userAgent(userAgent)
+                             .build(),
+                         EventMeshMessage.class)) {
+                client.init();
 
-            for (int i = 0; i < 5; i++) {
-                final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateAsyncEventMqMsg();
+                for (int i = 0; i < 5; i++) {
+                    final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateAsyncEventMqMsg();
 
-                log.info("begin send async msg[{}]: {}", i, eventMeshMessage);
-                client.publish(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    log.info("begin send async msg[{}]: {}", i, eventMeshMessage);
+                    client.publish(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
-                ThreadUtils.sleep(1, TimeUnit.SECONDS);
+                    ThreadUtils.sleep(1, TimeUnit.SECONDS);
+                }
+                ThreadUtils.sleep(2, TimeUnit.SECONDS);
             }
-            ThreadUtils.sleep(2, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("AsyncPublish failed", e);
         }

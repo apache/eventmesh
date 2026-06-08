@@ -21,17 +21,16 @@
 <meta name="twitter:description" content="This Source Code may also be made available under the following Secondary Licenses when the conditions for such availability set forth in the Eclipse Public License, v. 2.0 are satisfied: GNU General Public License, version 2 with the GNU Classpath Exception which is available at https://www.gnu.org/software/classpath/license.html." />
 <meta name="twitter:site" content="EclipseFdn" />
 <meta name="twitter:title" content="一 (Secondary) GNU General Public License, version 2 with the GNU Classpath Exception" />
-<meta name="twitter:url" content="https://projects.eclipse.org/license/yi-secondary-gnu-general-public-license-version-2-gnu-classpath-exception" />
 <meta name="twitter:image" content="https://www.eclipse.org/eclipse.org-common/themes/solstice/public/images/logo/eclipse-foundation-400x400.png" />
 <meta name="MobileOptimized" content="width" />
 <meta name="HandheldFriendly" content="true" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="icon" href="/themes/custom/solstice/favicon.ico" type="image/vnd.microsoft.icon" />
-<script src="/sites/default/files/google_tag/eclipse_foundation/google_tag.script.js?soqdam" defer></script>
+<script src="/sites/default/files/google_tag/eclipse_foundation/google_tag.script.js?t7r1wt" defer></script>
 
     <title>一 (Secondary) GNU General Public License, version 2 with the GNU Classpath Exception | projects.eclipse.org</title>
-    <link rel="stylesheet" media="all" href="/sites/default/files/css/css_GJubHtlTkW7l9xzifmN3T9se6IL6M-K2J7Sdvt_T8VY.css?delta=0&amp;language=en&amp;theme=solstice&amp;include=eJwrriwuSc3VT0osTtVJys8vKS4pSizQTytKzE0tzy_KBgDGUwx3" />
-<link rel="stylesheet" media="all" href="/sites/default/files/css/css_Cf_fNtYIesp3F5UGbgdY64lh2n9csIFFBVSSO9MlnwA.css?delta=1&amp;language=en&amp;theme=solstice&amp;include=eJwrriwuSc3VT0osTtVJys8vKS4pSizQTytKzE0tzy_KBgDGUwx3" />
+    <link rel="stylesheet" media="all" href="/sites/default/files/css/css_t_cnnRjPsV0XAejUpeai_Fm7QHIYlELVaxIyP5bMycw.css?delta=0&amp;language=en&amp;theme=solstice&amp;include=eJxLys8vKS4pSizQTytKzE0tzy_K1imuLC5JzdVPSixOBQDKiwx3" />
+<link rel="stylesheet" media="all" href="/sites/default/files/css/css_Hb7ZAexbLizD20LcZ6affKFLopIJeucOGOsoAXLJI2E.css?delta=1&amp;language=en&amp;theme=solstice&amp;include=eJxLys8vKS4pSizQTytKzE0tzy_K1imuLC5JzdVPSixOBQDKiwx3" />
 
     
   </head>
@@ -43,7 +42,7 @@
       <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas>
     
 
-<header class="header-wrapper margin-bottom-0" id="header-wrapper">
+<header class="header-wrapper" id="header-wrapper">
 
               <div class="region region-header">
     <section id="block-eclipsefoundationastrotoolbar" class="block block-eclipsefdn block-eclipsefdn-astro-toolbar clearfix">
@@ -100,7 +99,7 @@
     <div class="header-navbar">
       <a class="header-navbar-brand" href="https://www.eclipse.org">
   <div class="logo-wrapper">
-    <img alt="Eclipse Foundation" width="150" src="/themes/custom/solstice/images/logos/eclipse-foundation-grey-orange.svg"/>
+    <img alt="projects.eclipse.org" width="150" src="/themes/custom/solstice/images/logos/eclipse-foundation-grey-orange.svg"/>
   </div>
 </a>
 
@@ -245,13 +244,10 @@
             <div class="mobile-menu-sub-menu-wrapper">
               <ul class="mobile-menu-sub-menu mobile-menu-links-menu hidden" id="sponsorship-sub-menu">
                 <li>
-                  <a class="mobile-menu-item" href="https://newsroom.eclipse.org/">Sponsor</a>
+                  <a class="mobile-menu-item" href="https://www.eclipse.org/sponsor/">Become a Sponsor</a>
                 </li>
                 <li>
-                  <a class="mobile-menu-item" href="https://www.eclipse.org/org/corporate_sponsors/">Corporate Sponsorship</a>
-                </li>
-                <li>
-                  <a class="mobile-menu-item" href="https://www.eclipse.org/sponsor/collaboration/">Sponsor a Collaboration</a>
+                  <a class="mobile-menu-item" href="https://www.eclipse.org/org/our-sponsors/">Sponsor Directory</a>
                 </li>
               </ul>
             </div>
@@ -520,9 +516,8 @@
       <div class="mega-menu-submenu-links">
         <p class="menu-heading">Sponsorship</p>
         <ul>
-          <li><a href="https://www.eclipse.org/sponsor/">Sponsor</a></li>
-          <li><a href="https://www.eclipse.org/org/corporate_sponsors/">Corporate Sponsorship</a></li>
-          <li><a href="https://www.eclipse.org/sponsor/collaboration/">Sponsor a Collaboration</a></li>
+          <li><a href="https://www.eclipse.org/sponsor/">Become a Sponsor</a></li>
+          <li><a href="https://www.eclipse.org/org/our-sponsors/">Sponsor Directory</a></li>
         </ul>
       </div>
     </div>
@@ -653,16 +648,19 @@
   </div>
 
       
+    
     </header>
 
-      <section class="default-breadcrumbs hidden-print breadcrumbs-default-margin" id="breadcrumb">
+      <section class="default-breadcrumbs hidden-print" id="breadcrumb">
       <div class="container">
           <div class="region region-breadcrumbs">
       
 
 <ol class="breadcrumb">
-  <li><a href="https://www.eclipse.org">Home</a></li>
             <li >
+                  <a href="https://www.eclipse.org">Home</a>
+              </li>
+                <li >
                   <a href="/">Projects</a>
               </li>
                 <li  class="active">
@@ -676,7 +674,7 @@
       </div>
     </section>
   
-  <div class="main-container container js-quickedit-main-content">
+  <div class="main-container container margin-top-20 js-quickedit-main-content">
     <div
       class="row">
 
@@ -696,7 +694,8 @@
                   
                           <a id="main-content"></a>
             <div class="region region-content">
-        <h1 class="page-header">
+      
+  <h1 class="page-header">
 <span>一 (Secondary) GNU General Public License, version 2 with the GNU Classpath Exception</span>
 </h1>
 
@@ -734,7 +733,9 @@
 
   </div>
 
-              </section>
+        
+        
+      </section>
 
             
                               <aside class="col-sm-6">
@@ -763,6 +764,35 @@
 </p>
 <footer id="footer">
   <div class="container">
+    <div class="footer-end-social-container margin-bottom-30">
+      <div class="footer-end-social">
+        <p class="footer-end-social-text">Follow Us:</p>
+        
+<ul class="footer-end-social-links list-inline">
+  <li><a class="link-unstyled" href="https://x.com/EclipseFdn" title="X account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-x-twitter fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">X account</span></span></a></li>
+  <li><a class="link-unstyled" href="https://bsky.app/profile/eclipse.org" title="Bluesky account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-bluesky fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">Bluesky account</span></span></a></li>
+  <li><a class="link-unstyled" href="https://mastodon.social/@EclipseFdn" title="Mastodon account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-mastodon fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">Mastodon account</span></span></a></li>
+  <li><a class="link-unstyled" href="https://www.facebook.com/eclipse.org" title="Facebook account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-facebook-f fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">Facebook account</span></span></a></li>
+  <li><a class="link-unstyled" href="https://www.instagram.com/eclipsefoundation/" title="Instagram account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-instagram fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">Instagram account</span></span></a></li>
+  <li><a class="link-unstyled" href="https://www.youtube.com/user/EclipseFdn" title="YouTube account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-youtube fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">YouTube account</span></span></a></li>
+  <li><a class="link-unstyled" href="https://www.linkedin.com/company/eclipse-foundation" title="LinkedIn account"><span class="fa-stack"><i class="fa-solid fa-circle fa-stack-2x" aria-hidden="true"></i>
+        <i class="fa-brands fa-linkedin-in fa-stack-1x fa-inverse" aria-hidden="true"></i>
+        <span class="sr-only">LinkedIn account</span></span></a></li>
+</ul>
+      </div>
+    </div>
     <div class="footer-sections row equal-height-md font-bold">
       <div id="footer-eclipse-foundation" class="footer-section col-md-5 col-sm-8">
         <div class="menu-heading">Eclipse Foundation</div>
@@ -817,7 +847,7 @@
             <a href="https://www.eclipsestatus.io/">Service Status</a>
           </li>
           <li>
-            <a href="https://www.eclipse.org/org/foundation/contact.php">Contact</a>
+            <a href="https://www.eclipse.org/org/foundation/contact.php">Contact Us</a>
           </li>
           <li>
             <a href="https://www.eclipse.org/projects/support/">Support</a>
@@ -825,57 +855,21 @@
         </ul>
       </div>
       <div id="footer-end" class="footer-section col-md-8 col-md-offset-1 col-sm-24">
-        <div class="footer-end-social-container">
-          <div class="footer-end-social">
-            <p class="footer-end-social-text">Follow Us:</p>
-            <ul class="footer-end-social-links list-inline">
-              <li>
-                <a class="link-unstyled" href="https://www.youtube.com/channel/UCej18QqbZDxuYxyERPgs2Fw" title="YouTube Channel">
-                  <span class="fa fa-stack">
-                    <i class="fa fa-circle fa-stack-2x" aria-hidden="true"></i>
-                    <i class="fa fa-youtube-play fa-stack-1x fa-inverse" aria-hidden="true"></i>
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a class="link-unstyled" href="https://www.linkedin.com/company/eclipse-foundation/" title="LinkedIn">
-                  <span class="fa fa-stack">
-                    <i class="fa fa-circle fa-stack-2x" aria-hidden="true"></i>
-                    <i class="fa fa-linkedin fa-stack-1x fa-inverse" aria-hidden="true"></i>
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a class="link-unstyled" href="https://www.facebook.com/eclipse.org/" title="Facebook">
-                  <span class="fa fa-stack">
-                    <i class="fa fa-circle fa-stack-2x" aria-hidden="true"></i>
-                    <i class="fa fa-facebook fa-stack-1x fa-inverse" aria-hidden="true"></i>
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a class="link-unstyled" href="https://twitter.com/EclipseFdn" title="Twitter">
-                  <span class="fa fa-stack">
-                    <i class="fa fa-circle fa-stack-2x" aria-hidden="true"></i>
-                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
-                  </span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
         <div class="footer-end-newsletter">
-          <form id="mc-embedded-subscribe-form" action="https://eclipse.us6.list-manage.com/subscribe?u=eaf9e1f06f194eadc66788a85&id=46e57eacf1&v_id=53&f_id=00fac2e1f0" method="post" novalidate target="_blank">
+          <form
+            id="mc-embedded-subscribe-form"
+            action="https://eclipse.us6.list-manage.com/subscribe/post?u=eaf9e1f06f194eadc66788a85&amp;id=e7538485cd&amp;f_id=00f9c2e1f0"
+            method="post"
+            novalidate
+            target="_blank"
+          >
             <label class="footer-end-newsletter-label" for="email">Subscribe to our Newsletter</label>
             <div class="footer-end-newsletter-input-wrapper">
-              <input class="footer-end-newsletter-input" type="email" id="email" name="EMAIL" autocomplete="email" placeholder="Enter your email address">
-              <div>
+              <input class="footer-end-newsletter-input" type="email" id="email" name="EMAIL" autocomplete="email" placeholder="Enter your email address" />
+              <button class="footer-end-newsletter-submit btn btn-link" id="mc-embedded-subscribe" type="submit" name="subscribe">
                 <i class="fa fa-solid fa-envelope fa-lg" aria-hidden="true"></i>
-              </div>
+              </button>
             </div>
-            <input type="hidden" name="u" value="eaf9e1f06f194eadc66788a85">
-            <input type="hidden" name="id" value="46e57eacf1">
-            <input id="mc-embedded-subscribe" type="submit" name="subscribe" hidden>
           </form>
         </div>
       </div>
@@ -901,7 +895,7 @@
 
     
     <script type="application/json" data-drupal-selector="drupal-settings-json">{"path":{"baseUrl":"\/","pathPrefix":"","currentPath":"node\/12522","currentPathIsAdmin":false,"isFront":false,"currentLanguage":"en"},"pluralDelimiter":"\u0003","suppressDeprecationErrors":true,"bootstrap":{"forms_has_error_value_toggle":1,"modal_animation":1,"modal_backdrop":"true","modal_focus_input":1,"modal_keyboard":1,"modal_select_text":1,"modal_show":1,"modal_size":"","popover_enabled":1,"popover_animation":1,"popover_auto_close":1,"popover_container":"body","popover_content":"","popover_delay":"0","popover_html":0,"popover_placement":"right","popover_selector":"","popover_title":"","popover_trigger":"click","tooltip_enabled":1,"tooltip_animation":1,"tooltip_container":"body","tooltip_delay":"0","tooltip_html":0,"tooltip_placement":"auto left","tooltip_selector":"","tooltip_trigger":"hover"},"user":{"uid":0,"permissionsHash":"8ed503f1f6a4883ed443941129c4bcd3052d20f1b4d2070ca31cff77ec58ab76"}}</script>
-<script src="/sites/default/files/js/js_kI1hOe0CbPKTXnbO9OwmDZQeGIJvKYFJc_Kdfi1o2Lg.js?scope=footer&amp;delta=0&amp;language=en&amp;theme=solstice&amp;include=eJxLys8vKS4pSizQT4Kx4guKUuMz8zJLdOBC-gX5BfllqUVIIiX5-TklmQUAVOcaLQ"></script>
+<script src="/sites/default/files/js/js_win4BiBl7jHaedEHZ6N9qaarWdzW4hMo2svl9g6cdb4.js?scope=footer&amp;delta=0&amp;language=en&amp;theme=solstice&amp;include=eJxLys8vKS4pSizQT4Kx4guKUuMz8zJLdOBC-gX5BfllqUVIIiX5-TklmQUAVOcaLQ"></script>
 
   </body>
 </html>
