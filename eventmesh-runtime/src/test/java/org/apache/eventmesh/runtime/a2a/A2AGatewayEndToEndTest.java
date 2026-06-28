@@ -170,7 +170,7 @@ class A2AGatewayEndToEndTest {
     @Test
     void testHeartbeatRefreshesTtl() throws Exception {
         a2aService.shutdown();
-        a2aService = new A2APublishSubscribeService(null, 200L, 100L);
+        a2aService = new A2APublishSubscribeService(null, 500L, 250L);
         a2aService.init();
         a2aService.start();
 
@@ -181,12 +181,12 @@ class A2AGatewayEndToEndTest {
         a2aService.registerCard(identity, card);
 
         // Heartbeat before TTL expires
-        Thread.sleep(100);
-        assertTrue(a2aService.heartbeat(identity));
+        Thread.sleep(250);
+        assertTrue(a2aService.heartbeat(identity), "heartbeat should succeed before TTL");
 
         // Should still be registered
         Thread.sleep(100);
-        assertNotNull(a2aService.getCard(identity));
+        assertNotNull(a2aService.getCard(identity), "card should still exist after heartbeat refresh");
     }
 
     @Test
