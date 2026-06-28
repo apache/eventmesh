@@ -65,6 +65,31 @@ A2A Protocol features a unique **Dual-Mode** architecture that simultaneously su
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### Gateway Runtime Architecture
+
+```
+  protocol-a2a module              runtime module                   examples module
+  ┌─────────────────┐           ┌──────────────────┐           ┌──────────────┐
+  │ A2AMessageTransport(Iface)   │ A2AGatewayServer  │           │ A2AGatewayDemo│
+  │ A2AClient (SDK)  │<──HTTP──>│ (main, Netty HTTP)│<──HTTP──>│ (client only) │
+  │ AgentCard/Topic  │           │ InMemoryTransport │           └──────────────┘
+  └─────────────────┘           │ GatewayService    │
+                                │ TaskRegistry(TTL) │
+                                └──────────────────┘
+```
+
+#### Core Runtime Components
+
+| Component | Module | Responsibility |
+| :--- | :--- | :--- |
+| `A2AGatewayServer` | runtime | Netty HTTP server entry point, pre-registers mock agents |
+| `A2AGatewayHttpHandler` | runtime | HTTP request router, supports SSE streaming |
+| `A2AGatewayService` | runtime | Core orchestration: task submission, response handling, SSE push |
+| `TaskRegistry` | runtime | In-memory task state machine + TTL auto-cleanup (5 min) |
+| `A2APublishSubscribeService` | runtime | AgentCard registration, discovery, heartbeat |
+| `InMemoryA2AMessageTransport` | runtime | In-memory pub/sub (replaceable by EventMesh broker) |
+| `A2AClient` | protocol-a2a | Java SDK with typed API |
+
 ### Asynchronous RPC Pattern
 
 To support the MCP Request/Response model within an event-driven architecture, A2A defines the following mapping rules:
@@ -127,6 +152,77 @@ eventMeshProducer.publish(new A2AProtocolTransportObject(mcpRequest));
 
 Subscribe to the topic `org.apache.eventmesh.a2a.tools.call.req`, process logic, and send back response with matching `id`.
 
+### 3. Gateway REST API
+
+The A2A Gateway provides a full REST API for external clients and non-Java agents:
+
+```bash
+# Sync task
+curl -X POST 'http://localhost:10105/a2a/tasks?mode=sync' \
+  -H 'Content-Type: application/json' \
+  -d '{"targetAgent":"weather-agent","message":"Beijing"}'
+
+# Async task
+curl -X POST 'http://localhost:10105/a2a/tasks?mode=async' \
+  -H 'Content-Type: application/json' \
+  -d '{"targetAgent":"weather-agent","message":"Shanghai"}'
+
+# Query status
+curl http://localhost:10105/a2a/tasks/{taskId}
+
+# SSE stream
+curl -N http://localhost:10105/a2a/tasks/{taskId}/stream
+
+# List agents
+curl http://localhost:10105/a2a/agents
+```
+
+#### REST API Endpoints
+
+| Method | Path | Description |
+|------|------|------|
+| POST | `/a2a/tasks?mode=sync` | Submit task synchronously (wait for result) |
+| POST | `/a2a/tasks?mode=async` | Submit task asynchronously (return taskId) |
+| GET | `/a2a/tasks/{taskId}` | Get task status |
+| DELETE | `/a2a/tasks/{taskId}` | Cancel task |
+| GET | `/a2a/tasks/{taskId}/wait` | Long-poll wait for result |
+| GET | `/a2a/tasks/{taskId}/stream` | SSE stream of task status updates |
+| GET | `/a2a/agents` | List registered agents |
+| POST | `/a2a/heartbeat` | Agent heartbeat |
+| GET | `/a2a/cards/list` | List all AgentCards |
+| POST | `/a2a/cards/card/{org}/{unit}/{agent}` | Register AgentCard |
+
+### 4. A2AClient Java SDK
+
+```java
+A2AClient client = A2AClient.builder()
+    .gatewayUrl("http://localhost:10105")
+    .namespace("global")
+    .agentName("my-agent")
+    .agentCard(card)
+    .heartbeatInterval(30_000)
+    .build();
+
+client.start();
+
+// Sync task (returns typed TaskResult)
+TaskResult result = client.sendTaskSync("weather-agent", "Beijing", null);
+
+// Async task (returns taskId)
+String taskId = client.sendTaskAsync("weather-agent", "Shanghai", null);
+
+// Query status
+TaskResult status = client.getTaskStatus(taskId);
+
+// Cancel
+boolean cancelled = client.cancelTask(taskId);
+
+// List agents (returns List<String>)
+List<String> agents = client.listAgents();
+
+client.shutdown();
+```
+
 ## Version History
 
 - **v2.0.0**: Fully Embraced MCP (Model Context Protocol)
@@ -134,6 +230,15 @@ Subscribe to the topic `org.apache.eventmesh.a2a.tools.call.req`, process logic,
   - Implemented Async RPC over CloudEvents pattern.
   - Added **Native Pub/Sub** support via `_topic` parameter.
   - Added **Streaming** support via `_seq` parameter.
+
+- **v2.1.0**: Gateway Runtime Architecture
+  - Added `A2AGatewayServer` (Netty HTTP) standalone Gateway service.
+  - Implemented `TaskRegistry` task state machine + TTL auto-cleanup (5 min).
+  - Added SSE streaming response (`GET /a2a/tasks/{taskId}/stream`).
+  - `A2AClient` SDK returns typed objects (`TaskResult`, `List<String>`).
+  - Fixed `pendingTasks` race condition (put-before-publish).
+  - AgentCard registration, discovery, heartbeat management.
+  - 73 test scenarios all passing.
 
 ## Contribution
 
