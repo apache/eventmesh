@@ -37,9 +37,9 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>State machine:
  * <pre>
- *   SUBMITTED -> WORKING -> COMPLETED
- *                       \-> FAILED
- *                       \-> CANCELLED
+ *   SUBMITTED -&gt; WORKING -&gt; COMPLETED
+ *                       \-&gt; FAILED
+ *                       \-&gt; CANCELLED
  * </pre>
  */
 @Slf4j
