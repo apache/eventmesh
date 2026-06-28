@@ -41,6 +41,9 @@ public interface A2AMessageTransport {
      */
     void unsubscribe(String subscriptionId) throws Exception;
 
+    /**
+     * Callback invoked when a message is received on a subscribed topic.
+     */
     @FunctionalInterface
     interface MessageCallback {
         void onMessage(String topic, CloudEvent event);

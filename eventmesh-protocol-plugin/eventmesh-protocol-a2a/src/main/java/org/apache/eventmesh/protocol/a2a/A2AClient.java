@@ -17,17 +17,7 @@
 
 package org.apache.eventmesh.protocol.a2a;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -39,14 +29,24 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A2A Java SDK client for Agent developers.
@@ -557,6 +557,9 @@ public class A2AClient implements AutoCloseable {
         }
     }
 
+    /**
+     * Handler for incoming A2A task requests from agents.
+     */
     @FunctionalInterface
     public interface RequestHandler {
 
