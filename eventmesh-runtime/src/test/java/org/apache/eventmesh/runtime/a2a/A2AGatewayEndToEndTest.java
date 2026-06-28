@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.a2a;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.protocol.a2a.A2AProtocolConstants;
 import org.apache.eventmesh.protocol.a2a.A2ATopicFactory;
 import org.apache.eventmesh.protocol.a2a.AgentIdentity;
@@ -26,16 +30,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end test for A2A Gateway: task submission, agent response, and task registry.

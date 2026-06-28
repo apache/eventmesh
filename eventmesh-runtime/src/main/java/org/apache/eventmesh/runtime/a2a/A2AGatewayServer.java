@@ -29,7 +29,6 @@ import java.util.UUID;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -200,7 +199,7 @@ public class A2AGatewayServer {
             // Publish response
             String gwId = extractGatewayId(event);
             String responseTopic = A2ATopicFactory.gatewayResponseTopic(NAMESPACE, gwId, taskId);
-            String result = "The weather in " + message + " is sunny, 25\u00b0C";
+            String result = "The weather in " + message + " is sunny, 25°C";
             CloudEvent responseEvent = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())
                 .withType(A2AProtocolConstants.CE_TYPE_PREFIX + "task.response")

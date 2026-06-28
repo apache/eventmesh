@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.runtime.a2a;
 
-import org.apache.eventmesh.protocol.a2a.A2AClient;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.eventmesh.protocol.a2a.A2AClient;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -34,16 +33,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * True client-server HTTP integration test.
@@ -116,11 +116,11 @@ class A2AClientServerIntegrationTest {
         card.put("description", "A slow agent for testing");
 
         // Required fields for schema validation
-        java.util.List<Map<String, Object>> interfaces = new java.util.ArrayList<>();
         Map<String, Object> iface = new HashMap<>();
         iface.put("url", "http://localhost/a2a");
         iface.put("protocolBinding", "JSONRPC");
         iface.put("protocolVersion", "0.3");
+        java.util.List<Map<String, Object>> interfaces = new java.util.ArrayList<>();
         interfaces.add(iface);
         card.put("supportedInterfaces", interfaces);
 
@@ -132,12 +132,12 @@ class A2AClientServerIntegrationTest {
         card.put("defaultInputModes", java.util.Collections.singletonList("text/plain"));
         card.put("defaultOutputModes", java.util.Collections.singletonList("text/plain"));
 
-        java.util.List<Map<String, Object>> skills = new java.util.ArrayList<>();
         Map<String, Object> skill = new HashMap<>();
         skill.put("id", "slow-skill");
         skill.put("name", "Slow Skill");
         skill.put("description", "Does nothing");
         skill.put("tags", java.util.Collections.singletonList("test"));
+        java.util.List<Map<String, Object>> skills = new java.util.ArrayList<>();
         skills.add(skill);
         card.put("skills", skills);
 

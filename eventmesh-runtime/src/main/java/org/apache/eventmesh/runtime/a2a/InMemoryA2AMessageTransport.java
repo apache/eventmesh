@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.runtime.a2a;
 
-import java.util.ArrayList;
+import org.apache.eventmesh.protocol.a2a.A2AMessageTransport;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.eventmesh.protocol.a2a.A2AMessageTransport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -22,21 +22,18 @@ import org.apache.eventmesh.protocol.a2a.A2AProtocolConstants;
 import org.apache.eventmesh.protocol.a2a.A2ATopicFactory;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -412,6 +409,9 @@ public class A2AGatewayService {
         }
     }
 
+    /**
+     * Callback interface for task status change notifications.
+     */
     @FunctionalInterface
     public interface StatusSubscriber {
         void onStatus(String taskId, String state, String data);
