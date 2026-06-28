@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>Flow:
  * <pre>
- *   Client --HTTP--> Gateway Server --InMemory--> Weather Agent --> Gateway --> Client
+ *   Client -HTTP-&gt; Gateway Server -InMemory-&gt; Weather Agent -&gt; Gateway -&gt; Client
  * </pre>
  */
 @Slf4j
