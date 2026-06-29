@@ -85,7 +85,7 @@ graph TD
 
 ### 3.2 Component Design (`eventmesh-protocol-a2a`)
 
-The core logic resides in the `eventmesh-protocol-plugin` module.
+The core protocol logic resides in the `eventmesh-protocol-plugin` module.
 
 *   **`EnhancedA2AProtocolAdaptor`**: The central brain of the protocol.
     *   **Intelligent Parsing**: Automatically detects message format (MCP vs. Raw CloudEvent).
@@ -93,8 +93,107 @@ The core logic resides in the `eventmesh-protocol-plugin` module.
     *   **Semantic Mapping**: Transforms JSON-RPC methods and IDs into CloudEvent attributes.
 *   **`A2AProtocolConstants`**: Defines standard operations like `task/get`, `message/sendStream`.
 *   **`JsonRpc*` Models**: Strictly typed POJOs for JSON-RPC 2.0 compliance.
+*   **`AgentCard` / `AgentSkill` / `AgentInterface`**: Agent capability discovery models.
+*   **`A2ATopicFactory`**: Topic naming and parsing utility (request/response/status topics).
+*   **`A2AClient`**: Java SDK for agent developers — AgentCard registration, task submission (sync/async), task status query, heartbeat, and transport-based request handling. Returns typed `TaskResult` objects.
+*   **`A2AMessageTransport`**: Transport-agnostic pub/sub interface (InMemory implementation for dev/testing).
 
-### 3.3 Asynchronous RPC Mapping ( The "Async Bridge" )
+### 3.3 Gateway Runtime Architecture (`eventmesh-runtime`)
+
+The Gateway runtime provides a standalone HTTP server that bridges external clients to the A2A event bus.
+
+```mermaid
+graph TD
+    Client["Client / A2AClient SDK"] -- "HTTP REST" --> Server["A2AGatewayServer<br/>(Netty HTTP)"]
+    Server --> Handler["A2AGatewayHttpHandler"]
+    Handler --> GwService["A2AGatewayService"]
+    GwService --> Registry["TaskRegistry<br/>(state machine + TTL)"]
+    GwService --> Transport["InMemoryA2AMessageTransport"]
+    GwService --> PubSub["A2APublishSubscribeService<br/>(AgentCard discovery)"]
+    Transport -- "publish/subscribe" --> Agent["Target Agent"]
+    Agent -- "response event" --> Transport
+    Transport --> GwService
+
+    style Server fill:#f9f,stroke:#333,stroke-width:2px
+    style Registry fill:#cfc,stroke:#333
+    style Transport fill:#ccf,stroke:#333
+```
+
+#### Core Components
+
+| Component | Module | Responsibility |
+| :--- | :--- | :--- |
+| `A2AGatewayServer` | runtime | Standalone Netty HTTP server entry point. Pre-registers mock agents, wires all components. |
+| `A2AGatewayHttpHandler` | runtime | HTTP request router. Maps REST endpoints to service calls. Supports SSE streaming. |
+| `A2AGatewayService` | runtime | Core orchestration: task submission, response handling, status subscription, SSE push. |
+| `TaskRegistry` | runtime | In-memory task lifecycle state machine with TTL auto-cleanup. |
+| `A2APublishSubscribeService` | runtime | AgentCard registration, discovery, and heartbeat management. |
+| `InMemoryA2AMessageTransport` | runtime | In-memory pub/sub implementation (replaceable by EventMesh broker). |
+| `A2ACardHttpHandler` | runtime | AgentCard CRUD REST endpoints (`/a2a/cards/*`). |
+| `A2AClient` | protocol-a2a | Java SDK for agent developers (HTTP + transport). |
+
+#### Task Lifecycle State Machine
+
+```
+SUBMITTED → WORKING → COMPLETED
+                    ↘ FAILED
+                    ↘ CANCELLED
+```
+
+*   **TaskRegistry TTL Cleanup**: Terminal-state tasks (COMPLETED/FAILED/CANCELLED) are automatically removed after a configurable TTL (default: 5 minutes). A daemon `ScheduledExecutorService` runs cleanup every 60 seconds, preventing memory leaks from accumulated historical tasks.
+*   **Race Condition Prevention**: In `A2AGatewayService.submitTask()`, the pending future is registered (`pendingTasks.put()`) **before** `transport.publish()`. This ordering is critical because `InMemoryTransport` delivers messages synchronously — if publish happened first, `handleResponse()` could execute before `put()` and the future would never complete.
+
+#### REST API
+
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `POST` | `/a2a/tasks?mode=sync` | Submit task synchronously (wait for result, 30s timeout) |
+| `POST` | `/a2a/tasks?mode=async` | Submit task asynchronously (return taskId immediately) |
+| `GET` | `/a2a/tasks/{taskId}` | Get task status and result |
+| `DELETE` | `/a2a/tasks/{taskId}` | Cancel a task |
+| `GET` | `/a2a/tasks/{taskId}/wait` | Long-poll wait for task result (configurable timeout) |
+| `GET` | `/a2a/tasks/{taskId}/stream` | **SSE** stream of task status updates (`text/event-stream`) |
+| `GET` | `/a2a/agents` | List all registered agents |
+| `POST` | `/a2a/heartbeat` | Agent heartbeat (keeps AgentCard alive) |
+| `GET` | `/a2a/cards/list` | List all AgentCards |
+| `POST` | `/a2a/cards/card/{org}/{unit}/{agent}` | Register an AgentCard |
+
+#### SSE Streaming
+
+The `GET /a2a/tasks/{taskId}/stream` endpoint provides real-time task status updates via Server-Sent Events:
+
+1.  Client opens an HTTP connection with `Accept: text/event-stream`.
+2.  Server sends initial state immediately.
+3.  As task transitions (WORKING → COMPLETED/FAILED/CANCELLED), server pushes `data:` events.
+4.  On terminal state, server sends final event and closes the connection.
+
+The handler writes directly to the Netty channel (returns `null` to skip the default `writeAndFlush` path), using `DefaultHttpContent` chunks with `text/event-stream` content type.
+
+#### A2AClient SDK
+
+The `A2AClient` provides a typed Java API for agent developers:
+
+```java
+A2AClient client = A2AClient.builder()
+    .gatewayUrl("http://localhost:10105")
+    .namespace("global")
+    .agentName("my-agent")
+    .agentCard(card)
+    .heartbeatInterval(30_000)
+    .build();
+client.start();
+
+// Typed return: TaskResult instead of raw JSON
+TaskResult result = client.sendTaskSync("weather-agent", "Beijing", null);
+String taskId = client.sendTaskAsync("weather-agent", "Shanghai", null);
+TaskResult status = client.getTaskStatus(taskId);
+List<String> agents = client.listAgents();  // typed List<String>
+boolean ok = client.cancelTask(taskId);
+```
+
+`TaskResult` uses `@JsonAlias("result")` to handle the server's `result` field name while exposing a `data` property to callers.
+
+### 3.4 Asynchronous RPC Mapping ( The "Async Bridge" )
 
 To support MCP on an Event Bus, synchronous RPC concepts are mapped to asynchronous events:
 
@@ -133,6 +232,22 @@ To support MCP on an Event Bus, synchronous RPC concepts are mapped to asynchron
 #### C. Streaming Support
 *   **Operation**: `message/sendStream`
 *   **Mechanism**: Maps to `.stream` event type and preserves sequence order via `seq` extension attribute.
+
+#### D. SSE Task Streaming (Gateway)
+*   **Endpoint**: `GET /a2a/tasks/{taskId}/stream`
+*   **Mechanism**: Server-Sent Events (`text/event-stream`) pushes real-time task state transitions to the client.
+*   **Flow**: Initial state → WORKING updates → terminal state (COMPLETED/FAILED/CANCELLED) → connection close.
+*   **Implementation**: Handler writes `DefaultHttpContent` chunks directly to the Netty channel, bypassing the standard `FullHttpResponse` path.
+
+#### E. Task TTL Auto-Cleanup (Gateway)
+*   **Problem**: Completed/failed tasks accumulate in `TaskRegistry` indefinitely, causing memory leaks.
+*   **Solution**: A daemon `ScheduledExecutorService` (`a2a-task-ttl-cleanup` thread) runs every 60 seconds, removing terminal-state tasks older than the TTL (default: 5 minutes).
+*   **Configuration**: `TaskRegistry(taskTtlMs, cleanupIntervalMs)` constructor allows custom tuning.
+
+#### F. AgentCard Discovery & Heartbeat (Gateway)
+*   **Registration**: `POST /a2a/cards/card/{org}/{unit}/{agent}` registers an `AgentCard`.
+*   **Heartbeat**: `POST /a2a/heartbeat` refreshes the agent's last-seen timestamp. Cards expire after 60 seconds without heartbeat.
+*   **Discovery**: `GET /a2a/agents` returns all live agent cards.
 
 ## 5. Usage Examples
 
@@ -263,7 +378,101 @@ producer.publish(event);
 }
 ```
 
+### 5.3 Gateway REST API (HTTP)
+
+The A2A Gateway provides a REST API for external clients and non-Java agents.
+
+#### 5.3.1 Submit Task (Sync)
+
+```bash
+curl -X POST 'http://localhost:10105/a2a/tasks?mode=sync' \
+  -H 'Content-Type: application/json' \
+  -d '{"targetAgent":"weather-agent","message":"Beijing"}'
+```
+
+Response:
+```json
+{
+  "taskId": "task-a1b2c3d4",
+  "state": "COMPLETED",
+  "data": "The weather in Beijing is sunny, 25°C"
+}
+```
+
+#### 5.3.2 Submit Task (Async)
+
+```bash
+curl -X POST 'http://localhost:10105/a2a/tasks?mode=async' \
+  -H 'Content-Type: application/json' \
+  -d '{"targetAgent":"weather-agent","message":"Shanghai"}'
+```
+
+Response (HTTP 202):
+```json
+{
+  "taskId": "task-e5f6g7h8",
+  "status": "accepted",
+  "message": "Task submitted. Use GET /a2a/tasks/task-e5f6g7h8 to check status."
+}
+```
+
+#### 5.3.3 SSE Stream
+
+```bash
+curl -N http://localhost:10105/a2a/tasks/task-a1b2c3d4/stream
+```
+
+Response (`text/event-stream`):
+```
+data: {"taskId":"task-a1b2c3d4","state":"SUBMITTED"}
+
+data: {"taskId":"task-a1b2c3d4","state":"WORKING","data":"processing..."}
+
+data: {"taskId":"task-a1b2c3d4","state":"completed","data":"The weather in Beijing is sunny, 25°C"}
+```
+
+#### 5.3.4 List Agents
+
+```bash
+curl http://localhost:10105/a2a/agents
+```
+
+### 5.4 A2AClient SDK (Java)
+
+```java
+A2AClient client = A2AClient.builder()
+    .gatewayUrl("http://localhost:10105")
+    .namespace("global")
+    .agentName("my-agent")
+    .agentCard(card)
+    .heartbeatInterval(30_000)
+    .build();
+
+client.start();
+
+// Synchronous task (returns typed TaskResult)
+TaskResult result = client.sendTaskSync("weather-agent", "Beijing", null);
+
+// Asynchronous task (returns taskId immediately)
+String taskId = client.sendTaskAsync("weather-agent", "Shanghai", null);
+
+// Poll status
+TaskResult status = client.getTaskStatus(taskId);
+
+// Cancel
+boolean cancelled = client.cancelTask(taskId);
+
+// List registered agents (typed List<String>)
+List<String> agents = client.listAgents();
+
+client.shutdown();
+```
+
 ## 6. Future Roadmap
 
+*   **EventMesh Broker Integration**: Replace `InMemoryA2AMessageTransport` with the real EventMesh broker for production deployment.
 *   **Schema Registry**: Implement dynamic discovery of Agent capabilities via `methods/list`.
-*   **Sidecar Injection**: Fully integrate the adaptor into the EventMesh Sidecar.
+*   **Sidecar Injection**: Fully integrate the adaptor into the EventMesh Sidecar for non-Java agents (Python, Node.js).
+*   **WebSocket Streaming**: Extend SSE to bidirectional WebSocket for real-time agent-to-agent dialogue.
+*   **Task Persistence**: Persist `TaskRegistry` state to a durable store (Redis/DB) for crash recovery.
+*   **Authentication**: Add API key / JWT authentication to the Gateway REST API.

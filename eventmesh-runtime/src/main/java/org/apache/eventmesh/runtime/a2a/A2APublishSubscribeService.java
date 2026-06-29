@@ -24,9 +24,13 @@ import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -57,25 +61,100 @@ public class A2APublishSubscribeService {
 
     private AgentCardValidator cardValidator;
 
+    // TTL heartbeat configuration
+    private static final long DEFAULT_CARD_TTL_MS = 60_000L; // 60 seconds
+    private static final long DEFAULT_CLEANUP_INTERVAL_MS = 15_000L; // 15 seconds
+    private final long cardTtlMs;
+    private final long cleanupIntervalMs;
+    private ScheduledExecutorService cleanupExecutor;
+
     public A2APublishSubscribeService(EventMeshServer eventMeshServer) {
+        this(eventMeshServer, DEFAULT_CARD_TTL_MS, DEFAULT_CLEANUP_INTERVAL_MS);
+    }
+
+    public A2APublishSubscribeService(EventMeshServer eventMeshServer, long cardTtlMs, long cleanupIntervalMs) {
         this.eventMeshServer = eventMeshServer;
+        this.cardTtlMs = cardTtlMs;
+        this.cleanupIntervalMs = cleanupIntervalMs;
     }
 
     public void init() throws Exception {
         this.cardValidator = new AgentCardValidator(true);
-        log.info("A2APublishSubscribeService initialized with Agent Card Registry.");
+        log.info("A2APublishSubscribeService initialized with Agent Card Registry (TTL={}ms, cleanup={}ms).",
+            cardTtlMs, cleanupIntervalMs);
     }
 
     public void start() throws Exception {
         isStarted = true;
+        startCleanupScheduler();
         log.info("A2APublishSubscribeService started.");
     }
 
     public void shutdown() throws Exception {
         isStarted = false;
+        if (cleanupExecutor != null) {
+            cleanupExecutor.shutdownNow();
+            cleanupExecutor = null;
+        }
         cardRegistry.clear();
         agentStatusMap.clear();
         log.info("A2APublishSubscribeService shutdown.");
+    }
+
+    // -------------------------------------------------------------------------
+    // TTL Heartbeat Cleanup
+    // -------------------------------------------------------------------------
+
+    private void startCleanupScheduler() {
+        cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "a2a-card-ttl-cleanup");
+            t.setDaemon(true);
+            return t;
+        });
+        cleanupExecutor.scheduleAtFixedRate(this::cleanupExpiredCards,
+            cleanupIntervalMs, cleanupIntervalMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Removes AgentCards that have not been refreshed within the TTL window.
+     */
+    void cleanupExpiredCards() {
+        if (!isStarted) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        int removed = 0;
+        Iterator<Map.Entry<AgentIdentity, RegisteredCard>> it = cardRegistry.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<AgentIdentity, RegisteredCard> entry = it.next();
+            RegisteredCard rc = entry.getValue();
+            if (now - rc.lastHeartbeat > cardTtlMs) {
+                it.remove();
+                agentStatusMap.remove(entry.getKey().clientId());
+                removed++;
+                log.info("Agent card expired and removed: {} (lastHeartbeat={}ms ago)",
+                    entry.getKey().clientId(), now - rc.lastHeartbeat);
+            }
+        }
+        if (removed > 0) {
+            log.info("TTL cleanup removed {} expired agent card(s).", removed);
+        }
+    }
+
+    /**
+     * Refreshes the heartbeat timestamp for an agent card (agent calls this periodically).
+     */
+    public boolean heartbeat(AgentIdentity identity) {
+        if (!isStarted) {
+            throw new IllegalStateException("A2APublishSubscribeService is not started");
+        }
+        RegisteredCard rc = cardRegistry.get(identity);
+        if (rc == null) {
+            return false;
+        }
+        rc.lastHeartbeat = System.currentTimeMillis();
+        agentStatusMap.put(identity.clientId(), AgentStatus.ONLINE);
+        return true;
     }
 
     // =========================================================================
@@ -182,6 +261,24 @@ public class A2APublishSubscribeService {
         return listCards(null, null, null);
     }
 
+    /**
+     * Checks whether an agent with the given name is registered.
+     *
+     * @param agentName the agent name (or agentId segment) to look up
+     * @return true if a registered card's name matches
+     */
+    public boolean isAgentRegistered(String agentName) {
+        if (!isStarted || agentName == null) {
+            return false;
+        }
+        for (RegisteredCard rc : cardRegistry.values()) {
+            if (agentName.equals(rc.card.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // =========================================================================
     // Agent Status
     // =========================================================================
@@ -265,10 +362,12 @@ public class A2APublishSubscribeService {
 
         final AgentCard card;
         final long registeredAt;
+        volatile long lastHeartbeat;
 
         RegisteredCard(AgentCard card, long registeredAt) {
             this.card = card;
             this.registeredAt = registeredAt;
+            this.lastHeartbeat = registeredAt;
         }
     }
 
