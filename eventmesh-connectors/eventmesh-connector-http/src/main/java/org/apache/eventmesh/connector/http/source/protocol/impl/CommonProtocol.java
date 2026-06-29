@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.http.source.protocol.impl;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.http.source.data.CommonResponse;
 import org.apache.eventmesh.connector.http.source.data.WebhookRequest;
 import org.apache.eventmesh.connector.http.source.protocol.Protocol;
@@ -72,7 +71,6 @@ public class CommonProtocol implements Protocol {
             .handler(ctx -> {
                 // Get the payload
                 Object payload = ctx.body().asString(Constants.DEFAULT_CHARSET.toString());
-                payload = JsonUtils.parseObject(payload.toString(), String.class);
 
                 // Create and store the webhook request
                 Map<String, String> headerMap = ctx.request().headers().entries().stream()
