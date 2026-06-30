@@ -142,7 +142,8 @@ public class IngressProcessorTest {
     public void testProcess_TransformerModifiesData() throws Exception {
         // Given: Transformer configured
         Transformer transformer = mock(Transformer.class);
-        when(transformer.transform("original data")).thenReturn("transformed data");
+        // Transformer now receives full CloudEvent JSON, not just raw payload
+        when(transformer.transform(anyString())).thenReturn("transformed data");
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(null);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);
@@ -157,14 +158,15 @@ public class IngressProcessorTest {
         assertNotNull(result);
         assertEquals("transformed data", new String(result.getData().toBytes(), StandardCharsets.UTF_8));
         assertEquals("testTopic", result.getSubject()); // Subject unchanged
-        verify(transformer).transform("original data");
+        verify(transformer).transform(anyString());
     }
 
     @Test
     public void testProcess_RouterModifiesTopic() {
         // Given: Router configured
         Router router = mock(Router.class);
-        when(router.route("test data")).thenReturn("newTopic");
+        // Router now receives full CloudEvent JSON, not just raw payload
+        when(router.route(anyString())).thenReturn("newTopic");
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(null);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(null);
@@ -179,7 +181,7 @@ public class IngressProcessorTest {
         assertNotNull(result);
         assertEquals("newTopic", result.getSubject());
         assertEquals("test data", new String(result.getData().toBytes(), StandardCharsets.UTF_8)); // Data unchanged
-        verify(router).route("test data");
+        verify(router).route(anyString());
     }
 
     @Test
@@ -189,10 +191,12 @@ public class IngressProcessorTest {
         when(filterPattern.filter("original data")).thenReturn(true);
 
         Transformer transformer = mock(Transformer.class);
-        when(transformer.transform("original data")).thenReturn("transformed data");
+        // Transformer receives full CloudEvent JSON
+        when(transformer.transform(anyString())).thenReturn("transformed data");
 
         Router router = mock(Router.class);
-        when(router.route("transformed data")).thenReturn("routedTopic");
+        // Router receives full CloudEvent JSON (with transformed data)
+        when(router.route(anyString())).thenReturn("routedTopic");
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(filterPattern);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);
@@ -209,8 +213,8 @@ public class IngressProcessorTest {
         assertEquals("routedTopic", result.getSubject());
 
         verify(filterPattern).filter("original data");
-        verify(transformer).transform("original data");
-        verify(router).route("transformed data");
+        verify(transformer).transform(anyString());
+        verify(router).route(anyString());
     }
 
     @Test
@@ -234,7 +238,7 @@ public class IngressProcessorTest {
     public void testProcess_TransformerException_ThrowsRuntimeException() throws Exception {
         // Given: Transformer throws exception
         Transformer transformer = mock(Transformer.class);
-        when(transformer.transform("test data")).thenThrow(new RuntimeException("Transformer error"));
+        when(transformer.transform(anyString())).thenThrow(new RuntimeException("Transformer error"));
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(null);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);

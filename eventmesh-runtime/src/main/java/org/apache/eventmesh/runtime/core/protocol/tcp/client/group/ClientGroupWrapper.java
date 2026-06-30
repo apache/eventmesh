@@ -126,8 +126,8 @@ public class ClientGroupWrapper {
 
     private final MQProducerWrapper mqProducerWrapper;
 
-    private final IngressProcessor ingressProcessor;
-    private final EgressProcessor egressProcessor;
+    private IngressProcessor ingressProcessor;
+    private EgressProcessor egressProcessor;
 
     public ClientGroupWrapper(String sysId, String group,
         EventMeshTCPServer eventMeshTCPServer,
@@ -143,16 +143,10 @@ public class ClientGroupWrapper {
         this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
-        
-        this.ingressProcessor = new IngressProcessor(
-            eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
-            eventMeshTCPServer.getEventMeshServer().getTransformerEngine(),
-            eventMeshTCPServer.getEventMeshServer().getRouterEngine()
-        );
-        this.egressProcessor = new EgressProcessor(
-            eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
-            eventMeshTCPServer.getEventMeshServer().getTransformerEngine()
-        );
+
+        // Use shared Processor instances from EventMeshServer (single source of truth)
+        this.ingressProcessor = eventMeshTCPServer.getEventMeshServer().getIngressProcessor();
+        this.egressProcessor = eventMeshTCPServer.getEventMeshServer().getEgressProcessor();
     }
 
     public ConcurrentHashMap<String, Map<String, Session>> getTopic2sessionInGroupMapping() {

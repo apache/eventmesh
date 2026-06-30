@@ -229,6 +229,8 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
 
         // Apply Ingress Pipeline (Filter -> Transformer -> Router)
         String pipelineKey = producerGroup + "-" + topic;
+        // Save original event for span tracing before pipeline may nullify it
+        CloudEvent originalEvent = event;
         event = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor().process(event, pipelineKey);
 
         if (event == null) {
@@ -249,7 +251,8 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
             });
             MESSAGE_LOGGER.info("message|eventMesh2mq|REQ|ASYNC|filtered|topic={}|bizSeqNo={}|uniqueId={}",
                 topic, bizNo, uniqueId);
-            spanWithException(event, protocolVersion, EventMeshRetCode.SUCCESS);
+            // Use original event for span tracing since event is null after filtering
+            spanWithException(originalEvent, protocolVersion, EventMeshRetCode.SUCCESS);
             return;
         }
 
