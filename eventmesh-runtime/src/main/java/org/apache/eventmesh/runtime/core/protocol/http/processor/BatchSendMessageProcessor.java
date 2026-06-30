@@ -246,33 +246,8 @@ public class BatchSendMessageProcessor extends AbstractHttpRequestProcessor {
 
         if (httpConfiguration.isEventMeshServerBatchMsgBatchEnabled()) {
             for (List<CloudEvent> eventlist : topicBatchMessageMappings.values()) {
-                // Apply Ingress Pipeline to each event before aggregation
-                List<CloudEvent> processedEvents = new ArrayList<>();
-                for (CloudEvent ev : eventlist) {
-                    try {
-                        String pipelineKey = producerGroup + "-" + ev.getSubject();
-                        CloudEvent processed = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor()
-                            .process(ev, pipelineKey);
-                        if (processed != null) {
-                            processedEvents.add(processed);
-                        } else {
-                            batchResult.incrementFiltered();
-                            BATCH_MSG_LOGGER.info("Batch message filtered by pipeline: batchId={}, messageId={}",
-                                finalBatchId, ev.getId());
-                        }
-                    } catch (Exception e) {
-                        batchResult.incrementFailed(ev.getId());
-                        BATCH_MSG_LOGGER.error("Batch message pipeline exception: batchId={}, messageId={}",
-                            finalBatchId, ev.getId(), e);
-                    }
-                }
-
-                if (processedEvents.isEmpty()) {
-                    continue;
-                }
-
                 // TODO: Implementation in API. Consider whether to put it in the plug-in.
-                CloudEvent event = processedEvents.get(0);
+                CloudEvent event = null;
                 // TODO: Detect the maximum length of messages for different producers.
                 final SendMessageContext sendMessageContext = new SendMessageContext(finalBatchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {

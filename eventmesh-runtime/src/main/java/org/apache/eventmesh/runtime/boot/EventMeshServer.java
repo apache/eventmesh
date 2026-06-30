@@ -185,11 +185,9 @@ public class EventMeshServer {
         ingressProcessor = new org.apache.eventmesh.runtime.core.protocol.IngressProcessor(filterEngine, transformerEngine, routerEngine);
         egressProcessor = new org.apache.eventmesh.runtime.core.protocol.EgressProcessor(filterEngine, transformerEngine);
 
-        // a2a service init (conditional)
-        if (configuration.isEventMeshA2AEnable()) {
-            a2aPublishSubscribeService = new A2APublishSubscribeService(this);
-            a2aPublishSubscribeService.init();
-        }
+        // a2a service init
+        a2aPublishSubscribeService = new A2APublishSubscribeService(this);
+        a2aPublishSubscribeService.init();
 
         if (configuration.isEventMeshServerTraceEnable()) {
             trace.init();
@@ -260,9 +258,7 @@ public class EventMeshServer {
             eventMeshBootstrap.start();
         }
 
-        if (a2aPublishSubscribeService != null) {
-            a2aPublishSubscribeService.start();
-        }
+        a2aPublishSubscribeService.start();
         producerTopicManager.start();
 
         serviceState = ServiceState.RUNNING;

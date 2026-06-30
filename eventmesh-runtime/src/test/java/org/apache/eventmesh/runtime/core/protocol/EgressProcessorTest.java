@@ -134,8 +134,7 @@ public class EgressProcessorTest {
     public void testProcess_TransformerModifiesData() throws Exception {
         // Given: Transformer configured
         Transformer transformer = mock(Transformer.class);
-        // Transformer now receives full CloudEvent JSON, not just raw payload
-        when(transformer.transform(anyString())).thenReturn("transformed data");
+        when(transformer.transform("original data")).thenReturn("transformed data");
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(null);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);
@@ -149,7 +148,7 @@ public class EgressProcessorTest {
         assertNotNull(result);
         assertEquals("transformed data", new String(result.getData().toBytes(), StandardCharsets.UTF_8));
         assertEquals("testTopic", result.getSubject()); // Subject unchanged (no router in egress)
-        verify(transformer).transform(anyString());
+        verify(transformer).transform("original data");
     }
 
     @Test
@@ -159,8 +158,7 @@ public class EgressProcessorTest {
         when(filterPattern.filter("original data")).thenReturn(true);
 
         Transformer transformer = mock(Transformer.class);
-        // Transformer receives full CloudEvent JSON
-        when(transformer.transform(anyString())).thenReturn("transformed data");
+        when(transformer.transform("original data")).thenReturn("transformed data");
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(filterPattern);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);
@@ -176,7 +174,7 @@ public class EgressProcessorTest {
         assertEquals("testTopic", result.getSubject()); // Subject unchanged
 
         verify(filterPattern).filter("original data");
-        verify(transformer).transform(anyString());
+        verify(transformer).transform("original data");
     }
 
     @Test
@@ -200,7 +198,7 @@ public class EgressProcessorTest {
     public void testProcess_TransformerException_ThrowsRuntimeException() throws Exception {
         // Given: Transformer throws exception
         Transformer transformer = mock(Transformer.class);
-        when(transformer.transform(anyString())).thenThrow(new RuntimeException("Transformer error"));
+        when(transformer.transform("test data")).thenThrow(new RuntimeException("Transformer error"));
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(null);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);
@@ -269,8 +267,7 @@ public class EgressProcessorTest {
         when(filterPattern.filter("input data")).thenReturn(true);
 
         Transformer transformer = mock(Transformer.class);
-        // Transformer receives full CloudEvent JSON
-        when(transformer.transform(anyString())).thenReturn("output data");
+        when(transformer.transform("input data")).thenReturn("output data");
 
         when(filterEngine.getFilterPattern(PIPELINE_KEY)).thenReturn(filterPattern);
         when(transformerEngine.getTransformer(PIPELINE_KEY)).thenReturn(transformer);
@@ -286,6 +283,6 @@ public class EgressProcessorTest {
 
         // Verify execution order: filter first, then transformer
         verify(filterPattern).filter("input data");
-        verify(transformer).transform(anyString()); // Transformer gets full CloudEvent JSON
+        verify(transformer).transform("input data"); // Transformer gets original data, not filtered result
     }
 }

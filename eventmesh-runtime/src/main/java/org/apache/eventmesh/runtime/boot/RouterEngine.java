@@ -28,9 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -47,8 +44,6 @@ public class RouterEngine {
 
     private MetaServiceListener metaServiceListener;
 
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-
     public RouterEngine(MetaStorage metaStorage) {
         this.metaStorage = metaStorage;
     }
@@ -61,18 +56,6 @@ public class RouterEngine {
             updateRouterMap(key, value);
         }
         metaServiceListener = this::updateRouterMap;
-
-        // Periodic scan to ensure router listeners are registered for all known groups
-        // This compensates for any missed listener registrations (same pattern as FilterEngine/TransformerEngine)
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            for (String routerKey : routerMap.keySet()) {
-                // routerKey format: group-topic, extract group part
-                String group = StringUtils.substringBefore(routerKey, "-");
-                if (StringUtils.isNotBlank(group)) {
-                    addRouterListener(group);
-                }
-            }
-        }, 10_000, 5_000, TimeUnit.MILLISECONDS);
     }
 
     private void updateRouterMap(String key, String value) {

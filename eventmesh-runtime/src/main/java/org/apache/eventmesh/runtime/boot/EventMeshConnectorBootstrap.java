@@ -62,6 +62,8 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
     private Connector connector;
     private MQProducerWrapper producer;
     private MQConsumerWrapper consumer;
+    private IngressProcessor ingressProcessor;
+    private EgressProcessor egressProcessor;
 
     public EventMeshConnectorBootstrap(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;
@@ -73,10 +75,16 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
         if (!config.isEventMeshConnectorPluginEnable()) {
             return;
         }
-
-        // Use shared Processor instances from EventMeshServer (single source of truth)
-        IngressProcessor ingressProcessor = eventMeshServer.getIngressProcessor();
-        EgressProcessor egressProcessor = eventMeshServer.getEgressProcessor();
+        
+        this.ingressProcessor = new IngressProcessor(
+            eventMeshServer.getFilterEngine(),
+            eventMeshServer.getTransformerEngine(),
+            eventMeshServer.getRouterEngine()
+        );
+        this.egressProcessor = new EgressProcessor(
+            eventMeshServer.getFilterEngine(),
+            eventMeshServer.getTransformerEngine()
+        );
 
         String type = config.getEventMeshConnectorPluginType();
         String name = config.getEventMeshConnectorPluginName();
@@ -146,24 +154,19 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
             
             ((SourceWorker) worker).setPublisher((event, callback) -> {
                 try {
-                    // Save original metadata before pipeline may nullify the event
-                    final String originalTopic = event.getSubject();
-                    final String originalMessageId = event.getId();
-
                     // 1. Ingress Pipeline
-                    String pipelineKey = sourceConfig.getPubSubConfig().getGroup() + "-" + originalTopic;
+                    String pipelineKey = sourceConfig.getPubSubConfig().getGroup() + "-" + event.getSubject();
                     event = ingressProcessor.process(event, pipelineKey);
-
+                    
                     if (event == null) {
-                        // Message filtered by pipeline - return success with original metadata
                         SendResult result = new SendResult();
-                        result.setTopic(originalTopic);
-                        result.setMessageId(originalMessageId);
+                        result.setTopic(event.getSubject());
+                        result.setMessageId(event.getId());
                         callback.onSuccess(result);
                         return;
                     }
 
-                    // 2. Storage
+                    // 4. Storage
                     final CloudEvent finalEvent = event;
                     producer.send(finalEvent, new SendCallback() {
                         @Override

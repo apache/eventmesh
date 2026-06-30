@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
-import org.apache.eventmesh.function.filter.pattern.Pattern;
-import org.apache.eventmesh.function.transformer.Transformer;
 import org.apache.eventmesh.runtime.boot.FilterEngine;
 import org.apache.eventmesh.runtime.boot.TransformerEngine;
 
@@ -42,8 +40,8 @@ public class EgressProcessor {
 
     public CloudEvent process(CloudEvent event, String pipelineKey) {
         try {
-            // 1. Filter - operates on raw payload data
-            Pattern filterPattern = filterEngine.getFilterPattern(pipelineKey);
+            // 1. Filter
+            org.apache.eventmesh.function.filter.pattern.Pattern filterPattern = filterEngine.getFilterPattern(pipelineKey);
             if (filterPattern != null && event.getData() != null) {
                 String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
                 if (!filterPattern.filter(content)) {
@@ -52,11 +50,11 @@ public class EgressProcessor {
                 }
             }
 
-            // 2. Transformer - receives full CloudEvent JSON for field-based transformation
-            Transformer transformer = transformerEngine.getTransformer(pipelineKey);
+            // 2. Transformer
+            org.apache.eventmesh.function.transformer.Transformer transformer = transformerEngine.getTransformer(pipelineKey);
             if (transformer != null && event.getData() != null) {
-                String eventJson = IngressProcessor.cloudEventToJson(event);
-                String transformedContent = transformer.transform(eventJson);
+                String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+                String transformedContent = transformer.transform(content);
                 event = CloudEventBuilder.from(event)
                         .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
                         .build();

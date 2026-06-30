@@ -225,13 +225,11 @@ public class SourceWorker implements ConnectorWorker {
                                 latch.countDown();
                             }
                         });
-                        if (!latch.await(10, TimeUnit.SECONDS)) {
-                            throw new EventMeshException("Timed out waiting for publisher to acknowledge message.");
-                        }
+                        latch.await();
                         if (exception[0] != null) {
                             throw exception[0];
                         }
-
+                        
                         this.source.commit(connectRecord);
                         submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
                         callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));

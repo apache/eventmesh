@@ -127,9 +127,6 @@ public class CommonConfiguration {
     @ConfigField(field = "connector.plugin.enabled")
     private boolean eventMeshConnectorPluginEnable = false;
 
-    @ConfigField(field = "a2a.enabled")
-    private boolean eventMeshA2AEnable = false;
-
     public void reload() {
 
         if (Strings.isNullOrEmpty(this.eventMeshServerIp)) {
