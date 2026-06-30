@@ -67,8 +67,14 @@ public class A2ACardHttpHandler {
         String uri = httpRequest.uri();
         QueryStringDecoder decoder = new QueryStringDecoder(uri);
         String path = decoder.path();
+        HttpMethod method = httpRequest.method();
 
         try {
+            // Handle CORS preflight
+            if (method == HttpMethod.OPTIONS) {
+                return corsResponse();
+            }
+
             if (path.equals(PATH_LIST)) {
                 return handleList(decoder);
             }
@@ -84,11 +90,11 @@ public class A2ACardHttpHandler {
                 String unitId = segments[1];
                 String agentId = segments[2];
 
-                if (httpRequest.method() == HttpMethod.GET) {
+                if (method == HttpMethod.GET) {
                     return handleGet(orgId, unitId, agentId);
-                } else if (httpRequest.method() == HttpMethod.POST) {
+                } else if (method == HttpMethod.POST) {
                     return handleRegister(orgId, unitId, agentId, httpRequest);
-                } else if (httpRequest.method() == HttpMethod.DELETE) {
+                } else if (method == HttpMethod.DELETE) {
                     return handleDelete(orgId, unitId, agentId);
                 }
             }
@@ -191,6 +197,22 @@ public class A2ACardHttpHandler {
             HttpVersion.HTTP_1_1, status, content);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8");
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
+        setCorsHeaders(response);
         return response;
+    }
+
+    private FullHttpResponse corsResponse() {
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(
+            HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        setCorsHeaders(response);
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
+        return response;
+    }
+
+    private void setCorsHeaders(FullHttpResponse response) {
+        response.headers().set("Access-Control-Allow-Origin", "*");
+        response.headers().set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+        response.headers().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.headers().set("Access-Control-Max-Age", "3600");
     }
 }
