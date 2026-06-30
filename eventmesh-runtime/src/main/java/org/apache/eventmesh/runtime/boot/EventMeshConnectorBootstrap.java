@@ -154,14 +154,19 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
             
             ((SourceWorker) worker).setPublisher((event, callback) -> {
                 try {
+                    // Save original metadata before pipeline may nullify the event
+                    final String originalTopic = event.getSubject();
+                    final String originalMessageId = event.getId();
+
                     // 1. Ingress Pipeline
-                    String pipelineKey = sourceConfig.getPubSubConfig().getGroup() + "-" + event.getSubject();
+                    String pipelineKey = sourceConfig.getPubSubConfig().getGroup() + "-" + originalTopic;
                     event = ingressProcessor.process(event, pipelineKey);
-                    
+
                     if (event == null) {
+                        // Message filtered by pipeline - return success with original metadata
                         SendResult result = new SendResult();
-                        result.setTopic(event.getSubject());
-                        result.setMessageId(event.getId());
+                        result.setTopic(originalTopic);
+                        result.setMessageId(originalMessageId);
                         callback.onSuccess(result);
                         return;
                     }
