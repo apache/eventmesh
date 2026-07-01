@@ -17,7 +17,13 @@
 
 package org.apache.eventmesh.runtime.connector;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.Properties;
+import java.util.LinkedHashMap;
 
 /**
  * Per-connector configuration model.
@@ -67,5 +73,69 @@ public class ConnectorConfig {
     public String toString() {
         return "ConnectorConfig{name=" + connectorName + ", type=" + type
             + ", poolMode=" + poolMode + ", threads=" + threadPoolSize + '}';
+    }
+
+    // ---- factory methods ----
+
+    /**
+     * Parse a connector configuration from a .properties file.
+     *
+     * <p>Supported keys:
+     * <ul>
+     *   <li>{@code connector.name} (required)</li>
+     *   <li>{@code connector.type} — SOURCE or SINK (required)</li>
+     *   <li>{@code connector.pluginClass} (required)</li>
+     *   <li>{@code connector.poolMode} — DEDICATED or SHARED</li>
+     *   <li>{@code connector.threadPoolSize}</li>
+     *   <li>{@code connector.maxRetry}</li>
+     *   <li>All other keys go into {@code props}</li>
+     * </ul>
+     */
+    public static ConnectorConfig fromPropertiesFile(Path file) throws IOException {
+        Properties p = new Properties();
+        try (InputStream is = Files.newInputStream(file)) {
+            p.load(is);
+        }
+
+        ConnectorConfig config = new ConnectorConfig();
+        config.setConnectorName(getRequired(p, "connector.name"));
+        config.setType(ConnectorType.valueOf(
+            getRequired(p, "connector.type").toUpperCase()));
+        config.setPluginClass(getRequired(p, "connector.pluginClass"));
+
+        String poolMode = p.getProperty("connector.poolMode");
+        if (poolMode != null) {
+            config.setPoolMode(ThreadPoolMode.valueOf(poolMode.toUpperCase()));
+        }
+
+        String threadSize = p.getProperty("connector.threadPoolSize");
+        if (threadSize != null) {
+            config.setThreadPoolSize(Integer.parseInt(threadSize));
+        }
+
+        String maxRetry = p.getProperty("connector.maxRetry");
+        if (maxRetry != null) {
+            config.setMaxRetry(Integer.parseInt(maxRetry));
+        }
+
+        // Remaining properties → connector-specific config
+        Map<String, String> props = new LinkedHashMap<>();
+        for (String key : p.stringPropertyNames()) {
+            if (!key.startsWith("connector.")) {
+                props.put(key, p.getProperty(key));
+            }
+        }
+        config.setProps(props);
+
+        return config;
+    }
+
+    private static String getRequired(Properties p, String key) {
+        String value = p.getProperty(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "Missing required property: " + key);
+        }
+        return value.trim();
     }
 }

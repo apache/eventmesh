@@ -28,6 +28,8 @@ import org.apache.eventmesh.runtime.connector.ConnectorStatus;
 import org.apache.eventmesh.runtime.connector.JobInfo;
 import org.apache.eventmesh.runtime.connector.OffsetStore;
 import org.apache.eventmesh.runtime.admin.AdminClient;
+import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
+import org.apache.eventmesh.runtime.monitor.ConnectorMonitor;
 import org.apache.eventmesh.runtime.admin.JobApiController;
 
 import java.net.URI;
@@ -448,8 +450,17 @@ class PipelineAndConnectorTest {
 
     @Test
     void adminClient_shouldRecordMetrics() {
-        AdminClient client = new AdminClient("localhost:50051");
-        client.recordMetric("pipeline.latency", 12.5);
-        assertEquals(12.5, client.getMetrics().get("pipeline.latency"));
+        PipelineMonitor pipelineMonitor = new PipelineMonitor();
+        ConnectorMonitor connectorMonitor = new ConnectorMonitor();
+        AdminClient client = new AdminClient("localhost:50051", false, null,
+            null, pipelineMonitor, connectorMonitor);
+        // Record metrics through the monitors
+        pipelineMonitor.recordIngress(12L);
+        pipelineMonitor.recordIngressFiltered();
+        connectorMonitor.recordSourceRecords("test-connector", 100);
+        
+        Map<String, Object> metrics = client.collectMetrics();
+        assertTrue(metrics.containsKey("pipeline.ingress.total.count"));
+        assertTrue(metrics.containsKey("connector.test-connector.source.total"));
     }
 }

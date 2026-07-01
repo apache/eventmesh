@@ -127,6 +127,104 @@ public class CommonConfiguration {
     @ConfigField(field = "connector.plugin.enabled")
     private boolean eventMeshConnectorPluginEnable = false;
 
+    // ========== Unified Runtime: Connector Runtime ==========
+
+    @ConfigField(field = "connector.plugin.config.path")
+    private String eventMeshConnectorConfigPath = "conf/connectors/";
+
+    @ConfigField(field = "connector.thread.pool.size")
+    private int eventMeshConnectorThreadPoolSize = 4;
+
+    @ConfigField(field = "connector.max.retry")
+    private int eventMeshConnectorMaxRetry = 3;
+
+    @ConfigField(field = "connector.max.count")
+    private int eventMeshConnectorMaxCount = 16;
+
+    @ConfigField(field = "connector.pool.mode")
+    private String eventMeshConnectorPoolMode = "DEDICATED";
+
+    @ConfigField(field = "connector.verify.enabled")
+    private boolean eventMeshConnectorVerifyEnabled = false;
+
+    // ========== Unified Runtime: Admin Server ==========
+
+    @ConfigField(field = "admin.server.enabled")
+    private boolean eventMeshAdminServerEnabled = true;
+
+    @ConfigField(field = "admin.server.required")
+    private boolean eventMeshAdminServerRequired = false;
+
+    @ConfigField(field = "admin.server.address")
+    private String eventMeshAdminServerAddress = "localhost:50051";
+
+    @ConfigField(field = "admin.server.registry.type")
+    private String eventMeshAdminServerRegistryType = "static";
+
+    @ConfigField(field = "admin.server.heartbeat.interval.seconds")
+    private int eventMeshAdminHeartbeatIntervalSeconds = 5;
+
+    @ConfigField(field = "admin.server.monitor.report.interval.seconds")
+    private int eventMeshAdminMonitorReportIntervalSeconds = 30;
+
+    // ========== Unified Runtime: Offset Management ==========
+
+    @ConfigField(field = "offset.local.enabled")
+    private boolean eventMeshOffsetLocalEnabled = true;
+
+    @ConfigField(field = "offset.local.path")
+    private String eventMeshOffsetLocalPath = "data/offset/";
+
+    @ConfigField(field = "offset.remote.enabled")
+    private boolean eventMeshOffsetRemoteEnabled = false;
+
+    @ConfigField(field = "offset.remote.sync.interval.seconds")
+    private int eventMeshOffsetRemoteSyncIntervalSeconds = 60;
+
+    // ========== Unified Runtime: Pipeline ==========
+
+    @ConfigField(field = "pipeline.ingress.filters")
+    private String eventMeshPipelineIngressFilters = "auth,ratelimit,protocol";
+
+    @ConfigField(field = "pipeline.ingress.transformers")
+    private String eventMeshPipelineIngressTransformers = "protocol,enrichment";
+
+    @ConfigField(field = "pipeline.egress.filters")
+    private String eventMeshPipelineEgressFilters = "acl,sizelimit";
+
+    @ConfigField(field = "pipeline.egress.transformers")
+    private String eventMeshPipelineEgressTransformers = "protocol";
+
+    @ConfigField(field = "pipeline.dlq.enabled")
+    private boolean eventMeshPipelineDlqEnabled = true;
+
+    @ConfigField(field = "pipeline.dlq.topic")
+    private String eventMeshPipelineDlqTopic = "eventmesh-dlq";
+
+    // ========== Unified Runtime: A2A ==========
+
+    @ConfigField(field = "a2a.enabled")
+    private boolean eventMeshA2aEnabled = false;
+
+    @ConfigField(field = "a2a.gateway.port")
+    private int eventMeshA2aGatewayPort = 8080;
+
+    @ConfigField(field = "a2a.registry.ttl.seconds")
+    private int eventMeshA2aRegistryTtlSeconds = 30;
+
+    @ConfigField(field = "a2a.sse.max.connections")
+    private int eventMeshA2aSseMaxConnections = 1000;
+
+    // ========== Unified Runtime: FilePersistentOffsetStore ==========
+
+    @ConfigField(field = "file.offset.store.flush.interval.seconds")
+    private int eventMeshFileOffsetStoreFlushIntervalSeconds = 10;
+
+    // ========== Unified Runtime: Trace Context ==========
+
+    @ConfigField(field = "pipeline.trace.enabled")
+    private boolean eventMeshPipelineTraceEnabled = true;
+
     public void reload() {
 
         if (Strings.isNullOrEmpty(this.eventMeshServerIp)) {
