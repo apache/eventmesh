@@ -25,11 +25,10 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
     implementation 'io.opentelemetry:opentelemetry-semconv'
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-    testImplementation "org.mockito:mockito-core"
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
     testImplementation "org.mockito:mockito-inline"
 }

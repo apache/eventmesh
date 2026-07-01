@@ -18,16 +18,17 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import io.cloudevents.CloudEvent;
 
 public class HandleMsgContext {
+
     private final String msgRandomNo;
     private final SubscriptionMode subscriptionMode;
     private final EventMeshGrpcServer eventMeshGrpcServer;
@@ -41,8 +42,8 @@ public class HandleMsgContext {
     private final AbstractContext context;
 
     public HandleMsgContext(String consumerGroup, CloudEvent event, SubscriptionMode subscriptionMode, GrpcType grpcType,
-                            AbstractContext context, EventMeshGrpcServer eventMeshGrpcServer,
-                            EventMeshConsumer eventMeshConsumer, ConsumerGroupTopicConfig consumeTopicConfig) {
+        AbstractContext context, EventMeshGrpcServer eventMeshGrpcServer,
+        EventMeshConsumer eventMeshConsumer, ConsumerGroupTopicConfig consumeTopicConfig) {
         this.msgRandomNo = EventMeshUtil.buildPushMsgSeqNo();
         this.consumerGroup = consumerGroup;
         this.grpcType = grpcType;
@@ -89,7 +90,6 @@ public class HandleMsgContext {
     public GrpcType getGrpcType() {
         return grpcType;
     }
-
 
     @Override
     public String toString() {

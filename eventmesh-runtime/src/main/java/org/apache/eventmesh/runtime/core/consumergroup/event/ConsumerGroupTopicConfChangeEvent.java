@@ -19,23 +19,26 @@ package org.apache.eventmesh.runtime.core.consumergroup.event;
 
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 
+import lombok.Data;
+
+@Data
 public class ConsumerGroupTopicConfChangeEvent {
 
-    public ConsumerGroupTopicConfChangeAction action;
+    private ConsumerGroupTopicConfChangeAction action;
 
-    public String topic;
+    private String topic;
 
-    public String consumerGroup;
+    private String consumerGroup;
 
-    public ConsumerGroupTopicConf newTopicConf;
+    private ConsumerGroupTopicConf newTopicConf;
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("consumerGroupTopicConfChangeEvent={")
-                .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("topic=").append(topic).append(",")
-                .append("action=").append(action).append("}");
+            .append("consumerGroup=").append(consumerGroup).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("action=").append(action).append("}");
         return sb.toString();
     }
 

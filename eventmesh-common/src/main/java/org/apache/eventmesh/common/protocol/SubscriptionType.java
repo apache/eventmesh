@@ -18,6 +18,7 @@
 package org.apache.eventmesh.common.protocol;
 
 public enum SubscriptionType {
+
     /**
      * SYNC
      */
@@ -25,9 +26,14 @@ public enum SubscriptionType {
     /**
      * ASYNC
      */
-    ASYNC("ASYNC");
+    ASYNC("ASYNC"),
 
-    private String type;
+    /**
+     * UNRECOGNIZED
+     */
+    UNRECOGNIZED("UNRECOGNIZED");
+
+    private final String type;
 
     SubscriptionType(String type) {
         this.type = type;
@@ -37,7 +43,4 @@ public enum SubscriptionType {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 }

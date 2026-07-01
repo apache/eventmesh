@@ -24,6 +24,8 @@ import com.google.common.base.Objects;
 
 public class SubscriptionItem implements Serializable {
 
+    private static final long serialVersionUID = 171486618880705657L;
+
     private String topic;
 
     @JsonDeserialize(converter = SubscriptionModeConverter.class)
@@ -68,10 +70,10 @@ public class SubscriptionItem implements Serializable {
     @Override
     public String toString() {
         return "SubscriptionItem{"
-                + "topic=" + topic
-                + ", mode=" + mode
-                + ", type=" + type
-                + '}';
+            + "topic=" + topic
+            + ", mode=" + mode
+            + ", type=" + type
+            + '}';
     }
 
     @Override
@@ -91,5 +93,3 @@ public class SubscriptionItem implements Serializable {
         return Objects.hashCode(topic, mode, type);
     }
 }
-
-

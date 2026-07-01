@@ -19,6 +19,8 @@ package org.apache.eventmesh.api.exception;
 
 public class AuthException extends RuntimeException {
 
+    private static final long serialVersionUID = 7040545308620024091L;
+
     public AuthException(String message) {
         super(message);
     }

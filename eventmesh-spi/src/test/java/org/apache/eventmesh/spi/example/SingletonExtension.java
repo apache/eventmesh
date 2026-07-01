@@ -17,15 +17,13 @@
 
 package org.apache.eventmesh.spi.example;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SingletonExtension implements TestSingletonExtension {
-
-    private static final Logger logger = LoggerFactory.getLogger(SingletonExtension.class);
 
     @Override
     public void hello() {
-        logger.info("I am SingletonExtension");
+        log.info("I am SingletonExtension");
     }
 }

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Licensed to Apache Software Foundation (ASF) under one or more contributor
 # license agreements. See the NOTICE file distributed with
@@ -21,24 +21,30 @@
 # Java Environment Setting
 #===========================================================================================
 set -e
-#Server configuration may be inconsistent, add these configurations to avoid garbled code problems
+# Server configuration may be inconsistent, add these configurations to avoid garbled code problems
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-TMP_JAVA_HOME="/nemo/jdk1.8.0_152"
+TMP_JAVA_HOME="/customize/your/java/home/here"
 
-#detect operating system.
+# Detect operating system.
 OS=$(uname)
 
-function is_java8 {
+function is_java8_or_11 {
         local _java="$1"
         [[ -x "$_java" ]] || return 1
-        [[ "$("$_java" -version 2>&1)" =~ 'java version "1.8' || "$("$_java" -version 2>&1)" =~ 'openjdk version "1.8' ]] || return 2
+        [[ "$("$_java" -version 2>&1)" =~ 'java version "1.8' || "$("$_java" -version 2>&1)" =~ 'openjdk version "1.8' || "$("$_java" -version 2>&1)" =~ 'java version "11' || "$("$_java" -version 2>&1)" =~ 'openjdk version "11' ]] || return 2
         return 0
 }
 
-#0(not running),  1(is running)
+function extract_java_version {
+    local _java="$1"
+    local version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F '.' '{if ($1 == 1 && $2 == 8) print "8"; else if ($1 == 11) print "11"; else print "unknown"}')
+    echo "$version"
+}
+
+# 0(not running),  1(is running)
 #function is_proxyRunning {
 #        local _pid="$1"
 #        local pid=`ps ax | grep -i 'org.apache.eventmesh.runtime.boot.EventMeshStartup' |grep java | grep -v grep | awk '{print $1}'|grep $_pid`
@@ -53,6 +59,13 @@ function get_pid {
 	local ppid=""
 	if [ -f ${EVENTMESH_HOME}/bin/pid.file ]; then
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
+		# If the process does not exist, it indicates that the previous process terminated abnormally.
+    if [ ! -d /proc/$ppid ]; then
+      # Remove the residual file.
+      rm ${EVENTMESH_HOME}/bin/pid.file
+      echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
+      ppid=""
+    fi
 	else
 		if [[ $OS =~ Msys ]]; then
 			# There is a Bug on Msys that may not be able to kill the identified process
@@ -61,40 +74,45 @@ function get_pid {
 			# Known problem: grep Java may not be able to accurately identify Java processes
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
-			# It is required to identify the process as accurately as possible on Linux
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+		  if [ $DOCKER ]; then
+		    # No need to exclude root user in Docker containers.
+		    ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | awk -F ' ' {'print $2'})
+		  else
+        # It is required to identify the process as accurately as possible on Linux.
+        ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" | awk -F ' ' {'print $2'})
+      fi
 		fi
 	fi
 	echo "$ppid";
 }
 
+#===========================================================================================
+# Locate Java Executable
+#===========================================================================================
 
-if [[ -d "$TMP_JAVA_HOME" ]] && is_java8 "$TMP_JAVA_HOME/bin/java"; then
+if [[ -d "$TMP_JAVA_HOME" ]] && is_java8_or_11 "$TMP_JAVA_HOME/bin/java"; then
         JAVA="$TMP_JAVA_HOME/bin/java"
-elif [[ -d "$JAVA_HOME" ]] && is_java8 "$JAVA_HOME/bin/java"; then
+        JAVA_VERSION=$(extract_java_version "$TMP_JAVA_HOME/bin/java")
+elif [[ -d "$JAVA_HOME" ]] && is_java8_or_11 "$JAVA_HOME/bin/java"; then
         JAVA="$JAVA_HOME/bin/java"
-elif  is_java8 "/nemo/jdk8/bin/java"; then
-    JAVA="/nemo/jdk8/bin/java";
-elif  is_java8 "/nemo/jdk1.8/bin/java"; then
-    JAVA="/nemo/jdk1.8/bin/java";
-elif  is_java8 "/nemo/jdk/bin/java"; then
-    JAVA="/nemo/jdk/bin/java";
-elif is_java8 "$(which java)"; then
+        JAVA_VERSION=$(extract_java_version "$JAVA_HOME/bin/java")
+elif is_java8_or_11 "$(which java)"; then
         JAVA="$(which java)"
+        JAVA_VERSION=$(extract_java_version "$(which java)")
 else
-        echo -e "ERROR\t java(1.8) not found, operation abort."
+        echo -e "ERROR\t Java 8 or 11 not found, operation abort."
         exit 9;
 fi
 
-echo "eventmesh use java location= "$JAVA
+echo "EventMesh using Java version: $JAVA_VERSION, path: $JAVA"
 
-EVENTMESH_HOME=`cd $(dirname $0)/.. && pwd`
-
+EVENTMESH_HOME=$(cd "$(dirname "$0")/.." && pwd)
 export EVENTMESH_HOME
 
-export EVENTMESH_LOG_HOME=${EVENTMESH_HOME}/logs
+EVENTMESH_LOG_HOME="${EVENTMESH_HOME}/logs"
+export EVENTMESH_LOG_HOME
 
-echo "EVENTMESH_HOME : ${EVENTMESH_HOME}, EVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
+echo -e "EVENTMESH_HOME : ${EVENTMESH_HOME}\nEVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
 
 function make_logs_dir {
         if [ ! -e "${EVENTMESH_LOG_HOME}" ]; then mkdir -p "${EVENTMESH_LOG_HOME}"; fi
@@ -102,7 +120,7 @@ function make_logs_dir {
 
 error_exit ()
 {
-    echo "ERROR: $1 !!"
+    echo -e "ERROR\t $1 !!"
     exit 1
 }
 
@@ -116,12 +134,23 @@ export JAVA_HOME
 #elif [ $1 = "dev" ]; then JAVA_OPT="${JAVA_OPT} -server -Xms128M -Xmx256M -Xmn128m -XX:SurvivorRatio=4"
 #fi
 
+GC_LOG_FILE="${EVENTMESH_LOG_HOME}/eventmesh_gc_%p.log"
+
 #JAVA_OPT="${JAVA_OPT} -server -Xms2048M -Xmx4096M -Xmn2048m -XX:SurvivorRatio=4"
 JAVA_OPT=`cat ${EVENTMESH_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
-JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${EVENTMESH_HOME}/logs/eventmesh_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
-JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${EVENTMESH_HOME}/logs -XX:ErrorFile=${EVENTMESH_HOME}/logs/hs_err_%p.log"
-JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
+JAVA_OPT="${JAVA_OPT} -verbose:gc"
+if [[ "$JAVA_VERSION" == "8" ]]; then
+    # Set JAVA_OPT for Java 8
+    JAVA_OPT="${JAVA_OPT} -Xloggc:${GC_LOG_FILE} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
+    JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
+elif [[ "$JAVA_VERSION" == "11" ]]; then
+    # Set JAVA_OPT for Java 11
+    XLOG_PARAM="time,level,tags:filecount=5,filesize=30m"
+    JAVA_OPT="${JAVA_OPT} -Xlog:gc*:${GC_LOG_FILE}:${XLOG_PARAM}"
+    JAVA_OPT="${JAVA_OPT} -Xlog:safepoint:${GC_LOG_FILE}:${XLOG_PARAM} -Xlog:ergo*=debug:${GC_LOG_FILE}:${XLOG_PARAM}"
+fi
+JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${EVENTMESH_LOG_HOME} -XX:ErrorFile=${EVENTMESH_LOG_HOME}/hs_err_%p.log"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
 JAVA_OPT="${JAVA_OPT} -XX:MaxDirectMemorySize=8G"
@@ -148,22 +177,24 @@ JAVA_OPT="${JAVA_OPT} -DeventMeshPluginDir=${EVENTMESH_HOME}/plugin"
 #fi
 
 pid=$(get_pid)
-if [ -n "$pid" ];then
-	echo -e "ERROR\t the server is already running (pid=$pid), there is no need to execute start.sh again."
-	exit 9;
+if [[ $pid == "ERROR"* ]]; then
+  echo -e "${pid}"
+  exit 9
+fi
+if [ -n "$pid" ]; then
+	echo -e "ERROR\t The server is already running (pid=$pid), there is no need to execute start.sh again."
+	exit 9
 fi
 
 make_logs_dir
 
-echo "using jdk[$JAVA]" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
-
+echo "Using Java version: $JAVA_VERSION, path: $JAVA" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 
 EVENTMESH_MAIN=org.apache.eventmesh.runtime.boot.EventMeshStartup
-if [ $DOCKER ]
-then
+if [ $DOCKER ]; then
 	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 else
 	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out 2>&1 &
-echo $!>pid.file
+echo $!>${EVENTMESH_HOME}/bin/pid.file
 fi
 exit 0

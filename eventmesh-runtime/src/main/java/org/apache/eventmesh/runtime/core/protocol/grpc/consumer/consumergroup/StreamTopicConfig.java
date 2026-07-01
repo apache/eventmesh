@@ -17,74 +17,80 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class StreamTopicConfig extends ConsumerGroupTopicConfig {
-    private final Logger logger = LoggerFactory.getLogger(StreamTopicConfig.class);
 
     /**
-     * Key: IDC
-     * Value: list of emitters with Client_IP:port
+     * Key: IDC Value: list of emitters with Client_IP:port
      */
-    private final Map<String, Map<String, EventEmitter<SimpleMessage>>> idcEmitterMap = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap = new ConcurrentHashMap<>();
 
     /**
-     * Key: IDC
-     * Value: list of emitters
+     * Key: IDC Value: list of emitters
      */
-    private Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters = new ConcurrentHashMap<>();
+    private Map<String, List<EventEmitter<CloudEvent>>> idcEmitters = new ConcurrentHashMap<>();
 
-    private List<EventEmitter<SimpleMessage>> totalEmitters = new LinkedList<>();
+    private List<EventEmitter<CloudEvent>> totalEmitters = new ArrayList<>();
 
-    public StreamTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode) {
+    public StreamTopicConfig(final String consumerGroup, final String topic, final SubscriptionMode subscriptionMode) {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
     }
 
-    @Override
-    public synchronized void registerClient(ConsumerGroupClient client) {
-        if (!client.getGrpcType().equals(grpcType)) {
-            logger.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
-                client.getGrpcType(), grpcType, client.toString());
-            return;
-        }
-        String idc = client.getIdc();
-        String clientIp = client.getIp();
-        String clientPid = client.getPid();
-        EventEmitter<SimpleMessage> emitter = client.getEventEmitter();
-        Map<String, EventEmitter<SimpleMessage>> emitters = idcEmitterMap.computeIfAbsent(idc, k -> new HashMap<>());
-        emitters.put(clientIp + ":" + clientPid, emitter);
-
-        idcEmitters = buildIdcEmitter();
-        totalEmitters = buildTotalEmitter();
+    private String concatKey(String ip, String pid) {
+        return ip.concat(":").concat(pid);
     }
 
     @Override
-    public void deregisterClient(ConsumerGroupClient client) {
-        String idc = client.getIdc();
-        String clientIp = client.getIp();
-        String clientPid = client.getPid();
+    public synchronized void registerClient(final ConsumerGroupClient client) {
+        Objects.requireNonNull(client, "ConsumerGroupClient can not be null");
 
-        Map<String, EventEmitter<SimpleMessage>> emitters = idcEmitterMap.get(idc);
-        if (emitters == null) {
+        if (client.getGrpcType() != grpcType) {
+            log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}", client.getGrpcType(), grpcType, client);
             return;
         }
+
+        idcEmitterMap.computeIfAbsent(client.getIdc(), k -> new HashMap<>())
+            .put(concatKey(client.getIp(), client.getPid()), client.getEventEmitter());
+
+        idcEmitters = buildIdcEmitter(idcEmitterMap);
+        totalEmitters = buildTotalEmitter(idcEmitters);
+    }
+
+    @Override
+    public void deregisterClient(final ConsumerGroupClient client) {
+        final String idc = client.getIdc();
+        final String clientIp = client.getIp();
+        final String clientPid = client.getPid();
+
+        final Map<String, EventEmitter<CloudEvent>> emitters = idcEmitterMap.get(idc);
+        if (MapUtils.isEmpty(emitters)) {
+            return;
+        }
+
         emitters.remove(clientIp + ":" + clientPid);
-        if (emitters.size() == 0) {
+        if (emitters.isEmpty()) {
             idcEmitterMap.remove(idc);
         }
-        idcEmitters = buildIdcEmitter();
-        totalEmitters = buildTotalEmitter();
+
+        idcEmitters = buildIdcEmitter(idcEmitterMap);
+        totalEmitters = buildTotalEmitter(idcEmitters);
     }
 
     @Override
@@ -99,44 +105,29 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
             + ",topic=" + topic + "}";
     }
 
-    public String getConsumerGroup() {
-        return consumerGroup;
+    public Map<String, Map<String, EventEmitter<CloudEvent>>> getIdcEmitterMap() {
+        return idcEmitterMap;
     }
 
-    public String getTopic() {
-        return topic;
-    }
-
-    public SubscriptionMode getSubscriptionMode() {
-        return subscriptionMode;
-    }
-
-    public GrpcType getGrpcType() {
-        return grpcType;
-    }
-
-    public Map<String, List<EventEmitter<SimpleMessage>>> getIdcEmitters() {
+    public Map<String, List<EventEmitter<CloudEvent>>> getIdcEmitters() {
         return idcEmitters;
     }
 
-    public List<EventEmitter<SimpleMessage>> getTotalEmitters() {
+    public List<EventEmitter<CloudEvent>> getTotalEmitters() {
         return totalEmitters;
     }
 
-    private Map<String, List<EventEmitter<SimpleMessage>>> buildIdcEmitter() {
-        Map<String, List<EventEmitter<SimpleMessage>>> result = new HashMap<>();
-        for (Map.Entry<String, Map<String, EventEmitter<SimpleMessage>>> entry : idcEmitterMap.entrySet()) {
-            List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>(entry.getValue().values());
-            result.put(entry.getKey(), emitterList);
-        }
+    private static Map<String, List<EventEmitter<CloudEvent>>> buildIdcEmitter(
+        final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap) {
+        final Map<String, List<EventEmitter<CloudEvent>>> result = new HashMap<>();
+        idcEmitterMap.forEach((k, v) -> result.put(k, new LinkedList<>(v.values())));
         return result;
     }
 
-    private List<EventEmitter<SimpleMessage>> buildTotalEmitter() {
-        List<EventEmitter<SimpleMessage>> emitterList = new LinkedList<>();
-        for (List<EventEmitter<SimpleMessage>> emitters : idcEmitters.values()) {
-            emitterList.addAll(emitters);
-        }
+    private static List<EventEmitter<CloudEvent>> buildTotalEmitter(
+        final Map<String, List<EventEmitter<CloudEvent>>> idcEmitters) {
+        final List<EventEmitter<CloudEvent>> emitterList = new LinkedList<>();
+        idcEmitters.values().forEach(emitterList::addAll);
         return emitterList;
     }
 }

@@ -24,13 +24,17 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
+
 public class SessionContext {
 
     private Session session;
 
-    public ConcurrentHashMap<String, String> sendTopics = new ConcurrentHashMap<String, String>();
+    @Getter
+    private final ConcurrentHashMap<String, String> sendTopics = new ConcurrentHashMap<>(64);
 
-    public ConcurrentHashMap<String, SubscriptionItem> subscribeTopics = new ConcurrentHashMap<String, SubscriptionItem>();
+    @Getter
+    private final ConcurrentHashMap<String/* Topic */, SubscriptionItem> subscribeTopics = new ConcurrentHashMap<>(64);
 
     public long createTime = System.currentTimeMillis();
 
@@ -41,7 +45,7 @@ public class SessionContext {
     @Override
     public String toString() {
         return "SessionContext{subscribeTopics=" + subscribeTopics
-                + ",sendTopics=" + sendTopics.keySet()
-                + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
+            + ",sendTopics=" + sendTopics.keySet()
+            + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
     }
 }

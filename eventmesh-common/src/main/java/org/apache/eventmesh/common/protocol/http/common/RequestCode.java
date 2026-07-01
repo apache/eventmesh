@@ -19,6 +19,8 @@ package org.apache.eventmesh.common.protocol.http.common;
 
 public enum RequestCode {
 
+    UNKNOWN(0, "UNKNOWN"),
+
     MSG_BATCH_SEND(102, "SEND BATCH MSG"),
 
     MSG_BATCH_SEND_V2(107, "SEND BATCH MSG V2"),
@@ -47,9 +49,9 @@ public enum RequestCode {
 
     ADMIN_SHUTDOWN(601, "ADMIN SHUTDOWN");
 
-    private Integer requestCode;
+    private final Integer requestCode;
 
-    private String desc;
+    private final String desc;
 
     RequestCode(Integer requestCode, String desc) {
         this.requestCode = requestCode;
@@ -82,15 +84,8 @@ public enum RequestCode {
         return requestCode;
     }
 
-    public void setRequestCode(Integer requestCode) {
-        this.requestCode = requestCode;
-    }
-
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
 }

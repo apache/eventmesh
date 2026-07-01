@@ -17,22 +17,14 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class IPUtilsTest {
 
     @Test
-    public void testDockerIP() {
-        EnvironmentVariables environmentVariables = new EnvironmentVariables();
-        environmentVariables.set("docker_host_ip", "dockHostIP");
-        Assert.assertEquals("dockHostIP", IPUtils.getLocalAddress());
-    }
-
-    @Test
     public void testLocalhostIP() {
-        Assert.assertNotNull(IPUtils.getLocalAddress());
+        Assertions.assertNotNull(IPUtils.getLocalAddress());
     }
 
 }

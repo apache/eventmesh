@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.common.protocol.http.common;
 
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+
 public class ProtocolKey {
 
     public static final String REQUEST_CODE = "code";
@@ -29,27 +32,48 @@ public class ProtocolKey {
     public static final String PROTOCOL_VERSION = "protocolversion";
 
     public static final String PROTOCOL_DESC = "protocoldesc";
+    public static final String TOPIC = "topic";
 
     public static final String CONTENT_TYPE = "contenttype";
 
-    public static class ClientInstanceKey {
-        ////////////////////////////////////Protocol layer requester description///////////
-        public static final String ENV = "env";
-        public static final String IDC = "idc";
-        public static final String SYS = "sys";
-        public static final String PID = "pid";
-        public static final String IP = "ip";
-        public static final String USERNAME = "username";
-        public static final String PASSWD = "passwd";
-        public static final String BIZSEQNO = "bizseqno";
-        public static final String UNIQUEID = "uniqueid";
-        public static final String PRODUCERGROUP = "producergroup";
-        public static final String CONSUMERGROUP = "consumergroup";
+    public enum ClientInstanceKey {
+
+        //////////////////////////////////// Protocol layer requester description///////////
+        ENV("env", "env"),
+        IDC("idc", "idc"),
+        SYS("sys", "1234"),
+        PID("pid", ThreadUtils.getPID()),
+        IP("ip", IPUtils.getLocalAddress()),
+        USERNAME("username", "eventmesh"),
+        PASSWD("passwd", "pass"),
+        BIZSEQNO("bizseqno", "bizseqno"),
+        UNIQUEID("uniqueid", "uniqueid"),
+        PRODUCERGROUP("producergroup", "em-http-producer"),
+        CONSUMERGROUP("consumergroup", "em-http-consumer"),
+
+        TOKEN("token", "token");
+
+        private final String key;
+
+        private final Object value;
+
+        public String getKey() {
+            return key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        ClientInstanceKey(String key, Object value) {
+            this.key = key;
+            this.value = value;
+        }
     }
 
-
     public static class EventMeshInstanceKey {
-        ///////////////////////////////////////////////Protocol layer EventMesh description
+
+        /////////////////////////////////////////////// Protocol layer EventMesh description
         public static final String EVENTMESHCLUSTER = "eventmeshcluster";
         public static final String EVENTMESHIP = "eventmeship";
         public static final String EVENTMESHENV = "eventmeshenv";
@@ -57,14 +81,14 @@ public class ProtocolKey {
     }
 
     public static class CloudEventsKey {
+
         public static final String ID = "id";
         public static final String SOURCE = "source";
         public static final String SUBJECT = "subject";
         public static final String TYPE = "type";
     }
 
-
-    //return of CLIENT <-> EventMesh
+    // return of CLIENT <-> EventMesh
     public static final String RETCODE = "retCode";
     public static final String RETMSG = "retMsg";
     public static final String RESTIME = "resTime";

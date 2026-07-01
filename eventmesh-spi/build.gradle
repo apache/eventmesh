@@ -18,4 +18,10 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation "org.apache.commons:commons-collections4"
     testImplementation project(":eventmesh-common")
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }

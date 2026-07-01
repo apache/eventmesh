@@ -17,44 +17,44 @@
 
 package org.apache.eventmesh.acl.impl;
 
+import org.apache.eventmesh.api.acl.AclProperties;
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 
-import java.util.Properties;
-
 public class AclServiceImpl implements AclService {
+
     @Override
     public void init() throws AclException {
-        //TODO
+        // TODO
     }
 
     @Override
     public void start() throws AclException {
-        //TODO
+        // TODO
     }
 
     @Override
     public void shutdown() throws AclException {
-        //TODO
+        // TODO
     }
 
     @Override
-    public void doAclCheckInConnect(Properties aclProperties) throws AclException {
-        //TODO
+    public void doAclCheckInConnect(AclProperties aclProperties) throws AclException {
+        // TODO
     }
 
     @Override
-    public void doAclCheckInHeartbeat(Properties aclProperties) throws AclException {
-        //TODO
+    public void doAclCheckInHeartbeat(AclProperties aclProperties) throws AclException {
+        // TODO
     }
 
     @Override
-    public void doAclCheckInSend(Properties aclProperties) throws AclException {
-        //TODO
+    public void doAclCheckInSend(AclProperties aclProperties) throws AclException {
+        // TODO
     }
 
     @Override
-    public void doAclCheckInReceive(Properties aclProperties) throws AclException {
-        //TODO
+    public void doAclCheckInReceive(AclProperties aclProperties) throws AclException {
+        // TODO
     }
 }

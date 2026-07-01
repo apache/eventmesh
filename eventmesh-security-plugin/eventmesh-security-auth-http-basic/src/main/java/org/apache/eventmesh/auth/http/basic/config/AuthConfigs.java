@@ -17,25 +17,18 @@
 
 package org.apache.eventmesh.auth.http.basic.config;
 
-import org.apache.eventmesh.api.common.ConfigurationWrapper;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.config.ConfigField;
 
-import java.util.Properties;
+import lombok.Data;
 
+@Data
+@Config(prefix = "auth", path = "classPath://auth-http-basic.properties")
 public class AuthConfigs {
 
-    public String username;
+    @ConfigField(field = "username")
+    private String username;
 
+    @ConfigField(field = "password")
     public String password;
-
-    private static AuthConfigs instance;
-
-    public static synchronized AuthConfigs getConfigs() {
-        if (instance == null) {
-            Properties props = ConfigurationWrapper.getConfig("auth-http-basic.properties");
-            instance = new AuthConfigs();
-            instance.username = props.getProperty("auth.username");
-            instance.password = props.getProperty("auth.password");
-        }
-        return instance;
-    }
 }

@@ -20,34 +20,33 @@ package org.apache.eventmesh.common.loadbalance;
 import org.apache.eventmesh.common.exception.EventMeshException;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * This selector use the weighted random strategy to select from list.
- * If all the weights are same, it will randomly select one from list.
- * If the weights are different, it will select one by using RandomUtils.nextInt(0, w0 + w1 ... + wn)
+ * This selector use the weighted random strategy to select from list. If all the weights are same, it will randomly select one from list. If the
+ * weights are different, it will select one by using RandomUtils.nextInt(0, w0 + w1 ... + wn)
  *
  * @param <T> Target type
  */
 public class WeightRandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 
-    private final List<Weight<T>> clusterGroup;
+    private final transient List<Weight<T>> clusterGroup;
 
-    private final int totalWeight;
+    private final transient int totalWeight;
 
-    private boolean sameWeightGroup = true;
+    private transient boolean sameWeightGroup = true;
 
     public WeightRandomLoadBalanceSelector(List<Weight<T>> clusterGroup) throws EventMeshException {
         if (CollectionUtils.isEmpty(clusterGroup)) {
             throw new EventMeshException("clusterGroup can not be empty");
         }
         int totalWeight = 0;
-        int firstWeight = clusterGroup.get(0).getWeight();
+        int firstWeight = clusterGroup.get(0).getValue();
         for (Weight<T> weight : clusterGroup) {
-            totalWeight += weight.getWeight();
-            if (sameWeightGroup && firstWeight != weight.getWeight()) {
+            totalWeight += weight.getValue();
+            if (sameWeightGroup && firstWeight != weight.getValue()) {
                 sameWeightGroup = false;
             }
         }
@@ -58,16 +57,17 @@ public class WeightRandomLoadBalanceSelector<T> implements LoadBalanceSelector<T
     @Override
     public T select() {
         if (!sameWeightGroup) {
-            int targetWeight = RandomUtils.nextInt(0, totalWeight);
+            int targetWeight = ThreadLocalRandom.current().nextInt(totalWeight);
             for (Weight<T> weight : clusterGroup) {
-                targetWeight -= weight.getWeight();
+                targetWeight -= weight.getValue();
                 if (targetWeight < 0) {
                     return weight.getTarget();
                 }
             }
         }
+
         int length = clusterGroup.size();
-        return clusterGroup.get(RandomUtils.nextInt(0, length)).getTarget();
+        return clusterGroup.get(ThreadLocalRandom.current().nextInt(length)).getTarget();
     }
 
     @Override

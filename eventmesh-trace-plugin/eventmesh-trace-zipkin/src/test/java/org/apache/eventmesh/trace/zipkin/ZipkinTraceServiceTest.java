@@ -17,12 +17,15 @@
 
 package org.apache.eventmesh.trace.zipkin;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.apache.eventmesh.common.utils.ReflectUtils;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -31,25 +34,35 @@ public class ZipkinTraceServiceTest {
 
     @Test
     public void testInit() {
-        ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
+        ZipkinTraceService zipkinTraceService =
+            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
 
-        Assert.assertNotNull(zipkinTraceService.sdkTracerProvider);
-        Assert.assertNotNull(zipkinTraceService.openTelemetry);
-        Assert.assertNotNull(zipkinTraceService.shutdownHook);
+        Assertions.assertNotNull(zipkinTraceService.getSdkTracerProvider());
+        Assertions.assertNotNull(zipkinTraceService.getShutdownHook());
 
         IllegalArgumentException illegalArgumentException =
-            assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.shutdownHook));
-        Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
+            assertThrows(IllegalArgumentException.class,
+                () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.getShutdownHook()));
+        Assertions.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
     public void testShutdown() throws Exception {
-        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
-        ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
+        ZipkinTraceService zipkinTraceService =
+            (ZipkinTraceService) TracePluginFactory.getEventMeshTraceService("zipkin");
         zipkinTraceService.init();
-        Field sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
+        Field sdkTracerProviderField = null;
+        try {
+            sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
+        } catch (NoSuchFieldException e) {
+            sdkTracerProviderField = ReflectUtils.lookUpFieldByParentClass(ZipkinTraceService.class, "sdkTracerProvider");
+            if (sdkTracerProviderField == null) {
+                throw e;
+            }
+        }
         sdkTracerProviderField.setAccessible(true);
+        SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         sdkTracerProviderField.set(zipkinTraceService, mockSdkTracerProvider);
 
         zipkinTraceService.shutdown();

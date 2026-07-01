@@ -1,0 +1,44 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "monthly"
+    ignore:
+      - dependency-name: "*"
+        update-types: [ "version-update:semver-major", "version-update:semver-patch" ]
+      - dependency-name: "software.amazon.awssdk:s3"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "com.aliyun:dingtalk"
+        update-types: [ "version-update:semver-patch" ]
+  - package-ecosystem: "gomod"
+    directory: "eventmesh-sdks/eventmesh-sdk-go"
+    # Disabled temporarily since the Go SDK is not integrated with CI
+    open-pull-requests-limit: 0
+    schedule:
+      interval: "monthly"
+    ignore:
+      - dependency-name: "*"
+        update-types: [ "version-update:semver-major", "version-update:semver-patch" ]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

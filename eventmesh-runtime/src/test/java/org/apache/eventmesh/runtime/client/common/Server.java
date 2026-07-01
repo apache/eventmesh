@@ -18,11 +18,10 @@
 package org.apache.eventmesh.runtime.client.common;
 
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 public class Server {
 
-    EventMeshServer server;
+    private transient EventMeshServer eventMeshServer;
 
     static {
         System.setProperty("proxy.home", "E:\\projects\\external-1\\proxy");
@@ -32,14 +31,11 @@ public class Server {
     }
 
     public void startAccessServer() throws Exception {
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(null);
-        eventMeshHttpConfiguration.init();
-        server = new EventMeshServer(eventMeshHttpConfiguration, null, null);
-        server.init();
-        server.start();
+        eventMeshServer = new EventMeshServer();
+        eventMeshServer.start();
     }
 
     public void shutdownAccessServer() throws Exception {
-        server.shutdown();
+        eventMeshServer.shutdown();
     }
 }

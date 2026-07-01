@@ -19,5 +19,8 @@ package org.apache.eventmesh.protocol.meshmessage;
 
 public enum MeshMessageProtocolConstant {
     ;
+
     public static final String PROTOCOL_NAME = "eventmeshmessage";
+
+    public static final String PROTOCOL_KEY_CONTENT = "content";
 }

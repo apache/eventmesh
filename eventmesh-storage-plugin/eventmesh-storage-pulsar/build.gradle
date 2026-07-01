@@ -1,0 +1,54 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+dependencies {
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+
+    /*
+     * TODO: This is a shaded artifact that contains 20 MiB of external libraries. It could probably be replaced by:
+     *
+     *     implementation "org.apache.pulsar:pulsar-client-api:$pulsar_version"
+     *     runtimeOnly "org.apache.pulsar:pulsar-client-original:$pulsar_version"
+     *
+     * The exclusions can be removed after an upgrade of the transitive:
+     *
+     *     "org.apache.bookkeeper:bookkeeper"
+     *
+     * dependency to 4.15.4 or higher (used by Pulsar 2.11.2 or higher).
+     */
+    implementation('org.apache.pulsar:pulsar-client:2.11.4')  {
+        // Remove logging backend implementations
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    }
+
+    testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    testImplementation project(":eventmesh-common")
+
+    implementation 'io.cloudevents:cloudevents-json-jackson'
+
+    testImplementation 'io.cloudevents:cloudevents-json-jackson'
+
+    testImplementation "org.mockito:mockito-core"
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}

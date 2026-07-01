@@ -29,14 +29,19 @@ public enum RequestURI {
 
     SUBSCRIBE_REMOTE("/eventmesh/subscribe/remote", "SUBSCRIBE REMOTE"),
 
-    UNSUBSCRIBE_LOCAL("/eventmesh/unsubscribe/local", "SUBSCRIBE LOCAL"),
+    UNSUBSCRIBE_LOCAL("/eventmesh/unsubscribe/local", "UNSUBSCRIBE LOCAL"),
 
-    UNSUBSCRIBE_REMOTE("/eventmesh/unsubscribe/remote", "SUBSCRIBE REMOTE");
+    UNSUBSCRIBE_REMOTE("/eventmesh/unsubscribe/remote", "UNSUBSCRIBE REMOTE"),
 
+    CREATE_TOPIC("/eventmesh/topic/create", "CREATE TOPIC"),
 
-    private String requestURI;
+    DELETE_TOPIC("/eventmesh/topic/delete", "DELETE TOPIC"),
 
-    private String desc;
+    SUBSCRIPTION_QUERY("/eventmesh/subscrition/query", "SUBSCRIPTION QUERY");
+
+    private final String requestURI;
+
+    private final String desc;
 
     RequestURI(String requestURI, String desc) {
         this.requestURI = requestURI;
@@ -69,15 +74,8 @@ public enum RequestURI {
         return requestURI;
     }
 
-    public void setRequestURI(String requestURI) {
-        this.requestURI = requestURI;
-    }
-
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
 }

@@ -17,23 +17,49 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.apache.logging.log4j.util.ProcessIdUtil;
-
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public class ThreadUtils {
 
     private static volatile long currentPID = -1;
 
-    public static void randomSleep(int min, int max) throws Exception {
-        // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
-        int random = ThreadLocalRandom.current().nextInt(min, max + 1);
-        Thread.sleep(random);
-
+    public static void randomPause(long min, long max) {
+        randomPause(min, max, TimeUnit.MILLISECONDS);
     }
 
-    public static void randomSleep(int max) throws Exception {
-        randomSleep(1, max);
+    public static void randomPause(long min, long max, TimeUnit timeUnit) {
+        // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
+        try {
+            long timeout = ThreadLocalRandom.current().nextLong(min, max + 1);
+            timeUnit.sleep(timeout);
+        } catch (InterruptedException ignore) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void randomPause(long max) {
+        randomPause(1, max);
+    }
+
+    @Deprecated
+    public static void sleep(long timeout) {
+        sleep(timeout, TimeUnit.MILLISECONDS);
+    }
+
+    public static void sleep(long timeout, TimeUnit timeUnit) {
+        try {
+            sleepWithThrowException(timeout, timeUnit);
+        } catch (InterruptedException ignore) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void sleepWithThrowException(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        if (timeUnit == null) {
+            return;
+        }
+        timeUnit.sleep(timeout);
     }
 
     /**
@@ -45,7 +71,7 @@ public class ThreadUtils {
         if (currentPID == -1) {
             synchronized (ThreadUtils.class) {
                 if (currentPID == -1) {
-                    currentPID = Long.parseLong(ProcessIdUtil.getProcessId());
+                    currentPID = Long.parseLong(SystemUtils.getProcessId());
                 }
             }
         }

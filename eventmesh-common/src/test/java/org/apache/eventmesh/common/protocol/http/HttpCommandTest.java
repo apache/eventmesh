@@ -20,22 +20,23 @@ package org.apache.eventmesh.common.protocol.http;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HttpCommandTest {
 
     @Mock
@@ -46,7 +47,7 @@ public class HttpCommandTest {
 
     private HttpCommand httpCommand;
 
-    @Before
+    @BeforeEach
     public void before() {
         httpCommand = new HttpCommand("POST", "1.1", "200");
     }
@@ -57,36 +58,45 @@ public class HttpCommandTest {
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put("key1", "value1");
         when(header.toMap()).thenReturn(headerMap);
-        Assert.assertEquals("1.1", command.getHttpVersion());
-        Assert.assertEquals("POST", command.getHttpMethod());
-        Assert.assertEquals("200", command.getRequestCode());
-        Assert.assertEquals("value1", command.getHeader().toMap().get("key1"));
+        Assertions.assertEquals("1.1", command.getHttpVersion());
+        Assertions.assertEquals("POST", command.getHttpMethod());
+        Assertions.assertEquals("200", command.getRequestCode());
+        Assertions.assertEquals("value1", command.getHeader().toMap().get("key1"));
     }
 
     @Test
     public void testAbstractDesc() {
         HttpCommand command = httpCommand.createHttpCommandResponse(header, body);
         String desc = command.abstractDesc();
-        Assert.assertTrue(desc.startsWith("httpCommand"));
+        Assertions.assertTrue(desc.startsWith("httpCommand"));
     }
 
     @Test
     public void testSimpleDesc() {
         HttpCommand command = httpCommand.createHttpCommandResponse(header, body);
         String desc = command.simpleDesc();
-        Assert.assertTrue(desc.startsWith("httpCommand"));
+        Assertions.assertTrue(desc.startsWith("httpCommand"));
     }
 
     @Test
     public void testHttpResponse() throws Exception {
         HttpCommand command = httpCommand.createHttpCommandResponse(header, body);
         DefaultFullHttpResponse response = command.httpResponse();
-        Assert.assertEquals("keep-alive", response.headers().get(HttpHeaderNames.CONNECTION));
+        Assertions.assertEquals("keep-alive", response.headers().get(HttpHeaderNames.CONNECTION));
     }
 
     @Test
     public void testHttpResponseWithREQCmdType() throws Exception {
         DefaultFullHttpResponse response = httpCommand.httpResponse();
-        Assert.assertNull(response);
+        Assertions.assertNull(response);
+    }
+
+    @Test
+    public void testCreateHttpCommandResponse() {
+        HttpCommand command = new HttpCommand();
+        HttpCommand response = command.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals("0", response.getRequestCode());
+
     }
 }

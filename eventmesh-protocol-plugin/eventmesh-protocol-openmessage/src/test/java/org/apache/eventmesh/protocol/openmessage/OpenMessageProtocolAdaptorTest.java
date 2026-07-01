@@ -21,20 +21,19 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class OpenMessageProtocolAdaptorTest {
 
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(OpenMessageProtocolConstant.PROTOCOL_NAME);
+            ProtocolPluginFactory.getProtocolAdaptor(OpenMessageProtocolConstant.PROTOCOL_NAME);
 
-        Assert.assertNotNull(protocolAdaptor);
-        Assert.assertEquals(
-                OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
-        );
-        Assert.assertEquals(OpenMessageProtocolAdaptor.class, protocolAdaptor.getClass());
+        Assertions.assertNotNull(protocolAdaptor);
+        Assertions.assertEquals(
+            OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
+        Assertions.assertEquals(OpenMessageProtocolAdaptor.class, protocolAdaptor.getClass());
     }
 }

@@ -17,19 +17,17 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.runtime.trace.TraceUtils;
+import org.apache.eventmesh.runtime.util.TraceUtils;
+import org.apache.eventmesh.runtime.util.Utils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
@@ -39,7 +37,7 @@ import lombok.Getter;
 
 public class HTTPTrace {
 
-    public boolean useTrace;
+    public final boolean useTrace;
 
     public HTTPTrace(boolean useTrace) {
         this.useTrace = useTrace;
@@ -47,34 +45,21 @@ public class HTTPTrace {
 
     public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel, boolean traceEnabled) {
 
-        final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
+        final Map<String, Object> headerMap = Utils.parseHttpHeader(httpRequest);
         Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
             false);
         return new TraceOperation(span, null, traceEnabled);
-    }
-
-    private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
-        Map<String, Object> headerParam = new HashMap<>();
-        for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
-                continue;
-            }
-            headerParam.put(key, fullReq.headers().get(key));
-        }
-        return headerParam;
     }
 
     @AllArgsConstructor
     @Getter
     public class TraceOperation {
 
-        private Span span;
+        private final Span span;
 
         private TraceOperation childTraceOperation;
 
-        private boolean traceEnabled;
+        private final boolean traceEnabled;
 
         public void endTrace(CloudEvent ce) {
             if (!HTTPTrace.this.useTrace) {
@@ -96,7 +81,7 @@ public class HTTPTrace {
                 childTraceOperation.exceptionTrace(ex, map);
             }
             try (Scope ignored = span.makeCurrent()) {
-                TraceUtils.finishSpanWithException(span, map, ex.getMessage(), ex);
+                TraceUtils.finishSpanWithException(span, map, Objects.requireNonNull(ex).getMessage(), ex);
             }
         }
 

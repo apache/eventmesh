@@ -19,10 +19,10 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 
 import java.util.Set;
 
-
 import com.google.common.collect.Sets;
 
 public class ConsumerGroupTopicMetadata {
+
     /**
      * consumer group
      */
@@ -37,7 +37,6 @@ public class ConsumerGroupTopicMetadata {
      * ALL IDC URLs
      */
     private Set<String> urls = Sets.newConcurrentHashSet();
-
 
     public String getConsumerGroup() {
         return consumerGroup;

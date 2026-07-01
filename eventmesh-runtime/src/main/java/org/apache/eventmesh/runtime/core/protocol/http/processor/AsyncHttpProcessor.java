@@ -25,11 +25,12 @@ import io.netty.handler.codec.http.HttpResponse;
 /**
  * async http processor
  */
+
 public interface AsyncHttpProcessor extends HttpProcessor {
 
-    public default HttpResponse handler(HttpRequest httpRequest) {
+    default HttpResponse handler(HttpRequest httpRequest) {
         return null;
     }
 
-    public void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception;
+    void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception;
 }

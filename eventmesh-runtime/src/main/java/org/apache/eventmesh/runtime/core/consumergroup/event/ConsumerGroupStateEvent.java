@@ -19,21 +19,25 @@ package org.apache.eventmesh.runtime.core.consumergroup.event;
 
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 
+import lombok.Data;
+
+@Data
 public class ConsumerGroupStateEvent {
 
-    public String consumerGroup;
-    public ConsumerGroupStateAction action;
-    public ConsumerGroupConf consumerGroupConfig;
+    private String consumerGroup;
+
+    private ConsumerGroupStateAction action;
+
+    private ConsumerGroupConf consumerGroupConfig;
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("consumerGroupStateEvent={")
-                .append("consumerGroup=").append(consumerGroup)
-                .append(",action=").append(action).append("}");
+            .append("consumerGroup=").append(consumerGroup)
+            .append(",action=").append(action).append("}");
         return sb.toString();
     }
-
 
     public enum ConsumerGroupStateAction {
         NEW,

@@ -17,79 +17,34 @@
 
 package org.apache.eventmesh.http.demo.pub.cloudevents;
 
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.util.Utils;
+import org.apache.eventmesh.http.demo.HttpAbstractDemo;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AsyncPublishInstance {
+public class AsyncPublishInstance extends HttpAbstractDemo {
 
     public static final int MESSAGE_SIZE = 1;
 
     public static void main(String[] args) throws Exception {
 
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
-        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
-        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
-
-        // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-        String eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
-        if (StringUtils.isNotBlank(eventMeshIp) || StringUtils.isNotBlank(eventMeshHttpPort)) {
-            eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-        }
-
-        // Both the producer and consumer require an instance of EventMeshHttpClientConfig class
-        // that specifies the configuration of EventMesh HTTP client.
-        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-                .env("env")
-                .idc("idc")
-                .ip(IPUtils.getLocalAddress())
-                .sys("1234")
-                .pid(String.valueOf(ThreadUtils.getPID()))
-                .userName("eventmesh")
-                .password("pass")
-                .build();
-
-        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(
+            initEventMeshHttpClientConfig(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP))) {
             for (int i = 0; i < MESSAGE_SIZE; i++) {
                 Map<String, String> content = new HashMap<>();
                 content.put("content", "testAsyncMessage");
 
-                CloudEvent event = CloudEventBuilder.v1()
-                        .withId(UUID.randomUUID().toString())
-                        .withSubject(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
-                        .withSource(URI.create("/"))
-                        .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
-                        .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                        .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                        .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
-                        .build();
-                eventMeshHttpProducer.publish(event);
+                eventMeshHttpProducer.publish(buildCloudEvent(content));
                 log.info("publish event success content: {}", content);
             }
-            Thread.sleep(30000);
+            ThreadUtils.sleep(30, TimeUnit.SECONDS);
         }
     }
 }

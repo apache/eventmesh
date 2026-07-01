@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
-
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import java.util.Set;
@@ -26,12 +25,13 @@ import java.util.Set;
  * DownstreamDispatchStrategy
  */
 public interface DownstreamDispatchStrategy {
+
     /**
      * select a SESSION
      *
      * @param group
      * @param consumeSessions
-     * @return
+     * @return client session
      */
     Session select(String group, String topic, Set<Session> consumeSessions);
 }

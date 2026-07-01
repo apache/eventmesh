@@ -21,13 +21,21 @@ package org.apache.eventmesh.spi;
  * An Extension can be defined by extensionTypeName and extensionInstanceName
  */
 public enum EventMeshExtensionType {
+
     UNKNOWN("unknown"),
     CONNECTOR("connector"),
-    REGISTRY("registry"),
+    STORAGE("storage"),
+    META("metaStorage"),
+    REGISTRY("registryCenter"),
     SECURITY("security"),
     PROTOCOL("protocol"),
     METRICS("metrics"),
     TRACE("trace"),
+    JDBC_CDC_ENGINE("jdbc_cdc_engine"),
+    JDBC_SNAPSHOT_ENGINE("jdbc_snapshot_engine"),
+    JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
+    OFFSETMGMT("offsetMgmt"),
+    RETRY("retry"),
     ;
 
     private final String extensionTypeName;

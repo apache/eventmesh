@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.17.1'
-
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
 
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
@@ -28,51 +27,58 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
-    implementation 'com.github.seancfoley:ipaddress:5.3.3'
+    implementation "com.alibaba.fastjson2:fastjson2"
+
+    implementation 'com.github.seancfoley:ipaddress'
+
+    implementation "commons-io:commons-io"
+
+    implementation "commons-validator:commons-validator"
 
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
+    implementation project(":eventmesh-function:eventmesh-function-api")
+    implementation project(":eventmesh-function:eventmesh-function-filter")
+    implementation project(":eventmesh-function:eventmesh-function-transformer")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-standalone")
+    implementation project(":eventmesh-storage-plugin:eventmesh-storage-rocketmq")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
-
-
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
-
+    implementation project(":eventmesh-security-plugin:eventmesh-security-auth-token")
+    implementation project(":eventmesh-meta:eventmesh-meta-api")
+    implementation project(":eventmesh-meta:eventmesh-meta-nacos")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
-    implementation "io.grpc:grpc-core:${grpcVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-core"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // for debug only, can be removed
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-a2a")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
-    
-    implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
-    testImplementation "org.mockito:mockito-core"
+    implementation project(":eventmesh-retry:eventmesh-retry-api")
+
     testImplementation "org.mockito:mockito-inline"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+    testImplementation "commons-io:commons-io"
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }

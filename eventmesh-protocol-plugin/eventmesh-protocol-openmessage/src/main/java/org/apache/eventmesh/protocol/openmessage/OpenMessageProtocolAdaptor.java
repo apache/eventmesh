@@ -27,8 +27,7 @@ import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
 
 /**
- * OpenMessage protocol adaptor, used to transform protocol between
- * {@link CloudEvent} with {@link Message}.
+ * OpenMessage protocol adaptor, used to transform protocol between {@link CloudEvent} with {@link Message}.
  *
  * @since 1.3.0
  */

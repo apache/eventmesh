@@ -29,23 +29,16 @@ public enum OPStatus {
         this.desc = desc;
     }
 
-    private Integer code;
+    private final Integer code;
 
-    private String desc;
+    private final String desc;
 
     public Integer getCode() {
         return code;
-    }
-
-    public void setCode(Integer code) {
-        this.code = code;
     }
 
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
 }

@@ -22,27 +22,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class RandomLoadBalanceSelectorTest {
 
     private RandomLoadBalanceSelector<String> randomLoadBalanceSelector;
 
-    private Logger logger = LoggerFactory.getLogger(RandomLoadBalanceSelectorTest.class);
-
-    @Before
-    public void befor() {
+    @BeforeEach
+    public void before() {
         List<String> address = new ArrayList<>();
         address.add("A");
         address.add("B");
         address.add("C");
         randomLoadBalanceSelector = new RandomLoadBalanceSelector<>(address);
     }
-
 
     @Test
     public void testSelect() {
@@ -51,13 +49,13 @@ public class RandomLoadBalanceSelectorTest {
             String select = randomLoadBalanceSelector.select();
             addressToNum.put(select, addressToNum.getOrDefault(select, 0) + 1);
         }
-        addressToNum.forEach((key, value) -> logger.info("{} : {}", key, value));
+        addressToNum.forEach((key, value) -> log.info("{} : {}", key, value));
         // just assert success if no exception
-        Assert.assertTrue(true);
+        Assertions.assertTrue(true);
     }
 
     @Test
     public void testGetType() {
-        Assert.assertEquals(LoadBalanceType.RANDOM, randomLoadBalanceSelector.getType());
+        Assertions.assertEquals(LoadBalanceType.RANDOM, randomLoadBalanceSelector.getType());
     }
 }

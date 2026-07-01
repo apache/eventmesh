@@ -21,19 +21,19 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class HttpProtocolAdaptorTest {
 
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(HttpProtocolConstant.PROTOCOL_NAME);
+            ProtocolPluginFactory.getProtocolAdaptor(HttpProtocolConstant.PROTOCOL_NAME);
 
-        Assert.assertNotNull(protocolAdaptor);
-        Assert.assertEquals(
-                HttpProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
-        Assert.assertEquals(HttpProtocolAdaptor.class, protocolAdaptor.getClass());
+        Assertions.assertNotNull(protocolAdaptor);
+        Assertions.assertEquals(
+            HttpProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
+        Assertions.assertEquals(HttpProtocolAdaptor.class, protocolAdaptor.getClass());
     }
 }

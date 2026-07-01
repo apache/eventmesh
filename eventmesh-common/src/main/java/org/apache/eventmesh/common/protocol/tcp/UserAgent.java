@@ -35,6 +35,7 @@ public class UserAgent {
     private String version;
     private String username;
     private String password;
+    private String token;
     private String idc;
     private String group;
     private String purpose;
@@ -45,7 +46,7 @@ public class UserAgent {
     }
 
     public UserAgent(String env, String subsystem, String path, int pid, String host, int port, String version,
-                     String username, String password, String idc, String group, String purpose, int unack) {
+        String username, String password, String token, String idc, String group, String purpose, int unack) {
         this.env = env;
         this.subsystem = subsystem;
         this.path = path;
@@ -55,6 +56,7 @@ public class UserAgent {
         this.version = version;
         this.username = username;
         this.password = password;
+        this.token = token;
         this.idc = idc;
         this.group = group;
         this.purpose = purpose;
@@ -64,9 +66,9 @@ public class UserAgent {
     @Override
     public String toString() {
         return String.format(
-                "UserAgent{env='%s', subsystem='%s', group='%s', path='%s', pid=%d, host='%s',"
+            "UserAgent{env='%s', subsystem='%s', group='%s', path='%s', pid=%d, host='%s',"
                 + " port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
-                env, subsystem, group, path, pid, host, port, version, idc, purpose, unack);
+            env, subsystem, group, path, pid, host, port, version, idc, purpose, unack);
     }
 
     @Override
@@ -101,7 +103,6 @@ public class UserAgent {
             return false;
         }
 
-
         if (!Objects.equals(path, userAgent.path)) {
             return false;
         }
@@ -126,6 +127,10 @@ public class UserAgent {
             return false;
         }
 
+        if (!Objects.equals(token, userAgent.token)) {
+            return false;
+        }
+
         if (!Objects.equals(env, userAgent.env)) {
             return false;
         }
@@ -145,6 +150,7 @@ public class UserAgent {
         result = 31 * result + (version != null ? version.hashCode() : 0);
         result = 31 * result + (username != null ? username.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (token != null ? token.hashCode() : 0);
         result = 31 * result + (idc != null ? idc.hashCode() : 0);
         result = 31 * result + (env != null ? env.hashCode() : 0);
         result = 31 * result + unack;

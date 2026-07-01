@@ -17,15 +17,13 @@
 
 package org.apache.eventmesh.spi.example;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PrototypeExtension implements TestPrototypeExtension {
-
-    private static final Logger logger = LoggerFactory.getLogger(PrototypeExtension.class);
 
     @Override
     public void hello() {
-        logger.info("I am PrototypeExtension");
+        log.info("I am PrototypeExtension");
     }
 }

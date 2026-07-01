@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Licensed to Apache Software Foundation (ASF) under one or more contributor
 # license agreements. See the NOTICE file distributed with
@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-#detect operating system.
+# Detect operating system
 OS=$(uname)
 
 EVENTMESH_HOME=`cd $(dirname $0)/.. && pwd`
@@ -28,6 +28,13 @@ function get_pid {
 	local ppid=""
 	if [ -f ${EVENTMESH_HOME}/bin/pid.file ]; then
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
+    # If the process does not exist, it indicates that the previous process terminated abnormally.
+    if [ ! -d /proc/$ppid ]; then
+      # Remove the residual file and return an error status.
+      rm ${EVENTMESH_HOME}/bin/pid.file
+      echo -e "ERROR\t EventMesh process had already terminated unexpectedly before, please check log output."
+      ppid=""
+    fi
 	else
 		if [[ $OS =~ Msys ]]; then
 			# There is a Bug on Msys that may not be able to kill the identified process
@@ -44,20 +51,24 @@ function get_pid {
 }
 
 pid=$(get_pid)
+if [[ $pid == "ERROR"* ]]; then
+  echo -e "${pid}"
+  exit 9
+fi
 if [ -z "$pid" ];then
-	echo -e "No eventmesh running.."
-	exit 0;
+	echo -e "ERROR\t No EventMesh server running."
+	exit 9
 fi
 
 kill ${pid}
-echo "Send shutdown request to eventmesh(${pid}) OK"
+echo "Send shutdown request to EventMesh(${pid}) OK"
 
 [[ $OS =~ Msys ]] && PS_PARAM=" -W "
 stop_timeout=60
 for no in $(seq 1 $stop_timeout); do
 	if ps $PS_PARAM -p "$pid" 2>&1 > /dev/null; then
 		if [ $no -lt $stop_timeout ]; then
-			echo "[$no] shutdown server ..."
+			echo "[$no] server shutting down ..."
 			sleep 1
 			continue
 		fi

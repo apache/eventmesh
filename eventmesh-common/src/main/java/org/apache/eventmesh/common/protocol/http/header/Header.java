@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.header;
 
-
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.RegRequestHeader;

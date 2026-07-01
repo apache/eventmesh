@@ -22,17 +22,20 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3'
     implementation 'com.google.guava:guava'
 
-    // todo：Can we remove some dependency?
-    implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
     implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
     implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
-    implementation 'io.prometheus:simpleclient'
-    implementation 'io.prometheus:simpleclient_httpserver'
+    implementation 'io.opentelemetry:opentelemetry-semconv'
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.assertj:assertj-core"
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }

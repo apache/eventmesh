@@ -24,8 +24,8 @@ public enum StatusCode {
     EVENTMESH_REQUESTCODE_INVALID("2", "requestCode can't be null, or must be number, "),
     EVENTMESH_SEND_SYNC_MSG_ERR("3", "eventMesh send rr msg err, "),
     EVENTMESH_WAITING_RR_MSG_ERR("4", "eventMesh waiting rr msg err, "),
-    EVENTMESH_PROTOCOL_HEADER_ERR("6", "eventMesh protocol[header] err, "),
-    EVENTMESH_PROTOCOL_BODY_ERR("7", "eventMesh protocol[body] err, "),
+    EVENTMESH_PROTOCOL_HEADER_ERR("6", "eventMesh CloudEvent[header] err, "),
+    EVENTMESH_PROTOCOL_BODY_ERR("7", "eventMesh CloudEvent[body] err, "),
     EVENTMESH_STOP("8", "eventMesh will stop or had stopped, "),
     EVENTMESH_REJECT_BY_PROCESSOR_ERROR("9", "eventMesh reject by processor error, "),
     EVENTMESH_BATCH_PUBLISH_ERR("10", "eventMesh batch publish messages error, "),
@@ -41,11 +41,12 @@ public enum StatusCode {
     EVENTMESH_HEARTBEAT_ERR("19", "eventMesh heartbeat err"),
     EVENTMESH_ACL_ERR("20", "eventMesh acl err"),
     EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR("21", "eventMesh send message speed over the limit err."),
-    EVENTMESH_REQUEST_REPLY_MSG_ERR("22", "eventMesh request reply msg err, ");
+    EVENTMESH_REQUEST_REPLY_MSG_ERR("22", "eventMesh request reply msg err, "),
+    CLIENT_RESUBSCRIBE("30", "client needs to resubscribe.");
 
-    private String retCode;
+    private final String retCode;
 
-    private String errMsg;
+    private final String errMsg;
 
     StatusCode(String retCode, String errMsg) {
         this.retCode = retCode;
@@ -56,15 +57,8 @@ public enum StatusCode {
         return retCode;
     }
 
-    public void setRetCode(String retCode) {
-        this.retCode = retCode;
-    }
-
     public String getErrMsg() {
         return errMsg;
     }
 
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
 }

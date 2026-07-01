@@ -17,14 +17,9 @@
 
 package org.apache.eventmesh.grpc.sub.app.controller;
 
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.grpc.sub.app.service.SubService;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,11 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @RestController
@@ -47,28 +38,18 @@ import lombok.extern.slf4j.Slf4j;
 public class SubController {
 
     @Autowired
-    private SubService subService;
+    private transient SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String subTest(HttpServletRequest request) {
-        String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
-        String content = request.getParameter("content");
+    public String subTest(final HttpServletRequest request) {
+        final String content = request.getParameter("content");
         log.info("=======receive message======= {}", content);
-        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
-        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
-            String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
-
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(contentType)
-                .deserialize(content.getBytes(StandardCharsets.UTF_8));
-            String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("=======receive data======= {}", data);
-        }
 
         subService.consumeMessage(content);
 
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
-        return JsonUtils.serialize(map);
+        return JsonUtils.toJSONString(map);
     }
 
 }

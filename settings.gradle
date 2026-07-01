@@ -15,46 +15,120 @@
  * limitations under the License.
  */
 
-rootProject.name = 'incubator-eventmesh'
+plugins {
+    id 'com.gradle.develocity' version '3.18.2'
+    id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
+}
+
+def isCiServer = System.getenv().containsKey("CI")
+
+develocity {
+    server = "https://develocity.apache.org"
+    projectId = "eventmesh"
+    buildScan {
+        uploadInBackground = !isCiServer
+        publishing.onlyIf { it.isAuthenticated() }
+        obfuscation {
+            ipAddresses { addresses -> addresses.collect { address -> "0.0.0.0"} }
+        }
+    }
+}
+
+buildCache {
+    remote(develocity.buildCache) {
+        enabled = false
+    }
+}
+
+rootProject.name = 'eventmesh'
 String jdkVersion = "${jdk}"
 include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
+include 'eventmesh-sdks:eventmesh-sdk-java'
 include 'eventmesh-common'
 include 'eventmesh-starter'
 include 'eventmesh-examples'
 include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-connector-plugin:eventmesh-connector-standalone'
+
+include 'eventmesh-openconnect:eventmesh-openconnect-java'
+include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
+include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-admin'
+include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos'
+
+include 'eventmesh-connectors:eventmesh-connector-openfunction'
+include 'eventmesh-connectors:eventmesh-connector-rocketmq'
+include 'eventmesh-connectors:eventmesh-connector-rabbitmq'
+include 'eventmesh-connectors:eventmesh-connector-redis'
+include 'eventmesh-connectors:eventmesh-connector-mongodb'
+include 'eventmesh-connectors:eventmesh-connector-pulsar'
+include 'eventmesh-connectors:eventmesh-connector-kafka'
+include 'eventmesh-connectors:eventmesh-connector-s3'
+include 'eventmesh-connectors:eventmesh-connector-pravega'
+include 'eventmesh-connectors:eventmesh-connector-knative'
+include 'eventmesh-connectors:eventmesh-connector-jdbc'
+include 'eventmesh-connectors:eventmesh-connector-file'
+include 'eventmesh-connectors:eventmesh-connector-spring'
+include 'eventmesh-connectors:eventmesh-connector-prometheus'
+include 'eventmesh-connectors:eventmesh-connector-dingtalk'
+include 'eventmesh-connectors:eventmesh-connector-lark'
+include 'eventmesh-connectors:eventmesh-connector-wecom'
+include 'eventmesh-connectors:eventmesh-connector-slack'
+include 'eventmesh-connectors:eventmesh-connector-wechat'
+include 'eventmesh-connectors:eventmesh-connector-http'
+include 'eventmesh-connectors:eventmesh-connector-chatgpt'
+include 'eventmesh-connectors:eventmesh-connector-canal'
+include 'eventmesh-connectors:eventmesh-connector-mcp'
+
+include 'eventmesh-storage-plugin:eventmesh-storage-api'
+include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
+include 'eventmesh-storage-plugin:eventmesh-storage-kafka'
+include 'eventmesh-storage-plugin:eventmesh-storage-pulsar'
+include 'eventmesh-storage-plugin:eventmesh-storage-redis'
+include 'eventmesh-storage-plugin:eventmesh-storage-rocketmq'
+include 'eventmesh-storage-plugin:eventmesh-storage-rabbitmq'
+
+include 'eventmesh-security-plugin'
 include 'eventmesh-security-plugin:eventmesh-security-api'
 include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
-include 'eventmesh-registry-plugin:eventmesh-registry-nacos'
-include 'eventmesh-registry-plugin:eventmesh-registry-etcd'
-include 'eventmesh-registry-plugin:eventmesh-registry-consul'
-include 'eventmesh-admin'
+include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
+include 'eventmesh-security-plugin:eventmesh-security-auth-token'
+
+include 'eventmesh-meta:eventmesh-meta-api'
+include 'eventmesh-meta:eventmesh-meta-nacos'
+include 'eventmesh-meta:eventmesh-meta-etcd'
+include 'eventmesh-meta:eventmesh-meta-consul'
+include 'eventmesh-meta:eventmesh-meta-zookeeper'
+include 'eventmesh-meta:eventmesh-meta-raft'
+
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-http'
-include 'eventmesh-admin:eventmesh-admin-rocketmq'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpcmessage'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-a2a'
+
 include 'eventmesh-metrics-plugin'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-api'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-prometheus'
 
-include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
-
 include 'eventmesh-trace-plugin'
 include 'eventmesh-trace-plugin:eventmesh-trace-api'
 include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
+include 'eventmesh-trace-plugin:eventmesh-trace-pinpoint'
+include 'eventmesh-trace-plugin:eventmesh-trace-jaeger'
 
+include 'eventmesh-retry'
+include 'eventmesh-retry:eventmesh-retry-api'
+include 'eventmesh-retry:eventmesh-retry-rocketmq'
+include 'eventmesh-runtime-v2'
+include 'eventmesh-admin-server'
+include 'eventmesh-registry'
+include 'eventmesh-registry:eventmesh-registry-api'
+include 'eventmesh-registry:eventmesh-registry-nacos'
 
-include 'eventmesh-webhook'
-include 'eventmesh-webhook:eventmesh-webhook-api'
-include 'eventmesh-webhook:eventmesh-webhook-admin'
-include 'eventmesh-webhook:eventmesh-webhook-receive'
-
+include 'eventmesh-function'
+include 'eventmesh-function:eventmesh-function-api'
+include 'eventmesh-function:eventmesh-function-filter'
+include 'eventmesh-function:eventmesh-function-transformer'

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.body;
 
-
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.RegRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
@@ -37,35 +36,38 @@ public abstract class Body {
     public abstract Map<String, Object> toMap();
 
     public static Body buildBody(String requestCode, Map<String, Object> originalMap) throws Exception {
-        if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
-            return SendMessageBatchRequestBody.buildBody(originalMap);
+        RequestCode code = RequestCode.get(Integer.valueOf(requestCode));
+        if (code == null) {
+            throw new Exception("Request code " + requestCode + "not support");
         }
-        if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
-            return SendMessageBatchV2RequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()).equals(requestCode)) {
-            return SendMessageRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()).equals(requestCode)) {
-            return SendMessageRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode()).equals(requestCode)) {
-            return PushMessageRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode()).equals(requestCode)) {
-            return PushMessageRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.REGISTER.getRequestCode()).equals(requestCode)) {
-            return RegRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.UNREGISTER.getRequestCode()).equals(requestCode)) {
-            return UnRegRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()).equals(requestCode)) {
-            return SubscribeRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()).equals(requestCode)) {
-            return UnSubscribeRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.HEARTBEAT.getRequestCode()).equals(requestCode)) {
-            return HeartbeatRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.REPLY_MESSAGE.getRequestCode()).equals(requestCode)) {
-            return ReplyMessageRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.ADMIN_SHUTDOWN.getRequestCode()).equals(requestCode)) {
-            return BaseRequestBody.buildBody(originalMap);
-        } else {
-            throw new Exception();
+        switch (code) {
+            case MSG_BATCH_SEND:
+                return SendMessageBatchRequestBody.buildBody(originalMap);
+            case MSG_BATCH_SEND_V2:
+                return SendMessageBatchV2RequestBody.buildBody(originalMap);
+            case MSG_SEND_ASYNC:
+            case MSG_SEND_SYNC:
+                return SendMessageRequestBody.buildBody(originalMap);
+            case HTTP_PUSH_CLIENT_ASYNC:
+            case HTTP_PUSH_CLIENT_SYNC:
+                return PushMessageRequestBody.buildBody(originalMap);
+            case REGISTER:
+                return RegRequestBody.buildBody(originalMap);
+            case UNREGISTER:
+                return UnRegRequestBody.buildBody(originalMap);
+            case SUBSCRIBE:
+                return SubscribeRequestBody.buildBody(originalMap);
+            case UNSUBSCRIBE:
+                return UnSubscribeRequestBody.buildBody(originalMap);
+            case HEARTBEAT:
+                return HeartbeatRequestBody.buildBody(originalMap);
+            case REPLY_MESSAGE:
+                return ReplyMessageRequestBody.buildBody(originalMap);
+            case ADMIN_SHUTDOWN:
+                return BaseRequestBody.buildBody(originalMap);
+            default:
+                throw new Exception("Request code " + requestCode + "not support");
         }
+
     }
 }

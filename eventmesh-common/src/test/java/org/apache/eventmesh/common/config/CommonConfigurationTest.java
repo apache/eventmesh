@@ -17,29 +17,57 @@
 
 package org.apache.eventmesh.common.config;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CommonConfigurationTest {
 
-    private CommonConfiguration configuration;
+    public CommonConfiguration config;
 
-    @Before
-    public void before() {
-        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        ConfigurationWrapper wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
-        configuration = new CommonConfiguration(wraper);
+    @BeforeEach
+    public void beforeCommonConfigurationTest() throws Exception {
+        ConfigService configService = ConfigService.getInstance();
+        configService.setRootConfig("classPath://configuration.properties");
+
+        config = configService.buildConfigInstance(CommonConfiguration.class);
+
+        testGetCommonConfiguration();
     }
 
     @Test
-    public void testInit() {
-        configuration.init();
-        Assert.assertEquals("value1", configuration.eventMeshEnv);
-        Assert.assertEquals("value2", configuration.eventMeshIDC);
-        Assert.assertEquals("3", configuration.sysID);
+    public void testGetCommonConfiguration() {
+        Assertions.assertEquals("env-succeed!!!", config.getEventMeshEnv());
+        Assertions.assertEquals("idc-succeed!!!", config.getEventMeshIDC());
+        Assertions.assertEquals("cluster-succeed!!!", config.getEventMeshCluster());
+        Assertions.assertEquals("name-succeed!!!", config.getEventMeshName());
+        Assertions.assertEquals("816", config.getSysID());
+        Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
+        Assertions.assertEquals("storage-succeed!!!", config.getEventMeshStoragePluginType());
+        Assertions.assertEquals("security-succeed!!!", config.getEventMeshSecurityPluginType());
+        Assertions.assertEquals("metaStorage-succeed!!!", config.getEventMeshMetaStoragePluginType());
+        Assertions.assertEquals("trace-succeed!!!", config.getEventMeshTracePluginType());
+        Assertions.assertEquals("hostIp-succeed!!!", config.getEventMeshServerIp());
+        Assertions.assertEquals("username-succeed!!!", config.getEventMeshMetaStoragePluginUsername());
+        Assertions.assertEquals("password-succeed!!!", config.getEventMeshMetaStoragePluginPassword());
+
+        List<String> list = new ArrayList<>();
+        list.add("metrics-succeed1!!!");
+        list.add("metrics-succeed2!!!");
+        list.add("metrics-succeed3!!!");
+        Assertions.assertEquals(list, config.getEventMeshMetricsPluginType());
+
+        List<String> list1 = new ArrayList<>();
+        list1.add("TCP");
+        list1.add("HTTP");
+        list1.add("GRPC");
+        Assertions.assertEquals(list1, config.getEventMeshProvideServerProtocols());
+
+        Assertions.assertTrue(config.isEventMeshServerSecurityEnable());
+        Assertions.assertTrue(config.isEventMeshServerMetaStorageEnable());
+        Assertions.assertTrue(config.isEventMeshServerTraceEnable());
     }
 }

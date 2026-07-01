@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.protocol.http.body;
 
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 import java.util.HashMap;

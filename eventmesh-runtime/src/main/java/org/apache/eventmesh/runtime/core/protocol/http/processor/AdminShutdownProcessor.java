@@ -24,41 +24,42 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 
-public class AdminShutdownProcessor implements HttpRequestProcessor {
+import lombok.RequiredArgsConstructor;
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+@RequiredArgsConstructor
+public class AdminShutdownProcessor extends AbstractHttpRequestProcessor {
 
-    private EventMeshServer eventMeshServer;
+    public final Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public AdminShutdownProcessor(EventMeshServer eventMeshServer) {
-        this.eventMeshServer = eventMeshServer;
-    }
+    private final EventMeshServer eventMeshServer;
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
-        HttpCommand responseEventMeshCommand;
+        String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+            RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+            EventMeshConstants.PROTOCOL_HTTP, remoteAddr, IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 
-        responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+        HttpCommand responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
         asyncContext.onComplete(responseEventMeshCommand);
     }
 
     @Override
-    public boolean rejectRequest() {
-        return false;
+    public Executor executor() {
+        return (Runnable runnable) -> {
+            runnable.run();
+        };
     }
 }

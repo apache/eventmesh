@@ -28,25 +28,29 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.Channel;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import inet.ipaddr.HostName;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 
+@Slf4j
 public class IPUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(IPUtils.class);
+    @Getter
+    public static String localAddress = init();
 
-    public static String getLocalAddress() {
+    private static String init() {
         // if the progress works under docker environment
         // return the host ip about this docker located from environment value
         String dockerHostIp = System.getenv("docker_host_ip");
@@ -54,25 +58,25 @@ public class IPUtils {
             return dockerHostIp;
         }
 
-        //priority of networkInterface when generating client ip
+        // priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
-
-        ArrayList<String> preferList = new ArrayList<String>();
-        for (String eth : priority.split("<")) {
-            preferList.add(eth);
-        }
+        List<String> list = Arrays.asList(priority.split("<"));
+        ArrayList<String> preferList = new ArrayList<>(list);
         NetworkInterface preferNetworkInterface = null;
+        boolean isInterfacePreferred = false;
 
         try {
             Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
-                if (!preferList.contains(networkInterface.getName())) {
-                    continue;
-                } else if (preferNetworkInterface == null) {
+                String interfaceName = networkInterface.getName();
+                if (!isInterfacePreferred && preferList.contains(interfaceName)) {
+                    isInterfacePreferred = true;
+                }
+                if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
-                } else if (preferList.indexOf(networkInterface.getName()) //get the networkInterface that has higher priority
-                        > preferList.indexOf(preferNetworkInterface.getName())) {
+                } else if (preferList.indexOf(interfaceName) // get the networkInterface that has higher priority
+                    > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -81,7 +85,7 @@ public class IPUtils {
             ArrayList<String> ipv4Result = new ArrayList<String>();
             ArrayList<String> ipv6Result = new ArrayList<String>();
 
-            if (preferNetworkInterface != null) {
+            if (preferNetworkInterface != null && isInterfacePreferred) {
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
@@ -96,41 +100,34 @@ public class IPUtils {
             // prefer ipv4
             if (!ipv4Result.isEmpty()) {
                 for (String ip : ipv4Result) {
-                    if (ip.startsWith("127.0") || ip.startsWith("192.168") || !isValidIPV4Address(ip)) {
-                        continue;
+                    if (isValidIPV4Address(ip) && !ip.startsWith("127.0") && !ip.startsWith("192.168")) {
+                        return ip;
                     }
-
-                    return ip;
                 }
 
                 return ipv4Result.get(ipv4Result.size() - 1);
             } else if (!ipv6Result.isEmpty()) {
                 return ipv6Result.get(0);
             }
-            //If failed to find,fall back to localhost
+            // If failed to find,fall back to localhost
             final InetAddress localHost = InetAddress.getLocalHost();
             return normalizeHostAddress(localHost);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+        } catch (SocketException | UnknownHostException e) {
+            log.error("socket or unknown host exception:", e);
         }
-
         return null;
     }
 
     public static boolean isValidIPV4Address(String ip) {
 
         // Regex for digit from 0 to 255.
-        String zeroTo255
-                = "(\\d{1,2}|(0|1)\\"
-                + "d{2}|2[0-4]\\d|25[0-5])";
+        String zeroTo255 = "(\\d{1,2}|(0|1)\\"
+            + "d{2}|2[0-4]\\d|25[0-5])";
 
-        String regex
-                = zeroTo255 + "\\."
-                + zeroTo255 + "\\."
-                + zeroTo255 + "\\."
-                + zeroTo255;
+        String regex = zeroTo255 + "\\."
+            + zeroTo255 + "\\."
+            + zeroTo255 + "\\."
+            + zeroTo255;
 
         // Compile the ReGex
         Pattern p = Pattern.compile(regex);
@@ -146,8 +143,7 @@ public class IPUtils {
         return m.matches();
     }
 
-    private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
+    private static void getIpResult(Collection<String> ipv4Result, Collection<String> ipv6Result, Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {
@@ -168,9 +164,8 @@ public class IPUtils {
         }
     }
 
-
     public static String parseChannelRemoteAddr(final Channel channel) {
-        if (null == channel) {
+        if (channel == null) {
             return "";
         }
         SocketAddress remote = channel.remoteAddress();
@@ -214,7 +209,7 @@ public class IPUtils {
                 return new IPAddressString(new URL(url).getHost()).isValid();
             }
         } catch (Exception e) {
-            logger.warn("Invalid URL format url={}", url, e);
+            log.warn("Invalid URL format url={}", url, e);
             return false;
         }
         return true;
@@ -229,7 +224,7 @@ public class IPUtils {
             String host = new URL(url).getHost();
             return new HostName(host).getAddress();
         } catch (MalformedURLException e) {
-            logger.error("Invalid URL format url={}", url, e);
+            log.error("Invalid URL format url={}", url, e);
             return null;
         }
     }

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BaseRequestHeader extends Header {
+
     private String code;
 
     public String getCode() {
@@ -51,8 +52,7 @@ public class BaseRequestHeader extends Header {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("baseRequestHeader={code=")
-                .append(code).append("}");
+        sb.append("baseRequestHeader={code=").append(code).append("}");
         return sb.toString();
     }
 }

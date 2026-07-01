@@ -21,12 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class WatchFileManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WatchFileManager.class);
 
     private static final AtomicBoolean CLOSED = new AtomicBoolean(false);
 
@@ -34,13 +32,12 @@ public class WatchFileManager {
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LOGGER.warn("[WatchFileManager] WatchFileManager closed");
+            log.warn("[WatchFileManager] WatchFileManager closed");
             shutdown();
         }));
     }
 
-    public static void registerFileChangeListener(String directoryPath,
-                                                  FileChangeListener listener) {
+    public static void registerFileChangeListener(String directoryPath, FileChangeListener listener) {
         WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
         if (task == null) {
             task = new WatchFileTask(directoryPath);
@@ -62,16 +59,19 @@ public class WatchFileManager {
         if (!CLOSED.compareAndSet(false, true)) {
             return;
         }
-        LOGGER.warn("[WatchFileManager] start close");
+
+        log.info("[WatchFileManager] start close");
+
         for (Map.Entry<String, WatchFileTask> entry : WATCH_FILE_TASK_MAP.entrySet()) {
-            LOGGER.warn("[WatchFileManager] start to shutdown : " + entry.getKey());
+            log.info("[WatchFileManager] start to shutdown : {}", entry.getKey());
+
             try {
                 entry.getValue().shutdown();
-            } catch (Throwable ex) {
-                LOGGER.error("[WatchFileManager] shutdown has error : ", ex);
+            } catch (Exception ex) {
+                log.error("[WatchFileManager] shutdown has error : ", ex);
             }
         }
         WATCH_FILE_TASK_MAP.clear();
-        LOGGER.warn("[WatchFileManager] already closed");
+        log.warn("[WatchFileManager] already closed");
     }
 }

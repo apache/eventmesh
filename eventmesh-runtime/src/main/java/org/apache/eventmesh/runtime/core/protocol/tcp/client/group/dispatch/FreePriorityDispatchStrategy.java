@@ -27,48 +27,47 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(FreePriorityDispatchStrategy.class);
-
     @Override
-    public Session select(String group, String topic, Set<Session> groupConsumerSessions) {
+    public Session select(final String group, final String topic, final Set<Session> groupConsumerSessions) {
         if (CollectionUtils.isEmpty(groupConsumerSessions)
-                || StringUtils.isBlank(topic)
-                || StringUtils.isBlank(group)) {
+            || StringUtils.isBlank(topic)
+            || StringUtils.isBlank(group)) {
             return null;
         }
 
-        List<Session> filtered = new ArrayList<Session>();
-        List<Session> isolatedSessions = new ArrayList<>();
-        for (Session session : groupConsumerSessions) {
+        final List<Session> filtered = new ArrayList<>();
+        final List<Session> isolatedSessions = new ArrayList<>();
+        for (final Session session : groupConsumerSessions) {
             if (!session.isAvailable(topic)) {
                 continue;
             }
+
             if (session.isIsolated()) {
                 isolatedSessions.add(session);
-                logger.info("session is not available because session is isolated,isolateTime:{},client:{}",
-                        session.getIsolateTime(), session.getClient());
+                log.info("session is not available because session is isolated,isolateTime:{},client:{}",
+                    session.getIsolateTime(), session.getClient());
                 continue;
             }
+
             filtered.add(session);
         }
 
         if (CollectionUtils.isEmpty(filtered)) {
             if (CollectionUtils.isEmpty(isolatedSessions)) {
-                logger.warn("all sessions can't downstream msg");
+                log.warn("all sessions can't downstream msg");
                 return null;
             } else {
-                logger.warn("all sessions are isolated,group:{},topic:{}", group, topic);
+                log.warn("all sessions are isolated,group:{},topic:{}", group, topic);
                 filtered.addAll(isolatedSessions);
             }
         }
 
         Collections.shuffle(filtered);
-        Session session = filtered.get(0);
-        return session;
+        return filtered.get(0);
     }
 }

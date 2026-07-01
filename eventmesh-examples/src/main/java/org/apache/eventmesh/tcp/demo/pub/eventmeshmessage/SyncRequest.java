@@ -35,30 +35,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncRequest {
 
-    private static EventMeshTCPClient<EventMeshMessage> client;
-
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
-        UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
-        try {
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                    eventMeshTcpClientConfig, EventMeshMessage.class);
+        final UserAgent userAgent = EventMeshTestUtils.generateClient1();
+        try (final EventMeshTCPClient<EventMeshMessage> client =
+                 EventMeshTCPClientFactory.createEventMeshTCPClient(
+                     EventMeshTCPClientConfig.builder()
+                         .host(eventMeshIp)
+                         .port(eventMeshTcpPort)
+                         .userAgent(userAgent)
+                         .build(),
+                     EventMeshMessage.class)) {
             client.init();
 
-            EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
+            final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
+
             log.info("begin send rr msg: {}", eventMeshMessage);
-            Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+
+            final Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             log.info("receive rr reply: {}", response);
 
         } catch (Exception e) {
-            log.warn("SyncRequest failed", e);
+            log.error("SyncRequest failed", e);
         }
     }
 }

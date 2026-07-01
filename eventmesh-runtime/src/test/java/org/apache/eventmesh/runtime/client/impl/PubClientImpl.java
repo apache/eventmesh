@@ -31,19 +31,18 @@ import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.Assertions;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PubClientImpl extends TCPClient implements PubClient {
 
-    private Logger publogger = LoggerFactory.getLogger(this.getClass());
-
-    private UserAgent userAgent;
+    private final UserAgent userAgent;
 
     private ReceiveMsgHook callback;
 
@@ -61,7 +60,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     public void init() throws Exception {
         open(new Handler());
         hello();
-        publogger.info("PubClientImpl|{}|started!", clientNo);
+        log.info("PubClientImpl|{}|started!", clientNo);
     }
 
     public void reconnect() throws Exception {
@@ -74,24 +73,21 @@ public class PubClientImpl extends TCPClient implements PubClient {
             task.cancel(false);
             super.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("PubClientImpl|{}|close failed!", clientNo, e);
         }
     }
 
     public void heartbeat() throws Exception {
-        task = scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!isActive()) {
-                        PubClientImpl.this.reconnect();
-                    }
-                    Package msg = MessageUtils.heartBeat();
-                    publogger.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-                    PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-                } catch (Exception e) {
-                    //ignore
+        task = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!isActive()) {
+                    PubClientImpl.this.reconnect();
                 }
+                Package msg = MessageUtils.heartBeat();
+                log.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+                PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+            } catch (Exception ignored) {
+                // ignore
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
@@ -116,7 +112,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, msg.getHeader().getCommand().REQUEST_TO_SERVER, msg);
+        log.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
         return dispatcher(msg, timeout);
     }
 
@@ -124,31 +120,31 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Add test case assertions on the basis of the original IO
      */
     public Package dispatcher(Package request, long timeout) throws Exception {
-        Assert.assertNotNull(request);
+        Assertions.assertNotNull(request);
         Package response = super.io(request, timeout);
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         Command cmd = response.getHeader().getCommand();
         switch (request.getHeader().getCommand()) {
             case RECOMMEND_REQUEST:
-                Assert.assertEquals(cmd, Command.RECOMMEND_RESPONSE);
+                Assertions.assertEquals(Command.RECOMMEND_RESPONSE, cmd);
                 break;
             case HELLO_REQUEST:
-                Assert.assertEquals(cmd, Command.HELLO_RESPONSE);
+                Assertions.assertEquals(Command.HELLO_RESPONSE, cmd);
                 break;
             case HEARTBEAT_REQUEST:
-                Assert.assertEquals(cmd, Command.HEARTBEAT_RESPONSE);
+                Assertions.assertEquals(Command.HEARTBEAT_RESPONSE, cmd);
                 break;
             case CLIENT_GOODBYE_REQUEST:
-                Assert.assertEquals(cmd, Command.CLIENT_GOODBYE_RESPONSE);
+                Assertions.assertEquals(Command.CLIENT_GOODBYE_RESPONSE, cmd);
                 break;
             case BROADCAST_MESSAGE_TO_SERVER:
-                Assert.assertEquals(cmd, Command.BROADCAST_MESSAGE_TO_SERVER_ACK);
+                Assertions.assertEquals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case ASYNC_MESSAGE_TO_SERVER:
-                Assert.assertEquals(cmd, Command.ASYNC_MESSAGE_TO_SERVER_ACK);
+                Assertions.assertEquals(Command.ASYNC_MESSAGE_TO_SERVER_ACK, cmd);
                 break;
             case REQUEST_TO_SERVER:
-                Assert.assertEquals(cmd, Command.RESPONSE_TO_CLIENT);
+                Assertions.assertEquals(Command.RESPONSE_TO_CLIENT, cmd);
                 break;
             default:
                 break;
@@ -161,7 +157,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * Send an event message, the return value is ACCESS and ACK is given
      */
     public Package publish(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        log.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return dispatcher(msg, timeout);
     }
 
@@ -169,7 +165,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      * send broadcast message
      */
     public Package broadcast(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        log.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return dispatcher(msg, timeout);
     }
 
@@ -180,9 +176,10 @@ public class PubClientImpl extends TCPClient implements PubClient {
 
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<Package> {
+
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            publogger.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+            log.info("PubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
             Command cmd = msg.getHeader().getCommand();
             if (callback != null) {
                 callback.handle(msg, ctx);
@@ -193,27 +190,23 @@ public class PubClientImpl extends TCPClient implements PubClient {
             if (cmd == Command.RESPONSE_TO_CLIENT) {
                 Package responseToClientAck = MessageUtils.responseToClientAck(msg);
                 send(responseToClientAck);
-                RequestContext context = contexts.get(RequestContext.key(msg));
+                RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
-                    return;
                 } else {
-                    publogger.error("msg ignored,context not found .|{}|{}", cmd, msg);
-                    return;
+                    log.warn("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                publogger.error("server goodby request: ---------------------------" + msg);
+                log.error("server goodbye request: ---------------------------{}", msg);
                 close();
             } else {
-                RequestContext context = contexts.get(RequestContext.key(msg));
+                RequestContext context = contexts.get(RequestContext.getHeaderSeq(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
-                    return;
                 } else {
-                    publogger.error("msg ignored,context not found .|{}|{}", cmd, msg);
-                    return;
+                    log.warn("msg ignored,context not found.|{}|{}", cmd, msg);
                 }
             }
         }

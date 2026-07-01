@@ -27,6 +27,7 @@ import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
  * SubClient
  */
 public interface SubClient {
+
     void init() throws Exception;
 
     void close();

@@ -1,0 +1,58 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/eventmesh?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: //db_username
+    password: //db_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    initialSize: 1
+    minIdle: 1
+    maxActive: 20
+    maxWait: 10000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: false
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat
+    connectionProperties: "druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000"
+# secret keys
+sysPubKey:
+appPrivKey:
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# http server port
+server:
+  port: 8082
+event-mesh:
+  admin-server:
+    serviceName: DEFAULT_GROUP@@em_adm_server
+    # grpc server port
+    port: 8081
+    adminServerList:
+      R1: http://localhost:8082;http://localhost:8082
+      R2: http://localhost:8092;http://localhost:8092
+    region: R1

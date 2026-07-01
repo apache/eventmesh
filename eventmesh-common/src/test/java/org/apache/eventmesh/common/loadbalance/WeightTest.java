@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.common.loadbalance;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WeightTest {
 
@@ -26,19 +26,19 @@ public class WeightTest {
     public void testDecreaseTotal() {
         Weight weight = new Weight(null, 0);
         weight.decreaseTotal(1);
-        Assert.assertEquals(-1, weight.getCurrentWeight().get());
+        Assertions.assertEquals(-1, weight.getCurrentWeight().get());
     }
 
     @Test
     public void testIncreaseCurrentWeight() {
         Weight weight = new Weight(null, 10);
         weight.increaseCurrentWeight();
-        Assert.assertEquals(10, weight.getCurrentWeight().get());
+        Assertions.assertEquals(10, weight.getCurrentWeight().get());
     }
 
     @Test
     public void testGetCurrentWeight() {
         Weight weight = new Weight(null, 0);
-        Assert.assertEquals(0, weight.getCurrentWeight().get());
+        Assertions.assertEquals(0, weight.getCurrentWeight().get());
     }
 }

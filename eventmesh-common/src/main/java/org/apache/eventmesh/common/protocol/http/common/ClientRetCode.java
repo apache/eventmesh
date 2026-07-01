@@ -20,8 +20,8 @@ package org.apache.eventmesh.common.protocol.http.common;
 public enum ClientRetCode {
 
     /**
-     * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send
-     * next, try again several times to achieve grayscale, reserve
+     * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send next, try again several times to
+     * achieve grayscale, reserve
      */
 
     REMOTE_OK(0, "REMOTE Process OK"),
@@ -57,23 +57,16 @@ public enum ClientRetCode {
         return ret;
     }
 
-    private Integer retCode;
+    private final Integer retCode;
 
-    private String errMsg;
+    private final String errMsg;
 
     public Integer getRetCode() {
         return retCode;
-    }
-
-    public void setRetCode(Integer retCode) {
-        this.retCode = retCode;
     }
 
     public String getErrMsg() {
         return errMsg;
     }
 
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
 }

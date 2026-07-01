@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,17 +28,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
-    private final Logger logger = LoggerFactory.getLogger(WebhookTopicConfig.class);
 
     /**
      * PUSH URL
      * <p>
-     * Key: IDC
-     * Value: list of URls
+     * Key: IDC Value: list of URls
      */
     private final Map<String, List<String>> idcUrls = new ConcurrentHashMap<>();
 
@@ -49,8 +48,8 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
 
     @Override
     public synchronized void registerClient(ConsumerGroupClient client) {
-        if (!client.getGrpcType().equals(grpcType)) {
-            logger.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
+        if (client.getGrpcType() != grpcType) {
+            log.warn("Invalid grpc type: {}, expecting grpc type: {}, can not register client {}",
                 client.getGrpcType(), grpcType, client.toString());
             return;
         }
@@ -73,7 +72,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
             return;
         }
         urls.remove(url);
-        if (urls.size() == 0) {
+        if (urls.isEmpty()) {
             idcUrls.remove(idc);
         }
         totalUrls = buildTotalUrls();

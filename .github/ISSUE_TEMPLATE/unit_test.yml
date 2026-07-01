@@ -41,7 +41,7 @@ body:
     attributes:
       label: Read the unit testing guidelines
       description: >
-        Read the [unit testing guidelines](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/contribute/02-write-unit-test.md) before writing unit test code.
+        Read the [unit testing guidelines](https://eventmesh.apache.org/community/contribute/write-unit-test) before writing unit test code.
       options:
         - label: >
             I have read.
@@ -52,7 +52,7 @@ body:
       label: Unit test request
       description: Describe the unit test.
       placeholder: >
-        First of all: Have you checked the docs https://github.com/apache/incubator-eventmesh/tree/develop/docs,
+        First of all: Have you checked the docs https://github.com/apache/eventmesh/tree/develop/docs,
         or GitHub issues whether someone else has already reported your issue?
         Maybe the unit tests you want to do have already been done?
     validations:

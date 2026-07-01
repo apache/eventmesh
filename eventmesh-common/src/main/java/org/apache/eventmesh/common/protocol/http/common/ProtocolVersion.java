@@ -22,7 +22,7 @@ public enum ProtocolVersion {
     V1("1.0"),
     V2("2.0");
 
-    private String version;
+    private final String version;
 
     ProtocolVersion(String version) {
         this.version = version;
@@ -40,10 +40,6 @@ public enum ProtocolVersion {
 
     public String getVersion() {
         return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public static boolean contains(String version) {

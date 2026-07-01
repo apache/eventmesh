@@ -38,15 +38,13 @@ public class EventMeshMessage {
 
     private String content;
 
-    private Map<String, String> prop;
+    @Builder.Default
+    private Map<String, String> prop = new HashMap<>();
 
     @Builder.Default
     private final long createTime = System.currentTimeMillis();
 
     public EventMeshMessage addProp(String key, String val) {
-        if (prop == null) {
-            prop = new HashMap<>();
-        }
         prop.put(key, val);
         return this;
     }

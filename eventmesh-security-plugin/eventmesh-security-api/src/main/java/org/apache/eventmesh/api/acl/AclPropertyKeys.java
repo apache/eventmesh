@@ -18,6 +18,7 @@
 package org.apache.eventmesh.api.acl;
 
 public class AclPropertyKeys {
+
     public static final String CLIENT_IP = "clientIp";
     public static final String USER = "user";
     public static final String PASSWORD = "pwd";
@@ -25,4 +26,5 @@ public class AclPropertyKeys {
     public static final String TOPIC = "topic";
     public static final String REQUEST_CODE = "requestCode";
     public static final String REQUEST_URI = "requestURI";
+    public static final String CLIENT_VERSION = "clientVersion";
 }

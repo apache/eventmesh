@@ -23,13 +23,13 @@ public class Weight<T> {
 
     private T target;
 
-    private final int weight;
+    private final int value;
 
     private final AtomicInteger currentWeight;
 
-    public Weight(T target, int weight) {
+    public Weight(T target, int value) {
         this.target = target;
-        this.weight = weight;
+        this.value = value;
         this.currentWeight = new AtomicInteger(0);
     }
 
@@ -38,9 +38,8 @@ public class Weight<T> {
     }
 
     public void increaseCurrentWeight() {
-        currentWeight.addAndGet(weight);
+        currentWeight.addAndGet(value);
     }
-
 
     public T getTarget() {
         return target;
@@ -50,10 +49,9 @@ public class Weight<T> {
         this.target = target;
     }
 
-    public int getWeight() {
-        return weight;
+    public int getValue() {
+        return value;
     }
-
 
     public AtomicInteger getCurrentWeight() {
         return currentWeight;
@@ -62,9 +60,9 @@ public class Weight<T> {
     @Override
     public String toString() {
         return "Wight{"
-                + "target=" + target
-                + ", weight=" + weight
-                + ", currentWeight=" + currentWeight
-                + '}';
+            + "target=" + target
+            + ", value=" + value
+            + ", currentWeight=" + currentWeight
+            + '}';
     }
 }

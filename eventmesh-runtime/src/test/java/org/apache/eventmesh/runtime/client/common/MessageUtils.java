@@ -32,11 +32,12 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MessageUtils {
+
     public static final int seqLength = 10;
 
     public static Package hello(UserAgent user) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, "sucess", generateRandomString(seqLength)));
+        msg.setHeader(new Header(Command.HELLO_REQUEST, 0, "success", generateRandomString(seqLength)));
         msg.setBody(user);
         return msg;
     }
@@ -144,7 +145,7 @@ public class MessageUtils {
 
     public static UserAgent generatePubClient() {
         UserAgent user = new UserAgent();
-        user.setHost("127.0.0.1");
+        user.setHost("localhost");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
         user.setPath("/data/app/umg_proxy");
@@ -158,7 +159,7 @@ public class MessageUtils {
 
     public static UserAgent generateSubServer() {
         UserAgent user = new UserAgent();
-        user.setHost("127.0.0.1");
+        user.setHost("localhost");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
         user.setPath("/data/app/umg_proxy");
@@ -229,9 +230,8 @@ public class MessageUtils {
 
     public static Package askRecommend(UserAgent user) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.RECOMMEND_REQUEST, 0, "sucess", generateRandomString(seqLength)));
+        msg.setHeader(new Header(Command.RECOMMEND_REQUEST, 0, "success", generateRandomString(seqLength)));
         msg.setBody(user);
         return msg;
     }
 }
-

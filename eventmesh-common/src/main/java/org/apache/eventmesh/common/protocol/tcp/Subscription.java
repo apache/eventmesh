@@ -19,12 +19,12 @@ package org.apache.eventmesh.common.protocol.tcp;
 
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Subscription {
 
-    private List<SubscriptionItem> topicList = new LinkedList<>();
+    private List<SubscriptionItem> topicList = new ArrayList<>();
 
     public Subscription() {
     }
@@ -44,7 +44,7 @@ public class Subscription {
     @Override
     public String toString() {
         return "Subscription{"
-                + "topicList=" + topicList
-                + '}';
+            + "topicList=" + topicList
+            + '}';
     }
 }

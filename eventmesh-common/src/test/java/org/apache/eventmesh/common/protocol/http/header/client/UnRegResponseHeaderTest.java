@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UnRegResponseHeaderTest extends AbstractResponseHeaderTest {
 
     @Test
     public void testToMap() {
         UnRegResponseHeader header = UnRegResponseHeader.buildHeader(200,
-                "CLUSTER", "127.0.0.1", "DEV", "IDC");
+            "CLUSTER", "127.0.0.1", "DEV", "IDC");
         assertMapContent(header);
     }
 }

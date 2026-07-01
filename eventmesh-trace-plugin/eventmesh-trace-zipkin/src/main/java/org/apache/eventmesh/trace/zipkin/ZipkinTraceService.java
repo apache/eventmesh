@@ -19,70 +19,55 @@ package org.apache.eventmesh.trace.zipkin;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import org.apache.eventmesh.trace.api.EventMeshTraceService;
-import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
+import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.trace.api.AbstractTraceService;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 import org.apache.eventmesh.trace.api.exception.TraceException;
 import org.apache.eventmesh.trace.zipkin.common.ZipkinConstants;
 import org.apache.eventmesh.trace.zipkin.config.ZipkinConfiguration;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- *
+ * ZipkinTraceService
  */
-public class ZipkinTraceService implements EventMeshTraceService {
-    private String eventMeshZipkinIP;
-    private int eventMeshZipkinPort;
-    private int eventMeshTraceExportInterval;
-    private int eventMeshTraceExportTimeout;
-    private int eventMeshTraceMaxExportSize;
-    private int eventMeshTraceMaxQueueSize;
-    protected SdkTracerProvider sdkTracerProvider;
+@Config(field = "zipkinConfiguration")
+@Config(field = "exporterConfiguration")
+@Getter
+@Setter
+public class ZipkinTraceService extends AbstractTraceService {
 
-    protected OpenTelemetry openTelemetry;
+    /**
+     * Unified configuration class corresponding to zipkin.properties
+     */
+    private transient ZipkinConfiguration zipkinConfiguration;
 
-    protected Thread shutdownHook;
-
-    private Tracer tracer;
-    private TextMapPropagator textMapPropagator;
+    private transient ZipkinSpanExporter zipkinExporter;
 
     @Override
     public void init() {
-        //zipkin's config
-        eventMeshZipkinIP = ZipkinConfiguration.getEventMeshZipkinIP();
-        eventMeshZipkinPort = ZipkinConfiguration.getEventMeshZipkinPort();
-        //exporter's config
-        eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
-        eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
-        eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
-        eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+        // zipkin's config
+        final String eventMeshZipkinIP = zipkinConfiguration.getEventMeshZipkinIP();
+        final int eventMeshZipkinPort = zipkinConfiguration.getEventMeshZipkinPort();
 
-        String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
-        ZipkinSpanExporter zipkinExporter =
+        // exporter's config
+        final int eventMeshTraceExportInterval = exporterConfiguration.getEventMeshTraceExportInterval();
+        final int eventMeshTraceExportTimeout = exporterConfiguration.getEventMeshTraceExportTimeout();
+        final int eventMeshTraceMaxExportSize = exporterConfiguration.getEventMeshTraceMaxExportSize();
+        final int eventMeshTraceMaxQueueSize = exporterConfiguration.getEventMeshTraceMaxQueueSize();
+
+        final String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
+        zipkinExporter =
             ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
-
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(zipkinExporter)
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
             .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
@@ -90,81 +75,42 @@ public class ZipkinTraceService implements EventMeshTraceService {
             .setMaxQueueSize(eventMeshTraceMaxQueueSize)
             .build();
 
-        //set the trace service's name
-        Resource serviceNameResource =
-            Resource.create(Attributes.of(stringKey("service.name"), ZipkinConstants.SERVICE_NAME));
+        // set the trace service's name
+        final Resource serviceNameResource =
+            Resource.create(Attributes.of(stringKey("service.name"), EventMeshTraceConstants.SERVICE_NAME));
 
-        sdkTracerProvider = SdkTracerProvider.builder()
-            .addSpanProcessor(spanProcessor)
-            .setResource(Resource.getDefault().merge(serviceNameResource))
-            .build();
-
-        openTelemetry = OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .setTracerProvider(sdkTracerProvider)
-            .build();
-
-        //TODO serviceName???
-        tracer = openTelemetry.getTracer(ZipkinConstants.SERVICE_NAME);
-        textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
-
-        shutdownHook = new Thread(sdkTracerProvider::close);
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        initVars(spanProcessor, serviceNameResource);
     }
 
     @Override
-    public Context extractFrom(Context context, Map<String, Object> map) throws TraceException {
-        textMapPropagator.extract(context, map, new TextMapGetter<Map<String, Object>>() {
-            @Override
-            public Iterable<String> keys(Map<String, Object> carrier) {
-                return carrier.keySet();
+    public void shutdown() throws TraceException {
+
+        Exception ex = null;
+
+        try {
+            if (sdkTracerProvider != null) {
+                sdkTracerProvider.close();
             }
+        } catch (Exception e) {
+            ex = e;
+        }
 
-            @Override
-            public String get(Map<String, Object> carrier, String key) {
-                return carrier.get(key).toString();
+        try {
+            if (zipkinExporter != null) {
+                zipkinExporter.close();
             }
-        });
-        return context;
+        } catch (Exception e) {
+            ex = e;
+        }
+
+        if (ex != null) {
+            throw new TraceException("trace close error", ex);
+        }
+
+        // todo: turn the value of useTrace in AbstractHTTPServer into false
     }
 
-    @Override
-    public void inject(Context context, Map<String, Object> map) {
-        textMapPropagator.inject(context, map, new TextMapSetter<Map<String, Object>>() {
-            @Override
-            public void set(@Nullable Map<String, Object> carrier, String key, String value) {
-                map.put(key, value);
-            }
-        });
-    }
-
-    @Override
-    public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
-                           Context context, boolean isSpanFinishInOtherThread)
-        throws TraceException {
-        return tracer.spanBuilder(spanName)
-            .setParent(context)
-            .setSpanKind(spanKind)
-            .setStartTimestamp(startTime, timeUnit)
-            .startSpan();
-    }
-
-    @Override
-    public Span createSpan(String spanName, SpanKind spanKind, Context context,
-                           boolean isSpanFinishInOtherThread) throws TraceException {
-        return tracer.spanBuilder(spanName)
-            .setParent(context)
-            .setSpanKind(spanKind)
-            .setStartTimestamp(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            .startSpan();
-    }
-
-    @Override
-    public void shutdown() {
-        //todo: check the spanProcessor if it was already close
-
-        sdkTracerProvider.close();
-
-        //todo: turn the value of useTrace in AbstractHTTPServer into false
+    public ZipkinConfiguration getClientConfiguration() {
+        return this.zipkinConfiguration;
     }
 }

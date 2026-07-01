@@ -20,8 +20,8 @@ package org.apache.eventmesh.runtime.util;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import io.netty.channel.Channel;
@@ -31,29 +31,30 @@ public class RemotingHelperTest {
     @Test
     public void testExceptionSimpleDesc() {
         String result = RemotingHelper.exceptionSimpleDesc(new NullPointerException());
-        Assert.assertNotNull(result);
+        Assertions.assertNotNull(result);
     }
 
     @Test
     public void testString2SocketAddress() {
-        String addr = "127.0.0.1:11002";
-        SocketAddress address = RemotingHelper.string2SocketAddress(addr);
-        Assert.assertNotNull(address);
+        String addr = "127.0.0.1:8080";
+        InetSocketAddress address = (InetSocketAddress) RemotingHelper.string2SocketAddress(addr);
+        Assertions.assertNotNull(address);
+        Assertions.assertEquals("127.0.0.1:8080", address.getHostString() + ":" + address.getPort());
     }
 
     @Test
     public void testParseChannelRemoteAddr() {
-        SocketAddress address = new InetSocketAddress("127.0.0.1", 80);
+        SocketAddress address = new InetSocketAddress("localhost", 80);
         Channel channel = Mockito.mock(Channel.class);
         Mockito.when(channel.remoteAddress()).thenReturn(address);
         String addr = RemotingHelper.parseChannelRemoteAddr(channel);
-        Assert.assertEquals(addr, "127.0.0.1:80");
+        Assertions.assertEquals(addr, "127.0.0.1:80");
     }
 
     @Test
     public void testParseSocketAddressAddr() {
-        SocketAddress address = new InetSocketAddress("127.0.0.1", 80);
+        InetSocketAddress address = new InetSocketAddress("localhost", 80);
         String addr = RemotingHelper.parseSocketAddressAddr(address);
-        Assert.assertEquals(addr, "127.0.0.1:80");
+        Assertions.assertEquals("127.0.0.1:80", addr);
     }
 }

@@ -26,15 +26,13 @@ import java.util.List;
 public class EventMeshUrlClassLoader extends URLClassLoader {
 
     public static EventMeshUrlClassLoader getInstance() {
-        return EventMeshUrlClassLoaderHolder.instance;
+        return EventMeshUrlClassLoaderHolder.INSTANCE;
     }
 
     /**
      * Appends the specified URL to the list of URLs to search for classes and resources.
      * <p>
-     * If the URL specified is {@code null} or is already in the
-     * list of URLs, or if this loader is closed, then invoking this
-     * method has no effect.
+     * If the URL specified is {@code null} or is already in the list of URLs, or if this loader is closed, then invoking this method has no effect.
      * <p>
      * More detail see {@link URLClassLoader#addURL(URL)}
      *
@@ -52,6 +50,8 @@ public class EventMeshUrlClassLoader extends URLClassLoader {
     }
 
     private static class EventMeshUrlClassLoaderHolder {
-        private static EventMeshUrlClassLoader instance = new EventMeshUrlClassLoader(new URL[0], Thread.currentThread().getContextClassLoader());
+
+        private static final EventMeshUrlClassLoader INSTANCE = new EventMeshUrlClassLoader(new URL[0],
+            Thread.currentThread().getContextClassLoader());
     }
 }

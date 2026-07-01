@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,50 +49,59 @@ public class HttpRequestProtocolResolver {
 
             String id = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_ID, UUID.randomUUID()).toString();
 
-            String source =
-                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
+            String source = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE,
+                HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
 
-            String type = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_TYPE, HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
+            String type = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_TYPE,
+                HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
 
-            String subject =
-                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
+            String subject = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT,
+                HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
+            String dataContentType = requestHeaderMap.getOrDefault(HttpProtocolConstant.DATA_CONTENT_TYPE,
+                HttpProtocolConstant.APPLICATION_JSON).toString();
             // with attributes
             builder.withId(id)
                 .withType(type)
                 .withSource(URI.create(HttpProtocolConstant.CONSTANTS_KEY_SOURCE + ":" + source))
                 .withSubject(subject)
-                .withDataContentType(HttpProtocolConstant.DATA_CONTENT_TYPE);
+                .withDataContentType(dataContentType);
 
             // with extensions
-            for (String extensionKey : sysHeaderMap.keySet()) {
-                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extensionKey)
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extensionKey)
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extensionKey)
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extensionKey)) {
+            for (Map.Entry<String, Object> extension : sysHeaderMap.entrySet()) {
+                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extension.getKey())
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extension.getKey())
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extension.getKey())
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extension.getKey())) {
                     continue;
                 }
-                String lowerExtensionKey = extensionKey.toLowerCase();
-                builder.withExtension(lowerExtensionKey, sysHeaderMap.get(extensionKey).toString());
+                String lowerExtensionKey = extension.getKey().toLowerCase(Locale.getDefault());
+                builder.withExtension(lowerExtensionKey, sysHeaderMap.get(extension.getKey()).toString());
             }
 
             byte[] requestBody = httpEventWrapper.getBody();
 
-            Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
-            });
+            if (StringUtils.equals(dataContentType, HttpProtocolConstant.APPLICATION_JSON)) {
+                Map<String, Object> requestBodyMap = JsonUtils.parseTypeReferenceObject(new String(requestBody),
+                    new TypeReference<HashMap<String, Object>>() {
+                    });
 
-            String requestURI = httpEventWrapper.getRequestURI();
+                String requestURI = httpEventWrapper.getRequestURI();
 
-            Map<String, Object> data = new HashMap<>();
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
-            data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
-            // with data
-            builder = builder.withData(JsonUtils.serialize(data).getBytes(StandardCharsets.UTF_8));
+                Map<String, Object> data = new HashMap<>();
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
+                data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
+                // with data
+                builder = builder.withData(JsonUtils.toJSONString(data).getBytes(StandardCharsets.UTF_8));
+            } else if (StringUtils.equals(dataContentType, HttpProtocolConstant.PROTOBUF)) {
+                // with data
+                builder = builder.withData(requestBody);
+            }
             return builder.build();
         } catch (Exception e) {
-            throw new ProtocolHandleException(e.getMessage(), e.getCause());
+            throw new ProtocolHandleException(e.getMessage(), e);
         }
     }
 }

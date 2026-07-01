@@ -28,13 +28,13 @@ import java.util.Map;
 
 public class HeartbeatResponseBody extends Body {
 
-    //return code
+    // return code
     private Integer retCode;
 
-    //response message
+    // response message
     private String retMsg;
 
-    //response time
+    // response time
     private long resTime = System.currentTimeMillis();
 
     public Integer getRetCode() {
@@ -61,7 +61,7 @@ public class HeartbeatResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static HeartbeatResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+    public static HeartbeatResponseBody buildBody(Integer retCode, String retMsg) {
         HeartbeatResponseBody heartbeatResponseBody = new HeartbeatResponseBody();
         heartbeatResponseBody.setRetMsg(retMsg);
         heartbeatResponseBody.setResTime(System.currentTimeMillis());
@@ -73,9 +73,9 @@ public class HeartbeatResponseBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("heartbeatResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT_INCLUDE_MILLISECONDS)).append("}");
         return sb.toString();
     }
 

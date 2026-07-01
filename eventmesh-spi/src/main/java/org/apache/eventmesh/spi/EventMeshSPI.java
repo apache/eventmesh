@@ -34,7 +34,7 @@ public @interface EventMeshSPI {
     /**
      * If true, the spi instance is singleton
      */
-    boolean isSingleton() default false;
+    boolean isSingleton() default true;
 
     /**
      * {@link EventMeshExtensionType}
@@ -44,4 +44,3 @@ public @interface EventMeshSPI {
     EventMeshExtensionType eventMeshExtensionType();
 
 }
-

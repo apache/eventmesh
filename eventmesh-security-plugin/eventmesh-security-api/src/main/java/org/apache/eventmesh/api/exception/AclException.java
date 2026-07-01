@@ -22,6 +22,8 @@ package org.apache.eventmesh.api.exception;
  */
 public class AclException extends RuntimeException {
 
+    private static final long serialVersionUID = -8030697611105117189L;
+
     public AclException(String message) {
         super(message);
     }

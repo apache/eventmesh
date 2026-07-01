@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-
 import java.util.HashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HeartbeatRequestHeaderTest extends AbstractRequestHeaderTest {
 
