@@ -949,21 +949,145 @@ eventmesh.admin.server.required=true:
 
 ## 十一、当前分支实际完成状态
 
-| 功能 | 状态 | 说明 |
+> 本节基于 `refactor/unified-runtime-pipeline` 分支（截至提交 `341cd53`）代码实际 review 结果。图例：✅ 已完成 · 🟡 部分完成/有偏差 · ⬜ 待实现 · ❌ 与设计不符
+
+### 11.1 数据面（Pipeline & 协议）
+
+| 功能 | 状态 | 代码位置 | 说明 |
+|------|------|----------|------|
+| `IngressProcessor` | ✅ | `eventmesh-runtime/.../core/protocol/IngressProcessor.java` (10919 B) | Filter → Transformer → Router 完整实现，支持 pipelineKey 维度隔离 |
+| `EgressProcessor` | ✅ | `eventmesh-runtime/.../core/protocol/EgressProcessor.java` (4939 B) | Egress 侧 Filter + Transformer 完整实现 |
+| `BatchProcessResult` | ✅ | `eventmesh-runtime/.../core/protocol/BatchProcessResult.java` | 批量处理结果聚合与统计 |
+| `RetryContext` | ✅ | `eventmesh-runtime/.../core/protocol/RetryContext.java` | 重试上下文，为 `PipelineResult.RETRY` 提供支撑 |
+| `FilterEngine` (6 内置 Filter) | ✅ | `.../core/protocol/pipeline/filter/` | Auth / Acl / Protocol / Rule / RateLimit / SizeLimit **全部实现**（顺序与设计一致） |
+| `TransformerEngine` (5 内置 Transformer) | ✅ | `.../core/protocol/pipeline/transformer/` | Protocol / FieldMapping / Enrichment / Encryption / Compression **全部实现** |
+| `RouterEngine` (5 内置 Route) | ✅ | `.../core/protocol/pipeline/router/` | Static / Header / Content / Broadcast / DeadLetter **全部实现** |
+| `PipelineResult.Action` 语义 | 🟡 | 接口层未看到独立枚举文件 | 当前使用 `filter()` 返回 boolean、`transform()` 返回 `CloudEvent` (null=DROP)。文档中 `PipelineResult { CONTINUE/DROP/RETRY/DLQ/FAIL }` 属于**目标形态**，仍以 null 兼容层运行 |
+| TCP/HTTP/gRPC Processor 接入 Ingress | ✅ | Publish/Send/Batch 系列 Processor | 覆盖 TCP publish、HTTP send/async/batch、gRPC publish/batch |
+| TCP/HTTP/gRPC Processor 接入 Egress | ✅ | `ClientGroupWrapper` 等 | 消费侧 Egress 覆盖 |
+| A2A 走 HTTP Endpoint → Pipeline | ✅ | `runtime/a2a/A2AGatewayHttpHandler.java` + `A2APublishSubscribeService.java` | A2A 复用 HTTP Server 路由 `/a2a/*` 到 Pipeline |
+| NPE 修复（Source filtered event） | ✅ | `EventMeshConnectorBootstrap.java` | 提前保存 `originalTopic`/`originalMessageId`，Pipeline 返回 null 时回填 `SendResult` |
+
+### 11.2 Connector Runtime
+
+| 功能 | 状态 | 代码位置 | 说明 |
+|------|------|----------|------|
+| `ConnectorRuntimeService`（多 Connector 管理） | ✅ | `.../connector/ConnectorRuntimeService.java` (14223 B) | `registerConnector` / `unregisterConnector` / `startConnector` / `stopConnector` / 状态查询全套 API 已实现 |
+| DEDICATED / SHARED 线程池模式 | ✅ | 同上 + `ConnectorRuntimeConfig` | 两种模式均实现，通过 `eventmesh.connector.thread.pool.mode` 切换 |
+| Connector 注册上限保护 | ✅ | `ConnectorLimitExceededException.java` | 超限抛异常，配合 `eventmesh.connector.max.count` |
+| ClassLoader 隔离 | ✅ | `ConnectorClassLoader.java` (5322 B) | 独立 ClassLoader 加载插件 jar |
+| 插件发现 + 加载 | ✅ | `ConnectorPluginLoader.java` (11462 B) | SPI + 配置文件双路径 |
+| 指数退避重试 | ✅ | `ConnectorRuntimeService.java` | 结合 `maxRetry` 配置 |
+| 健康检查 & 状态机 | ✅ | `ConnectorStatus.java` | STARTING/RUNNING/STOPPED/FAILED 等状态 |
+| `EventMeshConnectorBootstrap` 接入 Pipeline | 🟡 | `.../boot/EventMeshConnectorBootstrap.java` (10078 B) | **单 Source+Sink 模式已接入 Pipeline**（Ingress/Egress 双向），但 **Bootstrap 尚未使用 `ConnectorRuntimeService`**——多 Connector 需另行通过 `ConnectorRuntimeService` API 注册 |
+| 单进程内多 Connector 并行 | 🟡 | — | 能力已由 `ConnectorRuntimeService` 提供，但 Bootstrap 路径未串起来；实际启动只加载一个 Source **或** 一个 Sink |
+
+### 11.3 管理面（Admin Client / Admin Command / Job API）
+
+| 功能 | 状态 | 代码位置 | 说明 |
+|------|------|----------|------|
+| `AdminClient`（gRPC BiStream） | ✅ | `.../admin/AdminClient.java` (9047 B) | Heartbeat / Monitor / Offset sync 定时任务齐备，支持 `standalone` / `required` 模式 |
+| `AdminReporter` | ✅ | `.../admin/AdminReporter.java` (2444 B) | 状态与指标上报 |
+| `AdminCommandHandler` | ✅ | `.../admin/AdminCommandHandler.java` (8172 B) | `JOB.CREATE/START/STOP/DELETE/RECONFIGURE` + `RUNTIME.SHUTDOWN/RESTART` 全套指令处理 |
+| `JobApiController`（HTTP REST） | ✅ | `.../admin/JobApiController.java` (5504 B) | POST/GET/PUT/DELETE /admin/jobs 系列端点已实现 |
+| `HealthService` 迁移 | ✅ | `AdminClient` 内嵌 | 心跳携带 runtime 元数据 |
+| `MonitorService` 迁移 | ✅ | `AdminClient` + `PipelineMonitor` / `ConnectorMonitor` | 指标采集与上报链路完整 |
+| `VerifyService` 迁移 | 🟡 | `AdminClient` | 骨架存在，Pipeline 埋点覆盖度需集成测试确认 |
+| `StatusService` 迁移 | ✅ | `AdminClient` | Runtime 级状态上报 |
+
+### 11.4 存储与 Offset
+
+| 功能 | 状态 | 代码位置 | 说明 |
+|------|------|----------|------|
+| `OffsetStore` 接口 | ✅ | `.../connector/OffsetStore.java` | save / load / loadAll / flush / close 齐备 |
+| `InMemoryOffsetStore` | ✅ | `.../connector/InMemoryOffsetStore.java` | 开发/测试场景 |
+| `FilePersistentOffsetStore` | ✅ | `.../connector/FilePersistentOffsetStore.java` (7387 B) | 生产可用：写内存 + 定时/关停 flush + 原子文件替换 + 可选远程同步回调 |
+| **`RocksDBOffsetStore`** | ❌ | — | **未实现**。设计文档第 2.4 节与本节 "Layer 1 · 存储" 均写"本地 RocksDB"，实际实现采用**文件持久化**（`FilePersistentOffsetStore`）。二者语义相近（本地持久 + 崩溃安全 + 定时刷盘），但需要同步修订文档措辞，避免读者期待 RocksDB 依赖 |
+| 远程 Offset 同步（Admin Server） | 🟡 | `FilePersistentOffsetStore.RemoteSyncCallback` + `AdminClient` 定时任务 | 回调机制已就位，具体 Admin Server 侧协议需集成联调 |
+| Exactly-Once 恢复优先级（本地 → 远程 → 默认） | 🟡 | `FilePersistentOffsetStore.loadFromDisk` | 本地恢复已具备；"远程兜底"依赖 Admin Server 上线后端到端验证 |
+
+### 11.5 A2A 协议层
+
+| 功能 | 状态 | 代码位置 | 说明 |
+|------|------|----------|------|
+| A2A Protocol 插件 | ✅ | `eventmesh-protocol-plugin/eventmesh-protocol-a2a/` | `A2AClient` / `EnhancedA2AProtocolAdaptor` / `AgentCardValidator` / `A2ATopicFactory` / `A2AProtocolConstants` / `AgentIdentity` 全套 |
+| MCP 兼容子模块 | ✅ | `.../protocol/a2a/mcp/` | 目录存在，提供 MCP ↔ A2A 语义桥接 |
+| A2A Gateway (HTTP 入口) | ✅ | `runtime/a2a/A2AGatewayHttpHandler.java` (28315 B) + `A2AGatewayServer.java` (14309 B) | REST + SSE + 生命周期 |
+| Agent Card 注册 & 发现 | ✅ | `runtime/a2a/A2ACardHttpHandler.java` (9284 B) | `/.well-known/agent-card` |
+| Task Registry | ✅ | `runtime/a2a/TaskRegistry.java` (10939 B) | 异步 Task 生命周期与状态 |
+| A2A 内部消息传输 | ✅ | `InMemoryA2AMessageTransport.java` | 单机内存实现（跨节点仍需 Storage Plugin 承载） |
+| `A2APublishSubscribeService` 挂载到 `EventMeshServer` | ✅ | `boot/EventMeshServer.java` | init/start/shutdown 已集成 |
+| A2A 端到端集成测试 | ✅ | `test/.../a2a/` (5 个测试类) | `A2AClientServerIntegrationTest` / `A2AGatewayEndToEndTest` / `A2AGatewayServiceTest` / `InMemoryA2AMessageTransportTest` / `TaskRegistryTest` |
+
+### 11.6 可观测性 & 测试
+
+| 功能 | 状态 | 代码位置 | 说明 |
+|------|------|----------|------|
+| `PipelineMonitor` | ✅ | `.../monitor/PipelineMonitor.java` (5241 B) | Ingress/Egress 时延、丢弃计数 |
+| `ConnectorMonitor` | ✅ | `.../monitor/ConnectorMonitor.java` (5099 B) | Source/Sink TPS、error count |
+| Pipeline 单元测试 | ✅ | `test/.../core/protocol/` | `IngressProcessorTest` / `EgressProcessorTest` / `IngressEgressProcessorTest` / `BatchProcessResultTest` |
+| Connector 扩展测试 | ✅ | `test/.../connector/ConnectorExtendedTest.java` (20306 B) | 多 Connector、上限、生命周期 |
+| Admin Job 扩展测试 | ✅ | `test/.../admin/AdminJobExtendedTest.java` (14019 B) | JobApiController + AdminCommandHandler 用例 |
+| 完整 Source→Pipeline→MQ→Pipeline→Sink 集成测试 | ⬜ | — | 当前仅有各段单测/局部集成测试，缺少走完整 Storage 的端到端 Job 场景 |
+| 性能基线（TPS / 各阶段延迟） | ⬜ | — | 未见性能测试脚本 / 基线数据 |
+| Admin Server 降级模式端到端测试 | ⬜ | — | `standalone` 分支代码存在，但缺少显式测试 |
+
+### 11.7 清理与统一
+
+| 事项 | 状态 | 说明 |
 |------|------|------|
-| Pipeline 核心 (Ingress/EgressProcessor) | ✅ 已完成 | Filter → Transformer → Router |
-| TCP/HTTP/gRPC Processor 接入 Pipeline | ✅ 已完成 | 全部协议路径统一 |
-| Connector 嵌入 Runtime (EventMeshConnectorBootstrap) | ✅ 已完成 | 单 Connector 支持 |
-| RouterEngine + BatchProcessResult | ✅ 已完成 | 路由能力 + 批处理统计 |
-| A2A Gateway + Registry + SDK | ✅ 已完成 | REST API + SSE + Task |
-| NPE Bug 修复 (Source filtered event) | ✅ 已修复 | |
-| Pipeline 单元测试 | ✅ 已完成 | Ingress/Egress/Router/Batch 测试 |
-| ConnectorRuntimeService (多 Connector) | ⬜ 待实现 | 当前仅单 Connector |
-| AdminClient (Health/Monitor/Status/Verify) | ⬜ 待实现 | 管理面通信 |
-| OffsetStore (RocksDB) | ⬜ 待实现 | Exactly-Once 保障 |
-| Job Management API (HTTP REST) | ⬜ 待实现 | 动态 Job 管理 |
-| AdminCommandHandler (gRPC 指令) | ⬜ 待实现 | Admin Server 下发指令 |
-| 集成测试 + 性能测试 | ⬜ 待实现 | 端到端验证 |
+| `eventmesh-runtime-v2` 模块删除 | ✅ | 分支中该模块已不存在 |
+| `start.sh` / `stop.sh` 统一入口 | ✅ | 沿用 `eventmesh-dist` 单一启动脚本 |
+| `EventMeshServer` 整合 Filter/Transformer/Router/Ingress/Egress/A2A | ✅ | `boot/EventMeshServer.java` init 中依次拉起 `filterEngine` → `transformerEngine` → `routerEngine` → `ingressProcessor` → `egressProcessor` → `a2aPublishSubscribeService` |
+
+### 11.8 本轮 Review 新发现的问题 / 建议
+
+以下条目是本次代码 review 相较原文档新识别的差距，建议后续 PR 逐条闭环：
+
+1. **⚠️ 存储实现与文档表述不一致：文档说 RocksDB，代码是文件持久化。**
+   - 现状：`FilePersistentOffsetStore` 已实现原子写、崩溃安全、定时 flush，功能上等价于 RocksDB 的本地持久化目标。
+   - 建议二选一：
+     - **A（推荐）**：把 §2.4、§8 及第一章 ASCII 图中的 "本地 RocksDB" 改为 "本地文件（原子替换 + 定时 flush）"，并保留"未来可扩展 RocksDB"的注释；
+     - **B**：新增真正的 `RocksDBOffsetStore` 实现，并把 `FilePersistentOffsetStore` 保留为轻量替代。
+   - 当前分支已按 A 方案的效果落地，仅文字未同步。
+
+2. **`EventMeshConnectorBootstrap` 与 `ConnectorRuntimeService` 未打通。**
+   - 现状：Bootstrap 通过 SPI 加载 **单一** Source 或 Sink 并挂 Pipeline；`ConnectorRuntimeService` 独立提供多 Connector 管理 API。
+   - 影响：设计文档 §2.2 承诺"单进程多 Connector 并行"，但从进程启动路径看仍是单实例；多 Connector 只能通过 `JobApiController` / `AdminCommandHandler` 动态注册。
+   - 建议：让 `EventMeshConnectorBootstrap.init()` 在检测到 `eventmesh.connector.plugin.multi.enabled=true` 或存在 `conf/connectors/*.yaml` 时委托给 `ConnectorRuntimeService`，把静态配置的多 Connector 一次性注册进去，与动态 API 共用同一管理路径。
+
+3. **`PipelineResult` 目标接口尚未落地。**
+   - 现状：`PipelineFilter.filter()` 返回 boolean，`PipelineTransformer.transform()` 返回 `CloudEvent`（null=DROP）。文档 §2.1 声明的 `PipelineResult { CONTINUE/DROP/RETRY/DLQ/FAIL }` 属于目标形态，尚未成为正式接口。
+   - 影响：`RETRY` / `DLQ` / `FAIL` 语义现阶段依赖 Processor 层胶水代码；`RetryContext` 已具备，但未在 Filter/Transformer 接口层暴露。
+   - 建议：拉一条独立 PR 引入 `PipelineResult`（新接口 + 老接口 default 适配），逐个 Filter/Transformer 迁移，避免大爆炸修改。
+
+4. **`VerifyService` / 数据校验链路只有骨架。**
+   - 现状：`AdminClient` 有 Verify 定时任务与上报点，但 Pipeline 内部尚缺显式采样埋点（如按抽样率写入 checksum、offset、payload hash 到 Admin Server）。
+   - 建议：在 `IngressProcessor.process()` 和 `EgressProcessor.process()` 加可选拦截钩子，走 `AdminClient.reportVerify(...)`；配合 §5 配置项 `eventmesh.connector.verify.enabled` 与采样率参数。
+
+5. **A2A 内部传输仍是 `InMemoryA2AMessageTransport`。**
+   - 现状：跨节点场景需要复用 Storage Plugin（Kafka/RocketMQ）承载 A2A 消息，当前只有内存实现。
+   - 建议：新增 `StorageBackedA2AMessageTransport`，通过 `A2ATopicFactory` 生成的内部 Topic 走 Storage Plugin；单机场景仍走 InMemory 以降延迟。
+
+6. **`ConnectorRuntimeService` 与 `AdminCommandHandler` 的一致性视图缺失。**
+   - `AdminCommandHandler` 处理 `JOB.*` 指令时，最终应通过 `ConnectorRuntimeService` 落地；review 中未见二者的直接调用链证据（可能通过 `JobInfo` 中转，需要在集成测试中确认）。
+   - 建议：补充集成测试 `AdminCommand → ConnectorRuntimeService → EventMeshConnectorBootstrap Pipeline` 全链路。
+
+7. **多协议接入的实际证据 vs 文档 "全部协议路径统一"。**
+   - Review 只直接确认了 TCP/HTTP/gRPC Publish/Batch/Send 系列 Processor 存在；Consumer 侧（`ClientGroupWrapper` 等）虽在文档提到但未在本轮逐行核对。
+   - 建议：补一份"Pipeline 接入清单"矩阵，逐 Processor 打勾（issue/PR 描述里带出即可）。
+
+8. **性能基线缺失。**
+   - 目前只有单元测试，缺少 `JMH` 或压测脚本；重构声称"消除双运行时开销"，需要数据背书。
+   - 建议：至少提供一份 100k msg × 1KB 场景下的 TPS + P99 延迟对比（重构前 v1、v1+v2、当前统一 Runtime）。
+
+9. **配置项文档 vs 代码字段可能存在偏差。**
+   - 文档 §5 列举了近 20 个 `eventmesh.*` 配置项，本轮未对 `CommonConfiguration.java` 全字段做穷举校对。
+   - 建议：由代码 owner 补一份 "配置项 → 代码字段 → 默认值" 的对照表，作为附录纳入本文档。
+
+10. **测试样本量不足 & CI 缺失说明。**
+    - `ConnectorExtendedTest` / `AdminJobExtendedTest` 是好开端，但没有明确的"每 PR 必跑的集成测试子集"。
+    - 建议：在 `.github/workflows` 中加一个 `unified-runtime-check` job，锁定必跑用例。
 
 ---
 
@@ -980,4 +1104,4 @@ eventmesh.admin.server.required=true:
 
 ---
 
-*文档版本：v2.0 | 统一运行时目标架构蓝图 | 2026-07-01*
+*文档版本：v2.1 | 统一运行时目标架构蓝图 + 分支实现 Review | 2026-07-01（Review 补丁 2026-07-02）*
