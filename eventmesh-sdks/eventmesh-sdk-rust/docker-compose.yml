@@ -41,7 +41,7 @@ services:
       - "10106:10106"
       - "10205:10205"
     volumes:
-      - ./docker/conf/eventmesh-standalone.properties:/data/app/eventmesh/conf/eventmesh.properties:ro
+      - ./docker/conf/eventmesh-standalone.properties:/data/app/eventmesh/conf/eventmesh.properties:ro,z
       - eventmesh-standalone-logs:/data/app/eventmesh/logs
     restart: unless-stopped
     healthcheck:
@@ -79,12 +79,19 @@ services:
       - "10909:10909"
       - "10911:10911"
     volumes:
-      - ./docker/conf/broker.conf:/etc/rocketmq/broker.conf:ro
-      - broker-logs:/home/rocketmq/logs
-      - broker-store:/home/rocketmq/store
+      - ./docker/conf/broker.conf:/etc/rocketmq/broker.conf:ro,z
+      # NOTE: broker-logs/broker-store named volumes are intentionally NOT used
+      # here. The rocketmq image doesn't ship /home/rocketmq/{logs,store}, so a
+      # named volume would be created root-owned and the broker (uid 3000)
+      # couldn't write to it, crashing on store init (exit 253). The broker
+      # creates these dirs itself (rocketmq-owned) inside the container layer.
     environment:
       NAMESRV_ADDR: "namesrv:9876"
-      JAVA_OPT_EXT: "-server -Xms512m -Xmx512m -Xmn256m"
+      # runbroker.sh otherwise auto-calculates heap from total host RAM and
+      # adds -XX:+AlwaysPreTouch, which commits the whole heap at boot. On a
+      # memory-constrained host that prevents the broker from starting (silent
+      # exit 253). Keep the footprint small and cap direct memory explicitly.
+      JAVA_OPT_EXT: "-server -Xms128m -Xmx256m -Xmn96m -XX:MaxDirectMemorySize=256m"
     restart: unless-stopped
 
   eventmesh-rocketmq:
@@ -100,8 +107,8 @@ services:
       - "10106:10106"
       - "10205:10205"
     volumes:
-      - ./docker/conf/eventmesh-rocketmq.properties:/data/app/eventmesh/conf/eventmesh.properties:ro
-      - ./docker/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties:ro
+      - ./docker/conf/eventmesh-rocketmq.properties:/data/app/eventmesh/conf/eventmesh.properties:ro,z
+      - ./docker/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties:ro,z
       - eventmesh-rocketmq-logs:/data/app/eventmesh/logs
     restart: unless-stopped
     healthcheck:
@@ -116,5 +123,3 @@ volumes:
   eventmesh-rocketmq-logs:
   namesrv-logs:
   namesrv-store:
-  broker-logs:
-  broker-store:
