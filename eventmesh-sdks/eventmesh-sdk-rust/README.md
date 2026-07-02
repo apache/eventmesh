@@ -144,7 +144,7 @@ available — the server POSTs delivered events to the given URL.
 The examples assume a standalone EventMesh is running on `127.0.0.1`:
 
 ```bash
-# from the repo root
+# from this crate's directory (docker-compose.yml ships with the SDK)
 docker compose --profile standalone up -d
 ```
 
@@ -172,6 +172,32 @@ PROTOC=$HOME/.local/bin/protoc cargo fmt
 PROTOC=$HOME/.local/bin/protoc cargo clippy --features full --all-targets -- -D warnings
 PROTOC=$HOME/.local/bin/protoc cargo test --features full
 ```
+
+## End-to-end tests
+
+The `e2e` test suite (`tests/e2e/`) exercises the full gRPC producer/consumer
+against a live EventMesh runtime. It is gated behind the `e2e` feature so a
+plain `cargo test` never touches Docker.
+
+```bash
+# Auto-start the standalone stack via docker compose, run the suite, then stop it:
+PROTOC=$HOME/.local/bin/protoc cargo test --features e2e
+
+# ...or run against a server you already started yourself:
+EVENTMESH_E2E_EXTERNAL=1 \
+PROTOC=$HOME/.local/bin/protoc cargo test --features e2e
+```
+
+When neither Docker nor a reachable server is found, every test skips itself
+rather than failing. Tests run in parallel by default; each one uses a unique
+topic and consumer group so they never collide on the shared broker.
+
+> **Standalone limitations:** the in-memory broker requires a topic to be
+> created *and* a consumer subscribed before publishing (the harness does this
+> automatically), and it does **not** implement synchronous request/reply. The
+> request/reply test detects this and skips the assertion on standalone; switch
+> to the RocketMQ profile (`docker compose --profile rocketmq up -d`) to exercise
+> it fully.
 
 ## License
 

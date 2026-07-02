@@ -38,6 +38,9 @@ cloud_events = ["dep:cloudevents"]
 tls = ["tonic/tls"]
 # Convenience aggregate (only enabled features; add http/tcp as they land).
 full = ["grpc", "cloud_events", "tls"]
+# End-to-end tests (tests/e2e/*). Gated off by default so plain `cargo test`
+# never needs a live server. Run with `cargo test --features e2e`.
+e2e = []
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -64,6 +67,9 @@ tonic-build = "0.12"
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
+# e2e test harness (only referenced under the `e2e` feature):
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+ctor = "0.2"
 
 [[example]]
 name = "grpc_producer"

@@ -105,7 +105,9 @@ root `build.gradle`.
 
 ## Docker / runtime
 
-- `docker-compose.yml` requires a profile: `--profile standalone` (in-memory) or
+- `docker-compose.yml` lives with the Rust SDK
+  (`eventmesh-sdks/eventmesh-sdk-rust/docker-compose.yml`, plus its `docker/conf/`)
+  and requires a profile: `--profile standalone` (in-memory) or
   `--profile rocketmq`. `docker compose up` with no profile starts nothing by design.
 - Runtime ports: TCP `10000`, HTTP `10105`, gRPC `10205`, Admin `10106`.
 - Dockerfiles: `docker/Dockerfile_jdk8`, `docker/Dockerfile_jdk11` (run `./gradlew build dist`
