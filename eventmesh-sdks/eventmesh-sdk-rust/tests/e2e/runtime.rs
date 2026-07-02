@@ -18,7 +18,7 @@
 //! EventMesh runtime lifecycle for the e2e suite.
 //!
 //! [`ensure_runtime`] is process-global (guarded by a `OnceLock`): the first
-//! caller starts the standalone stack via `docker compose` and blocks until its
+//! caller starts the rocketmq stack via `docker compose` and blocks until its
 //! healthcheck passes (`up --wait`). Subsequent callers (other parallel test
 //! threads) reuse the already-running server.
 //!
@@ -109,7 +109,7 @@ fn initialize() -> Mode {
         eprintln!(
             "[e2e] skipping: no EventMesh server on {HOST}:{ADMIN_PORT} and \
              `docker` is not on PATH. Start one with \
-             `docker compose --profile standalone up -d`, or set \
+             `docker compose --profile rocketmq up -d`, or set \
              EVENTMESH_E2E_EXTERNAL=1."
         );
         return Mode::Unavailable;
@@ -119,7 +119,7 @@ fn initialize() -> Mode {
     let project_dir = PathBuf::from(MANIFEST_DIR);
     info!(
         ?compose,
-        "starting EventMesh via docker compose (standalone)"
+        "starting EventMesh via docker compose (rocketmq)"
     );
     let up = Command::new("docker")
         .args([
@@ -129,7 +129,7 @@ fn initialize() -> Mode {
             "--project-directory",
             project_dir.to_str().expect("utf-8 project dir"),
             "--profile",
-            "standalone",
+            "rocketmq",
             "up",
             "-d",
             "--wait",
@@ -176,7 +176,7 @@ fn teardown() {
             "--project-directory",
             project_dir.to_str().expect("utf-8 project dir"),
             "--profile",
-            "standalone",
+            "rocketmq",
             "down",
         ])
         .current_dir(&project_dir)

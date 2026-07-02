@@ -17,7 +17,7 @@
 
 //! End-to-end tests for the EventMesh Rust SDK.
 //!
-//! These tests spin up the EventMesh runtime via `docker compose` (standalone
+//! These tests spin up the EventMesh runtime via `docker compose` (rocketmq
 //! profile) and exercise the gRPC producer/consumer against a real server.
 //!
 //! Gated behind the `e2e` feature so a plain `cargo test` never touches Docker:
