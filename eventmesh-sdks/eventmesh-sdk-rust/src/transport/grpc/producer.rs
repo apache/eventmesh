@@ -45,7 +45,7 @@ impl GrpcProducer {
     /// broker ack codes.
     pub async fn publish_one_way(&self, message: EventMeshMessage) -> Result<()> {
         let event = CloudEventCodec::from_event_mesh_message(&message, &self.config)?;
-        let _ = self.client.publish(event).await?;
+        let _ = timed(self.config.timeout, self.client.publish(event)).await?;
         Ok(())
     }
 
@@ -54,7 +54,7 @@ impl GrpcProducer {
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
         let ce =
             crate::transport::grpc::codec::CloudEventMessage::from_event(&event, &self.config)?;
-        let resp = self.client.publish(ce).await?;
+        let resp = timed(self.config.timeout, self.client.publish(ce)).await?;
         Ok(CloudEventCodec::to_response(&resp))
     }
 }
@@ -63,7 +63,7 @@ impl Publisher for GrpcProducer {
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         validate_publish(&message)?;
         let event = CloudEventCodec::from_event_mesh_message(&message, &self.config)?;
-        let resp = self.client.publish(event).await?;
+        let resp = timed(self.config.timeout, self.client.publish(event)).await?;
         let response = CloudEventCodec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -85,7 +85,7 @@ impl Publisher for GrpcProducer {
             validate_publish(m)?;
         }
         let batch = CloudEventCodec::from_event_mesh_messages(&messages, &self.config)?;
-        let resp = self.client.batch_publish(batch).await?;
+        let resp = timed(self.config.timeout, self.client.batch_publish(batch)).await?;
         let response = CloudEventCodec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -131,4 +131,13 @@ fn validate_publish(message: &EventMeshMessage) -> Result<()> {
         return Err(EventMeshError::InvalidMessage("content is required".into()));
     }
     Ok(())
+}
+
+/// Apply the config's default request timeout to a short unary RPC. Long-lived
+/// RPCs (subscribe stream) and caller-controlled RPCs (request_reply) bypass
+/// this and use their own timeouts.
+async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result<T>>) -> Result<T> {
+    tokio::time::timeout(timeout, f)
+        .await
+        .map_err(|_| EventMeshError::Timeout(timeout))?
 }

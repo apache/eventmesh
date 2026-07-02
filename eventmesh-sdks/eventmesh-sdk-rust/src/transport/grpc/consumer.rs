@@ -19,6 +19,7 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 
 use tokio::sync::Mutex;
 use tonic::codegen::tokio_stream::StreamExt;
@@ -96,7 +97,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
             Some(&url),
             &items,
         )?;
-        let resp = self.client.subscribe_webhook(event).await?;
+        let resp = timed(self.config.timeout, self.client.subscribe_webhook(event)).await?;
         let response = CloudEventCodec::to_response(&resp);
         // Only record the subscription locally when the broker actually
         // accepted it, so the heartbeat loop doesn't advertise rejected subs.
@@ -209,7 +210,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> Subscriber for GrpcConsumer
             None,
             &items,
         )?;
-        let resp = self.client.unsubscribe(event).await?;
+        let resp = timed(self.config.timeout, self.client.unsubscribe(event)).await?;
         let response = CloudEventCodec::to_response(&resp);
         // Only drop the local entries when the server confirms the unsubscribe;
         // otherwise the heartbeat loop would stop reporting still-active subs.
@@ -221,6 +222,13 @@ impl<L: MessageListener<Message = EventMeshMessage>> Subscriber for GrpcConsumer
         }
         Ok(response)
     }
+}
+
+/// Apply the config's default request timeout to a short unary RPC.
+async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result<T>>) -> Result<T> {
+    tokio::time::timeout(timeout, f)
+        .await
+        .map_err(|_| EventMeshError::Timeout(timeout))?
 }
 
 /// Build a reply CloudEvent (used by the stream receive loop when the listener

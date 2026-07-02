@@ -48,7 +48,10 @@ impl GrpcClient {
         let endpoint = Endpoint::from_shared(uri.clone())
             .map_err(|e| EventMeshError::Config(format!("bad endpoint {uri:?}: {e}")))?
             .connect_timeout(Duration::from_secs(10))
-            .timeout(config.timeout)
+            // No channel-wide request timeout: it would wrongly cap the
+            // long-lived subscribe_stream and caller-controlled request_reply
+            // RPCs. Per-call timeouts are applied by the producer/consumer
+            // wrappers instead.
             .keep_alive_while_idle(true)
             .tcp_nodelay(true)
             .tcp_keepalive(Some(Duration::from_secs(100)));
