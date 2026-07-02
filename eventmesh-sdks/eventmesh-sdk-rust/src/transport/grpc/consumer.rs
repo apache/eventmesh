@@ -98,7 +98,11 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
         )?;
         let resp = self.client.subscribe_webhook(event).await?;
         let response = CloudEventCodec::to_response(&resp);
-        self.record(items, url).await;
+        // Only record the subscription locally when the broker actually
+        // accepted it, so the heartbeat loop doesn't advertise rejected subs.
+        if response.is_success() {
+            self.record(items, url).await;
+        }
         Ok(response)
     }
 
@@ -207,7 +211,9 @@ impl<L: MessageListener<Message = EventMeshMessage>> Subscriber for GrpcConsumer
         )?;
         let resp = self.client.unsubscribe(event).await?;
         let response = CloudEventCodec::to_response(&resp);
-        {
+        // Only drop the local entries when the server confirms the unsubscribe;
+        // otherwise the heartbeat loop would stop reporting still-active subs.
+        if response.is_success() {
             let mut guard = self.subscriptions.lock().await;
             for item in &items {
                 guard.remove(&item.topic);

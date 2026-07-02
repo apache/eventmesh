@@ -271,17 +271,14 @@ impl CloudEventCodec {
     }
 
     pub fn get_subject(cloud_event: &PbCloudEvent) -> String {
+        // Only read the `subject` attribute — do NOT fall back to `source`.
+        // Internally-built events set `source` to the default "/", so a fallback
+        // would yield a topic of "/" instead of an empty topic. This mirrors
+        // EventMeshCloudEventUtils.getSubject in the Java SDK.
         cloud_event
             .attributes
             .get(ProtocolKey::SUBJECT)
             .map(attr_as_str)
-            .or_else(|| {
-                if !cloud_event.source.is_empty() {
-                    Some(cloud_event.source.clone())
-                } else {
-                    None
-                }
-            })
             .unwrap_or_default()
     }
 
@@ -430,9 +427,14 @@ impl CloudEventMessage {
         }
         for (k, v) in cloud_event.attributes {
             // Skip response / envelope fields that don't belong as extensions.
+            // Use the canonical ProtocolKey spellings so the skip actually matches
+            // the keys written by the server ("statuscode"/"responsemessage"/"time").
             if matches!(
                 k.as_str(),
-                "status_code" | "response_message" | "time" | "datacontenttype"
+                ProtocolKey::GRPC_RESPONSE_CODE
+                    | ProtocolKey::GRPC_RESPONSE_MESSAGE
+                    | ProtocolKey::GRPC_RESPONSE_TIME
+                    | "datacontenttype"
             ) {
                 continue;
             }
