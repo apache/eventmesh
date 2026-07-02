@@ -69,5 +69,45 @@ public class CommonConfigurationTest {
         Assertions.assertTrue(config.isEventMeshServerSecurityEnable());
         Assertions.assertTrue(config.isEventMeshServerMetaStorageEnable());
         Assertions.assertTrue(config.isEventMeshServerTraceEnable());
+
+        // ========== Unified Runtime: Connector Runtime ==========
+        Assertions.assertEquals("conf/connectors-test/", config.getEventMeshConnectorConfigPath());
+        Assertions.assertEquals(8, config.getEventMeshConnectorThreadPoolSize());
+        Assertions.assertEquals(5, config.getEventMeshConnectorMaxRetry());
+        Assertions.assertEquals(32, config.getEventMeshConnectorMaxCount());
+        Assertions.assertEquals("SHARED", config.getEventMeshConnectorPoolMode());
+        Assertions.assertTrue(config.isEventMeshConnectorVerifyEnabled());
+
+        // ========== Unified Runtime: Admin Server ==========
+        Assertions.assertTrue(config.isEventMeshAdminServerEnabled());
+        Assertions.assertTrue(config.isEventMeshAdminServerRequired());
+        Assertions.assertEquals("admin-test:9090", config.getEventMeshAdminServerAddress());
+        Assertions.assertEquals("nacos", config.getEventMeshAdminServerRegistryType());
+        Assertions.assertEquals(10, config.getEventMeshAdminHeartbeatIntervalSeconds());
+        Assertions.assertEquals(60, config.getEventMeshAdminMonitorReportIntervalSeconds());
+
+        // ========== Unified Runtime: Offset Management ==========
+        Assertions.assertTrue(config.isEventMeshOffsetLocalEnabled());
+        Assertions.assertEquals("data/offset-test/", config.getEventMeshOffsetLocalPath());
+        Assertions.assertTrue(config.isEventMeshOffsetRemoteEnabled());
+        Assertions.assertEquals(120, config.getEventMeshOffsetRemoteSyncIntervalSeconds());
+
+        // ========== Unified Runtime: Pipeline ==========
+        Assertions.assertEquals("auth,ratelimit,protocol,rule,acl,sizelimit", config.getEventMeshPipelineIngressFilters());
+        Assertions.assertEquals("protocol,enrichment,fieldmapping", config.getEventMeshPipelineIngressTransformers());
+        Assertions.assertEquals("acl,sizelimit,protocol", config.getEventMeshPipelineEgressFilters());
+        Assertions.assertEquals("protocol,compression", config.getEventMeshPipelineEgressTransformers());
+        Assertions.assertTrue(config.isEventMeshPipelineDlqEnabled());
+        Assertions.assertEquals("test-dlq", config.getEventMeshPipelineDlqTopic());
+        Assertions.assertTrue(config.isEventMeshPipelineTraceEnabled());
+
+        // ========== Unified Runtime: FilePersistentOffsetStore ==========
+        Assertions.assertEquals(15, config.getEventMeshFileOffsetStoreFlushIntervalSeconds());
+
+        // ========== Unified Runtime: A2A ==========
+        Assertions.assertTrue(config.isEventMeshA2aEnabled());
+        Assertions.assertEquals(9090, config.getEventMeshA2aGatewayPort());
+        Assertions.assertEquals(60, config.getEventMeshA2aRegistryTtlSeconds());
+        Assertions.assertEquals(500, config.getEventMeshA2aSseMaxConnections());
     }
 }

@@ -169,7 +169,6 @@ tasks.register('dist') {
              "eventmesh-registry:eventmesh-registry-api",
              "eventmesh-retry:eventmesh-retry-api",
              "eventmesh-runtime",
-             "eventmesh-runtime-v2",
              "eventmesh-security-plugin:eventmesh-security-api",
              "eventmesh-spi",
              "eventmesh-starter",

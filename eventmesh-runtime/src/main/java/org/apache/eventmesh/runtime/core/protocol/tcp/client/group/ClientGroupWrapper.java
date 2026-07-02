@@ -25,6 +25,8 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.exception.StorageRuntimeException;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -33,6 +35,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.EgressProcessor;
+import org.apache.eventmesh.runtime.core.protocol.IngressProcessor;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
@@ -122,6 +126,9 @@ public class ClientGroupWrapper {
 
     private final MQProducerWrapper mqProducerWrapper;
 
+    private final IngressProcessor ingressProcessor;
+    private final EgressProcessor egressProcessor;
+
     public ClientGroupWrapper(String sysId, String group,
         EventMeshTCPServer eventMeshTCPServer,
         DownstreamDispatchStrategy downstreamDispatchStrategy) {
@@ -136,6 +143,16 @@ public class ClientGroupWrapper {
         this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
+        
+        this.ingressProcessor = new IngressProcessor(
+            eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
+            eventMeshTCPServer.getEventMeshServer().getTransformerEngine(),
+            eventMeshTCPServer.getEventMeshServer().getRouterEngine()
+        );
+        this.egressProcessor = new EgressProcessor(
+            eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
+            eventMeshTCPServer.getEventMeshServer().getTransformerEngine()
+        );
     }
 
     public ConcurrentHashMap<String, Map<String, Session>> getTopic2sessionInGroupMapping() {
@@ -161,7 +178,32 @@ public class ClientGroupWrapper {
 
     public boolean send(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback)
         throws Exception {
-        mqProducerWrapper.send(upStreamMsgContext.getEvent(), sendCallback);
+        
+        // Ingress Pipeline: Filter -> Transformer -> Router
+        CloudEvent event = upStreamMsgContext.getEvent();
+        String topic = event.getSubject();
+        String pipelineKey = group + "-" + topic;
+
+        try {
+            event = ingressProcessor.process(event, pipelineKey);
+            if (event == null) {
+                // Filtered out
+                SendResult result = new SendResult();
+                result.setTopic(topic);
+                result.setMessageId(upStreamMsgContext.getEvent().getId());
+                sendCallback.onSuccess(result);
+                return true;
+            }
+        } catch (Exception e) {
+             log.error("Ingress pipeline exception", e);
+             // Fail request
+             OnExceptionContext context = new OnExceptionContext();
+             context.setException(new StorageRuntimeException("Ingress pipeline failed", e));
+             sendCallback.onException(context);
+             return false;
+        }
+
+        mqProducerWrapper.send(event, sendCallback);
         return true;
     }
 
@@ -446,6 +488,18 @@ public class ClientGroupWrapper {
                     .build();
                 String topic = event.getSubject();
 
+                // Egress Pipeline: Filter -> Transformer
+                try {
+                    String pipelineKey = group + "-" + topic;
+                    event = egressProcessor.process(event, pipelineKey);
+                    if (event == null) {
+                         ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
+                         return;
+                    }
+                } catch (Exception e) {
+                    log.error("Egress pipeline exception", e);
+                }
+
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
                     (EventMeshAsyncConsumeContext) context;
                 Session session = downstreamDispatchStrategy
@@ -552,6 +606,18 @@ public class ClientGroupWrapper {
                         eventMeshTCPConfiguration.getEventMeshServerIp())
                     .build();
                 String topic = event.getSubject();
+
+                // Egress Pipeline: Filter -> Transformer
+                try {
+                    String pipelineKey = group + "-" + topic;
+                    event = egressProcessor.process(event, pipelineKey);
+                    if (event == null) {
+                         ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
+                         return;
+                    }
+                } catch (Exception e) {
+                    log.error("Egress pipeline exception", e);
+                }
 
                 EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
                     (EventMeshAsyncConsumeContext) context;

@@ -67,6 +67,10 @@ public class FilterEngine {
         this.consumerManager = consumerManager;
     }
 
+    public FilterEngine(MetaStorage metaStorage) {
+        this(metaStorage, null, null);
+    }
+
     public void start() {
         Map<String, String> filterMetaData = metaStorage.getMetaData(filterPrefix, true);
         for (Entry<String, String> filterDataEntry : filterMetaData.entrySet()) {
@@ -80,21 +84,25 @@ public class FilterEngine {
 
         // addListeners for producerManager & consumerManager
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            ConcurrentHashMap<String, EventMeshProducer> producerMap = producerManager.getProducerTable();
-            for (String producerGroup : producerMap.keySet()) {
-                for (String filterKey : filterPatternMap.keySet()) {
-                    if (!StringUtils.contains(filterKey, producerGroup)) {
-                        addFilterListener(producerGroup);
-                        log.info("addFilterListener for producer group: " + producerGroup);
+            if (producerManager != null) {
+                ConcurrentHashMap<String, EventMeshProducer> producerMap = producerManager.getProducerTable();
+                for (String producerGroup : producerMap.keySet()) {
+                    for (String filterKey : filterPatternMap.keySet()) {
+                        if (!StringUtils.contains(filterKey, producerGroup)) {
+                            addFilterListener(producerGroup);
+                            log.info("addFilterListener for producer group: " + producerGroup);
+                        }
                     }
                 }
             }
-            ConcurrentHashMap<String, ConsumerGroupManager> consumerMap = consumerManager.getClientTable();
-            for (String consumerGroup : consumerMap.keySet()) {
-                for (String filterKey : filterPatternMap.keySet()) {
-                    if (!StringUtils.contains(filterKey, consumerGroup)) {
-                        addFilterListener(consumerGroup);
-                        log.info("addFilterListener for consumer group: " + consumerGroup);
+            if (consumerManager != null) {
+                ConcurrentHashMap<String, ConsumerGroupManager> consumerMap = consumerManager.getClientTable();
+                for (String consumerGroup : consumerMap.keySet()) {
+                    for (String filterKey : filterPatternMap.keySet()) {
+                        if (!StringUtils.contains(filterKey, consumerGroup)) {
+                            addFilterListener(consumerGroup);
+                            log.info("addFilterListener for consumer group: " + consumerGroup);
+                        }
                     }
                 }
             }

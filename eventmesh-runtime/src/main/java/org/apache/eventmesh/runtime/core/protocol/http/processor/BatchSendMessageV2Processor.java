@@ -38,6 +38,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import org.apache.eventmesh.runtime.core.protocol.BatchProcessResult;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
@@ -211,33 +212,59 @@ public class BatchSendMessageV2Processor extends AbstractHttpRequestProcessor {
 
         summaryMetrics.recordSendBatchMsg(1);
 
+        // Create BatchProcessResult to track success/filtered/failed counts
+        final BatchProcessResult batchResult = new BatchProcessResult(1);
+        final String finalBizNo = bizNo;  // Make bizNo effectively final for inner classes
+
+        // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+        String pipelineKey = producerGroup + "-" + topic;
+        CloudEvent processedEvent = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor()
+            .process(event, pipelineKey);
+
+        if (processedEvent == null) {
+            // Message filtered by pipeline - return success
+            batchResult.incrementFiltered();
+            BATCH_MESSAGE_LOGGER.info("BatchV2 message filtered by pipeline: bizNo={}, topic={}",
+                bizNo, topic);
+            completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
+                EventMeshRetCode.SUCCESS, batchResult.toSummary(), SendMessageBatchV2ResponseBody.class);
+            return;
+        }
+
+        // Topic may have been changed by Router
+        final String finalTopic = processedEvent.getSubject();
+        final String finalEventId = processedEvent.getId();
         final SendMessageContext sendMessageContext =
-            new SendMessageContext(bizNo, event, batchEventMeshProducer, eventMeshHTTPServer);
+            new SendMessageContext(bizNo, processedEvent, batchEventMeshProducer, eventMeshHTTPServer);
 
         try {
             batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                 @Override
                 public void onSuccess(SendResult sendResult) {
+                    batchResult.incrementSuccess();
                     long batchEndTime = System.currentTimeMillis();
                     summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
-                    BATCH_MESSAGE_LOGGER.debug(
-                        "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
-                        bizNo, batchEndTime - batchStartTime, topic);
+                    BATCH_MESSAGE_LOGGER.info(
+                        "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}|result={}",
+                        finalBizNo, batchEndTime - batchStartTime, finalTopic, batchResult.toSummary());
                 }
 
                 @Override
                 public void onException(OnExceptionContext context) {
+                    batchResult.incrementFailed(finalEventId);
                     long batchEndTime = System.currentTimeMillis();
                     eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
                     summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
                     BATCH_MESSAGE_LOGGER.error(
-                        "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
-                        bizNo, batchEndTime - batchStartTime, topic, context.getException());
+                        "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}|result={}",
+                        finalBizNo, batchEndTime - batchStartTime, finalTopic, batchResult.toSummary(),
+                        context.getException());
                 }
 
             });
         } catch (Exception e) {
+            batchResult.incrementFailed(finalEventId);
             completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader, EventMeshRetCode.EVENTMESH_SEND_BATCHLOG_MSG_ERR,
                 EventMeshRetCode.EVENTMESH_SEND_BATCHLOG_MSG_ERR.getErrMsg()
                     +
@@ -247,12 +274,12 @@ public class BatchSendMessageV2Processor extends AbstractHttpRequestProcessor {
             eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
             summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
             BATCH_MESSAGE_LOGGER.error(
-                "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
-                bizNo, batchEndTime - batchStartTime, topic, e);
+                "batchMessageV2|eventMesh2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}|result={}",
+                finalBizNo, batchEndTime - batchStartTime, finalTopic, batchResult.toSummary(), e);
         }
 
         completeResponse(request, asyncContext, sendMessageBatchV2ResponseHeader,
-            EventMeshRetCode.SUCCESS, null, SendMessageBatchV2ResponseBody.class);
+            EventMeshRetCode.SUCCESS, batchResult.toSummary(), SendMessageBatchV2ResponseBody.class);
     }
 
     @Override

@@ -29,10 +29,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.function.filter.pattern.Pattern;
-import org.apache.eventmesh.function.transformer.Transformer;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
@@ -159,10 +156,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
         final String producerGroup = Objects.requireNonNull(
             event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP.getKey())).toString();
-        final String topic = event.getSubject();
-
-        Pattern filterPattern = eventMeshHTTPServer.getFilterEngine().getFilterPattern(producerGroup + "-" + topic);
-        Transformer transformer = eventMeshHTTPServer.getTransformerEngine().getTransformer(producerGroup + "-" + topic);
+        String topic = event.getSubject();
 
         // validate body
         if (StringUtils.isAnyBlank(bizNo, uniqueId, producerGroup, topic)
@@ -240,28 +234,38 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
         final SendMessageContext sendMessageContext = new SendMessageContext(bizNo, event, eventMeshProducer, eventMeshHTTPServer);
         eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordSendMsg();
 
+        // process A2A logic
+        event = eventMeshHTTPServer.getEventMeshServer().getA2APublishSubscribeService().process(event);
+        sendMessageContext.setEvent(event);
+
         final long startTime = System.currentTimeMillis();
-        boolean isFiltered = true;
         try {
             event = CloudEventBuilder.from(sendMessageContext.getEvent())
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
             handlerSpecific.getTraceOperation().createClientTraceOperation(EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
-            if (filterPattern != null) {
-                isFiltered = filterPattern.filter(JsonUtils.toJSONString(event));
+
+            // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+            String pipelineKey = producerGroup + "-" + topic;
+            event = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor().process(event, pipelineKey);
+
+            if (event == null) {
+                // Message filtered by pipeline - return success
+                responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                responseBodyMap.put(EventMeshConstants.RET_MSG, "Message filtered by pipeline");
+                handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
+                handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+                log.info("message|eventMesh2mq|REQ|ASYNC|filtered|cost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
+                return;
             }
 
-            // apply transformer
-            if (isFiltered && transformer != null) {
-                String data = transformer.transform(JsonUtils.toJSONString(event));
-                event = CloudEventBuilder.from(event).withData(Objects.requireNonNull(JsonUtils.toJSONString(data))
-                    .getBytes(StandardCharsets.UTF_8)).build();
-                sendMessageContext.setEvent(event);
-            }
+            // Topic may have been changed by Router
+            sendMessageContext.setEvent(event);
+            final String finalTopic = event.getSubject();
 
-            if (isFiltered) {
-                eventMeshProducer.send(sendMessageContext, new SendCallback() {
+            eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                     @Override
                     public void onSuccess(final SendResult sendResult) {
@@ -269,7 +273,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
                         responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg() + sendResult);
 
                         log.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
+                            System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId);
                         handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
                         handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
                     }
@@ -285,16 +289,9 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
                         handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
                         log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, context.getException());
+                            System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId, context.getException());
                     }
                 });
-            } else {
-                log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}|apply filter failed",
-                    System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
-                handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
-                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_FILTER_MSG_ERR, responseHeaderMap, responseBodyMap,
-                    EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
-            }
 
         } catch (Exception ex) {
             eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
