@@ -78,25 +78,29 @@ pub(crate) fn consumer_config() -> GrpcClientConfig {
         .build()
 }
 
-/// Create a topic via the admin HTTP API (idempotent). The standalone in-memory
-/// broker requires a topic to exist before a producer may publish to it, so this
-/// runs ahead of every publish/subscribe test.
+/// Create a topic via the admin HTTP API (idempotent). The broker requires a
+/// topic to exist before a consumer can rebalance onto it (and the standalone
+/// in-memory broker before a producer may publish), so this runs ahead of
+/// every publish/subscribe test.
 pub(crate) async fn ensure_topic(topic: &str) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
 
     let url = format!("http://{HOST}:{ADMIN_PORT}/topic");
-    let body = format!(r#"{{"name":"{topic}"}}"#);
 
-    // The admin endpoint occasionally rejects concurrent creates with a 500;
-    // retry briefly since "already exists" is a perfectly good outcome here.
+    // The admin `/topic` endpoint parses the POST body as
+    // application/x-www-form-urlencoded (Netty HttpPostRequestDecoder), not
+    // JSON — sending a JSON body yields a blank name and "Topic name can not
+    // be blank". Send the name as a form field instead.
+    //
+    // The endpoint occasionally rejects concurrent creates with a 500; retry
+    // briefly since "already exists" is a perfectly good outcome here.
     for attempt in 0..5u8 {
         let res = reqwest::Client::builder()
             .timeout(Duration::from_secs(5))
             .build()
             .expect("reqwest client")
             .post(&url)
-            .header("Content-Type", "application/json")
-            .body(body.clone())
+            .form(&[("name", topic)])
             .send()
             .await;
         match res {
