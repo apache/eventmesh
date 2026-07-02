@@ -1,70 +1,60 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+//
+// Licensed to the Apache Software Foundation (ASF) under one or more
+// contributor license agreements.  See the NOTICE file distributed with this
+// work for additional information regarding copyright ownership.  The ASF
+// licenses this file to You under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance with the
+// License.  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+// License for the specific language governing permissions and limitations
+// under the License.
+//
 
-#![cfg(feature = "eventmesh_message")]
+//! The core user-facing message type.
 
-#[allow(unused_imports)]
-use cloudevents::Event;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
-use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::common::grpc_eventmesh_message_utils::EventMeshCloudEventUtils;
-use crate::model::convert::FromPbCloudEvent;
-use crate::proto_cloud_event::PbCloudEvent;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+use crate::common::util::now_millis;
+
+/// A simple, idiomatic EventMesh message: a topic + string content + arbitrary
+/// string properties.
+///
+/// This maps directly to `org.apache.eventmesh.common.EventMeshMessage` on the
+/// Java side. It is the primary message type of the SDK; CloudEvents interop is
+/// available behind the `cloud_events` feature (see the conversion impls in
+/// `transport::grpc::codec`).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EventMeshMessage {
-    #[serde(rename = "bizSeqNo")]
-    pub(crate) biz_seq_no: Option<String>,
-    #[serde(rename = "uniqueId")]
-    pub(crate) unique_id: Option<String>,
-    pub(crate) topic: Option<String>,
-    pub(crate) content: Option<String>,
-    pub(crate) prop: HashMap<String, String>,
-    #[serde(rename = "createTime")]
-    pub(crate) create_time: u64,
+    /// Optional business sequence number (correlates request/reply).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub biz_seq_no: Option<String>,
+    /// Optional application-level unique id.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unique_id: Option<String>,
+    /// The destination topic. Required for publish.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
+    /// The message payload as a string.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
+    /// Free-form string properties (become CloudEvent attributes on the wire).
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub props: HashMap<String, String>,
+    /// Creation time, epoch milliseconds.
+    pub create_time: u64,
+    /// Optional TTL in milliseconds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ttl: Option<i64>,
 }
 
-impl fmt::Display for EventMeshMessage {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "EventMeshMessage {{")?;
-        if let Some(biz_seq_no) = &self.biz_seq_no {
-            write!(f, " biz_seq_no: {},", biz_seq_no)?;
-        }
-        if let Some(unique_id) = &self.unique_id {
-            write!(f, " unique_id: {},", unique_id)?;
-        }
-        if let Some(topic) = &self.topic {
-            write!(f, " topic: {},", topic)?;
-        }
-        if let Some(content) = &self.content {
-            write!(f, " content: {},", content)?;
-        }
-        write!(f, " prop: {{")?;
-        for (key, value) in &self.prop {
-            write!(f, " {}: {},", key, value)?;
-        }
-        write!(f, " }},")?;
-        write!(f, " create_time: {},", self.create_time)?;
-        write!(f, " }}")
-    }
-}
 impl Default for EventMeshMessage {
     fn default() -> Self {
         Self {
@@ -72,90 +62,95 @@ impl Default for EventMeshMessage {
             unique_id: None,
             topic: None,
             content: None,
-            prop: HashMap::with_capacity(0),
-            create_time: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map_or_else(|_err| 0u64, |time| time.as_millis() as u64),
+            props: HashMap::new(),
+            create_time: now_millis(),
+            ttl: None,
         }
     }
 }
 
-#[allow(dead_code)]
+impl fmt::Display for EventMeshMessage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("EventMeshMessage")
+            .field("topic", &self.topic)
+            .field("biz_seq_no", &self.biz_seq_no)
+            .field("unique_id", &self.unique_id)
+            .field("content_len", &self.content.as_ref().map(|c| c.len()))
+            .field("props", &self.props)
+            .field("create_time", &self.create_time)
+            .finish()
+    }
+}
+
 impl EventMeshMessage {
-    pub fn new(
-        biz_seq_no: impl Into<String>,
-        unique_id: impl Into<String>,
-        topic: impl Into<String>,
-        content: impl Into<String>,
-        prop: HashMap<String, String>,
-        create_time: u64,
-    ) -> Self {
-        Self {
-            biz_seq_no: Some(biz_seq_no.into()),
-            unique_id: Some(unique_id.into()),
-            topic: Some(topic.into()),
-            content: Some(content.into()),
-            prop,
-            create_time,
+    /// Start a builder. Equivalent to [`EventMeshMessageBuilder::default`].
+    pub fn builder() -> EventMeshMessageBuilder {
+        EventMeshMessageBuilder::default()
+    }
+
+    /// Insert/overwrite a property.
+    pub fn set_prop(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
+        self.props.insert(key.into(), value.into());
+        self
+    }
+
+    /// Get a property by key.
+    pub fn get_prop(&self, key: &str) -> Option<&str> {
+        self.props.get(key).map(|s| s.as_str())
+    }
+}
+
+/// Fluent builder for [`EventMeshMessage`].
+#[derive(Debug, Clone, Default)]
+pub struct EventMeshMessageBuilder {
+    biz_seq_no: Option<String>,
+    unique_id: Option<String>,
+    topic: Option<String>,
+    content: Option<String>,
+    props: HashMap<String, String>,
+    ttl: Option<i64>,
+}
+
+impl EventMeshMessageBuilder {
+    pub fn biz_seq_no(mut self, v: impl Into<String>) -> Self {
+        self.biz_seq_no = Some(v.into());
+        self
+    }
+    pub fn unique_id(mut self, v: impl Into<String>) -> Self {
+        self.unique_id = Some(v.into());
+        self
+    }
+    pub fn topic(mut self, v: impl Into<String>) -> Self {
+        self.topic = Some(v.into());
+        self
+    }
+    pub fn content(mut self, v: impl Into<String>) -> Self {
+        self.content = Some(v.into());
+        self
+    }
+    pub fn ttl_millis(mut self, v: i64) -> Self {
+        self.ttl = Some(v);
+        self
+    }
+    pub fn prop(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.props.insert(key.into(), value.into());
+        self
+    }
+    pub fn props(mut self, props: HashMap<String, String>) -> Self {
+        self.props = props;
+        self
+    }
+
+    pub fn build(self) -> EventMeshMessage {
+        EventMeshMessage {
+            biz_seq_no: self.biz_seq_no,
+            unique_id: self.unique_id,
+            topic: self.topic,
+            content: self.content,
+            props: self.props,
+            create_time: now_millis(),
+            ttl: self.ttl,
         }
-    }
-
-    pub fn add_prop(mut self, key: String, val: String) -> Self {
-        self.prop.insert(key, val);
-        self
-    }
-
-    pub fn get_prop(&self, key: &str) -> Option<&String> {
-        self.prop.get(key)
-    }
-
-    pub fn remove_prop_if_present(mut self, key: &str) -> Self {
-        self.prop.remove(key);
-        self
-    }
-
-    pub fn with_biz_seq_no(mut self, biz_seq_no: impl Into<String>) -> Self {
-        self.biz_seq_no = Some(biz_seq_no.into());
-        self
-    }
-
-    pub fn with_unique_id(mut self, unique_id: impl Into<String>) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    pub fn with_topic(mut self, topic: impl Into<String>) -> Self {
-        self.topic = Some(topic.into());
-        self
-    }
-
-    pub fn with_content(mut self, content: impl Into<String>) -> Self {
-        self.content = Some(content.into());
-        self
-    }
-
-    pub fn with_create_time(mut self, create_time: u64) -> Self {
-        self.create_time = create_time;
-        self
-    }
-}
-
-impl FromPbCloudEvent<EventMeshMessage> for EventMeshMessage {
-    fn from_pb_cloud_event(event: &PbCloudEvent) -> Option<EventMeshMessage> {
-        Some(EventMeshCloudEventUtils::switch_event_mesh_cloud_event_2_event_mesh_message(event))
-    }
-}
-
-impl From<PbCloudEvent> for EventMeshMessage {
-    fn from(value: PbCloudEvent) -> Self {
-        EventMeshCloudEventUtils::switch_event_mesh_cloud_event_2_event_mesh_message(&value)
-    }
-}
-
-#[cfg(feature = "cloud_events")]
-impl From<Event> for EventMeshMessage {
-    fn from(value: Event) -> Self {
-        EventMeshCloudEventUtils::switch_cloud_event_2_event_mesh_message(value)
     }
 }
 
@@ -164,43 +159,27 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_default() {
-        let default_msg = EventMeshMessage::default();
-
-        assert_eq!(default_msg.biz_seq_no, None);
-        assert_eq!(default_msg.unique_id, None);
-        assert_eq!(default_msg.topic, None);
-        assert_eq!(default_msg.content, None);
-        assert!(default_msg.prop.is_empty());
+    fn builder_round_trip() {
+        let m = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .biz_seq_no("b")
+            .unique_id("u")
+            .prop("k", "v")
+            .ttl_millis(1000)
+            .build();
+        assert_eq!(m.topic.as_deref(), Some("t"));
+        assert_eq!(m.content.as_deref(), Some("c"));
+        assert_eq!(m.get_prop("k"), Some("v"));
+        assert_eq!(m.ttl, Some(1000));
+        assert!(m.create_time > 0);
     }
 
     #[test]
-    fn test_new() {
-        let msg = EventMeshMessage::new(
-            "biz_seq_123",
-            "unique_456",
-            "test_topic",
-            "message_content",
-            HashMap::new(),
-            1234567890,
-        );
-
-        assert_eq!(msg.biz_seq_no, Some("biz_seq_123".to_string()));
-        assert_eq!(msg.unique_id, Some("unique_456".to_string()));
-        assert_eq!(msg.topic, Some("test_topic".to_string()));
-        assert_eq!(msg.content, Some("message_content".to_string()));
-        assert!(msg.prop.is_empty());
-        assert_eq!(msg.create_time, 1234567890);
-    }
-
-    #[test]
-    fn test_add_prop() {
-        let mut msg = EventMeshMessage::default();
-
-        msg = msg.add_prop("key1".to_string(), "value1".to_string());
-        msg = msg.add_prop("key2".to_string(), "value2".to_string());
-
-        assert_eq!(msg.get_prop("key1"), Some(&"value1".to_string()));
-        assert_eq!(msg.get_prop("key2"), Some(&"value2".to_string()));
+    fn serde_round_trip() {
+        let m = EventMeshMessage::builder().topic("t").content("c").build();
+        let json = serde_json::to_string(&m).unwrap();
+        let back: EventMeshMessage = serde_json::from_str(&json).unwrap();
+        assert_eq!(m, back);
     }
 }

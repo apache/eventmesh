@@ -1,0 +1,120 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to You under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Docker Compose for EventMesh Runtime.
+#
+# Two profiles are provided. Pick ONE with the `--profile` flag:
+#
+#   1. Standalone (default, in-memory store, no external dependencies):
+#        docker compose --profile standalone up -d
+#
+#   2. RocketMQ (namesrv + broker + runtime, durable Event Store):
+#        docker compose --profile rocketmq up -d
+#
+# Notes:
+#   - EventMesh image: https://hub.docker.com/r/apache/eventmesh
+#   - Runtime exposes TCP 10000, HTTP 10105, gRPC 10205, Admin 10106.
+#   - To use a locally built image, set IMAGE env var, e.g.:
+#       IMAGE=yourname/eventmesh:tag docker compose --profile standalone up -d
+#   - `docker compose up` (no profile) starts nothing on purpose, to avoid
+#     accidentally booting the wrong storage backend.
+
+services:
+
+  # ====================================================================
+  # Profile: standalone
+  # ====================================================================
+  eventmesh-standalone:
+    image: ${IMAGE:-apache/eventmesh:latest}
+    container_name: eventmesh-standalone
+    profiles: ["standalone"]
+    ports:
+      - "10000:10000"
+      - "10105:10105"
+      - "10106:10106"
+      - "10205:10205"
+    volumes:
+      - ./docker/conf/eventmesh-standalone.properties:/data/app/eventmesh/conf/eventmesh.properties:ro
+      - eventmesh-standalone-logs:/data/app/eventmesh/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'server state:RUNNING' /data/app/eventmesh/logs/eventmesh.out || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # ====================================================================
+  # Profile: rocketmq
+  # ====================================================================
+  namesrv:
+    image: apache/rocketmq:4.9.4
+    container_name: rocketmq-namesrv
+    profiles: ["rocketmq"]
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+    volumes:
+      - namesrv-logs:/home/rocketmq/logs
+      - namesrv-store:/home/rocketmq/store
+    environment:
+      JAVA_OPT_EXT: "-server -Xms256m -Xmx256m -Xmn128m"
+    restart: unless-stopped
+
+  broker:
+    image: apache/rocketmq:4.9.4
+    container_name: rocketmq-broker
+    profiles: ["rocketmq"]
+    depends_on:
+      - namesrv
+    command: sh mqbroker -c /etc/rocketmq/broker.conf
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+    volumes:
+      - ./docker/conf/broker.conf:/etc/rocketmq/broker.conf:ro
+      - broker-logs:/home/rocketmq/logs
+      - broker-store:/home/rocketmq/store
+    environment:
+      NAMESRV_ADDR: "namesrv:9876"
+      JAVA_OPT_EXT: "-server -Xms512m -Xmx512m -Xmn256m"
+    restart: unless-stopped
+
+  eventmesh-rocketmq:
+    image: ${IMAGE:-apache/eventmesh:latest}
+    container_name: eventmesh-rocketmq
+    profiles: ["rocketmq"]
+    depends_on:
+      - namesrv
+      - broker
+    ports:
+      - "10000:10000"
+      - "10105:10105"
+      - "10106:10106"
+      - "10205:10205"
+    volumes:
+      - ./docker/conf/eventmesh-rocketmq.properties:/data/app/eventmesh/conf/eventmesh.properties:ro
+      - ./docker/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties:ro
+      - eventmesh-rocketmq-logs:/data/app/eventmesh/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'server state:RUNNING' /data/app/eventmesh/logs/eventmesh.out || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  eventmesh-standalone-logs:
+  eventmesh-rocketmq-logs:
+  namesrv-logs:
+  namesrv-store:
+  broker-logs:
+  broker-store:

@@ -1,86 +1,81 @@
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to You under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 #
 
 [package]
 name = "eventmesh"
 version = "1.9.0"
 edition = "2021"
-authors = [
-    "mxsm <mxsm@apache.org>"
-]
-msrv = "1.75.0"
-description = "Rust client for Apache EventMesh"
+rust-version = "1.75.0"
+authors = ["Apache EventMesh <dev@eventmesh.apache.org>"]
 license = "Apache-2.0"
-keywords = ["EventMesh", "SDK", "rust-client", "rust", "eventmesh-rust-sdk"]
-readme = "./README.md"
-homepage = "https://github.com/apache/eventmesh"
+description = "Apache EventMesh Rust SDK"
+homepage = "https://eventmesh.apache.org"
 repository = "https://github.com/apache/eventmesh"
+keywords = ["eventmesh", "messaging", "cloud-events", "grpc"]
+categories = ["api-bindings", "network-programming"]
+
+[lib]
+name = "eventmesh"
+path = "src/lib.rs"
 
 [features]
-default = ["grpc", "eventmesh_message"]
-full = ["grpc", "eventmesh_message","cloud_events"]
-eventmesh_message = []
-cloud_events = []
-tls = []
-grpc = []
+default = ["grpc"]
+# Transport protocols (implemented incrementally).
+grpc = ["dep:tonic", "dep:prost", "dep:prost-types"]
+# http = ["dep:reqwest", "dep:axum", "dep:tower"]      # Phase 2
+# tcp  = ["dep:tokio-util", "dep:http"]                # Phase 3
+# Message models.
+cloud_events = ["dep:cloudevents"]
+# TLS support.
+tls = ["tonic/tls"]
+# Convenience aggregate (only enabled features; add http/tcp as they land).
+full = ["grpc", "cloud_events", "tls"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-# common
-anyhow = "1.0"
-
-#Rust grpc
-tonic = "0.10"
-prost = "0.12"
-prost-types = "0.12"
-
-#tokio
-tokio = { version = "1.32.0", features = ["full"] }
-
-#serde
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-
-#log
-tracing = "0.1"
-tracing-subscriber = "0.3"
-
-#cloudEvents
-cloudevents-sdk = "0.7.0"
-
-# tools crate
-thiserror = "1.0"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+futures = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
 bytes = "1"
 rand = "0.8"
-uuid = { version = "1.4.1", features = ["v4"] }
-local-ip-address = "0.5.6"
-futures = "0.3"
-log = "0.4.20"
-chrono = "0.4"
+uuid = { version = "1", features = ["v4"] }
+tracing = "0.1"
+http = "1"
+# gRPC transport.
+tonic = { version = "0.12", optional = true }
+prost = { version = "0.13", optional = true }
+prost-types = { version = "0.13", optional = true }
+# CloudEvents interop.
+cloudevents = { package = "cloudevents-sdk", version = "0.7", optional = true }
 
 [build-dependencies]
-tonic-build = "0.10"
+tonic-build = "0.12"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
 
 [[example]]
-name = "producer_example"
-path = "examples/grpc/producer_example.rs"
-required-features = ["grpc", "eventmesh_message","cloud_events"]
+name = "grpc_producer"
+path = "examples/grpc/producer.rs"
+required-features = ["grpc"]
 
 [[example]]
-name = "consumer_example"
-path = "examples/grpc/consumer_example.rs"
-required-features = ["grpc", "eventmesh_message"]
+name = "grpc_consumer"
+path = "examples/grpc/consumer.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "grpc_producer_cloud_events"
+path = "examples/grpc/producer_cloud_events.rs"
+required-features = ["grpc", "cloud_events"]

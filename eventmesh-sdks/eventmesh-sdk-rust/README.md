@@ -1,156 +1,178 @@
-## Eventmesh-rust-sdk
+<!--
+~ Licensed to the Apache Software Foundation (ASF) under one or more
+~ contributor license agreements.  See the NOTICE file distributed with this
+~ work for additional information regarding copyright ownership.  The ASF
+~ licenses this file to You under the Apache License, Version 2.0 (the
+~ "License"); you may not use this file except in compliance with the
+~ License.  You may obtain a copy of the License at
+~
+~     http://www.apache.org/licenses/LICENSE-2.0
+-->
 
-Eventmesh rust sdk
+# eventmesh-rust-sdk
 
-## Quickstart
+A Rust client SDK for [Apache EventMesh](https://eventmesh.apache.org), the
+serverless event-driven middleware.
 
-### Requirements
+This crate (`eventmesh`) speaks the EventMesh **gRPC** protocol (HTTP and TCP
+transports are planned for later phases). Messages are modeled with the simple
+[`EventMeshMessage`](src/model/message.rs) type, with optional native
+[CloudEvents](https://cloudevents.io) interop behind the `cloud_events` feature.
 
-1. rust toolchain, eventmesh's MSRV is 1.75.
-2. protoc 3.15.0+
-3. setup eventmesh runtime
+> Phase 1 (this release): **gRPC transport** — publish, batch publish,
+> request-reply, stream subscription, webhook subscription, heartbeat, and
+> CloudEvents interop.
 
-### Add Dependency
+## Requirements
+
+- Rust toolchain **>= 1.75.0**
+- `protoc` >= 3.15 (the Protocol Buffers compiler) on your `PATH` or pointed to
+  by the `PROTOC` env var. `tonic-build` invokes it at build time.
+- A running EventMesh runtime (gRPC on port `10205`).
+
+### Installing protoc
+
+```bash
+# Ubuntu / Debian
+sudo apt-get install -y protobuf-compiler
+# Alpine
+apk add protobuf-dev protoc
+# macOS
+brew install protobuf
+# or download a release binary from https://github.com/protocolbuffers/protobuf/releases
+```
+
+## Usage
+
+Add the dependency:
 
 ```toml
 [dependencies]
-eventmesh = { version = "1.9", features = ["default"] }
+eventmesh = { version = "1.9", features = ["default"] }   # gRPC + EventMeshMessage
+# Optional extras:
+# eventmesh = { version = "1.9", features = ["grpc", "cloud_events", "tls"] }
 ```
 
-### Send message
+### Publish a message
 
 ```rust
-use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::info;
-
-use eventmesh::config::EventMeshGrpcClientConfig;
-use eventmesh::grpc::grpc_producer::EventMeshGrpcProducer;
-use eventmesh::grpc::GrpcEventMeshMessageProducer;
-use eventmesh::log;
-use eventmesh::model::message::EventMeshMessage;
+use eventmesh::{
+    config::GrpcClientConfig, grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher,
+};
 
 #[eventmesh::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    log::init_logger();
+async fn main() -> eventmesh::Result<()> {
+    let config = GrpcClientConfig::builder()
+        .server_addr("127.0.0.1")
+        .server_port(10205)
+        .env("env").idc("idc").sys("sys")
+        .username("eventmesh").password("eventmesh")   // required by the server
+        .producer_group("test-producerGroup")
+        .build();
 
-    let grpc_client_config = EventMeshGrpcClientConfig::new();
-    let mut producer = GrpcEventMeshMessageProducer::new(grpc_client_config);
+    let producer = GrpcProducer::connect(config)?;
 
-    //Publish Message
-    info!("Publish Message to EventMesh........");
-    let message = EventMeshMessage::default()
-        .with_biz_seq_no("1")
-        .with_content("123")
-        .with_create_time(SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64)
-        .with_topic("123")
-        .with_unique_id("1111");
-    let response = producer.publish(message.clone()).await?;
-    info!("Publish Message to EventMesh return result: {}", response);
+    let msg = EventMeshMessage::builder()
+        .topic("test-topic-rust-sdk")
+        .content("hello from rust")
+        .build();
 
-    //Publish batch message
-    info!("Publish batch message to EventMesh........");
-    let messages = vec![message.clone(), message.clone(), message.clone()];
-    let response = producer.publish_batch(messages).await?;
-    info!(
-        "Publish batch message to EventMesh return result: {}",
-        response
-    );
-
-    //Publish batch message
-    info!("Publish request reply message to EventMesh........");
-    let response = producer.request_reply(message.clone(), 1000).await?;
-    info!(
-        "Publish request reply message to EventMesh return result: {}",
-        response
-    );
+    let resp = producer.publish(msg).await?;
+    println!("published: {resp}");
     Ok(())
 }
 ```
 
-### Subscribe message
+`producer.publish_batch(vec![...])` sends many messages in one RPC, and
+`producer.request_reply(msg, timeout)` performs a synchronous request/reply
+(returns the consumer's reply message).
+
+### Subscribe (stream)
 
 ```rust
-use std::time::Duration;
+use std::sync::atomic::{AtomicU64, Ordering};
+use eventmesh::{
+    config::GrpcClientConfig, grpc::GrpcConsumer, model::{EventMeshMessage,
+        SubscriptionItem, SubscriptionMode, SubscriptionType},
+    transport::Subscriber, MessageListener,
+};
 
-use tracing::info;
+struct MyListener { n: AtomicU64 }
 
-use eventmesh::common::ReceiveMessageListener;
-use eventmesh::config::EventMeshGrpcClientConfig;
-use eventmesh::grpc::grpc_consumer::EventMeshGrpcConsumer;
-use eventmesh::log;
-use eventmesh::model::message::EventMeshMessage;
-use eventmesh::model::subscription::{SubscriptionItem, SubscriptionMode, SubscriptionType};
-
-struct EventMeshListener;
-
-impl ReceiveMessageListener for EventMeshListener {
+impl MessageListener for MyListener {
     type Message = EventMeshMessage;
-
-    fn handle(&self, msg: Self::Message) -> eventmesh::Result<std::option::Option<Self::Message>> {
-        info!("Receive message from eventmesh================{:?}", msg);
-        Ok(None)
+    async fn handle(&self, msg: Self::Message) -> Option<Self::Message> {
+        println!("[{}] topic={:?} content={:?}", self.n.fetch_add(1, Ordering::Relaxed), msg.topic, msg.content);
+        None // None = ack only; Some(msg) = reply (for request/reply topics)
     }
 }
 
 #[eventmesh::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    log::init_logger();
-    let grpc_client_config = EventMeshGrpcClientConfig::new();
-    let listener = Box::new(EventMeshListener);
-    let mut consumer = EventMeshGrpcConsumer::new(grpc_client_config, listener);
-    //send
-    let item = SubscriptionItem::new(
-        "TEST-TOPIC-GRPC-ASYNC",
-        SubscriptionMode::CLUSTERING,
-        SubscriptionType::ASYNC,
-    );
-    info!("==========Start consumer======================\n{}", item);
-    let _response = consumer.subscribe(vec![item.clone()]).await?;
-    tokio::time::sleep(Duration::from_secs(1000)).await;
-    info!("=========Unsubscribe start================");
-    let response = consumer.unsubscribe(vec![item.clone()]).await?;
-    println!("unsubscribe result:{}", response);
+async fn main() -> eventmesh::Result<()> {
+    let config = GrpcClientConfig::builder()
+        .server_addr("127.0.0.1").server_port(10205)
+        .env("env").idc("idc").sys("sys")
+        .username("eventmesh").password("eventmesh")
+        .consumer_group("test-consumerGroup")
+        .build();
+
+    let consumer = GrpcConsumer::new(config, MyListener { n: AtomicU64::new(0) })?;
+    consumer.subscribe(vec![SubscriptionItem::new(
+        "test-topic-rust-sdk", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC,
+    )]).await?;
+
+    // keep the process alive so the stream + heartbeat keep running
+    tokio::signal::ctrl_c().await.ok();
     Ok(())
 }
-
 ```
 
-## Development Guide
+A webhook subscription (`consumer.subscribe_webhook(items, url)`) is also
+available — the server POSTs delivered events to the given URL.
 
-### Dependencies
+## Features
 
-In order to build `tonic` >= 0.8.0, you need the `protoc` Protocol Buffers compiler, along with Protocol Buffers resource files.
+| Feature | Description |
+|---|---|
+| `grpc` (default) | gRPC transport (producer, consumer, heartbeat) |
+| `cloud_events` | Native `cloudevents::Event` interop |
+| `tls` | TLS for the gRPC channel |
+| `full` | `grpc` + `cloud_events` + `tls` |
 
-#### Ubuntu
+## Running the examples
+
+The examples assume a standalone EventMesh is running on `127.0.0.1`:
 
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y protobuf-compiler libprotobuf-dev
+# from the repo root
+docker compose --profile standalone up -d
 ```
 
-#### Alpine Linux
+> **Standalone-broker note:** the in-memory broker requires a topic to be
+> created **and** a consumer subscribed before a producer can publish. Create
+> the topic once, then start the consumer before the producer:
+>
+> ```bash
+> # create the topic via the admin API (port 10106)
+> curl -X POST http://127.0.0.1:10106/topic -H 'Content-Type: application/json' -d '{"name":"test-topic-rust-sdk"}'
+>
+> # terminal 1 — receive
+> PROTOC=$HOME/.local/bin/protoc cargo run --features grpc --example grpc_consumer
+> # terminal 2 — send
+> PROTOC=$HOME/.local/bin/protoc cargo run --features grpc --example grpc_producer
+> ```
+>
+> (With the RocketMQ backend, topics are auto-created and this dance is not
+> needed.)
 
-```sh
-sudo apk add protoc protobuf-dev
+## Development
+
+```bash
+PROTOC=$HOME/.local/bin/protoc cargo fmt
+PROTOC=$HOME/.local/bin/protoc cargo clippy --features full --all-targets -- -D warnings
+PROTOC=$HOME/.local/bin/protoc cargo test --features full
 ```
 
-#### macOS
+## License
 
-Assuming [Homebrew](https://brew.sh/) is already installed. (If not, see instructions for installing Homebrew on [the Homebrew website](https://brew.sh/).)
-
-```zsh
-brew install protobuf
-```
-
-#### Windows
-
-- Download the latest version of `protoc-xx.y-win64.zip` from [HERE](https://github.com/protocolbuffers/protobuf/releases/latest)
-- Extract the file `bin\protoc.exe` and put it somewhere in the `PATH`
-- Verify installation by opening a command prompt and enter `protoc --version`
-
-### Build
-
-```shell
-cargo build
-```
-
+Apache License 2.0.
