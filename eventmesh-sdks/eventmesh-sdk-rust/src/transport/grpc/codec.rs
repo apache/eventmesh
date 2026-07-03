@@ -317,17 +317,24 @@ impl CloudEventCodec {
 
     /// Mark a CloudEvent as a subscription reply (sent back over the stream).
     ///
-    /// Only tags the message with `SUB_MESSAGE_TYPE = SUBSCRIPTION_REPLY`. The
-    /// reply's data is left intact: EventMesh's `ReplyMessageProcessor` runs
-    /// `ServiceUtils.validateCloudEventData`, which for text content requires a
-    /// non-empty `textData` — clearing the data here would make the reply fail
-    /// validation and never reach `producer.reply()`, breaking request/reply.
-    /// This mirrors the Java SDK's `SubStreamHandler.buildReplyMessage`, which
-    /// does not strip the reply payload.
+    /// Mirrors the Java SDK's `SubStreamHandler.buildReplyMessage`:
+    /// - Tags the message with `SUB_MESSAGE_TYPE = SUBSCRIPTION_REPLY`.
+    /// - Forces `datacontenttype` to `application/json` so cross-SDK consumers
+    ///   that dispatch on content type decode the reply consistently.
+    ///
+    /// The reply's data is left intact: EventMesh's `ReplyMessageProcessor`
+    /// runs `ServiceUtils.validateCloudEventData`, which for text content
+    /// requires a non-empty `textData` — clearing the data here would make the
+    /// reply fail validation and never reach `producer.reply()`, breaking
+    /// request/reply.
     pub fn mark_as_reply(cloud_event: &mut PbCloudEvent) {
         cloud_event.attributes.insert(
             ProtocolKey::SUB_MESSAGE_TYPE.into(),
             attr_str(ProtocolKey::SUBSCRIPTION_REPLY),
+        );
+        cloud_event.attributes.insert(
+            ProtocolKey::DATA_CONTENT_TYPE.into(),
+            attr_str(DataContentType::JSON),
         );
     }
 }

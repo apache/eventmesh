@@ -18,10 +18,14 @@
 //! gRPC consumer.
 
 use std::collections::HashMap;
+use std::future::{Future, IntoFuture};
+use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 
 use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
+use tokio_util::sync::CancellationToken;
 use tonic::codegen::tokio_stream::StreamExt;
 use tracing::{debug, error, warn};
 
@@ -34,27 +38,25 @@ use crate::transport::grpc::heartbeat;
 use crate::transport::Subscriber;
 use crate::MessageListener;
 
-/// Handle to an active stream subscription; keeps the reply channel alive.
-#[derive(Clone)]
-pub struct SubscribeStreamHandle {
-    /// Holding this sender keeps the bidirectional stream's request side
-    /// alive for the broker (and lets the receive loop send replies).
-    #[allow(dead_code)]
-    pub(crate) reply_tx: Option<Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>>,
-}
-
 /// gRPC-based consumer, generic over the user's [`MessageListener`] type.
 ///
 /// Use [`GrpcConsumer::new`] with your own listener. The listener's
 /// `Message` associated type must be [`EventMeshMessage`] for this consumer.
+///
+/// A background heartbeat task is spawned on construction and tied to an
+/// internal cancellation token. It is stopped automatically when the consumer
+/// is dropped, or explicitly via [`GrpcConsumer::shutdown`].
 pub struct GrpcConsumer<L: MessageListener<Message = EventMeshMessage>> {
     client: GrpcClient,
     config: crate::config::GrpcClientConfig,
     /// topic -> entry, for heartbeat and unsubscribe.
     subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
-    /// Active stream reply sender.
-    stream: Mutex<Option<SubscribeStreamHandle>>,
     listener: Arc<L>,
+    /// Shared shutdown signal for the heartbeat and stream driver.
+    shutdown: CancellationToken,
+    /// Handle to the background heartbeat task, awaited by `shutdown` /
+    /// aborted by `Drop`.
+    heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -65,17 +67,25 @@ pub(crate) struct SubscriptionEntry {
 }
 
 impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
-    /// Create a consumer. Spawns a background heartbeat task.
+    /// Create a consumer. Spawns a background heartbeat task that is stopped
+    /// on [`GrpcConsumer::shutdown`] or drop.
     pub fn new(config: crate::config::GrpcClientConfig, listener: L) -> Result<Self> {
         let client = GrpcClient::new(&config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
-        heartbeat::spawn(client.clone(), config.clone(), Arc::clone(&subscriptions));
+        let shutdown = CancellationToken::new();
+        let heartbeat_handle = heartbeat::spawn(
+            client.clone(),
+            config.clone(),
+            Arc::clone(&subscriptions),
+            shutdown.clone(),
+        );
         Ok(Self {
             client,
             config,
             subscriptions,
-            stream: Mutex::new(None),
             listener: Arc::new(listener),
+            shutdown,
+            heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
         })
     }
 
@@ -107,9 +117,23 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
         Ok(response)
     }
 
-    /// Subscribe via bidirectional stream and spawn the receive loop driving
-    /// the registered listener.
-    pub async fn subscribe_stream(&self, items: Vec<SubscriptionItem>) -> Result<()> {
+    /// Prepare a bidirectional stream subscription, returning a foreground
+    /// [`StreamServe`] driver.
+    ///
+    /// This is **synchronous** (it only validates and encodes the subscription
+    /// request) so that, axum-style, a single `.await` drives everything:
+    ///
+    /// ```ignore
+    /// // drive until the server closes the stream
+    /// consumer.subscribe_stream(items)?.await?;
+    /// // or bind a shutdown signal
+    /// consumer.subscribe_stream(items)?.with_graceful_shutdown(sig).await?;
+    /// ```
+    ///
+    /// The actual gRPC stream is opened on the first poll of the returned
+    /// driver; opening/IO errors therefore surface from the `.await`, not from
+    /// this call. Dropping the driver without awaiting opens nothing.
+    pub fn subscribe_stream(&self, items: Vec<SubscriptionItem>) -> Result<StreamServe<L>> {
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
                 "subscription items must not be empty".into(),
@@ -121,52 +145,15 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
             None,
             &items,
         )?;
-
-        let (reply_tx, mut stream) = self.client.subscribe_stream(event).await?;
-        let reply_tx = Arc::new(reply_tx);
-        let handle = SubscribeStreamHandle {
-            reply_tx: Some(Arc::clone(&reply_tx)),
-        };
-        *self.stream.lock().await = Some(handle);
-
-        self.record(items, SDK_STREAM_URL.to_string()).await;
-
-        let listener = Arc::clone(&self.listener);
-        let config = self.config.clone();
-        tokio::spawn(async move {
-            while let Some(msg) = stream.next().await {
-                let cloud_event = match msg {
-                    Ok(ce) => ce,
-                    Err(status) => {
-                        warn!("stream receive error: {status}");
-                        continue;
-                    }
-                };
-                let eventmesh_msg = CloudEventCodec::to_event_mesh_message(&cloud_event);
-                // Skip control/ack frames: the broker echoes the subscription
-                // request back as the first stream message. Real messages always
-                // carry a seqnum; control frames don't.
-                if eventmesh_msg.biz_seq_no.is_none() {
-                    debug!("skipping control frame (no seqnum)");
-                    continue;
-                }
-                debug!("delivered topic={:?}", eventmesh_msg.topic);
-                match listener.handle(eventmesh_msg).await {
-                    Some(reply) => match build_reply(reply, &cloud_event, &config) {
-                        Ok(reply_event) => {
-                            if reply_tx.send(reply_event).await.is_err() {
-                                warn!("reply channel closed; stopping receive loop");
-                                break;
-                            }
-                        }
-                        Err(e) => error!("failed to encode reply: {e}"),
-                    },
-                    None => { /* async ack: nothing to send back */ }
-                }
-            }
-            debug!("subscribe stream ended");
-        });
-        Ok(())
+        Ok(StreamServe {
+            client: self.client.clone(),
+            event,
+            record_items: items,
+            subscriptions: Arc::clone(&self.subscriptions),
+            listener: Arc::clone(&self.listener),
+            config: self.config.clone(),
+            shutdown: self.shutdown.clone(),
+        })
     }
 
     async fn record(&self, items: Vec<SubscriptionItem>, url: String) {
@@ -186,11 +173,28 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
     pub fn consumer_group(&self) -> &str {
         &self.config.identity.consumer_group
     }
+
+    /// Explicitly shut down: cancel the shared token and await the heartbeat
+    /// task's exit. Any active [`StreamServe`] driver observing the same token
+    /// also stops.
+    pub async fn shutdown(&self) {
+        self.shutdown.cancel();
+        if let Some(handle) = self.heartbeat_handle.lock().await.take() {
+            let _ = handle.await;
+        }
+    }
 }
 
 impl<L: MessageListener<Message = EventMeshMessage>> Subscriber for GrpcConsumer<L> {
     async fn subscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
-        self.subscribe_stream(items).await?;
+        // Fire-and-forget: spawn the driver in the background. It stops when
+        // the consumer is dropped / shut down (shared cancellation token).
+        let serve = self.subscribe_stream(items)?;
+        tokio::spawn(async move {
+            if let Err(e) = serve.await {
+                warn!("stream driver exited with error: {e}");
+            }
+        });
         Ok(PublishResponse::new(
             Some(0),
             Some("subscribed".into()),
@@ -224,6 +228,20 @@ impl<L: MessageListener<Message = EventMeshMessage>> Subscriber for GrpcConsumer
     }
 }
 
+impl<L: MessageListener<Message = EventMeshMessage>> Drop for GrpcConsumer<L> {
+    fn drop(&mut self) {
+        // Signal the heartbeat (and any stream driver) to stop, then abort the
+        // heartbeat task if it is still running. `Drop` is sync, so we cannot
+        // await; explicit `shutdown()` is the awaitable path.
+        self.shutdown.cancel();
+        if let Ok(mut guard) = self.heartbeat_handle.try_lock() {
+            if let Some(handle) = guard.take() {
+                handle.abort();
+            }
+        }
+    }
+}
+
 /// Apply the config's default request timeout to a short unary RPC.
 async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result<T>>) -> Result<T> {
     tokio::time::timeout(timeout, f)
@@ -254,4 +272,158 @@ pub(crate) fn build_reply(
     }
     CloudEventCodec::mark_as_reply(&mut event);
     Ok(event)
+}
+
+/// Foreground driver for a bidirectional stream subscription.
+///
+/// Returned (synchronously) by [`GrpcConsumer::subscribe_stream`]. The gRPC
+/// stream is opened lazily on the first poll, so awaiting this driver both
+/// subscribes and runs the receive loop in one step — dispatching delivered
+/// messages to the registered listener and sending back replies until the
+/// server closes the stream or a graceful shutdown fires.
+///
+/// Bind an external trigger (Ctrl-C, a `oneshot`, etc.) with
+/// [`StreamServe::with_graceful_shutdown`]; resolving that signal cancels the
+/// consumer's shared token, stopping both this driver and the background
+/// heartbeat.
+///
+/// # Example
+///
+/// ```no_run
+/// # use eventmesh::{
+/// #     config::GrpcClientConfig, grpc::GrpcConsumer,
+/// #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
+/// #     MessageListener,
+/// # };
+/// # #[eventmesh::main]
+/// # async fn main() -> eventmesh::Result<()> {
+/// #     let consumer = GrpcConsumer::new(GrpcClientConfig::builder().build(), MyListener)?;
+/// #     let items = vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)];
+/// consumer
+///     .subscribe_stream(items)?
+///     .with_graceful_shutdown(async { tokio::signal::ctrl_c().await.ok(); })
+///     .await?;
+/// #     Ok(())
+/// # }
+/// # struct MyListener;
+/// # impl MessageListener for MyListener {
+/// #     type Message = EventMeshMessage;
+/// #     async fn handle(&self, _: Self::Message) -> Option<Self::Message> { None }
+/// # }
+/// ```
+pub struct StreamServe<L: MessageListener<Message = EventMeshMessage>> {
+    client: GrpcClient,
+    event: crate::proto_gen::PbCloudEvent,
+    record_items: Vec<SubscriptionItem>,
+    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    listener: Arc<L>,
+    config: crate::config::GrpcClientConfig,
+    shutdown: CancellationToken,
+}
+
+impl<L: MessageListener<Message = EventMeshMessage>> StreamServe<L> {
+    /// Bind an external shutdown signal.
+    ///
+    /// When `signal` resolves the consumer's shared cancellation token is
+    /// triggered, which stops both this driver's receive loop and the
+    /// background heartbeat. The returned `StreamServe` is the receiver, so
+    /// you can chain `.await` directly.
+    pub fn with_graceful_shutdown(
+        self,
+        signal: impl Future<Output = ()> + Send + 'static,
+    ) -> Self {
+        let token = self.shutdown.clone();
+        tokio::spawn(async move {
+            // Exit the watcher either when the signal fires (cancel the token)
+            // or when the token is already cancelled (consumer dropped), so the
+            // watcher task never leaks.
+            tokio::select! {
+                _ = signal => token.cancel(),
+                _ = token.cancelled() => {}
+            }
+        });
+        self
+    }
+}
+
+impl<L: MessageListener<Message = EventMeshMessage>> IntoFuture for StreamServe<L> {
+    type Output = Result<()>;
+    type IntoFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        let Self {
+            client,
+            event,
+            record_items,
+            subscriptions,
+            listener,
+            config,
+            shutdown,
+        } = self;
+        Box::pin(async move {
+            // Open the stream lazily here so `subscribe_stream` can stay
+            // synchronous (single `.await` at the call site, axum-style).
+            let (reply_tx, mut stream) = client.subscribe_stream(event).await?;
+            let reply_tx = Arc::new(reply_tx);
+
+            // Record the subscription so the heartbeat advertises it.
+            {
+                let mut guard = subscriptions.lock().await;
+                for item in record_items {
+                    guard.insert(
+                        item.topic.clone(),
+                        SubscriptionEntry {
+                            item,
+                            url: SDK_STREAM_URL.to_string(),
+                        },
+                    );
+                }
+            }
+
+            loop {
+                tokio::select! {
+                    msg = stream.next() => match msg {
+                        None => {
+                            debug!("subscribe stream ended");
+                            break;
+                        }
+                        Some(Err(status)) => {
+                            warn!("stream receive error: {status}");
+                            continue;
+                        }
+                        Some(Ok(cloud_event)) => {
+                            let eventmesh_msg =
+                                CloudEventCodec::to_event_mesh_message(&cloud_event);
+                            // Skip control/ack frames: the broker echoes the
+                            // subscription request back as the first stream
+                            // message. Real messages always carry a seqnum;
+                            // control frames don't.
+                            if eventmesh_msg.biz_seq_no.is_none() {
+                                debug!("skipping control frame (no seqnum)");
+                                continue;
+                            }
+                            debug!("delivered topic={:?}", eventmesh_msg.topic);
+                            match listener.handle(eventmesh_msg).await {
+                                Some(reply) => match build_reply(reply, &cloud_event, &config) {
+                                    Ok(reply_event) => {
+                                        if reply_tx.send(reply_event).await.is_err() {
+                                            warn!("reply channel closed; stopping receive loop");
+                                            break;
+                                        }
+                                    }
+                                    Err(e) => error!("failed to encode reply: {e}"),
+                                },
+                                None => { /* async ack: nothing to send back */ }
+                            }
+                        }
+                    },
+                    _ = shutdown.cancelled() => {
+                        debug!("subscribe stream shutting down");
+                        break;
+                    }
+                }
+            }
+            Ok(())
+        })
+    }
 }

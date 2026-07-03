@@ -17,7 +17,6 @@
 
 //! Subscription model: topics, modes, types, heartbeat items and reply.
 
-use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
@@ -124,27 +123,6 @@ impl FromStr for SubscriptionType {
             ))),
         }
     }
-}
-
-/// Reply sent back over the stream for request/reply consumption.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SubscriptionReply {
-    #[serde(rename = "producerGroup")]
-    pub producer_group: String,
-    pub topic: String,
-    pub content: String,
-    pub ttl: String,
-    #[serde(rename = "uniqueId")]
-    pub unique_id: String,
-    #[serde(rename = "seqNum")]
-    pub seq_num: String,
-    pub tag: Option<String>,
-    pub properties: HashMap<String, String>,
-}
-
-impl SubscriptionReply {
-    /// Marker value of the `submessagetype` attribute for a reply message.
-    pub const SUB_TYPE: &'static str = "subscription_reply";
 }
 
 /// One entry of the heartbeat payload (`text_data` JSON array).

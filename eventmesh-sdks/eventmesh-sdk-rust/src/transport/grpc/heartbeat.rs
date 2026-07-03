@@ -22,12 +22,15 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
+use tokio_util::sync::CancellationToken;
 use tracing::{debug, warn};
 
 use crate::common::status_code::StatusCode;
 use crate::config::GrpcClientConfig;
 use crate::transport::grpc::client::GrpcClient;
 use crate::transport::grpc::codec::build_heartbeat;
+use crate::transport::grpc::consumer::SubscriptionEntry;
 
 /// Initial delay before the first heartbeat.
 const HEARTBEAT_INITIAL_DELAY: Duration = Duration::from_secs(10);
@@ -35,14 +38,23 @@ const HEARTBEAT_INITIAL_DELAY: Duration = Duration::from_secs(10);
 pub const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);
 
 /// Spawn the heartbeat loop. Reads the consumer's current `(topic, url)`
-/// subscriptions each tick and reports them to the broker.
+/// subscriptions each tick and reports them to the broker. The loop exits
+/// promptly when `shutdown` is cancelled, so dropping / shutting down the
+/// consumer no longer leaks a permanently-running task.
+///
+/// Returns the task's [`JoinHandle`] so the owner can await clean exit.
 pub(crate) fn spawn(
     client: GrpcClient,
     config: GrpcClientConfig,
-    subscriptions: Arc<Mutex<HashMap<String, crate::transport::grpc::consumer::SubscriptionEntry>>>,
-) {
+    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    shutdown: CancellationToken,
+) -> JoinHandle<()> {
     tokio::spawn(async move {
-        tokio::time::sleep(HEARTBEAT_INITIAL_DELAY).await;
+        // Initial delay is itself interruptible.
+        tokio::select! {
+            _ = tokio::time::sleep(HEARTBEAT_INITIAL_DELAY) => {}
+            _ = shutdown.cancelled() => return,
+        }
         loop {
             let items: Vec<(String, String)> = subscriptions
                 .lock()
@@ -65,7 +77,10 @@ pub(crate) fn spawn(
                     Err(e) => warn!("heartbeat failed: {e}"),
                 }
             }
-            tokio::time::sleep(HEARTBEAT_INTERVAL).await;
+            tokio::select! {
+                _ = tokio::time::sleep(HEARTBEAT_INTERVAL) => {}
+                _ = shutdown.cancelled() => break,
+            }
         }
-    });
+    })
 }

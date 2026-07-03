@@ -22,13 +22,11 @@
 //! this consumer.
 
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::time::Duration;
 
 use eventmesh::{
     config::GrpcClientConfig,
     grpc::GrpcConsumer,
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::Subscriber,
     MessageListener,
 };
 
@@ -76,11 +74,12 @@ async fn main() -> eventmesh::Result<()> {
         SubscriptionMode::CLUSTERING,
         SubscriptionType::ASYNC,
     )];
-    consumer.subscribe(items).await?;
     println!("subscribed; waiting for messages (Ctrl-C to stop)...");
-
-    // keep the process alive so the background stream + heartbeat keep running
-    loop {
-        tokio::time::sleep(Duration::from_secs(1)).await;
-    }
+    consumer
+        .subscribe_stream(items)?
+        .with_graceful_shutdown(async {
+            tokio::signal::ctrl_c().await.ok();
+        })
+        .await?;
+    Ok(())
 }
