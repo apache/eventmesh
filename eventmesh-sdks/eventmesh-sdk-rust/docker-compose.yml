@@ -101,6 +101,22 @@ services:
     depends_on:
       - namesrv
       - broker
+    # The published image ships rocketmq-*.jar in lib/ (system classpath). With
+    # them there, parent-first classloading always picks rocketmq-client's own
+    # ConsumeMessageConcurrentlyService over EventMesh's shadow copy that lives
+    # in the storage plugin, causing a ClassCastException that silently drops
+    # every consumed message (apache/eventmesh#5213). The plugin classloader
+    # (JarExtensionClassLoader) sorts its URLs alphabetically, so once the
+    # rocketmq jars sit next to eventmesh-storage-rocketmq.jar under
+    # plugin/storage/rocketmq/, the shadow class loads first and consumption
+    # works. Move them before starting the runtime.
+    command:
+      - bash
+      - -c
+      - |
+        mkdir -p plugin/storage/rocketmq
+        mv lib/rocketmq-*.jar plugin/storage/rocketmq/ 2>/dev/null || true
+        exec bash bin/start.sh
     ports:
       - "10000:10000"
       - "10105:10105"
