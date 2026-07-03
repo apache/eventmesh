@@ -152,7 +152,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
                 }
                 debug!("delivered topic={:?}", eventmesh_msg.topic);
                 match listener.handle(eventmesh_msg).await {
-                    Some(reply) => match build_reply(reply, &config) {
+                    Some(reply) => match build_reply(reply, &cloud_event, &config) {
                         Ok(reply_event) => {
                             if reply_tx.send(reply_event).await.is_err() {
                                 warn!("reply channel closed; stopping receive loop");
@@ -233,11 +233,25 @@ async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result
 
 /// Build a reply CloudEvent (used by the stream receive loop when the listener
 /// returns `Some(message)`).
+///
+/// Mirrors the Java SDK's `SubStreamHandler.buildReplyMessage`: the incoming
+/// request's attributes are carried over into the reply so the broker can
+/// correlate the reply with the original request. The reply's own attributes
+/// take precedence; the request only fills keys the reply leaves unset (notably
+/// `correlation99id` / `reply99to99client`, which RocketMQ needs to match the
+/// reply back to the pending `RequestFuture`).
 pub(crate) fn build_reply(
     reply: EventMeshMessage,
+    request: &crate::proto_gen::PbCloudEvent,
     config: &crate::config::GrpcClientConfig,
 ) -> Result<crate::proto_gen::PbCloudEvent> {
     let mut event = CloudEventCodec::from_event_mesh_message(&reply, config)?;
+    for (key, value) in &request.attributes {
+        event
+            .attributes
+            .entry(key.clone())
+            .or_insert_with(|| value.clone());
+    }
     CloudEventCodec::mark_as_reply(&mut event);
     Ok(event)
 }

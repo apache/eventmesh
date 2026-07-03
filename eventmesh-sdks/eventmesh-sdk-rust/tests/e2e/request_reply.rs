@@ -69,19 +69,16 @@ async fn request_reply_roundtrip() {
         .expect("request_reply RPC should complete");
 
     // The standalone (in-memory) broker does not implement synchronous
-    // request/reply: it bounces the request back with statuscode "22" and a
-    // "Request is not supported" message rather than forwarding it to the
-    // consumer. Treat that as a broker-capability skip, not a failure, so the
-    // suite stays green on standalone while still asserting the full round-trip
-    // on a durable backend (RocketMQ).
+    // request/reply: it bounces the request back with a "Request is not
+    // supported" message rather than forwarding it to the consumer. Treat that
+    // specific broker-capability gap as a skip, not a failure, so the suite
+    // stays green on standalone while still asserting the full round-trip on a
+    // durable backend (RocketMQ). Any other non-zero status (e.g. a request
+    // timeout, 10006) is a real failure and must surface here.
     let unsupported = reply
-        .get_prop("statuscode")
-        .map(|c| c != "0")
-        .unwrap_or(false)
-        || reply
-            .get_prop("responsemessage")
-            .map(|m| m.contains("not supported"))
-            .unwrap_or(false);
+        .get_prop("responsemessage")
+        .map(|m| m.to_lowercase().contains("not supported"))
+        .unwrap_or(false);
     if unsupported {
         eprintln!(
             "[e2e] skipping request_reply assertion: broker does not support \

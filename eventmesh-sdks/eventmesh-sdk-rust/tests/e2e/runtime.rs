@@ -117,10 +117,7 @@ fn initialize() -> Mode {
 
     let compose = compose_file();
     let project_dir = PathBuf::from(MANIFEST_DIR);
-    info!(
-        ?compose,
-        "starting EventMesh via docker compose (rocketmq)"
-    );
+    info!(?compose, "starting EventMesh via docker compose (rocketmq)");
     let up = Command::new("docker")
         .args([
             "compose",
