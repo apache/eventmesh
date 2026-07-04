@@ -15,17 +15,21 @@
 // under the License.
 //
 
-//! Stream subscription: receive delivered messages via a listener.
+//! HTTP webhook consumer using the built-in [`WebhookServer`].
 //!
-//! Assumes `docker compose --profile standalone up` is running (gRPC on
-//! `127.0.0.1:10205`). Run the producer example in another terminal to feed
-//! this consumer.
+//! The SDK starts an axum server to receive pushed messages from the
+//! EventMesh runtime. This is the "batteries-included" mode.
+//!
+//! Assumes `docker compose --profile standalone up` is running (HTTP on
+//! `127.0.0.1:10105`). Run the HTTP producer example in another terminal.
 
+use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 use eventmesh::{
-    config::GrpcClientConfig,
-    grpc::GrpcConsumer,
+    config::HttpClientConfig,
+    http::{HttpConsumer, WebhookServer},
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
     MessageListener,
 };
@@ -43,7 +47,7 @@ impl MessageListener for PrintingListener {
             "[received #{n}] topic={:?} content={:?}",
             message.topic, message.content
         );
-        None // async ack, no reply
+        None
     }
 }
 
@@ -53,33 +57,48 @@ async fn main() -> eventmesh::Result<()> {
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let config = GrpcClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10205)
+    let listener = Arc::new(PrintingListener {
+        count: AtomicU64::new(0),
+    });
+
+    // Start the built-in webhook server on port 9090.
+    // Bind to 0.0.0.0 so Docker-hosted runtimes can reach us, but advertise
+    // 127.0.0.1 since that's where the standalone runtime (on the same host)
+    // can POST back to.
+    let addr: SocketAddr = "0.0.0.0:9090".parse().expect("valid addr");
+    let server = WebhookServer::new(addr, listener.clone())
+        .with_advertise_url("http://127.0.0.1:9090/eventmesh/callback");
+
+    // Register the webhook URL with the EventMesh runtime.
+    let config = HttpClientConfig::builder()
+        .servers("127.0.0.1:10105")
         .env("env")
         .idc("idc")
         .sys("sys")
         .username("eventmesh")
         .password("eventmesh")
-        .consumer_group("test-consumerGroup")
-        .build();
+        .consumer_group("test-consumerGroup-http")
+        .build()?;
 
-    let listener = PrintingListener {
-        count: AtomicU64::new(0),
-    };
-    let consumer = GrpcConsumer::new(config, listener)?;
+    let consumer = HttpConsumer::new(config)?;
 
     let items = vec![SubscriptionItem::new(
-        "test-topic-rust-sdk",
+        "test-topic-rust-http",
         SubscriptionMode::CLUSTERING,
         SubscriptionType::ASYNC,
     )];
+    let webhook_url = server.url();
+    println!("webhook URL: {webhook_url}");
+    consumer.subscribe_webhook(items, webhook_url).await?;
     println!("subscribed; waiting for messages (Ctrl-C to stop)...");
-    consumer
-        .subscribe_stream(items)?
+
+    // Run the server until Ctrl-C.
+    server
         .with_graceful_shutdown(async {
             tokio::signal::ctrl_c().await.ok();
         })
         .await?;
+
+    consumer.shutdown().await;
     Ok(())
 }

@@ -56,8 +56,67 @@ impl GrpcClient {
             .tcp_nodelay(true)
             .tcp_keepalive(Some(Duration::from_secs(100)));
 
+        // Apply TLS settings (CA cert, client identity, SNI) when enabled.
+        // Gated behind the `tls` cargo feature; without it, `use_tls=true`
+        // still produces an `https://` URI but tonic falls back to its
+        // default TLS settings.
+        #[cfg(feature = "tls")]
+        let endpoint = if config.use_tls {
+            Self::apply_tls(endpoint, config)?
+        } else {
+            endpoint
+        };
+
         let channel = endpoint.connect_lazy();
         Ok(Self::from_channel(channel))
+    }
+
+    /// Configure the tonic [`Endpoint`] with [`tonic::transport::ClientTlsConfig`]
+    /// derived from [`GrpcClientConfig`].
+    ///
+    /// When `tls_config` is `None`, only the SNI domain is set (to
+    /// `server_addr`); tonic uses its built-in trust store. When present, the
+    /// CA certificate, native roots flag, and mTLS client identity are applied.
+    #[cfg(feature = "tls")]
+    fn apply_tls(endpoint: Endpoint, config: &GrpcClientConfig) -> Result<Endpoint> {
+        use tonic::transport::{Certificate, ClientTlsConfig, Identity};
+
+        let tls = config.tls_config.as_ref();
+        let domain = tls
+            .and_then(|t| t.domain.clone())
+            .unwrap_or_else(|| config.server_addr.clone());
+
+        let mut tls_config = ClientTlsConfig::new().domain_name(domain);
+
+        if let Some(tls) = tls {
+            // CA certificate — inline PEM takes precedence over file path.
+            match tls.ca_cert_pem_bytes() {
+                Some(Ok(pem)) => {
+                    tls_config = tls_config.ca_certificate(Certificate::from_pem(pem));
+                }
+                Some(Err(e)) => {
+                    return Err(EventMeshError::Config(format!(
+                        "failed to read CA certificate: {e}"
+                    )));
+                }
+                None => {}
+            }
+
+            // OS-native trust roots.
+            if tls.use_native_roots {
+                tls_config = tls_config.with_native_roots();
+            }
+
+            // mTLS client identity.
+            if let Some(id) = &tls.client_identity {
+                tls_config = tls_config
+                    .identity(Identity::from_pem(id.cert_pem.clone(), id.key_pem.clone()));
+            }
+        }
+
+        endpoint
+            .tls_config(tls_config)
+            .map_err(|e| EventMeshError::Config(format!("TLS config error: {e}")))
     }
 
     fn from_channel(channel: Channel) -> Self {

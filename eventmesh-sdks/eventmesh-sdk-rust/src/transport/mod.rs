@@ -64,4 +64,8 @@ pub trait Subscriber {
     ) -> impl Future<Output = crate::Result<PublishResponse>> + Send;
 }
 
+#[cfg(feature = "grpc")]
 pub mod grpc;
+
+#[cfg(feature = "http")]
+pub mod http;

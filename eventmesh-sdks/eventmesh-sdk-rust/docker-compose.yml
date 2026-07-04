@@ -40,6 +40,11 @@ services:
       - "10105:10105"
       - "10106:10106"
       - "10205:10205"
+    # Allow the runtime container to reach webhook servers running on the host
+    # (needed by the HTTP transport consumer e2e tests). `host-gateway` is a
+    # special Docker keyword (Docker 20.10+) that resolves to the host IP.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./docker/conf/eventmesh-standalone.properties:/data/app/eventmesh/conf/eventmesh.properties:ro,z
       - eventmesh-standalone-logs:/data/app/eventmesh/logs
@@ -122,6 +127,10 @@ services:
       - "10105:10105"
       - "10106:10106"
       - "10205:10205"
+    # Allow the runtime container to reach webhook servers running on the host
+    # (needed by the HTTP transport consumer e2e tests).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./docker/conf/eventmesh-rocketmq.properties:/data/app/eventmesh/conf/eventmesh.properties:ro,z
       - ./docker/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties:ro,z

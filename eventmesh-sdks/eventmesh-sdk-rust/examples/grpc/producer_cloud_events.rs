@@ -23,7 +23,7 @@
 use cloudevents::{EventBuilder, EventBuilderV10};
 use eventmesh::{config::GrpcClientConfig, grpc::GrpcProducer};
 
-#[eventmesh::main]
+#[tokio::main]
 async fn main() -> eventmesh::Result<()> {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)

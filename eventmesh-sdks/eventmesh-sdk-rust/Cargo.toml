@@ -30,17 +30,19 @@ path = "src/lib.rs"
 default = ["grpc"]
 # Transport protocols (implemented incrementally).
 grpc = ["dep:tonic", "dep:prost", "dep:prost-types"]
-# http = ["dep:reqwest", "dep:axum", "dep:tower"]      # Phase 2
+# HTTP transport (producer, consumer, webhook middleware + built-in server).
+http = ["dep:reqwest", "dep:serde_urlencoded", "dep:axum", "dep:tower", "dep:tower-http"]
 # tcp  = ["dep:tokio-util", "dep:http"]                # Phase 3
 # Message models.
 cloud_events = ["dep:cloudevents"]
 # TLS support.
-tls = ["tonic/tls"]
+tls = ["tonic/tls", "tonic/tls-native-roots"]
 # Convenience aggregate (only enabled features; add http/tcp as they land).
-full = ["grpc", "cloud_events", "tls"]
+full = ["grpc", "http", "cloud_events", "tls"]
 # End-to-end tests (tests/e2e/*). Gated off by default so plain `cargo test`
-# never needs a live server. Run with `cargo test --features e2e`.
-e2e = []
+# never needs a live server. Run with `cargo test --features e2e`. Implies both
+# transports so the full suite (gRPC + HTTP) compiles from a single flag.
+e2e = ["grpc", "http"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -61,6 +63,12 @@ prost = { version = "0.13", optional = true }
 prost-types = { version = "0.13", optional = true }
 # CloudEvents interop.
 cloudevents = { package = "cloudevents-sdk", version = "0.7", optional = true }
+# HTTP transport.
+reqwest = { version = "0.12", optional = true, features = ["json"] }
+serde_urlencoded = { version = "0.7", optional = true }
+tower = { version = "0.5", optional = true }
+tower-http = { version = "0.6", optional = true }
+axum = { version = "0.7", optional = true }
 
 [build-dependencies]
 tonic-build = "0.12"
@@ -86,3 +94,18 @@ required-features = ["grpc"]
 name = "grpc_producer_cloud_events"
 path = "examples/grpc/producer_cloud_events.rs"
 required-features = ["grpc", "cloud_events"]
+
+[[example]]
+name = "http_producer"
+path = "examples/http/producer.rs"
+required-features = ["http"]
+
+[[example]]
+name = "http_consumer_server"
+path = "examples/http/consumer_server.rs"
+required-features = ["http"]
+
+[[example]]
+name = "http_consumer_custom"
+path = "examples/http/consumer_custom.rs"
+required-features = ["http"]

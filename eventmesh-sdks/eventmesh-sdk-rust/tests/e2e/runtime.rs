@@ -36,6 +36,8 @@ use tracing::{info, warn};
 
 /// gRPC port of the EventMesh runtime.
 pub(crate) const GRPC_PORT: u16 = 10_205;
+/// HTTP port of the EventMesh runtime.
+pub(crate) const HTTP_PORT: u16 = 10_105;
 /// Admin (HTTP) port, used for topic creation + readiness probes.
 pub(crate) const ADMIN_PORT: u16 = 10_106;
 /// Host the runtime is reachable on from the test host.
@@ -81,6 +83,37 @@ pub(crate) fn ensure_runtime() -> bool {
             // Already warned during init; just signal "skip".
             false
         }
+    }
+}
+
+/// The hostname an EventMesh runtime should use to POST webhook callbacks to a
+/// server running in this test process.
+///
+/// The runtime almost always lives in a container — either the harness started
+/// it via `docker compose` (`Mode::Started`), or the user pre-started the very
+/// same compose file and we reuse it (`Mode::External`). In both cases the
+/// container cannot reach the test process via `127.0.0.1` (that resolves to
+/// the container's own loopback), so we advertise `host.docker.internal`,
+/// which both profiles in `docker-compose.yml` map to the host gateway.
+///
+/// Override with the `EVENTMESH_E2E_WEBHOOK_HOST` env var for non-containerized
+/// setups (e.g. a runtime running directly on the host via `bin/start.sh`, in
+/// which case `127.0.0.1` is correct) or a server on another host.
+pub(crate) fn webhook_host() -> String {
+    if let Ok(h) = std::env::var("EVENTMESH_E2E_WEBHOOK_HOST") {
+        return h;
+    }
+    match MODE.get() {
+        // Both compose profiles map host.docker.internal -> host-gateway, so
+        // callbacks from the container reach the test process on the host.
+        // This deliberately covers Mode::External too: the common "external"
+        // case is a user who pre-started this crate's compose file, where the
+        // runtime is still containerized and 127.0.0.1 would route callbacks
+        // to the container's loopback and silently time out the webhook tests.
+        // For a genuinely non-containerized local runtime, set
+        // EVENTMESH_E2E_WEBHOOK_HOST=127.0.0.1.
+        Some(&Mode::Started | &Mode::External) => "host.docker.internal".to_string(),
+        _ => "127.0.0.1".to_string(),
     }
 }
 

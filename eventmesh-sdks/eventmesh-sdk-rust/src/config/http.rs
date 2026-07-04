@@ -15,68 +15,77 @@
 // under the License.
 //
 
-//! gRPC client configuration.
+//! HTTP client configuration.
 
 use std::time::Duration;
 
-use crate::config::{ClientIdentity, TlsConfig};
+use crate::common::loadbalance::LoadBalance;
+use crate::config::ClientIdentity;
 
-/// Default gRPC port of an EventMesh runtime.
-pub const DEFAULT_GRPC_PORT: u16 = 10_205;
-/// Default request timeout.
-pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
+/// Default HTTP port of an EventMesh runtime.
+pub const DEFAULT_HTTP_PORT: u16 = 10_105;
+/// Default request timeout (mirrors the Java SDK's `Constants.DEFAULT_HTTP_TIME_OUT`).
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(15);
+/// Default connection pool size (mirrors the Java SDK).
+pub const DEFAULT_POOL_SIZE: usize = 30;
+/// Default idle connection eviction (seconds).
+pub const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 10;
 
-/// Configuration for the gRPC transport.
+/// Configuration for the HTTP transport.
+///
+/// `servers` is a list of `host:port` (or `host:port:weight`) strings,
+/// semicolon- or comma-separated in the builder, mirroring the Java SDK's
+/// `liteEventMeshAddr` field.
 #[derive(Debug, Clone)]
-pub struct GrpcClientConfig {
-    /// Server host (no scheme, no port), e.g. `"127.0.0.1"`.
-    pub server_addr: String,
-    /// Server gRPC port (default `10205`).
-    pub server_port: u16,
-    /// Whether to use TLS (`https`).
+pub struct HttpClientConfig {
+    /// Parsed server nodes for load balancing.
+    pub nodes: Vec<crate::common::loadbalance::ServerNode>,
+    /// Load-balance strategy.
+    pub load_balance: LoadBalance,
+    /// Use TLS (`https`).
     pub use_tls: bool,
-    /// TLS details (CA cert, client identity, SNI, ...). Applied only when
-    /// `use_tls` is `true` and the `tls` cargo feature is enabled. If `None`,
-    /// tonic uses its built-in defaults.
-    pub tls_config: Option<TlsConfig>,
-    /// Default RPC timeout applied when none is given to a call.
+    /// Connection pool max size.
+    pub pool_size: usize,
+    /// Idle connection eviction timeout.
+    pub pool_idle_timeout: Duration,
+    /// Default request timeout.
     pub timeout: Duration,
     /// Client identity sent with every request.
     pub identity: ClientIdentity,
 }
 
-impl Default for GrpcClientConfig {
+impl Default for HttpClientConfig {
     fn default() -> Self {
         Self {
-            server_addr: "localhost".into(),
-            server_port: DEFAULT_GRPC_PORT,
+            nodes: vec![
+                crate::common::loadbalance::ServerNode::parse("localhost:10105")
+                    .expect("default node"),
+            ],
+            load_balance: LoadBalance::Random,
             use_tls: false,
-            tls_config: None,
+            pool_size: DEFAULT_POOL_SIZE,
+            pool_idle_timeout: Duration::from_secs(DEFAULT_IDLE_TIMEOUT_SECS),
             timeout: DEFAULT_TIMEOUT,
             identity: ClientIdentity::detect(),
         }
     }
 }
 
-impl GrpcClientConfig {
+impl HttpClientConfig {
     /// Start a fluent builder.
-    pub fn builder() -> GrpcClientConfigBuilder {
-        GrpcClientConfigBuilder::default()
-    }
-
-    /// `host:port` authority string.
-    pub fn authority(&self) -> String {
-        format!("{}:{}", self.server_addr, self.server_port)
+    pub fn builder() -> HttpClientConfigBuilder {
+        HttpClientConfigBuilder::default()
     }
 }
 
-/// Fluent builder for [`GrpcClientConfig`].
+/// Fluent builder for [`HttpClientConfig`].
 #[derive(Debug, Clone, Default)]
-pub struct GrpcClientConfigBuilder {
-    server_addr: Option<String>,
-    server_port: Option<u16>,
+pub struct HttpClientConfigBuilder {
+    servers: Option<String>,
+    load_balance: Option<LoadBalance>,
     use_tls: Option<bool>,
-    tls_config: Option<TlsConfig>,
+    pool_size: Option<usize>,
+    pool_idle_timeout: Option<Duration>,
     timeout: Option<Duration>,
     identity: Option<ClientIdentity>,
     // identity convenience setters:
@@ -90,70 +99,91 @@ pub struct GrpcClientConfigBuilder {
     token: Option<String>,
 }
 
-impl GrpcClientConfigBuilder {
-    pub fn server_addr(mut self, v: impl Into<String>) -> Self {
-        self.server_addr = Some(v.into());
+impl HttpClientConfigBuilder {
+    /// Set server addresses. Accepts `;` or `,` separated `host:port[:weight]` strings.
+    pub fn servers(mut self, v: impl Into<String>) -> Self {
+        self.servers = Some(v.into());
         self
     }
-    pub fn server_port(mut self, v: u16) -> Self {
-        self.server_port = Some(v);
+
+    pub fn load_balance(mut self, v: LoadBalance) -> Self {
+        self.load_balance = Some(v);
         self
     }
+
     pub fn use_tls(mut self, v: bool) -> Self {
         self.use_tls = Some(v);
         self
     }
-    pub fn tls_config(mut self, v: TlsConfig) -> Self {
-        self.tls_config = Some(v);
+
+    pub fn pool_size(mut self, v: usize) -> Self {
+        self.pool_size = Some(v);
         self
     }
+
+    pub fn pool_idle_timeout(mut self, v: Duration) -> Self {
+        self.pool_idle_timeout = Some(v);
+        self
+    }
+
     pub fn timeout(mut self, v: Duration) -> Self {
         self.timeout = Some(v);
         self
     }
+
     pub fn identity(mut self, v: ClientIdentity) -> Self {
         self.identity = Some(v);
         self
     }
+
     pub fn env(mut self, v: impl Into<String>) -> Self {
         self.env = Some(v.into());
         self
     }
+
     pub fn idc(mut self, v: impl Into<String>) -> Self {
         self.idc = Some(v.into());
         self
     }
+
     pub fn sys(mut self, v: impl Into<String>) -> Self {
         self.sys = Some(v.into());
         self
     }
+
     pub fn producer_group(mut self, v: impl Into<String>) -> Self {
         self.producer_group = Some(v.into());
         self
     }
+
     pub fn consumer_group(mut self, v: impl Into<String>) -> Self {
         self.consumer_group = Some(v.into());
         self
     }
+
     pub fn username(mut self, v: impl Into<String>) -> Self {
         self.username = Some(v.into());
         self
     }
+
     pub fn password(mut self, v: impl Into<String>) -> Self {
         self.password = Some(v.into());
         self
     }
+
     pub fn token(mut self, v: impl Into<String>) -> Self {
         self.token = Some(v.into());
         self
     }
 
-    pub fn build(self) -> GrpcClientConfig {
-        let GrpcClientConfigBuilder {
-            server_addr,
-            server_port,
+    /// Build the config, parsing the server address list.
+    pub fn build(self) -> crate::error::Result<HttpClientConfig> {
+        let HttpClientConfigBuilder {
+            servers,
+            load_balance,
             use_tls,
-            tls_config,
+            pool_size,
+            pool_idle_timeout,
             timeout,
             identity,
             env,
@@ -192,13 +222,30 @@ impl GrpcClientConfigBuilder {
             identity.token = Some(v);
         }
 
-        GrpcClientConfig {
-            server_addr: server_addr.unwrap_or_else(|| "localhost".into()),
-            server_port: server_port.unwrap_or(DEFAULT_GRPC_PORT),
+        // Parse server addresses — accept `;` or `,` separators.
+        let raw = servers.unwrap_or_else(|| "localhost:10105".into());
+        let nodes: Vec<crate::common::loadbalance::ServerNode> = raw
+            .split([';', ','])
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty())
+            .map(crate::common::loadbalance::ServerNode::parse)
+            .collect::<crate::error::Result<Vec<_>>>()?;
+
+        if nodes.is_empty() {
+            return Err(crate::error::EventMeshError::Config(
+                "at least one server address is required".into(),
+            ));
+        }
+
+        Ok(HttpClientConfig {
+            nodes,
+            load_balance: load_balance.unwrap_or_default(),
             use_tls: use_tls.unwrap_or(false),
-            tls_config,
+            pool_size: pool_size.unwrap_or(DEFAULT_POOL_SIZE),
+            pool_idle_timeout: pool_idle_timeout
+                .unwrap_or(Duration::from_secs(DEFAULT_IDLE_TIMEOUT_SECS)),
             timeout: timeout.unwrap_or(DEFAULT_TIMEOUT),
             identity,
-        }
+        })
     }
 }

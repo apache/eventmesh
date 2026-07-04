@@ -15,15 +15,17 @@
 // under the License.
 //
 
-//! Publish + batch publish + request-reply against a running EventMesh server.
+//! HTTP publish + request-reply against a running EventMesh server.
 //!
-//! Assumes `docker compose --profile standalone up` is running (gRPC on
-//! `127.0.0.1:10205`).
+//! Assumes `docker compose --profile standalone up` is running (HTTP on
+//! `127.0.0.1:10105`).
+//!
+//! Batch publish is not yet supported over HTTP — see `publish_batch` docs.
 
 use std::time::Duration;
 
 use eventmesh::{
-    config::GrpcClientConfig, grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher,
+    config::HttpClientConfig, http::HttpProducer, model::EventMeshMessage, transport::Publisher,
 };
 
 #[tokio::main]
@@ -32,43 +34,39 @@ async fn main() -> eventmesh::Result<()> {
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let config = GrpcClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10205)
+    let config = HttpClientConfig::builder()
+        .servers("127.0.0.1:10105")
         .env("env")
         .idc("idc")
         .sys("sys")
         .username("eventmesh")
         .password("eventmesh")
         .producer_group("test-producerGroup")
-        .build();
+        .build()?;
 
-    let producer = GrpcProducer::connect(config)?;
+    let producer = HttpProducer::new(config)?;
 
-    let topic = "test-topic-rust-sdk";
+    let topic = "test-topic-rust-http";
 
     // 1) single publish
     let msg = EventMeshMessage::builder()
         .topic(topic)
-        .content("hello from rust sdk")
+        .content("hello from rust http sdk")
         .build();
     let resp = producer.publish(msg).await?;
     println!("[publish]     {resp}");
 
-    // 2) batch publish
-    let batch: Vec<EventMeshMessage> = (0..3)
-        .map(|i| {
-            EventMeshMessage::builder()
-                .topic(topic)
-                .content(format!("batch message #{i}"))
-                .build()
-        })
-        .collect();
-    let resp = producer.publish_batch(batch).await?;
-    println!("[batch]       {resp}");
+    // 2) multiple single publishes (HTTP batch is not yet supported)
+    for i in 0..3 {
+        let msg = EventMeshMessage::builder()
+            .topic(topic)
+            .content(format!("message #{i}"))
+            .build();
+        let resp = producer.publish(msg).await?;
+        println!("[publish-{i}]   {resp}");
+    }
 
-    // 3) request-reply (needs a SYNC consumer subscribed to the topic; will
-    //    time out otherwise)
+    // 3) request-reply (needs a SYNC consumer subscribed to the topic)
     let rr = EventMeshMessage::builder()
         .topic(format!("{topic}-rr"))
         .content("ping")

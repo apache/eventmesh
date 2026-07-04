@@ -75,6 +75,10 @@ pub enum EventMeshError {
     #[error("channel closed: {0}")]
     ChannelClosed(String),
 
+    /// The operation is not supported by the active transport.
+    #[error("unsupported operation: {0}")]
+    Unsupported(String),
+
     /// Anything else, with a free-form message.
     #[error("{0}")]
     Other(String),

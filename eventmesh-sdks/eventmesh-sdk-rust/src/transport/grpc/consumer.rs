@@ -34,7 +34,7 @@ use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
 use crate::transport::grpc::client::GrpcClient;
 use crate::transport::grpc::codec::CloudEventCodec;
-use crate::transport::grpc::heartbeat;
+use crate::transport::grpc::heartbeat::{self, StreamTx};
 use crate::transport::Subscriber;
 use crate::MessageListener;
 
@@ -57,6 +57,12 @@ pub struct GrpcConsumer<L: MessageListener<Message = EventMeshMessage>> {
     /// Handle to the background heartbeat task, awaited by `shutdown` /
     /// aborted by `Drop`.
     heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
+    /// Sender for the currently-active bidirectional stream, if any.
+    ///
+    /// Set by [`StreamServe`] when the stream opens and cleared when it closes.
+    /// The heartbeat loop reads this to re-send stream subscriptions when the
+    /// server signals `CLIENT_RESUBSCRIBE`.
+    stream_tx: StreamTx,
 }
 
 #[derive(Debug, Clone)]
@@ -73,10 +79,12 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
         let client = GrpcClient::new(&config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
+        let stream_tx: StreamTx = Arc::new(Mutex::new(None));
         let heartbeat_handle = heartbeat::spawn(
             client.clone(),
             config.clone(),
             Arc::clone(&subscriptions),
+            Arc::clone(&stream_tx),
             shutdown.clone(),
         );
         Ok(Self {
@@ -86,6 +94,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
             listener: Arc::new(listener),
             shutdown,
             heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
+            stream_tx,
         })
     }
 
@@ -153,6 +162,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
             listener: Arc::clone(&self.listener),
             config: self.config.clone(),
             shutdown: self.shutdown.clone(),
+            stream_tx: Arc::clone(&self.stream_tx),
         })
     }
 
@@ -295,7 +305,7 @@ pub(crate) fn build_reply(
 /// #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
 /// #     MessageListener,
 /// # };
-/// # #[eventmesh::main]
+/// # #[tokio::main]
 /// # async fn main() -> eventmesh::Result<()> {
 /// #     let consumer = GrpcConsumer::new(GrpcClientConfig::builder().build(), MyListener)?;
 /// #     let items = vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)];
@@ -319,6 +329,9 @@ pub struct StreamServe<L: MessageListener<Message = EventMeshMessage>> {
     listener: Arc<L>,
     config: crate::config::GrpcClientConfig,
     shutdown: CancellationToken,
+    /// Shared slot where the stream sender is registered so the heartbeat
+    /// resubscribe path can re-send subscriptions over the active stream.
+    stream_tx: StreamTx,
 }
 
 impl<L: MessageListener<Message = EventMeshMessage>> StreamServe<L> {
@@ -328,10 +341,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> StreamServe<L> {
     /// triggered, which stops both this driver's receive loop and the
     /// background heartbeat. The returned `StreamServe` is the receiver, so
     /// you can chain `.await` directly.
-    pub fn with_graceful_shutdown(
-        self,
-        signal: impl Future<Output = ()> + Send + 'static,
-    ) -> Self {
+    pub fn with_graceful_shutdown(self, signal: impl Future<Output = ()> + Send + 'static) -> Self {
         let token = self.shutdown.clone();
         tokio::spawn(async move {
             // Exit the watcher either when the signal fires (cancel the token)
@@ -359,12 +369,19 @@ impl<L: MessageListener<Message = EventMeshMessage>> IntoFuture for StreamServe<
             listener,
             config,
             shutdown,
+            stream_tx,
         } = self;
         Box::pin(async move {
             // Open the stream lazily here so `subscribe_stream` can stay
             // synchronous (single `.await` at the call site, axum-style).
             let (reply_tx, mut stream) = client.subscribe_stream(event).await?;
             let reply_tx = Arc::new(reply_tx);
+
+            // Register the stream sender so the heartbeat loop can re-send
+            // subscriptions when the server signals CLIENT_RESUBSCRIBE.
+            {
+                *stream_tx.lock().await = Some((*reply_tx).clone());
+            }
 
             // Record the subscription so the heartbeat advertises it.
             {
@@ -423,6 +440,12 @@ impl<L: MessageListener<Message = EventMeshMessage>> IntoFuture for StreamServe<
                     }
                 }
             }
+
+            // Clear the registered stream sender so the heartbeat loop knows
+            // the stream is no longer active and won't try to re-send through
+            // a stale channel.
+            *stream_tx.lock().await = None;
+
             Ok(())
         })
     }

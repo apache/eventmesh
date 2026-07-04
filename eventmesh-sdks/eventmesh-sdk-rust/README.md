@@ -60,7 +60,7 @@ use eventmesh::{
     config::GrpcClientConfig, grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher,
 };
 
-#[eventmesh::main]
+#[tokio::main]
 async fn main() -> eventmesh::Result<()> {
     let config = GrpcClientConfig::builder()
         .server_addr("127.0.0.1")
@@ -107,7 +107,7 @@ impl MessageListener for MyListener {
     }
 }
 
-#[eventmesh::main]
+#[tokio::main]
 async fn main() -> eventmesh::Result<()> {
     let config = GrpcClientConfig::builder()
         .server_addr("127.0.0.1").server_port(10205)

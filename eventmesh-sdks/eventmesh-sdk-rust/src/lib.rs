@@ -25,15 +25,26 @@
 //!
 //! # Transports
 //!
-//! Phase 1 ships the **gRPC** transport. HTTP and TCP transports are tracked
-//! as follow-up phases.
+//! Phase 1 ships the **gRPC** transport. The **HTTP** transport (producer,
+//! consumer, and webhook middleware) is also available behind the `http`
+//! feature flag. TCP is tracked as a follow-up phase.
 //!
 //! - [`grpc::GrpcProducer`] — publish / batch / request-reply.
 //! - [`grpc::GrpcConsumer`] — webhook + bidirectional-stream subscription.
+//! - [`http::HttpProducer`] — HTTP publish / request-reply.
+//! - [`http::HttpConsumer`] — HTTP subscribe / heartbeat; receive pushes via
+//!   the built-in [`http::WebhookServer`] or your own endpoint built on the
+//!   [`http::codec`] helpers.
 //!
 //! # Quick example (gRPC producer)
 //!
-//! ```no_run
+//! Requires the `grpc` feature. The example is compiled by rustdoc only when
+//! `grpc` is enabled; on HTTP-only builds it is marked `ignore` so that
+//! `cargo test --no-default-features --features http` does not try to compile
+//! the `eventmesh::grpc` re-export.
+//!
+#![cfg_attr(feature = "grpc", doc = "```no_run")]
+#![cfg_attr(not(feature = "grpc"), doc = "```ignore")]
 //! use eventmesh::{
 //!     config::GrpcClientConfig, grpc::GrpcProducer, model::EventMeshMessage,
 //!     transport::Publisher,
@@ -68,22 +79,20 @@ pub mod model;
 #[cfg(feature = "grpc")]
 pub mod proto_gen;
 
-#[cfg(feature = "grpc")]
+#[cfg(any(feature = "grpc", feature = "http"))]
 pub mod transport;
 
 /// gRPC transport re-exported at the crate root (`eventmesh::grpc`).
 #[cfg(feature = "grpc")]
 pub use transport::grpc;
 
+/// HTTP transport re-exported at the crate root (`eventmesh::http`).
+#[cfg(feature = "http")]
+pub use transport::http;
+
 pub use error::{EventMeshError, Result};
 
 use std::future::Future;
-
-/// Alias so callers can write `eventmesh::main`.
-///
-/// This re-exports `tokio::main` under the crate namespace for ergonomic
-/// `#[eventmesh::main]` attribute usage in examples and user code.
-pub use tokio::main;
 
 /// Convenience trait alias for an async listener of delivered messages.
 ///

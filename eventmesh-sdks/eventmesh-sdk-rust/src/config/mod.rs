@@ -19,6 +19,14 @@
 
 pub mod grpc;
 pub mod identity;
+pub mod tls;
 
 pub use grpc::GrpcClientConfig;
 pub use identity::ClientIdentity;
+pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
+
+#[cfg(feature = "http")]
+pub mod http;
+
+#[cfg(feature = "http")]
+pub use http::HttpClientConfig;
