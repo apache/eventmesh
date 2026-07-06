@@ -69,3 +69,6 @@ pub mod grpc;
 
 #[cfg(feature = "http")]
 pub mod http;
+
+#[cfg(feature = "tcp")]
+pub mod tcp;

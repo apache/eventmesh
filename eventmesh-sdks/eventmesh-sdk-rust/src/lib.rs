@@ -27,7 +27,8 @@
 //!
 //! Phase 1 ships the **gRPC** transport. The **HTTP** transport (producer,
 //! consumer, and webhook middleware) is also available behind the `http`
-//! feature flag. TCP is tracked as a follow-up phase.
+//! feature flag. The **TCP** transport (native binary wire protocol) is
+//! available behind the `tcp` feature flag.
 //!
 //! - [`grpc::GrpcProducer`] — publish / batch / request-reply.
 //! - [`grpc::GrpcConsumer`] — webhook + bidirectional-stream subscription.
@@ -35,6 +36,8 @@
 //! - [`http::HttpConsumer`] — HTTP subscribe / heartbeat; receive pushes via
 //!   the built-in [`http::WebhookServer`] or your own endpoint built on the
 //!   [`http::codec`] helpers.
+//! - [`tcp::TcpProducer`] — TCP publish / broadcast / request-reply.
+//! - [`tcp::TcpConsumer`] — TCP subscribe + receive loop.
 //!
 //! # Quick example (gRPC producer)
 //!
@@ -79,7 +82,7 @@ pub mod model;
 #[cfg(feature = "grpc")]
 pub mod proto_gen;
 
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 pub mod transport;
 
 /// gRPC transport re-exported at the crate root (`eventmesh::grpc`).
@@ -89,6 +92,10 @@ pub use transport::grpc;
 /// HTTP transport re-exported at the crate root (`eventmesh::http`).
 #[cfg(feature = "http")]
 pub use transport::http;
+
+/// TCP transport re-exported at the crate root (`eventmesh::tcp`).
+#[cfg(feature = "tcp")]
+pub use transport::tcp;
 
 pub use error::{EventMeshError, Result};
 

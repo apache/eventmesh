@@ -1,0 +1,73 @@
+//
+// Licensed to the Apache Software Foundation (ASF) under one or more
+// contributor license agreements.  See the NOTICE file distributed with this
+// work for additional information regarding copyright ownership.  The ASF
+// licenses this file to You under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance with the
+// License.  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+
+//! TCP publish + request-reply against a running EventMesh server.
+//!
+//! Assumes `docker compose --profile standalone up` is running (TCP on
+//! `127.0.0.1:10000`).
+
+use std::time::Duration;
+
+use eventmesh::{
+    config::TcpClientConfig, model::EventMeshMessage, tcp::TcpProducer, transport::Publisher,
+};
+
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
+
+    let config = TcpClientConfig::builder()
+        .server_addr("127.0.0.1")
+        .server_port(10000)
+        .env("env")
+        .idc("idc")
+        .sys("sys")
+        .username("eventmesh")
+        .password("eventmesh")
+        .producer_group("test-producerGroup")
+        .build();
+
+    let producer = TcpProducer::connect(config).await?;
+
+    let topic = "test-topic-rust-tcp";
+
+    // 1) single publish
+    let msg = EventMeshMessage::builder()
+        .topic(topic)
+        .content("hello from rust tcp sdk")
+        .build();
+    let resp = producer.publish(msg).await?;
+    println!("[publish]     {resp}");
+
+    // 2) broadcast (fire-and-forget)
+    let msg = EventMeshMessage::builder()
+        .topic(topic)
+        .content("broadcast from rust tcp sdk")
+        .build();
+    producer.broadcast(msg).await?;
+    println!("[broadcast]   sent");
+
+    // 3) request-reply (needs a SYNC consumer subscribed to the topic)
+    let rr = EventMeshMessage::builder()
+        .topic(format!("{topic}-rr"))
+        .content("ping")
+        .ttl_millis(4000)
+        .build();
+    match producer.request_reply(rr, Duration::from_secs(6)).await {
+        Ok(reply) => println!("[request-reply] got reply: {reply}"),
+        Err(e) => println!("[request-reply] no reply (is a SYNC consumer running?): {e}"),
+    }
+
+    producer.shutdown().await;
+    Ok(())
+}

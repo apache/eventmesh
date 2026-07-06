@@ -32,17 +32,22 @@ default = ["grpc"]
 grpc = ["dep:tonic", "dep:prost", "dep:prost-types"]
 # HTTP transport (producer, consumer, webhook middleware + built-in server).
 http = ["dep:reqwest", "dep:serde_urlencoded", "dep:axum", "dep:tower", "dep:tower-http"]
-# tcp  = ["dep:tokio-util", "dep:http"]                # Phase 3
+# TCP transport (producer, consumer, native TCP wire protocol).
+# `tokio-util/codec` is required by the framed codec in
+# `src/transport/tcp/{codec,connection}.rs`; without it the crate fails to
+# compile when `tcp` is enabled without `grpc` (tonic pulls in `codec` only as
+# a side effect of the `grpc` feature).
+tcp = ["tokio-util/codec"]
 # Message models.
 cloud_events = ["dep:cloudevents"]
 # TLS support.
 tls = ["tonic/tls", "tonic/tls-native-roots"]
-# Convenience aggregate (only enabled features; add http/tcp as they land).
-full = ["grpc", "http", "cloud_events", "tls"]
+# Convenience aggregate.
+full = ["grpc", "http", "tcp", "cloud_events", "tls"]
 # End-to-end tests (tests/e2e/*). Gated off by default so plain `cargo test`
-# never needs a live server. Run with `cargo test --features e2e`. Implies both
-# transports so the full suite (gRPC + HTTP) compiles from a single flag.
-e2e = ["grpc", "http"]
+# never needs a live server. Run with `cargo test --features e2e`. Implies all
+# transports so the full suite (gRPC + HTTP + TCP) compiles from a single flag.
+e2e = ["grpc", "http", "tcp"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -109,3 +114,13 @@ required-features = ["http"]
 name = "http_consumer_custom"
 path = "examples/http/consumer_custom.rs"
 required-features = ["http"]
+
+[[example]]
+name = "tcp_producer"
+path = "examples/tcp/producer.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "tcp_consumer"
+path = "examples/tcp/consumer.rs"
+required-features = ["tcp"]

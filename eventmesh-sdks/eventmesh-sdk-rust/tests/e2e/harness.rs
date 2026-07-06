@@ -40,7 +40,9 @@ use eventmesh::{
 
 use eventmesh::config::HttpClientConfig;
 
-use crate::runtime::{ensure_runtime, webhook_host, ADMIN_PORT, GRPC_PORT, HOST, HTTP_PORT};
+use crate::runtime::{
+    ensure_runtime, webhook_host, ADMIN_PORT, GRPC_PORT, HOST, HTTP_PORT, TCP_PORT,
+};
 
 /// Monotonic counter to make every resource name globally unique, so parallel
 /// tests never collide on a topic or consumer group.
@@ -316,6 +318,73 @@ pub(crate) async fn http_warm_topic(
     };
 
     (handle, rx)
+}
+
+// ---------------------------------------------------------------------------
+// TCP transport helpers
+// ---------------------------------------------------------------------------
+
+use eventmesh::config::TcpClientConfig;
+use eventmesh::tcp::TcpConsumer;
+
+/// A TCP producer config pointing at the local runtime, with a unique group.
+pub(crate) fn tcp_producer_config() -> TcpClientConfig {
+    let group = unique_topic("tcp-producer-group");
+    TcpClientConfig::builder()
+        .server_addr(HOST)
+        .server_port(TCP_PORT)
+        .env("env")
+        .idc("idc")
+        .sys("sys")
+        .username("eventmesh")
+        .password("eventmesh")
+        .producer_group(group)
+        .build()
+}
+
+/// A TCP consumer config pointing at the local runtime, with a unique group.
+pub(crate) fn tcp_consumer_config() -> TcpClientConfig {
+    let group = unique_topic("tcp-consumer-group");
+    TcpClientConfig::builder()
+        .server_addr(HOST)
+        .server_port(TCP_PORT)
+        .env("env")
+        .idc("idc")
+        .sys("sys")
+        .username("eventmesh")
+        .password("eventmesh")
+        .consumer_group(group)
+        .build()
+}
+
+/// Create a topic and subscribe a TCP collecting consumer to it, returning the
+/// consumer (keep it alive for the test) and the message receiver.
+///
+/// Mirrors the gRPC [`warm_topic`]. The standalone in-memory broker rejects
+/// publishes to topics with no live subscriber, so every publish-oriented TCP
+/// test warms the topic this way first.
+pub(crate) async fn tcp_warm_topic(
+    topic: &str,
+) -> (
+    TcpConsumer<CollectingListener>,
+    mpsc::UnboundedReceiver<EventMeshMessage>,
+) {
+    assert!(ensure_runtime(), "ensure_runtime() must be called first");
+
+    let (listener, rx) = CollectingListener::new();
+    let consumer = TcpConsumer::connect(tcp_consumer_config(), listener)
+        .await
+        .expect("connect tcp consumer");
+    consumer
+        .subscribe(vec![SubscriptionItem::new(
+            topic,
+            SubscriptionMode::CLUSTERING,
+            SubscriptionType::ASYNC,
+        )])
+        .await
+        .expect("subscribe");
+    let_stream_settle().await;
+    (consumer, rx)
 }
 
 // ---------------------------------------------------------------------------

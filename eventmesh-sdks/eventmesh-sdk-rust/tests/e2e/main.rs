@@ -18,8 +18,8 @@
 //! End-to-end tests for the EventMesh Rust SDK.
 //!
 //! These tests spin up the EventMesh runtime via `docker compose` (rocketmq
-//! profile) and exercise the **gRPC** and **HTTP** producer/consumer against a
-//! real server.
+//! profile) and exercise the **gRPC**, **HTTP** and **TCP** producer/consumer
+//! against a real server.
 //!
 //! Gated behind the `e2e` feature so a plain `cargo test` never touches Docker:
 //!
@@ -27,8 +27,8 @@
 //! cargo test --features e2e
 //! ```
 //!
-//! The `e2e` feature implies both `grpc` and `http`, so the full suite
-//! compiles from a single flag.
+//! The `e2e` feature implies all transports (`grpc`, `http`, `tcp`), so the
+//! full suite compiles from a single flag.
 //!
 //! To run against an already-running server instead of auto-starting one, set
 //! `EVENTMESH_E2E_EXTERNAL=1`. When neither Docker nor a server is available the
@@ -43,3 +43,6 @@ mod publish;
 mod request_reply;
 mod runtime;
 mod subscribe;
+mod tcp_publish;
+mod tcp_request_reply;
+mod tcp_subscribe;

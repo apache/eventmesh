@@ -30,3 +30,9 @@ pub mod http;
 
 #[cfg(feature = "http")]
 pub use http::HttpClientConfig;
+
+#[cfg(feature = "tcp")]
+pub mod tcp;
+
+#[cfg(feature = "tcp")]
+pub use tcp::TcpClientConfig;
