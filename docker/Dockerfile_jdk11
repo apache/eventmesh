@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-FROM eclipse-temurin:11-jdk as builder
+FROM eclipse-temurin:11-jdk AS builder
 WORKDIR /build
 COPY . .
 RUN ./gradlew clean build dist --parallel --daemon
@@ -29,9 +29,9 @@ COPY --from=builder /build/dist ./
 
 EXPOSE 10000 10105 10106 10205
 
-ENV DOCKER true
-ENV EVENTMESH_HOME /data/app/eventmesh
-ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
-ENV CONFPATH /data/app/eventmesh/conf
+ENV DOCKER=true
+ENV EVENTMESH_HOME=/data/app/eventmesh
+ENV EVENTMESH_LOG_HOME=/data/app/eventmesh/logs
+ENV CONFPATH=/data/app/eventmesh/conf
 
 CMD ["bash", "bin/start.sh"]

@@ -1,2 +1,26 @@
 dist/
 build/
+
+# VCS
+.git/
+.gitignore
+
+# Non-Java SDKs (not included in Gradle build)
+eventmesh-sdks/eventmesh-sdk-rust/
+eventmesh-sdks/eventmesh-sdk-go/
+eventmesh-sdks/eventmesh-sdk-c/
+
+# Rust / Node build artifacts
+**/target/
+**/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Docs & misc
+docs/
+*.md
+LICENSE
+NOTICE
