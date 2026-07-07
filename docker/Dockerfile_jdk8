@@ -15,18 +15,18 @@
 # limitations under the License.
 #
 
-FROM openjdk:11-jdk as builder_11
+FROM eclipse-temurin:11-jdk as builder_11
 WORKDIR /build
 COPY . .
 RUN ./gradlew clean generateGrammarSource --parallel --daemon
 
-FROM openjdk:8-jdk as builder_8
+FROM eclipse-temurin:8-jdk as builder_8
 WORKDIR /build
 COPY --from=builder_11 /build ./
 RUN ./gradlew clean build dist -x spotlessJava -x generateGrammarSource --parallel --daemon
 RUN ./gradlew installPlugin
 
-FROM openjdk:8-jdk
+FROM eclipse-temurin:8-jdk
 RUN apt-get update && apt-get install -y locales procps
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
 WORKDIR /data/app/eventmesh
