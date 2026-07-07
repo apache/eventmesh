@@ -45,17 +45,27 @@ impl GrpcProducer {
     /// broker ack codes.
     pub async fn publish_one_way(&self, message: EventMeshMessage) -> Result<()> {
         let event = CloudEventCodec::from_event_mesh_message(&message, &self.config)?;
-        let _ = timed(self.config.timeout, self.client.publish(event)).await?;
+        timed(self.config.timeout, self.client.publish_one_way(event)).await?;
         Ok(())
     }
 
     #[cfg(feature = "cloud_events")]
     /// Publish a native CloudEvent.
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
+        use cloudevents::AttributesReader;
+
         let ce =
             crate::transport::grpc::codec::CloudEventMessage::from_event(&event, &self.config)?;
         let resp = timed(self.config.timeout, self.client.publish(ce)).await?;
-        Ok(CloudEventCodec::to_response(&resp))
+        let response = CloudEventCodec::to_response(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response.message.unwrap_or_else(|| "publish failed".into()),
+            });
+        }
+        debug!("published CloudEvent id={:?}", event.id());
+        Ok(response)
     }
 }
 
@@ -109,6 +119,19 @@ impl Publisher for GrpcProducer {
         let resp = tokio::time::timeout(timeout, fut)
             .await
             .map_err(|_| EventMeshError::Timeout(timeout))??;
+        // The runtime reports request/reply failures (ACL denial, invalid
+        // attributes, timeout waiting for a reply, ...) as a response CloudEvent
+        // carrying a nonzero status code. Check it before decoding, mirroring
+        // `publish`, so `?` does not treat a failed reply as a valid message.
+        let response = CloudEventCodec::to_response(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "request/reply failed".into()),
+            });
+        }
         Ok(CloudEventCodec::to_event_mesh_message(&resp))
     }
 }
