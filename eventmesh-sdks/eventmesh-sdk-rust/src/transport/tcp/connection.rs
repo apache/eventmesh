@@ -1,7 +1,7 @@
 //
 // Licensed to the Apache Software Foundation (ASF) under one or more
 // contributor license agreements.  See the NOTICE file distributed with this
-// work for additional information regarding copyright ownership.  The ASF
+// work for additional information regarding copyright ownership. The ASF
 // licenses this file to You under the Apache License, Version 2.0 (the
 // "License"); you may not use this file except in compliance with the
 // License.  You may obtain a copy of the License at
@@ -9,10 +9,10 @@
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-// License for the specific language governing permissions and limitations
-// under the License.
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 //! TCP connection engine — the core of the transport.
@@ -20,6 +20,15 @@
 //! Corresponds to the Java SDK's `TcpClient` abstract base: manages the TCP
 //! socket, the read/write loop, heartbeat, and request-response correlation
 //! via a `seq`-keyed pending map of `oneshot` channels.
+//!
+//! ## Reconnect
+//!
+//! When [`ReconnectConfig::enabled`] is `true` (the default), the background
+//! task automatically re-establishes the TCP connection + HELLO handshake after
+//! an I/O error or server-side close. An optional reconnect-event channel
+//! ([`TcpConnection::take_reconnect_rx`]) lets consumers replay their
+//! subscriptions after a successful reconnect. This mirrors the Java SDK's
+//! heartbeat-driven reconnect but with exponential backoff.
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -34,6 +43,7 @@ use tokio_util::codec::Framed;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
+use crate::config::ReconnectConfig;
 use crate::error::{EventMeshError, Result};
 
 use super::codec::TcpCodec;
@@ -46,10 +56,33 @@ use futures::SinkExt;
 /// Default channel capacity for outbound and inbound message queues.
 const CHANNEL_CAPACITY: usize = 256;
 
+/// Capacity of the reconnect-event channel. A bounded channel of 1 is enough:
+/// `try_send` drops intermediate notifications if the consumer hasn't drained
+/// the previous one yet — the consumer re-subscribes to *all* topics each time,
+/// so missing an intermediate notification is harmless.
+const RECONNECT_CHANNEL_CAPACITY: usize = 1;
+
+/// Why the inner I/O loop exited. Used by the outer reconnect loop to decide
+/// whether to attempt a reconnect.
+#[derive(Debug)]
+enum IoExitReason {
+    /// `CancellationToken` was fired (explicit shutdown).
+    Cancelled,
+    /// All `mpsc::Sender` clones were dropped (user dropped the connection
+    /// handle).
+    AllSendersDropped,
+    /// A read or write I/O error occurred.
+    IoError,
+    /// The server closed the connection (EOF on read).
+    ServerClosed,
+}
+
 /// A connected TCP transport.
 ///
 /// Created by [`TcpConnection::connect`], which performs the TCP connect +
-/// HELLO handshake. A background task handles all I/O (read, write, heartbeat).
+/// HELLO handshake. A background task handles all I/O (read, write, heartbeat)
+/// and, when [`ReconnectConfig`] is enabled, automatically re-establishes the
+/// connection after failures.
 ///
 /// Call [`TcpConnection::io`] for request-response (blocks until the matching
 /// reply arrives, keyed by the header `seq`), or [`TcpConnection::send`] for
@@ -60,6 +93,9 @@ pub struct TcpConnection {
     /// Inbound server-pushed messages (taken by the consumer via
     /// [`take_inbound_rx`]).
     inbound_rx: Mutex<Option<mpsc::Receiver<Package>>>,
+    /// Reconnect-event receiver (taken by the consumer via
+    /// [`take_reconnect_rx`]).
+    reconnect_rx: Mutex<Option<mpsc::Receiver<()>>>,
     /// Pending request-response contexts: `seq → oneshot::Sender`.
     pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
     /// Shutdown signal shared with the background task.
@@ -80,19 +116,71 @@ impl TcpConnection {
     /// `timeout` bounds both the TCP connect and the HELLO response wait,
     /// mirroring Java's `TcpClient.hello()` which goes through
     /// `io(msg, DEFAULT_TIME_OUT_MILLS)` (20s).
+    ///
+    /// The `reconnect` config controls automatic reconnection after I/O errors.
+    /// When enabled, the background task re-establishes the connection with
+    /// exponential backoff after failures.
     pub async fn connect(
         addr: &str,
         port: u16,
         user_agent: &super::frame::UserAgent,
         heartbeat_interval: Duration,
         timeout: Duration,
+        reconnect: ReconnectConfig,
     ) -> Result<Self> {
+        // Initial connect is inline so the caller gets immediate feedback.
+        // Subsequent reconnects happen in the background task.
+        let framed = Self::establish(addr, port, user_agent, timeout).await?;
+
+        let (outbound_tx, outbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
+        let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
+        let (reconnect_tx, reconnect_rx) = mpsc::channel(RECONNECT_CHANNEL_CAPACITY);
+        let pending = Arc::new(Mutex::new(HashMap::new()));
+        let cancel = CancellationToken::new();
+        let alive = Arc::new(AtomicBool::new(true));
+
+        let join = tokio::spawn(Self::run(
+            addr.to_string(),
+            port,
+            user_agent.clone(),
+            heartbeat_interval,
+            timeout,
+            reconnect,
+            framed,
+            outbound_rx,
+            inbound_tx,
+            reconnect_tx,
+            Arc::clone(&pending),
+            cancel.clone(),
+            Arc::clone(&alive),
+        ));
+
+        info!(peer = %format!("{addr}:{port}"), "TCP connected");
+
+        Ok(Self {
+            outbound_tx,
+            inbound_rx: Mutex::new(Some(inbound_rx)),
+            reconnect_rx: Mutex::new(Some(reconnect_rx)),
+            pending,
+            cancel,
+            alive,
+            join: Mutex::new(Some(join)),
+        })
+    }
+
+    /// Establish a new TCP connection and perform the HELLO handshake.
+    ///
+    /// Used both by [`connect`] (initial) and the reconnect loop (subsequent).
+    /// Bounded by `timeout` for both the TCP connect and the HELLO response.
+    async fn establish(
+        addr: &str,
+        port: u16,
+        user_agent: &super::frame::UserAgent,
+        timeout: Duration,
+    ) -> Result<Framed<TcpStream, TcpCodec>> {
         // Defer name resolution to Tokio: `TcpStream::connect` accepts a
         // "host:port" string via `ToSocketAddrs`, so DNS names like
         // "localhost" (the default `server_addr`) resolve correctly.
-        // Pre-parsing into a `SocketAddr` would reject any non-numeric host
-        // with `InvalidArgument` before the resolver ever runs, breaking the
-        // default config and any hostname-based deployment.
         let peer = format!("{addr}:{port}");
         debug!(%peer, "connecting TCP");
         let stream = tokio::time::timeout(timeout, TcpStream::connect(&peer))
@@ -112,21 +200,15 @@ impl TcpConnection {
         let hello_pkg = message::hello(user_agent);
         framed.send(hello_pkg).await?;
         match tokio::time::timeout(timeout, framed.next()).await {
-            Err(_) => {
-                return Err(EventMeshError::Timeout(timeout));
-            }
-            Ok(None) => return Err(EventMeshError::Tcp("connection closed during HELLO".into())),
-            Ok(Some(Err(e))) => return Err(e),
+            Err(_) => Err(EventMeshError::Timeout(timeout)),
+            Ok(None) => Err(EventMeshError::Tcp("connection closed during HELLO".into())),
+            Ok(Some(Err(e))) => Err(e),
             Ok(Some(Ok(resp))) if resp.header.cmd == Command::HelloResponse => {
                 // The Java runtime's `HelloProcessor` rejects the handshake
                 // (OPStatus.FAIL / ACL_FAIL) when the group isn't registered,
                 // the token is rejected, the server isn't RUNNING yet, or the
-                // `UserAgent` is invalid — and then closes the session. Treat a
-                // non-zero code as a failure and surface `desc` (the reason),
-                // mirroring how ACKs are checked in `message.rs` /
-                // `producer.rs`. Otherwise every later op would fail opaquely
-                // with `ChannelClosed` / `Timeout` while the real reason sits
-                // unread in `desc`.
+                // `UserAgent` is invalid — and then closes the session. Treat
+                // a non-zero code as a failure and surface `desc`.
                 if resp.header.code != 0 {
                     return Err(EventMeshError::Server {
                         code: resp.header.code,
@@ -134,42 +216,13 @@ impl TcpConnection {
                     });
                 }
                 debug!(code = resp.header.code, "HELLO ok");
+                Ok(framed)
             }
-            Ok(Some(Ok(resp))) => {
-                return Err(EventMeshError::Tcp(format!(
-                    "unexpected response to HELLO: {:?}",
-                    resp.header.cmd
-                )));
-            }
+            Ok(Some(Ok(resp))) => Err(EventMeshError::Tcp(format!(
+                "unexpected response to HELLO: {:?}",
+                resp.header.cmd
+            ))),
         }
-
-        // --- Spawn background task ---
-        let (outbound_tx, outbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
-        let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
-        let pending = Arc::new(Mutex::new(HashMap::new()));
-        let cancel = CancellationToken::new();
-        let alive = Arc::new(AtomicBool::new(true));
-
-        let join = tokio::spawn(Self::run(
-            framed,
-            outbound_rx,
-            inbound_tx,
-            Arc::clone(&pending),
-            heartbeat_interval,
-            cancel.clone(),
-            Arc::clone(&alive),
-        ));
-
-        info!(%peer, "TCP connected");
-
-        Ok(Self {
-            outbound_tx,
-            inbound_rx: Mutex::new(Some(inbound_rx)),
-            pending,
-            cancel,
-            alive,
-            join: Mutex::new(Some(join)),
-        })
     }
 
     /// Request-response: register a pending context keyed by `seq`, send the
@@ -234,12 +287,24 @@ impl TcpConnection {
         self.inbound_rx.lock().await.take()
     }
 
+    /// Take ownership of the reconnect-event receiver. Called once by the
+    /// consumer to get notified when the connection has been automatically
+    /// re-established, so it can replay subscriptions.
+    ///
+    /// Each `()` received means a reconnect just succeeded and the consumer
+    /// should re-send `SUBSCRIBE_REQUEST` + `LISTEN_REQUEST`.
+    pub async fn take_reconnect_rx(&self) -> Option<mpsc::Receiver<()>> {
+        self.reconnect_rx.lock().await.take()
+    }
+
     /// Whether the background task is still alive.
     ///
     /// Mirrors Java's `TcpClient.isActive()` which checks `channel.isActive()`.
     /// This flips to `false` for *any* reason the background task exits
     /// (cancellation, read/write error, server-side close, all senders
-    /// dropped) — not just explicit shutdown.
+    /// dropped) — not just explicit shutdown. During a reconnect backoff it is
+    /// also `false`; it returns to `true` once the new connection is
+    /// established.
     pub fn is_active(&self) -> bool {
         self.alive.load(Ordering::Acquire)
     }
@@ -255,17 +320,130 @@ impl TcpConnection {
         }
     }
 
-    /// Background I/O loop.
+    // -----------------------------------------------------------------------
+    // Background task: outer reconnect loop + inner I/O loop
+    // -----------------------------------------------------------------------
+
+    /// Outer run loop. Owns the channels across reconnects. On I/O error /
+    /// server close, attempts reconnection with exponential backoff (when
+    /// enabled). On cancellation / all-senders-dropped, exits immediately.
+    #[allow(clippy::too_many_arguments)]
     async fn run(
+        addr: String,
+        port: u16,
+        user_agent: super::frame::UserAgent,
+        heartbeat_interval: Duration,
+        timeout: Duration,
+        reconnect: ReconnectConfig,
         mut framed: Framed<TcpStream, TcpCodec>,
         mut outbound_rx: mpsc::Receiver<Package>,
         inbound_tx: mpsc::Sender<Package>,
+        reconnect_tx: mpsc::Sender<()>,
         pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
-        heartbeat_interval: Duration,
         cancel: CancellationToken,
         alive: Arc<AtomicBool>,
     ) {
+        loop {
+            // Run the I/O loop with the current framed stream.
+            let reason = Self::io_loop(
+                &mut framed,
+                &mut outbound_rx,
+                &inbound_tx,
+                Arc::clone(&pending),
+                heartbeat_interval,
+                &cancel,
+                alive.as_ref(),
+            )
+            .await;
+
+            // Clean up pending requests from the (now dead) connection so
+            // waiting `io()` callers get a ChannelClosed error instead of
+            // hanging until timeout. Mirrors Java's behavior where orphaned
+            // RequestContext entries simply time out, but is more prompt.
+            pending.lock().await.clear();
+            alive.store(false, Ordering::Release);
+
+            match reason {
+                IoExitReason::Cancelled | IoExitReason::AllSendersDropped => {
+                    debug!("connection task exiting ({:?})", reason);
+                    return;
+                }
+                IoExitReason::IoError | IoExitReason::ServerClosed => {}
+            }
+
+            // Decide whether to attempt reconnect.
+            if !reconnect.enabled || cancel.is_cancelled() {
+                debug!("reconnect disabled or cancelled, exiting");
+                return;
+            }
+
+            // Reconnect with exponential backoff.
+            let mut backoff = reconnect.initial_backoff;
+            let mut attempt: usize = 0;
+
+            loop {
+                attempt += 1;
+                if attempt > reconnect.max_retries {
+                    warn!(
+                        attempts = attempt - 1,
+                        "max reconnect attempts ({}) exceeded, giving up", reconnect.max_retries
+                    );
+                    return;
+                }
+
+                debug!(attempt, backoff = ?backoff, "reconnect backoff");
+                tokio::select! {
+                    biased;
+                    _ = cancel.cancelled() => {
+                        debug!("cancelled during reconnect backoff");
+                        return;
+                    }
+                    _ = tokio::time::sleep(backoff) => {}
+                }
+                backoff = backoff.saturating_mul(2).min(reconnect.max_backoff);
+
+                match Self::establish(&addr, port, &user_agent, timeout).await {
+                    Ok(new_framed) => {
+                        info!(
+                            attempt,
+                            peer = %format!("{addr}:{port}"),
+                            "TCP reconnected"
+                        );
+                        alive.store(true, Ordering::Release);
+
+                        // Notify the consumer that it should replay
+                        // subscriptions. `try_send` drops the notification if
+                        // the channel is full (the consumer hasn't drained the
+                        // previous one) — which is fine because the consumer
+                        // re-subscribes *all* topics each time.
+                        let _ = reconnect_tx.try_send(());
+
+                        framed = new_framed;
+                        break; // Back to outer loop → new io_loop with new framed.
+                    }
+                    Err(e) => {
+                        warn!(attempt, error = %e, "reconnect attempt failed");
+                        // Continue inner loop to retry with increased backoff.
+                    }
+                }
+            }
+        }
+    }
+
+    /// Inner I/O loop — read, write, and heartbeat on a single connection.
+    /// Returns when the connection is lost or the task is cancelled.
+    #[allow(clippy::too_many_arguments)]
+    async fn io_loop(
+        framed: &mut Framed<TcpStream, TcpCodec>,
+        outbound_rx: &mut mpsc::Receiver<Package>,
+        inbound_tx: &mpsc::Sender<Package>,
+        pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+        heartbeat_interval: Duration,
+        cancel: &CancellationToken,
+        alive: &AtomicBool,
+    ) -> IoExitReason {
         use tokio::time::MissedTickBehavior;
+        let _ = alive; // already set to true by caller; no need to touch here
         let mut heartbeat = tokio::time::interval(heartbeat_interval);
         heartbeat.set_missed_tick_behavior(MissedTickBehavior::Delay);
         // Skip the immediate first tick.
@@ -277,7 +455,7 @@ impl TcpConnection {
 
                 _ = cancel.cancelled() => {
                     debug!("connection task cancelled");
-                    break;
+                    return IoExitReason::Cancelled;
                 }
 
                 // Write outbound packages from user code.
@@ -286,12 +464,12 @@ impl TcpConnection {
                         Some(pkg) => {
                             if let Err(e) = framed.send(pkg).await {
                                 warn!("write error, connection lost: {e}");
-                                break;
+                                return IoExitReason::IoError;
                             }
                         }
                         None => {
                             debug!("all senders dropped, stopping connection task");
-                            break;
+                            return IoExitReason::AllSendersDropped;
                         }
                     }
                 }
@@ -370,11 +548,11 @@ impl TcpConnection {
                         }
                         Some(Err(e)) => {
                             warn!("read error, connection lost: {e}");
-                            break;
+                            return IoExitReason::IoError;
                         }
                         None => {
                             info!("connection closed by server");
-                            break;
+                            return IoExitReason::ServerClosed;
                         }
                     }
                 }
@@ -385,22 +563,12 @@ impl TcpConnection {
                     let hb = message::heartbeat();
                     if let Err(e) = framed.send(hb).await {
                         warn!("heartbeat send failed: {e}");
-                        break;
+                        return IoExitReason::IoError;
                     }
                     debug!("heartbeat sent");
                 }
             }
         }
-
-        // Clean up: drop all pending oneshot senders so waiting `io()` callers
-        // get a `ChannelClosed` error instead of hanging until timeout.
-        let mut guard = pending.lock().await;
-        guard.clear();
-        drop(guard);
-
-        // Mark the connection as dead so `is_active()` reports false (mirrors
-        // Java's `channel.isActive()` going false after close).
-        alive.store(false, Ordering::Release);
     }
 }
 
@@ -420,7 +588,7 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::config::TcpClientConfig;
+    use crate::config::{ReconnectConfig, TcpClientConfig};
     use crate::model::EventMeshMessage;
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody};
@@ -451,9 +619,7 @@ mod tests {
             framed.send(hello_resp).await.unwrap();
 
             // 2. Receive REQUEST_TO_SERVER; echo a RESPONSE_TO_CLIENT with the
-            //    same seq + a JSON body (code 0 = success). The body uses the
-            //    TCP wire field names (`body`/`properties`) matching the Java
-            //    server's `org.apache.eventmesh.common.protocol.tcp.EventMeshMessage`.
+            //    same seq + a JSON body (code 0 = success).
             let req = framed.next().await.unwrap().unwrap();
             assert_eq!(req.header.cmd, Command::RequestToServer);
             let seq = req.header.seq.clone().unwrap_or_default();
@@ -501,6 +667,7 @@ mod tests {
             .producer_group("g")
             .timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
+            .reconnect(ReconnectConfig::builder().enabled(false).build())
             .build();
 
         let producer = crate::transport::tcp::TcpProducer::connect(config)
@@ -530,6 +697,92 @@ mod tests {
             "RESPONSE_TO_CLIENT_ACK must carry the reply seq"
         );
 
+        let _ = server.await;
+    }
+
+    /// After a server-side close, the connection must automatically reconnect
+    /// (when enabled) and the consumer must receive a reconnect event so it
+    /// can replay subscriptions.
+    #[tokio::test]
+    async fn reconnect_after_server_close() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        // Server: accept two connections on the same listener. Close the first
+        // one to force a reconnect, then HELLO the second.
+        let server = tokio::spawn(async move {
+            // --- First connection ---
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(Command::HelloResponse, "hello-1")))
+                .await
+                .unwrap();
+            // Drop to force a reconnect.
+            drop(framed);
+
+            // --- Second connection (the auto-reconnect) ---
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(Command::HelloResponse, "hello-2")))
+                .await
+                .unwrap();
+
+            // Keep alive briefly so the reconnect stabilizes.
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        });
+
+        let config = TcpClientConfig::builder()
+            .server_addr("127.0.0.1")
+            .server_port(port)
+            .producer_group("g")
+            .timeout(Duration::from_secs(3))
+            .heartbeat_interval(Duration::from_secs(60))
+            .reconnect(
+                ReconnectConfig::builder()
+                    .enabled(true)
+                    .initial_backoff(Duration::from_millis(100))
+                    .max_backoff(Duration::from_millis(500))
+                    .build(),
+            )
+            .build();
+
+        let user_agent = super::super::frame::UserAgent::from_identity(
+            &config.identity,
+            config.server_port,
+            "pub",
+        );
+        let conn = TcpConnection::connect(
+            &config.server_addr,
+            config.server_port,
+            &user_agent,
+            config.heartbeat_interval,
+            config.timeout,
+            config.reconnect.clone(),
+        )
+        .await
+        .expect("initial connect");
+
+        // Wait for the server to close the first connection and the client to
+        // reconnect. The reconnect event channel fires after the new HELLO.
+        let mut reconnect_rx = conn.take_reconnect_rx().await.expect("reconnect receiver");
+
+        let result = tokio::time::timeout(Duration::from_secs(5), reconnect_rx.recv()).await;
+        assert!(
+            result.is_ok(),
+            "should receive a reconnect event within 5 s"
+        );
+        assert!(
+            conn.is_active(),
+            "connection should be alive after reconnect"
+        );
+
+        conn.shutdown().await;
         let _ = server.await;
     }
 }

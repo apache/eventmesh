@@ -33,6 +33,7 @@ const PROTOCOL_TYPE_KEY: &str = "protocoltype";
 const PROTOCOL_VERSION_KEY: &str = "protocolversion";
 const PROTOCOL_DESC_KEY: &str = "protocoldesc";
 const EM_MESSAGE_PROTOCOL: &str = "eventmeshmessage";
+const CLOUD_EVENTS_PROTOCOL: &str = "cloudevents";
 const PROTOCOL_DESC_TCP: &str = "tcp";
 
 /// The TCP wire-format body for `eventmeshmessage` protocol messages.
@@ -235,6 +236,137 @@ pub fn parse_message(body: &PackageBody) -> Option<EventMeshMessage> {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CloudEvents wire support
+// ---------------------------------------------------------------------------
+
+/// Whether the given header properties declare a CloudEvents body
+/// (`protocoltype == "cloudevents"`). Used by the consumer to decide whether
+/// to parse the body as a CloudEvent JSON or a TCP-wire `EventMeshMessage`.
+pub fn is_cloudevents(pkg: &Package) -> bool {
+    pkg.header.get_string_property(PROTOCOL_TYPE_KEY) == Some(CLOUD_EVENTS_PROTOCOL)
+}
+
+/// Wrap a native [`cloudevents::Event`] into a [`Package`] with the given
+/// command, using the CloudEvents JSON wire format
+/// (`application/cloudevents+json`).
+///
+/// Sets `protocoltype=cloudevents`, `protocolversion=<event.specversion>`,
+/// `protocoldesc=tcp` so the Java runtime's codec writes the body bytes
+/// verbatim instead of re-serializing via Jackson.
+///
+/// This mirrors Java's `MessageUtils.buildPackage(cloudEvent, command)`:
+/// the CloudEvent is serialized to JSON by the cloudevents crate's serde
+/// impl (equivalent to `EventFormat.serialize` in Java), and the resulting
+/// bytes are stored as [`PackageBody::Bytes`]. The TCP codec detects the
+/// `cloudevents` protocol type and writes the raw bytes without further
+/// JSON encoding.
+#[cfg(feature = "cloud_events")]
+pub fn build_cloud_event_package(event: &cloudevents::Event, cmd: Command) -> Result<Package> {
+    use cloudevents::AttributesReader;
+
+    let mut pkg = package(cmd);
+    pkg.header
+        .set_property(PROTOCOL_TYPE_KEY, CLOUD_EVENTS_PROTOCOL);
+    pkg.header
+        .set_property(PROTOCOL_VERSION_KEY, event.specversion().as_str());
+    pkg.header
+        .set_property(PROTOCOL_DESC_KEY, PROTOCOL_DESC_TCP);
+
+    // Serialize the CloudEvent as CloudEvents JSON
+    // (application/cloudevents+json). The cloudevents crate's serde impl
+    // produces the canonical CloudEvents JSON format, matching what the Java
+    // runtime's `EventFormatProvider.resolveFormat(JsonFormat.CONTENT_TYPE)`
+    // expects on decode.
+    let json = serde_json::to_vec(event)?;
+    pkg.body = PackageBody::Bytes(json);
+
+    Ok(pkg)
+}
+
+/// Parse a CloudEvents body ([`PackageBody::Text`] or [`PackageBody::Bytes`])
+/// back into a native [`cloudevents::Event`]. Returns `None` on failure.
+///
+/// On the wire, CloudEvents bodies arrive as a JSON string in `Text` (the
+/// codec decodes valid UTF-8 bodies as strings). This function reverses the
+/// serialization done by [`build_cloud_event_package`].
+#[cfg(feature = "cloud_events")]
+pub fn parse_cloud_event(body: &PackageBody) -> Option<cloudevents::Event> {
+    match body {
+        PackageBody::Text(s) => serde_json::from_str(s).ok(),
+        PackageBody::Bytes(b) => serde_json::from_slice(b).ok(),
+        _ => None,
+    }
+}
+
+/// Convert a CloudEvent to an [`EventMeshMessage`] so the consumer's existing
+/// `MessageListener<Message = EventMeshMessage>` can handle CloudEvents
+/// deliveries transparently.
+///
+/// - `subject` → `topic`
+/// - `data` → `content` (string values are kept as-is; JSON values are
+///   stringified; binary values are lossily converted to UTF-8)
+/// - CloudEvent extensions (e.g. `ttl`, `seqnum`, `uniqueid`) → `props`
+///
+/// This mirrors the gRPC codec's `to_event_mesh_message`.
+#[cfg(feature = "cloud_events")]
+pub fn cloud_event_to_message(event: &cloudevents::Event) -> EventMeshMessage {
+    use cloudevents::{AttributesReader, Data};
+
+    let topic = event.subject().map(|s| s.to_string());
+    let content = match event.data() {
+        Some(Data::String(s)) => Some(s.clone()),
+        Some(Data::Binary(b)) => Some(String::from_utf8_lossy(b).into_owned()),
+        Some(Data::Json(j)) => Some(j.to_string()),
+        None => None,
+    };
+
+    let mut props = std::collections::HashMap::new();
+    for (k, v) in event.iter_extensions() {
+        props.insert(k.to_string(), v.to_string());
+    }
+
+    EventMeshMessage {
+        topic,
+        content,
+        props,
+        ..Default::default()
+    }
+}
+
+/// Convert an [`EventMeshMessage`] back into a native [`cloudevents::Event`].
+///
+/// This is the reverse of [`cloud_event_to_message`] and is used when the
+/// consumer replies with an `EventMeshMessage` to a CloudEvents
+/// `REQUEST_TO_SERVER` — the producer's `request_reply_cloud_event` uses it to
+/// produce a uniform `Event` return type.
+#[cfg(feature = "cloud_events")]
+pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Event> {
+    use cloudevents::{EventBuilder, EventBuilderV10};
+
+    let source = msg.topic.as_deref().unwrap_or("/").to_string();
+    let mut builder = EventBuilderV10::new()
+        .id(msg
+            .unique_id
+            .clone()
+            .unwrap_or_else(crate::common::RandomStringUtils::generate_uuid))
+        .source(source)
+        .ty("org.apache.eventmesh");
+
+    if let Some(ref topic) = msg.topic {
+        builder = builder.subject(topic);
+    }
+    if let Some(ref content) = msg.content {
+        builder = builder.data("text/plain", content.clone());
+    }
+    for (k, v) in &msg.props {
+        builder = builder.extension(k.as_str(), v.as_str());
+    }
+    builder
+        .build()
+        .map_err(|e| crate::error::EventMeshError::Other(format!("cloudevents build error: {e}")))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -347,5 +479,100 @@ mod tests {
         assert_eq!(parsed.topic, original.topic);
         assert_eq!(parsed.content, original.content);
         assert_eq!(parsed.props, original.props);
+    }
+
+    #[test]
+    fn is_cloudevents_detects_protocol() {
+        let em_pkg = package(Command::AsyncMessageToServer);
+        assert!(!is_cloudevents(&em_pkg));
+
+        let mut ce_pkg = package(Command::AsyncMessageToServer);
+        ce_pkg
+            .header
+            .set_property(PROTOCOL_TYPE_KEY, CLOUD_EVENTS_PROTOCOL);
+        assert!(is_cloudevents(&ce_pkg));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloudevents_build_sets_protocol_headers() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("ce-1")
+            .source("https://example.com")
+            .ty("com.example.test")
+            .subject("ce-topic")
+            .data("application/json", serde_json::json!({"hello": "world"}))
+            .build()
+            .expect("valid event");
+
+        let pkg =
+            build_cloud_event_package(&event, Command::AsyncMessageToServer).expect("build pkg");
+        assert_eq!(
+            pkg.header.get_string_property(PROTOCOL_TYPE_KEY),
+            Some(CLOUD_EVENTS_PROTOCOL)
+        );
+        assert_eq!(
+            pkg.header.get_string_property(PROTOCOL_DESC_KEY),
+            Some(PROTOCOL_DESC_TCP)
+        );
+        assert_eq!(
+            pkg.header.get_string_property(PROTOCOL_VERSION_KEY),
+            Some("1.0")
+        );
+        assert_eq!(pkg.header.cmd, Command::AsyncMessageToServer);
+        // Body must be Bytes (raw JSON, not re-encoded).
+        assert!(matches!(pkg.body, PackageBody::Bytes(_)));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloudevents_round_trip() {
+        use cloudevents::{AttributesReader, EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("ce-rt-1")
+            .source("https://example.com")
+            .ty("com.example.test")
+            .subject("ce-round-trip")
+            .data("text/plain", "hello cloudevents")
+            .build()
+            .expect("valid event");
+
+        let pkg =
+            build_cloud_event_package(&event, Command::AsyncMessageToServer).expect("build pkg");
+        assert!(is_cloudevents(&pkg));
+
+        // Parse back — the codec would deliver the body as Text (valid UTF-8).
+        let body_text = match &pkg.body {
+            PackageBody::Bytes(b) => {
+                PackageBody::Text(String::from_utf8(b.clone()).expect("cloudevents json is utf-8"))
+            }
+            ref other => panic!("expected Bytes body, got {other:?}"),
+        };
+        let parsed = parse_cloud_event(&body_text).expect("parse cloudevent");
+        assert_eq!(parsed.subject(), Some("ce-round-trip"));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloudevents_to_message_preserves_topic_and_content() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("ce-conv-1")
+            .source("https://example.com")
+            .ty("com.example.test")
+            .subject("conv-topic")
+            .data("text/plain", "conv-content")
+            .extension("ttl", "5000")
+            .build()
+            .expect("valid event");
+
+        let msg = cloud_event_to_message(&event);
+        assert_eq!(msg.topic.as_deref(), Some("conv-topic"));
+        assert_eq!(msg.content.as_deref(), Some("conv-content"));
+        assert_eq!(msg.get_prop("ttl"), Some("5000"));
     }
 }

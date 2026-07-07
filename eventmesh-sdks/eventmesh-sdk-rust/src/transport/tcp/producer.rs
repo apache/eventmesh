@@ -41,6 +41,9 @@ pub struct TcpProducer {
 
 impl TcpProducer {
     /// Connect to the EventMesh TCP endpoint and perform the HELLO handshake.
+    ///
+    /// The reconnect policy from the config controls automatic reconnection
+    /// after I/O failures (enabled by default).
     pub async fn connect(config: TcpClientConfig) -> Result<Self> {
         let user_agent = UserAgent::from_identity(&config.identity, config.server_port, "pub");
         let conn = TcpConnection::connect(
@@ -49,6 +52,7 @@ impl TcpProducer {
             &user_agent,
             config.heartbeat_interval,
             config.timeout,
+            config.reconnect.clone(),
         )
         .await?;
 
@@ -61,6 +65,81 @@ impl TcpProducer {
         validate_publish(&msg)?;
         let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
         self.conn.send(pkg).await
+    }
+
+    /// Publish a native CloudEvent over TCP (requires the `cloud_events`
+    /// feature).
+    ///
+    /// The event is serialized as CloudEvents JSON
+    /// (`application/cloudevents+json`) with `protocoltype=cloudevents`,
+    /// matching the Java runtime's TCP CloudEvents codec path.
+    #[cfg(feature = "cloud_events")]
+    pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
+        use cloudevents::AttributesReader;
+        let pkg = message::build_cloud_event_package(&event, Command::AsyncMessageToServer)?;
+        debug!(topic = ?event.subject(), "publishing CloudEvent via TCP");
+
+        let resp = self.conn.io(pkg, self.config.timeout).await?;
+        let response = message::response_from_pkg(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response.message.unwrap_or_else(|| "publish failed".into()),
+            });
+        }
+        Ok(response)
+    }
+
+    /// Broadcast a native CloudEvent (fire-and-forget, requires the
+    /// `cloud_events` feature).
+    #[cfg(feature = "cloud_events")]
+    pub async fn broadcast_cloud_event(&self, event: cloudevents::Event) -> Result<()> {
+        let pkg = message::build_cloud_event_package(&event, Command::BroadcastMessageToServer)?;
+        self.conn.send(pkg).await
+    }
+
+    /// Synchronous request/reply with a native CloudEvent (requires the
+    /// `cloud_events` feature).
+    ///
+    /// Sends the CloudEvent as `REQUEST_TO_SERVER` and waits for the reply.
+    /// The reply is parsed as a CloudEvent if the server tags it
+    /// `protocoltype=cloudevents`; otherwise it is parsed as a TCP-wire
+    /// `EventMeshMessage` and converted to a CloudEvent for a uniform return
+    /// type.
+    #[cfg(feature = "cloud_events")]
+    pub async fn request_reply_cloud_event(
+        &self,
+        event: cloudevents::Event,
+        timeout: Duration,
+    ) -> Result<cloudevents::Event> {
+        use cloudevents::AttributesReader;
+        let pkg = message::build_cloud_event_package(&event, Command::RequestToServer)?;
+        debug!(topic = ?event.subject(), "request-reply CloudEvent via TCP");
+
+        let resp = self.conn.io(pkg, timeout).await?;
+        let response = message::response_from_pkg(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "request-reply failed".into()),
+            });
+        }
+
+        // Try CloudEvents first; fall back to EventMeshMessage → convert.
+        if message::is_cloudevents(&resp) {
+            message::parse_cloud_event(&resp.body).ok_or_else(|| {
+                EventMeshError::Codec(serde::de::Error::custom(
+                    "failed to parse CloudEvent reply body",
+                ))
+            })
+        } else {
+            let msg = message::parse_message(&resp.body).ok_or_else(|| {
+                EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
+            })?;
+            message::message_to_cloud_event(&msg)
+        }
     }
 
     /// Access the underlying connection (for testing or advanced use).

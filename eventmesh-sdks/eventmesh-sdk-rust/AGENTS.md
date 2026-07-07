@@ -1,11 +1,13 @@
 # AGENTS.md — EventMesh Rust SDK
 
 Cargo crate `eventmesh` (`edition = "2021"`, **MSRV 1.75.0**). Speaks the
-EventMesh **gRPC** and **HTTP** protocols (TCP is stubbed as Phase 3 in
-`Cargo.toml` but unimplemented). gRPC wire format is CloudEvents-protobuf; the
-simple `EventMeshMessage` model is converted at the gRPC boundary by
-`codec.rs`. HTTP wire format is `application/x-www-form-urlencoded` with JSON
-payloads in the `content` field, mirroring the Java SDK.
+EventMesh **gRPC**, **HTTP**, and **TCP** protocols. gRPC wire format is
+CloudEvents-protobuf; the simple `EventMeshMessage` model is converted at the
+gRPC boundary by `codec.rs`. HTTP wire format is
+`application/x-www-form-urlencoded` with JSON payloads in the `content` field,
+mirroring the Java SDK. TCP uses the EventMesh binary wire protocol
+(length-prefixed frames with `"EventMesh"` magic) and supports automatic
+reconnect with exponential backoff plus CloudEvents JSON interop.
 
 This crate is **not** part of the Gradle build and has **no GitHub Actions
 CI**. All verification is local. The parent repo `AGENTS.md` covers the
@@ -27,9 +29,10 @@ PROTOC=$HOME/.local/bin/protoc cargo build --features full
 |---|---|
 | `grpc` (default) | gRPC transport — publish, batch, request-reply, stream/webhook subscribe. |
 | `http` | HTTP transport — `HttpProducer`, `HttpConsumer`, webhook middleware + built-in `WebhookServer`. Uses reqwest + axum. |
-| `cloud_events` | Native `cloudevents::Event` interop. |
+| `tcp` | TCP transport — `TcpProducer`, `TcpConsumer`, native binary wire protocol. Auto-reconnect with exponential backoff. CloudEvents interop behind `cloud_events`. |
+| `cloud_events` | Native `cloudevents::Event` interop (gRPC, HTTP, and TCP). |
 | `tls` | TLS on the gRPC channel. |
-| `full` | `grpc` + `http` + `cloud_events` + `tls`. Use this for clippy/test so every code path compiles. |
+| `full` | `grpc` + `http` + `tcp` + `cloud_events` + `tls`. Use this for clippy/test so every code path compiles. |
 | `e2e` | Gates the live-server integration suite (`tests/e2e/`). A plain `cargo test` never touches Docker. |
 
 ## Verification (the order the README mandates)
@@ -73,6 +76,19 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
   + `WebhookState`) used only by `WebhookServer`. Not part of the public API.
 - `src/transport/http/server.rs` — built-in `WebhookServer` (axum) implementing
   `IntoFuture` for one-liner `.await` startup with optional graceful shutdown.
+- `src/transport/tcp/connection.rs` — TCP engine: `establish()` does TCP +
+  HELLO handshake; `run()` is an outer reconnect loop that calls `io_loop()`
+  (the inner select! over read/write/heartbeat). When `ReconnectConfig::enabled`
+  (default `true`), the outer loop re-establishes the connection with
+  exponential backoff after I/O errors. `take_reconnect_rx()` delivers a
+  notification on each successful reconnect so consumers can replay
+  subscriptions.
+- `src/transport/tcp/message.rs` — package builders for `EventMeshMessage`
+  (`build_message_package`) and CloudEvents (`build_cloud_event_package`,
+  behind `cloud_events`). CloudEvents bodies use `protocoltype=cloudevents` and
+  are serialized as `application/cloudevents+json` raw bytes (matching the Java
+  runtime's codec path).
+- `src/config/tcp.rs` — `TcpClientConfig` + `ReconnectConfig` + fluent builders.
 - `src/common/` — `ProtocolKey`, status codes, constants, `LoadBalanceSelector`
   shared across transports.
 

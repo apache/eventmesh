@@ -30,6 +30,104 @@ pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(20);
 /// Heartbeat interval (mirrors the Java SDK `HEARTBEAT = 30_000 ms`).
 pub const DEFAULT_HEARTBEAT: Duration = Duration::from_secs(30);
 
+/// Default initial backoff before the first reconnect attempt.
+pub const DEFAULT_RECONNECT_INITIAL_BACKOFF: Duration = Duration::from_secs(1);
+
+/// Default maximum backoff between reconnect attempts.
+pub const DEFAULT_RECONNECT_MAX_BACKOFF: Duration = Duration::from_secs(30);
+
+/// Reconnect policy for the TCP transport.
+///
+/// When enabled (the default), the background I/O task automatically
+/// re-establishes the TCP connection + HELLO handshake after an I/O error or
+/// server-side close. For consumers, subscriptions are replayed automatically
+/// after a successful reconnect.
+///
+/// This mirrors the Java SDK's heartbeat-driven reconnect (`TcpClient.heartbeat`
+/// checks `channel.isActive()` every 30 s and calls `reconnect()` when false),
+/// but with exponential backoff and a configurable retry cap instead of a flat
+/// 30 s cadence.
+#[derive(Debug, Clone)]
+pub struct ReconnectConfig {
+    /// Whether automatic reconnect is enabled (default `true`).
+    pub enabled: bool,
+    /// Maximum reconnect attempts before giving up. `usize::MAX` = infinite
+    /// (default, matching the Java SDK).
+    pub max_retries: usize,
+    /// Initial backoff duration before the first retry (default `1 s`).
+    pub initial_backoff: Duration,
+    /// Cap for the exponential backoff (default `30 s`).
+    pub max_backoff: Duration,
+}
+
+impl Default for ReconnectConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            max_retries: usize::MAX,
+            initial_backoff: DEFAULT_RECONNECT_INITIAL_BACKOFF,
+            max_backoff: DEFAULT_RECONNECT_MAX_BACKOFF,
+        }
+    }
+}
+
+impl ReconnectConfig {
+    /// Start a fluent builder.
+    pub fn builder() -> ReconnectConfigBuilder {
+        ReconnectConfigBuilder::default()
+    }
+}
+
+/// Fluent builder for [`ReconnectConfig`].
+#[derive(Debug, Clone, Default)]
+pub struct ReconnectConfigBuilder {
+    enabled: Option<bool>,
+    max_retries: Option<usize>,
+    initial_backoff: Option<Duration>,
+    max_backoff: Option<Duration>,
+}
+
+impl ReconnectConfigBuilder {
+    pub fn enabled(mut self, v: bool) -> Self {
+        self.enabled = Some(v);
+        self
+    }
+    pub fn max_retries(mut self, v: usize) -> Self {
+        self.max_retries = Some(v);
+        self
+    }
+    pub fn initial_backoff(mut self, v: Duration) -> Self {
+        self.initial_backoff = Some(v);
+        self
+    }
+    pub fn max_backoff(mut self, v: Duration) -> Self {
+        self.max_backoff = Some(v);
+        self
+    }
+    pub fn build(self) -> ReconnectConfig {
+        let ReconnectConfigBuilder {
+            enabled,
+            max_retries,
+            initial_backoff,
+            max_backoff,
+        } = self;
+        let mut cfg = ReconnectConfig::default();
+        if let Some(v) = enabled {
+            cfg.enabled = v;
+        }
+        if let Some(v) = max_retries {
+            cfg.max_retries = v;
+        }
+        if let Some(v) = initial_backoff {
+            cfg.initial_backoff = v;
+        }
+        if let Some(v) = max_backoff {
+            cfg.max_backoff = v;
+        }
+        cfg
+    }
+}
+
 /// Configuration for the TCP transport.
 #[derive(Debug, Clone)]
 pub struct TcpClientConfig {
@@ -41,6 +139,9 @@ pub struct TcpClientConfig {
     pub timeout: Duration,
     /// Heartbeat interval.
     pub heartbeat_interval: Duration,
+    /// Automatic reconnect policy (default: enabled, infinite retries, 1–30 s
+    /// exponential backoff).
+    pub reconnect: ReconnectConfig,
     /// Client identity sent with every request.
     pub identity: ClientIdentity,
 }
@@ -52,6 +153,7 @@ impl Default for TcpClientConfig {
             server_port: DEFAULT_TCP_PORT,
             timeout: DEFAULT_TIMEOUT,
             heartbeat_interval: DEFAULT_HEARTBEAT,
+            reconnect: ReconnectConfig::default(),
             identity: ClientIdentity::detect(),
         }
     }
@@ -76,6 +178,7 @@ pub struct TcpClientConfigBuilder {
     server_port: Option<u16>,
     timeout: Option<Duration>,
     heartbeat_interval: Option<Duration>,
+    reconnect: Option<ReconnectConfig>,
     identity: Option<ClientIdentity>,
     // identity convenience setters:
     env: Option<String>,
@@ -103,6 +206,10 @@ impl TcpClientConfigBuilder {
     }
     pub fn heartbeat_interval(mut self, v: Duration) -> Self {
         self.heartbeat_interval = Some(v);
+        self
+    }
+    pub fn reconnect(mut self, v: ReconnectConfig) -> Self {
+        self.reconnect = Some(v);
         self
     }
     pub fn identity(mut self, v: ClientIdentity) -> Self {
@@ -148,6 +255,7 @@ impl TcpClientConfigBuilder {
             server_port,
             timeout,
             heartbeat_interval,
+            reconnect,
             identity,
             env,
             idc,
@@ -190,6 +298,7 @@ impl TcpClientConfigBuilder {
             server_port: server_port.unwrap_or(DEFAULT_TCP_PORT),
             timeout: timeout.unwrap_or(DEFAULT_TIMEOUT),
             heartbeat_interval: heartbeat_interval.unwrap_or(DEFAULT_HEARTBEAT),
+            reconnect: reconnect.unwrap_or_default(),
             identity,
         }
     }

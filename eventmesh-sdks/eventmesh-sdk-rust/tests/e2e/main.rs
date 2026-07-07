@@ -43,6 +43,7 @@ mod publish;
 mod request_reply;
 mod runtime;
 mod subscribe;
+mod tcp_cloud_events;
 mod tcp_publish;
 mod tcp_request_reply;
 mod tcp_subscribe;

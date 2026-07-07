@@ -46,8 +46,9 @@ tls = ["tonic/tls", "tonic/tls-native-roots"]
 full = ["grpc", "http", "tcp", "cloud_events", "tls"]
 # End-to-end tests (tests/e2e/*). Gated off by default so plain `cargo test`
 # never needs a live server. Run with `cargo test --features e2e`. Implies all
-# transports so the full suite (gRPC + HTTP + TCP) compiles from a single flag.
-e2e = ["grpc", "http", "tcp"]
+# transports + cloud_events so the full suite (gRPC + HTTP + TCP + CE) compiles
+# from a single flag.
+e2e = ["grpc", "http", "tcp", "cloud_events"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -124,3 +125,8 @@ required-features = ["tcp"]
 name = "tcp_consumer"
 path = "examples/tcp/consumer.rs"
 required-features = ["tcp"]
+
+[[example]]
+name = "tcp_producer_cloud_events"
+path = "examples/tcp/producer_cloud_events.rs"
+required-features = ["tcp", "cloud_events"]

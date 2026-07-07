@@ -59,6 +59,11 @@ pub struct TcpConsumer<L: MessageListener<Message = EventMeshMessage>> {
 impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
     /// Connect to the EventMesh TCP endpoint and perform the HELLO handshake
     /// (role = sub).
+    ///
+    /// The reconnect policy from the config controls automatic reconnection
+    /// after I/O failures (enabled by default). When a reconnect succeeds,
+    /// the receive loop automatically replays all subscriptions and re-issues
+    /// `LISTEN_REQUEST`.
     pub async fn connect(config: TcpClientConfig, listener: L) -> Result<Self> {
         let user_agent = UserAgent::from_identity(&config.identity, config.server_port, "sub");
         let conn = TcpConnection::connect(
@@ -67,6 +72,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
             &user_agent,
             config.heartbeat_interval,
             config.timeout,
+            config.reconnect.clone(),
         )
         .await?;
 
@@ -315,7 +321,15 @@ impl<L: MessageListener<Message = EventMeshMessage>> IntoFuture for ListenServe<
                 .await
                 .ok_or_else(|| EventMeshError::Tcp("inbound receiver already taken".into()))?;
 
-            // 4. Receive loop.
+            // 4. Take the reconnect-event receiver. When the connection task
+            //    auto-reconnects, it sends `()` on this channel. The receive
+            //    loop uses it to replay subscriptions + LISTEN without dropping
+            //    the user's driver. `None` means reconnect is disabled or the
+            //    receiver was already taken — the loop simply won't handle
+            //    reconnects, which is fine for the non-reconnect case.
+            let mut reconnect_rx = conn.take_reconnect_rx().await;
+
+            // 5. Receive loop.
             loop {
                 tokio::select! {
                     biased;
@@ -323,6 +337,68 @@ impl<L: MessageListener<Message = EventMeshMessage>> IntoFuture for ListenServe<
                         debug!("receive loop shutting down");
                         break;
                     }
+
+                    // Reconnect event: the connection task has re-established
+                    // the TCP session. Replay all subscriptions + LISTEN so the
+                    // new server-side session mirrors the old one. Mirrors the
+                    // Java SDK's `EventMeshMessageTCPSubClient.reconnect()`.
+                    event = async {
+                        match reconnect_rx.as_mut() {
+                            Some(rx) => rx.recv().await,
+                            // No reconnect channel: this arm never fires.
+                            None => std::future::pending().await,
+                        }
+                    } => {
+                        if event.is_none() {
+                            info!("reconnect channel closed, exiting receive loop");
+                            break;
+                        }
+                        info!("connection reconnected, replaying subscriptions");
+                        let subs_snapshot = subscriptions.lock().await.clone();
+                        let mut all_ok = true;
+                        for item in &subs_snapshot {
+                            let sub_pkg =
+                                message::subscribe(&item.topic, std::slice::from_ref(item));
+                            match conn.io(sub_pkg, config.timeout).await {
+                                Ok(resp) => {
+                                    let r = message::response_from_pkg(&resp);
+                                    if !r.is_success() {
+                                        warn!(
+                                            topic = ?item.topic,
+                                            code = r.code,
+                                            "re-subscribe after reconnect rejected"
+                                        );
+                                        all_ok = false;
+                                    }
+                                }
+                                Err(e) => {
+                                    warn!(
+                                        topic = ?item.topic,
+                                        error = %e,
+                                        "re-subscribe after reconnect error"
+                                    );
+                                    all_ok = false;
+                                }
+                            }
+                        }
+                        if all_ok {
+                            match conn.io(message::listen(), config.timeout).await {
+                                Ok(resp) => {
+                                    let r = message::response_from_pkg(&resp);
+                                    if !r.is_success() {
+                                        warn!(code = r.code, "re-LISTEN after reconnect rejected");
+                                    } else {
+                                        debug!("re-LISTEN ok after reconnect");
+                                    }
+                                }
+                                Err(e) => {
+                                    warn!(error = %e, "re-LISTEN after reconnect error");
+                                }
+                            }
+                        }
+                    }
+
+                    // Inbound message from the server.
                     pkg = inbound_rx.recv() => {
                         match pkg {
                             Some(pkg) => {
@@ -423,7 +499,30 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
     };
 
     // Parse message body and invoke listener BEFORE sending the ACK.
-    if let Some(msg) = message::parse_message(&pkg.body) {
+    //
+    // CloudEvents bodies (`protocoltype=cloudevents`) arrive as CloudEvents
+    // JSON in the package body. When the `cloud_events` feature is enabled,
+    // they are parsed and converted to EventMeshMessage so the listener
+    // handles them uniformly. Without the feature, the message is logged and
+    // skipped (the ACK is still sent so the broker doesn't redeliver).
+    let parsed = if message::is_cloudevents(pkg) {
+        #[cfg(feature = "cloud_events")]
+        {
+            message::parse_cloud_event(&pkg.body).map(|ev| message::cloud_event_to_message(&ev))
+        }
+        #[cfg(not(feature = "cloud_events"))]
+        {
+            warn!(
+                cmd = ?pkg.header.cmd,
+                "received CloudEvents message but the cloud_events feature is disabled; skipping"
+            );
+            None
+        }
+    } else {
+        message::parse_message(&pkg.body)
+    };
+
+    if let Some(msg) = parsed {
         debug!(topic = ?msg.topic, "dispatching to listener");
         // Snapshot the request's wire properties before the listener
         // consumes the message. When the listener returns a fresh reply we

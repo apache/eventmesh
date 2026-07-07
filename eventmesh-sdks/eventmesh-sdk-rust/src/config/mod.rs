@@ -35,4 +35,4 @@ pub use http::HttpClientConfig;
 pub mod tcp;
 
 #[cfg(feature = "tcp")]
-pub use tcp::TcpClientConfig;
+pub use tcp::{ReconnectConfig, ReconnectConfigBuilder, TcpClientConfig};
