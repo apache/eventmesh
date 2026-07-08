@@ -49,6 +49,12 @@ pub(crate) type StreamTx = Arc<Mutex<Option<mpsc::Sender<PbCloudEvent>>>>;
 /// promptly when `shutdown` is cancelled, so dropping / shutting down the
 /// consumer no longer leaks a permanently-running task.
 ///
+/// Scheduling mirrors the Java SDK's `scheduleAtFixedRate`: the first tick
+/// fires after `HEARTBEAT_INITIAL_DELAY`, subsequent ticks align to a fixed
+/// grid of `HEARTBEAT_INTERVAL`. The default `Burst` missed-tick behavior
+/// matches Java's "catch up by one (non-concurrent)" semantics — if a tick
+/// overruns, the next fires immediately rather than shifting the grid.
+///
 /// When the server returns `CLIENT_RESUBSCRIBE`, the loop automatically
 /// re-registers all active subscriptions: webhook subscriptions are re-sent via
 /// the `subscribe` RPC, stream subscriptions are re-sent over `stream_tx`.
@@ -62,12 +68,18 @@ pub(crate) fn spawn(
     shutdown: CancellationToken,
 ) -> JoinHandle<()> {
     tokio::spawn(async move {
-        // Initial delay is itself interruptible.
-        tokio::select! {
-            _ = tokio::time::sleep(HEARTBEAT_INITIAL_DELAY) => {}
-            _ = shutdown.cancelled() => return,
-        }
+        let mut interval = tokio::time::interval_at(
+            tokio::time::Instant::now() + HEARTBEAT_INITIAL_DELAY,
+            HEARTBEAT_INTERVAL,
+        );
+        // Default `MissedTickBehavior::Burst` mirrors Java's
+        // `scheduleAtFixedRate`: an overrun is followed by an immediate
+        // catch-up tick rather than a delayed one.
         loop {
+            tokio::select! {
+                _ = interval.tick() => {}
+                _ = shutdown.cancelled() => return,
+            }
             let items: Vec<(String, String)> = subscriptions
                 .lock()
                 .await
@@ -88,10 +100,6 @@ pub(crate) fn spawn(
                     }
                     Err(e) => warn!("heartbeat failed: {e}"),
                 }
-            }
-            tokio::select! {
-                _ = tokio::time::sleep(HEARTBEAT_INTERVAL) => {}
-                _ = shutdown.cancelled() => break,
             }
         }
     })
