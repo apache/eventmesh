@@ -32,7 +32,7 @@ use crate::config::GrpcClientConfig;
 use crate::model::{EventMeshProtocolType, SubscriptionItem};
 use crate::proto_gen::PbCloudEvent;
 use crate::transport::grpc::client::GrpcClient;
-use crate::transport::grpc::codec::{build_heartbeat, CloudEventCodec};
+use crate::transport::grpc::codec;
 use crate::transport::grpc::consumer::SubscriptionEntry;
 
 /// Initial delay before the first heartbeat.
@@ -76,10 +76,10 @@ pub(crate) fn spawn(
                 .collect();
             if items.is_empty() {
                 debug!("heartbeat tick: no subscriptions yet");
-            } else if let Ok(event) = build_heartbeat(&config, &items) {
+            } else if let Ok(event) = codec::build_heartbeat(&config, &items) {
                 match client.heartbeat(event).await {
                     Ok(resp) => {
-                        let response = CloudEventCodec::to_response(&resp);
+                        let response = codec::to_response(&resp);
                         if response.code == Some(StatusCode::CLIENT_RESUBSCRIBE as i64) {
                             warn!("server requested resubscribe (CLIENT_RESUBSCRIBE)");
                             resubscribe(&client, &config, &subscriptions, &stream_tx).await;
@@ -132,7 +132,7 @@ async fn resubscribe(
 
     for (url, items) in groups {
         let is_stream = url == SDK_STREAM_URL;
-        let event = match CloudEventCodec::build_subscription_event(
+        let event = match codec::build_subscription_event(
             config,
             EventMeshProtocolType::EventMeshMessage,
             if is_stream { None } else { Some(&url) },

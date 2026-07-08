@@ -33,7 +33,7 @@ use crate::common::constants::SDK_STREAM_URL;
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
 use crate::transport::grpc::client::GrpcClient;
-use crate::transport::grpc::codec::CloudEventCodec;
+use crate::transport::grpc::codec;
 use crate::transport::grpc::heartbeat::{self, StreamTx};
 use crate::transport::Subscriber;
 use crate::MessageListener;
@@ -110,14 +110,14 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
                 "subscription items must not be empty".into(),
             ));
         }
-        let event = CloudEventCodec::build_subscription_event(
+        let event = codec::build_subscription_event(
             &self.config,
             EventMeshProtocolType::EventMeshMessage,
             Some(&url),
             &items,
         )?;
         let resp = timed(self.config.timeout, self.client.subscribe_webhook(event)).await?;
-        let response = CloudEventCodec::to_response(&resp);
+        let response = codec::to_response(&resp);
         // Only record the subscription locally when the broker actually
         // accepted it, so the heartbeat loop doesn't advertise rejected subs.
         if response.is_success() {
@@ -148,7 +148,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcConsumer<L> {
                 "subscription items must not be empty".into(),
             ));
         }
-        let event = CloudEventCodec::build_subscription_event(
+        let event = codec::build_subscription_event(
             &self.config,
             EventMeshProtocolType::EventMeshMessage,
             None,
@@ -218,14 +218,14 @@ impl<L: MessageListener<Message = EventMeshMessage>> Subscriber for GrpcConsumer
                 "unsubscribe items must not be empty".into(),
             ));
         }
-        let event = CloudEventCodec::build_subscription_event(
+        let event = codec::build_subscription_event(
             &self.config,
             EventMeshProtocolType::EventMeshMessage,
             None,
             &items,
         )?;
         let resp = timed(self.config.timeout, self.client.unsubscribe(event)).await?;
-        let response = CloudEventCodec::to_response(&resp);
+        let response = codec::to_response(&resp);
         // Only drop the local entries when the server confirms the unsubscribe;
         // otherwise the heartbeat loop would stop reporting still-active subs.
         if response.is_success() {
@@ -273,14 +273,14 @@ pub(crate) fn build_reply(
     request: &crate::proto_gen::PbCloudEvent,
     config: &crate::config::GrpcClientConfig,
 ) -> Result<crate::proto_gen::PbCloudEvent> {
-    let mut event = CloudEventCodec::from_event_mesh_message(&reply, config)?;
+    let mut event = codec::from_event_mesh_message(&reply, config)?;
     for (key, value) in &request.attributes {
         event
             .attributes
             .entry(key.clone())
             .or_insert_with(|| value.clone());
     }
-    CloudEventCodec::mark_as_reply(&mut event);
+    codec::mark_as_reply(&mut event);
     Ok(event)
 }
 
@@ -410,7 +410,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> IntoFuture for StreamServe<
                         }
                         Some(Ok(cloud_event)) => {
                             let eventmesh_msg =
-                                CloudEventCodec::to_event_mesh_message(&cloud_event);
+                                codec::to_event_mesh_message(&cloud_event);
                             // Skip control/ack frames: the broker echoes the
                             // subscription request back as the first stream
                             // message. Real messages always carry a seqnum;

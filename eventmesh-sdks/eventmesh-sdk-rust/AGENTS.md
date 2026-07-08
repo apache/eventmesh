@@ -16,11 +16,13 @@ docker-compose profiles and runtime ports; this file covers the Rust workflow.
 ## Build prerequisite: `protoc`
 
 `build.rs` invokes `tonic-build`, which shells out to the `protoc` compiler at
-**build time**. If `protoc` is not on `PATH`, every `cargo` command fails. The
-README therefore prefixes commands with `PROTOC=$HOME/.local/bin/protoc`:
+**build time**. `prost-build` finds `protoc` automatically when it is on
+`PATH`; only set the `PROTOC` env var to point at a binary that is **not** on
+`PATH`. (`brew install protobuf`, `apt-get install protobuf-compiler`, etc. all
+put `protoc` on `PATH`, so no prefix is needed.)
 
 ```bash
-PROTOC=$HOME/.local/bin/protoc cargo build --features full
+cargo build --features full
 ```
 
 ## Feature matrix
@@ -38,9 +40,9 @@ PROTOC=$HOME/.local/bin/protoc cargo build --features full
 ## Verification (the order the README mandates)
 
 ```bash
-PROTOC=$HOME/.local/bin/protoc cargo fmt
-PROTOC=$HOME/.local/bin/protoc cargo clippy --features full --all-targets -- -D warnings
-PROTOC=$HOME/.local/bin/protoc cargo test --features full
+cargo fmt
+cargo clippy --features full --all-targets -- -D warnings
+cargo test --features full
 ```
 
 Clippy runs with **`-D warnings`** (warnings are errors here). There is no
@@ -122,7 +124,7 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
 
 ## End-to-end tests (`tests/e2e/`)
 
-Run with: `PROTOC=$HOME/.local/bin/protoc cargo test --features e2e`.
+Run with: `cargo test --features e2e`.
 
 - The harness (`tests/e2e/runtime.rs`) **auto-starts the `rocketmq` docker-compose
   profile** and tears it down at process exit. Set `EVENTMESH_E2E_EXTERNAL=1` to

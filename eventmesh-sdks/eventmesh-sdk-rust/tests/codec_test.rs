@@ -22,7 +22,7 @@
 use eventmesh::common::ProtocolKey;
 use eventmesh::{
     config::GrpcClientConfig,
-    grpc::codec::CloudEventCodec,
+    grpc::codec,
     model::{
         EventMeshMessage, EventMeshProtocolType, SubscriptionItem, SubscriptionMode,
         SubscriptionType,
@@ -51,12 +51,12 @@ fn round_trip_message() {
         .unique_id("u")
         .prop("custom", "val")
         .build();
-    let ce = CloudEventCodec::from_event_mesh_message(&msg, &cfg).unwrap();
-    assert_eq!(CloudEventCodec::get_subject(&ce), "t");
-    assert_eq!(CloudEventCodec::get_text_data(&ce), "c");
+    let ce = codec::from_event_mesh_message(&msg, &cfg).unwrap();
+    assert_eq!(codec::get_subject(&ce), "t");
+    assert_eq!(codec::get_text_data(&ce), "c");
     assert_eq!(ce.attributes.get("custom").map(attr_as_str).unwrap(), "val");
 
-    let back = CloudEventCodec::to_event_mesh_message(&ce);
+    let back = codec::to_event_mesh_message(&ce);
     assert_eq!(back.topic.as_deref(), Some("t"));
     assert_eq!(back.content.as_deref(), Some("c"));
 }
@@ -69,7 +69,7 @@ fn subscription_event_carries_url_and_items() {
         SubscriptionMode::CLUSTERING,
         SubscriptionType::ASYNC,
     )];
-    let ce = CloudEventCodec::build_subscription_event(
+    let ce = codec::build_subscription_event(
         &cfg,
         EventMeshProtocolType::EventMeshMessage,
         Some("http://localhost:8080/cb"),
@@ -80,7 +80,7 @@ fn subscription_event_carries_url_and_items() {
         ce.attributes.get("url").map(attr_as_str).unwrap(),
         "http://localhost:8080/cb"
     );
-    assert!(CloudEventCodec::get_text_data(&ce).contains("CLUSTERING"));
+    assert!(codec::get_text_data(&ce).contains("CLUSTERING"));
 }
 
 #[test]
@@ -88,7 +88,7 @@ fn response_code_success() {
     let mut ce = PbCloudEvent::default();
     ce.attributes
         .insert(ProtocolKey::GRPC_RESPONSE_CODE.into(), attr_str("0"));
-    let resp = CloudEventCodec::to_response(&ce);
+    let resp = codec::to_response(&ce);
     assert!(resp.is_success());
 }
 
@@ -103,7 +103,7 @@ fn batch_encode() {
                 .build()
         })
         .collect();
-    let batch = CloudEventCodec::from_event_mesh_messages(&msgs, &cfg).unwrap();
+    let batch = codec::from_event_mesh_messages(&msgs, &cfg).unwrap();
     assert_eq!(batch.events.len(), 3);
 }
 
@@ -115,6 +115,6 @@ fn binary_data_fallback() {
         .content("raw-bytes")
         .prop(ProtocolKey::DATA_CONTENT_TYPE, "application/octet-stream")
         .build();
-    let ce = CloudEventCodec::from_event_mesh_message(&msg, &cfg).unwrap();
+    let ce = codec::from_event_mesh_message(&msg, &cfg).unwrap();
     assert!(matches!(ce.data, Some(PbData::BinaryData(_))));
 }

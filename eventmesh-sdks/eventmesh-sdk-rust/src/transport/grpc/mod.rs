@@ -33,6 +33,3 @@ pub mod producer;
 pub use client::GrpcClient;
 pub use consumer::{GrpcConsumer, StreamServe};
 pub use producer::GrpcProducer;
-
-#[cfg(feature = "cloud_events")]
-pub use codec::CloudEventMessage;

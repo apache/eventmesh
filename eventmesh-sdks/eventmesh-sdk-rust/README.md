@@ -147,9 +147,9 @@ docker compose --profile standalone up -d
 > curl -X POST http://127.0.0.1:10106/topic -H 'Content-Type: application/json' -d '{"name":"test-topic-rust-sdk"}'
 >
 > # terminal 1 — receive
-> PROTOC=$HOME/.local/bin/protoc cargo run --features grpc --example grpc_consumer
+> cargo run --features grpc --example grpc_consumer
 > # terminal 2 — send
-> PROTOC=$HOME/.local/bin/protoc cargo run --features grpc --example grpc_producer
+> cargo run --features grpc --example grpc_producer
 > ```
 >
 > (With the RocketMQ backend, topics are auto-created and this dance is not
@@ -158,9 +158,9 @@ docker compose --profile standalone up -d
 ## Development
 
 ```bash
-PROTOC=$HOME/.local/bin/protoc cargo fmt
-PROTOC=$HOME/.local/bin/protoc cargo clippy --features full --all-targets -- -D warnings
-PROTOC=$HOME/.local/bin/protoc cargo test --features full
+cargo fmt
+cargo clippy --features full --all-targets -- -D warnings
+cargo test --features full
 ```
 
 ## End-to-end tests
@@ -171,11 +171,10 @@ plain `cargo test` never touches Docker.
 
 ```bash
 # Auto-start the standalone stack via docker compose, run the suite, then stop it:
-PROTOC=$HOME/.local/bin/protoc cargo test --features e2e
+cargo test --features e2e
 
 # ...or run against a server you already started yourself:
-EVENTMESH_E2E_EXTERNAL=1 \
-PROTOC=$HOME/.local/bin/protoc cargo test --features e2e
+EVENTMESH_E2E_EXTERNAL=1 cargo test --features e2e
 ```
 
 When neither Docker nor a reachable server is found, every test skips itself

@@ -20,6 +20,7 @@
 
 use std::time::Duration;
 
+use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
 use tonic::transport::{Channel, Endpoint};
 use tonic::{Request, Streaming};
 
@@ -172,8 +173,6 @@ impl GrpcClient {
         tokio::sync::mpsc::Sender<PbCloudEvent>,
         Streaming<PbCloudEvent>,
     )> {
-        use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
-
         let (tx, rx) = tokio::sync::mpsc::channel::<PbCloudEvent>(32);
         tx.send(first)
             .await

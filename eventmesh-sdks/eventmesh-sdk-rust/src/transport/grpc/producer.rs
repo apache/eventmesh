@@ -24,7 +24,7 @@ use tracing::debug;
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::grpc::client::GrpcClient;
-use crate::transport::grpc::codec::CloudEventCodec;
+use crate::transport::grpc::codec;
 use crate::transport::Publisher;
 
 /// gRPC-based producer.
@@ -44,7 +44,7 @@ impl GrpcProducer {
     /// broker beyond the RPC ack). Useful when you don't care about per-message
     /// broker ack codes.
     pub async fn publish_one_way(&self, message: EventMeshMessage) -> Result<()> {
-        let event = CloudEventCodec::from_event_mesh_message(&message, &self.config)?;
+        let event = codec::from_event_mesh_message(&message, &self.config)?;
         timed(self.config.timeout, self.client.publish_one_way(event)).await?;
         Ok(())
     }
@@ -54,10 +54,9 @@ impl GrpcProducer {
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
         use cloudevents::AttributesReader;
 
-        let ce =
-            crate::transport::grpc::codec::CloudEventMessage::from_event(&event, &self.config)?;
+        let ce = codec::from_cloudevent(&event, &self.config)?;
         let resp = timed(self.config.timeout, self.client.publish(ce)).await?;
-        let response = CloudEventCodec::to_response(&resp);
+        let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
                 code: response.code.unwrap_or(-1) as i32,
@@ -72,9 +71,9 @@ impl GrpcProducer {
 impl Publisher for GrpcProducer {
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         validate_publish(&message)?;
-        let event = CloudEventCodec::from_event_mesh_message(&message, &self.config)?;
+        let event = codec::from_event_mesh_message(&message, &self.config)?;
         let resp = timed(self.config.timeout, self.client.publish(event)).await?;
-        let response = CloudEventCodec::to_response(&resp);
+        let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
                 code: response.code.unwrap_or(-1) as i32,
@@ -94,9 +93,9 @@ impl Publisher for GrpcProducer {
         for m in &messages {
             validate_publish(m)?;
         }
-        let batch = CloudEventCodec::from_event_mesh_messages(&messages, &self.config)?;
+        let batch = codec::from_event_mesh_messages(&messages, &self.config)?;
         let resp = timed(self.config.timeout, self.client.batch_publish(batch)).await?;
-        let response = CloudEventCodec::to_response(&resp);
+        let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
                 code: response.code.unwrap_or(-1) as i32,
@@ -114,7 +113,7 @@ impl Publisher for GrpcProducer {
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
         validate_publish(&message)?;
-        let event = CloudEventCodec::from_event_mesh_message(&message, &self.config)?;
+        let event = codec::from_event_mesh_message(&message, &self.config)?;
         let fut = self.client.request_reply(event);
         let resp = tokio::time::timeout(timeout, fut)
             .await
@@ -123,7 +122,7 @@ impl Publisher for GrpcProducer {
         // attributes, timeout waiting for a reply, ...) as a response CloudEvent
         // carrying a nonzero status code. Check it before decoding, mirroring
         // `publish`, so `?` does not treat a failed reply as a valid message.
-        let response = CloudEventCodec::to_response(&resp);
+        let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
                 code: response.code.unwrap_or(-1) as i32,
@@ -132,7 +131,7 @@ impl Publisher for GrpcProducer {
                     .unwrap_or_else(|| "request/reply failed".into()),
             });
         }
-        Ok(CloudEventCodec::to_event_mesh_message(&resp))
+        Ok(codec::to_event_mesh_message(&resp))
     }
 }
 

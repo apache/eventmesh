@@ -25,19 +25,18 @@
 //!
 //! # Transports
 //!
-//! Phase 1 ships the **gRPC** transport. The **HTTP** transport (producer,
-//! consumer, and webhook middleware) is also available behind the `http`
-//! feature flag. The **TCP** transport (native binary wire protocol) is
-//! available behind the `tcp` feature flag.
+//! The SDK ships three transports, each gated by its own feature flag:
 //!
-//! - [`grpc::GrpcProducer`] — publish / batch / request-reply.
-//! - [`grpc::GrpcConsumer`] — webhook + bidirectional-stream subscription.
-//! - [`http::HttpProducer`] — HTTP publish / request-reply.
-//! - [`http::HttpConsumer`] — HTTP subscribe / heartbeat; receive pushes via
-//!   the built-in [`http::WebhookServer`] or your own endpoint built on the
-//!   [`http::codec`] helpers.
-//! - [`tcp::TcpProducer`] — TCP publish / broadcast / request-reply.
-//! - [`tcp::TcpConsumer`] — TCP subscribe + receive loop.
+//! - **gRPC** (default, `grpc` feature) — [`grpc::GrpcProducer`] for
+//!   publish / batch / request-reply and [`grpc::GrpcConsumer`] for
+//!   webhook + bidirectional-stream subscription.
+//! - **HTTP** (`http` feature) — [`http::HttpProducer`] for publish /
+//!   request-reply and [`http::HttpConsumer`] for subscribe / heartbeat;
+//!   receive pushes via the built-in [`http::WebhookServer`] or your own
+//!   endpoint built on the [`http::codec`] helpers.
+//! - **TCP** (`tcp` feature) — [`tcp::TcpProducer`] for publish / broadcast /
+//!   request-reply and [`tcp::TcpConsumer`] for subscribe + receive loop,
+//!   over the native binary wire protocol with auto-reconnect.
 //!
 //! # Quick example (gRPC producer)
 //!
