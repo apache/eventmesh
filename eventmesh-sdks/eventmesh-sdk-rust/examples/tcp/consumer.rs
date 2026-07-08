@@ -69,22 +69,21 @@ async fn main() -> eventmesh::Result<()> {
         PrintingListener {
             count: AtomicU64::new(0),
         },
+        Some(async {
+            tokio::signal::ctrl_c().await.ok();
+        }),
     )
     .await?;
 
-    let items = vec![SubscriptionItem::new(
-        "test-topic-rust-tcp",
-        SubscriptionMode::CLUSTERING,
-        SubscriptionType::ASYNC,
-    )];
-    println!("listening (Ctrl-C to stop)...");
     consumer
-        .listen(items)?
-        .with_graceful_shutdown(async {
-            tokio::signal::ctrl_c().await.ok();
-        })
+        .subscribe(&[SubscriptionItem::new(
+            "test-topic-rust-tcp",
+            SubscriptionMode::CLUSTERING,
+            SubscriptionType::ASYNC,
+        )])
         .await?;
 
-    consumer.shutdown().await;
+    println!("listening (Ctrl-C to stop)...");
+    consumer.wait_for_shutdown().await;
     Ok(())
 }

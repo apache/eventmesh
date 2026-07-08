@@ -18,8 +18,10 @@
 //! gRPC transport for the EventMesh server.
 //!
 //! - [`GrpcProducer`] implements [`crate::transport::Publisher`].
-//! - [`GrpcConsumer`] implements [`crate::transport::Subscriber`] plus a
-//!   streaming receive loop driven by a [`crate::MessageListener`].
+//! - [`GrpcStreamConsumer`] opens a bidirectional stream and dispatches
+//!   delivered messages to a [`crate::MessageListener`].
+//! - [`GrpcWebhookConsumer`] is a lightweight RPC-only client for webhook
+//!   subscriptions.
 //!
 //! Wire format is CloudEvents-protobuf; [`EventMeshMessage`] is converted at
 //! the boundary by [`codec`].
@@ -31,5 +33,5 @@ pub mod heartbeat;
 pub mod producer;
 
 pub use client::GrpcClient;
-pub use consumer::{GrpcConsumer, StreamServe};
+pub use consumer::{GrpcStreamConsumer, GrpcWebhookConsumer};
 pub use producer::GrpcProducer;

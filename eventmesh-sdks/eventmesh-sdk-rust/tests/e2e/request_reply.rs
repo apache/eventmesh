@@ -20,9 +20,9 @@
 use std::time::Duration;
 
 use eventmesh::{
-    grpc::{GrpcConsumer, GrpcProducer},
+    grpc::{GrpcProducer, GrpcStreamConsumer},
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::{Publisher, Subscriber},
+    transport::Publisher,
 };
 
 use crate::harness::{
@@ -45,15 +45,18 @@ async fn request_reply_roundtrip() {
     let listener = ReplyingListener {
         reply_content: REPLY.to_string(),
     };
-    let consumer = GrpcConsumer::new(consumer_config(), listener).expect("build consumer");
-    consumer
-        .subscribe(vec![SubscriptionItem::new(
+    let consumer = GrpcStreamConsumer::subscribe_stream(
+        consumer_config(),
+        listener,
+        vec![SubscriptionItem::new(
             &topic,
             SubscriptionMode::CLUSTERING,
             SubscriptionType::SYNC,
-        )])
-        .await
-        .expect("subscribe");
+        )],
+        None::<std::future::Ready<()>>,
+    )
+    .await
+    .expect("subscribe_stream");
     let_stream_settle().await;
 
     let producer = GrpcProducer::connect(producer_config()).expect("connect producer");

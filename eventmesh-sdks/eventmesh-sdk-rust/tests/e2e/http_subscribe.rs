@@ -23,7 +23,7 @@ use std::time::Duration;
 use eventmesh::{
     http::HttpProducer,
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::{Publisher, Subscriber},
+    transport::Publisher,
 };
 
 use crate::harness::{

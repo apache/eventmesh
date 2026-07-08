@@ -18,7 +18,7 @@
 //! HTTP transport for EventMesh.
 //!
 //! Provides an HTTP-based [`Publisher`](crate::transport::Publisher) and
-//! [`Subscriber`](crate::transport::Subscriber), plus a built-in
+//! [`HttpConsumer`] for webhook subscription, plus a built-in
 //! [`WebhookServer`] for receiving pushed messages from the EventMesh runtime.
 //!
 //! # Wire format

@@ -108,7 +108,7 @@ async fn main() -> eventmesh::Result<()> {
         .consumer_group("test-consumerGroup-http-custom")
         .build()?;
 
-    let consumer = HttpConsumer::new(config)?;
+    let consumer = HttpConsumer::new(config, None::<std::future::Ready<()>>)?;
     let items = vec![SubscriptionItem::new(
         "test-topic-rust-http",
         SubscriptionMode::CLUSTERING,

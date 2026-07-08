@@ -18,6 +18,7 @@
 //! HTTP consumer.
 
 use std::collections::HashMap;
+use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -31,7 +32,6 @@ use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshProtocolType, PublishResponse, SubscriptionItem, SubscriptionType};
 use crate::transport::http::client::EventMeshHttpClient;
 use crate::transport::http::codec::{self, uri};
-use crate::transport::Subscriber;
 
 /// Heartbeat interval (mirrors the Java SDK: 30s).
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);
@@ -55,7 +55,7 @@ struct SubscriptionEntry {
 /// [`codec`](crate::transport::http::codec) helpers.
 ///
 /// A background heartbeat task is spawned on construction and stopped on drop
-/// or via [`HttpConsumer::shutdown`].
+/// or via [`HttpConsumer::shutdown`] / [`HttpConsumer::wait_for_shutdown`].
 pub struct HttpConsumer {
     client: EventMeshHttpClient,
     subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
@@ -65,10 +65,28 @@ pub struct HttpConsumer {
 
 impl HttpConsumer {
     /// Create a consumer. Spawns a background heartbeat task.
-    pub fn new(config: HttpClientConfig) -> Result<Self> {
+    ///
+    /// `shutdown_signal` is an optional future whose resolution triggers
+    /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
+    /// initiated by [`shutdown`](Self::shutdown) or drop.
+    pub fn new(
+        config: HttpClientConfig,
+        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
+    ) -> Result<Self> {
         let client = EventMeshHttpClient::new(config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
+
+        // Signal watcher.
+        if let Some(signal) = shutdown_signal {
+            let token = shutdown.clone();
+            tokio::spawn(async move {
+                tokio::select! {
+                    _ = signal => token.cancel(),
+                    _ = token.cancelled() => {}
+                }
+            });
+        }
 
         let heartbeat_handle =
             spawn_heartbeat(client.clone(), Arc::clone(&subscriptions), shutdown.clone());
@@ -155,21 +173,23 @@ impl HttpConsumer {
             let _ = handle.await;
         }
     }
+
+    /// Block until the shutdown signal fires or the heartbeat task exits.
+    ///
+    /// If no shutdown signal was provided at construction time, this blocks
+    /// until the heartbeat task exits (which typically only happens on
+    /// explicit shutdown or drop).
+    pub async fn wait_for_shutdown(&self) {
+        self.shutdown.cancelled().await;
+        if let Some(handle) = self.heartbeat_handle.lock().await.take() {
+            let _ = handle.await;
+        }
+    }
 }
 
-impl Subscriber for HttpConsumer {
-    async fn subscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
-        // Without an explicit URL, we can't register a webhook. Return an
-        // error guiding the user to `subscribe_webhook`.
-        let _ = &items;
-        Err(EventMeshError::InvalidArgument(
-            "HTTP transport requires subscribe_webhook(items, url); \
-             use subscribe_webhook with a webhook URL"
-                .into(),
-        ))
-    }
-
-    async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
+impl HttpConsumer {
+    /// Unsubscribe from topics.
+    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
                 "unsubscribe items must not be empty".into(),
@@ -297,7 +317,7 @@ mod tests {
     use crate::model::SubscriptionMode;
 
     fn make_consumer() -> HttpConsumer {
-        HttpConsumer::new(HttpClientConfig::default()).unwrap()
+        HttpConsumer::new(HttpClientConfig::default(), None::<std::future::Ready<()>>).unwrap()
     }
 
     #[tokio::test]

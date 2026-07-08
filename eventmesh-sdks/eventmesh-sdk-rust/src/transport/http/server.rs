@@ -45,7 +45,7 @@
 //! let config = HttpClientConfig::builder()
 //!     .servers("127.0.0.1:10105")
 //!     .build()?;
-//! let consumer = HttpConsumer::new(config)?;
+//! let consumer = HttpConsumer::new(config, None::<std::future::Ready<()>>)?;
 //! consumer.subscribe_webhook(
 //!     vec![SubscriptionItem::new("test-topic", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
 //!     server.url(),

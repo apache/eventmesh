@@ -25,7 +25,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use eventmesh::{
     config::GrpcClientConfig,
-    grpc::GrpcConsumer,
+    grpc::GrpcStreamConsumer,
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
     MessageListener,
 };
@@ -67,7 +67,6 @@ async fn main() -> eventmesh::Result<()> {
     let listener = PrintingListener {
         count: AtomicU64::new(0),
     };
-    let consumer = GrpcConsumer::new(config, listener)?;
 
     let items = vec![SubscriptionItem::new(
         "test-topic-rust-sdk",
@@ -75,11 +74,15 @@ async fn main() -> eventmesh::Result<()> {
         SubscriptionType::ASYNC,
     )];
     println!("subscribed; waiting for messages (Ctrl-C to stop)...");
-    consumer
-        .subscribe_stream(items)?
-        .with_graceful_shutdown(async {
+    let consumer = GrpcStreamConsumer::subscribe_stream(
+        config,
+        listener,
+        items,
+        Some(async {
             tokio::signal::ctrl_c().await.ok();
-        })
-        .await?;
+        }),
+    )
+    .await?;
+    consumer.wait_for_shutdown().await;
     Ok(())
 }

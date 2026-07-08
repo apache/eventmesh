@@ -15,16 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Transport-agnostic async traits.
+//! Transport-agnostic async traits and transport modules.
 //!
-//! These use native Rust-1.75 `async fn in trait`. They are therefore **not**
-//! object-safe — concrete producer/consumer types (`GrpcProducer`, etc.) are
-//! used directly rather than as `dyn` trait objects.
+//! Only the publish side is abstracted into a trait ([`Publisher`]). Each
+//! transport exposes its own consumer type with transport-specific subscribe /
+//! unsubscribe methods and a background receive loop — see the `grpc`,
+//! `http`, and `tcp` modules for details.
+//!
+//! These traits use native Rust-1.75 `async fn in trait` and are therefore
+//! **not object-safe** — use concrete types (`GrpcProducer`, etc.) directly,
+//! never `dyn`.
 
 use std::future::Future;
 use std::time::Duration;
 
-use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, PublishResponse};
 
 /// Publish-side capability.
 pub trait Publisher {
@@ -47,21 +52,6 @@ pub trait Publisher {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> impl Future<Output = crate::Result<EventMeshMessage>> + Send;
-}
-
-/// Subscribe-side capability.
-pub trait Subscriber {
-    /// Register interest in a set of topics.
-    fn subscribe(
-        &self,
-        items: Vec<SubscriptionItem>,
-    ) -> impl Future<Output = crate::Result<PublishResponse>> + Send;
-
-    /// Drop interest in the given topics.
-    fn unsubscribe(
-        &self,
-        items: Vec<SubscriptionItem>,
-    ) -> impl Future<Output = crate::Result<PublishResponse>> + Send;
 }
 
 #[cfg(feature = "grpc")]

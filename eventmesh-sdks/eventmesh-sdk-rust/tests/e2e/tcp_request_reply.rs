@@ -22,7 +22,7 @@ use std::time::Duration;
 use eventmesh::{
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
     tcp::{TcpConsumer, TcpProducer},
-    transport::{Publisher, Subscriber},
+    transport::Publisher,
 };
 
 use crate::harness::{
@@ -45,11 +45,15 @@ async fn tcp_request_reply_roundtrip() {
     let listener = ReplyingListener {
         reply_content: REPLY.to_string(),
     };
-    let consumer = TcpConsumer::connect(tcp_consumer_config(), listener)
-        .await
-        .expect("connect consumer");
+    let consumer = TcpConsumer::connect(
+        tcp_consumer_config(),
+        listener,
+        None::<std::future::Ready<()>>,
+    )
+    .await
+    .expect("connect consumer");
     consumer
-        .subscribe(vec![SubscriptionItem::new(
+        .subscribe(&[SubscriptionItem::new(
             &topic,
             SubscriptionMode::CLUSTERING,
             SubscriptionType::SYNC,

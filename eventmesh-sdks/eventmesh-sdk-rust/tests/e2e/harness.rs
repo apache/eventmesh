@@ -31,10 +31,9 @@ use tracing::{debug, warn};
 
 use eventmesh::{
     config::GrpcClientConfig,
-    grpc::GrpcConsumer,
+    grpc::GrpcStreamConsumer,
     http::{HttpConsumer, WebhookServer},
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::Subscriber,
     MessageListener,
 };
 
@@ -146,19 +145,22 @@ pub(crate) async fn let_stream_settle() {
 pub(crate) async fn warm_topic(
     topic: &str,
 ) -> (
-    GrpcConsumer<CollectingListener>,
+    GrpcStreamConsumer<CollectingListener>,
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     let (listener, rx) = CollectingListener::new();
-    let consumer = GrpcConsumer::new(consumer_config(), listener).expect("build consumer");
-    consumer
-        .subscribe(vec![SubscriptionItem::new(
+    let consumer = GrpcStreamConsumer::subscribe_stream(
+        consumer_config(),
+        listener,
+        vec![SubscriptionItem::new(
             topic,
             SubscriptionMode::CLUSTERING,
             SubscriptionType::ASYNC,
-        )])
-        .await
-        .expect("subscribe");
+        )],
+        None::<std::future::Ready<()>>,
+    )
+    .await
+    .expect("subscribe_stream");
     let_stream_settle().await;
     (consumer, rx)
 }
@@ -296,7 +298,8 @@ pub(crate) async fn http_warm_topic(
     debug!(%topic, port, url = %webhook_url, "HTTP webhook server ready");
 
     // Create the HTTP consumer (spawns heartbeat task) and subscribe.
-    let consumer = HttpConsumer::new(http_consumer_config()).expect("build http consumer");
+    let consumer = HttpConsumer::new(http_consumer_config(), None::<std::future::Ready<()>>)
+        .expect("build http consumer");
     consumer
         .subscribe_webhook(
             vec![SubscriptionItem::new(
@@ -372,11 +375,15 @@ pub(crate) async fn tcp_warm_topic(
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
 
     let (listener, rx) = CollectingListener::new();
-    let consumer = TcpConsumer::connect(tcp_consumer_config(), listener)
-        .await
-        .expect("connect tcp consumer");
+    let consumer = TcpConsumer::connect(
+        tcp_consumer_config(),
+        listener,
+        None::<std::future::Ready<()>>,
+    )
+    .await
+    .expect("connect tcp consumer");
     consumer
-        .subscribe(vec![SubscriptionItem::new(
+        .subscribe(&[SubscriptionItem::new(
             topic,
             SubscriptionMode::CLUSTERING,
             SubscriptionType::ASYNC,

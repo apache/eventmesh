@@ -28,8 +28,8 @@
 //! The SDK ships three transports, each gated by its own feature flag:
 //!
 //! - **gRPC** (default, `grpc` feature) — [`grpc::GrpcProducer`] for
-//!   publish / batch / request-reply and [`grpc::GrpcConsumer`] for
-//!   webhook + bidirectional-stream subscription.
+//!   publish / batch / request-reply and [`grpc::GrpcStreamConsumer`] /
+//!   [`grpc::GrpcWebhookConsumer`] for stream and webhook subscription.
 //! - **HTTP** (`http` feature) — [`http::HttpProducer`] for publish /
 //!   request-reply and [`http::HttpConsumer`] for subscribe / heartbeat;
 //!   receive pushes via the built-in [`http::WebhookServer`] or your own

@@ -60,10 +60,14 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
 ## Architecture notes
 
 - `src/lib.rs` is `#![deny(unsafe_code)]` — no `unsafe` anywhere.
-- `src/transport/mod.rs` defines `Publisher` / `Subscriber` as **async-fn-in-trait**
-  (Rust 1.75). They are therefore **not object-safe** — use the concrete
-  `GrpcProducer` / `GrpcConsumer` / `HttpProducer` / `HttpConsumer` directly,
-  never `dyn`.
+- `src/transport/mod.rs` defines `Publisher` as an **async-fn-in-trait**
+  (Rust 1.75). It is therefore **not object-safe** — use the concrete
+  `GrpcProducer` / `TcpProducer` / `HttpProducer` directly, never `dyn`.
+  The subscribe side has **no trait** — each transport exposes its own
+  consumer type (`GrpcStreamConsumer`, `GrpcWebhookConsumer`, `TcpConsumer`,
+  `HttpConsumer`) with transport-specific `subscribe` / `unsubscribe` /
+  `subscribe_webhook` methods, a background receive loop (where applicable),
+  and `wait_for_shutdown()` for clean exit.
 - `src/transport/grpc/codec.rs` is the `EventMeshMessage` ↔ CloudEvents-protobuf
   bridge for the gRPC transport.
 - `src/transport/http/codec.rs` is the `EventMeshMessage` ↔ form-urlencoded +

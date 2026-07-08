@@ -21,10 +21,11 @@
 //! frames with a `"EventMesh"` magic prefix) and is fully interoperable with
 //! the Java runtime's TCP endpoint (default port `10000`).
 //!
-//! Like the gRPC and HTTP transports, it normalizes everything onto the
-//! [`EventMeshMessage`](crate::model::EventMeshMessage) model and implements
-//! the [`Publisher`](crate::transport::Publisher) / [`Subscriber`](crate::transport::Subscriber)
-//! traits.
+//! Like the other transports, it normalizes everything onto the
+//! [`EventMeshMessage`](crate::model::EventMeshMessage) model.  The producer
+//! implements the [`Publisher`](crate::transport::Publisher) trait; the
+//! consumer exposes transport-specific subscribe / unsubscribe methods with
+//! a background receive loop.
 //!
 //! # Quick example (producer)
 //!
@@ -71,11 +72,11 @@
 //!         .server_addr("127.0.0.1").server_port(10000)
 //!         .consumer_group("g")
 //!         .build();
-//!     let consumer = TcpConsumer::connect(config, MyListener).await?;
-//!     let items = vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)];
-//!     consumer.listen(items)?
-//!         .with_graceful_shutdown(async { tokio::signal::ctrl_c().await.ok(); })
-//!         .await?;
+//!     let consumer = TcpConsumer::connect(
+//!         config, MyListener,
+//!         async { tokio::signal::ctrl_c().await.ok(); },
+//!     ).await?;
+//!     consumer.wait_for_shutdown().await;
 //!     Ok(())
 //! }
 //! ```
@@ -87,5 +88,5 @@ pub mod frame;
 pub mod message;
 pub mod producer;
 
-pub use consumer::{ListenServe, TcpConsumer};
+pub use consumer::TcpConsumer;
 pub use producer::TcpProducer;

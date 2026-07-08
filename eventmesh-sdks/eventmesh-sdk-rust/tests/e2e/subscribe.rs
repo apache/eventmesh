@@ -19,11 +19,7 @@
 
 use std::time::Duration;
 
-use eventmesh::{
-    grpc::GrpcProducer,
-    model::EventMeshMessage,
-    transport::{Publisher, Subscriber},
-};
+use eventmesh::{grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher};
 
 use crate::harness::{ensure_topic, let_stream_settle, producer_config, unique_topic, warm_topic};
 use crate::runtime::ensure_runtime;

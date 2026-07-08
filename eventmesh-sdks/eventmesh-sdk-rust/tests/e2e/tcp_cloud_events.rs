@@ -24,7 +24,6 @@ use cloudevents::{EventBuilder, EventBuilderV10};
 use eventmesh::{
     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
     tcp::{TcpConsumer, TcpProducer},
-    transport::Subscriber,
 };
 
 use crate::harness::{
@@ -54,11 +53,15 @@ async fn tcp_publish_cloud_event() {
 
     // Subscribe a collecting TCP consumer.
     let (listener, mut rx) = CollectingListener::new();
-    let consumer = TcpConsumer::connect(tcp_consumer_config(), listener)
-        .await
-        .expect("connect consumer");
+    let consumer = TcpConsumer::connect(
+        tcp_consumer_config(),
+        listener,
+        None::<std::future::Ready<()>>,
+    )
+    .await
+    .expect("connect consumer");
     consumer
-        .subscribe(vec![SubscriptionItem::new(
+        .subscribe(&[SubscriptionItem::new(
             &topic,
             SubscriptionMode::CLUSTERING,
             SubscriptionType::ASYNC,
@@ -113,11 +116,15 @@ async fn tcp_broadcast_cloud_event() {
     ensure_topic(&topic).await;
 
     let (listener, mut rx) = CollectingListener::new();
-    let consumer = TcpConsumer::connect(tcp_consumer_config(), listener)
-        .await
-        .expect("connect consumer");
+    let consumer = TcpConsumer::connect(
+        tcp_consumer_config(),
+        listener,
+        None::<std::future::Ready<()>>,
+    )
+    .await
+    .expect("connect consumer");
     consumer
-        .subscribe(vec![SubscriptionItem::new(
+        .subscribe(&[SubscriptionItem::new(
             &topic,
             SubscriptionMode::BROADCASTING,
             SubscriptionType::ASYNC,

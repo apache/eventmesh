@@ -82,9 +82,9 @@ async fn main() -> eventmesh::Result<()> {
 ```rust
 use std::sync::atomic::{AtomicU64, Ordering};
 use eventmesh::{
-    config::GrpcClientConfig, grpc::GrpcConsumer, model::{EventMeshMessage,
+    config::GrpcClientConfig, grpc::GrpcStreamConsumer, model::{EventMeshMessage,
         SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::Subscriber, MessageListener,
+    MessageListener,
 };
 
 struct MyListener { n: AtomicU64 }
@@ -106,19 +106,27 @@ async fn main() -> eventmesh::Result<()> {
         .consumer_group("test-consumerGroup")
         .build();
 
-    let consumer = GrpcConsumer::new(config, MyListener { n: AtomicU64::new(0) })?;
-    consumer.subscribe(vec![SubscriptionItem::new(
-        "test-topic-rust-sdk", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC,
-    )]).await?;
+    let consumer = GrpcStreamConsumer::subscribe_stream(
+        config,
+        MyListener { n: AtomicU64::new(0) },
+        vec![SubscriptionItem::new(
+            "test-topic-rust-sdk", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC,
+        )],
+        Some(async { tokio::signal::ctrl_c().await.ok(); }),
+    ).await?;
 
-    // keep the process alive so the stream + heartbeat keep running
-    tokio::signal::ctrl_c().await.ok();
+    // subscribe/unsubscribe can be called at any time on the open stream
+    // consumer.subscribe(more_items).await?;
+    // consumer.unsubscribe(items).await?;
+
+    // blocks until Ctrl-C or the stream closes
+    consumer.wait_for_shutdown().await;
     Ok(())
 }
 ```
 
-A webhook subscription (`consumer.subscribe_webhook(items, url)`) is also
-available — the server POSTs delivered events to the given URL.
+A webhook subscription (`GrpcWebhookConsumer::new` / `subscribe_webhook(items, url)`)
+is also available — the server POSTs delivered events to the given URL.
 
 ## Features
 
