@@ -158,8 +158,13 @@ async fn tcp_unsubscribe_stops_delivery() {
     {
         Ok(_) => {
             let leaked = tokio::time::timeout(Duration::from_secs(3), rx.recv()).await;
+            // A timeout (`Err`) is the "nothing leaked" outcome. A closed
+            // channel (`Ok(None)`) also means nothing was delivered — the
+            // server tore down the subscription on unsubscribe — so treat that
+            // as a pass too. Only an actual delivered message (`Ok(Some(..))`)
+            // is a real leak.
             assert!(
-                leaked.is_err(),
+                matches!(leaked, Err(_) | Ok(None)),
                 "no message expected after unsubscribe, but got: {:?}",
                 leaked.ok().flatten()
             );

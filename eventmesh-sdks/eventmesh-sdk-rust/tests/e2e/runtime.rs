@@ -71,6 +71,34 @@ fn compose_file() -> PathBuf {
     PathBuf::from(MANIFEST_DIR).join("docker-compose.yml")
 }
 
+/// Best-effort make the bind-mounted `docker/conf/` dir traversable and its
+/// files world-readable.
+///
+/// The compose file bind-mounts `./docker/conf/*` into containers that run as
+/// a different uid than the host user (e.g. the rocketmq image runs as uid
+/// 3000). On hosts where the repo lives behind a restrictive ACL
+/// (`other::---`), those containers can't read their own config and the broker
+/// crashes on boot with `FileNotFoundException: ... (Permission denied)`. We
+/// open the perms once, up front, so the e2e suite is self-contained.
+///
+/// No-op where the perms are already open; failures (e.g. read-only fs) are
+/// ignored — the real failure will surface as an unreadable-config crash from
+/// `docker compose up` below.
+fn ensure_conf_readable() {
+    let dir = PathBuf::from(MANIFEST_DIR).join("docker").join("conf");
+    // Directory must be traversable (o+x) for the container to resolve files
+    // inside it; files must be readable (o+r).
+    let _ = Command::new("chmod").args(["o+rx", dir.to_str().unwrap_or(".")]).status();
+    if let Ok(entries) = std::fs::read_dir(&dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let _ = Command::new("chmod")
+                .args(["o+r", path.to_str().unwrap_or(".")])
+                .status();
+        }
+    }
+}
+
 /// Ensure an EventMesh runtime is reachable. Returns `false` (and emits a skip
 /// notice) when neither Docker nor a live server is available.
 ///
@@ -163,6 +191,16 @@ fn initialize() -> Mode {
 
     let compose = compose_file();
     let project_dir = PathBuf::from(MANIFEST_DIR);
+
+    // The compose file bind-mounts ./docker/conf/* into containers that run
+    // as a different uid (rocketmq runs as uid 3000). On hosts where the
+    // conf dir/files inherit a restrictive ACL (`other::---`), those
+    // containers can't even read their own config and the broker crashes on
+    // boot. Make the conf dir traversable and its files world-readable before
+    // bringing the stack up so the suite is self-contained regardless of the
+    // host's umask/ACL. Best-effort: a no-op where the perms are already open.
+    ensure_conf_readable();
+
     info!(?compose, "starting EventMesh via docker compose (rocketmq)");
     let up = Command::new("docker")
         .args([
