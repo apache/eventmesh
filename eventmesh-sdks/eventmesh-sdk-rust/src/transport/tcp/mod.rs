@@ -80,6 +80,33 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! # CloudEvents over TCP
+//!
+//! With the `cloud_events` feature, the TCP producer can send native
+//! [`cloudevents::Event`] values via [`TcpProducer::publish_cloud_event`],
+//! [`TcpProducer::broadcast_cloud_event`], and
+//! [`TcpProducer::request_reply_cloud_event`]. The consumer receives them
+//! transparently converted to [`EventMeshMessage`](crate::model::EventMeshMessage).
+//!
+//! **Important:** the event's `datacontenttype` must be set to
+//! `application/cloudevents+json`. The Java runtime's downlink codec
+//! (`CloudEventsProtocolAdaptor.fromCloudEvent`) uses `datacontenttype` to
+//! look up the CloudEvents serializer; only `application/cloudevents+json`
+//! is registered. Any other value causes an NPE and the message is silently
+//! dropped before reaching consumers.
+//!
+//! ```ignore
+//! use cloudevents::EventBuilderV10;
+//!
+//! let event = EventBuilderV10::new()
+//!     .id("1")
+//!     .source("https://example.com")
+//!     .ty("com.example.event")
+//!     .subject(topic)
+//!     .data("application/cloudevents+json", serde_json::json!({"msg": "hi"}))
+//!     .build()?;
+//! ```
 
 pub mod codec;
 pub mod connection;

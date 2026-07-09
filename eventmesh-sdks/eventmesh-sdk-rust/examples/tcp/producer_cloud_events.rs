@@ -54,8 +54,10 @@ async fn main() -> eventmesh::Result<()> {
         .source("https://eventmesh.apache.org/rust-sdk")
         .ty("com.example.someevent")
         .subject(topic)
+        // NOTE: datacontenttype must be "application/cloudevents+json" for TCP
+        // CloudEvents — the server uses it to resolve the serializer.
         .data(
-            "application/json",
+            "application/cloudevents+json",
             serde_json::json!({"msg": "hello from rust tcp cloudevents"}),
         )
         .build()
@@ -72,7 +74,10 @@ async fn main() -> eventmesh::Result<()> {
         .source("https://eventmesh.apache.org/rust-sdk")
         .ty("com.example.someevent")
         .subject(topic)
-        .data("text/plain", "broadcast from rust tcp cloudevents")
+        .data(
+            "application/cloudevents+json",
+            "broadcast from rust tcp cloudevents",
+        )
         .build()
         .expect("valid CloudEvent");
 
@@ -85,7 +90,7 @@ async fn main() -> eventmesh::Result<()> {
         .source("https://eventmesh.apache.org/rust-sdk")
         .ty("com.example.someevent")
         .subject(format!("{topic}-rr"))
-        .data("text/plain", "ping")
+        .data("application/cloudevents+json", "ping")
         .build()
         .expect("valid CloudEvent");
 

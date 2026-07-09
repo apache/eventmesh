@@ -81,7 +81,11 @@ async fn tcp_publish_cloud_event() {
         .source("https://eventmesh.apache.org/rust-sdk")
         .ty("com.example.someevent")
         .subject(&topic)
-        .data("application/json", payload)
+        // NOTE: datacontenttype must be "application/cloudevents+json" — the
+        // EventMesh server's fromCloudEvent uses this value to resolve the
+        // CloudEvents EventFormat serializer. Other values (e.g.
+        // "application/json", "text/plain") cause an NPE on the downlink path.
+        .data("application/cloudevents+json", payload)
         .build()
         .expect("valid CloudEvent");
 
@@ -91,7 +95,9 @@ async fn tcp_publish_cloud_event() {
     assert!(resp.is_success(), "publish should succeed: {resp}");
 
     // The consumer receives the CloudEvent converted to EventMeshMessage.
-    let received = recv_one(&mut rx, Duration::from_secs(10)).await;
+    // RocketMQ's consumer needs time to discover the topic route and rebalance
+    // (pollNameServerInterval=30s, rebalanceInterval=20s) before pulling.
+    let received = recv_one(&mut rx, Duration::from_secs(35)).await;
     assert_eq!(received.topic.as_deref(), Some(topic.as_str()));
     // Content should contain the JSON payload.
     assert!(
@@ -131,7 +137,12 @@ async fn tcp_broadcast_cloud_event() {
         )])
         .await
         .expect("subscribe");
-    let_stream_settle().await;
+
+    // RocketMQ broadcast consumers start from CONSUME_FROM_LAST_OFFSET, so any
+    // message published before the consumer's first rebalance is permanently
+    // skipped. Wait for the rebalance cycle (~20s) + nameserver route
+    // discovery (~30s) to complete before publishing.
+    tokio::time::sleep(Duration::from_secs(25)).await;
 
     let producer = TcpProducer::connect(tcp_producer_config())
         .await
@@ -142,7 +153,10 @@ async fn tcp_broadcast_cloud_event() {
         .source("https://eventmesh.apache.org/rust-sdk")
         .ty("com.example.someevent")
         .subject(&topic)
-        .data("text/plain", "broadcast cloudevents payload")
+        .data(
+            "application/cloudevents+json",
+            "broadcast cloudevents payload",
+        )
         .build()
         .expect("valid CloudEvent");
 
@@ -151,7 +165,10 @@ async fn tcp_broadcast_cloud_event() {
         .await
         .expect("broadcast");
 
-    let received = recv_one(&mut rx, Duration::from_secs(10)).await;
+    // Broadcasting consumers need extra time: RocketMQ's broadcast consumer
+    // must discover the topic route (pollNameServerInterval=30s) and
+    // rebalance (rebalanceInterval=20s) before it can pull messages.
+    let received = recv_one(&mut rx, Duration::from_secs(35)).await;
     assert_eq!(received.topic.as_deref(), Some(topic.as_str()));
     assert!(
         received

@@ -73,6 +73,20 @@ impl TcpProducer {
     /// The event is serialized as CloudEvents JSON
     /// (`application/cloudevents+json`) with `protocoltype=cloudevents`,
     /// matching the Java runtime's TCP CloudEvents codec path.
+    ///
+    /// # `datacontenttype` requirement
+    ///
+    /// The event's `datacontenttype` **must** be `application/cloudevents+json`.
+    /// The server uses this value to resolve the serializer on the downlink
+    /// path; other values (e.g. `application/json`, `text/plain`) cause an
+    /// NPE and the message is silently dropped before reaching consumers.
+    ///
+    /// ```ignore
+    /// EventBuilderV10::new()
+    ///     .id("1").source("...").ty("...").subject(topic)
+    ///     .data("application/cloudevents+json", json!({"msg": "hi"}))
+    ///     .build()?;
+    /// ```
     #[cfg(feature = "cloud_events")]
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
         use cloudevents::AttributesReader;
@@ -92,6 +106,9 @@ impl TcpProducer {
 
     /// Broadcast a native CloudEvent (fire-and-forget, requires the
     /// `cloud_events` feature).
+    ///
+    /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
+    /// `datacontenttype` requirement.
     #[cfg(feature = "cloud_events")]
     pub async fn broadcast_cloud_event(&self, event: cloudevents::Event) -> Result<()> {
         let pkg = message::build_cloud_event_package(&event, Command::BroadcastMessageToServer)?;
@@ -100,6 +117,9 @@ impl TcpProducer {
 
     /// Synchronous request/reply with a native CloudEvent (requires the
     /// `cloud_events` feature).
+    ///
+    /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
+    /// `datacontenttype` requirement.
     ///
     /// Sends the CloudEvent as `REQUEST_TO_SERVER` and waits for the reply.
     /// The reply is parsed as a CloudEvent if the server tags it

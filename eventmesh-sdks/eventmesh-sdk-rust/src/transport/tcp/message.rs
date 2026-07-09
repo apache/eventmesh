@@ -255,6 +255,21 @@ pub fn is_cloudevents(pkg: &Package) -> bool {
 /// `protocoldesc=tcp` so the Java runtime's codec writes the body bytes
 /// verbatim instead of re-serializing via Jackson.
 ///
+/// # `datacontenttype` requirement
+///
+/// The CloudEvent's `datacontenttype` **must** be set to
+/// `application/cloudevents+json`. The Java runtime's
+/// `CloudEventsProtocolAdaptor.fromCloudEvent` (downlink path) uses
+/// `datacontenttype` to resolve the CloudEvents `EventFormat` serializer
+/// via `EventFormatProvider.resolveFormat(dataContentType)`. The only
+/// registered format is `application/cloudevents+json`; any other value
+/// (e.g. `application/json`, `text/plain`) causes `resolveFormat()` to
+/// return null, which triggers an NPE that silently drops the message.
+///
+/// This is a known server-side quirk — the Java SDK works around it by
+/// always setting `datacontenttype = application/cloudevents+json` for TCP
+/// CloudEvents (see `ExampleConstants.CLOUDEVENT_CONTENT_TYPE`).
+///
 /// This mirrors Java's `MessageUtils.buildPackage(cloudEvent, command)`:
 /// the CloudEvent is serialized to JSON by the cloudevents crate's serde
 /// impl (equivalent to `EventFormat.serialize` in Java), and the resulting
