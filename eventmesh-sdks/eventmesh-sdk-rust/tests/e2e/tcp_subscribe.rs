@@ -29,7 +29,7 @@ use crate::harness::{
     ensure_topic, let_stream_settle, tcp_consumer_config, tcp_producer_config, unique_topic,
     CollectingListener,
 };
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 use eventmesh::tcp::TcpConsumer;
 
@@ -46,9 +46,7 @@ async fn recv_one(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_subscribe_and_receive() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("tcp-sub-recv");
     ensure_topic(&topic).await;
 
@@ -92,9 +90,7 @@ async fn tcp_subscribe_and_receive() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_unsubscribe_stops_delivery() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("tcp-sub-unsub");
     ensure_topic(&topic).await;
 

@@ -28,8 +28,8 @@ use std::path::PathBuf;
 ///
 /// Set on [`GrpcClientConfig`](super::GrpcClientConfig) and used only when
 /// `use_tls` is `true`. If `use_tls` is `true` but `tls_config` is `None`,
-/// tonic uses its built-in defaults (system trust store, endpoint authority
-/// as SNI domain).
+/// the OS-native trust roots are loaded automatically and the endpoint
+/// authority is used as the SNI domain.
 ///
 /// # Examples
 ///

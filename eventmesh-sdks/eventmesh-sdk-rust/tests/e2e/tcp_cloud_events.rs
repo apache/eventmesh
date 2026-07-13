@@ -30,7 +30,7 @@ use crate::harness::{
     ensure_topic, let_stream_settle, tcp_consumer_config, tcp_producer_config, unique_topic,
     CollectingListener,
 };
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 /// Helper: receive one message from `rx` or panic after `timeout`.
 async fn recv_one(
@@ -45,9 +45,7 @@ async fn recv_one(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_cloud_event() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("tcp-ce-pub");
     ensure_topic(&topic).await;
 
@@ -115,9 +113,7 @@ async fn tcp_publish_cloud_event() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_broadcast_cloud_event() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("tcp-ce-broadcast");
     ensure_topic(&topic).await;
 

@@ -15,7 +15,7 @@ transports are planned for later phases). Messages are modeled with the simple
 
 ## Requirements
 
-- Rust toolchain **>= 1.75.0**
+- Rust toolchain **>= 1.86.0**
 - `protoc` >= 3.15 (the Protocol Buffers compiler) on your `PATH` or pointed to
   by the `PROTOC` env var. `tonic-build` invokes it at build time.
 - A running EventMesh runtime (gRPC on port `10205`).

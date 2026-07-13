@@ -29,7 +29,7 @@ use eventmesh::{
 use crate::harness::{
     ensure_topic, http_producer_config, http_warm_topic, let_stream_settle, unique_topic,
 };
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 /// The HTTP transport delivers messages via an HTTP POST callback from the
 /// runtime to the consumer's webhook URL, which adds a network hop compared to
@@ -48,9 +48,7 @@ async fn recv_one(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn http_subscribe_and_receive() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("http-sub-recv");
     ensure_topic(&topic).await;
     let (handle, mut rx) = http_warm_topic(&topic).await;
@@ -75,9 +73,7 @@ async fn http_subscribe_and_receive() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn http_subscribe_batch_receive() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("http-sub-batch");
     ensure_topic(&topic).await;
     let (handle, mut rx) = http_warm_topic(&topic).await;
@@ -106,9 +102,7 @@ async fn http_subscribe_batch_receive() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn http_unsubscribe_stops_delivery() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("http-sub-unsub");
     ensure_topic(&topic).await;
     let (handle, mut rx) = http_warm_topic(&topic).await;

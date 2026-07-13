@@ -22,7 +22,7 @@ use std::time::Duration;
 use eventmesh::{grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher};
 
 use crate::harness::{ensure_topic, let_stream_settle, producer_config, unique_topic, warm_topic};
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 /// Helper: receive one message from `rx` or panic after `timeout`.
 async fn recv_one(
@@ -37,9 +37,7 @@ async fn recv_one(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn subscribe_and_receive() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("sub-recv");
     ensure_topic(&topic).await;
     let (consumer, mut rx) = warm_topic(&topic).await;
@@ -61,9 +59,7 @@ async fn subscribe_and_receive() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn subscribe_batch_receive() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("sub-batch");
     ensure_topic(&topic).await;
     let (consumer, mut rx) = warm_topic(&topic).await;
@@ -93,9 +89,7 @@ async fn subscribe_batch_receive() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn unsubscribe_stops_delivery() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("sub-unsub");
     ensure_topic(&topic).await;
     let (consumer, mut rx) = warm_topic(&topic).await;
@@ -116,7 +110,7 @@ async fn unsubscribe_stops_delivery() {
 
     // Unsubscribe, then publish again.
     consumer
-        .unsubscribe(vec![eventmesh::model::SubscriptionItem::new(
+        .unsubscribe_stream(vec![eventmesh::model::SubscriptionItem::new(
             &topic,
             eventmesh::model::SubscriptionMode::CLUSTERING,
             eventmesh::model::SubscriptionType::ASYNC,

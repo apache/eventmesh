@@ -29,15 +29,13 @@ use crate::harness::{
     consumer_config, ensure_topic, let_stream_settle, producer_config, unique_topic,
     ReplyingListener,
 };
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 const REPLY: &str = "pong";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn request_reply_roundtrip() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("req-reply");
     ensure_topic(&topic).await;
 

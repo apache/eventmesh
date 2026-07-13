@@ -351,13 +351,18 @@ pub fn from_cloudevent(
         .map(|v| v.to_string())
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| RandomStringUtils::generate_num(30));
+    // UNIQUE_ID: preserve an existing extension, otherwise generate one.
+    // Do NOT clobber it with the CE id — the CE id travels in the top-level
+    // `id` field (see below) and cross-language consumers dedup on that.
+    let unique_id = event
+        .extension(ProtocolKey::UNIQUE_ID)
+        .map(|v| v.to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| RandomStringUtils::generate_num(30));
 
     attrs.insert(ProtocolKey::TTL.into(), attr_str(ttl));
     attrs.insert(ProtocolKey::SEQ_NUM.into(), attr_str(&seq_num));
-    attrs.insert(
-        ProtocolKey::UNIQUE_ID.into(),
-        attr_str(event.id().to_string()),
-    );
+    attrs.insert(ProtocolKey::UNIQUE_ID.into(), attr_str(&unique_id));
     attrs.insert(
         ProtocolKey::PRODUCERGROUP.into(),
         attr_str(&config.identity.producer_group),
@@ -377,10 +382,42 @@ pub fn from_cloudevent(
             attr_str(DataContentType::TEXT_PLAIN),
         );
     }
+    // Preserve standard CE attributes the previous code dropped.
+    if let Some(t) = event.time() {
+        attrs.insert(
+            ProtocolKey::TIME.into(),
+            PbCloudEventAttributeValue {
+                attr: Some(PbAttr::CeTimestamp(prost_types::Timestamp {
+                    seconds: t.timestamp(),
+                    nanos: t.timestamp_subsec_nanos() as i32,
+                })),
+            },
+        );
+    }
+    if let Some(ds) = event.dataschema() {
+        attrs.insert(
+            ProtocolKey::DATA_SCHEMA.into(),
+            PbCloudEventAttributeValue {
+                attr: Some(PbAttr::CeUri(ds.to_string())),
+            },
+        );
+    }
+    // Preserve typed extension values (Boolean / Integer) instead of
+    // stringifying everything.
     for (k, v) in event.iter_extensions() {
-        attrs
-            .entry(k.to_string())
-            .or_insert_with(|| attr_str(v.to_string()));
+        if attrs.contains_key(k) {
+            continue;
+        }
+        let attr = match v {
+            cloudevents::event::ExtensionValue::String(s) => attr_str(s),
+            cloudevents::event::ExtensionValue::Boolean(b) => PbCloudEventAttributeValue {
+                attr: Some(PbAttr::CeBoolean(*b)),
+            },
+            cloudevents::event::ExtensionValue::Integer(i) => PbCloudEventAttributeValue {
+                attr: Some(PbAttr::CeInteger(*i as i32)),
+            },
+        };
+        attrs.insert(k.to_string(), attr);
     }
 
     let data = match event.data() {
@@ -391,7 +428,7 @@ pub fn from_cloudevent(
     };
 
     Ok(PbCloudEvent {
-        id: RandomStringUtils::generate_uuid(),
+        id: event.id().to_string(),
         source: event.source().to_string(),
         spec_version: event.specversion().to_string(),
         r#type: event.ty().to_string(),
@@ -407,12 +444,23 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
     use cloudevents::{EventBuilder, EventBuilderV10};
 
     let topic = get_subject(&cloud_event);
-    let unique_id = get_unique_id(&cloud_event);
-    let content = get_text_data(&cloud_event);
+    // Use the protobuf `id` field (the standard CE id) rather than the
+    // EventMesh-specific UNIQUE_ID extension, so cross-language consumers
+    // can dedup and correlate correctly.
+    let ce_id = if cloud_event.id.is_empty() {
+        get_unique_id(&cloud_event)
+    } else {
+        cloud_event.id.clone()
+    };
     let source = if cloud_event.source.is_empty() {
         DEFAULT_SOURCE.to_string()
     } else {
         cloud_event.source.clone()
+    };
+    let ty = if cloud_event.r#type.is_empty() {
+        ProtocolKey::CLOUD_EVENTS_PROTOCOL_NAME.to_string()
+    } else {
+        cloud_event.r#type.clone()
     };
     let content_type = cloud_event
         .attributes
@@ -421,24 +469,75 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| DataContentType::JSON.to_string());
 
-    let mut builder = EventBuilderV10::new()
-        .id(unique_id)
-        .source(source)
-        .ty(ProtocolKey::CLOUD_EVENTS_PROTOCOL_NAME)
-        .data(content_type, content);
+    let dataschema = cloud_event
+        .attributes
+        .get(ProtocolKey::DATA_SCHEMA)
+        .map(attr_as_str)
+        .filter(|s| !s.is_empty());
+
+    let mut builder = EventBuilderV10::new().id(ce_id).source(source).ty(ty);
+
+    // Preserve binary vs text data instead of lossy-converting everything
+    // to a string.  When dataschema is present use data_with_schema so the
+    // schema URL round-trips as a standard CE attribute.
+    match (&cloud_event.data, &dataschema) {
+        (Some(PbData::TextData(s)), Some(ds)) => {
+            builder = builder.data_with_schema(content_type.as_str(), ds.as_str(), s.clone());
+        }
+        (Some(PbData::BinaryData(b)), Some(ds)) => {
+            builder = builder.data_with_schema(content_type.as_str(), ds.as_str(), b.clone());
+        }
+        (Some(PbData::ProtoData(any)), Some(ds)) => {
+            builder = builder.data_with_schema(
+                content_type.as_str(),
+                ds.as_str(),
+                String::from_utf8_lossy(&any.value).into_owned(),
+            );
+        }
+        (Some(PbData::TextData(s)), None) => {
+            builder = builder.data(content_type.as_str(), s.clone());
+        }
+        (Some(PbData::BinaryData(b)), None) => {
+            builder = builder.data(content_type.as_str(), b.clone());
+        }
+        (Some(PbData::ProtoData(any)), None) => {
+            builder = builder.data(
+                content_type.as_str(),
+                String::from_utf8_lossy(&any.value).into_owned(),
+            );
+        }
+        (None, _) => {
+            builder = builder.data(content_type.as_str(), String::new());
+        }
+    }
+
     if !topic.is_empty() {
         builder = builder.subject(topic);
     }
+
+    // Extract the standard CE `time` attribute instead of skipping it.
+    if let Some(v) = cloud_event.attributes.get(ProtocolKey::TIME) {
+        match &v.attr {
+            Some(PbAttr::CeTimestamp(ts)) => {
+                if let Some(dt) = chrono::DateTime::from_timestamp(ts.seconds, ts.nanos as u32) {
+                    builder = builder.time(dt);
+                }
+            }
+            Some(PbAttr::CeString(s)) => {
+                builder = builder.time(s.clone());
+            }
+            _ => {}
+        }
+    }
+
     for (k, v) in cloud_event.attributes {
-        // Skip response / envelope fields that don't belong as extensions.
-        // Use the canonical ProtocolKey spellings so the skip actually matches
-        // the keys written by the server ("statuscode"/"responsemessage"/"time").
         if matches!(
             k.as_str(),
             ProtocolKey::GRPC_RESPONSE_CODE
                 | ProtocolKey::GRPC_RESPONSE_MESSAGE
-                | ProtocolKey::GRPC_RESPONSE_TIME
-                | "datacontenttype"
+                | ProtocolKey::TIME
+                | ProtocolKey::DATA_SCHEMA
+                | ProtocolKey::DATA_CONTENT_TYPE
         ) {
             continue;
         }
@@ -554,5 +653,95 @@ mod tests {
         let resp = to_response(&ce);
         assert!(resp.is_success());
         assert_eq!(resp.message.as_deref(), Some("ok"));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloudevent_roundtrip_preserves_fields() {
+        use cloudevents::{AttributesReader, EventBuilder, EventBuilderV10};
+
+        let original = EventBuilderV10::new()
+            .id("my-ce-id")
+            .source("http://example.com/src")
+            .ty("com.example.event")
+            .time("2023-07-13T12:00:00Z")
+            .data_with_schema(
+                "application/json",
+                "http://example.com/schema",
+                r#"{"k":"v"}"#.to_string(),
+            )
+            .extension("bool-ext", true)
+            .extension("int-ext", 42i64)
+            .extension("str-ext", "hello")
+            .build()
+            .unwrap();
+
+        let cfg = cfg();
+        let pb = from_cloudevent(&original, &cfg).unwrap();
+
+        // id is preserved, not replaced with a random UUID.
+        assert_eq!(pb.id, "my-ce-id");
+
+        // time is preserved as CeTimestamp.
+        match pb
+            .attributes
+            .get(ProtocolKey::TIME)
+            .and_then(|v| v.attr.as_ref())
+        {
+            Some(PbAttr::CeTimestamp(_)) => {}
+            other => panic!("expected CeTimestamp for time, got {other:?}"),
+        }
+
+        // dataschema is preserved as CeUri.
+        match pb
+            .attributes
+            .get(ProtocolKey::DATA_SCHEMA)
+            .and_then(|v| v.attr.as_ref())
+        {
+            Some(PbAttr::CeUri(s)) => assert_eq!(s, "http://example.com/schema"),
+            other => panic!("expected CeUri for dataschema, got {other:?}"),
+        }
+
+        // Typed extensions preserve their wire types.
+        match pb.attributes.get("bool-ext").and_then(|v| v.attr.as_ref()) {
+            Some(PbAttr::CeBoolean(true)) => {}
+            other => panic!("expected CeBoolean(true) for bool-ext, got {other:?}"),
+        }
+        match pb.attributes.get("int-ext").and_then(|v| v.attr.as_ref()) {
+            Some(PbAttr::CeInteger(42)) => {}
+            other => panic!("expected CeInteger(42) for int-ext, got {other:?}"),
+        }
+
+        // Round-trip back to a native CE.
+        let back = to_cloudevent(pb).unwrap();
+        assert_eq!(back.id(), "my-ce-id");
+        assert_eq!(back.ty(), "com.example.event");
+        assert!(back.time().is_some());
+        assert!(back.dataschema().is_some());
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn to_cloudevent_preserves_binary_data() {
+        use cloudevents::AttributesReader;
+        let mut pb = PbCloudEvent {
+            id: "bin-id".into(),
+            source: "/".into(),
+            spec_version: "1.0".into(),
+            r#type: "com.example.binary".into(),
+            ..Default::default()
+        };
+        pb.attributes.insert(
+            ProtocolKey::DATA_CONTENT_TYPE.into(),
+            attr_str("application/octet-stream"),
+        );
+        pb.data = Some(PbData::BinaryData(vec![0, 1, 2, 3]));
+
+        let ce = to_cloudevent(pb).unwrap();
+        assert_eq!(ce.ty(), "com.example.binary");
+        match ce.data() {
+            Some(cloudevents::Data::Binary(b)) => assert_eq!(b, &[0, 1, 2, 3]),
+            other => panic!("expected binary data, got {other:?}"),
+        }
     }
 }

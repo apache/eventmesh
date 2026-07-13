@@ -118,6 +118,17 @@ pub(crate) fn ensure_runtime() -> bool {
     }
 }
 
+/// Whether strict mode is enabled (`EVENTMESH_E2E_STRICT=1`).
+///
+/// In strict mode a test that cannot reach a runtime **fails** instead of
+/// silently passing.  This is intended for release CI: the suite must not
+/// report "20 passed" when zero tests actually executed.
+pub(crate) fn is_strict() -> bool {
+    std::env::var_os("EVENTMESH_E2E_STRICT")
+        .map(|v| v == "1" || v == "true")
+        .unwrap_or(false)
+}
+
 /// The hostname an EventMesh runtime should use to POST webhook callbacks to a
 /// server running in this test process.
 ///

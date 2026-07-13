@@ -1,6 +1,6 @@
 # AGENTS.md — EventMesh Rust SDK
 
-Cargo crate `eventmesh` (`edition = "2021"`, **MSRV 1.75.0**). Speaks the
+Cargo crate `eventmesh` (`edition = "2021"`, **MSRV 1.86.0**). Speaks the
 EventMesh **gRPC**, **HTTP**, and **TCP** protocols. gRPC wire format is
 CloudEvents-protobuf; the simple `EventMeshMessage` model is converted at the
 gRPC boundary by `codec.rs`. HTTP wire format is
@@ -61,7 +61,7 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
 
 - `src/lib.rs` is `#![deny(unsafe_code)]` — no `unsafe` anywhere.
 - `src/transport/mod.rs` defines `Publisher` as an **async-fn-in-trait**
-  (Rust 1.75). It is therefore **not object-safe** — use the concrete
+  (Rust 1.86). It is therefore **not object-safe** — use the concrete
   `GrpcProducer` / `TcpProducer` / `HttpProducer` directly, never `dyn`.
   The subscribe side has **no trait** — each transport exposes its own
   consumer type (`GrpcStreamConsumer`, `GrpcWebhookConsumer`, `TcpConsumer`,

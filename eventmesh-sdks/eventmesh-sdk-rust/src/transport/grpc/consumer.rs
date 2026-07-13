@@ -26,11 +26,12 @@
 //!   webhook URLs with the runtime (the runtime POSTs delivered messages to
 //!   the URL over HTTP).  No listener, no receive loop.
 //!
-//! Both types support [`subscribe_webhook`], [`unsubscribe`], and
-//! [`wait_for_shutdown`].
+//! Both types support [`subscribe_webhook`], [`unsubscribe_stream`] /
+//! [`unsubscribe_webhook`], and [`wait_for_shutdown`].
 //!
 //! [`subscribe_webhook`]: GrpcStreamConsumer::subscribe_webhook
-//! [`unsubscribe`]: GrpcStreamConsumer::unsubscribe
+//! [`unsubscribe_stream`]: GrpcStreamConsumer::unsubscribe_stream
+//! [`unsubscribe_webhook`]: GrpcStreamConsumer::unsubscribe_webhook
 
 use std::collections::HashMap;
 use std::future::Future;
@@ -313,10 +314,30 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
         subscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
     }
 
-    /// Unsubscribe from topics (independent unary RPC, not sent over the
-    /// stream).
-    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
-        unsubscribe_rpc(&self.client, &self.config, &self.subscriptions, items).await
+    /// Unsubscribe stream-mode topics (registered via `subscribe_stream` or
+    /// `subscribe`).
+    ///
+    /// This is an independent unary RPC — it is **not** sent over the open
+    /// stream. The server matches stream clients by IP + PID, so no URL is
+    /// needed.
+    pub async fn unsubscribe_stream(
+        &self,
+        items: Vec<SubscriptionItem>,
+    ) -> Result<PublishResponse> {
+        unsubscribe_stream_rpc(&self.client, &self.config, &self.subscriptions, items).await
+    }
+
+    /// Unsubscribe webhook-mode topics (registered via `subscribe_webhook`).
+    ///
+    /// `url` must be the same webhook URL passed to `subscribe_webhook`.
+    /// The server matches webhook clients by URL — omitting or mismatching
+    /// it leaves a ghost subscription that continues to receive pushes.
+    pub async fn unsubscribe_webhook(
+        &self,
+        items: Vec<SubscriptionItem>,
+        url: impl Into<String>,
+    ) -> Result<PublishResponse> {
+        unsubscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
     }
 
     /// Current consumer group.
@@ -444,9 +465,17 @@ impl GrpcWebhookConsumer {
         subscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
     }
 
-    /// Unsubscribe from topics.
-    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
-        unsubscribe_rpc(&self.client, &self.config, &self.subscriptions, items).await
+    /// Unsubscribe webhook topics.
+    ///
+    /// `url` must be the same webhook URL passed to `subscribe_webhook`.
+    /// The server matches webhook clients by URL — omitting or mismatching
+    /// it leaves a ghost subscription that continues to receive pushes.
+    pub async fn unsubscribe_webhook(
+        &self,
+        items: Vec<SubscriptionItem>,
+        url: impl Into<String>,
+    ) -> Result<PublishResponse> {
+        unsubscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
     }
 
     /// Current consumer group.
@@ -525,7 +554,7 @@ async fn subscribe_webhook_rpc(
     Ok(response)
 }
 
-async fn unsubscribe_rpc(
+async fn unsubscribe_stream_rpc(
     client: &GrpcClient,
     config: &crate::config::GrpcClientConfig,
     subscriptions: &Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
@@ -536,10 +565,52 @@ async fn unsubscribe_rpc(
             "unsubscribe items must not be empty".into(),
         ));
     }
+
+    // Stream subscriptions: the server matches stream clients by ip+pid,
+    // not by URL, so url=None is correct here.
     let event = codec::build_subscription_event(
         config,
         EventMeshProtocolType::EventMeshMessage,
         None,
+        &items,
+    )?;
+    let resp = timed(config.timeout, client.unsubscribe(event)).await?;
+    let response = codec::to_response(&resp);
+    if response.is_success() {
+        let mut guard = subscriptions.lock().await;
+        for item in &items {
+            guard.remove(&item.topic);
+        }
+    }
+    Ok(response)
+}
+
+async fn unsubscribe_webhook_rpc(
+    client: &GrpcClient,
+    config: &crate::config::GrpcClientConfig,
+    subscriptions: &Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    items: Vec<SubscriptionItem>,
+    url: impl Into<String>,
+) -> Result<PublishResponse> {
+    let url = url.into();
+    if items.is_empty() {
+        return Err(EventMeshError::InvalidArgument(
+            "unsubscribe items must not be empty".into(),
+        ));
+    }
+
+    // Webhook subscriptions: the server matches webhook clients by URL.
+    // The URL must match the one used at subscribe time, otherwise the
+    // WebhookTopicConfig entry is not removed and pushes continue.
+    let url_ref = if url.is_empty() {
+        None
+    } else {
+        Some(url.as_str())
+    };
+    let event = codec::build_subscription_event(
+        config,
+        EventMeshProtocolType::EventMeshMessage,
+        url_ref,
         &items,
     )?;
     let resp = timed(config.timeout, client.unsubscribe(event)).await?;
@@ -596,6 +667,9 @@ fn spawn_stream_driver(
                 msg = stream.next() => match msg {
                     None => {
                         debug!("subscribe stream ended");
+                        // Cancel the token so wait_for_shutdown() unblocks
+                        // instead of waiting forever for an external signal.
+                        shutdown.cancel();
                         break;
                     }
                     Some(Err(status)) => {
@@ -630,7 +704,18 @@ fn spawn_stream_driver(
                     }
                 },
                 // Reap completed tasks so the JoinSet does not grow unbounded.
-                _ = join_set.join_next() => {}
+                // Guard against busy-spinning: join_next() on an empty JoinSet
+                // returns Ready(None) immediately, which would make the select!
+                // fire on this branch every iteration.  The async block keeps the
+                // future Pending when the set is empty, so the loop only wakes
+                // when the stream delivers, a task completes, or shutdown fires.
+                _ = async {
+                    if !join_set.is_empty() {
+                        join_set.join_next().await;
+                    } else {
+                        std::future::pending::<()>().await;
+                    }
+                } => {}
                 _ = shutdown.cancelled() => {
                     debug!("subscribe stream shutting down");
                     break;

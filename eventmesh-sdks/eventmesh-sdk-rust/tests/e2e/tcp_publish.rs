@@ -20,13 +20,11 @@
 use eventmesh::{model::EventMeshMessage, tcp::TcpProducer, transport::Publisher};
 
 use crate::harness::{ensure_topic, tcp_producer_config, tcp_warm_topic, unique_topic};
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_single() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("tcp-pub-single");
     ensure_topic(&topic).await;
     let (_consumer, _rx) = tcp_warm_topic(&topic).await;
@@ -47,9 +45,7 @@ async fn tcp_publish_single() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_broadcast() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("tcp-pub-broadcast");
     ensure_topic(&topic).await;
     let (_consumer, _rx) = tcp_warm_topic(&topic).await;

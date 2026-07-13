@@ -41,7 +41,7 @@ use eventmesh::transport::Publisher;
 use crate::harness::{
     consumer_config, ensure_topic, let_stream_settle, producer_config, unique_topic,
 };
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 /// Per-message artificial delay inside the listener.
 const HANDLER_DELAY: Duration = Duration::from_millis(500);
@@ -67,9 +67,7 @@ impl MessageListener for SlowListener {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn concurrent_dispatch_overlaps_handlers() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("concurrent");
     ensure_topic(&topic).await;
 

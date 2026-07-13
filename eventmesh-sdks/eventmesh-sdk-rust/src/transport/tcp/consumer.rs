@@ -61,10 +61,8 @@
 //! ```
 
 use std::future::Future;
-use std::panic::AssertUnwindSafe;
 use std::sync::Arc;
 
-use futures::FutureExt;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
@@ -396,7 +394,14 @@ fn spawn_driver(
 /// Dispatch an inbound package: parse the message, invoke the listener, send
 /// any reply, then send the matching ACK.
 ///
-/// Returns `true` to keep the receive loop running, or `false` to stop it.
+/// Returns `true` to keep the receive loop running, or `false` to stop it
+/// (which triggers reconnection and server-side redelivery).
+///
+/// If the message cannot be parsed, **no ACK is sent** and the function
+/// returns `false` so the connection is torn down — mirroring the Java SDK,
+/// where a parse exception propagates to `exceptionCaught` and closes the
+/// channel.  A listener panic likewise propagates and kills the receive
+/// task; it is not silently swallowed.
 async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
     pkg: &Package,
     conn: &TcpConnection,
@@ -451,39 +456,43 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
         {
             warn!(
                 cmd = ?pkg.header.cmd,
-                "received CloudEvents message but the cloud_events feature is disabled; skipping"
+                "received CloudEvents message but the cloud_events feature is disabled; \
+                 disconnecting so the server can redeliver"
             );
-            None
+            return false;
         }
     } else {
         message::parse_message(&pkg.body)
     };
 
-    if let Some(msg) = parsed {
-        debug!(topic = ?msg.topic, "dispatching to listener");
-        let request_props = msg.props.clone();
-        match AssertUnwindSafe(listener.handle(msg)).catch_unwind().await {
-            Ok(Some(mut reply)) => {
-                for (key, value) in &request_props {
-                    reply
-                        .props
-                        .entry(key.clone())
-                        .or_insert_with(|| value.clone());
-                }
-                match message::build_message_package(&reply, Command::ResponseToServer) {
-                    Ok(reply_pkg) => {
-                        if let Err(e) = conn.send(reply_pkg).await {
-                            warn!(error = %e, "failed to send reply");
-                        }
-                    }
-                    Err(e) => warn!(error = %e, "failed to serialize reply"),
+    let msg = match parsed {
+        Some(msg) => msg,
+        None => {
+            warn!("failed to parse inbound message body; disconnecting without ACK");
+            return false;
+        }
+    };
+
+    debug!(topic = ?msg.topic, "dispatching to listener");
+    let request_props = msg.props.clone();
+    // A listener panic propagates naturally and kills the receive task —
+    // mirroring Java where the exception escapes to exceptionCaught and
+    // closes the channel.  The message is NOT acknowledged.
+    if let Some(mut reply) = listener.handle(msg).await {
+        for (key, value) in &request_props {
+            reply
+                .props
+                .entry(key.clone())
+                .or_insert_with(|| value.clone());
+        }
+        match message::build_message_package(&reply, Command::ResponseToServer) {
+            Ok(reply_pkg) => {
+                if let Err(e) = conn.send(reply_pkg).await {
+                    warn!(error = %e, "failed to send reply");
                 }
             }
-            Ok(None) => {}
-            Err(_) => warn!("message listener panicked; ACK will still be sent"),
+            Err(e) => warn!(error = %e, "failed to serialize reply"),
         }
-    } else {
-        warn!("failed to parse inbound message body");
     }
 
     if let Some(cmd) = ack_cmd {

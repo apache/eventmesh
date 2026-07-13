@@ -20,13 +20,11 @@
 use eventmesh::{grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher};
 
 use crate::harness::{ensure_topic, producer_config, unique_topic, warm_topic};
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn publish_single() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("pub-single");
     ensure_topic(&topic).await;
     let (_consumer, _rx) = warm_topic(&topic).await;
@@ -43,9 +41,7 @@ async fn publish_single() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn publish_batch() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("pub-batch");
     ensure_topic(&topic).await;
     let (_consumer, _rx) = warm_topic(&topic).await;
@@ -66,9 +62,7 @@ async fn publish_batch() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn publish_one_way() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("pub-oneway");
     ensure_topic(&topic).await;
     let (_consumer, _rx) = warm_topic(&topic).await;

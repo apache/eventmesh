@@ -24,13 +24,11 @@
 use eventmesh::{http::HttpProducer, model::EventMeshMessage, transport::Publisher};
 
 use crate::harness::{ensure_topic, http_producer_config, http_warm_topic, unique_topic};
-use crate::runtime::ensure_runtime;
+use crate::require_runtime;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn http_publish_single() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let topic = unique_topic("http-pub-single");
     ensure_topic(&topic).await;
     let (_handle, _rx) = http_warm_topic(&topic).await;
@@ -49,9 +47,7 @@ async fn http_publish_single() {
 /// silently succeeding or panicking. This documents the known limitation.
 #[tokio::test(flavor = "multi_thread")]
 async fn http_publish_batch_unsupported() {
-    if !ensure_runtime() {
-        return;
-    }
+    require_runtime!();
     let producer = HttpProducer::new(http_producer_config()).expect("build http producer");
 
     let batch: Vec<EventMeshMessage> = (0..2)

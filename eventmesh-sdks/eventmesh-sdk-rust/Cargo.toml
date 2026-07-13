@@ -19,7 +19,7 @@
 name = "eventmesh"
 version = "1.9.0"
 edition = "2021"
-rust-version = "1.75.0"
+rust-version = "1.86.0"
 authors = ["Apache EventMesh <dev@eventmesh.apache.org>"]
 license = "Apache-2.0"
 description = "Apache EventMesh Rust SDK"
@@ -45,7 +45,7 @@ http = ["dep:reqwest", "dep:serde_urlencoded", "dep:axum", "dep:tower", "dep:tow
 # a side effect of the `grpc` feature).
 tcp = ["tokio-util/codec"]
 # Message models.
-cloud_events = ["dep:cloudevents"]
+cloud_events = ["dep:cloudevents", "dep:chrono"]
 # TLS support.
 tls = ["tonic/tls", "tonic/tls-native-roots"]
 # Convenience aggregate.
@@ -75,6 +75,7 @@ prost = { version = "0.13", optional = true }
 prost-types = { version = "0.13", optional = true }
 # CloudEvents interop.
 cloudevents = { package = "cloudevents-sdk", version = "0.7", optional = true }
+chrono = { version = "0.4", optional = true, default-features = false, features = ["std", "clock"] }
 # HTTP transport.
 reqwest = { version = "0.12", optional = true, features = ["json"] }
 serde_urlencoded = { version = "0.7", optional = true }

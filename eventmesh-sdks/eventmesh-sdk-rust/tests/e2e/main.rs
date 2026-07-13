@@ -33,6 +33,11 @@
 //! To run against an already-running server instead of auto-starting one, set
 //! `EVENTMESH_E2E_EXTERNAL=1`. When neither Docker nor a server is available the
 //! tests skip themselves (rather than fail).
+//!
+//! **Release CI must set `EVENTMESH_E2E_STRICT=1`.**  Without it a test that
+//! cannot reach a runtime silently returns and is counted as *passed* by the
+//! test harness — a false green.  Strict mode turns that into a hard failure
+//! so the pipeline goes red when the suite didn't actually execute.
 
 #![cfg(feature = "e2e")]
 
@@ -48,3 +53,24 @@ mod tcp_cloud_events;
 mod tcp_publish;
 mod tcp_request_reply;
 mod tcp_subscribe;
+
+/// Guard clause for e2e tests: ensures a runtime is available before
+/// proceeding.
+///
+/// In normal mode, if no runtime is available the test returns early (counted
+/// as *passed* by libtest).  In strict mode (`EVENTMESH_E2E_STRICT=1`) the test
+/// panics instead, so CI fails when the suite didn't actually run.
+macro_rules! require_runtime {
+    () => {
+        if !crate::runtime::ensure_runtime() {
+            if crate::runtime::is_strict() {
+                panic!(
+                    "EventMesh runtime is not available and EVENTMESH_E2E_STRICT=1; \
+                     refusing to let the test silently pass"
+                );
+            }
+            return;
+        }
+    };
+}
+pub(crate) use require_runtime;

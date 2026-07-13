@@ -89,8 +89,16 @@ pub(crate) fn spawn(
             if items.is_empty() {
                 debug!("heartbeat tick: no subscriptions yet");
             } else if let Ok(event) = codec::build_heartbeat(&config, &items) {
-                match client.heartbeat(event).await {
-                    Ok(resp) => {
+                // Wrap the RPC in a timeout so a network black-hole cannot hang
+                // the heartbeat task indefinitely.  The select! also makes the
+                // call interruptible by shutdown so consumer.shutdown() returns
+                // promptly instead of waiting for the full timeout to elapse.
+                let outcome = tokio::select! {
+                    r = tokio::time::timeout(config.timeout, client.heartbeat(event)) => r,
+                    _ = shutdown.cancelled() => return,
+                };
+                match outcome {
+                    Ok(Ok(resp)) => {
                         let response = codec::to_response(&resp);
                         if response.code == Some(StatusCode::CLIENT_RESUBSCRIBE as i64) {
                             warn!("server requested resubscribe (CLIENT_RESUBSCRIBE)");
@@ -98,7 +106,8 @@ pub(crate) fn spawn(
                         }
                         debug!("heartbeat ok: {} items", items.len());
                     }
-                    Err(e) => warn!("heartbeat failed: {e}"),
+                    Ok(Err(e)) => warn!("heartbeat failed: {e}"),
+                    Err(_) => warn!("heartbeat timed out after {:?}", config.timeout),
                 }
             }
         }

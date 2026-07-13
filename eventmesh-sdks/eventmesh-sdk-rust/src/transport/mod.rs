@@ -22,7 +22,7 @@
 //! unsubscribe methods and a background receive loop — see the `grpc`,
 //! `http`, and `tcp` modules for details.
 //!
-//! These traits use native Rust-1.75 `async fn in trait` and are therefore
+//! These traits use native Rust-1.86 `async fn in trait` and are therefore
 //! **not object-safe** — use concrete types (`GrpcProducer`, etc.) directly,
 //! never `dyn`.
 

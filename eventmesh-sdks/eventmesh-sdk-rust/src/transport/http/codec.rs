@@ -208,20 +208,11 @@ pub struct PushMessageRequestBody {
 impl PushMessageRequestBody {
     /// Decode the pushed body into an [`EventMeshMessage`].
     ///
-    /// The `content` field is treated as the message payload. If it looks like
-    /// JSON (starts with `{`), we attempt to deserialize it as a full
-    /// `EventMeshMessage` (which may carry its own `topic`/`bizseqno`/etc.).
-    /// Otherwise the raw string is stored as `content` and the form-level
-    /// fields populate the message metadata.
+    /// The `content` field is **always** treated as the business payload —
+    /// the Runtime puts the original user payload there, not a serialized
+    /// `EventMeshMessage`.  Message metadata (`topic`, `bizseqno`,
+    /// `uniqueId`, `extFields`) is taken from the form-level fields.
     pub fn to_event_mesh_message(&self) -> Result<EventMeshMessage> {
-        // Try to parse content as a full EventMeshMessage JSON object.
-        if self.content.trim_start().starts_with('{') {
-            if let Ok(msg) = serde_json::from_str::<EventMeshMessage>(&self.content) {
-                return Ok(msg);
-            }
-        }
-
-        // Fall back: build an EventMeshMessage from the form-level fields.
         let mut msg = EventMeshMessage::builder()
             .content(self.content.clone())
             .build();
@@ -674,14 +665,22 @@ mod tests {
 
     #[test]
     fn push_body_to_message_with_json_content() {
-        let msg_json =
-            serde_json::to_string(&EventMeshMessage::builder().topic("t").content("c").build())
-                .unwrap();
-        let body = form_encode(&[("content".to_string(), msg_json)]);
+        // The Runtime puts the *business payload* in `content`, not a
+        // serialized EventMeshMessage.  A JSON payload that happens to
+        // contain a `create_time` field must NOT be misinterpreted as a
+        // full EventMeshMessage — it must be preserved verbatim and the
+        // form-level metadata (topic, bizseqno, extFields) must be applied.
+        let business_json = r#"{"create_time":123,"order_id":"x"}"#;
+        let body = form_encode(&[
+            ("content".to_string(), business_json.to_string()),
+            ("topic".to_string(), "test-topic".to_string()),
+            ("bizseqno".to_string(), "seq-1".to_string()),
+        ]);
         let parsed = parse_push_body(&body).unwrap();
         let msg = parsed.to_event_mesh_message().unwrap();
-        assert_eq!(msg.topic.as_deref(), Some("t"));
-        assert_eq!(msg.content.as_deref(), Some("c"));
+        assert_eq!(msg.content.as_deref(), Some(business_json));
+        assert_eq!(msg.topic.as_deref(), Some("test-topic"));
+        assert_eq!(msg.biz_seq_no.as_deref(), Some("seq-1"));
     }
 
     #[test]
