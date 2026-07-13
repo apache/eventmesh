@@ -33,9 +33,6 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            url "https://maven.aliyun.com/repository/public"
-        }
-        maven {
             url "https://plugins.gradle.org/m2/"
         }
     }
@@ -74,8 +71,8 @@ allprojects {
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
     java {
-        sourceCompatibility = "1.8"
-        targetCompatibility = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     clean.doFirst {
@@ -105,9 +102,6 @@ allprojects {
     dependencies {
         repositories {
             mavenCentral()
-            maven {
-                url "https://maven.aliyun.com/repository/public"
-            }
         }
         testImplementation "org.junit.jupiter:junit-jupiter:5.11.0"
     }
@@ -159,22 +153,18 @@ tasks.register('dist') {
         dependsOn("${subProject.path}:jar")
     }
     dependsOn('generateDistLicense', 'generateDistNotice')
+    // Only modules that ship on the runtime classpath of the unified runtime
+    // (EventMeshApplication). Legacy api/registry/retry/security/trace/meta/
+    // metrics/starter/runtime-v2/openconnect modules were deleted in the uni
+    // rewrite; listing them here made `findProject` return null and NPE.
     def includedProjects =
             ["eventmesh-common",
-             "eventmesh-meta:eventmesh-meta-api",
-             "eventmesh-metrics-plugin:eventmesh-metrics-api",
-             "eventmesh-openconnect:eventmesh-openconnect-java",
-             "eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api",
-             "eventmesh-protocol-plugin:eventmesh-protocol-api",
-             "eventmesh-registry:eventmesh-registry-api",
-             "eventmesh-retry:eventmesh-retry-api",
              "eventmesh-runtime",
-             "eventmesh-runtime-v2",
-             "eventmesh-security-plugin:eventmesh-security-api",
              "eventmesh-spi",
-             "eventmesh-starter",
              "eventmesh-storage-plugin:eventmesh-storage-api",
-             "eventmesh-trace-plugin:eventmesh-trace-api"]
+             "eventmesh-protocol-plugin:eventmesh-protocol-api",
+             "eventmesh-protocol-plugin:eventmesh-protocol-meshmessage",
+             "eventmesh-protocol-plugin:eventmesh-protocol-a2a"]
     doLast {
         includedProjects.each {
             def subProject = findProject(it)
@@ -207,53 +197,13 @@ tasks.register('dist') {
     }
 }
 
-tasks.register('dist-admin') {
-    subprojects.forEach { subProject ->
-        dependsOn("${subProject.path}:jar")
-    }
-    def includedProjects =
-            [
-                    "eventmesh-admin-server",
-                    "eventmesh-common",
-                    "eventmesh-spi",
-                    "eventmesh-registry:eventmesh-registry-api",
-                    "eventmesh-registry:eventmesh-registry-nacos",
-                    "eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api"
-            ]
-    doLast {
-        includedProjects.each {
-            def subProject = findProject(it)
-            copy {
-                from subProject.jar.archivePath
-                into rootProject.file('dist/apps')
-            }
-            copy {
-                from subProject.configurations.runtimeClasspath
-                into rootProject.file('dist/lib')
-                exclude 'eventmesh-*'
-            }
-            copy {
-                from subProject.file('bin')
-                into rootProject.file('dist/bin')
-            }
-            copy {
-                from subProject.file('conf')
-                from subProject.sourceSets.main.resources.srcDirs
-                into rootProject.file('dist/conf')
-                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-                exclude 'META-INF'
-            }
-
-        }
-    }
-
-}
-
 tasks.register('installPlugin') {
     var pluginProjects = subprojects.findAll {
         it.file('gradle.properties').exists()
                 && it.properties.containsKey('pluginType')
                 && it.properties.containsKey('pluginName')
+                // connectors ship in the connector-runtime image (dist-connector), not the runtime image
+                && it.properties.get('pluginType') != 'connector'
     }
     doLast {
         String[] libJars = java.util.Optional.ofNullable(file('dist/lib').list()).orElse(new String[0])
@@ -278,6 +228,64 @@ tasks.register('installPlugin') {
                 exclude 'META-INF'
             }
         })
+    }
+}
+
+tasks.register('dist-connector') {
+    subprojects.forEach { subProject ->
+        dependsOn("${subProject.path}:jar")
+    }
+    dependsOn('generateDistLicense', 'generateDistNotice')
+    doLast {
+        // Core: the connector-runtime process jar + its third-party deps (cloudevents, jackson,
+        // rocksdb, log4j binding, …). ConnectorApplication loads connectors via Class.forName, so
+        // connector jars must be on the classpath — start-connector.sh builds -cp from plugin/**/*.jar.
+        def core = findProject('eventmesh-connector-runtime')
+        logger.lifecycle('Install module: module: {}', core.name)
+        copy {
+            from core.jar.archivePath
+            into rootProject.file('dist-connector/apps')
+        }
+        copy {
+            from core.configurations.runtimeClasspath
+            into rootProject.file('dist-connector/lib')
+            exclude 'eventmesh-*'
+        }
+        copy {
+            from core.file('bin')
+            into rootProject.file('dist-connector/bin')
+        }
+        copy {
+            from core.file('conf')
+            from core.sourceSets.main.resources.srcDirs
+            into rootProject.file('dist-connector/conf')
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            exclude 'META-INF'
+        }
+        // Connector plugins (pluginType == connector) into dist-connector/plugin/connector/<name>/
+        String[] libJars = java.util.Optional.ofNullable(file('dist-connector/lib').list()).orElse(new String[0])
+        def connectorPlugins = subprojects.findAll {
+            it.file('gradle.properties').exists()
+                    && it.properties.containsKey('pluginType')
+                    && it.properties.get('pluginType') == 'connector'
+        }
+        connectorPlugins.forEach(subProject -> {
+            var pluginName = subProject.properties.get('pluginName')
+            logger.lifecycle('Install connector plugin: {}, module: {}', pluginName, subProject.name)
+            copy {
+                from subProject.jar.archivePath
+                into rootProject.file("dist-connector/plugin/connector/${pluginName}")
+            }
+            copy {
+                from subProject.configurations.runtimeClasspath
+                into rootProject.file("dist-connector/plugin/connector/${pluginName}")
+                exclude(libJars)
+            }
+        })
+        copy {
+            from 'tools/dist-license'
+            into rootProject.file('dist-connector')
+        }
     }
 }
 
@@ -630,7 +638,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven { url "https://maven.aliyun.com/repository/public" }
     }
 
     configurations.configureEach {

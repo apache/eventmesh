@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 
+pluginManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
     id 'com.gradle.develocity' version '3.18.2'
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
@@ -42,93 +48,52 @@ buildCache {
 
 rootProject.name = 'eventmesh'
 String jdkVersion = "${jdk}"
+
+// ===== 新架构 (eventmesh-runtime) + 最小依赖 + 兼容/connector 子树 =====
 include 'eventmesh-runtime'
-include 'eventmesh-sdks:eventmesh-sdk-java'
 include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-examples'
 include 'eventmesh-spi'
 
-include 'eventmesh-openconnect:eventmesh-openconnect-java'
-include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
-include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-admin'
-include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos'
+// SDK (多语言: c / go / java / rust, 此处 java 进 gradle 构建; 其余作为源码保留)
+include 'eventmesh-sdks:eventmesh-sdk-java'
 
-include 'eventmesh-connectors:eventmesh-connector-openfunction'
-include 'eventmesh-connectors:eventmesh-connector-rocketmq'
-include 'eventmesh-connectors:eventmesh-connector-rabbitmq'
-include 'eventmesh-connectors:eventmesh-connector-redis'
-include 'eventmesh-connectors:eventmesh-connector-mongodb'
-include 'eventmesh-connectors:eventmesh-connector-pulsar'
-include 'eventmesh-connectors:eventmesh-connector-kafka'
-include 'eventmesh-connectors:eventmesh-connector-s3'
-include 'eventmesh-connectors:eventmesh-connector-pravega'
-include 'eventmesh-connectors:eventmesh-connector-knative'
-include 'eventmesh-connectors:eventmesh-connector-jdbc'
-include 'eventmesh-connectors:eventmesh-connector-file'
-include 'eventmesh-connectors:eventmesh-connector-spring'
-include 'eventmesh-connectors:eventmesh-connector-prometheus'
-include 'eventmesh-connectors:eventmesh-connector-dingtalk'
-include 'eventmesh-connectors:eventmesh-connector-lark'
-include 'eventmesh-connectors:eventmesh-connector-wecom'
-include 'eventmesh-connectors:eventmesh-connector-slack'
-include 'eventmesh-connectors:eventmesh-connector-wechat'
-include 'eventmesh-connectors:eventmesh-connector-http'
-include 'eventmesh-connectors:eventmesh-connector-chatgpt'
-include 'eventmesh-connectors:eventmesh-connector-canal'
-include 'eventmesh-connectors:eventmesh-connector-mcp'
-
+// Storage 后端 (新架构适配了 kafka/rocketmq)
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
-include 'eventmesh-storage-plugin:eventmesh-storage-standalone'
 include 'eventmesh-storage-plugin:eventmesh-storage-kafka'
-include 'eventmesh-storage-plugin:eventmesh-storage-pulsar'
-include 'eventmesh-storage-plugin:eventmesh-storage-redis'
 include 'eventmesh-storage-plugin:eventmesh-storage-rocketmq'
-include 'eventmesh-storage-plugin:eventmesh-storage-rabbitmq'
+include 'eventmesh-storage-plugin:eventmesh-storage-rocketmq5'
 
-include 'eventmesh-security-plugin'
-include 'eventmesh-security-plugin:eventmesh-security-api'
-include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
-include 'eventmesh-security-plugin:eventmesh-security-auth-token'
-
-include 'eventmesh-meta:eventmesh-meta-api'
-include 'eventmesh-meta:eventmesh-meta-nacos'
-include 'eventmesh-meta:eventmesh-meta-etcd'
-include 'eventmesh-meta:eventmesh-meta-consul'
-include 'eventmesh-meta:eventmesh-meta-zookeeper'
-include 'eventmesh-meta:eventmesh-meta-raft'
-
+// 协议适配 (老协议兼容 + A2A, 待基于新架构重实现适配)
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
-include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
-include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
-include 'eventmesh-protocol-plugin:eventmesh-protocol-http'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
-include 'eventmesh-protocol-plugin:eventmesh-protocol-grpcmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-a2a'
 
-include 'eventmesh-metrics-plugin'
-include 'eventmesh-metrics-plugin:eventmesh-metrics-api'
-include 'eventmesh-metrics-plugin:eventmesh-metrics-prometheus'
+// Connector Runtime — 独立模块 (与 EventMesh Runtime 经 HTTP 通信, 不互相依赖)
+include 'eventmesh-connector-runtime'
 
-include 'eventmesh-trace-plugin'
-include 'eventmesh-trace-plugin:eventmesh-trace-api'
-include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
-include 'eventmesh-trace-plugin:eventmesh-trace-pinpoint'
-include 'eventmesh-trace-plugin:eventmesh-trace-jaeger'
-
-include 'eventmesh-retry'
-include 'eventmesh-retry:eventmesh-retry-api'
-include 'eventmesh-retry:eventmesh-retry-rocketmq'
-include 'eventmesh-runtime-v2'
-include 'eventmesh-admin-server'
-include 'eventmesh-registry'
-include 'eventmesh-registry:eventmesh-registry-api'
-include 'eventmesh-registry:eventmesh-registry-nacos'
-
-include 'eventmesh-function'
-include 'eventmesh-function:eventmesh-function-api'
-include 'eventmesh-function:eventmesh-function-filter'
-include 'eventmesh-function:eventmesh-function-transformer'
+// Connector 插件 (保留, 待基于新 ConnectorRuntime 重实现)
+include 'eventmesh-connector-plugin:eventmesh-connector-openfunction'
+include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
+include 'eventmesh-connector-plugin:eventmesh-connector-rabbitmq'
+include 'eventmesh-connector-plugin:eventmesh-connector-redis'
+include 'eventmesh-connector-plugin:eventmesh-connector-mongodb'
+include 'eventmesh-connector-plugin:eventmesh-connector-pulsar'
+include 'eventmesh-connector-plugin:eventmesh-connector-kafka'
+include 'eventmesh-connector-plugin:eventmesh-connector-s3'
+include 'eventmesh-connector-plugin:eventmesh-connector-pravega'
+include 'eventmesh-connector-plugin:eventmesh-connector-knative'
+include 'eventmesh-connector-plugin:eventmesh-connector-jdbc'
+include 'eventmesh-connector-plugin:eventmesh-connector-file'
+include 'eventmesh-connector-plugin:eventmesh-connector-spring'
+include 'eventmesh-connector-plugin:eventmesh-connector-prometheus'
+include 'eventmesh-connector-plugin:eventmesh-connector-dingtalk'
+include 'eventmesh-connector-plugin:eventmesh-connector-lark'
+include 'eventmesh-connector-plugin:eventmesh-connector-wecom'
+include 'eventmesh-connector-plugin:eventmesh-connector-slack'
+include 'eventmesh-connector-plugin:eventmesh-connector-wechat'
+include 'eventmesh-connector-plugin:eventmesh-connector-http'
+include 'eventmesh-connector-plugin:eventmesh-connector-chatgpt'
+include 'eventmesh-connector-plugin:eventmesh-connector-canal'
+include 'eventmesh-connector-plugin:eventmesh-connector-mcp'

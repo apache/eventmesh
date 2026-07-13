@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(":eventmesh-connector-runtime")
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.mongodb:mongodb-driver-sync:4.11.0'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}

@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(":eventmesh-connector-runtime")
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'org.slf4j:slf4j-api'
+    implementation "org.redisson:redisson:3.38.1"
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}

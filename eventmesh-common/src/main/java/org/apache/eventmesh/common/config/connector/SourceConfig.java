@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.config.connector;
 
-import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,7 +27,6 @@ public abstract class SourceConfig extends Config {
 
     private PubSubConfig pubSubConfig;
 
-    private OffsetStorageConfig offsetStorageConfig;
 
     // Polling configuration, e.g. capacity, batch size, wait time, etc.
     private PollConfig pollConfig = new PollConfig();

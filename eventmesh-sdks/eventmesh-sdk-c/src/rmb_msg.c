@@ -85,7 +85,7 @@ int rmb_msg_init (StRmbMsg * pRmbMsg, StRmbConfig * pConfig,
   RMB_MEMCPY (pRmbMsg->sysHeader.cOrgId, pConfig->strOrgId);
   RMB_MEMCPY (pRmbMsg->sysHeader.cRmbVersion, RMBVERSION);
 
-  char cAppHeaderClassName[50] = "cn.webank.rmb.message.AppHeader";
+  char cAppHeaderClassName[50] = "cn.rmb.message.AppHeader";
   RMB_MEMCPY (pRmbMsg->sysHeader.cAppHeaderClass, cAppHeaderClassName);
 
   //RMB_MEMSET(pRmbMsg->strScenarioId);

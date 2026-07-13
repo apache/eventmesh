@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,6 +74,11 @@ public class A2AClient implements AutoCloseable {
 
     private volatile boolean started = false;
     private ScheduledExecutorService heartbeatExecutor;
+    /**
+     * Virtual-thread executor for async task submission ({@link #sendTask}). Blocking HTTP runs on
+     * virtual threads instead of {@code ForkJoinPool.commonPool}, so the shared pool isn't starved.
+     */
+    private final ExecutorService asyncExecutor = Executors.newVirtualThreadPerTaskExecutor();
     private RequestHandler requestHandler;
 
     private A2AMessageTransport transport;
@@ -113,6 +119,7 @@ public class A2AClient implements AutoCloseable {
         if (heartbeatExecutor != null) {
             heartbeatExecutor.shutdownNow();
         }
+        asyncExecutor.shutdownNow();
         if (transport != null && requestSubscriptionId != null) {
             transport.unsubscribe(requestSubscriptionId);
             requestSubscriptionId = null;
@@ -202,7 +209,7 @@ public class A2AClient implements AutoCloseable {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, asyncExecutor);
     }
 
     /**

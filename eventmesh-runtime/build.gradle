@@ -15,70 +15,76 @@
  * limitations under the License.
  */
 
+// uni 统一运行时: CloudEvents-over-MQ 消息总线. 最小依赖面 — 只依赖 common(协议帧) +
+// spi + storage-api(MeshStoragePlugin). 其余 (security/meta/protocol/metrics/trace/retry/
+// registry/function/sdk/legacy runtime) 均不需要, 由内置组件承担.
+// Java 21 source: 启用虚拟线程承载 SSE/stream 等阻塞连接 (allprojects 默认 1.8, 这里覆盖)。
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'io.cloudevents:cloudevents-json-jackson'
 
     implementation 'io.opentelemetry:opentelemetry-api'
-    implementation 'io.opentelemetry:opentelemetry-sdk'
-    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
-    implementation 'io.opentelemetry:opentelemetry-semconv'
 
-    implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
-    implementation "com.alibaba.fastjson2:fastjson2"
+    // Self-managed distribution offset store (uni §12.6.3)
+    implementation 'org.rocksdb:rocksdbjni:8.8.1'
 
-    implementation 'com.github.seancfoley:ipaddress'
+    // Meta 后端 (NacosMetaStore)
+    implementation 'com.alibaba.nacos:nacos-client:2.1.1'
 
-    implementation "commons-io:commons-io"
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-    implementation "commons-validator:commons-validator"
+    implementation project(':eventmesh-common')
+    implementation project(':eventmesh-spi')
+    implementation project(':eventmesh-storage-plugin:eventmesh-storage-api')
 
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-function:eventmesh-function-api")
-    implementation project(":eventmesh-function:eventmesh-function-filter")
-    implementation project(":eventmesh-function:eventmesh-function-transformer")
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-standalone")
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-rocketmq")
-    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
-    implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
-    implementation project(":eventmesh-security-plugin:eventmesh-security-auth-token")
-    implementation project(":eventmesh-meta:eventmesh-meta-api")
-    implementation project(":eventmesh-meta:eventmesh-meta-nacos")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-
-    implementation "io.grpc:grpc-core"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-stub"
-    implementation "io.grpc:grpc-netty"
-    implementation "io.grpc:grpc-netty-shaded"
+    // 协议适配 (TCP/HTTP 桥 + A2A Agent 通信)
+    implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-api')
+    implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-meshmessage')
+    implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-a2a')
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // for debug only, can be removed
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-a2a")
+    // Integration tests boot the connector-runtime worker in-process (dynamic scheduling E2E).
+    testImplementation project(':eventmesh-connector-runtime')
+    // RealBrokerIntegrationTest loads the rocketmq storage plugin via SPI against a live broker.
+    testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq')
+    // RocketMQ5BrokerIntegrationTest loads the 5.x plugin via SPI key "rocketmq5".
+    testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5')
+    // KafkaClientE2EIntegrationTest boots the full app with the kafka plugin (incl. SASL/JAAS).
+    testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-kafka')
+    // Topic creation in RealBrokerIntegrationTest (broker may have autoCreateTopicEnable=false).
+    testImplementation 'org.apache.rocketmq:rocketmq-tools:4.9.5'
+    // ClientBrokerIntegrationTest drives the runtime via the real CloudEventsClient SDK over HTTP.
+    testImplementation project(':eventmesh-sdks:eventmesh-sdk-java')
+}
 
-    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
-    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
+// Resolve the lz4-java capability conflict when kafka-clients and rocketmq are both on the test
+// classpath: kafka-clients brings org.lz4:lz4-java, rocketmq-common brings at.yawk.lz4:lz4-java —
+// both declare the org.lz4:lz4-java capability and ship the SAME lz4-java classes. Exclude org.lz4
+// so kafka-clients reuses rocketmq's at.yawk.lz4 at runtime. (Production dist loads each storage
+// plugin in its own classloader, so this is test-classpath-only.)
+configurations.all {
+    exclude group: 'org.lz4', module: 'lz4-java'
+}
 
-    implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
-    implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
-
-    implementation project(":eventmesh-retry:eventmesh-retry-api")
-
-    testImplementation "org.mockito:mockito-inline"
-    testImplementation "org.mockito:mockito-junit-jupiter"
-    testImplementation "commons-io:commons-io"
-
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+test {
+    // Forward -Dit.* (set on the gradle CLI) to the test JVM so RealBrokerIntegrationTest can be
+    // enabled + pointed at a broker. Only forwarded when actually set, so the test's own defaults
+    // (it.topic=em-it-orders, it.namesrv=localhost:9092) still apply otherwise.
+    // Enable + run: -Dit.storage=rocketmq -Dit.namesrv=host:9876 [-Dit.topic=...]
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+    ['it.storage', 'it.topic', 'it.namesrv', 'it.nacos', 'it.storage5', 'it.namesrv5'].each { k ->
+        def v = System.getProperty(k)
+        if (v != null) {
+            systemProperty k, v
+        }
+    }
 }

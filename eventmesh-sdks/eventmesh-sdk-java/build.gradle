@@ -44,6 +44,8 @@ dependencies {
     api "io.openmessaging:openmessaging-api"
 
     testImplementation project(":eventmesh-common")
+    testImplementation project(":eventmesh-runtime")
+    testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind"
     testImplementation "com.fasterxml.jackson.core:jackson-core"
