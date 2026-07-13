@@ -35,7 +35,7 @@ async fn recv_one(
         .expect("listener channel closed unexpectedly")
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn subscribe_and_receive() {
     if !ensure_runtime() {
         return;
@@ -59,7 +59,7 @@ async fn subscribe_and_receive() {
     drop(consumer);
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn subscribe_batch_receive() {
     if !ensure_runtime() {
         return;
@@ -91,7 +91,7 @@ async fn subscribe_batch_receive() {
     drop(consumer);
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn unsubscribe_stops_delivery() {
     if !ensure_runtime() {
         return;

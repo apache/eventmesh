@@ -167,6 +167,19 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
     /// request).  `shutdown_signal` is an optional future whose resolution
     /// triggers graceful shutdown of the stream and heartbeat.  When omitted,
     /// shutdown can only be initiated by [`shutdown`](Self::shutdown) or drop.
+    ///
+    /// # Runtime requirement
+    ///
+    /// This method **requires a multi-threaded tokio runtime**. On a
+    /// current-thread runtime (the default for `#[tokio::test]`),
+    /// tonic's background connection tasks cannot progress and the call
+    /// will time out after 15 seconds with a diagnostic error. Use:
+    ///
+    /// ```text
+    /// #[tokio::test(flavor = "multi_thread")]
+    /// ```
+    ///
+    /// (`#[tokio::main]` is already multi-threaded by default.)
     pub async fn subscribe_stream(
         config: crate::config::GrpcClientConfig,
         listener: L,

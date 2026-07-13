@@ -26,7 +26,7 @@ use eventmesh::{http::HttpProducer, model::EventMeshMessage, transport::Publishe
 use crate::harness::{ensure_topic, http_producer_config, http_warm_topic, unique_topic};
 use crate::runtime::ensure_runtime;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn http_publish_single() {
     if !ensure_runtime() {
         return;
@@ -47,7 +47,7 @@ async fn http_publish_single() {
 
 /// Verify that batch publish surfaces a clear `Unsupported` error rather than
 /// silently succeeding or panicking. This documents the known limitation.
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn http_publish_batch_unsupported() {
     if !ensure_runtime() {
         return;

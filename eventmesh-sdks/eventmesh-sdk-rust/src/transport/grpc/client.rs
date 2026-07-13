@@ -166,6 +166,13 @@ impl GrpcClient {
 
     /// Open a bidirectional stream subscription. The first message on the
     /// request stream should be the subscription CloudEvent.
+    ///
+    /// The stream-open future is wrapped in a timeout to surface a helpful
+    /// diagnostic when the caller is running on a **current-thread** tokio
+    /// runtime. On a current-thread runtime tonic's background connection
+    /// tasks cannot make progress while the caller awaits the server's
+    /// response headers, producing an indefinite hang; the timeout converts
+    /// that hang into a clear error message instead.
     pub async fn subscribe_stream(
         &self,
         first: PbCloudEvent,
@@ -178,9 +185,28 @@ impl GrpcClient {
             .await
             .map_err(|e| EventMeshError::ChannelClosed(format!("stream open send: {e}")))?;
         let mut stream_client = self.consumer.clone();
-        let response = stream_client
-            .subscribe_stream(Request::new(ReceiverStream::new(rx)))
-            .await?;
+
+        // The stream-open `.await` resolves once the server sends response
+        // headers. On a single-threaded runtime this never completes because
+        // tonic's internal connection driver task is starved. Wrap it in a
+        // timeout so the caller gets an actionable error instead of a hang.
+        const STREAM_OPEN_TIMEOUT: Duration = Duration::from_secs(15);
+        let response = tokio::time::timeout(
+            STREAM_OPEN_TIMEOUT,
+            stream_client.subscribe_stream(Request::new(ReceiverStream::new(rx))),
+        )
+        .await
+        .map_err(|_| {
+            EventMeshError::Other(format!(
+                "subscribe_stream did not receive server headers within \
+                 {STREAM_OPEN_TIMEOUT:?}. This is almost always caused by a \
+                 current-thread tokio runtime (the default for \
+                 #[tokio::test]); tonic's background connection tasks \
+                 cannot progress. Fix: use #[tokio::test(flavor = \
+                 \"multi_thread\")] or \
+                 tokio::runtime::Builder::new_multi_thread()"
+            ))
+        })??;
         Ok((tx, response.into_inner()))
     }
 

@@ -65,7 +65,7 @@ impl MessageListener for SlowListener {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn concurrent_dispatch_overlaps_handlers() {
     if !ensure_runtime() {
         return;

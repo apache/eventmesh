@@ -22,7 +22,7 @@ use eventmesh::{model::EventMeshMessage, tcp::TcpProducer, transport::Publisher}
 use crate::harness::{ensure_topic, tcp_producer_config, tcp_warm_topic, unique_topic};
 use crate::runtime::ensure_runtime;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_single() {
     if !ensure_runtime() {
         return;
@@ -45,7 +45,7 @@ async fn tcp_publish_single() {
     producer.shutdown().await;
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn tcp_broadcast() {
     if !ensure_runtime() {
         return;

@@ -43,7 +43,7 @@ async fn recv_one(
         .expect("listener channel closed unexpectedly")
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_cloud_event() {
     if !ensure_runtime() {
         return;
@@ -113,7 +113,7 @@ async fn tcp_publish_cloud_event() {
     consumer.shutdown().await;
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn tcp_broadcast_cloud_event() {
     if !ensure_runtime() {
         return;

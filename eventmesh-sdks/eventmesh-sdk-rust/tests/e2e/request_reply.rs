@@ -33,7 +33,7 @@ use crate::runtime::ensure_runtime;
 
 const REPLY: &str = "pong";
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn request_reply_roundtrip() {
     if !ensure_runtime() {
         return;
