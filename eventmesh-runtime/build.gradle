@@ -62,6 +62,8 @@ dependencies {
     testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-kafka')
     // Topic creation in RealBrokerIntegrationTest (broker may have autoCreateTopicEnable=false).
     testImplementation 'org.apache.rocketmq:rocketmq-tools:4.9.5'
+    // A2AClientServerIntegrationTest drives the A2A Gateway over HTTP.
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
     // ClientBrokerIntegrationTest drives the runtime via the real CloudEventsClient SDK over HTTP.
     testImplementation project(':eventmesh-sdks:eventmesh-sdk-java')
 }
