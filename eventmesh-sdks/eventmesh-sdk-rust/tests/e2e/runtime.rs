@@ -88,7 +88,9 @@ fn ensure_conf_readable() {
     let dir = PathBuf::from(MANIFEST_DIR).join("docker").join("conf");
     // Directory must be traversable (o+x) for the container to resolve files
     // inside it; files must be readable (o+r).
-    let _ = Command::new("chmod").args(["o+rx", dir.to_str().unwrap_or(".")]).status();
+    let _ = Command::new("chmod")
+        .args(["o+rx", dir.to_str().unwrap_or(".")])
+        .status();
     if let Ok(entries) = std::fs::read_dir(&dir) {
         for entry in entries.flatten() {
             let path = entry.path();

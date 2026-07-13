@@ -38,7 +38,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use tokio::sync::Mutex;
-use tokio::task::JoinHandle;
+use tokio::sync::Semaphore;
+use tokio::task::{JoinHandle, JoinSet};
 use tokio_util::sync::CancellationToken;
 use tonic::codegen::tokio_stream::StreamExt;
 use tracing::{debug, error, warn};
@@ -110,6 +111,13 @@ async fn await_task<T: Send + 'static>(handle: &Mutex<Option<JoinHandle<T>>>) ->
 /// and heartbeat all run as background tokio tasks that are stopped when the
 /// consumer is dropped or explicitly via [`shutdown`](Self::shutdown) /
 /// [`wait_for_shutdown`](Self::wait_for_shutdown).
+///
+/// Delivered messages are dispatched to the listener **concurrently** — up to
+/// [`GrpcClientConfig::max_concurrent_handlers`] (default 64) may be in flight
+/// at once.  This means replies can arrive at the broker out of message-arrival
+/// order (each reply is self-correlating via request attributes, so protocol
+/// correctness is unaffected).  Set `max_concurrent_handlers = 1` to restore
+/// strict serial / in-order-reply semantics matching the Java SDK.
 ///
 /// Subscribe and unsubscribe RPCs can be called at any time after construction
 /// — they are sent over the already-open stream (subscribe) or as independent
@@ -538,9 +546,26 @@ async fn unsubscribe_rpc(
 
 /// Spawn the stream receive loop as a background task.
 ///
-/// Dispatches delivered messages to the listener and sends back replies until
-/// the server closes the stream or the shutdown token fires.  On exit, clears
-/// the shared `stream_tx` so the heartbeat loop knows the stream is gone.
+/// Dispatches delivered messages to the listener **concurrently** (up to
+/// [`GrpcClientConfig::max_concurrent_handlers`] in flight at once) and sends
+/// back replies as each handler completes.  Concurrency is bounded by a
+/// `Semaphore`: when all permits are held by in-flight handlers, the loop
+/// stops pulling from the gRPC stream, which engages gRPC flow control and
+/// pauses the server — this is the backpressure path.
+///
+/// Replies are sent in handler-completion order, **not** message-arrival
+/// order.  This is a deliberate divergence from the Java SDK (which processes
+/// serially and replies in order) chosen for throughput.  Each reply carries
+/// the original request's attributes (see [`build_reply`]) so the broker can
+/// correlate it independently of ordering.  Set
+/// `max_concurrent_handlers = 1` to restore strict serial / in-order-reply
+/// semantics.
+///
+/// On shutdown (`shutdown` token cancelled or the stream ends) the loop stops
+/// accepting new messages and then **drains** all in-flight handlers to
+/// completion (mirroring axum's graceful-shutdown behaviour) before clearing
+/// `stream_tx` and returning.  `Drop` of the consumer aborts the driver task,
+/// which drops the `JoinSet` and aborts any remaining in-flight handlers.
 fn spawn_stream_driver(
     mut stream: tonic::Streaming<crate::proto_gen::PbCloudEvent>,
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
@@ -550,6 +575,9 @@ fn spawn_stream_driver(
     shutdown: CancellationToken,
 ) -> JoinHandle<Result<()>> {
     tokio::spawn(async move {
+        let semaphore = Arc::new(Semaphore::new(config.max_concurrent_handlers.max(1)));
+        let mut join_set: JoinSet<()> = JoinSet::new();
+
         loop {
             tokio::select! {
                 msg = stream.next() => match msg {
@@ -568,20 +596,28 @@ fn spawn_stream_driver(
                             continue;
                         }
                         debug!("delivered topic={:?}", eventmesh_msg.topic);
-                        match listener.handle(eventmesh_msg).await {
-                            Some(reply) => match build_reply(reply, &cloud_event, &config) {
-                                Ok(reply_event) => {
-                                    if reply_tx.send(reply_event).await.is_err() {
-                                        warn!("reply channel closed; stopping receive loop");
-                                        break;
-                                    }
-                                }
-                                Err(e) => error!("failed to encode reply: {e}"),
+                        // Acquire a permit (bounded concurrency) but allow
+                        // shutdown to interrupt the wait.  The permit lives
+                        // for the duration of the spawned handler task.
+                        let permit = tokio::select! {
+                            p = semaphore.clone().acquire_owned() => match p {
+                                Ok(p) => p,
+                                Err(_) => break, // semaphore closed
                             },
-                            None => { /* async ack: nothing to send back */ }
-                        }
+                            _ = shutdown.cancelled() => break,
+                        };
+                        join_set.spawn(handle_one(
+                            cloud_event,
+                            eventmesh_msg,
+                            Arc::clone(&listener),
+                            Arc::clone(&reply_tx),
+                            config.clone(),
+                            permit,
+                        ));
                     }
                 },
+                // Reap completed tasks so the JoinSet does not grow unbounded.
+                _ = join_set.join_next() => {}
                 _ = shutdown.cancelled() => {
                     debug!("subscribe stream shutting down");
                     break;
@@ -589,9 +625,40 @@ fn spawn_stream_driver(
             }
         }
 
+        // Drain: wait for all in-flight handlers to finish (mirrors axum's
+        // graceful-shutdown semantics).  `Drop` of the consumer aborts the
+        // driver task instead, cancelling these immediately.
+        while join_set.join_next().await.is_some() {}
+
         *stream_tx.lock().await = None;
         Ok(())
     })
+}
+
+/// Run a single message through the listener and send any reply.
+///
+/// The `_permit` is held for the lifetime of this future; dropping it (when
+/// the future completes or is cancelled) releases the concurrency slot back
+/// to the semaphore, allowing the receive loop to pull the next message.
+async fn handle_one<L: MessageListener<Message = EventMeshMessage>>(
+    cloud_event: crate::proto_gen::PbCloudEvent,
+    eventmesh_msg: EventMeshMessage,
+    listener: Arc<L>,
+    reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
+    config: crate::config::GrpcClientConfig,
+    _permit: tokio::sync::OwnedSemaphorePermit,
+) {
+    match listener.handle(eventmesh_msg).await {
+        Some(reply) => match build_reply(reply, &cloud_event, &config) {
+            Ok(reply_event) => {
+                if reply_tx.send(reply_event).await.is_err() {
+                    warn!("reply channel closed; reply dropped");
+                }
+            }
+            Err(e) => error!("failed to encode reply: {e}"),
+        },
+        None => { /* async ack: nothing to send back */ }
+    }
 }
 
 /// Build a reply CloudEvent (used by the stream receive loop when the listener

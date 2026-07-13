@@ -25,6 +25,8 @@ use crate::config::{ClientIdentity, TlsConfig};
 pub const DEFAULT_GRPC_PORT: u16 = 10_205;
 /// Default request timeout.
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
+/// Default max concurrent `listener.handle()` calls in the stream receive loop.
+pub const DEFAULT_MAX_CONCURRENT_HANDLERS: usize = 64;
 
 /// Configuration for the gRPC transport.
 #[derive(Debug, Clone)]
@@ -43,6 +45,12 @@ pub struct GrpcClientConfig {
     pub timeout: Duration,
     /// Client identity sent with every request.
     pub identity: ClientIdentity,
+    /// Max number of `listener.handle()` calls running concurrently in the
+    /// gRPC stream receive loop. Provides backpressure: when at capacity the
+    /// loop stops pulling from the gRPC stream (relying on gRPC flow control
+    /// to pause the server). Set to `1` to restore strict serial /
+    /// in-order-reply semantics (matching the Java SDK).
+    pub max_concurrent_handlers: usize,
 }
 
 impl Default for GrpcClientConfig {
@@ -54,6 +62,7 @@ impl Default for GrpcClientConfig {
             tls_config: None,
             timeout: DEFAULT_TIMEOUT,
             identity: ClientIdentity::detect(),
+            max_concurrent_handlers: DEFAULT_MAX_CONCURRENT_HANDLERS,
         }
     }
 }
@@ -79,6 +88,7 @@ pub struct GrpcClientConfigBuilder {
     tls_config: Option<TlsConfig>,
     timeout: Option<Duration>,
     identity: Option<ClientIdentity>,
+    max_concurrent_handlers: Option<usize>,
     // identity convenience setters:
     env: Option<String>,
     idc: Option<String>,
@@ -109,6 +119,10 @@ impl GrpcClientConfigBuilder {
     }
     pub fn timeout(mut self, v: Duration) -> Self {
         self.timeout = Some(v);
+        self
+    }
+    pub fn max_concurrent_handlers(mut self, v: usize) -> Self {
+        self.max_concurrent_handlers = Some(v);
         self
     }
     pub fn identity(mut self, v: ClientIdentity) -> Self {
@@ -156,6 +170,7 @@ impl GrpcClientConfigBuilder {
             tls_config,
             timeout,
             identity,
+            max_concurrent_handlers,
             env,
             idc,
             sys,
@@ -199,6 +214,9 @@ impl GrpcClientConfigBuilder {
             tls_config,
             timeout: timeout.unwrap_or(DEFAULT_TIMEOUT),
             identity,
+            max_concurrent_handlers: max_concurrent_handlers
+                .unwrap_or(DEFAULT_MAX_CONCURRENT_HANDLERS)
+                .max(1),
         }
     }
 }
