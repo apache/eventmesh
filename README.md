@@ -48,7 +48,7 @@ Apache EventMesh is packed with features that help users build event-driven appl
 
 - **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/a2a-protocol/README_EN.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
 - **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), and more.
-- **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
+- **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
 - **Pluggable meta service** — [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io), and [Zookeeper](https://zookeeper.apache.org/).
 - **Event schema management** via catalog service.
 - **Powerful event orchestration** through the [Serverless workflow](https://serverlessworkflow.io/) engine.

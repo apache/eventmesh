@@ -49,7 +49,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 - **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/a2a-protocol/README.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
 - **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)、[Apache Kafka](https://kafka.apache.org)、[Apache Pulsar](https://pulsar.apache.org)、[RabbitMQ](https://rabbitmq.com)、[Redis](https://redis.io) 等。
-- **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
+- **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
 - **可插拔元数据服务** —— [Consul](https://consulproject.org/en/)、[Nacos](https://nacos.io)、[ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
 - **事件模式管理** —— 通过目录（catalog）服务实现。
 - **强大的事件编排** —— 基于 [Serverless workflow](https://serverlessworkflow.io/) 引擎。
