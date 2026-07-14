@@ -138,13 +138,10 @@ allprojects {
         useJUnitPlatform()
     }
 
-    // Remove doclint warnings that pollute javadoc logs when building
-    if (JavaVersion.current().isJava8()) {
-        tasks.withType(Javadoc).tap {
-            configureEach {
-                options.addStringOption('xdoclint:none', '-quiet')
-            }
-        }
+    // Disable doclint: it is overly strict on JDK 11+ and breaks javadoc generation
+    // on comments that were valid under JDK 8. The uni-architecture baseline is JDK 21.
+    tasks.withType(Javadoc).configureEach {
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 }
 

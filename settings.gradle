@@ -15,12 +15,6 @@
  * limitations under the License.
  */
 
-pluginManagement {
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
     id 'com.gradle.develocity' version '3.18.2'
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
@@ -53,6 +47,9 @@ String jdkVersion = "${jdk}"
 include 'eventmesh-runtime'
 include 'eventmesh-common'
 include 'eventmesh-spi'
+
+// 可运行示例（仅保留能基于新架构编译的 demo，依赖见 eventmesh-examples/build.gradle）
+include 'eventmesh-examples'
 
 // SDK (多语言: c / go / java / rust, 此处 java 进 gradle 构建; 其余作为源码保留)
 include 'eventmesh-sdks:eventmesh-sdk-java'
