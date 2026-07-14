@@ -1,8 +1,17 @@
+plugins {
+    id 'antlr'
+}
+
 dependencies {
+    antlr "org.antlr:antlr4:4.13.1"
+    implementation 'org.antlr:antlr4-runtime:4.13.1'
     implementation project(":eventmesh-connector-runtime")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'org.slf4j:slf4j-api'
-    implementation 'org.slf4j:slf4j-api'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+}
+
+generateGrammarSource {
+    arguments += ['-package', 'org.apache.eventmesh.connector.jdbc.antlr4.autogeneration', '-visitor']
 }
