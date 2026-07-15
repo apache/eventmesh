@@ -24,6 +24,7 @@
 
 use std::collections::HashMap;
 
+use prost::Message as _;
 use prost_types::Any as PbAny;
 
 use crate::common::constants::{DataContentType, DEFAULT_MESSAGE_TTL, SDK_STREAM_URL};
@@ -177,10 +178,21 @@ pub fn from_event_mesh_message(
         Some(content) if is_text_content(&data_content_type) => {
             Some(PbData::TextData(content.clone()))
         }
-        Some(content) if is_proto_content(&data_content_type) => Some(PbData::ProtoData(PbAny {
-            type_url: String::new(),
-            value: content.as_bytes().to_vec(),
-        })),
+        Some(content) if is_proto_content(&data_content_type) => {
+            // Match the Java SDK: content bytes are a serialized
+            // `google.protobuf.Any` message (produced by `Any.pack(...)` or
+            // manual construction, then serialized). Java calls
+            // `Any.parseFrom(content.getBytes(UTF_8))` on the producer side
+            // and `any.toByteArray()` on the consumer side. We mirror both
+            // directions so Rust↔Java `application/protobuf` messages are
+            // wire-compatible.
+            let any = PbAny::decode(content.as_bytes()).map_err(|e| {
+                EventMeshError::Other(format!(
+                    "failed to decode application/protobuf content as google.protobuf.Any: {e}"
+                ))
+            })?;
+            Some(PbData::ProtoData(any))
+        }
         Some(content) => Some(PbData::BinaryData(content.as_bytes().to_vec())),
         None => None,
     };
@@ -286,7 +298,13 @@ pub fn get_text_data(cloud_event: &PbCloudEvent) -> String {
     match &cloud_event.data {
         Some(PbData::TextData(s)) => s.clone(),
         Some(PbData::BinaryData(b)) => String::from_utf8_lossy(b).into_owned(),
-        Some(PbData::ProtoData(any)) => String::from_utf8_lossy(&any.value).into_owned(),
+        Some(PbData::ProtoData(any)) => {
+            // Match Java: `new String(protoData.toByteArray(), UTF_8)`.
+            // Re-serializes the `Any` to bytes then decodes as UTF-8 string.
+            let mut buf = Vec::with_capacity(any.encoded_len());
+            let _ = any.encode(&mut buf);
+            String::from_utf8_lossy(&buf).into_owned()
+        }
         None => String::new(),
     }
 }

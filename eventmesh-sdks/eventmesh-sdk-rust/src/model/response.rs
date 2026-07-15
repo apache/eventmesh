@@ -43,9 +43,12 @@ impl PublishResponse {
         }
     }
 
-    /// Whether the server reported success (code == 0).
+    /// Whether the server explicitly reported success (`code == Some(0)`).
+    ///
+    /// A missing or unparseable code is treated as **failure**, not success,
+    /// so that garbled / incomplete responses can never masquerade as `Ok`.
     pub fn is_success(&self) -> bool {
-        self.code.unwrap_or(0) == 0
+        self.code == Some(0)
     }
 }
 
@@ -56,5 +59,22 @@ impl std::fmt::Display for PublishResponse {
             "PublishResponse(code={:?}, msg={:?}, time={:?})",
             self.code, self.message, self.time
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn success_only_when_explicit_zero() {
+        assert!(PublishResponse::new(Some(0), None, None).is_success());
+        assert!(!PublishResponse::new(Some(1), None, None).is_success());
+    }
+
+    #[test]
+    fn missing_code_is_not_success() {
+        assert!(!PublishResponse::new(None, None, None).is_success());
+        assert!(!PublishResponse::default().is_success());
     }
 }

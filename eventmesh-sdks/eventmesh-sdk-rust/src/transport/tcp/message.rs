@@ -71,10 +71,18 @@ impl From<&EventMeshMessage> for TcpWireMessage {
 
 impl From<TcpWireMessage> for EventMeshMessage {
     fn from(wire: TcpWireMessage) -> Self {
+        // Merge wire `headers` into `props` so protocol-level metadata
+        // (e.g. `datacontenttype`) set by the Java runtime is not lost.
+        // The Rust SDK's `EventMeshMessage` model does not have a separate
+        // `headers` field, so `props` is the only place to carry them.
+        let mut props = wire.properties;
+        for (k, v) in wire.headers {
+            props.entry(k).or_insert(v);
+        }
         EventMeshMessage {
             topic: wire.topic,
             content: wire.body,
-            props: wire.properties,
+            props,
             ..Default::default()
         }
     }
@@ -482,6 +490,22 @@ mod tests {
     }
 
     #[test]
+    fn parse_message_preserves_wire_headers() {
+        // The Java runtime puts protocol-level metadata (e.g.
+        // datacontenttype) in the wire `headers` field. These must not be
+        // silently discarded when deserializing into EventMeshMessage.
+        let server_json = r#"{"topic":"t","headers":{"datacontenttype":"application/json"},"properties":{"k":"v"},"body":"payload"}"#;
+        let msg = parse_message(&PackageBody::Text(server_json.into())).expect("parse");
+        assert_eq!(msg.content.as_deref(), Some("payload"));
+        assert_eq!(msg.get_prop("k"), Some("v"));
+        assert_eq!(
+            msg.get_prop("datacontenttype"),
+            Some("application/json"),
+            "wire headers must be merged into props"
+        );
+    }
+
+    #[test]
     fn wire_format_round_trip() {
         let original = EventMeshMessage::builder()
             .topic("round-trip")
@@ -518,7 +542,10 @@ mod tests {
             .source("https://example.com")
             .ty("com.example.test")
             .subject("ce-topic")
-            .data("application/json", serde_json::json!({"hello": "world"}))
+            .data(
+                "application/cloudevents+json",
+                serde_json::json!({"hello": "world"}),
+            )
             .build()
             .expect("valid event");
 

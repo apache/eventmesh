@@ -321,10 +321,30 @@ pub fn encode_publish(msg: &EventMeshMessage, identity: &ClientIdentity) -> Vec<
     fields.push(("bizseqno".into(), biz));
     fields.push(("uniqueid".into(), uid));
     if !msg.props.is_empty() {
-        fields.push((
-            "extFields".into(),
-            serde_json::to_string(&msg.props).unwrap_or_default(),
-        ));
+        // Filter out reserved keys that are already emitted as typed form
+        // fields above. The runtime post-processes `extFields` and would
+        // reverse-overwrite the typed values (e.g. a stale `ttl` prop
+        // clobbering the resolved TTL, or an old `bizseqno` overwriting the
+        // auto-generated one).
+        const RESERVED_KEYS: &[&str] = &[
+            "producergroup",
+            "topic",
+            "content",
+            "ttl",
+            "bizseqno",
+            "uniqueid",
+        ];
+        let filtered: HashMap<&String, &String> = msg
+            .props
+            .iter()
+            .filter(|(k, _)| !RESERVED_KEYS.contains(&k.as_str()))
+            .collect();
+        if !filtered.is_empty() {
+            fields.push((
+                "extFields".into(),
+                serde_json::to_string(&filtered).unwrap_or_default(),
+            ));
+        }
     }
     fields
 }
@@ -535,6 +555,53 @@ mod tests {
         let props: HashMap<String, String> = serde_json::from_str(ext).unwrap();
         assert_eq!(props.get("key1"), Some(&"val1".to_string()));
         assert_eq!(props.get("key2"), Some(&"val2".to_string()));
+    }
+
+    #[test]
+    fn encode_publish_filters_reserved_keys_from_ext_fields() {
+        let identity = ClientIdentity::detect();
+        let msg = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .ttl_millis(7_000)
+            .biz_seq_no("my-seq")
+            .unique_id("my-uid")
+            .prop("key1", "val1")
+            .prop("ttl", "99000")
+            .prop("bizseqno", "stale-seq")
+            .prop("uniqueid", "stale-uid")
+            .prop("topic", "stale-topic")
+            .prop("content", "stale-content")
+            .prop("producergroup", "stale-group")
+            .build();
+        let fields = encode_publish(&msg, &identity);
+        let map: HashMap<String, String> = fields.into_iter().collect();
+        let ext = map.get("extFields").expect("extFields should be present");
+        let props: HashMap<String, String> = serde_json::from_str(ext).unwrap();
+        // Non-reserved keys survive.
+        assert_eq!(props.get("key1"), Some(&"val1".to_string()));
+        // Reserved keys are filtered out — they are already emitted as typed
+        // form fields and must not reverse-overwrite via extFields.
+        assert!(!props.contains_key("ttl"));
+        assert!(!props.contains_key("bizseqno"));
+        assert!(!props.contains_key("uniqueid"));
+        assert!(!props.contains_key("topic"));
+        assert!(!props.contains_key("content"));
+        assert!(!props.contains_key("producergroup"));
+    }
+
+    #[test]
+    fn encode_publish_omits_ext_fields_when_all_props_filtered() {
+        let identity = ClientIdentity::detect();
+        let msg = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .prop("ttl", "99000")
+            .prop("bizseqno", "stale")
+            .build();
+        let fields = encode_publish(&msg, &identity);
+        // All props were reserved keys → no extFields field should be emitted.
+        assert!(!fields.iter().any(|(k, _)| k == "extFields"));
     }
 
     #[test]

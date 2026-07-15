@@ -221,21 +221,28 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
         let resp = self.conn.io(unsub_pkg, self.config.timeout).await?;
         let response = message::response_from_pkg(&resp);
 
-        if response.is_success() {
-            let mut subs = self.subscriptions.lock().await;
-            let current: Vec<String> = subs.iter().map(|s| s.topic.clone()).collect();
-            let passed_all =
-                items.len() == current.len() && items.iter().all(|i| current.contains(&i.topic));
-            if !passed_all {
-                warn!(
-                    passed = ?items.iter().map(|i| i.topic.clone()).collect::<Vec<_>>(),
-                    current = ?current,
-                    "TCP unsubscribe drops ALL topics on the server (not just \
-                     the ones passed); clearing local state to match"
-                );
-            }
-            subs.clear();
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "unsubscribe failed".into()),
+            });
         }
+
+        let mut subs = self.subscriptions.lock().await;
+        let current: Vec<String> = subs.iter().map(|s| s.topic.clone()).collect();
+        let passed_all =
+            items.len() == current.len() && items.iter().all(|i| current.contains(&i.topic));
+        if !passed_all {
+            warn!(
+                passed = ?items.iter().map(|i| i.topic.clone()).collect::<Vec<_>>(),
+                current = ?current,
+                "TCP unsubscribe drops ALL topics on the server (not just \
+                 the ones passed); clearing local state to match"
+            );
+        }
+        subs.clear();
         Ok(response)
     }
 
@@ -630,7 +637,102 @@ mod tests {
         let _ = server.await;
     }
 
-    /// On rebalance the runtime sends `REDIRECT_TO_CLIENT` with an
+    /// When the server returns a non-zero code for UNSUBSCRIBE_REQUEST, the
+    /// SDK must return `Err(Server)` — not `Ok` with a failed response.
+    /// Local subscription state must be preserved on failure.
+    #[tokio::test]
+    async fn unsubscribe_nonzero_returns_err() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+
+            // 1. HELLO handshake.
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::HelloResponse,
+                    "hello-seq",
+                )))
+                .await
+                .unwrap();
+
+            // 2. Reply to LISTEN_REQUEST.
+            let req = framed.next().await.unwrap().unwrap();
+            assert_eq!(req.header.cmd, Command::ListenRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::ListenResponse,
+                    req.header.seq.clone().unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+
+            // 3. Reply to SUBSCRIBE_REQUEST with code 0.
+            let req = framed.next().await.unwrap().unwrap();
+            assert_eq!(req.header.cmd, Command::SubscribeRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::SubscribeResponse,
+                    req.header.seq.clone().unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+
+            // 4. Reply to UNSUBSCRIBE_REQUEST with code 1 (FAIL).
+            let req = framed.next().await.unwrap().unwrap();
+            assert_eq!(req.header.cmd, Command::UnsubscribeRequest);
+            let mut resp = Header::new(
+                Command::UnsubscribeResponse,
+                req.header.seq.clone().unwrap_or_default(),
+            );
+            resp.code = 1;
+            resp.desc = Some("group not found".into());
+            framed.send(Package::new(resp)).await.unwrap();
+
+            let _ = framed.close().await;
+        });
+
+        let config = TcpClientConfig::builder()
+            .server_addr("127.0.0.1")
+            .server_port(port)
+            .consumer_group("g")
+            .timeout(Duration::from_secs(3))
+            .heartbeat_interval(Duration::from_secs(60))
+            .build();
+
+        let consumer = TcpConsumer::connect(config, NoopListener, None::<std::future::Ready<()>>)
+            .await
+            .expect("connect");
+
+        let item = SubscriptionItem::new("A", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
+        consumer.subscribe(&[item]).await.expect("subscribe");
+
+        // Server returns code 1 → must be Err, not Ok.
+        let item = SubscriptionItem::new("A", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
+        let err = consumer
+            .unsubscribe(vec![item])
+            .await
+            .expect_err("should fail");
+        assert!(
+            err.to_string().contains("server error"),
+            "expected Server error, got: {err}"
+        );
+
+        // Local state must be preserved on failure.
+        let subs = consumer.subscriptions.lock().await;
+        assert_eq!(
+            subs.len(),
+            1,
+            "subscriptions must not be cleared on failure"
+        );
+
+        consumer.shutdown().await;
+        let _ = server.await;
+    }
     /// `ip`/`port` body, then closes the session after a 30s grace period.
     /// The receive loop must stop promptly so the caller can reconnect.
     #[tokio::test]
