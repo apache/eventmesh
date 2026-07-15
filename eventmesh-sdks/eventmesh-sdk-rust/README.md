@@ -4,14 +4,17 @@
 A Rust client SDK for [Apache EventMesh](https://eventmesh.apache.org), the
 serverless event-driven middleware.
 
-This crate (`eventmesh`) speaks the EventMesh **gRPC** protocol (HTTP and TCP
-transports are planned for later phases). Messages are modeled with the simple
-[`EventMeshMessage`](src/model/message.rs) type, with optional native
-[CloudEvents](https://cloudevents.io) interop behind the `cloud_events` feature.
+This crate (`eventmesh`) speaks the EventMesh **gRPC**, **HTTP**, and **TCP**
+protocols. Messages are modeled with the simple
+[`EventMeshMessage`](src/model/message.rs) type, an OpenMessaging-style
+[`OpenMessage`](src/model/open_message.rs) compatibility model, and optional
+native [CloudEvents](https://cloudevents.io) interop behind the
+`cloud_events` feature.
 
-> Phase 1 (this release): **gRPC transport** — publish, batch publish,
-> request-reply, stream subscription, webhook subscription, heartbeat, and
-> CloudEvents interop.
+The gRPC transport supports publish, batch publish, request-reply, stream and
+webhook subscription, and heartbeat. HTTP supports publish, request-reply and
+webhook subscription. TCP supports publish, broadcast, request-reply,
+subscription and automatic reconnection.
 
 ## Requirements
 
@@ -40,7 +43,7 @@ Add the dependency:
 [dependencies]
 eventmesh = { version = "1.9", features = ["default"] }   # gRPC + EventMeshMessage
 # Optional extras:
-# eventmesh = { version = "1.9", features = ["grpc", "cloud_events", "tls"] }
+# eventmesh = { version = "1.9", features = ["grpc", "http", "tcp", "cloud_events", "tls"] }
 ```
 
 ### Publish a message
@@ -133,9 +136,11 @@ is also available — the server POSTs delivered events to the given URL.
 | Feature | Description |
 |---|---|
 | `grpc` (default) | gRPC transport (producer, consumer, heartbeat) |
+| `http` | HTTP producer, webhook consumer, and built-in webhook server |
+| `tcp` | Native TCP producer and consumer with reconnect support |
 | `cloud_events` | Native `cloudevents::Event` interop |
 | `tls` | TLS for the gRPC channel |
-| `full` | `grpc` + `cloud_events` + `tls` |
+| `full` | `grpc` + `http` + `tcp` + `cloud_events` + `tls` |
 
 ## Running the examples
 

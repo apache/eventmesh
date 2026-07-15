@@ -66,6 +66,64 @@ impl GrpcProducer {
         debug!("published CloudEvent id={:?}", event.id());
         Ok(response)
     }
+
+    /// Publish several native CloudEvents in a single gRPC batch RPC.
+    #[cfg(feature = "cloud_events")]
+    pub async fn publish_cloud_event_batch(
+        &self,
+        events: Vec<cloudevents::Event>,
+    ) -> Result<PublishResponse> {
+        if events.is_empty() {
+            return Err(EventMeshError::InvalidArgument(
+                "batch publish requires at least one CloudEvent".into(),
+            ));
+        }
+        let mut wire_events = Vec::with_capacity(events.len());
+        for event in &events {
+            wire_events.push(codec::from_cloudevent(event, &self.config)?);
+        }
+        let resp = timed(
+            self.config.timeout,
+            self.client
+                .batch_publish(crate::proto_gen::PbCloudEventBatch {
+                    events: wire_events,
+                }),
+        )
+        .await?;
+        let response = codec::to_response(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "CloudEvents batch publish failed".into()),
+            });
+        }
+        Ok(response)
+    }
+
+    /// Send a native CloudEvent and wait for a native CloudEvent reply.
+    #[cfg(feature = "cloud_events")]
+    pub async fn request_reply_cloud_event(
+        &self,
+        event: cloudevents::Event,
+        timeout: Duration,
+    ) -> Result<cloudevents::Event> {
+        let event = codec::from_cloudevent(&event, &self.config)?;
+        let response = tokio::time::timeout(timeout, self.client.request_reply(event))
+            .await
+            .map_err(|_| EventMeshError::Timeout(timeout))??;
+        let status = codec::to_response(&response);
+        if !status.is_success() {
+            return Err(EventMeshError::Server {
+                code: status.code.unwrap_or(-1) as i32,
+                message: status
+                    .message
+                    .unwrap_or_else(|| "CloudEvents request/reply failed".into()),
+            });
+        }
+        codec::to_cloudevent(response)
+    }
 }
 
 impl Publisher for GrpcProducer {

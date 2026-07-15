@@ -74,6 +74,62 @@ impl HttpProducer {
             .await
     }
 
+    /// Send a native CloudEvent and wait for a native CloudEvent reply.
+    #[cfg(feature = "cloud_events")]
+    pub async fn request_reply_cloud_event(
+        &self,
+        mut event: cloudevents::Event,
+        timeout: Duration,
+    ) -> Result<cloudevents::Event> {
+        use cloudevents::AttributesReader;
+
+        ensure_ce_extension(&mut event, "bizseqno");
+        ensure_ce_extension(&mut event, "uniqueid");
+        let topic = event
+            .subject()
+            .ok_or_else(|| {
+                EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
+            })?
+            .to_string();
+        let message = EventMeshMessage::builder()
+            .topic(topic)
+            .content(serde_json::to_string(&event)?)
+            .build();
+        let reply = self
+            .request_reply_with_protocol(message, timeout, EventMeshProtocolType::CloudEvents)
+            .await?;
+        decode_cloud_event_reply(reply)
+    }
+
+    /// Publish an OpenMessaging-style message over HTTP using the native,
+    /// interoperable EventMeshMessage envelope.
+    pub async fn publish_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+    ) -> Result<PublishResponse> {
+        self.publish_with_protocol(
+            message.to_event_mesh_message(),
+            EventMeshProtocolType::EventMeshMessage,
+        )
+        .await
+    }
+
+    /// Send an OpenMessaging-style message and wait for an OpenMessaging-style reply.
+    pub async fn request_reply_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+        timeout: Duration,
+    ) -> Result<crate::model::OpenMessage> {
+        let reply = self
+            .request_reply_with_protocol(
+                message.to_event_mesh_message(),
+                timeout,
+                EventMeshProtocolType::EventMeshMessage,
+            )
+            .await?;
+        Ok(crate::model::OpenMessage::from_event_mesh_message(reply))
+    }
+
     /// Internal publish with a specific protocol type.
     async fn publish_with_protocol(
         &self,
@@ -99,6 +155,33 @@ impl HttpProducer {
         }
         debug!("published topic={:?}", message.topic);
         Ok(response)
+    }
+
+    async fn request_reply_with_protocol(
+        &self,
+        message: EventMeshMessage,
+        timeout: Duration,
+        protocol_type: EventMeshProtocolType,
+    ) -> Result<EventMeshMessage> {
+        validate_publish(&message)?;
+        let config = self.client.config();
+        let body = codec::encode_publish(&message, &config.identity);
+        let headers =
+            codec::build_headers(codec::publish_sync_code(), protocol_type, &config.identity);
+        let text = self
+            .client
+            .post_form(uri::ROOT, &body, &headers, timeout)
+            .await?;
+        let response = codec::parse_response(&text)?;
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "request-reply failed".into()),
+            });
+        }
+        codec::parse_reply(response.message.as_deref().unwrap_or(""))
     }
 }
 
@@ -126,34 +209,33 @@ impl Publisher for HttpProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        validate_publish(&message)?;
-        let config = self.client.config();
-        let body = codec::encode_publish(&message, &config.identity);
-        let code = codec::publish_sync_code();
-        let headers = codec::build_headers(
-            code,
-            EventMeshProtocolType::EventMeshMessage,
-            &config.identity,
-        );
-        let text = self
-            .client
-            .post_form(uri::ROOT, &body, &headers, timeout)
-            .await?;
-        let response = codec::parse_response(&text)?;
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "request-reply failed".into()),
-            });
-        }
-        // The reply message is inside the retMsg field as a JSON object
-        // {"topic":...,"body":...,"properties":{...}}, mirroring the Java SDK's
-        // SendMessageResponseBody.ReplyMessage / transformMessage.
-        let ret_msg = response.message.as_deref().unwrap_or("");
-        codec::parse_reply(ret_msg)
+        self.request_reply_with_protocol(message, timeout, EventMeshProtocolType::EventMeshMessage)
+            .await
     }
+}
+
+/// Decode the HTTP reply payload into a native CloudEvent.  EventMesh
+/// installations return either CloudEvents JSON directly or the legacy
+/// `ReplyMessage` envelope; accepting both keeps interop with Java runtimes.
+#[cfg(feature = "cloud_events")]
+fn decode_cloud_event_reply(reply: EventMeshMessage) -> Result<cloudevents::Event> {
+    if let Some(content) = &reply.content {
+        if let Ok(event) = serde_json::from_str(content) {
+            return Ok(event);
+        }
+    }
+    use cloudevents::{EventBuilder, EventBuilderV10};
+    let topic = reply.topic.unwrap_or_default();
+    EventBuilderV10::new()
+        .id(reply
+            .unique_id
+            .unwrap_or_else(|| uuid::Uuid::new_v4().to_string()))
+        .source("eventmesh://http-reply")
+        .ty("eventmesh.reply")
+        .subject(topic)
+        .data("text/plain", reply.content.unwrap_or_default())
+        .build()
+        .map_err(|e| EventMeshError::InvalidMessage(format!("invalid CloudEvent reply: {e}")))
 }
 
 fn validate_publish(message: &EventMeshMessage) -> Result<()> {

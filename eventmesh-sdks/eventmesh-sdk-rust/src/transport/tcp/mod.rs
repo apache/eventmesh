@@ -86,8 +86,9 @@
 //! With the `cloud_events` feature, the TCP producer can send native
 //! [`cloudevents::Event`] values via [`TcpProducer::publish_cloud_event`],
 //! [`TcpProducer::broadcast_cloud_event`], and
-//! [`TcpProducer::request_reply_cloud_event`]. The consumer receives them
-//! transparently converted to [`EventMeshMessage`](crate::model::EventMeshMessage).
+//! [`TcpProducer::request_reply_cloud_event`]. Use [`TcpCloudEventConsumer`]
+//! to receive native [`cloudevents::Event`] values, or [`TcpConsumer`] for
+//! the existing EventMeshMessage conversion.
 //!
 //! **Important:** the event's `datacontenttype` must be set to
 //! `application/cloudevents+json`. The Java runtime's downlink codec
@@ -115,5 +116,7 @@ pub mod frame;
 pub mod message;
 pub mod producer;
 
-pub use consumer::{ShutdownReason, TcpConsumer};
+#[cfg(feature = "cloud_events")]
+pub use consumer::TcpCloudEventConsumer;
+pub use consumer::{ShutdownReason, TcpConsumer, TcpMessage, TcpOpenMessageConsumer};
 pub use producer::TcpProducer;

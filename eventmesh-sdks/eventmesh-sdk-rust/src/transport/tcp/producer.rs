@@ -67,6 +67,31 @@ impl TcpProducer {
         self.conn.send(pkg).await
     }
 
+    /// Publish an OpenMessaging-style message using the interoperable native
+    /// EventMesh TCP envelope.
+    pub async fn publish_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+    ) -> Result<PublishResponse> {
+        self.publish(message.to_event_mesh_message()).await
+    }
+
+    /// Broadcast an OpenMessaging-style message.
+    pub async fn broadcast_open_message(&self, message: crate::model::OpenMessage) -> Result<()> {
+        self.broadcast(message.to_event_mesh_message()).await
+    }
+
+    /// Send an OpenMessaging-style request and wait for its reply.
+    pub async fn request_reply_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+        timeout: Duration,
+    ) -> Result<crate::model::OpenMessage> {
+        self.request_reply(message.to_event_mesh_message(), timeout)
+            .await
+            .map(crate::model::OpenMessage::from_event_mesh_message)
+    }
+
     /// Publish a native CloudEvent over TCP (requires the `cloud_events`
     /// feature).
     ///

@@ -70,11 +70,59 @@ use tracing::{debug, info, warn};
 
 use crate::config::TcpClientConfig;
 use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, OpenMessage, PublishResponse, SubscriptionItem};
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
 use crate::transport::tcp::message;
 use crate::MessageListener;
+
+/// A message representation supported by the TCP consumer receive loop.
+///
+/// This is implemented by the SDK's native EventMeshMessage and, with the
+/// `cloud_events` feature, native CloudEvents. It keeps TCP wire codecs out
+/// of the normal producer and consumer APIs.
+pub trait TcpMessage: Send + 'static {
+    #[doc(hidden)]
+    fn decode_tcp(pkg: &Package) -> Option<Self>
+    where
+        Self: Sized;
+
+    #[doc(hidden)]
+    fn encode_tcp_reply(&self) -> Result<Package>;
+}
+
+impl TcpMessage for EventMeshMessage {
+    fn decode_tcp(pkg: &Package) -> Option<Self> {
+        if message::is_cloudevents(pkg) {
+            #[cfg(feature = "cloud_events")]
+            return message::parse_cloud_event(&pkg.body)
+                .map(|event| message::cloud_event_to_message(&event));
+            #[cfg(not(feature = "cloud_events"))]
+            return None;
+        }
+        message::parse_message(&pkg.body)
+    }
+
+    fn encode_tcp_reply(&self) -> Result<Package> {
+        message::build_message_package(self, Command::ResponseToServer)
+    }
+}
+
+#[cfg(feature = "cloud_events")]
+impl TcpMessage for cloudevents::Event {
+    fn decode_tcp(pkg: &Package) -> Option<Self> {
+        if message::is_cloudevents(pkg) {
+            message::parse_cloud_event(&pkg.body)
+        } else {
+            message::parse_message(&pkg.body)
+                .and_then(|message| message::message_to_cloud_event(&message).ok())
+        }
+    }
+
+    fn encode_tcp_reply(&self) -> Result<Package> {
+        message::build_cloud_event_package(self, Command::ResponseToServer)
+    }
+}
 
 /// Why the TCP consumer's receive loop stopped.
 ///
@@ -119,7 +167,7 @@ enum InboundResult {
 /// Subscribe and unsubscribe RPCs can be called at any time after construction.
 /// The background tasks are stopped when the consumer is dropped or explicitly
 /// via [`shutdown`](Self::shutdown) / [`wait_for_shutdown`](Self::wait_for_shutdown).
-pub struct TcpConsumer<L: MessageListener<Message = EventMeshMessage>> {
+pub struct TcpConsumer<L: MessageListener> {
     conn: Arc<TcpConnection>,
     config: TcpClientConfig,
     _listener: std::marker::PhantomData<Arc<L>>,
@@ -131,7 +179,79 @@ pub struct TcpConsumer<L: MessageListener<Message = EventMeshMessage>> {
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 }
 
-impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
+/// TCP consumer facade for [`OpenMessage`].
+///
+/// EventMesh runtimes route TCP messages through the native EventMeshMessage
+/// envelope. This facade converts at the SDK boundary, giving OpenMessaging
+/// applications a typed listener while retaining interoperable wire data.
+pub struct TcpOpenMessageConsumer<L: MessageListener<Message = OpenMessage>> {
+    inner: TcpConsumer<OpenMessageListener<L>>,
+}
+
+struct OpenMessageListener<L> {
+    listener: Arc<L>,
+}
+
+impl<L: MessageListener<Message = OpenMessage>> MessageListener for OpenMessageListener<L> {
+    type Message = EventMeshMessage;
+
+    async fn handle(&self, message: EventMeshMessage) -> Option<EventMeshMessage> {
+        self.listener
+            .handle(OpenMessage::from_event_mesh_message(message))
+            .await
+            .map(|reply| reply.to_event_mesh_message())
+    }
+}
+
+impl<L: MessageListener<Message = OpenMessage>> TcpOpenMessageConsumer<L> {
+    /// Connect and start an OpenMessaging-style TCP consumer.
+    pub async fn connect(
+        config: TcpClientConfig,
+        listener: L,
+        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
+    ) -> Result<Self> {
+        let listener = OpenMessageListener {
+            listener: Arc::new(listener),
+        };
+        Ok(Self {
+            inner: TcpConsumer::connect(config, listener, shutdown_signal).await?,
+        })
+    }
+
+    /// Subscribe to additional topics.
+    pub async fn subscribe(&self, items: &[SubscriptionItem]) -> Result<()> {
+        self.inner.subscribe(items).await
+    }
+
+    /// Unsubscribe from topics.
+    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
+        self.inner.unsubscribe(items).await
+    }
+
+    /// Shut down the consumer and its background tasks.
+    pub async fn shutdown(&self) {
+        self.inner.shutdown().await;
+    }
+
+    /// Wait for the consumer to stop.
+    pub async fn wait_for_shutdown(&self) -> ShutdownReason {
+        self.inner.wait_for_shutdown().await
+    }
+}
+
+/// Native CloudEvents TCP consumer.
+///
+/// Unlike the EventMeshMessage consumer, this type passes the TCP
+/// CloudEvents JSON body directly to a `MessageListener<cloudevents::Event>`
+/// and serializes listener replies back as CloudEvents.
+#[cfg(feature = "cloud_events")]
+pub type TcpCloudEventConsumer<L> = TcpConsumer<L>;
+
+impl<L> TcpConsumer<L>
+where
+    L: MessageListener,
+    L::Message: TcpMessage,
+{
     /// Connect to the EventMesh TCP endpoint, perform the HELLO handshake
     /// (role = sub), send `LISTEN_REQUEST`, and spawn the receive loop.
     ///
@@ -358,7 +478,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
     }
 }
 
-impl<L: MessageListener<Message = EventMeshMessage>> Drop for TcpConsumer<L> {
+impl<L: MessageListener> Drop for TcpConsumer<L> {
     fn drop(&mut self) {
         self.shutdown.cancel();
         if let Ok(mut guard) = self.driver_handle.try_lock() {
@@ -381,16 +501,20 @@ impl<L: MessageListener<Message = EventMeshMessage>> Drop for TcpConsumer<L> {
 /// `REDIRECT_TO_CLIENT` frame is received.  On exit, cancels the shutdown
 /// token so `wait_for_shutdown` unblocks.
 #[allow(clippy::too_many_arguments)]
-fn spawn_driver(
+fn spawn_driver<L>(
     conn: Arc<TcpConnection>,
     mut inbound_rx: tokio::sync::mpsc::Receiver<Package>,
     mut reconnect_rx: Option<tokio::sync::mpsc::Receiver<()>>,
-    listener: Arc<impl MessageListener<Message = EventMeshMessage>>,
+    listener: Arc<L>,
     config: TcpClientConfig,
     subscriptions: Arc<Mutex<Vec<SubscriptionItem>>>,
     shutdown: CancellationToken,
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
-) -> JoinHandle<Result<()>> {
+) -> JoinHandle<Result<()>>
+where
+    L: MessageListener,
+    L::Message: TcpMessage,
+{
     tokio::spawn(async move {
         loop {
             tokio::select! {
@@ -512,11 +636,11 @@ fn spawn_driver(
 /// the Java SDK, where a parse exception propagates to `exceptionCaught` and
 /// closes the channel.  A listener panic likewise propagates and kills the
 /// receive task; it is not silently swallowed.
-async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
-    pkg: &Package,
-    conn: &TcpConnection,
-    listener: &L,
-) -> InboundResult {
+async fn handle_inbound<L>(pkg: &Package, conn: &TcpConnection, listener: &L) -> InboundResult
+where
+    L: MessageListener,
+    L::Message: TcpMessage,
+{
     let ack_cmd = match pkg.header.cmd {
         Command::RequestToClient => Some(Command::RequestToClientAck),
         Command::AsyncMessageToClient => Some(Command::AsyncMessageToClientAck),
@@ -558,25 +682,7 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
         }
     };
 
-    let parsed = if message::is_cloudevents(pkg) {
-        #[cfg(feature = "cloud_events")]
-        {
-            message::parse_cloud_event(&pkg.body).map(|ev| message::cloud_event_to_message(&ev))
-        }
-        #[cfg(not(feature = "cloud_events"))]
-        {
-            warn!(
-                cmd = ?pkg.header.cmd,
-                "received CloudEvents message but the cloud_events feature is disabled; \
-                 disconnecting so the server can redeliver"
-            );
-            return InboundResult::Stop;
-        }
-    } else {
-        message::parse_message(&pkg.body)
-    };
-
-    let msg = match parsed {
+    let msg = match L::Message::decode_tcp(pkg) {
         Some(msg) => msg,
         None => {
             warn!("failed to parse inbound message body; disconnecting without ACK");
@@ -584,19 +690,12 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
         }
     };
 
-    debug!(topic = ?msg.topic, "dispatching to listener");
-    let request_props = msg.props.clone();
+    debug!("dispatching to listener");
     // A listener panic propagates naturally and kills the receive task —
     // mirroring Java where the exception escapes to exceptionCaught and
     // closes the channel.  The message is NOT acknowledged.
-    if let Some(mut reply) = listener.handle(msg).await {
-        for (key, value) in &request_props {
-            reply
-                .props
-                .entry(key.clone())
-                .or_insert_with(|| value.clone());
-        }
-        match message::build_message_package(&reply, Command::ResponseToServer) {
+    if let Some(reply) = listener.handle(msg).await {
+        match reply.encode_tcp_reply() {
             Ok(reply_pkg) => {
                 if let Err(e) = conn.send(reply_pkg).await {
                     warn!(error = %e, "failed to send reply");
