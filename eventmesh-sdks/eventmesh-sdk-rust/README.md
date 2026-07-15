@@ -131,11 +131,60 @@ async fn main() -> eventmesh::Result<()> {
 A webhook subscription (`GrpcWebhookConsumer::new` / `subscribe_webhook(items, url)`)
 is also available — the server POSTs delivered events to the given URL.
 
+### Catalog, Workflow, and service discovery
+
+Catalog and Workflow clients use a caller-supplied `ServiceDiscovery`
+implementation. This keeps the SDK independent of a particular registry while
+matching the Java SDK's `Selector` behavior. Implement the trait with your
+existing Nacos, Consul, Kubernetes, or other registry client:
+
+```rust
+use std::future::Future;
+use eventmesh::{
+    config::WorkflowClientConfig,
+    discovery::{ServiceDiscovery, ServiceInstance},
+    workflow::{ExecuteRequest, WorkflowClient},
+    Result,
+};
+
+struct StaticDiscovery;
+
+impl ServiceDiscovery for StaticDiscovery {
+    fn select_one(
+        &self,
+        service_name: String,
+    ) -> impl Future<Output = Result<Option<ServiceInstance>>> + Send {
+        async move {
+            assert_eq!(service_name, "eventmesh-workflow");
+            Ok(Some(ServiceInstance::new("127.0.0.1", 9000)))
+        }
+    }
+}
+
+async fn start_workflow() -> Result<()> {
+    let client = WorkflowClient::new(WorkflowClientConfig::default(), StaticDiscovery);
+    let response = client.execute(ExecuteRequest {
+        id: "order-flow".into(),
+        instance_id: String::new(),
+        task_instance_id: String::new(),
+        input: r#"{"order_no":"42"}"#.into(),
+    }).await?;
+    println!("workflow instance: {}", response.instance_id);
+    Ok(())
+}
+```
+
+To synchronize an existing `GrpcStreamConsumer` with Catalog, construct a
+`CatalogClientConfig` with its required `app_server_name`, then call
+`catalog.init(&consumer).await?`. It queries `QueryOperations`, subscribes to
+`subscribe` operations only, and `catalog.destroy(&consumer).await?` removes
+only the subscriptions it created.
+
 ## Features
 
 | Feature | Description |
 |---|---|
-| `grpc` (default) | gRPC transport (producer, consumer, heartbeat) |
+| `grpc` (default) | gRPC transport (producer, consumer, heartbeat), Catalog and Workflow clients |
 | `http` | HTTP producer, webhook consumer, and built-in webhook server |
 | `tcp` | Native TCP producer and consumer with reconnect support |
 | `cloud_events` | Native `cloudevents::Event` interop |

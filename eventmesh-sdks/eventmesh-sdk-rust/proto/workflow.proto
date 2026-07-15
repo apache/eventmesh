@@ -15,36 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Client configuration.
+syntax = "proto3";
 
-pub mod grpc;
-pub mod identity;
-pub mod tls;
+package eventmesh.workflow.api.protocol;
 
-#[cfg(feature = "grpc")]
-pub mod catalog;
+option java_package = "org.apache.eventmesh.common.protocol.workflow.protos";
+option java_multiple_files = true;
+option java_outer_classname = "EventmeshWorkflowGrpc";
+option go_package = "github.com/apache/eventmesh/eventmesh-workflow-go/api/proto";
 
-#[cfg(feature = "grpc")]
-pub mod workflow;
+service Workflow {
+  rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+}
 
-pub use grpc::GrpcClientConfig;
-pub use identity::ClientIdentity;
-pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
+message ExecuteRequest {
+  string id = 1;
+  string instance_id = 2;
+  string task_instance_id = 3;
+  string input = 4;
+}
 
-#[cfg(feature = "grpc")]
-pub use catalog::{CatalogClientConfig, CatalogClientConfigBuilder};
-
-#[cfg(feature = "grpc")]
-pub use workflow::{WorkflowClientConfig, WorkflowClientConfigBuilder};
-
-#[cfg(feature = "http")]
-pub mod http;
-
-#[cfg(feature = "http")]
-pub use http::HttpClientConfig;
-
-#[cfg(feature = "tcp")]
-pub mod tcp;
-
-#[cfg(feature = "tcp")]
-pub use tcp::{ReconnectConfig, ReconnectConfigBuilder, TcpClientConfig};
+message ExecuteResponse {
+  string instance_id = 1;
+}

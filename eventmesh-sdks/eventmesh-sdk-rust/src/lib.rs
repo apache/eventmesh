@@ -75,11 +75,23 @@
 
 pub mod common;
 pub mod config;
+pub mod discovery;
 pub mod error;
 pub mod model;
 
 #[cfg(feature = "grpc")]
 pub mod proto_gen;
+
+/// Catalog service client, available with the `grpc` feature.
+#[cfg(feature = "grpc")]
+pub mod catalog;
+
+/// Workflow service client, available with the `grpc` feature.
+#[cfg(feature = "grpc")]
+pub mod workflow;
+
+#[cfg(feature = "grpc")]
+mod service;
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 pub mod transport;

@@ -44,6 +44,16 @@ pub struct GrpcClient {
 impl GrpcClient {
     /// Build a lazy channel from a config. Does **not** block on connection.
     pub fn new(config: &GrpcClientConfig) -> Result<Self> {
+        Ok(Self::from_channel(Self::channel(config)?))
+    }
+
+    /// Build a lazy gRPC channel from a config.
+    ///
+    /// This is shared by the Catalog and Workflow service clients after they
+    /// resolve a logical service name. It deliberately has crate visibility so
+    /// those clients share the Runtime transport's TLS and socket settings
+    /// without exposing a generic channel factory as public SDK API.
+    pub(crate) fn channel(config: &GrpcClientConfig) -> Result<Channel> {
         let scheme = if config.use_tls { "https" } else { "http" };
         let uri = format!("{}://{}", scheme, config.authority());
         let endpoint = Endpoint::from_shared(uri.clone())
@@ -78,8 +88,7 @@ impl GrpcClient {
             endpoint
         };
 
-        let channel = endpoint.connect_lazy();
-        Ok(Self::from_channel(channel))
+        Ok(endpoint.connect_lazy())
     }
 
     /// Configure the tonic [`Endpoint`] with [`tonic::transport::ClientTlsConfig`]

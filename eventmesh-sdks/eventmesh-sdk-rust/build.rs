@@ -37,7 +37,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &["proto"],
         )?;
 
+    // Catalog and Workflow are SDK client APIs, but generating their server
+    // stubs as crate-private code lets the unit tests host protocol-faithful
+    // tonic fakes without making the EventMesh runtime service server API part
+    // of this crate's public surface.
+    tonic_build::configure()
+        .build_server(true)
+        .build_client(true)
+        .protoc_arg("--experimental_allow_proto3_optional")
+        .compile_protos(&["proto/catalog.proto", "proto/workflow.proto"], &["proto"])?;
+
     println!("cargo:rerun-if-changed=proto/eventmesh-service.proto");
     println!("cargo:rerun-if-changed=proto/eventmesh-cloudevents.proto");
+    println!("cargo:rerun-if-changed=proto/catalog.proto");
+    println!("cargo:rerun-if-changed=proto/workflow.proto");
     Ok(())
 }

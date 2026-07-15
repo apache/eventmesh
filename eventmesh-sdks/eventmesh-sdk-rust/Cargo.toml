@@ -58,7 +58,7 @@ e2e = ["grpc", "http", "tcp", "cloud_events"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-tokio-stream = "0.1"
+tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = "0.7"
 futures = "0.3"
 serde = { version = "1", features = ["derive"] }

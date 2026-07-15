@@ -79,6 +79,14 @@ pub enum EventMeshError {
     #[error("unsupported operation: {0}")]
     Unsupported(String),
 
+    /// A service-discovery implementation failed while resolving an endpoint.
+    #[error("service discovery error: {0}")]
+    ServiceDiscovery(String),
+
+    /// No healthy instance was available for a logical service name.
+    #[error("service unavailable: {0}")]
+    ServiceUnavailable(String),
+
     /// Anything else, with a free-form message.
     #[error("{0}")]
     Other(String),

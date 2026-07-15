@@ -22,6 +22,20 @@ pub mod pb {
     tonic::include_proto!("org.apache.eventmesh.cloudevents.v1");
 }
 
+/// Catalog generated types. Kept crate-private: the public Catalog API is the
+/// Java-SDK-compatible operation-to-subscription lifecycle, not a schema
+/// registry wrapper.
+pub(crate) mod catalog {
+    tonic::include_proto!("eventmesh.catalog.api.protocol");
+}
+
+/// Workflow generated types. The public Workflow module re-exports the
+/// request/response messages while keeping generated client/server machinery
+/// internal.
+pub(crate) mod workflow {
+    tonic::include_proto!("eventmesh.workflow.api.protocol");
+}
+
 // ---- convenience aliases used throughout the gRPC transport ----
 pub use pb::cloud_event::cloud_event_attribute_value::Attr as PbAttr;
 pub use pb::cloud_event::CloudEventAttributeValue as PbCloudEventAttributeValue;
