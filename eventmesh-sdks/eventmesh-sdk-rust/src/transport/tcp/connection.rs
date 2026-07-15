@@ -75,6 +75,11 @@ enum IoExitReason {
     IoError,
     /// The server closed the connection (EOF on read).
     ServerClosed,
+    /// The inbound (consumer-facing) channel is full — the consumer is not
+    /// draining pushes fast enough. Rather than silently dropping server pushes
+    /// (which would lose unacked messages), we tear down the connection so the
+    /// server redelivers them after reconnect.
+    SlowConsumer,
 }
 
 /// A connected TCP transport.
@@ -230,6 +235,17 @@ impl TcpConnection {
     ///
     /// Corresponds to Java `TcpClient.io()`.
     pub async fn io(&self, pkg: Package, timeout: Duration) -> Result<Package> {
+        // Fail fast: if the connection is not active (reconnecting, shut down,
+        // or backing off), reject the request immediately. Without this the
+        // package would sit in the outbound mpsc buffer and be sent after a
+        // successful reconnect — a "ghost write" — even though the caller may
+        // have already received a Timeout/ChannelClosed and retried.
+        if !self.is_active() {
+            return Err(EventMeshError::ChannelClosed(
+                "connection is not active (reconnecting or shut down)".into(),
+            ));
+        }
+
         // Client-originated frames always carry a seq (see `message::package`),
         // so this is `Some` in practice. A `None` would mean a programming
         // error; we coalesce it to an empty string so the `pending` lookup
@@ -275,6 +291,13 @@ impl TcpConnection {
     ///
     /// Corresponds to Java `TcpClient.send()`.
     pub async fn send(&self, pkg: Package) -> Result<()> {
+        // Same fail-fast rationale as `io()`: prevent ghost writes during
+        // reconnect.
+        if !self.is_active() {
+            return Err(EventMeshError::ChannelClosed(
+                "connection is not active (reconnecting or shut down)".into(),
+            ));
+        }
         self.outbound_tx
             .send(pkg)
             .await
@@ -363,12 +386,26 @@ impl TcpConnection {
             pending.lock().await.clear();
             alive.store(false, Ordering::Release);
 
+            // Drain the outbound queue so stale packages from the dead
+            // connection are never re-sent on the next connection. Without
+            // this, a package enqueued via io()/send() that hadn't been
+            // written to the socket yet would survive in the mpsc buffer
+            // across the reconnect and produce a "ghost write" — a message
+            // sent to the new connection even though the caller already
+            // received a Timeout/ChannelClosed error and may have retried.
+            // (The Java SDK avoids this by writing directly via
+            // `channel.writeAndFlush()` with no user-space queue.)
+            while outbound_rx.try_recv().is_ok() {
+                // Discard; these packages were never written to the wire.
+            }
+
             match reason {
                 IoExitReason::Cancelled | IoExitReason::AllSendersDropped => {
                     debug!("connection task exiting ({:?})", reason);
                     return;
                 }
-                IoExitReason::IoError | IoExitReason::ServerClosed => {}
+                IoExitReason::IoError | IoExitReason::ServerClosed | IoExitReason::SlowConsumer => {
+                }
             }
 
             // Decide whether to attempt reconnect.
@@ -522,23 +559,44 @@ impl TcpConnection {
                                 }
                                 let _ = tx.send(pkg);
                             } else {
+                                // An orphan RESPONSE_TO_CLIENT is a late reply
+                                // to an `io()` call that already timed out and
+                                // removed its pending entry. Drop it silently
+                                // rather than forwarding to the inbound channel:
+                                // on a producer-only connection the inbound
+                                // receiver is never drained, so these would
+                                // pile up and eventually trigger a SlowConsumer
+                                // disconnect.
+                                if pkg.header.cmd == Command::ResponseToClient {
+                                    debug!("dropping orphan RESPONSE_TO_CLIENT");
+                                    continue;
+                                }
+
                                 // Server push → inbound channel for the consumer.
                                 // Use `try_send` instead of a blocking `send().await`
                                 // so a full inbound channel can never stall the I/O
-                                // loop. On a producer-only connection `take_inbound_rx`
-                                // is never called, so the receiver is never drained;
-                                // 256 unmatched frames (e.g. late replies to timed-out
-                                // `io()` calls) would block forever and freeze
-                                // heartbeats + writes. Dropping with a warning keeps
-                                // the connection alive at the cost of losing pushes
-                                // nobody is consuming.
+                                // loop indefinitely.
+                                //
+                                // When the channel is **full**, the consumer is not
+                                // draining fast enough. Rather than silently dropping
+                                // the push (which would lose an unacked message), we
+                                // tear down the connection. The server has not
+                                // received an ACK for this message (ACKs are sent by
+                                // the consumer-side driver *after* it reads from this
+                                // channel), so the server will redeliver after
+                                // reconnect. This mirrors the Java SDK's behavior
+                                // where a slow user callback blocks the Netty event
+                                // loop, creating natural TCP backpressure — but
+                                // avoids stalling heartbeats and writes in our async
+                                // model.
                                 match inbound_tx.try_send(pkg) {
                                     Ok(()) => {}
                                     Err(mpsc::error::TrySendError::Full(_)) => {
                                         warn!(
-                                            "inbound channel full, dropping server push \
-                                             (consumer too slow or not consuming)"
+                                            "inbound channel full — disconnecting to \
+                                             trigger server redelivery of unacked messages"
                                         );
+                                        return IoExitReason::SlowConsumer;
                                     }
                                     Err(mpsc::error::TrySendError::Closed(_)) => {
                                         debug!("inbound channel closed (consumer dropped)");

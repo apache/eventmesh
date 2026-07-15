@@ -72,9 +72,43 @@ use crate::config::TcpClientConfig;
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
 use crate::transport::tcp::connection::TcpConnection;
-use crate::transport::tcp::frame::{Command, Package, PackageBody, UserAgent};
+use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
 use crate::transport::tcp::message;
 use crate::MessageListener;
+
+/// Why the TCP consumer's receive loop stopped.
+///
+/// Returned by [`TcpConsumer::wait_for_shutdown`] so the caller can react to
+/// server-driven events like redirect.
+#[derive(Debug, Clone)]
+pub enum ShutdownReason {
+    /// The shutdown token was cancelled — either by the user-supplied
+    /// shutdown signal, an explicit `shutdown()` call, or the driver itself
+    /// after a clean exit.
+    Cancelled,
+    /// The server sent `REDIRECT_TO_CLIENT` with a target address. The caller
+    /// should connect to the advertised EventMesh node.
+    ///
+    /// (The Java SDK ignores this frame entirely — it falls into the `default`
+    /// branch of the handler switch and is logged as a warning. The Rust SDK
+    /// surfaces it so the caller can act on it.)
+    Redirect(RedirectInfo),
+    /// The inbound channel closed (the connection was lost and not
+    /// re-established, or the consumer was dropped).
+    ChannelClosed,
+    /// The receive-loop driver task exited abnormally (panic or error).
+    Error(String),
+}
+
+/// Result of dispatching a single inbound package.
+enum InboundResult {
+    /// Keep the receive loop running.
+    Continue,
+    /// Stop the loop and report a redirect target to the caller.
+    Redirect(RedirectInfo),
+    /// Stop the loop (parse failure, unknown command, etc.).
+    Stop,
+}
 
 /// TCP-based consumer, generic over the user's [`MessageListener`] type.
 ///
@@ -92,6 +126,9 @@ pub struct TcpConsumer<L: MessageListener<Message = EventMeshMessage>> {
     shutdown: CancellationToken,
     subscriptions: Arc<Mutex<Vec<SubscriptionItem>>>,
     driver_handle: Mutex<Option<JoinHandle<Result<()>>>>,
+    /// Filled by the driver before it exits, so `wait_for_shutdown` can
+    /// return a structured [`ShutdownReason`].
+    shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 }
 
 impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
@@ -125,6 +162,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
 
         let shutdown = CancellationToken::new();
         let subscriptions = Arc::new(Mutex::new(Vec::new()));
+        let shutdown_reason = Arc::new(Mutex::new(None));
         let listener = Arc::new(listener);
 
         // Signal watcher.
@@ -170,6 +208,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
             config.clone(),
             Arc::clone(&subscriptions),
             shutdown.clone(),
+            Arc::clone(&shutdown_reason),
         );
 
         Ok(Self {
@@ -179,6 +218,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
             shutdown,
             subscriptions,
             driver_handle: Mutex::new(Some(driver_handle)),
+            shutdown_reason,
         })
     }
 
@@ -262,17 +302,59 @@ impl<L: MessageListener<Message = EventMeshMessage>> TcpConsumer<L> {
     }
 
     /// Block until the shutdown signal fires or the receive loop exits on its
-    /// own (e.g. server goodbye, redirect, or I/O error), then await the
-    /// driver task's clean exit.
+    /// own (e.g. server redirect or I/O error), then return a
+    /// [`ShutdownReason`] indicating why the driver stopped.
+    ///
+    /// If the driver task panics, the `JoinHandle` resolves with
+    /// `Err(JoinError)` and this method returns `ShutdownReason::Error` — it
+    /// does **not** hang forever waiting for the cancellation token (which the
+    /// panicked driver would never fire).
     ///
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the driver exits naturally.
-    pub async fn wait_for_shutdown(&self) {
-        self.shutdown.cancelled().await;
-        self.conn.shutdown().await;
-        if let Some(handle) = self.driver_handle.lock().await.take() {
-            let _ = handle.await;
+    pub async fn wait_for_shutdown(&self) -> ShutdownReason {
+        // Take ownership of the driver handle so we can race it against
+        // cancellation.
+        let handle = self.driver_handle.lock().await.take();
+
+        if let Some(handle) = handle {
+            tokio::select! {
+                biased;
+                _ = self.shutdown.cancelled() => {
+                    // Cancellation fired (user signal, `shutdown()` call, or
+                    // the driver itself called `shutdown.cancel()` before
+                    // exiting). If the driver set a reason, it will be
+                    // available below; otherwise the default is `Cancelled`.
+                    self.conn.shutdown().await;
+                    // The handle was consumed by the select — the driver
+                    // task continues asynchronously and will observe the
+                    // cancellation token / closed inbound channel and exit.
+                }
+                result = handle => {
+                    // Driver exited before the token was cancelled (redirect,
+                    // channel closed, error, or panic). Cancel to stop any
+                    // signal-watcher task.
+                    self.shutdown.cancel();
+                    // If the driver panicked, capture the JoinError as a
+                    // shutdown reason.
+                    if let Err(join_err) = result {
+                        *self.shutdown_reason.lock().await = Some(ShutdownReason::Error(
+                            format!("receive-loop driver task panicked: {join_err}"),
+                        ));
+                    }
+                }
+            }
+        } else {
+            // Handle already taken (concurrent `shutdown()` or previous
+            // `wait_for_shutdown`).
+            self.shutdown.cancelled().await;
         }
+
+        self.shutdown_reason
+            .lock()
+            .await
+            .take()
+            .unwrap_or(ShutdownReason::Cancelled)
     }
 }
 
@@ -307,6 +389,7 @@ fn spawn_driver(
     config: TcpClientConfig,
     subscriptions: Arc<Mutex<Vec<SubscriptionItem>>>,
     shutdown: CancellationToken,
+    shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 ) -> JoinHandle<Result<()>> {
     tokio::spawn(async move {
         loop {
@@ -314,6 +397,7 @@ fn spawn_driver(
                 biased;
                 _ = shutdown.cancelled() => {
                     debug!("receive loop shutting down");
+                    *shutdown_reason.lock().await = Some(ShutdownReason::Cancelled);
                     break;
                 }
 
@@ -327,6 +411,7 @@ fn spawn_driver(
                 } => {
                     if event.is_none() {
                         info!("reconnect channel closed, exiting receive loop");
+                        *shutdown_reason.lock().await = Some(ShutdownReason::ChannelClosed);
                         break;
                     }
                     info!("connection reconnected, replaying subscriptions");
@@ -378,13 +463,29 @@ fn spawn_driver(
                 pkg = inbound_rx.recv() => {
                     match pkg {
                         Some(pkg) => {
-                            if !handle_inbound(&pkg, &conn, &*listener).await {
-                                info!("receive loop stopping after REDIRECT_TO_CLIENT");
-                                break;
+                            match handle_inbound(&pkg, &conn, &*listener).await {
+                                InboundResult::Continue => {}
+                                InboundResult::Redirect(ri) => {
+                                    info!(
+                                        ip = %ri.ip,
+                                        port = ri.port,
+                                        "receive loop stopping after REDIRECT_TO_CLIENT"
+                                    );
+                                    *shutdown_reason.lock().await =
+                                        Some(ShutdownReason::Redirect(ri));
+                                    break;
+                                }
+                                InboundResult::Stop => {
+                                    info!("receive loop stopping (disconnect or parse failure)");
+                                    *shutdown_reason.lock().await =
+                                        Some(ShutdownReason::ChannelClosed);
+                                    break;
+                                }
                             }
                         }
                         None => {
                             info!("inbound channel closed, exiting receive loop");
+                            *shutdown_reason.lock().await = Some(ShutdownReason::ChannelClosed);
                             break;
                         }
                     }
@@ -401,19 +502,21 @@ fn spawn_driver(
 /// Dispatch an inbound package: parse the message, invoke the listener, send
 /// any reply, then send the matching ACK.
 ///
-/// Returns `true` to keep the receive loop running, or `false` to stop it
-/// (which triggers reconnection and server-side redelivery).
+/// Returns [`InboundResult::Continue`] to keep the receive loop running,
+/// [`InboundResult::Redirect`] to stop and report a redirect target, or
+/// [`InboundResult::Stop`] to stop the loop (which triggers reconnection
+/// and server-side redelivery).
 ///
 /// If the message cannot be parsed, **no ACK is sent** and the function
-/// returns `false` so the connection is torn down — mirroring the Java SDK,
-/// where a parse exception propagates to `exceptionCaught` and closes the
-/// channel.  A listener panic likewise propagates and kills the receive
-/// task; it is not silently swallowed.
+/// returns [`InboundResult::Stop`] so the connection is torn down — mirroring
+/// the Java SDK, where a parse exception propagates to `exceptionCaught` and
+/// closes the channel.  A listener panic likewise propagates and kills the
+/// receive task; it is not silently swallowed.
 async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
     pkg: &Package,
     conn: &TcpConnection,
     listener: &L,
-) -> bool {
+) -> InboundResult {
     let ack_cmd = match pkg.header.cmd {
         Command::RequestToClient => Some(Command::RequestToClientAck),
         Command::AsyncMessageToClient => Some(Command::AsyncMessageToClientAck),
@@ -424,7 +527,7 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
             if let Err(e) = conn.send(resp).await {
                 warn!(error = %e, "failed to send SERVER_GOODBYE_RESPONSE");
             }
-            return true;
+            return InboundResult::Continue;
         }
         Command::RedirectToClient => {
             match pkg.body {
@@ -435,6 +538,7 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
                         "received REDIRECT_TO_CLIENT; stopping receive loop so the \
                          caller can reconnect to the advertised EventMesh node"
                     );
+                    return InboundResult::Redirect(ri.clone());
                 }
                 PackageBody::Text(ref s) => warn!(
                     body = %s,
@@ -446,11 +550,11 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
                     "unexpected body shape for REDIRECT_TO_CLIENT; stopping receive loop"
                 ),
             }
-            return false;
+            return InboundResult::Stop;
         }
         cmd => {
             warn!(?cmd, "unexpected inbound command, ignoring");
-            return true;
+            return InboundResult::Continue;
         }
     };
 
@@ -466,7 +570,7 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
                 "received CloudEvents message but the cloud_events feature is disabled; \
                  disconnecting so the server can redeliver"
             );
-            return false;
+            return InboundResult::Stop;
         }
     } else {
         message::parse_message(&pkg.body)
@@ -476,7 +580,7 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
         Some(msg) => msg,
         None => {
             warn!("failed to parse inbound message body; disconnecting without ACK");
-            return false;
+            return InboundResult::Stop;
         }
     };
 
@@ -509,7 +613,7 @@ async fn handle_inbound<L: MessageListener<Message = EventMeshMessage>>(
         }
     }
 
-    true
+    InboundResult::Continue
 }
 
 #[cfg(test)]
@@ -733,10 +837,11 @@ mod tests {
         consumer.shutdown().await;
         let _ = server.await;
     }
-    /// `ip`/`port` body, then closes the session after a 30s grace period.
-    /// The receive loop must stop promptly so the caller can reconnect.
+    /// The server sends `REDIRECT_TO_CLIENT` with an `ip`/`port` body.
+    /// The receive loop must stop promptly and `wait_for_shutdown` must
+    /// return `ShutdownReason::Redirect` carrying the advertised address.
     #[tokio::test]
-    async fn redirect_to_client_stops_receive_loop() {
+    async fn redirect_to_client_returns_redirect_reason() {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
 
@@ -789,14 +894,22 @@ mod tests {
             .await
             .expect("connect");
 
-        // The redirect frame should make the driver exit on its own, which
-        // cancels the shutdown token. wait_for_shutdown should return promptly.
-        let result =
+        // The redirect frame should make the driver exit on its own.
+        // wait_for_shutdown must return promptly with the redirect reason.
+        let reason =
             tokio::time::timeout(Duration::from_secs(10), consumer.wait_for_shutdown()).await;
         assert!(
-            result.is_ok(),
+            reason.is_ok(),
             "REDIRECT_TO_CLIENT should stop the receive loop promptly"
         );
+
+        match reason.unwrap() {
+            ShutdownReason::Redirect(ri) => {
+                assert_eq!(ri.ip, "10.0.0.9", "redirect ip must match");
+                assert_eq!(ri.port, 10000, "redirect port must match");
+            }
+            other => panic!("expected ShutdownReason::Redirect, got {other:?}"),
+        }
 
         let _ = server.await;
     }

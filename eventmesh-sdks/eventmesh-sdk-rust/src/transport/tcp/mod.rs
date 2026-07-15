@@ -115,5 +115,5 @@ pub mod frame;
 pub mod message;
 pub mod producer;
 
-pub use consumer::TcpConsumer;
+pub use consumer::{ShutdownReason, TcpConsumer};
 pub use producer::TcpProducer;
