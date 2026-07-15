@@ -58,6 +58,7 @@ impl HttpProducer {
         // when either is missing. Populate them before serializing.
         ensure_ce_extension(&mut event, "bizseqno");
         ensure_ce_extension(&mut event, "uniqueid");
+        ensure_ce_ttl(&mut event);
 
         let topic = event
             .subject()
@@ -85,6 +86,7 @@ impl HttpProducer {
 
         ensure_ce_extension(&mut event, "bizseqno");
         ensure_ce_extension(&mut event, "uniqueid");
+        ensure_ce_ttl(&mut event);
         let topic = event
             .subject()
             .ok_or_else(|| {
@@ -278,6 +280,22 @@ fn ensure_ce_extension(event: &mut cloudevents::Event, key: &str) {
     }
 }
 
+/// Ensure a CloudEvent contains the TTL extension required by the HTTP sync
+/// request processor. Unlike the form field emitted by `encode_publish`, the
+/// CloudEvents resolver reads TTL only from the serialized event.
+#[cfg(feature = "cloud_events")]
+fn ensure_ce_ttl(event: &mut cloudevents::Event) {
+    use crate::common::DEFAULT_MESSAGE_TTL;
+
+    let missing = match event.extension("ttl") {
+        None => true,
+        Some(value) => value.to_string().trim().is_empty(),
+    };
+    if missing {
+        event.set_extension("ttl", DEFAULT_MESSAGE_TTL.to_string());
+    }
+}
+
 #[cfg(all(test, feature = "cloud_events"))]
 mod tests {
     use super::*;
@@ -328,12 +346,27 @@ mod tests {
     }
 
     #[test]
+    fn ensure_ce_ttl_defaults_when_missing_and_preserves_caller_value() {
+        let mut event = make_event();
+        ensure_ce_ttl(&mut event);
+        assert_eq!(
+            event.extension("ttl").unwrap().to_string(),
+            crate::common::DEFAULT_MESSAGE_TTL.to_string()
+        );
+
+        event.set_extension("ttl", "9000".to_string());
+        ensure_ce_ttl(&mut event);
+        assert_eq!(event.extension("ttl").unwrap().to_string(), "9000");
+    }
+
+    #[test]
     fn publish_cloud_event_serializes_extensions() {
         // Verify that after ensure_ce_extension runs, the serialized JSON
         // contains the extension attributes — this is what the runtime reads.
         let mut event = make_event();
         ensure_ce_extension(&mut event, "bizseqno");
         ensure_ce_extension(&mut event, "uniqueid");
+        ensure_ce_ttl(&mut event);
         let json = serde_json::to_string(&event).unwrap();
         assert!(
             json.contains("bizseqno"),
@@ -342,6 +375,10 @@ mod tests {
         assert!(
             json.contains("uniqueid"),
             "serialized CloudEvent must contain uniqueid extension: {json}"
+        );
+        assert!(
+            json.contains("\"ttl\":\"4000\""),
+            "serialized CloudEvent must contain ttl extension: {json}"
         );
     }
 }

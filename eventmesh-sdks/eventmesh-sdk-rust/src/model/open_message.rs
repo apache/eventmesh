@@ -48,11 +48,17 @@ impl OpenMessage {
 
     /// Convert to the SDK's common transport message representation.
     pub fn to_event_mesh_message(&self) -> EventMeshMessage {
-        let mut props = self.properties.clone();
+        // Keep properties and headers in separate wire namespaces. OpenMessage
+        // permits arbitrary property keys, including `header.*`, so storing a
+        // header directly as `header.{key}` while leaving properties unescaped
+        // makes the conversion lossy.
+        let mut props: HashMap<String, String> = self
+            .properties
+            .iter()
+            .map(|(key, value)| (format!("property.{key}"), value.clone()))
+            .collect();
         for (key, value) in &self.headers {
-            props
-                .entry(format!("header.{key}"))
-                .or_insert_with(|| value.clone());
+            props.insert(format!("header.{key}"), value.clone());
         }
         let mut builder = EventMeshMessage::builder().props(props);
         if let Some(topic) = &self.topic {
@@ -71,7 +77,11 @@ impl OpenMessage {
         for (key, value) in message.props {
             if let Some(key) = key.strip_prefix("header.") {
                 headers.insert(key.to_string(), value);
+            } else if let Some(key) = key.strip_prefix("property.") {
+                properties.insert(key.to_string(), value);
             } else {
+                // Preserve messages produced by SDK versions before the
+                // property namespace was introduced.
                 properties.insert(key, value);
             }
         }
@@ -140,6 +150,23 @@ mod tests {
         assert_eq!(common.topic.as_deref(), Some("orders"));
         assert_eq!(common.content.as_deref(), Some("created"));
         assert_eq!(common.get_prop("header.traceparent"), Some("00-abc"));
+        assert_eq!(common.get_prop("property.region"), Some("cn"));
+        assert_eq!(OpenMessage::from_event_mesh_message(common), message);
+    }
+
+    #[test]
+    fn conversion_preserves_colliding_header_prefixed_property() {
+        let message = OpenMessage::builder()
+            .header("traceparent", "header-value")
+            .property("header.traceparent", "property-value")
+            .build();
+
+        let common = message.to_event_mesh_message();
+        assert_eq!(common.get_prop("header.traceparent"), Some("header-value"));
+        assert_eq!(
+            common.get_prop("property.header.traceparent"),
+            Some("property-value")
+        );
         assert_eq!(OpenMessage::from_event_mesh_message(common), message);
     }
 }

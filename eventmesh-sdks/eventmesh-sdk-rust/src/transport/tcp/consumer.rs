@@ -81,7 +81,7 @@ use crate::MessageListener;
 /// This is implemented by the SDK's native EventMeshMessage and, with the
 /// `cloud_events` feature, native CloudEvents. It keeps TCP wire codecs out
 /// of the normal producer and consumer APIs.
-pub trait TcpMessage: Send + 'static {
+pub trait TcpMessage: Clone + Send + 'static {
     #[doc(hidden)]
     fn decode_tcp(pkg: &Package) -> Option<Self>
     where
@@ -89,6 +89,11 @@ pub trait TcpMessage: Send + 'static {
 
     #[doc(hidden)]
     fn encode_tcp_reply(&self) -> Result<Package>;
+
+    /// Copy request routing and correlation metadata into a fresh reply when
+    /// the runtime has sent a request/reply delivery.
+    #[doc(hidden)]
+    fn inherit_request_metadata(&mut self, request: &Self);
 }
 
 impl TcpMessage for EventMeshMessage {
@@ -106,6 +111,14 @@ impl TcpMessage for EventMeshMessage {
     fn encode_tcp_reply(&self) -> Result<Package> {
         message::build_message_package(self, Command::ResponseToServer)
     }
+
+    fn inherit_request_metadata(&mut self, request: &Self) {
+        for (key, value) in &request.props {
+            self.props
+                .entry(key.clone())
+                .or_insert_with(|| value.clone());
+        }
+    }
 }
 
 #[cfg(feature = "cloud_events")]
@@ -121,6 +134,14 @@ impl TcpMessage for cloudevents::Event {
 
     fn encode_tcp_reply(&self) -> Result<Package> {
         message::build_cloud_event_package(self, Command::ResponseToServer)
+    }
+
+    fn inherit_request_metadata(&mut self, request: &Self) {
+        for (key, value) in request.iter_extensions() {
+            if self.extension(key).is_none() {
+                self.set_extension(key, value.clone());
+            }
+        }
     }
 }
 
@@ -694,7 +715,11 @@ where
     // A listener panic propagates naturally and kills the receive task —
     // mirroring Java where the exception escapes to exceptionCaught and
     // closes the channel.  The message is NOT acknowledged.
-    if let Some(reply) = listener.handle(msg).await {
+    let request = (pkg.header.cmd == Command::RequestToClient).then(|| msg.clone());
+    if let Some(mut reply) = listener.handle(msg).await {
+        if let Some(request) = request.as_ref() {
+            reply.inherit_request_metadata(request);
+        }
         match reply.encode_tcp_reply() {
             Ok(reply_pkg) => {
                 if let Err(e) = conn.send(reply_pkg).await {
@@ -737,6 +762,54 @@ mod tests {
         async fn handle(&self, _: EventMeshMessage) -> Option<EventMeshMessage> {
             None
         }
+    }
+
+    #[test]
+    fn request_reply_inherits_routing_properties_without_overwriting_reply() {
+        let request = EventMeshMessage::builder()
+            .topic("request-topic")
+            .content("request")
+            .prop("cluster", "remote-cluster")
+            .prop("correlation-id", "request-id")
+            .build();
+        let mut reply = EventMeshMessage::builder()
+            .topic("reply-topic")
+            .content("reply")
+            .prop("correlation-id", "reply-id")
+            .build();
+
+        reply.inherit_request_metadata(&request);
+        let pkg = reply.encode_tcp_reply().expect("encode reply");
+        let encoded = message::parse_message(&pkg.body).expect("decode reply");
+
+        assert_eq!(encoded.get_prop("cluster"), Some("remote-cluster"));
+        assert_eq!(encoded.get_prop("correlation-id"), Some("reply-id"));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloud_event_reply_inherits_request_extensions() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let request = EventBuilderV10::new()
+            .id("request")
+            .source("urn:test")
+            .ty("test")
+            .extension("cluster", "remote-cluster")
+            .build()
+            .expect("build request");
+        let mut reply = EventBuilderV10::new()
+            .id("reply")
+            .source("urn:test")
+            .ty("test")
+            .build()
+            .expect("build reply");
+
+        reply.inherit_request_metadata(&request);
+        assert_eq!(
+            reply.extension("cluster").unwrap().to_string(),
+            "remote-cluster"
+        );
     }
 
     /// Loopback test: the runtime's TCP `UnSubscribeProcessor` ignores the
