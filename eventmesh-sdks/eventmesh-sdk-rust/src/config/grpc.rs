@@ -80,7 +80,7 @@ impl GrpcClientConfig {
 }
 
 /// Fluent builder for [`GrpcClientConfig`].
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct GrpcClientConfigBuilder {
     server_addr: Option<String>,
     server_port: Option<u16>,
@@ -218,5 +218,27 @@ impl GrpcClientConfigBuilder {
                 .unwrap_or(DEFAULT_MAX_CONCURRENT_HANDLERS)
                 .max(1),
         }
+    }
+}
+
+impl std::fmt::Debug for GrpcClientConfigBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GrpcClientConfigBuilder")
+            .field("server_addr", &self.server_addr)
+            .field("server_port", &self.server_port)
+            .field("use_tls", &self.use_tls)
+            .field("tls_config", &self.tls_config)
+            .field("timeout", &self.timeout)
+            .field("identity", &self.identity)
+            .field("max_concurrent_handlers", &self.max_concurrent_handlers)
+            .field("env", &self.env)
+            .field("idc", &self.idc)
+            .field("sys", &self.sys)
+            .field("producer_group", &self.producer_group)
+            .field("consumer_group", &self.consumer_group)
+            .field("username", &self.username)
+            .field("password", &self.password.as_ref().map(|_| "***"))
+            .field("token", &self.token.as_ref().map(|_| "***"))
+            .finish()
     }
 }

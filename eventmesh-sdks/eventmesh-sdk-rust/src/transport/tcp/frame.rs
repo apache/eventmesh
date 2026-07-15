@@ -362,7 +362,7 @@ mod command_serde {
 // ---------------------------------------------------------------------------
 
 /// Client identity sent in the HELLO body (mirrors Java `UserAgent.java`).
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 pub struct UserAgent {
     #[serde(default)]
     pub env: String,
@@ -427,6 +427,27 @@ impl UserAgent {
             purpose: purpose.to_string(),
             unack: 0,
         }
+    }
+}
+
+impl std::fmt::Debug for UserAgent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("UserAgent")
+            .field("env", &self.env)
+            .field("subsystem", &self.subsystem)
+            .field("path", &self.path)
+            .field("pid", &self.pid)
+            .field("host", &self.host)
+            .field("port", &self.port)
+            .field("version", &self.version)
+            .field("username", &self.username)
+            .field("password", &"***")
+            .field("token", &"***")
+            .field("idc", &self.idc)
+            .field("group", &self.group)
+            .field("purpose", &self.purpose)
+            .field("unack", &self.unack)
+            .finish()
     }
 }
 

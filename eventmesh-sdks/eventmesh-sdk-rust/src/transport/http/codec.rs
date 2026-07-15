@@ -136,7 +136,7 @@ pub mod uri {
 /// Mirrors `org.apache.eventmesh.common.protocol.http.body.Body`.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EventMeshRetObj {
-    #[serde(default, rename = "retCode")]
+    #[serde(rename = "retCode")]
     pub ret_code: i64,
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "retMsg")]
     pub ret_msg: Option<String>,
@@ -220,9 +220,17 @@ impl PushMessageRequestBody {
         msg.biz_seq_no = self.bizseqno.clone();
         msg.unique_id = self.unique_id.clone();
 
-        // Parse extFields JSON into props.
+        // Parse extFields JSON into props. Invalid JSON is an error — the
+        // webhook handler returns a retry reply so the runtime redelivers,
+        // matching the Java runtime's PushMessageRequestBody.buildBody()
+        // which throws on parse failure.
         if let Some(ext) = &self.extfields {
-            if let Ok(props) = serde_json::from_str::<HashMap<String, String>>(ext) {
+            let trimmed = ext.trim();
+            if !trimmed.is_empty() {
+                let props: HashMap<String, String> =
+                    serde_json::from_str(trimmed).map_err(|e| {
+                        EventMeshError::Other(format!("failed to parse extFields JSON: {e}"))
+                    })?;
                 msg.props = props;
             }
         }
@@ -714,6 +722,23 @@ mod tests {
     }
 
     #[test]
+    fn parse_response_missing_ret_code_is_error() {
+        let body = r#"{"retMsg":"oops"}"#;
+        assert!(parse_response(body).is_err());
+    }
+
+    #[test]
+    fn parse_response_empty_object_is_error() {
+        assert!(parse_response("{}").is_err());
+    }
+
+    #[test]
+    fn parse_response_non_numeric_ret_code_is_error() {
+        let body = r#"{"retCode":"abc"}"#;
+        assert!(parse_response(body).is_err());
+    }
+
+    #[test]
     fn parse_reply_from_ret_msg() {
         let ret_msg = r#"{"topic":"reply-topic","body":"reply-body","properties":{"k":"v"}}"#;
         let msg = parse_reply(ret_msg).unwrap();
@@ -772,6 +797,16 @@ mod tests {
         assert!(parsed.extfields.is_none());
         let msg = parsed.to_event_mesh_message().unwrap();
         assert!(msg.props.is_empty());
+    }
+
+    #[test]
+    fn push_body_invalid_ext_fields_returns_error() {
+        let body = form_encode(&[
+            ("content".to_string(), "hello".to_string()),
+            ("extFields".to_string(), "not valid json".to_string()),
+        ]);
+        let parsed = parse_push_body(&body).unwrap();
+        assert!(parsed.to_event_mesh_message().is_err());
     }
 
     #[test]

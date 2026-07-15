@@ -63,7 +63,7 @@ use std::path::PathBuf;
 ///     )
 ///     .build();
 /// ```
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct TlsConfig {
     /// Expected SNI / certificate hostname. Defaults to `server_addr` when
     /// unset — set this when connecting via IP but the cert is for a domain.
@@ -99,7 +99,7 @@ impl TlsConfig {
 }
 
 /// PEM-encoded client certificate + private key for mutual TLS.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TlsClientIdentity {
     /// PEM-encoded certificate chain.
     pub cert_pem: Vec<u8>,
@@ -108,7 +108,7 @@ pub struct TlsClientIdentity {
 }
 
 /// Fluent builder for [`TlsConfig`].
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct TlsConfigBuilder {
     domain: Option<String>,
     ca_cert_path: Option<PathBuf>,
@@ -157,6 +157,55 @@ impl TlsConfigBuilder {
             use_native_roots: self.use_native_roots.unwrap_or(false),
             client_identity: self.client_identity,
         }
+    }
+}
+
+// -----------------------------------------------------------------------
+// Redacting Debug impls
+// -----------------------------------------------------------------------
+
+impl std::fmt::Debug for TlsClientIdentity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TlsClientIdentity")
+            .field("cert_pem", &format!("<{} bytes>", self.cert_pem.len()))
+            .field("key_pem", &"***")
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for TlsConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TlsConfig")
+            .field("domain", &self.domain)
+            .field("ca_cert_path", &self.ca_cert_path)
+            .field(
+                "ca_cert_pem",
+                &self
+                    .ca_cert_pem
+                    .as_ref()
+                    .map(|v| format!("<{} bytes>", v.len())),
+            )
+            .field("use_native_roots", &self.use_native_roots)
+            .field("client_identity", &self.client_identity)
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for TlsConfigBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TlsConfigBuilder")
+            .field("domain", &self.domain)
+            .field("ca_cert_path", &self.ca_cert_path)
+            .field(
+                "ca_cert_pem",
+                &self
+                    .ca_cert_pem
+                    .as_ref()
+                    .map(|v| format!("<{} bytes>", v.len())),
+            )
+            .field("use_native_roots", &self.use_native_roots)
+            .field("client_identity", &self.client_identity)
+            .finish()
     }
 }
 
@@ -209,5 +258,21 @@ mod tests {
     fn ca_cert_pem_bytes_returns_none_when_unset() {
         let tls = TlsConfig::builder().build();
         assert!(tls.ca_cert_pem_bytes().is_none());
+    }
+
+    #[test]
+    fn debug_redacts_private_key() {
+        let tls = TlsConfig::builder()
+            .ca_cert_pem(b"fake-ca".to_vec())
+            .client_identity(TlsClientIdentity {
+                cert_pem: b"my-cert".to_vec(),
+                key_pem: b"PRIVATE KEY MATERIAL".to_vec(),
+            })
+            .build();
+        let s = format!("{tls:?}");
+        assert!(!s.contains("PRIVATE KEY MATERIAL"), "key leaked: {s}");
+        assert!(!s.contains("my-cert"), "cert content leaked: {s}");
+        assert!(s.contains("***"), "redaction marker missing: {s}");
+        assert!(s.contains("<7 bytes>"), "ca cert length missing: {s}");
     }
 }

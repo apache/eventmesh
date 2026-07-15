@@ -94,13 +94,18 @@ pub enum LoadBalanceSelector {
         nodes: Vec<ServerNode>,
     },
     WeightRandom {
-        /// Nodes expanded into a weighted list for O(1) random pick.
-        expanded: Vec<ServerNode>,
+        nodes: Vec<ServerNode>,
+        /// Precomputed sum of all node weights (each clamped to ≥ 1).
+        /// Stored as `i64` to avoid overflow on large weights.
+        total_weight: i64,
     },
     WeightRoundRobin {
         nodes: Vec<ServerNode>,
-        /// Current weighted round-robin counters.
-        counters: Mutex<Vec<i32>>,
+        /// Precomputed sum of all node weights (each clamped to ≥ 1).
+        total_weight: i64,
+        /// Current weighted round-robin counters (smooth WRR, nginx-style).
+        /// Stored as `i64` to avoid overflow on large / long-running sums.
+        counters: Mutex<Vec<i64>>,
     },
 }
 
@@ -115,17 +120,20 @@ impl LoadBalanceSelector {
         Ok(match strategy {
             LoadBalance::Random => Self::Random { nodes },
             LoadBalance::WeightRandom => {
-                let mut expanded = Vec::new();
-                for n in &nodes {
-                    for _ in 0..n.weight.max(1) {
-                        expanded.push(n.clone());
-                    }
+                let total_weight: i64 = nodes.iter().map(|n| n.weight.max(1) as i64).sum();
+                Self::WeightRandom {
+                    nodes,
+                    total_weight,
                 }
-                Self::WeightRandom { expanded }
             }
             LoadBalance::WeightRoundRobin => {
+                let total_weight: i64 = nodes.iter().map(|n| n.weight.max(1) as i64).sum();
                 let counters = Mutex::new(vec![0; nodes.len()]);
-                Self::WeightRoundRobin { nodes, counters }
+                Self::WeightRoundRobin {
+                    nodes,
+                    total_weight,
+                    counters,
+                }
             }
         })
     }
@@ -137,22 +145,39 @@ impl LoadBalanceSelector {
                 let idx = rand::thread_rng().gen_range(0..nodes.len());
                 &nodes[idx]
             }
-            Self::WeightRandom { expanded } => {
-                let idx = rand::thread_rng().gen_range(0..expanded.len());
-                &expanded[idx]
+            Self::WeightRandom {
+                nodes,
+                total_weight,
+            } => {
+                // O(n) walk — does NOT expand nodes by weight, so large
+                // weights cannot cause OOM. Mirrors the Java SDK's
+                // WeightRandomLoadBalanceSelector.
+                let mut target = rand::thread_rng().gen_range(0..*total_weight);
+                for n in nodes.iter() {
+                    target -= n.weight.max(1) as i64;
+                    if target < 0 {
+                        return n;
+                    }
+                }
+                // Fallback (defensive — unreachable when total_weight is exact).
+                &nodes[nodes.len() - 1]
             }
-            Self::WeightRoundRobin { nodes, counters } => {
-                // Smooth weighted round-robin (nginx-style).
+            Self::WeightRoundRobin {
+                nodes,
+                total_weight,
+                counters,
+            } => {
+                // Smooth weighted round-robin (nginx-style). Counters are i64
+                // so large weights or long uptimes cannot overflow.
                 let mut guard = counters.lock().expect("counter lock poisoned");
-                let total: i32 = nodes.iter().map(|n| n.weight).sum();
                 let mut best = 0usize;
                 for (i, n) in nodes.iter().enumerate() {
-                    guard[i] += n.weight;
+                    guard[i] += n.weight.max(1) as i64;
                     if guard[i] > guard[best] {
                         best = i;
                     }
                 }
-                guard[best] -= total;
+                guard[best] -= total_weight;
                 &nodes[best]
             }
         }
@@ -206,5 +231,35 @@ mod tests {
         }
         // ~5/6 should be 'a'.
         assert!(a > 35 && a < 65, "a={a}");
+    }
+
+    #[test]
+    fn weight_random_distributes_proportionally() {
+        let nodes = vec![
+            ServerNode::parse("a:1:9").unwrap(),
+            ServerNode::parse("b:1:1").unwrap(),
+        ];
+        let sel = LoadBalanceSelector::new(nodes, LoadBalance::WeightRandom).unwrap();
+        let mut a = 0;
+        for _ in 0..1000 {
+            if sel.select().host == "a" {
+                a += 1;
+            }
+        }
+        // ~9/10 should be 'a'.
+        assert!(a > 850 && a < 950, "a={a}");
+    }
+
+    #[test]
+    fn weight_random_handles_large_weight_without_oom() {
+        // Previously this would expand to a Vec of 1 billion entries.
+        let nodes = vec![
+            ServerNode::parse("a:1:1000000").unwrap(),
+            ServerNode::parse("b:1:1").unwrap(),
+        ];
+        let sel = LoadBalanceSelector::new(nodes, LoadBalance::WeightRandom).unwrap();
+        for _ in 0..10 {
+            sel.select();
+        }
     }
 }

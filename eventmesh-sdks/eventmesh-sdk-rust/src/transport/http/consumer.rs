@@ -43,6 +43,7 @@ const HEARTBEAT_INITIAL_DELAY: Duration = Duration::from_secs(10);
 struct SubscriptionEntry {
     #[allow(dead_code)]
     item: SubscriptionItem,
+    #[allow(dead_code)]
     url: String,
 }
 
@@ -58,7 +59,7 @@ struct SubscriptionEntry {
 /// or via [`HttpConsumer::shutdown`] / [`HttpConsumer::wait_for_shutdown`].
 pub struct HttpConsumer {
     client: EventMeshHttpClient,
-    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
 }
@@ -143,7 +144,7 @@ impl HttpConsumer {
             let mut guard = self.subscriptions.lock().await;
             for item in items {
                 guard.insert(
-                    item.topic.clone(),
+                    (item.topic.clone(), url.clone()),
                     SubscriptionEntry {
                         item,
                         url: url.clone(),
@@ -198,18 +199,24 @@ impl HttpConsumer {
         // Group topics by their registered webhook URL. The runtime removes a
         // subscription only when BOTH topic AND url match, and the wire format
         // carries a single `url` per request — so topics registered under
-        // different URLs must be sent in separate requests.
+        // different URLs must be sent in separate requests.  A topic may be
+        // registered under multiple URLs, so we scan all (topic, url) keys.
         let url_groups: HashMap<String, Vec<String>> = {
             let guard = self.subscriptions.lock().await;
-            items.iter().fold(HashMap::new(), |mut acc, i| {
-                let url = guard
-                    .get(&i.topic)
-                    .map(|e| e.url.clone())
-                    .unwrap_or_default();
-                acc.entry(url).or_default().push(i.topic.clone());
-                acc
-            })
+            let topics: Vec<String> = items.iter().map(|i| i.topic.clone()).collect();
+            let mut groups: HashMap<String, Vec<String>> = HashMap::new();
+            for ((topic, url), _) in guard.iter() {
+                if topics.contains(topic) {
+                    groups.entry(url.clone()).or_default().push(topic.clone());
+                }
+            }
+            groups
         };
+        if url_groups.is_empty() {
+            return Err(EventMeshError::InvalidArgument(
+                "none of the topics are currently subscribed".into(),
+            ));
+        }
         let config = self.client.config();
         let code = codec::unsubscribe_code();
         let headers = codec::build_headers(
@@ -229,7 +236,7 @@ impl HttpConsumer {
             if response.is_success() {
                 let mut guard = self.subscriptions.lock().await;
                 for topic in topics {
-                    guard.remove(topic);
+                    guard.remove(&(topic.clone(), url.clone()));
                 }
                 last_response = Some(response);
             } else {
@@ -261,7 +268,7 @@ impl Drop for HttpConsumer {
 /// reports them to the broker.
 fn spawn_heartbeat(
     client: EventMeshHttpClient,
-    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
 ) -> JoinHandle<()> {
     tokio::spawn(async move {
@@ -274,7 +281,7 @@ fn spawn_heartbeat(
                 .lock()
                 .await
                 .iter()
-                .map(|(t, e)| (t.clone(), e.url.clone()))
+                .map(|((topic, url), _entry)| (topic.clone(), url.clone()))
                 .collect();
             if !items.is_empty() {
                 let config = client.config();

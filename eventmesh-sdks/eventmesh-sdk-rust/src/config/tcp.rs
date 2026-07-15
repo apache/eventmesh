@@ -172,7 +172,7 @@ impl TcpClientConfig {
 }
 
 /// Fluent builder for [`TcpClientConfig`].
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct TcpClientConfigBuilder {
     server_addr: Option<String>,
     server_port: Option<u16>,
@@ -301,5 +301,26 @@ impl TcpClientConfigBuilder {
             reconnect: reconnect.unwrap_or_default(),
             identity,
         }
+    }
+}
+
+impl std::fmt::Debug for TcpClientConfigBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TcpClientConfigBuilder")
+            .field("server_addr", &self.server_addr)
+            .field("server_port", &self.server_port)
+            .field("timeout", &self.timeout)
+            .field("heartbeat_interval", &self.heartbeat_interval)
+            .field("reconnect", &self.reconnect)
+            .field("identity", &self.identity)
+            .field("env", &self.env)
+            .field("idc", &self.idc)
+            .field("sys", &self.sys)
+            .field("producer_group", &self.producer_group)
+            .field("consumer_group", &self.consumer_group)
+            .field("username", &self.username)
+            .field("password", &self.password.as_ref().map(|_| "***"))
+            .field("token", &self.token.as_ref().map(|_| "***"))
+            .finish()
     }
 }

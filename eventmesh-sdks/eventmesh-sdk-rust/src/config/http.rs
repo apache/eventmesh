@@ -79,7 +79,7 @@ impl HttpClientConfig {
 }
 
 /// Fluent builder for [`HttpClientConfig`].
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct HttpClientConfigBuilder {
     servers: Option<String>,
     load_balance: Option<LoadBalance>,
@@ -247,5 +247,27 @@ impl HttpClientConfigBuilder {
             timeout: timeout.unwrap_or(DEFAULT_TIMEOUT),
             identity,
         })
+    }
+}
+
+impl std::fmt::Debug for HttpClientConfigBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HttpClientConfigBuilder")
+            .field("servers", &self.servers)
+            .field("load_balance", &self.load_balance)
+            .field("use_tls", &self.use_tls)
+            .field("pool_size", &self.pool_size)
+            .field("pool_idle_timeout", &self.pool_idle_timeout)
+            .field("timeout", &self.timeout)
+            .field("identity", &self.identity)
+            .field("env", &self.env)
+            .field("idc", &self.idc)
+            .field("sys", &self.sys)
+            .field("producer_group", &self.producer_group)
+            .field("consumer_group", &self.consumer_group)
+            .field("username", &self.username)
+            .field("password", &self.password.as_ref().map(|_| "***"))
+            .field("token", &self.token.as_ref().map(|_| "***"))
+            .finish()
     }
 }

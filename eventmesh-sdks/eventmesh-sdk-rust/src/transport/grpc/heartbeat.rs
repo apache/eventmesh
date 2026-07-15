@@ -63,7 +63,7 @@ pub(crate) type StreamTx = Arc<Mutex<Option<mpsc::Sender<PbCloudEvent>>>>;
 pub(crate) fn spawn(
     client: GrpcClient,
     config: GrpcClientConfig,
-    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     stream_tx: StreamTx,
     shutdown: CancellationToken,
 ) -> JoinHandle<()> {
@@ -84,7 +84,7 @@ pub(crate) fn spawn(
                 .lock()
                 .await
                 .iter()
-                .map(|(t, e)| (t.clone(), e.url.clone()))
+                .map(|((topic, url), _entry)| (topic.clone(), url.clone()))
                 .collect();
             if items.is_empty() {
                 debug!("heartbeat tick: no subscriptions yet");
@@ -126,7 +126,7 @@ pub(crate) fn spawn(
 async fn resubscribe(
     client: &GrpcClient,
     config: &GrpcClientConfig,
-    subscriptions: &Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     stream_tx: &StreamTx,
 ) {
     // Collect and group subscriptions by URL. We hold the lock only briefly.

@@ -152,7 +152,7 @@ async fn await_task<T: Send + 'static>(handle: &Mutex<Option<JoinHandle<T>>>) ->
 pub struct GrpcStreamConsumer<L: MessageListener<Message = EventMeshMessage>> {
     client: GrpcClient,
     config: crate::config::GrpcClientConfig,
-    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
@@ -224,7 +224,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
             let mut guard = subscriptions.lock().await;
             for item in &items {
                 guard.insert(
-                    item.topic.clone(),
+                    (item.topic.clone(), SDK_STREAM_URL.to_string()),
                     SubscriptionEntry {
                         item: item.clone(),
                         url: SDK_STREAM_URL.to_string(),
@@ -289,7 +289,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
                 let mut sub_guard = self.subscriptions.lock().await;
                 for item in &items {
                     sub_guard.insert(
-                        item.topic.clone(),
+                        (item.topic.clone(), SDK_STREAM_URL.to_string()),
                         SubscriptionEntry {
                             item: item.clone(),
                             url: SDK_STREAM_URL.to_string(),
@@ -417,7 +417,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> Drop for GrpcStreamConsumer
 pub struct GrpcWebhookConsumer {
     client: GrpcClient,
     config: crate::config::GrpcClientConfig,
-    subscriptions: Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
 }
@@ -521,7 +521,7 @@ async fn timed<T>(timeout: Duration, f: impl Future<Output = Result<T>>) -> Resu
 async fn subscribe_webhook_rpc(
     client: &GrpcClient,
     config: &crate::config::GrpcClientConfig,
-    subscriptions: &Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     items: Vec<SubscriptionItem>,
     url: impl Into<String>,
 ) -> Result<PublishResponse> {
@@ -543,21 +543,28 @@ async fn subscribe_webhook_rpc(
         let mut guard = subscriptions.lock().await;
         for item in items {
             guard.insert(
-                item.topic.clone(),
+                (item.topic.clone(), url.clone()),
                 SubscriptionEntry {
                     item,
                     url: url.clone(),
                 },
             );
         }
+        Ok(response)
+    } else {
+        Err(EventMeshError::Server {
+            code: response.code.unwrap_or(-1) as i32,
+            message: response
+                .message
+                .unwrap_or_else(|| "subscribe failed".into()),
+        })
     }
-    Ok(response)
 }
 
 async fn unsubscribe_stream_rpc(
     client: &GrpcClient,
     config: &crate::config::GrpcClientConfig,
-    subscriptions: &Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     items: Vec<SubscriptionItem>,
 ) -> Result<PublishResponse> {
     if items.is_empty() {
@@ -579,16 +586,23 @@ async fn unsubscribe_stream_rpc(
     if response.is_success() {
         let mut guard = subscriptions.lock().await;
         for item in &items {
-            guard.remove(&item.topic);
+            guard.remove(&(item.topic.clone(), SDK_STREAM_URL.to_string()));
         }
+        Ok(response)
+    } else {
+        Err(EventMeshError::Server {
+            code: response.code.unwrap_or(-1) as i32,
+            message: response
+                .message
+                .unwrap_or_else(|| "unsubscribe failed".into()),
+        })
     }
-    Ok(response)
 }
 
 async fn unsubscribe_webhook_rpc(
     client: &GrpcClient,
     config: &crate::config::GrpcClientConfig,
-    subscriptions: &Arc<Mutex<HashMap<String, SubscriptionEntry>>>,
+    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     items: Vec<SubscriptionItem>,
     url: impl Into<String>,
 ) -> Result<PublishResponse> {
@@ -618,10 +632,17 @@ async fn unsubscribe_webhook_rpc(
     if response.is_success() {
         let mut guard = subscriptions.lock().await;
         for item in &items {
-            guard.remove(&item.topic);
+            guard.remove(&(item.topic.clone(), url.clone()));
         }
+        Ok(response)
+    } else {
+        Err(EventMeshError::Server {
+            code: response.code.unwrap_or(-1) as i32,
+            message: response
+                .message
+                .unwrap_or_else(|| "unsubscribe failed".into()),
+        })
     }
-    Ok(response)
 }
 
 // ---------------------------------------------------------------------------

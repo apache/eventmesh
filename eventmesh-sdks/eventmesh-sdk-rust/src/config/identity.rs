@@ -19,7 +19,7 @@
 
 /// Who the client is. Every protocol carries these to the server as either
 /// CloudEvent attributes (gRPC), HTTP headers, or `UserAgent` fields (TCP).
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ClientIdentity {
     /// Environment tag (e.g. `"prod"`).
     pub env: String,
@@ -67,5 +67,51 @@ impl ClientIdentity {
 impl Default for ClientIdentity {
     fn default() -> Self {
         Self::detect()
+    }
+}
+
+impl std::fmt::Debug for ClientIdentity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ClientIdentity")
+            .field("env", &self.env)
+            .field("idc", &self.idc)
+            .field("sys", &self.sys)
+            .field("pid", &self.pid)
+            .field("ip", &self.ip)
+            .field("language", &self.language)
+            .field("username", &self.username)
+            .field("password", &"***")
+            .field("token", &self.token.as_ref().map(|_| "***"))
+            .field("producer_group", &self.producer_group)
+            .field("consumer_group", &self.consumer_group)
+            .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn debug_redacts_secrets() {
+        let id = ClientIdentity {
+            password: "hunter2".into(),
+            token: Some("jwt-token".into()),
+            ..ClientIdentity::detect()
+        };
+        let s = format!("{id:?}");
+        assert!(!s.contains("hunter2"), "password leaked: {s}");
+        assert!(!s.contains("jwt-token"), "token leaked: {s}");
+        assert!(s.contains("***"), "redaction marker missing: {s}");
+    }
+
+    #[test]
+    fn debug_redacts_empty_secrets() {
+        let id = ClientIdentity::detect();
+        let s = format!("{id:?}");
+        assert!(
+            !s.contains("password") || s.contains("\"***\""),
+            "password field should be redacted: {s}"
+        );
     }
 }
