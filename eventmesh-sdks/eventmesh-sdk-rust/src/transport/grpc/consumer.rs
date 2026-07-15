@@ -267,7 +267,8 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
     /// Subscribe to additional topics over the already-open stream.
     ///
     /// The subscription CloudEvent is sent through the stream's request
-    /// channel.  Returns an error if the stream is no longer active.
+    /// channel. Returns an error if the stream is no longer active, is shutting
+    /// down, or remains backpressured beyond the configured timeout.
     pub async fn subscribe(&self, items: Vec<SubscriptionItem>) -> Result<()> {
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
@@ -280,23 +281,42 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
             None,
             &items,
         )?;
-        let guard = self.stream_tx.lock().await;
-        match guard.as_ref() {
+        match heartbeat::stream_sender(&self.stream_tx).await {
             Some(tx) => {
-                tx.send(event)
-                    .await
-                    .map_err(|e| EventMeshError::ChannelClosed(format!("subscribe: {e}")))?;
-                let mut sub_guard = self.subscriptions.lock().await;
-                for item in &items {
-                    sub_guard.insert(
-                        (item.topic.clone(), SDK_STREAM_URL.to_string()),
-                        SubscriptionEntry {
-                            item: item.clone(),
-                            url: SDK_STREAM_URL.to_string(),
-                        },
-                    );
+                // The state lock is released before awaiting bounded-channel
+                // capacity. This keeps stream teardown and heartbeat replay
+                // from being blocked by a backpressured caller subscription.
+                match heartbeat::await_with_timeout_or_shutdown(
+                    &self.shutdown,
+                    self.config.timeout,
+                    tx.reserve(),
+                )
+                .await
+                {
+                    heartbeat::OperationOutcome::Completed(Ok(permit)) => {
+                        permit.send(event);
+                        let mut sub_guard = self.subscriptions.lock().await;
+                        for item in &items {
+                            sub_guard.insert(
+                                (item.topic.clone(), SDK_STREAM_URL.to_string()),
+                                SubscriptionEntry {
+                                    item: item.clone(),
+                                    url: SDK_STREAM_URL.to_string(),
+                                },
+                            );
+                        }
+                        Ok(())
+                    }
+                    heartbeat::OperationOutcome::Completed(Err(e)) => {
+                        Err(EventMeshError::ChannelClosed(format!("subscribe: {e}")))
+                    }
+                    heartbeat::OperationOutcome::TimedOut => {
+                        Err(EventMeshError::Timeout(self.config.timeout))
+                    }
+                    heartbeat::OperationOutcome::Cancelled => Err(EventMeshError::ChannelClosed(
+                        "stream is shutting down".into(),
+                    )),
                 }
-                Ok(())
             }
             None => Err(EventMeshError::ChannelClosed("stream is not active".into())),
         }

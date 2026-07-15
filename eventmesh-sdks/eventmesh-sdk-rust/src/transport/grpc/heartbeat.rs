@@ -18,6 +18,7 @@
 //! Background heartbeat loop for the gRPC consumer.
 
 use std::collections::HashMap;
+use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -43,6 +44,41 @@ pub const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);
 /// Type alias for the shared stream sender used to re-send stream subscriptions
 /// during resubscribe. `None` when no stream is currently active.
 pub(crate) type StreamTx = Arc<Mutex<Option<mpsc::Sender<PbCloudEvent>>>>;
+
+/// Outcome of an operation bounded by a timeout and consumer shutdown.
+pub(crate) enum OperationOutcome<T> {
+    /// The operation completed before either bound was reached.
+    Completed(T),
+    /// The configured timeout elapsed first.
+    TimedOut,
+    /// Consumer shutdown was requested first.
+    Cancelled,
+}
+
+/// Await an operation until it completes, its deadline expires, or shutdown
+/// is requested. Shutdown wins when it is already ready so callers never
+/// start more work after the consumer begins closing.
+pub(crate) async fn await_with_timeout_or_shutdown<T>(
+    shutdown: &CancellationToken,
+    timeout: Duration,
+    operation: impl Future<Output = T>,
+) -> OperationOutcome<T> {
+    tokio::select! {
+        biased;
+        _ = shutdown.cancelled() => OperationOutcome::Cancelled,
+        result = tokio::time::timeout(timeout, operation) => match result {
+            Ok(value) => OperationOutcome::Completed(value),
+            Err(_) => OperationOutcome::TimedOut,
+        },
+    }
+}
+
+/// Clone the active stream sender while holding the state lock only long
+/// enough to read it. Sending through a bounded channel can await indefinitely
+/// under backpressure, so it must always happen after this lock is released.
+pub(crate) async fn stream_sender(stream_tx: &StreamTx) -> Option<mpsc::Sender<PbCloudEvent>> {
+    stream_tx.lock().await.clone()
+}
 
 /// Spawn the heartbeat loop. Reads the consumer's current `(topic, url)`
 /// subscriptions each tick and reports them to the broker. The loop exits
@@ -89,25 +125,32 @@ pub(crate) fn spawn(
             if items.is_empty() {
                 debug!("heartbeat tick: no subscriptions yet");
             } else if let Ok(event) = codec::build_heartbeat(&config, &items) {
-                // Wrap the RPC in a timeout so a network black-hole cannot hang
-                // the heartbeat task indefinitely.  The select! also makes the
-                // call interruptible by shutdown so consumer.shutdown() returns
-                // promptly instead of waiting for the full timeout to elapse.
-                let outcome = tokio::select! {
-                    r = tokio::time::timeout(config.timeout, client.heartbeat(event)) => r,
-                    _ = shutdown.cancelled() => return,
-                };
+                // Bound the RPC and let shutdown interrupt it, so a network
+                // black-hole cannot keep the heartbeat task alive indefinitely.
+                let outcome = await_with_timeout_or_shutdown(
+                    &shutdown,
+                    config.timeout,
+                    client.heartbeat(event),
+                )
+                .await;
                 match outcome {
-                    Ok(Ok(resp)) => {
+                    OperationOutcome::Completed(Ok(resp)) => {
                         let response = codec::to_response(&resp);
                         if response.code == Some(StatusCode::CLIENT_RESUBSCRIBE as i64) {
                             warn!("server requested resubscribe (CLIENT_RESUBSCRIBE)");
-                            resubscribe(&client, &config, &subscriptions, &stream_tx).await;
+                            resubscribe(&client, &config, &subscriptions, &stream_tx, &shutdown)
+                                .await;
+                            if shutdown.is_cancelled() {
+                                return;
+                            }
                         }
                         debug!("heartbeat ok: {} items", items.len());
                     }
-                    Ok(Err(e)) => warn!("heartbeat failed: {e}"),
-                    Err(_) => warn!("heartbeat timed out after {:?}", config.timeout),
+                    OperationOutcome::Completed(Err(e)) => warn!("heartbeat failed: {e}"),
+                    OperationOutcome::TimedOut => {
+                        warn!("heartbeat timed out after {:?}", config.timeout)
+                    }
+                    OperationOutcome::Cancelled => return,
                 }
             }
         }
@@ -128,6 +171,7 @@ async fn resubscribe(
     config: &GrpcClientConfig,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     stream_tx: &StreamTx,
+    shutdown: &CancellationToken,
 ) {
     // Collect and group subscriptions by URL. We hold the lock only briefly.
     let groups: HashMap<String, Vec<SubscriptionItem>> = {
@@ -163,16 +207,29 @@ async fn resubscribe(
         };
 
         if is_stream {
-            let guard = stream_tx.lock().await;
-            match guard.as_ref() {
+            match stream_sender(stream_tx).await {
                 Some(tx) => {
-                    if tx.send(event).await.is_err() {
-                        warn!(
+                    // Reserve capacity before moving `event` into the channel.
+                    // A timeout or shutdown therefore cancels only the wait
+                    // for capacity. Crucially, the StreamTx mutex was released
+                    // by `stream_sender` before this potentially long wait.
+                    match await_with_timeout_or_shutdown(shutdown, config.timeout, tx.reserve())
+                        .await
+                    {
+                        OperationOutcome::Completed(Ok(permit)) => {
+                            permit.send(event);
+                            debug!("resubscribe: re-sent {} stream subscriptions", items.len());
+                        }
+                        OperationOutcome::Completed(Err(_)) => warn!(
                             "resubscribe: stream channel closed; \
                              stream subscriptions will not be re-sent"
-                        );
-                    } else {
-                        debug!("resubscribe: re-sent {} stream subscriptions", items.len());
+                        ),
+                        OperationOutcome::TimedOut => warn!(
+                            "resubscribe: stream channel stayed backpressured \
+                             for {:?}; stream subscriptions will not be re-sent",
+                            config.timeout
+                        ),
+                        OperationOutcome::Cancelled => return,
                     }
                 }
                 None => warn!(
@@ -181,10 +238,84 @@ async fn resubscribe(
                 ),
             }
         } else {
-            match client.subscribe_webhook(event).await {
-                Ok(_) => debug!("resubscribe: webhook re-registered for url={url}"),
-                Err(e) => warn!("resubscribe: webhook re-register failed for url={url}: {e}"),
+            match await_with_timeout_or_shutdown(
+                shutdown,
+                config.timeout,
+                client.subscribe_webhook(event),
+            )
+            .await
+            {
+                OperationOutcome::Completed(Ok(_)) => {
+                    debug!("resubscribe: webhook re-registered for url={url}")
+                }
+                OperationOutcome::Completed(Err(e)) => {
+                    warn!("resubscribe: webhook re-register failed for url={url}: {e}")
+                }
+                OperationOutcome::TimedOut => warn!(
+                    "resubscribe: webhook re-register timed out for url={url} after {:?}",
+                    config.timeout
+                ),
+                OperationOutcome::Cancelled => return,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::future::pending;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn operation_wait_stops_on_shutdown() {
+        let shutdown = CancellationToken::new();
+        let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+        let task_shutdown = shutdown.clone();
+        let task = tokio::spawn(async move {
+            await_with_timeout_or_shutdown(&task_shutdown, Duration::from_secs(60), async move {
+                let _ = started_tx.send(());
+                pending::<()>().await
+            })
+            .await
+        });
+
+        started_rx.await.expect("operation should start");
+        shutdown.cancel();
+
+        assert!(matches!(
+            task.await.expect("task should not panic"),
+            OperationOutcome::Cancelled
+        ));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn operation_wait_times_out() {
+        let shutdown = CancellationToken::new();
+        let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+        let task = tokio::spawn(async move {
+            await_with_timeout_or_shutdown(&shutdown, Duration::from_secs(1), async move {
+                let _ = started_tx.send(());
+                pending::<()>().await
+            })
+            .await
+        });
+
+        started_rx.await.expect("operation should start");
+        tokio::time::advance(Duration::from_secs(1)).await;
+
+        assert!(matches!(
+            task.await.expect("task should not panic"),
+            OperationOutcome::TimedOut
+        ));
+    }
+
+    #[tokio::test]
+    async fn stream_sender_returns_a_snapshot_without_retaining_the_lock() {
+        let (tx, _rx) = mpsc::channel(1);
+        let stream_tx = Arc::new(Mutex::new(Some(tx)));
+
+        assert!(stream_sender(&stream_tx).await.is_some());
+        assert!(stream_tx.try_lock().is_ok());
     }
 }
