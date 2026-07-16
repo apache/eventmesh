@@ -17,17 +17,33 @@
 
 //! E2e: TCP producer operations through the v2 facade.
 
-use eventmesh::message::{EventMeshMessage, Message};
+use eventmesh::{
+    message::{EventMeshMessage, Message},
+    subscription::{DeliveryMode, Subscription},
+};
 
-use crate::harness::{ensure_topic, tcp_producer, tcp_warm_topic, unique_topic};
+use crate::harness::{
+    consumer_options, ensure_topic, tcp_client, tcp_producer, tcp_warm_topic, unique_topic,
+    CollectingListener,
+};
 use crate::require_runtime;
+use std::time::Duration;
+
+async fn receive(
+    receiver: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
+) -> EventMeshMessage {
+    tokio::time::timeout(Duration::from_secs(10), receiver.recv())
+        .await
+        .expect("timed out waiting for TCP delivery")
+        .expect("handler channel closed")
+}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_single() {
     require_runtime!();
     let topic = unique_topic("tcp-pub-single");
     ensure_topic(&topic).await;
-    let (_consumer, _receiver) = tcp_warm_topic(&topic).await;
+    let (_consumer, mut receiver) = tcp_warm_topic(&topic).await;
 
     let producer = tcp_producer().await;
     let receipt = producer
@@ -38,6 +54,10 @@ async fn tcp_publish_single() {
         .await
         .expect("TCP publish");
     assert_eq!(receipt.code, 0, "TCP publish should succeed: {receipt:?}");
+    assert_eq!(
+        receive(&mut receiver).await.content.as_deref(),
+        Some("hello from rust TCP e2e")
+    );
     producer.shutdown().await;
 }
 
@@ -46,9 +66,31 @@ async fn tcp_broadcast() {
     require_runtime!();
     let topic = unique_topic("tcp-broadcast");
     ensure_topic(&topic).await;
-    let (_consumer, _receiver) = tcp_warm_topic(&topic).await;
-
     let producer = tcp_producer().await;
+    let receipt = producer
+        .publish(Message::from(EventMeshMessage::new(
+            &topic,
+            "warm TCP broadcast topic",
+        )))
+        .await
+        .expect("warm TCP broadcast topic");
+    assert_eq!(receipt.code, 0, "warm publish should succeed: {receipt:?}");
+
+    let (listener, mut receiver) = CollectingListener::new();
+    let consumer = tcp_client()
+        .consumer(consumer_options(), listener)
+        .await
+        .expect("open TCP broadcast consumer");
+    consumer
+        .subscribe(Subscription::new(&topic).with_delivery_mode(DeliveryMode::Broadcast))
+        .await
+        .expect("subscribe TCP broadcast consumer");
+    // The RocketMQ broadcast consumer refreshes topic routes on a 30-second
+    // interval.  Wait for that initial rebalance before sending the message
+    // under test; otherwise the first message can arrive before the consumer
+    // owns a queue and be skipped by its `CONSUME_FROM_LAST_OFFSET` policy.
+    tokio::time::sleep(Duration::from_secs(30)).await;
+
     producer
         .broadcast(Message::from(EventMeshMessage::new(
             &topic,
@@ -56,5 +98,15 @@ async fn tcp_broadcast() {
         )))
         .await
         .expect("TCP broadcast");
+    assert_eq!(
+        tokio::time::timeout(Duration::from_secs(35), receiver.recv())
+            .await
+            .expect("timed out waiting for TCP broadcast delivery")
+            .expect("broadcast handler channel closed")
+            .content
+            .as_deref(),
+        Some("broadcast from rust TCP e2e")
+    );
     producer.shutdown().await;
+    consumer.shutdown().await;
 }

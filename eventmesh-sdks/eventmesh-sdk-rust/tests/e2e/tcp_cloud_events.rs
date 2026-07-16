@@ -19,18 +19,41 @@
 
 use std::time::Duration;
 
-use cloudevents::{EventBuilder, EventBuilderV10};
-use eventmesh::message::Message;
+use cloudevents::{AttributesReader, Event, EventBuilder, EventBuilderV10};
+use eventmesh::{message::Message, MessageHandler, Result};
+use tokio::sync::mpsc;
 
-use crate::harness::{ensure_topic, tcp_producer, tcp_warm_topic, unique_topic};
+use crate::harness::{consumer_options, ensure_topic, tcp_client, tcp_producer, unique_topic};
 use crate::require_runtime;
+
+struct CloudEventListener {
+    tx: mpsc::UnboundedSender<Event>,
+}
+
+impl MessageHandler for CloudEventListener {
+    async fn handle(&self, message: Message) -> Result<Option<Message>> {
+        if let Message::CloudEvent(event) = message {
+            let _ = self.tx.send(event);
+        }
+        Ok(None)
+    }
+}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_cloud_event() {
     require_runtime!();
     let topic = unique_topic("tcp-ce-pub");
     ensure_topic(&topic).await;
-    let (consumer, mut receiver) = tcp_warm_topic(&topic).await;
+    let (tx, mut receiver) = mpsc::unbounded_channel();
+    let consumer = tcp_client()
+        .consumer(consumer_options(), CloudEventListener { tx })
+        .await
+        .expect("open TCP CloudEvent consumer");
+    consumer
+        .subscribe(eventmesh::subscription::Subscription::new(&topic))
+        .await
+        .expect("subscribe TCP CloudEvent consumer");
+    tokio::time::sleep(Duration::from_millis(800)).await;
     let producer = tcp_producer().await;
 
     let event = EventBuilderV10::new()
@@ -54,11 +77,10 @@ async fn tcp_publish_cloud_event() {
         .await
         .expect("timed out waiting for CloudEvent delivery")
         .expect("handler channel closed");
-    assert_eq!(received.topic.as_deref(), Some(topic.as_str()));
-    assert!(received
-        .content
-        .as_deref()
-        .is_some_and(|content| content.contains("hello from rust tcp cloudevents e2e")));
+    assert_eq!(received.subject(), Some(topic.as_str()));
+    assert!(serde_json::to_string(&received)
+        .expect("serialize received CloudEvent")
+        .contains("hello from rust tcp cloudevents e2e"));
 
     producer.shutdown().await;
     consumer.shutdown().await;

@@ -21,13 +21,23 @@ use eventmesh::message::{EventMeshMessage, Message};
 
 use crate::harness::{ensure_topic, http_producer, http_warm_topic, unique_topic};
 use crate::require_runtime;
+use std::time::Duration;
+
+async fn receive(
+    receiver: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
+) -> EventMeshMessage {
+    tokio::time::timeout(Duration::from_secs(15), receiver.recv())
+        .await
+        .expect("timed out waiting for HTTP delivery")
+        .expect("handler channel closed")
+}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn http_publish_single() {
     require_runtime!();
     let topic = unique_topic("http-pub-single");
     ensure_topic(&topic).await;
-    let (_handle, _receiver) = http_warm_topic(&topic).await;
+    let (_handle, mut receiver) = http_warm_topic(&topic).await;
 
     let receipt = http_producer()
         .publish(Message::from(EventMeshMessage::new(
@@ -37,4 +47,8 @@ async fn http_publish_single() {
         .await
         .expect("HTTP publish");
     assert_eq!(receipt.code, 0, "HTTP publish should succeed: {receipt:?}");
+    assert_eq!(
+        receive(&mut receiver).await.content.as_deref(),
+        Some("hello from rust http e2e")
+    );
 }

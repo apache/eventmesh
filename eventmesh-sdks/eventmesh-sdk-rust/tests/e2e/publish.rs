@@ -21,13 +21,23 @@ use eventmesh::message::{EventMeshMessage, Message};
 
 use crate::harness::{ensure_topic, grpc_producer, unique_topic, warm_topic};
 use crate::require_runtime;
+use std::time::Duration;
+
+async fn receive(
+    receiver: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
+) -> EventMeshMessage {
+    tokio::time::timeout(Duration::from_secs(10), receiver.recv())
+        .await
+        .expect("timed out waiting for gRPC delivery")
+        .expect("handler channel closed")
+}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn publish_single() {
     require_runtime!();
     let topic = unique_topic("pub-single");
     ensure_topic(&topic).await;
-    let (_consumer, _receiver) = warm_topic(&topic).await;
+    let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     let receipt = grpc_producer()
         .publish(Message::from(EventMeshMessage::new(
@@ -37,6 +47,10 @@ async fn publish_single() {
         .await
         .expect("publish");
     assert_eq!(receipt.code, 0, "publish should succeed: {receipt:?}");
+    assert_eq!(
+        receive(&mut receiver).await.content.as_deref(),
+        Some("hello from rust e2e")
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -44,7 +58,7 @@ async fn publish_batch() {
     require_runtime!();
     let topic = unique_topic("pub-batch");
     ensure_topic(&topic).await;
-    let (_consumer, _receiver) = warm_topic(&topic).await;
+    let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     let messages = (0..3)
         .map(|index| {
@@ -59,6 +73,15 @@ async fn publish_batch() {
         .await
         .expect("batch publish");
     assert_eq!(receipt.code, 0, "batch publish should succeed: {receipt:?}");
+    let mut contents = Vec::new();
+    for _ in 0..3 {
+        contents.push(receive(&mut receiver).await.content.unwrap_or_default());
+    }
+    contents.sort();
+    assert_eq!(
+        contents,
+        ["batch message #0", "batch message #1", "batch message #2"]
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -66,18 +89,24 @@ async fn publish_one_way() {
     require_runtime!();
     let topic = unique_topic("pub-oneway");
     ensure_topic(&topic).await;
-    let (_consumer, _receiver) = warm_topic(&topic).await;
+    let (_consumer, mut receiver) = warm_topic(&topic).await;
 
-    grpc_producer()
+    let result = grpc_producer()
         .publish_one_way(Message::from(EventMeshMessage::new(
             &topic,
             "fire-and-forget",
         )))
-        .await
-        .unwrap_or_else(|error| {
+        .await;
+    match result {
+        Ok(()) => assert_eq!(
+            receive(&mut receiver).await.content.as_deref(),
+            Some("fire-and-forget")
+        ),
+        Err(error) => {
             let text = error.to_string();
             if !(text.contains("Unimplemented") || text.contains("unimplemented")) {
                 panic!("publish_one_way: {error}");
             }
-        });
+        }
+    }
 }
