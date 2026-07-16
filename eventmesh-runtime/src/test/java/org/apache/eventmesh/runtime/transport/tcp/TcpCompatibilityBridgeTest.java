@@ -105,7 +105,7 @@ class TcpCompatibilityBridgeTest {
         return CloudEventBuilder.v1().withId(id).withSource(URI.create("svc")).withType("t").build();
     }
 
-    /** Deterministic codec: push frame = "PUSH:<deliveryId>:<eventId>"; ACK frame = "ACK:<deliveryId>". */
+    /** Deterministic codec: push frame = "PUSH:&lt;deliveryId&gt;:&lt;eventId&gt;"; ACK frame = "ACK:&lt;deliveryId&gt;". */
     private static final class StubCodec implements TcpFrameCodec {
 
         @Override
@@ -189,3 +189,4 @@ class TcpCompatibilityBridgeTest {
         }
     }
 }
+

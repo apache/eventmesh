@@ -103,7 +103,7 @@ class SecurityWiringTest {
 
     private static final class InMemStorage implements MeshStoragePlugin {
 
-        private final ConcurrentHashMap<String, Queue<CloudEvent>> q = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, Queue<CloudEvent>> queue = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties p) {
@@ -111,7 +111,7 @@ class SecurityWiringTest {
 
         @Override
         public void send(String topic, CloudEvent event, SendCallback cb) {
-            q.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
+            queue.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
             cb.onSuccess(r);
@@ -149,3 +149,4 @@ class SecurityWiringTest {
         }
     }
 }
+

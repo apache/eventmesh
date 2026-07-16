@@ -170,7 +170,7 @@ public class UniRuntime {
                 // Run dispatcher tick to process any late ACKs / timeouts
                 try {
                     ingress.dispatcherTick();
-                } catch (Exception ignored) {
+                } catch (Exception expected) {
                 }
                 pending = ingress.getDispatcher().pendingCount();
             }
@@ -205,3 +205,4 @@ public class UniRuntime {
         shutdown(10_000L);
     }
 }
+

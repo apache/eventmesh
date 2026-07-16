@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.it;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
@@ -40,10 +39,8 @@ class BrokerListTest {
         RemotingCommand request = RemotingCommand.createRequestCommand(106, null);
         RemotingCommand response = client.invokeSync(namesrv, request, 5000);
 
-        System.out.println("IT-BROKERS response code=" + response.getCode());
         if (response.getBody() != null) {
             String json = new String(response.getBody(), "UTF-8");
-            System.out.println("IT-BROKERS cluster info: " + json.substring(0, Math.min(2000, json.length())));
         }
 
         // Also try fetching route for a test topic
@@ -55,17 +52,13 @@ class BrokerListTest {
         if (routeResp.getBody() != null) {
             TopicRouteData route = org.apache.rocketmq.remoting.protocol.RemotingSerializable.decode(
                 routeResp.getBody(), TopicRouteData.class);
-            System.out.println("IT-BROKERS route for TBW102: " + route.getQueueDatas().size() + " queueDatas, "
-                + route.getBrokerDatas().size() + " brokerDatas");
             for (var qd : route.getQueueDatas()) {
-                System.out.println("IT-BROKERS queueData: broker=" + qd.getBrokerName()
-                    + " readQ=" + qd.getReadQueueNums() + " writeQ=" + qd.getWriteQueueNums());
             }
             for (var bd : route.getBrokerDatas()) {
-                System.out.println("IT-BROKERS brokerData: name=" + bd.getBrokerName()
-                    + " addrs=" + bd.getBrokerAddrs());
             }
         }
         client.shutdown();
     }
 }
+
+

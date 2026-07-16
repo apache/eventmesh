@@ -176,7 +176,7 @@ class UniIngressServiceTest {
     void metricsTrackPublishDispatchAck() throws Exception {
         InMemoryStorage storage = new InMemoryStorage();
         UniIngressService svc = new UniIngressService(storage, new InMemoryOffsetStore());
-        org.apache.eventmesh.runtime.metrics.UniMetrics metrics = svc.getMetrics();
+        final org.apache.eventmesh.runtime.metrics.UniMetrics metrics = svc.getMetrics();
 
         svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
         svc.publish("orders", event("o-1")).get();
@@ -256,3 +256,4 @@ class UniIngressServiceTest {
         }
     }
 }
+

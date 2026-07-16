@@ -126,9 +126,6 @@ class LoadThroughputIntegrationTest {
 
         Set<String> got = distinctIds(received);
         int lost = published - got.size();
-        System.out.println("IT-LOAD published=" + published + " pubMs=" + pubMs
-            + " pubRate=" + (published * 1000L / Math.max(1, pubMs)) + " ev/s"
-            + " received=" + got.size() + " deliveries=" + received.size() + " lost=" + lost);
 
         // No duplicates under load (at-least-once, not many-once).
         assertEquals(received.size(), got.size(),
@@ -164,3 +161,4 @@ class LoadThroughputIntegrationTest {
         }
     }
 }
+

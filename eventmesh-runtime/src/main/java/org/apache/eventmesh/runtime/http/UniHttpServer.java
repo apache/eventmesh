@@ -203,7 +203,7 @@ public class UniHttpServer {
                     writeJson(exchange, 413, error("payload too large (max " + MAX_MESSAGE_SIZE + " bytes)"));
                     return;
                 }
-            } catch (NumberFormatException ignored) {
+            } catch (NumberFormatException expected) {
             }
         }
         String topic = param(exchange.getRequestURI(), "topic");
@@ -348,6 +348,12 @@ public class UniHttpServer {
         } else {
             writeJson(exchange, 404, error("unknown deliveryId"));
         }
+    }
+
+    private static Map<String, Object> ack(String msg) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("status", msg);
+        return m;
     }
 
     private void poll(HttpExchange exchange) throws IOException {
@@ -677,11 +683,6 @@ public class UniHttpServer {
         return m;
     }
 
-    private static Map<String, Object> ack(String msg) {
-        Map<String, Object> m = new HashMap<>();
-        m.put("status", msg);
-        return m;
-    }
 
     private byte[] readAll(HttpExchange exchange) throws IOException {
         return exchange.getRequestBody().readAllBytes();
@@ -720,3 +721,6 @@ public class UniHttpServer {
         return v == null ? dflt : Long.parseLong(v);
     }
 }
+
+
+

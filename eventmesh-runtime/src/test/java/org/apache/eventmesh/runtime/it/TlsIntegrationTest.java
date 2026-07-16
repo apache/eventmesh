@@ -134,23 +134,25 @@ class TlsIntegrationTest {
     /** A client SSLContext that trusts the self-signed cert (permissive TrustManager). */
     private static SSLContext trustAllContext() throws Exception {
         SSLContext ctx = SSLContext.getInstance("TLSv1.3");
-        ctx.init(null, new TrustManager[]{new X509TrustManager() {
+        TrustManager[] tms = new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                    // no-op
+                }
 
-            @Override
-            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                // no-op
-            }
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                    // no-op - trust the self-signed cert
+                }
 
-            @Override
-            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                // no-op — trust the self-signed cert
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[0];
+                }
             }
-
-            @Override
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new java.security.cert.X509Certificate[0];
-            }
-        }}, null);
+        };
+        ctx.init(null, tms, null);
         return ctx;
     }
 
@@ -218,3 +220,7 @@ class TlsIntegrationTest {
         }
     }
 }
+
+
+
+

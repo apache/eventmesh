@@ -49,7 +49,7 @@ class UniAdminServiceTest {
     void adminReflectsRuntimeState() throws Exception {
         InMemoryStorage storage = new InMemoryStorage();
         UniIngressService svc = new UniIngressService(storage, new InMemoryOffsetStore());
-        UniAdminService admin = new UniAdminService(svc);
+        final UniAdminService admin = new UniAdminService(svc);
 
         svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
         svc.publish("orders", event("o-1")).get();
@@ -70,7 +70,7 @@ class UniAdminServiceTest {
     void rejectClientEvictsSubscriptionsAndBuffer() throws Exception {
         InMemoryStorage storage = new InMemoryStorage();
         UniIngressService svc = new UniIngressService(storage, new InMemoryOffsetStore());
-        UniAdminService admin = new UniAdminService(svc);
+        final UniAdminService admin = new UniAdminService(svc);
 
         svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
         svc.publish("orders", event("o-1")).get();
@@ -87,7 +87,7 @@ class UniAdminServiceTest {
         InMemoryStorage storage = new InMemoryStorage();
         UniIngressService svc = new UniIngressService(storage, new InMemoryOffsetStore(),
             new SubscriptionManager(), new PushService(), 1_000L, 1, clock::get);
-        UniAdminService admin = new UniAdminService(svc);
+        final UniAdminService admin = new UniAdminService(svc);
 
         svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
         svc.publish("orders", event("doomed")).get();
@@ -174,3 +174,4 @@ class UniAdminServiceTest {
         }
     }
 }
+

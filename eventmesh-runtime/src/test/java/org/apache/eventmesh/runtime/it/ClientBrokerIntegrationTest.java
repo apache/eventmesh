@@ -89,8 +89,9 @@ class ClientBrokerIntegrationTest {
         if (storage instanceof org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) {
             ((org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) storage).createTopic(topic, 4);
             for (int w = 0; w < 30; w++) {
-                if (((org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) storage).partitionCount(topic) > 0)
+                if (((org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) storage).partitionCount(topic) > 0) {
                     break;
+                }
                 Thread.sleep(1000);
             }
         } else {
@@ -187,3 +188,4 @@ class ClientBrokerIntegrationTest {
         }
     }
 }
+

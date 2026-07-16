@@ -82,6 +82,6 @@ final class BrokerDiscoverer {
             }
             Thread.sleep(500);
         }
-        System.out.println("IT-BROKER route for [" + topic + "] not propagated after 15s (proceeding)");
     }
 }
+

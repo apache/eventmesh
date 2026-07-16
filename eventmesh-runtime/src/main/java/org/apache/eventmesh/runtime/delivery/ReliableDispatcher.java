@@ -179,7 +179,7 @@ public class ReliableDispatcher {
             } else {
                 // Bump attempt, open a fresh ACK window, and redeliver immediately.
                 metrics.incRedelivery();
-                io.opentelemetry.api.trace.Span retrySpan =
+                final io.opentelemetry.api.trace.Span retrySpan =
                     org.apache.eventmesh.runtime.metrics.UniTrace.startRetry(d.getDeliveryId(), d.getAttempt());
                 d.reschedule(now + ackTimeoutMs);
                 pending.put(d.getDeliveryId(), d);
@@ -249,3 +249,4 @@ public class ReliableDispatcher {
         return low + ThreadLocalRandom.current().nextLong(high - low + 1);
     }
 }
+

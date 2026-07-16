@@ -73,7 +73,7 @@ class BatchPublishIntegrationTest {
         driver.scheduleAtFixedRate(() -> {
             try {
                 ingress.pullAndDispatch(TOPIC, 100, 0L);
-            } catch (Exception ignored) {
+            } catch (Exception expected) {
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
         client = CloudEventsClient.builder()
@@ -82,12 +82,15 @@ class BatchPublishIntegrationTest {
 
     @AfterEach
     void tearDown() {
-        if (client != null)
+        if (client != null) {
             client.shutdown();
-        if (driver != null)
+        }
+        if (driver != null) {
             driver.shutdownNow();
-        if (http != null)
+        }
+        if (http != null) {
             http.stop();
+        }
     }
 
     @Test
@@ -113,9 +116,11 @@ class BatchPublishIntegrationTest {
     static final class InMemoryStorage implements MeshStoragePlugin {
 
         final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
+
         @Override
         public void init(java.util.Properties p) {
         }
+
         @Override
         public void send(String topic, CloudEvent event, SendCallback cb) {
             queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
@@ -124,36 +129,46 @@ class BatchPublishIntegrationTest {
             r.setTopic(topic);
             cb.onSuccess(r);
         }
+
         @Override
         public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
-            if (q == null)
+            if (q == null) {
                 return new ArrayList<>();
+            }
             List<CloudEvent> out = new ArrayList<>();
             CloudEvent e;
-            while (out.size() < maxEvents && (e = q.poll()) != null)
+            while (out.size() < maxEvents && (e = q.poll()) != null) {
                 out.add(e);
+            }
             return out;
         }
+
         @Override
         public void assignPartitions(String topic, List<Integer> partitions) {
         }
+
         @Override
         public void commitOffset(String topic, int partition, long offset) {
         }
+
         @Override
         public boolean isStarted() {
             return true;
         }
+
         @Override
         public boolean isClosed() {
             return false;
         }
+
         @Override
         public void start() {
         }
+
         @Override
         public void shutdown() {
         }
     }
 }
+

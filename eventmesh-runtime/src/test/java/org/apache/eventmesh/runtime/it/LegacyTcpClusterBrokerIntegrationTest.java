@@ -97,8 +97,8 @@ class LegacyTcpClusterBrokerIntegrationTest {
     void oldSdkOverRealBrokerAndNacosMeta() throws Exception {
         String storageType = System.getProperty("it.storage", "rocketmq");
         String namesrv = System.getProperty("it.namesrv", "localhost:9092");
-        String nacos = System.getProperty("it.nacos");
-        String selfInstance = "it-tcp-" + System.nanoTime();
+        final String nacos = System.getProperty("it.nacos");
+        final String selfInstance = "it-tcp-" + System.nanoTime();
 
         // 1. Real RocketMQ storage via SPI + ensure the topic exists.
         storage = EventMeshExtensionFactory.getExtension(MeshStoragePlugin.class, storageType);
@@ -175,3 +175,4 @@ class LegacyTcpClusterBrokerIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
+

@@ -188,7 +188,9 @@ public class EventMeshApplication {
         return adminBoundPort;
     }
 
-    /** @return the actual bound WebSocket push port, or -1 if the WS transport isn't enabled. */
+    /**
+     *  @return the actual bound WebSocket push port, or -1 if the WS transport isn't enabled. 
+     */
     public int wsPort() {
         return wsBoundPort;
     }
@@ -196,12 +198,12 @@ public class EventMeshApplication {
     public static void main(String[] args) throws Exception {
         String storageType = System.getProperty("eventmesh.storage.type", "standalone");
         int httpPort = Integer.getInteger("eventmesh.http.port", 8080);
-        int adminPort = Integer.getInteger("eventmesh.admin.port", 8081);
-        String offsetPath = System.getProperty("eventmesh.offset.path", "./data/offset");
+        final int adminPort = Integer.getInteger("eventmesh.admin.port", 8081);
+        final String offsetPath = System.getProperty("eventmesh.offset.path", "./data/offset");
 
         // Cluster config (optional): -Deventmesh.meta.type=nacos -Deventmesh.meta.addr=localhost:8848
-        String metaType = System.getProperty("eventmesh.meta.type", "");
-        String metaAddr = System.getProperty("eventmesh.meta.addr", "");
+        final String metaType = System.getProperty("eventmesh.meta.type", "");
+        final String metaAddr = System.getProperty("eventmesh.meta.addr", "");
         String selfInstance = System.getProperty("eventmesh.instance.id",
             java.net.InetAddress.getLocalHost().getHostAddress() + ":" + httpPort);
 
@@ -289,3 +291,4 @@ public class EventMeshApplication {
         Thread.currentThread().join();
     }
 }
+

@@ -74,8 +74,8 @@ class KafkaClientE2EIntegrationTest {
     void publishSubscribeOverHttpToKafka() throws Exception {
         String bootstrap = System.getProperty("it.namesrv",
             "127.0.0.1:9094");
-        String user = System.getProperty("it.kafka.user", "");
-        String pass = System.getProperty("it.kafka.password", "");
+        final String user = System.getProperty("it.kafka.user", "");
+        final String pass = System.getProperty("it.kafka.password", "");
 
         MeshStoragePlugin storage = EventMeshExtensionFactory.getExtension(MeshStoragePlugin.class, "kafka");
         assertNotNull(storage, "no MeshStoragePlugin registered for 'kafka'");
@@ -93,7 +93,6 @@ class KafkaClientE2EIntegrationTest {
         app = new EventMeshApplication(storage, new InMemoryOffsetStore(), 0, 0);
         app.runtime().withStorageConfig(props);
         app.start();
-        System.out.println("IT-KAFKA-E2E: app started, http port=" + app.trafficPort());
 
         client = CloudEventsClient.builder()
             .runtimeUrl("http://localhost:" + app.trafficPort()).clientId("kafka-e2e").pollIntervalMs(500L).build();
@@ -104,7 +103,6 @@ class KafkaClientE2EIntegrationTest {
 
         CloudEvent event = CloudEventsClient.event("ke-1", "src", "kafka.e2e", "hello-kafka-e2e".getBytes(StandardCharsets.UTF_8));
         assertTrue(client.publish(TOPIC, event), "publish should return 202");
-        System.out.println("IT-KAFKA-E2E: published ke-1");
 
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         while (received.stream().noneMatch("ke-1"::equals) && System.nanoTime() < deadline) {
@@ -112,6 +110,6 @@ class KafkaClientE2EIntegrationTest {
         }
         assertTrue(received.stream().anyMatch("ke-1"::equals),
             "subscribe over HTTP should receive the kafka event (got " + received + ")");
-        System.out.println("IT-KAFKA-E2E: received ke-1");
     }
 }
+

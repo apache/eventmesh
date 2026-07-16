@@ -129,6 +129,7 @@ class UniHttpServerEndpointTest {
         @Override
         public void init(Properties p) {
         }
+
         @Override
         public void send(String topic, CloudEvent event, SendCallback cb) {
             SendResult r = new SendResult();
@@ -136,29 +137,37 @@ class UniHttpServerEndpointTest {
             r.setTopic(topic);
             cb.onSuccess(r);
         }
+
         @Override
         public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             return new ArrayList<>();
         }
+
         @Override
         public void assignPartitions(String topic, List<Integer> partitions) {
         }
+
         @Override
         public void commitOffset(String topic, int partition, long offset) {
         }
+
         @Override
         public boolean isStarted() {
             return true;
         }
+
         @Override
         public boolean isClosed() {
             return false;
         }
+
         @Override
         public void start() {
         }
+
         @Override
         public void shutdown() {
         }
     }
 }
+

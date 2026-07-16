@@ -72,7 +72,7 @@ class WebSocketPushIntegrationTest {
         ingress = new UniIngressService(new InMemoryStorage(), new InMemoryOffsetStore());
         UniAdminService admin = new UniAdminService(ingress);
         http = new UniHttpServer(ingress, admin);
-        int httpPort = http.start(0);
+        final int httpPort = http.start(0);
         ws = new UniWsServer(ingress);
         int wsPort = ws.start(0);
 
@@ -195,3 +195,4 @@ class WebSocketPushIntegrationTest {
         }
     }
 }
+

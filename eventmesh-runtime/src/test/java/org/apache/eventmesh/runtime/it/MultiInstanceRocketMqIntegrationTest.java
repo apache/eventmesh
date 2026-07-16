@@ -84,9 +84,9 @@ class MultiInstanceRocketMqIntegrationTest {
 
     @Test
     void eachMessageDeliveredExactlyOnceAcrossTwoInstances() throws Exception {
-        String storageType = System.getProperty("it.storage", "rocketmq");
+        final String storageType = System.getProperty("it.storage", "rocketmq");
         String namesrv = System.getProperty("it.namesrv", "localhost:9092");
-        String nacos = System.getProperty("it.nacos");
+        final String nacos = System.getProperty("it.nacos");
 
         Properties props = new Properties();
         props.setProperty("namesrvAddr", namesrv);
@@ -152,3 +152,4 @@ class MultiInstanceRocketMqIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
+

@@ -64,7 +64,7 @@ class EventMeshApplicationTest {
 
     private static final class InMemStorage implements MeshStoragePlugin {
 
-        private final ConcurrentHashMap<String, Queue<CloudEvent>> q = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, Queue<CloudEvent>> queue = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties properties) {
@@ -72,7 +72,7 @@ class EventMeshApplicationTest {
 
         @Override
         public void send(String topic, CloudEvent event, SendCallback callback) {
-            q.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
+            queue.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
             callback.onSuccess(r);
@@ -110,3 +110,4 @@ class EventMeshApplicationTest {
         }
     }
 }
+

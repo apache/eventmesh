@@ -38,7 +38,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 
 /**
  * End-to-end integration test of the uni runtime against a REAL message broker (§18 E2E
- * suite, real-service 联调).
+ * suite, real-service ).
  *
  * <p><b>Gated by {@code -Dit.storage}</b> (matches {@code rocketmq|kafka}) so it is skipped in the
  * normal suite. To run against a live RocketMQ nameserver:</p>
@@ -146,3 +146,4 @@ class RealBrokerIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
+

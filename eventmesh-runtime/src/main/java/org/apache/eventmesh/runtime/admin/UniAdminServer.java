@@ -412,6 +412,7 @@ public class UniAdminServer {
         m.put("error", msg);
         return m;
     }
+
     private static String param(URI uri, String name) {
         String query = uri.getQuery();
         if (query == null) {
@@ -431,3 +432,4 @@ public class UniAdminServer {
         return v == null ? dflt : Integer.parseInt(v);
     }
 }
+

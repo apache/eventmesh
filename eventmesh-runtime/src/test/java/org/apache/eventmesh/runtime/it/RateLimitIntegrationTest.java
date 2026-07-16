@@ -84,7 +84,7 @@ class RateLimitIntegrationTest {
     @Test
     void adminRateLimitThrottlesBurstAndIncrementsMetric() throws Exception {
         boot();
-        byte[] event = serialize(CloudEventBuilder());
+        byte[] event = serialize(cloudEventBuilder());
 
         // Install a token bucket: capacity 2 (burst of 2), refill 0.1/s (~0 every 100ms).
         int put = HTTP.send(HttpRequest.newBuilder(URI.create(
@@ -136,8 +136,8 @@ class RateLimitIntegrationTest {
         return EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(event);
     }
 
-    private static CloudEvent CloudEventBuilder() {
-        return io.cloudevents.core.builder.CloudEventBuilder.v1()
+    private static CloudEvent cloudEventBuilder() {
+        return io.cloudevents.core.builder.cloudEventBuilder.v1()
             .withId("e1").withSource(URI.create("it")).withType("it.event").build();
     }
 
@@ -197,3 +197,4 @@ class RateLimitIntegrationTest {
         }
     }
 }
+

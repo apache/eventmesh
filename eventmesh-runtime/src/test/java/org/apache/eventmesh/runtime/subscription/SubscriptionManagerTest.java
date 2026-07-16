@@ -47,7 +47,7 @@ class SubscriptionManagerTest {
      */
     @Test
     void loadBalanceRoundRobinsAcrossSubscribers() {
-        FakeStorage storage = new FakeStorage();
+        final FakeStorage storage = new FakeStorage();
         AtomicLong clock = new AtomicLong(0);
         SubscriptionManager manager = new SubscriptionManager(SubscriptionManager.DEFAULT_MAX_IDLE_MS, clock::get);
 
@@ -125,7 +125,7 @@ class SubscriptionManagerTest {
         SubscriptionManager manager = new SubscriptionManager(maxIdleMs, clock::get);
 
         List<String> received = new ArrayList<>();
-        String subId = manager.subscribe(TOPIC, "worker-1", DistributionMode.BROADCAST, null, e -> received.add(e.getId()));
+        final String subId = manager.subscribe(TOPIC, "worker-1", DistributionMode.BROADCAST, null, e -> received.add(e.getId()));
         assertTrue(manager.activeSubscriptions(TOPIC).size() >= 1);
 
         // Advance the clock past the idle window without heartbeating.
@@ -144,7 +144,7 @@ class SubscriptionManagerTest {
      */
     @Test
     void heartbeatKeepsSubscriptionAlive() {
-        FakeStorage storage = new FakeStorage();
+        final FakeStorage storage = new FakeStorage();
         AtomicLong clock = new AtomicLong(1_000L);
         long maxIdleMs = 10_000L;
         SubscriptionManager manager = new SubscriptionManager(maxIdleMs, clock::get);
@@ -168,7 +168,7 @@ class SubscriptionManagerTest {
      */
     @Test
     void unsubscribeByTopicAndClientRemovesOnlyThatClient() {
-        FakeStorage storage = new FakeStorage();
+        final FakeStorage storage = new FakeStorage();
         AtomicLong clock = new AtomicLong(0);
         SubscriptionManager manager = new SubscriptionManager(SubscriptionManager.DEFAULT_MAX_IDLE_MS, clock::get);
 
@@ -255,3 +255,4 @@ class SubscriptionManagerTest {
         }
     }
 }
+

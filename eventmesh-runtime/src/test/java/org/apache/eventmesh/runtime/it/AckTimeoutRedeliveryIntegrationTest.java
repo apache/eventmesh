@@ -85,7 +85,7 @@ class AckTimeoutRedeliveryIntegrationTest {
 
     @Test
     void noAck_triggersRedelivery_thenDlq() throws Exception {
-        String storageType = System.getProperty("it.storage", "rocketmq");
+        final String storageType = System.getProperty("it.storage", "rocketmq");
         String namesrv = System.getProperty("it.namesrv", "localhost:9092");
 
         java.util.Properties props = new java.util.Properties();
@@ -172,3 +172,4 @@ class AckTimeoutRedeliveryIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
+

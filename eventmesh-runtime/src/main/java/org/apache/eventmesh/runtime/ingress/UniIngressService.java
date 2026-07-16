@@ -424,7 +424,9 @@ public class UniIngressService {
         ((org.apache.eventmesh.api.storage.LiteTopicCapable) storage).createLiteTopic(parentTopic, liteTopic);
     }
 
-    /** @return true iff the storage plugin implements {@link org.apache.eventmesh.api.storage.LiteTopicCapable}. */
+    /**
+     *  @return true iff the storage plugin implements {@link org.apache.eventmesh.api.storage.LiteTopicCapable}. 
+     */
     public boolean isLiteCapable() {
         return storage instanceof org.apache.eventmesh.api.storage.LiteTopicCapable;
     }
@@ -480,7 +482,9 @@ public class UniIngressService {
         return dispatcher;
     }
 
-    /** @return the multi-instance partition ownership (null when clustering is disabled). */
+    /**
+     *  @return the multi-instance partition ownership (null when clustering is disabled). 
+     */
     public org.apache.eventmesh.runtime.cluster.PartitionOwnership getPartitionOwnership() {
         return partitionOwnership;
     }
@@ -586,7 +590,7 @@ public class UniIngressService {
                             try {
                                 int p = Integer.parseInt(e.getKey().substring(sep + 1));
                                 maxByPart.merge(p, e.getValue(), Math::max);
-                            } catch (NumberFormatException ignored) {
+                            } catch (NumberFormatException expected) {
                             }
                         }
                     }
@@ -698,3 +702,4 @@ public class UniIngressService {
         };
     }
 }
+

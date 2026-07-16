@@ -58,15 +58,15 @@ public class UniMetrics {
     private final LongHistogram dispatchLatency;
 
     // Internal mirrors for synchronous reads (tests + admin snapshot). OTel is the export path.
-    private final AtomicLong mPublish = new AtomicLong();
-    private final AtomicLong mPublishFailed = new AtomicLong();
-    private final AtomicLong mRateLimited = new AtomicLong();
-    private final AtomicLong mDispatched = new AtomicLong();
-    private final AtomicLong mAck = new AtomicLong();
-    private final AtomicLong mRedeliveries = new AtomicLong();
-    private final AtomicLong mDlq = new AtomicLong();
-    private final AtomicLong mRequestReply = new AtomicLong();
-    private final AtomicLong mDispatchLatencyNanos = new AtomicLong();
+    private final AtomicLong publish = new AtomicLong();
+    private final AtomicLong publishFailed = new AtomicLong();
+    private final AtomicLong rateLimited = new AtomicLong();
+    private final AtomicLong dispatched = new AtomicLong();
+    private final AtomicLong ack = new AtomicLong();
+    private final AtomicLong redeliveries = new AtomicLong();
+    private final AtomicLong dlq = new AtomicLong();
+    private final AtomicLong requestReply = new AtomicLong();
+    private final AtomicLong dispatchLatencyNanos = new AtomicLong();
 
     public UniMetrics() {
         this(GlobalOpenTelemetry.get().getMeter(METER_NAME));
@@ -89,95 +89,96 @@ public class UniMetrics {
             .ofLongs()
             .build();
     }
+
     public void incPublish() {
         publishCount.add(1);
-        mPublish.incrementAndGet();
+        publish.incrementAndGet();
     }
 
     public void incPublishFailed() {
         publishFailed.add(1);
-        mPublishFailed.incrementAndGet();
+        publishFailed.incrementAndGet();
     }
 
     public void incRateLimited() {
         rateLimited.add(1);
-        mRateLimited.incrementAndGet();
+        rateLimited.incrementAndGet();
     }
 
     public void incDispatched(int n) {
         eventsDispatched.add(n);
-        mDispatched.addAndGet(n);
+        dispatched.addAndGet(n);
     }
 
     public void addDispatchLatencyNanos(long nanos) {
         dispatchLatency.record(nanos);
-        mDispatchLatencyNanos.addAndGet(nanos);
+        dispatchLatencyNanos.addAndGet(nanos);
     }
 
     public void incAck() {
         ackCount.add(1);
-        mAck.incrementAndGet();
+        ack.incrementAndGet();
     }
 
     public void incRedelivery() {
         redeliveries.add(1);
-        mRedeliveries.incrementAndGet();
+        redeliveries.incrementAndGet();
     }
 
     public void incDlq() {
         dlqCount.add(1);
-        mDlq.incrementAndGet();
+        dlq.incrementAndGet();
     }
 
     public void incRequestReply() {
         requestReplyCount.add(1);
-        mRequestReply.incrementAndGet();
+        requestReply.incrementAndGet();
     }
 
     // ---- synchronous read accessors (mirrors) ----
 
     public long getPublishCount() {
-        return mPublish.get();
+        return publish.get();
     }
 
     public long getPublishFailed() {
-        return mPublishFailed.get();
+        return publishFailed.get();
     }
 
     public long getRateLimited() {
-        return mRateLimited.get();
+        return rateLimited.get();
     }
 
     public long getEventsDispatched() {
-        return mDispatched.get();
+        return dispatched.get();
     }
 
     public long getAckCount() {
-        return mAck.get();
+        return ack.get();
     }
 
     public long getRedeliveries() {
-        return mRedeliveries.get();
+        return redeliveries.get();
     }
 
     public long getDlqCount() {
-        return mDlq.get();
+        return dlq.get();
     }
 
     public long getRequestReplyCount() {
-        return mRequestReply.get();
+        return requestReply.get();
     }
 
     public long getDispatchLatencyNanos() {
-        return mDispatchLatencyNanos.get();
+        return dispatchLatencyNanos.get();
     }
 
     /**
      * Average per-event dispatch latency in nanoseconds (0 before any dispatch).
      */
     public double avgDispatchLatencyNanos() {
-        long dispatched = mDispatched.get();
-        return dispatched == 0 ? 0.0 : (double) mDispatchLatencyNanos.get() / dispatched;
+        long dispatched = dispatched.get();
+        return dispatched == 0 ? 0.0 : (double) dispatchLatencyNanos.get() / dispatched;
     }
 
     /**
@@ -243,3 +244,4 @@ public class UniMetrics {
         return meter.counterBuilder(name).setDescription(description).build();
     }
 }
+

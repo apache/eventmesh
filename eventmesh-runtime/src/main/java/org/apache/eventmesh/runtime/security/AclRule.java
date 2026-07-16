@@ -31,6 +31,7 @@ public final class AclRule {
     public enum Action {
         PUBLISH, SUBSCRIBE, REQUEST, ANY
     }
+
     public enum Effect {
         ALLOW, DENY
     }
@@ -86,3 +87,4 @@ public final class AclRule {
         return "AclRule{priority=" + priority + ", " + effect + " " + principal + " " + resource + " " + action + "}";
     }
 }
+

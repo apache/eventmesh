@@ -115,7 +115,7 @@ class SseStreamTest {
 
     private static final class InMemStorage implements MeshStoragePlugin {
 
-        private final ConcurrentHashMap<String, Queue<CloudEvent>> q = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, Queue<CloudEvent>> queue = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties p) {
@@ -123,7 +123,7 @@ class SseStreamTest {
 
         @Override
         public void send(String topic, CloudEvent event, SendCallback cb) {
-            q.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
+            queue.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
             cb.onSuccess(r);
@@ -131,7 +131,7 @@ class SseStreamTest {
 
         @Override
         public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
-            Queue<CloudEvent> queue = q.get(topic);
+            Queue<CloudEvent> queue = queue.get(topic);
             if (queue == null) {
                 return new ArrayList<>();
             }
@@ -170,3 +170,4 @@ class SseStreamTest {
         }
     }
 }
+

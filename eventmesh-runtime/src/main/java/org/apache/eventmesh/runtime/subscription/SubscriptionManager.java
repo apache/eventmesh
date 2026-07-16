@@ -133,7 +133,9 @@ public class SubscriptionManager {
         return true;
     }
 
-    /** @return all topics a client is subscribed to (for cluster-wide unsubscribeByClient propagation). */
+    /**
+     *  @return all topics a client is subscribed to (for cluster-wide unsubscribeByClient propagation). 
+     */
     public Set<String> topicsForClient(String clientId) {
         Set<String> topics = new java.util.HashSet<>();
         for (Map.Entry<String, Set<Subscription>> entry : topicSubscriptions.entrySet()) {
@@ -328,3 +330,4 @@ public class SubscriptionManager {
         }
     }
 }
+

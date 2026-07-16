@@ -342,7 +342,7 @@ public class NacosMetaStore implements MetaStore {
         return inst;
     }
 
-    /** Register (or refresh) one instance: value is "<timestamp>|<address>". */
+    /** Register (or refresh) one instance: value is "&lt;timestamp&gt;|&lt;address&gt;". */
     private void namingRegister(String key, String value) {
         String instanceId = key.substring(INSTANCE_PREFIX.length());
         String[] parts = value.split("\\|", 2);
@@ -370,7 +370,7 @@ public class NacosMetaStore implements MetaStore {
         }
     }
 
-    /** List all instances and reassemble the "<timestamp>|<address>" value ClusterMembership expects. */
+    /** List all instances and reassemble the "&lt;timestamp&gt;|&lt;address&gt;" value ClusterMembership expects. */
     private Map<String, String> namingList() {
         Map<String, String> out = new HashMap<>();
         try {
@@ -422,3 +422,4 @@ public class NacosMetaStore implements MetaStore {
         }
     }
 }
+
