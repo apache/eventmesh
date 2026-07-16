@@ -19,7 +19,7 @@
 
 use crate::config::{ConsumerOptions, GrpcConfig, ProducerOptions};
 use crate::error::{EventMeshError, Result};
-use crate::handler::NativeHandler;
+use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::grpc::{
@@ -72,7 +72,7 @@ impl GrpcClient {
             .collect();
         let inner = LegacyConsumer::subscribe_stream(
             self.config.legacy(None, Some(&options)),
-            NativeHandler::new(handler),
+            PublicHandler::new(handler),
             subscriptions,
             None::<std::future::Ready<()>>,
         )
@@ -89,7 +89,7 @@ pub struct GrpcProducer {
 
 /// A long-lived gRPC stream consumer.
 pub struct GrpcConsumer<H: MessageHandler> {
-    inner: LegacyConsumer<NativeHandler<H>>,
+    inner: LegacyConsumer<PublicHandler<H>>,
 }
 
 impl<H: MessageHandler> GrpcConsumer<H> {
@@ -113,8 +113,7 @@ impl<H: MessageHandler> GrpcConsumer<H> {
 
     /// Wait for stream shutdown.
     pub async fn join(&self) -> Result<()> {
-        self.inner.wait_for_shutdown().await;
-        Ok(())
+        self.inner.wait_for_shutdown().await
     }
 
     pub(crate) async fn has_stream_subscription(&self, topic: &str) -> bool {
@@ -150,7 +149,7 @@ impl GrpcProducer {
                 .map(PublishReceipt::from_legacy),
             Message::Open(message) => self
                 .inner
-                .publish(message.to_event_mesh_message())
+                .publish_open_message(message)
                 .await
                 .map(PublishReceipt::from_legacy),
             #[cfg(feature = "cloud_events")]
@@ -189,21 +188,17 @@ impl GrpcProducer {
                 .map(PublishReceipt::from_legacy);
         }
 
-        let mut native = Vec::with_capacity(messages.len());
-        for message in messages {
-            match message {
-                Message::EventMesh(message) => native.push(message),
-                Message::Open(message) => native.push(message.to_event_mesh_message()),
-                #[cfg(feature = "cloud_events")]
-                Message::CloudEvent(_) => {
-                    return Err(EventMeshError::Unsupported(
-                        "mixed EventMesh/OpenMessaging and CloudEvents gRPC batches".into(),
-                    ));
-                }
-            }
+        #[cfg(feature = "cloud_events")]
+        if messages
+            .iter()
+            .any(|message| matches!(message, Message::CloudEvent(_)))
+        {
+            return Err(EventMeshError::Unsupported(
+                "mixed EventMesh/OpenMessaging and CloudEvents gRPC batches".into(),
+            ));
         }
         self.inner
-            .publish_batch(native)
+            .publish_message_batch(messages)
             .await
             .map(PublishReceipt::from_legacy)
     }
@@ -218,9 +213,8 @@ impl GrpcProducer {
                 .map(Message::EventMesh),
             Message::Open(message) => self
                 .inner
-                .request_reply(message.to_event_mesh_message(), self.timeout)
+                .request_reply_open_message(message, self.timeout)
                 .await
-                .map(crate::message::OpenMessage::from_event_mesh_message)
                 .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
@@ -236,11 +230,7 @@ impl GrpcProducer {
     pub async fn publish_one_way(&self, message: Message) -> Result<()> {
         match message {
             Message::EventMesh(message) => self.inner.publish_one_way(message).await,
-            Message::Open(message) => {
-                self.inner
-                    .publish_one_way(message.to_event_mesh_message())
-                    .await
-            }
+            Message::Open(message) => self.inner.publish_one_way_open_message(message).await,
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(_) => Err(EventMeshError::Unsupported(
                 "gRPC one-way CloudEvents publishing".into(),

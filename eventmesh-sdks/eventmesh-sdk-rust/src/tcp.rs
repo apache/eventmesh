@@ -19,7 +19,7 @@
 
 use crate::config::{ConsumerOptions, ProducerOptions, TcpConfig};
 use crate::error::Result;
-use crate::handler::NativeHandler;
+use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::tcp::{TcpConsumer as LegacyConsumer, TcpProducer as LegacyProducer};
@@ -54,7 +54,7 @@ impl TcpClient {
         Ok(TcpConsumer {
             inner: LegacyConsumer::connect(
                 self.config.legacy(None, Some(&options)),
-                NativeHandler::new(handler),
+                PublicHandler::new(handler),
                 None::<std::future::Ready<()>>,
             )
             .await?,
@@ -70,7 +70,7 @@ pub struct TcpProducer {
 
 /// A long-lived TCP consumer.
 pub struct TcpConsumer<H: MessageHandler> {
-    inner: LegacyConsumer<NativeHandler<H>>,
+    inner: LegacyConsumer<PublicHandler<H>>,
 }
 
 impl<H: MessageHandler> TcpConsumer<H> {
@@ -94,8 +94,25 @@ impl<H: MessageHandler> TcpConsumer<H> {
 
     /// Wait for TCP consumer shutdown.
     pub async fn join(&self) -> Result<()> {
-        let _ = self.inner.wait_for_shutdown().await;
-        Ok(())
+        shutdown_result(self.inner.wait_for_shutdown().await)
+    }
+}
+
+fn shutdown_result(reason: crate::transport::tcp::ShutdownReason) -> Result<()> {
+    match reason {
+        crate::transport::tcp::ShutdownReason::Cancelled => Ok(()),
+        crate::transport::tcp::ShutdownReason::Redirect(info) => {
+            Err(crate::error::EventMeshError::Tcp(format!(
+                "server redirected consumer to {}:{}",
+                info.ip, info.port
+            )))
+        }
+        crate::transport::tcp::ShutdownReason::ChannelClosed => Err(
+            crate::error::EventMeshError::ChannelClosed("TCP consumer connection closed".into()),
+        ),
+        crate::transport::tcp::ShutdownReason::Error(message) => {
+            Err(crate::error::EventMeshError::Tcp(message))
+        }
     }
 }
 
@@ -157,5 +174,29 @@ impl TcpProducer {
     /// Shut down the TCP connection.
     pub async fn shutdown(&self) {
         self.inner.shutdown().await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::transport::tcp::frame::RedirectInfo;
+    use crate::transport::tcp::ShutdownReason;
+
+    #[test]
+    fn abnormal_consumer_shutdown_is_an_error() {
+        assert!(shutdown_result(ShutdownReason::ChannelClosed).is_err());
+        assert!(shutdown_result(ShutdownReason::Error("driver failed".into())).is_err());
+        let error = shutdown_result(ShutdownReason::Redirect(RedirectInfo {
+            ip: "127.0.0.2".into(),
+            port: 10_000,
+        }))
+        .unwrap_err();
+        assert!(error.to_string().contains("127.0.0.2:10000"));
+    }
+
+    #[test]
+    fn cancelled_consumer_shutdown_is_clean() {
+        assert!(shutdown_result(ShutdownReason::Cancelled).is_ok());
     }
 }

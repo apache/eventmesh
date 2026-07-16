@@ -73,12 +73,17 @@ impl TcpProducer {
         &self,
         message: crate::model::OpenMessage,
     ) -> Result<PublishResponse> {
-        self.publish(message.to_event_mesh_message()).await
+        validate_publish(&message.to_event_mesh_message())?;
+        let pkg = message::build_open_message_package(&message, Command::AsyncMessageToServer)?;
+        let response = message::response_from_pkg(&self.conn.io(pkg, self.config.timeout).await?);
+        ensure_success(response, "publish failed")
     }
 
     /// Broadcast an OpenMessaging-style message.
     pub async fn broadcast_open_message(&self, message: crate::model::OpenMessage) -> Result<()> {
-        self.broadcast(message.to_event_mesh_message()).await
+        validate_publish(&message.to_event_mesh_message())?;
+        let pkg = message::build_open_message_package(&message, Command::BroadcastMessageToServer)?;
+        self.conn.send(pkg).await
     }
 
     /// Send an OpenMessaging-style request and wait for its reply.
@@ -87,9 +92,18 @@ impl TcpProducer {
         message: crate::model::OpenMessage,
         timeout: Duration,
     ) -> Result<crate::model::OpenMessage> {
-        self.request_reply(message.to_event_mesh_message(), timeout)
-            .await
+        validate_publish(&message.to_event_mesh_message())?;
+        let pkg = message::build_open_message_package(&message, Command::RequestToServer)?;
+        let response = self.conn.io(pkg, timeout).await?;
+        ensure_success(
+            message::response_from_pkg(&response),
+            "request-reply failed",
+        )?;
+        message::parse_message(&response.body)
             .map(crate::model::OpenMessage::from_event_mesh_message)
+            .ok_or_else(|| {
+                EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
+            })
     }
 
     /// Publish a native CloudEvent over TCP (requires the `cloud_events`
@@ -203,6 +217,17 @@ impl TcpProducer {
     /// Current config.
     pub fn config(&self) -> &TcpClientConfig {
         &self.config
+    }
+}
+
+fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishResponse> {
+    if response.is_success() {
+        Ok(response)
+    } else {
+        Err(EventMeshError::Server {
+            code: response.code.unwrap_or(-1) as i32,
+            message: response.message.unwrap_or_else(|| fallback.into()),
+        })
     }
 }
 

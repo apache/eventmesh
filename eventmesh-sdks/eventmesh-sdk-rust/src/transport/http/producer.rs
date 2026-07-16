@@ -111,7 +111,7 @@ impl HttpProducer {
     ) -> Result<PublishResponse> {
         self.publish_with_protocol(
             message.to_event_mesh_message(),
-            EventMeshProtocolType::EventMeshMessage,
+            EventMeshProtocolType::OpenMessage,
         )
         .await
     }
@@ -126,7 +126,7 @@ impl HttpProducer {
             .request_reply_with_protocol(
                 message.to_event_mesh_message(),
                 timeout,
-                EventMeshProtocolType::EventMeshMessage,
+                EventMeshProtocolType::OpenMessage,
             )
             .await?;
         Ok(crate::model::OpenMessage::from_event_mesh_message(reply))

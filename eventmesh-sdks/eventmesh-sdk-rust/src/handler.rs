@@ -21,8 +21,6 @@
 use std::future::Future;
 
 use crate::error::Result;
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-use crate::message::EventMeshMessage;
 use crate::message::Message;
 
 /// Handles a delivered EventMesh message.
@@ -46,29 +44,25 @@ where
     }
 }
 
-/// Adapter used while the protocol engines are migrated to the v2 handler
-/// contract.  The old engines only accept native EventMesh messages.
+/// Adapter used by the public protocol clients. It preserves the message
+/// dialect selected by the transport decoder.
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-pub(crate) struct NativeHandler<H> {
+pub(crate) struct PublicHandler<H> {
     handler: H,
 }
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-impl<H> NativeHandler<H> {
+impl<H> PublicHandler<H> {
     pub(crate) fn new(handler: H) -> Self {
         Self { handler }
     }
 }
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-impl<H: MessageHandler> crate::MessageListener for NativeHandler<H> {
-    type Message = EventMeshMessage;
+impl<H: MessageHandler> crate::MessageListener for PublicHandler<H> {
+    type Message = Message;
 
-    async fn handle(&self, message: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
-        match self.handler.handle(Message::EventMesh(message)).await {
-            Ok(Some(reply)) => reply.into_event_mesh().map(Some),
-            Ok(None) => Ok(None),
-            Err(error) => Err(error),
-        }
+    async fn handle(&self, message: Message) -> Result<Option<Message>> {
+        self.handler.handle(message).await
     }
 }

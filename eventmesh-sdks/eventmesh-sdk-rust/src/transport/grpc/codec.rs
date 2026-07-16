@@ -201,6 +201,20 @@ pub fn from_event_mesh_message(
     Ok(base_event(attrs, data))
 }
 
+/// Convert an OpenMessaging value to the shared protobuf wire shape while
+/// retaining the `openmessage` protocol discriminator.
+pub fn from_open_message(
+    message: &crate::model::OpenMessage,
+    config: &GrpcClientConfig,
+) -> Result<PbCloudEvent> {
+    let mut event = from_event_mesh_message(&message.to_event_mesh_message(), config)?;
+    event.attributes.insert(
+        ProtocolKey::PROTOCOL_TYPE.into(),
+        attr_str(EventMeshProtocolType::OpenMessage.as_str()),
+    );
+    Ok(event)
+}
+
 /// Build a `CloudEventBatch` from many messages (one RPC, many events).
 pub fn from_event_mesh_messages(
     messages: &[EventMeshMessage],

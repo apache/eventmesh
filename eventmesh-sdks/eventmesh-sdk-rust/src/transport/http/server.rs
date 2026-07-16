@@ -65,7 +65,6 @@ use axum::{routing::post, Router};
 use tracing::info;
 
 use crate::error::{EventMeshError, Result};
-use crate::model::EventMeshMessage;
 use crate::transport::http::webhook::{WebhookHandler, WebhookState};
 use crate::MessageListener;
 
@@ -94,7 +93,8 @@ impl WebhookServer {
     /// Create a webhook server bound to `addr`, dispatching pushes to `listener`.
     pub fn new<L>(addr: SocketAddr, listener: Arc<L>) -> Self
     where
-        L: MessageListener<Message = EventMeshMessage>,
+        L: MessageListener,
+        L::Message: crate::transport::http::webhook::WebhookMessage,
     {
         Self::with_path(addr, listener, DEFAULT_WEBHOOK_PATH)
     }
@@ -102,7 +102,8 @@ impl WebhookServer {
     /// Like [`WebhookServer::new`] but with a custom webhook path.
     pub fn with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Self
     where
-        L: MessageListener<Message = EventMeshMessage>,
+        L: MessageListener,
+        L::Message: crate::transport::http::webhook::WebhookMessage,
     {
         let state = WebhookState::new(listener);
         let router = Router::new()

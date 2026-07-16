@@ -21,6 +21,9 @@ use eventmesh::{
     subscription::{DeliveryMode, DeliveryType, Subscription},
 };
 
+#[cfg(feature = "http")]
+use eventmesh::http::codec::{parse_push_body, PushMessageRequestBody, WebhookReply};
+
 #[test]
 fn native_and_open_models_round_trip_without_public_wire_codecs() {
     let original = OpenMessage::new("orders", "created")
@@ -53,4 +56,13 @@ fn endpoint_sets_require_members() {
         Endpoint::new("::1", 10_205).unwrap().authority(),
         "[::1]:10205"
     );
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn custom_webhook_codec_is_public() {
+    let parsed: PushMessageRequestBody =
+        parse_push_body("content=hello&topic=orders").expect("decode webhook body");
+    assert_eq!(parsed.topic.as_deref(), Some("orders"));
+    assert_eq!(WebhookReply::ok().ret_code, 1);
 }

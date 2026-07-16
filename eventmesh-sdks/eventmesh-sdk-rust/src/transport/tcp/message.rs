@@ -33,6 +33,7 @@ const PROTOCOL_TYPE_KEY: &str = "protocoltype";
 const PROTOCOL_VERSION_KEY: &str = "protocolversion";
 const PROTOCOL_DESC_KEY: &str = "protocoldesc";
 const EM_MESSAGE_PROTOCOL: &str = "eventmeshmessage";
+const OPEN_MESSAGE_PROTOCOL: &str = "openmessage";
 const CLOUD_EVENTS_PROTOCOL: &str = "cloudevents";
 const PROTOCOL_DESC_TCP: &str = "tcp";
 
@@ -215,6 +216,18 @@ pub fn build_message_package(msg: &EventMeshMessage, cmd: Command) -> Result<Pac
     Ok(pkg)
 }
 
+/// Encode an OpenMessaging value using the native TCP body while retaining
+/// the original public protocol discriminator.
+pub(crate) fn build_open_message_package(
+    msg: &crate::model::OpenMessage,
+    cmd: Command,
+) -> Result<Package> {
+    let mut pkg = build_message_package(&msg.to_event_mesh_message(), cmd)?;
+    pkg.header
+        .set_property(PROTOCOL_TYPE_KEY, OPEN_MESSAGE_PROTOCOL);
+    Ok(pkg)
+}
+
 /// Convert a server ACK [`Package`] into a [`PublishResponse`].
 ///
 /// The Java runtime encodes the ACK result in the `Header`'s dedicated `code`
@@ -253,6 +266,11 @@ pub fn parse_message(body: &PackageBody) -> Option<EventMeshMessage> {
 /// to parse the body as a CloudEvent JSON or a TCP-wire `EventMeshMessage`.
 pub fn is_cloudevents(pkg: &Package) -> bool {
     pkg.header.get_string_property(PROTOCOL_TYPE_KEY) == Some(CLOUD_EVENTS_PROTOCOL)
+}
+
+/// Whether the package retains an OpenMessaging protocol discriminator.
+pub(crate) fn is_open_message(pkg: &Package) -> bool {
+    pkg.header.get_string_property(PROTOCOL_TYPE_KEY) == Some(OPEN_MESSAGE_PROTOCOL)
 }
 
 /// Wrap a native [`cloudevents::Event`] into a [`Package`] with the given

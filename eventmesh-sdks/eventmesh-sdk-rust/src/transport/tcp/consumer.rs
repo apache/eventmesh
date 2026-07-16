@@ -70,6 +70,7 @@ use tracing::{debug, info, warn};
 
 use crate::config::TcpClientConfig;
 use crate::error::{EventMeshError, Result};
+use crate::message::Message;
 use crate::model::{EventMeshMessage, OpenMessage, PublishResponse, SubscriptionItem};
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
@@ -118,6 +119,69 @@ impl TcpMessage for EventMeshMessage {
                 .entry(key.clone())
                 .or_insert_with(|| value.clone());
         }
+    }
+}
+
+impl TcpMessage for Message {
+    fn decode_tcp(pkg: &Package) -> Option<Self> {
+        if message::is_cloudevents(pkg) {
+            #[cfg(feature = "cloud_events")]
+            return message::parse_cloud_event(&pkg.body).map(Self::CloudEvent);
+            #[cfg(not(feature = "cloud_events"))]
+            return None;
+        }
+
+        let native = message::parse_message(&pkg.body)?;
+        if message::is_open_message(pkg) {
+            Some(Self::Open(OpenMessage::from_event_mesh_message(native)))
+        } else {
+            Some(Self::EventMesh(native))
+        }
+    }
+
+    fn encode_tcp_reply(&self) -> Result<Package> {
+        match self {
+            Self::EventMesh(message) => {
+                message::build_message_package(message, Command::ResponseToServer)
+            }
+            Self::Open(message) => {
+                message::build_open_message_package(message, Command::ResponseToServer)
+            }
+            #[cfg(feature = "cloud_events")]
+            Self::CloudEvent(event) => {
+                message::build_cloud_event_package(event, Command::ResponseToServer)
+            }
+        }
+    }
+
+    fn inherit_request_metadata(&mut self, request: &Self) {
+        #[cfg(feature = "cloud_events")]
+        if let (Self::CloudEvent(reply), Self::CloudEvent(request)) = (&mut *self, request) {
+            for (key, value) in request.iter_extensions() {
+                if reply.extension(key).is_none() {
+                    reply.set_extension(key, value.clone());
+                }
+            }
+            return;
+        }
+
+        // TCP correlation metadata has no lossless slot in OpenMessage.
+        // Normalize non-CloudEvent replies to EventMeshMessage before merging
+        // request metadata, matching the previous public adapter's behavior.
+        let mut reply = match self.clone() {
+            Self::EventMesh(message) => message,
+            Self::Open(message) => message.to_event_mesh_message(),
+            #[cfg(feature = "cloud_events")]
+            Self::CloudEvent(event) => message::cloud_event_to_message(&event),
+        };
+        let request = match request.clone() {
+            Self::EventMesh(message) => message,
+            Self::Open(message) => message.to_event_mesh_message(),
+            #[cfg(feature = "cloud_events")]
+            Self::CloudEvent(event) => message::cloud_event_to_message(&event),
+        };
+        <EventMeshMessage as TcpMessage>::inherit_request_metadata(&mut reply, &request);
+        *self = Self::EventMesh(reply);
     }
 }
 
@@ -784,6 +848,42 @@ mod tests {
         type Message = EventMeshMessage;
         async fn handle(&self, _: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
             Err(EventMeshError::Tcp("listener failure".into()))
+        }
+    }
+
+    #[test]
+    fn public_message_preserves_open_protocol() {
+        let open = OpenMessage::new("orders", "created");
+        let package =
+            message::build_open_message_package(&open, Command::AsyncMessageToClient).unwrap();
+        let decoded = <Message as TcpMessage>::decode_tcp(&package).expect("decode message");
+        assert_eq!(decoded, Message::Open(open));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn public_message_preserves_cloud_event_protocol() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("event-1")
+            .source("urn:test")
+            .ty("orders.created")
+            .subject("orders")
+            .data("application/cloudevents+json", "created")
+            .build()
+            .expect("build event");
+        let package =
+            message::build_cloud_event_package(&event, Command::AsyncMessageToClient).unwrap();
+        let decoded = <Message as TcpMessage>::decode_tcp(&package).expect("decode message");
+        match decoded {
+            Message::CloudEvent(decoded) => {
+                use cloudevents::AttributesReader;
+                assert_eq!(decoded.id(), "event-1");
+                assert_eq!(decoded.subject(), Some("orders"));
+                assert!(decoded.data().is_some());
+            }
+            other => panic!("expected CloudEvent, got {other:?}"),
         }
     }
 

@@ -43,10 +43,12 @@ use tokio::sync::Semaphore;
 use tokio::task::{JoinHandle, JoinSet};
 use tokio_util::sync::CancellationToken;
 use tonic::codegen::tokio_stream::StreamExt;
-use tracing::{debug, error, warn};
+use tracing::{debug, warn};
 
 use crate::common::constants::SDK_STREAM_URL;
+use crate::common::protocol_key::ProtocolKey;
 use crate::error::{EventMeshError, Result};
+use crate::message::Message;
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
 use crate::transport::grpc::client::GrpcClient;
 use crate::transport::grpc::codec;
@@ -63,6 +65,67 @@ pub(crate) struct SubscriptionEntry {
     #[allow(dead_code)]
     pub(crate) item: SubscriptionItem,
     pub(crate) url: String,
+}
+
+/// Message representation supported by the gRPC stream decoder.
+pub trait GrpcMessage: Send + 'static {
+    fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self>
+    where
+        Self: Sized;
+
+    fn encode_grpc(
+        &self,
+        config: &crate::config::GrpcClientConfig,
+    ) -> Result<crate::proto_gen::PbCloudEvent>;
+}
+
+impl GrpcMessage for EventMeshMessage {
+    fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self> {
+        Ok(codec::to_event_mesh_message(event))
+    }
+
+    fn encode_grpc(
+        &self,
+        config: &crate::config::GrpcClientConfig,
+    ) -> Result<crate::proto_gen::PbCloudEvent> {
+        codec::from_event_mesh_message(self, config)
+    }
+}
+
+impl GrpcMessage for Message {
+    fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self> {
+        let protocol_type = event
+            .attributes
+            .get(ProtocolKey::PROTOCOL_TYPE)
+            .map(crate::proto_gen::attr_as_str)
+            .unwrap_or_default();
+
+        if protocol_type == EventMeshProtocolType::CloudEvents.as_str() {
+            #[cfg(feature = "cloud_events")]
+            return codec::to_cloudevent(event.clone()).map(Self::CloudEvent);
+        }
+
+        let native = codec::to_event_mesh_message(event);
+        if protocol_type == EventMeshProtocolType::OpenMessage.as_str() {
+            Ok(Self::Open(
+                crate::model::OpenMessage::from_event_mesh_message(native),
+            ))
+        } else {
+            Ok(Self::EventMesh(native))
+        }
+    }
+
+    fn encode_grpc(
+        &self,
+        config: &crate::config::GrpcClientConfig,
+    ) -> Result<crate::proto_gen::PbCloudEvent> {
+        match self {
+            Self::EventMesh(message) => codec::from_event_mesh_message(message, config),
+            Self::Open(message) => codec::from_open_message(message, config),
+            #[cfg(feature = "cloud_events")]
+            Self::CloudEvent(event) => codec::from_cloudevent(event, config),
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +212,10 @@ async fn await_task<T: Send + 'static>(handle: &Mutex<Option<JoinHandle<T>>>) ->
 /// # Ok(())
 /// # }
 /// ```
-pub struct GrpcStreamConsumer<L: MessageListener<Message = EventMeshMessage>> {
+pub struct GrpcStreamConsumer<L: MessageListener>
+where
+    L::Message: GrpcMessage,
+{
     client: GrpcClient,
     config: crate::config::GrpcClientConfig,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -160,7 +226,10 @@ pub struct GrpcStreamConsumer<L: MessageListener<Message = EventMeshMessage>> {
     driver_handle: Mutex<Option<JoinHandle<Result<()>>>>,
 }
 
-impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
+impl<L: MessageListener> GrpcStreamConsumer<L>
+where
+    L::Message: GrpcMessage,
+{
     /// Open a bidirectional stream subscription and spawn the receive loop +
     /// heartbeat as background tasks.
     ///
@@ -390,14 +459,26 @@ impl<L: MessageListener<Message = EventMeshMessage>> GrpcStreamConsumer<L> {
     ///
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the tasks exit naturally (e.g. the server closes the stream).
-    pub async fn wait_for_shutdown(&self) {
+    pub async fn wait_for_shutdown(&self) -> Result<()> {
         self.shutdown.cancelled().await;
-        await_task(&self.driver_handle).await;
+        let driver_result = match self.driver_handle.lock().await.take() {
+            Some(handle) => match handle.await {
+                Ok(result) => result,
+                Err(error) => Err(EventMeshError::ChannelClosed(format!(
+                    "gRPC consumer driver task panicked: {error}"
+                ))),
+            },
+            None => Ok(()),
+        };
         await_task(&self.heartbeat_handle).await;
+        driver_result
     }
 }
 
-impl<L: MessageListener<Message = EventMeshMessage>> Drop for GrpcStreamConsumer<L> {
+impl<L: MessageListener> Drop for GrpcStreamConsumer<L>
+where
+    L::Message: GrpcMessage,
+{
     fn drop(&mut self) {
         self.shutdown.cancel();
         if let Ok(mut guard) = self.heartbeat_handle.try_lock() {
@@ -703,17 +784,22 @@ async fn unsubscribe_webhook_rpc(
 /// completion (mirroring axum's graceful-shutdown behaviour) before clearing
 /// `stream_tx` and returning.  `Drop` of the consumer aborts the driver task,
 /// which drops the `JoinSet` and aborts any remaining in-flight handlers.
-fn spawn_stream_driver(
+fn spawn_stream_driver<L>(
     mut stream: tonic::Streaming<crate::proto_gen::PbCloudEvent>,
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
-    listener: Arc<impl MessageListener<Message = EventMeshMessage>>,
+    listener: Arc<L>,
     config: crate::config::GrpcClientConfig,
     stream_tx: StreamTx,
     shutdown: CancellationToken,
-) -> JoinHandle<Result<()>> {
+) -> JoinHandle<Result<()>>
+where
+    L: MessageListener,
+    L::Message: GrpcMessage,
+{
     tokio::spawn(async move {
         let semaphore = Arc::new(Semaphore::new(config.max_concurrent_handlers.max(1)));
-        let mut join_set: JoinSet<()> = JoinSet::new();
+        let mut join_set: JoinSet<Result<()>> = JoinSet::new();
+        let mut terminal_error = None;
 
         loop {
             tokio::select! {
@@ -727,15 +813,23 @@ fn spawn_stream_driver(
                     }
                     Some(Err(status)) => {
                         warn!("stream receive error: {status}");
-                        continue;
+                        terminal_error = Some(EventMeshError::from(status));
+                        shutdown.cancel();
+                        break;
                     }
                     Some(Ok(cloud_event)) => {
-                        let eventmesh_msg = codec::to_event_mesh_message(&cloud_event);
-                        if eventmesh_msg.biz_seq_no.is_none() {
+                        if codec::get_seq_num(&cloud_event).is_empty() {
                             debug!("skipping control frame (no seqnum)");
                             continue;
                         }
-                        debug!("delivered topic={:?}", eventmesh_msg.topic);
+                        let message = match L::Message::decode_grpc(&cloud_event) {
+                            Ok(message) => message,
+                            Err(error) => {
+                                terminal_error = Some(error);
+                                shutdown.cancel();
+                                break;
+                            }
+                        };
                         // Acquire a permit (bounded concurrency) but allow
                         // shutdown to interrupt the wait.  The permit lives
                         // for the duration of the spawned handler task.
@@ -748,12 +842,11 @@ fn spawn_stream_driver(
                         };
                         join_set.spawn(handle_one(
                             cloud_event,
-                            eventmesh_msg,
+                            message,
                             Arc::clone(&listener),
                             Arc::clone(&reply_tx),
                             config.clone(),
                             permit,
-                            shutdown.clone(),
                         ));
                     }
                 },
@@ -763,13 +856,29 @@ fn spawn_stream_driver(
                 // fire on this branch every iteration.  The async block keeps the
                 // future Pending when the set is empty, so the loop only wakes
                 // when the stream delivers, a task completes, or shutdown fires.
-                _ = async {
+                completed = async {
                     if !join_set.is_empty() {
-                        join_set.join_next().await;
+                        join_set.join_next().await
                     } else {
-                        std::future::pending::<()>().await;
+                        std::future::pending().await
                     }
-                } => {}
+                } => {
+                    match completed {
+                        Some(Ok(Ok(()))) | None => {}
+                        Some(Ok(Err(error))) => {
+                            terminal_error = Some(error);
+                            shutdown.cancel();
+                            break;
+                        }
+                        Some(Err(error)) => {
+                            terminal_error = Some(EventMeshError::ChannelClosed(format!(
+                                "gRPC message handler task panicked: {error}"
+                            )));
+                            shutdown.cancel();
+                            break;
+                        }
+                    }
+                }
                 _ = shutdown.cancelled() => {
                     debug!("subscribe stream shutting down");
                     break;
@@ -780,10 +889,20 @@ fn spawn_stream_driver(
         // Drain: wait for all in-flight handlers to finish (mirrors axum's
         // graceful-shutdown semantics).  `Drop` of the consumer aborts the
         // driver task instead, cancelling these immediately.
-        while join_set.join_next().await.is_some() {}
+        while let Some(completed) = join_set.join_next().await {
+            if terminal_error.is_none() {
+                terminal_error = match completed {
+                    Ok(Ok(())) => None,
+                    Ok(Err(error)) => Some(error),
+                    Err(error) => Some(EventMeshError::ChannelClosed(format!(
+                        "gRPC message handler task panicked: {error}"
+                    ))),
+                };
+            }
+        }
 
         *stream_tx.lock().await = None;
-        Ok(())
+        terminal_error.map_or(Ok(()), Err)
     })
 }
 
@@ -792,30 +911,28 @@ fn spawn_stream_driver(
 /// The `_permit` is held for the lifetime of this future; dropping it (when
 /// the future completes or is cancelled) releases the concurrency slot back
 /// to the semaphore, allowing the receive loop to pull the next message.
-async fn handle_one<L: MessageListener<Message = EventMeshMessage>>(
+async fn handle_one<L: MessageListener>(
     cloud_event: crate::proto_gen::PbCloudEvent,
-    eventmesh_msg: EventMeshMessage,
+    message: L::Message,
     listener: Arc<L>,
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
     config: crate::config::GrpcClientConfig,
     _permit: tokio::sync::OwnedSemaphorePermit,
-    shutdown: CancellationToken,
-) {
-    match listener.handle(eventmesh_msg).await {
-        Ok(Some(reply)) => match build_reply(reply, &cloud_event, &config) {
-            Ok(reply_event) => {
-                if reply_tx.send(reply_event).await.is_err() {
-                    warn!("reply channel closed; reply dropped");
-                }
-            }
-            Err(e) => error!("failed to encode reply: {e}"),
-        },
-        Ok(None) => { /* async ack: nothing to send back */ }
-        Err(error) => {
-            error!(%error, "stream handler failed; closing stream without acknowledgement");
-            shutdown.cancel();
+) -> Result<()>
+where
+    L::Message: GrpcMessage,
+{
+    match listener.handle(message).await? {
+        Some(reply) => {
+            let reply_event = build_reply(&reply, &cloud_event, &config)?;
+            reply_tx
+                .send(reply_event)
+                .await
+                .map_err(|_| EventMeshError::ChannelClosed("gRPC reply channel closed".into()))?;
         }
+        None => { /* async ack: nothing to send back */ }
     }
+    Ok(())
 }
 
 /// Build a reply CloudEvent (used by the stream receive loop when the listener
@@ -825,12 +942,12 @@ async fn handle_one<L: MessageListener<Message = EventMeshMessage>>(
 /// request's attributes are carried over into the reply so the broker can
 /// correlate the reply with the original request.  The reply's own attributes
 /// take precedence.
-pub(crate) fn build_reply(
-    reply: EventMeshMessage,
+pub(crate) fn build_reply<M: GrpcMessage>(
+    reply: &M,
     request: &crate::proto_gen::PbCloudEvent,
     config: &crate::config::GrpcClientConfig,
 ) -> Result<crate::proto_gen::PbCloudEvent> {
-    let mut event = codec::from_event_mesh_message(&reply, config)?;
+    let mut event = reply.encode_grpc(config)?;
     for (key, value) in &request.attributes {
         event
             .attributes
@@ -839,4 +956,79 @@ pub(crate) fn build_reply(
     }
     codec::mark_as_reply(&mut event);
     Ok(event)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn config() -> crate::config::GrpcClientConfig {
+        crate::config::GrpcClientConfig::builder().build()
+    }
+
+    #[test]
+    fn public_message_preserves_open_protocol() {
+        let original = Message::Open(crate::model::OpenMessage::new("orders", "created"));
+        let wire = original
+            .encode_grpc(&config())
+            .expect("encode open message");
+        assert_eq!(
+            wire.attributes
+                .get(ProtocolKey::PROTOCOL_TYPE)
+                .map(crate::proto_gen::attr_as_str)
+                .as_deref(),
+            Some(EventMeshProtocolType::OpenMessage.as_str())
+        );
+        let decoded = Message::decode_grpc(&wire).expect("decode open message");
+        match decoded {
+            Message::Open(message) => {
+                assert_eq!(message.topic.as_deref(), Some("orders"));
+                assert_eq!(message.body.as_deref(), Some("created"));
+            }
+            other => panic!("expected Open message, got {other:?}"),
+        }
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn public_message_preserves_cloud_event_protocol_and_reply_metadata() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("event-1")
+            .source("urn:test")
+            .ty("orders.created")
+            .subject("orders")
+            .data("application/json", "created")
+            .build()
+            .expect("build event");
+        let original = Message::CloudEvent(event);
+        let mut request = original
+            .encode_grpc(&config())
+            .expect("encode CloudEvent request");
+        request.attributes.insert(
+            "correlation-id".into(),
+            crate::proto_gen::attr_str("request-7"),
+        );
+
+        let decoded = Message::decode_grpc(&request).expect("decode CloudEvent request");
+        assert!(matches!(decoded, Message::CloudEvent(_)));
+        let reply = build_reply(&original, &request, &config()).expect("encode reply");
+        assert_eq!(
+            reply
+                .attributes
+                .get(ProtocolKey::PROTOCOL_TYPE)
+                .map(crate::proto_gen::attr_as_str)
+                .as_deref(),
+            Some(EventMeshProtocolType::CloudEvents.as_str())
+        );
+        assert_eq!(
+            reply
+                .attributes
+                .get("correlation-id")
+                .map(crate::proto_gen::attr_as_str)
+                .as_deref(),
+            Some("request-7")
+        );
+    }
 }

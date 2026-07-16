@@ -49,6 +49,82 @@ impl GrpcProducer {
         Ok(())
     }
 
+    /// Publish an OpenMessaging value while retaining its protocol type.
+    pub async fn publish_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+    ) -> Result<PublishResponse> {
+        validate_publish(&message.to_event_mesh_message())?;
+        let event = codec::from_open_message(&message, &self.config)?;
+        let response =
+            codec::to_response(&timed(self.config.timeout, self.client.publish(event)).await?);
+        ensure_success(response, "publish failed")
+    }
+
+    /// Send an OpenMessaging request and decode its reply as OpenMessaging.
+    pub async fn request_reply_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+        timeout: Duration,
+    ) -> Result<crate::model::OpenMessage> {
+        validate_publish(&message.to_event_mesh_message())?;
+        let event = codec::from_open_message(&message, &self.config)?;
+        let response = tokio::time::timeout(timeout, self.client.request_reply(event))
+            .await
+            .map_err(|_| EventMeshError::Timeout(timeout))??;
+        ensure_success(codec::to_response(&response), "request-reply failed")?;
+        Ok(crate::model::OpenMessage::from_event_mesh_message(
+            codec::to_event_mesh_message(&response),
+        ))
+    }
+
+    /// Publish an OpenMessaging value without waiting for a broker response.
+    pub async fn publish_one_way_open_message(
+        &self,
+        message: crate::model::OpenMessage,
+    ) -> Result<()> {
+        validate_publish(&message.to_event_mesh_message())?;
+        let event = codec::from_open_message(&message, &self.config)?;
+        timed(self.config.timeout, self.client.publish_one_way(event)).await?;
+        Ok(())
+    }
+
+    /// Publish a native/OpenMessaging batch with a protocol discriminator on
+    /// every element.
+    pub(crate) async fn publish_message_batch(
+        &self,
+        messages: Vec<crate::message::Message>,
+    ) -> Result<PublishResponse> {
+        let mut events = Vec::with_capacity(messages.len());
+        for message in messages {
+            events.push(match message {
+                crate::message::Message::EventMesh(message) => {
+                    validate_publish(&message)?;
+                    codec::from_event_mesh_message(&message, &self.config)?
+                }
+                crate::message::Message::Open(message) => {
+                    validate_publish(&message.to_event_mesh_message())?;
+                    codec::from_open_message(&message, &self.config)?
+                }
+                #[cfg(feature = "cloud_events")]
+                crate::message::Message::CloudEvent(_) => {
+                    return Err(EventMeshError::Unsupported(
+                        "CloudEvents must use the CloudEvents batch path".into(),
+                    ));
+                }
+            });
+        }
+        let response = codec::to_response(
+            &timed(
+                self.config.timeout,
+                self.client
+                    .batch_publish(crate::proto_gen::PbCloudEventBatch { events }),
+            )
+            .await?,
+        );
+        ensure_success(response, "batch publish failed")
+    }
+
     #[cfg(feature = "cloud_events")]
     /// Publish a native CloudEvent.
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
@@ -123,6 +199,17 @@ impl GrpcProducer {
             });
         }
         codec::to_cloudevent(response)
+    }
+}
+
+fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishResponse> {
+    if response.is_success() {
+        Ok(response)
+    } else {
+        Err(EventMeshError::Server {
+            code: response.code.unwrap_or(-1) as i32,
+            message: response.message.unwrap_or_else(|| fallback.into()),
+        })
     }
 }
 

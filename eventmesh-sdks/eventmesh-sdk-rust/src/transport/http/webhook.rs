@@ -36,23 +36,80 @@ use axum::Json;
 use bytes::Bytes;
 use tracing::{debug, error, warn};
 
-use crate::model::EventMeshMessage;
+use crate::message::Message;
+use crate::model::{EventMeshMessage, EventMeshProtocolType, OpenMessage};
 use crate::transport::http::codec::{parse_push_body, WebhookReply};
 use crate::MessageListener;
 
+/// Message representation supported by the built-in webhook decoder.
+pub trait WebhookMessage: Send + 'static {
+    fn decode_webhook(
+        body: &crate::transport::http::codec::PushMessageRequestBody,
+        headers: &HeaderMap,
+    ) -> crate::Result<Self>
+    where
+        Self: Sized;
+}
+
+impl WebhookMessage for EventMeshMessage {
+    fn decode_webhook(
+        body: &crate::transport::http::codec::PushMessageRequestBody,
+        _headers: &HeaderMap,
+    ) -> crate::Result<Self> {
+        body.to_event_mesh_message()
+    }
+}
+
+impl WebhookMessage for Message {
+    fn decode_webhook(
+        body: &crate::transport::http::codec::PushMessageRequestBody,
+        headers: &HeaderMap,
+    ) -> crate::Result<Self> {
+        let protocol_type = headers
+            .get("protocoltype")
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or(EventMeshProtocolType::EventMeshMessage.as_str());
+
+        if protocol_type == EventMeshProtocolType::CloudEvents.as_str() {
+            #[cfg(feature = "cloud_events")]
+            {
+                return serde_json::from_str(&body.content)
+                    .map(Self::CloudEvent)
+                    .map_err(crate::error::EventMeshError::Codec);
+            }
+        }
+
+        let native = body.to_event_mesh_message()?;
+        if protocol_type == EventMeshProtocolType::OpenMessage.as_str() {
+            Ok(Self::Open(OpenMessage::from_event_mesh_message(native)))
+        } else {
+            Ok(Self::EventMesh(native))
+        }
+    }
+}
+
 /// Shared state for the webhook handler, holding the message listener.
-pub(crate) struct WebhookState<L: MessageListener<Message = EventMeshMessage>> {
+pub(crate) struct WebhookState<L: MessageListener>
+where
+    L::Message: WebhookMessage,
+{
     listener: Arc<L>,
 }
 
-impl<L: MessageListener<Message = EventMeshMessage>> WebhookState<L> {
+impl<L: MessageListener> WebhookState<L>
+where
+    L::Message: WebhookMessage,
+{
     /// Create state wrapping the given listener.
     pub(crate) fn new(listener: Arc<L>) -> Self {
         Self { listener }
     }
 }
 
-impl<L: MessageListener<Message = EventMeshMessage>> Clone for WebhookState<L> {
+impl<L: MessageListener> Clone for WebhookState<L>
+where
+    L::Message: WebhookMessage,
+{
     fn clone(&self) -> Self {
         Self {
             listener: Arc::clone(&self.listener),
@@ -71,11 +128,14 @@ impl WebhookHandler {
     /// The actual handler function. Extracts the body bytes, parses the
     /// form-urlencoded push body, dispatches to the listener, and returns the
     /// JSON acknowledgment `{"retCode": <int>}`.
-    pub(crate) async fn handle<L: MessageListener<Message = EventMeshMessage>>(
+    pub(crate) async fn handle<L: MessageListener>(
         State(state): State<WebhookState<L>>,
-        _headers: HeaderMap,
+        headers: HeaderMap,
         body: Bytes,
-    ) -> impl IntoResponse {
+    ) -> impl IntoResponse
+    where
+        L::Message: WebhookMessage,
+    {
         let body_str = match std::str::from_utf8(&body) {
             Ok(s) => s,
             Err(e) => {
@@ -92,7 +152,7 @@ impl WebhookHandler {
             }
         };
 
-        let msg = match push_body.to_event_mesh_message() {
+        let msg = match L::Message::decode_webhook(&push_body, &headers) {
             Ok(m) => m,
             Err(e) => {
                 error!("webhook message decode error: {e}");
@@ -100,10 +160,7 @@ impl WebhookHandler {
             }
         };
 
-        debug!(
-            "webhook received topic={:?} bizseqno={:?}",
-            msg.topic, msg.biz_seq_no
-        );
+        debug!("webhook received a message");
 
         match state.listener.handle(msg).await {
             Ok(Some(reply)) => {
@@ -115,10 +172,10 @@ impl WebhookHandler {
                 // this warning is a defensive backstop for messages pushed from
                 // a non-Rust consumer or a legacy subscription.
                 warn!(
-                    "listener produced a reply (topic={:?}) but the HTTP webhook \
+                    "listener produced a reply (type={}) but the HTTP webhook \
                      transport cannot deliver replies; use the gRPC transport for \
                      request/reply",
-                    reply.topic
+                    std::any::type_name_of_val(&reply)
                 );
                 Json(WebhookReply::ok()).into_response()
             }
@@ -128,5 +185,48 @@ impl WebhookHandler {
                 Json(WebhookReply::retry("handler failed")).into_response()
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn push(content: String) -> crate::transport::http::codec::PushMessageRequestBody {
+        crate::transport::http::codec::PushMessageRequestBody {
+            content,
+            bizseqno: Some("seq-1".into()),
+            unique_id: Some("id-1".into()),
+            random_no: None,
+            topic: Some("orders".into()),
+            extfields: None,
+        }
+    }
+
+    #[test]
+    fn public_message_preserves_open_protocol() {
+        let mut headers = HeaderMap::new();
+        headers.insert("protocoltype", "openmessage".parse().unwrap());
+        let decoded = Message::decode_webhook(&push("created".into()), &headers).unwrap();
+        assert!(matches!(decoded, Message::Open(_)));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn public_message_preserves_cloud_event_protocol() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("event-1")
+            .source("urn:test")
+            .ty("orders.created")
+            .build()
+            .unwrap();
+        let mut headers = HeaderMap::new();
+        headers.insert("protocoltype", "cloudevents".parse().unwrap());
+        let decoded =
+            Message::decode_webhook(&push(serde_json::to_string(&event).unwrap()), &headers)
+                .unwrap();
+        assert_eq!(decoded, Message::CloudEvent(event));
     }
 }

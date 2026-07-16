@@ -71,7 +71,7 @@ impl<H: crate::MessageHandler> WebhookServer<H> {
     pub fn new(addr: std::net::SocketAddr, handler: H) -> Self {
         let inner = crate::transport::http::WebhookServer::new(
             addr,
-            std::sync::Arc::new(crate::handler::NativeHandler::new(handler)),
+            std::sync::Arc::new(crate::handler::PublicHandler::new(handler)),
         );
         Self {
             inner,

@@ -17,6 +17,13 @@
 
 //! HTTP client API.
 
+/// Framework-independent helpers for custom webhook endpoints.
+pub mod codec {
+    pub use crate::transport::http::codec::{
+        parse_push_body, PushMessageRequestBody, WebhookReply,
+    };
+}
+
 use crate::config::{ConsumerOptions, HttpConfig, ProducerOptions};
 use crate::error::Result;
 use crate::message::{Message, PublishReceipt};
