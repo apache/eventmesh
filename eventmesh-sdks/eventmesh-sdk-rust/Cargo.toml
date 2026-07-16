@@ -58,6 +58,8 @@ full = ["grpc", "http", "tcp", "cloud_events", "tls"]
 # transports + cloud_events so the full suite (gRPC + HTTP + TCP + CE) compiles
 # from a single flag.
 e2e = ["grpc", "http", "tcp", "cloud_events"]
+# Cross-SDK E2E: starts the Java SDK peer on the host JVM.
+interop_e2e = ["e2e"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }

@@ -45,6 +45,8 @@ mod grpc_concurrent_dispatch;
 mod harness;
 mod http_publish;
 mod http_subscribe;
+#[cfg(feature = "interop_e2e")]
+mod interop;
 mod publish;
 mod request_reply;
 mod runtime;
