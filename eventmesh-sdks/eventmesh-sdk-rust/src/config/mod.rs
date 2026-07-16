@@ -17,10 +17,11 @@
 
 //! Public client configuration.
 //!
-//! All v2 transport configurations require an explicit endpoint.  The old
+//! All transport configurations require an explicit endpoint. The old
 //! transport configuration types remain crate-private adapters while Catalog
 //! and Workflow keep their established public configuration contracts.
 
+mod client;
 #[allow(dead_code)]
 mod grpc;
 #[allow(dead_code)]
@@ -30,7 +31,6 @@ mod identity;
 #[allow(dead_code)]
 mod tcp;
 pub mod tls;
-mod v2;
 
 #[cfg(feature = "grpc")]
 pub mod catalog;
@@ -38,11 +38,11 @@ pub mod catalog;
 #[cfg(feature = "grpc")]
 pub mod workflow;
 
-pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
-pub use v2::{
+pub use client::{
     ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, HttpConfig,
     Identity, LoadBalance, ProducerOptions, ReconnectPolicy, TcpConfig,
 };
+pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
 
 #[cfg(feature = "grpc")]
 pub use catalog::{CatalogClientConfig, CatalogClientConfigBuilder};

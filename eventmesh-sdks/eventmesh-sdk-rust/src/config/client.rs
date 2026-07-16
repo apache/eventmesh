@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Version 2 transport configuration types.
+//! Transport configuration types.
 
 use std::time::Duration;
 
