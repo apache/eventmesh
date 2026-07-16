@@ -56,8 +56,10 @@ public class ConnectorApplication {
     public static void main(String[] args) throws Exception {
         String runtimeUrl = System.getProperty("eventmesh.runtime.url", "http://localhost:8080");
         String offsetPath = System.getProperty("connector.offset.path");
+        int adminPort = Integer.getInteger("connector.admin.port", 0);
         String workerId = System.getProperty("connector.worker.id", "");
         String workerAddress = System.getProperty("connector.worker.address", "");
+        boolean registered = !workerId.isEmpty() && !workerAddress.isEmpty();
 
         EventMeshHttpEndpoint endpoint = new EventMeshHttpEndpoint(runtimeUrl);
         String offsetMode = System.getProperty("connector.offset.mode", "remote");
@@ -89,7 +91,6 @@ public class ConnectorApplication {
         }
 
         // ---- admin server (must be up before registering so runtime can push /control/*) ----
-        int adminPort = Integer.getInteger("connector.admin.port", 0);
         final ConnectorAdminServer adminServer = (adminPort >= 0) ? new ConnectorAdminServer(manager) : null;
         if (adminServer != null) {
             try {
@@ -101,7 +102,6 @@ public class ConnectorApplication {
         }
 
         // Empty at startup is only OK when registered (runtime will push). Static-only mode needs ≥1.
-        boolean registered = !workerId.isEmpty() && !workerAddress.isEmpty();
         if (manager.size() == 0 && !registered) {
             throw new IllegalArgumentException("no connector configured — use -Dconnector.class / "
                 + "-Dconnector.N.class, or set connector.worker.id+connector.worker.address to receive from runtime");
