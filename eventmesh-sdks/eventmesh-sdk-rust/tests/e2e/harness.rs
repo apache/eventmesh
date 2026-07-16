@@ -128,30 +128,56 @@ pub(crate) async fn tcp_producer() -> TcpProducer {
 pub(crate) async fn ensure_topic(topic: &str) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
     let url = format!("http://{HOST}:{ADMIN_PORT}/topic");
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .expect("reqwest client");
 
     for attempt in 0..5u8 {
-        let result = reqwest::Client::builder()
-            .timeout(Duration::from_secs(5))
-            .build()
-            .expect("reqwest client")
-            .post(&url)
-            .form(&[("name", topic)])
-            .send()
-            .await;
+        let result = client.post(&url).form(&[("name", topic)]).send().await;
         match result {
             Ok(response) if response.status().is_success() || response.status().as_u16() == 409 => {
-                return;
+                break;
             }
             Ok(response) => debug!(%topic, status = %response.status(), "ensure_topic response"),
             Err(error) => warn!(%topic, attempt, "ensure_topic error: {error}"),
         }
         tokio::time::sleep(Duration::from_millis(300)).await;
     }
-    warn!(%topic, "ensure_topic gave up after retries; continuing optimistically");
+    // RocketMQ's admin call updates brokers before the new route is visible
+    // through NameServer. A consumer started in that gap logs "topic not
+    // exist" and may not rebalance again until after a short E2E timeout.
+    let deadline = Instant::now() + Duration::from_secs(15);
+    loop {
+        if let Ok(response) = client.get(&url).send().await {
+            if let Ok(topics) = response.json::<Vec<serde_json::Value>>().await {
+                if topics
+                    .iter()
+                    .any(|entry| entry.get("name").and_then(|name| name.as_str()) == Some(topic))
+                {
+                    return;
+                }
+            }
+        }
+        assert!(
+            Instant::now() < deadline,
+            "topic {topic:?} was not visible through EventMesh admin within 15s"
+        );
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
 }
 
 pub(crate) async fn let_stream_settle() {
     tokio::time::sleep(Duration::from_millis(800)).await;
+}
+
+/// The TCP Runtime acknowledges `SUBSCRIBE_REQUEST` before its RocketMQ push
+/// consumer has refreshed routes and sent the new subscription heartbeat.
+/// Route refresh and rebalance run on separate scheduled intervals, so allow
+/// enough time for both before publishing a message under test.
+pub(crate) async fn let_tcp_subscription_settle() {
+    tokio::time::sleep(Duration::from_secs(45)).await;
 }
 
 pub(crate) async fn warm_topic(
@@ -279,7 +305,7 @@ pub(crate) async fn tcp_warm_topic(
         .subscribe(Subscription::new(topic))
         .await
         .expect("subscribe TCP consumer");
-    let_stream_settle().await;
+    let_tcp_subscription_settle().await;
     (consumer, receiver)
 }
 

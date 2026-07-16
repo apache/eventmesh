@@ -23,8 +23,8 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, tcp_client, tcp_producer, tcp_warm_topic, unique_topic,
-    CollectingListener,
+    consumer_options, ensure_topic, let_tcp_subscription_settle, tcp_client, tcp_producer,
+    tcp_warm_topic, unique_topic, CollectingListener,
 };
 use crate::require_runtime;
 use std::time::Duration;
@@ -85,11 +85,7 @@ async fn tcp_broadcast() {
         .subscribe(Subscription::new(&topic).with_delivery_mode(DeliveryMode::Broadcast))
         .await
         .expect("subscribe TCP broadcast consumer");
-    // The RocketMQ broadcast consumer refreshes topic routes on a 30-second
-    // interval.  Wait for that initial rebalance before sending the message
-    // under test; otherwise the first message can arrive before the consumer
-    // owns a queue and be skipped by its `CONSUME_FROM_LAST_OFFSET` policy.
-    tokio::time::sleep(Duration::from_secs(30)).await;
+    let_tcp_subscription_settle().await;
 
     producer
         .broadcast(Message::from(EventMeshMessage::new(

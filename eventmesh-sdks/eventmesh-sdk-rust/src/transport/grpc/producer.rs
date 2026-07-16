@@ -72,7 +72,7 @@ impl GrpcProducer {
         let response = tokio::time::timeout(timeout, self.client.request_reply(event))
             .await
             .map_err(|_| EventMeshError::Timeout(timeout))??;
-        ensure_success(codec::to_response(&response), "request-reply failed")?;
+        ensure_request_reply_success(codec::to_response(&response), "request-reply failed")?;
         Ok(crate::model::OpenMessage::from_event_mesh_message(
             codec::to_event_mesh_message(&response),
         ))
@@ -189,15 +189,10 @@ impl GrpcProducer {
         let response = tokio::time::timeout(timeout, self.client.request_reply(event))
             .await
             .map_err(|_| EventMeshError::Timeout(timeout))??;
-        let status = codec::to_response(&response);
-        if !status.is_success() {
-            return Err(EventMeshError::Server {
-                code: status.code.unwrap_or(-1) as i32,
-                message: status
-                    .message
-                    .unwrap_or_else(|| "CloudEvents request/reply failed".into()),
-            });
-        }
+        ensure_request_reply_success(
+            codec::to_response(&response),
+            "CloudEvents request/reply failed",
+        )?;
         codec::to_cloudevent(response)
     }
 }
@@ -210,6 +205,18 @@ fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishRe
             code: response.code.unwrap_or(-1) as i32,
             message: response.message.unwrap_or_else(|| fallback.into()),
         })
+    }
+}
+
+/// Successful request/reply RPCs return the business CloudEvent directly and
+/// do not attach a `statuscode`. Error replies carry a non-zero status.
+fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Result<()> {
+    match response.code {
+        None | Some(0) => Ok(()),
+        Some(code) => Err(EventMeshError::Server {
+            code: code as i32,
+            message: response.message.unwrap_or_else(|| fallback.into()),
+        }),
     }
 }
 
@@ -263,19 +270,7 @@ impl Publisher for GrpcProducer {
         let resp = tokio::time::timeout(timeout, fut)
             .await
             .map_err(|_| EventMeshError::Timeout(timeout))??;
-        // The runtime reports request/reply failures (ACL denial, invalid
-        // attributes, timeout waiting for a reply, ...) as a response CloudEvent
-        // carrying a nonzero status code. Check it before decoding, mirroring
-        // `publish`, so `?` does not treat a failed reply as a valid message.
-        let response = codec::to_response(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "request/reply failed".into()),
-            });
-        }
+        ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
         Ok(codec::to_event_mesh_message(&resp))
     }
 }
@@ -307,4 +302,26 @@ async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result
     tokio::time::timeout(timeout, f)
         .await
         .map_err(|_| EventMeshError::Timeout(timeout))?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn request_reply_accepts_statusless_business_reply() {
+        assert!(
+            ensure_request_reply_success(PublishResponse::new(None, None, None), "failed").is_ok()
+        );
+    }
+
+    #[test]
+    fn request_reply_rejects_explicit_error_status() {
+        let error = ensure_request_reply_success(
+            PublishResponse::new(Some(17), Some("broker rejected".into()), None),
+            "failed",
+        )
+        .unwrap_err();
+        assert!(matches!(error, EventMeshError::Server { code: 17, .. }));
+    }
 }

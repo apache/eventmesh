@@ -23,8 +23,8 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, let_stream_settle, tcp_client, tcp_producer, unique_topic,
-    ReplyingListener,
+    consumer_options, ensure_topic, let_tcp_subscription_settle, tcp_client, tcp_producer,
+    unique_topic, ReplyingListener,
 };
 use crate::require_runtime;
 use crate::runtime::{mode, Mode};
@@ -47,7 +47,7 @@ async fn tcp_request_reply_roundtrip() {
         .subscribe(Subscription::new(&topic).with_delivery_type(DeliveryType::Sync))
         .await
         .expect("subscribe TCP request/reply consumer");
-    let_stream_settle().await;
+    let_tcp_subscription_settle().await;
 
     let producer = tcp_producer().await;
     let reply = producer
