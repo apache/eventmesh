@@ -15,3 +15,10 @@ dependencies {
 generateGrammarSource {
     arguments += ['-package', 'org.apache.eventmesh.connector.jdbc.antlr4.autogeneration', '-visitor']
 }
+
+// Gradle 8.7 validation: packageSources (sources jar) consumes the ANTLR-generated
+// sources dir but does not depend on generateGrammarSource, which can order tasks
+// incorrectly. Declare the dependency explicitly so the sources jar always runs after.
+tasks.named('packageSources') {
+    dependsOn tasks.named('generateGrammarSource')
+}
