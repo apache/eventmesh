@@ -56,7 +56,7 @@ pub(crate) enum Mode {
     External,
     /// We launched `docker compose` and must stop it on exit.
     Started,
-    /// No Docker and no server — tests must skip.
+    /// No Docker and no server — tests fail unless skipping was explicitly allowed.
     Unavailable,
 }
 
@@ -101,8 +101,9 @@ fn ensure_conf_readable() {
     }
 }
 
-/// Ensure an EventMesh runtime is reachable. Returns `false` (and emits a skip
-/// notice) when neither Docker nor a live server is available.
+/// Ensure an EventMesh runtime is reachable. Returns `false` (and emits an
+/// unavailable notice) when neither Docker nor a live server is available. The
+/// caller decides whether that is a failure or an explicitly allowed skip.
 ///
 /// Idempotent and thread-safe: the (potentially slow) `docker compose up` runs
 /// at most once per process; parallel test threads block on the `OnceLock`
@@ -112,19 +113,18 @@ pub(crate) fn ensure_runtime() -> bool {
     match mode {
         Mode::External | Mode::Started => true,
         Mode::Unavailable => {
-            // Already warned during init; just signal "skip".
+            // Already warned during init; let the caller enforce strict/skip policy.
             false
         }
     }
 }
 
-/// Whether strict mode is enabled (`EVENTMESH_E2E_STRICT=1`).
+/// Whether an unavailable runtime may be treated as an intentional skip.
 ///
-/// In strict mode a test that cannot reach a runtime **fails** instead of
-/// silently passing.  This is intended for release CI: the suite must not
-/// report "20 passed" when zero tests actually executed.
-pub(crate) fn is_strict() -> bool {
-    std::env::var_os("EVENTMESH_E2E_STRICT")
+/// This is an opt-in local escape hatch. Release verification is strict by
+/// default and must not set this variable.
+pub(crate) fn allow_skip() -> bool {
+    std::env::var_os("EVENTMESH_E2E_ALLOW_SKIP")
         .map(|v| v == "1" || v == "true")
         .unwrap_or(false)
 }
@@ -194,7 +194,7 @@ fn initialize() -> Mode {
     // 3) Try to launch via docker compose.
     if !docker_available() {
         eprintln!(
-            "[e2e] skipping: no EventMesh server on {HOST}:{ADMIN_PORT} and \
+            "[e2e] unavailable: no EventMesh server on {HOST}:{ADMIN_PORT} and \
              `docker` is not on PATH. Start one with \
              `docker compose --profile rocketmq up -d`, or set \
              EVENTMESH_E2E_EXTERNAL=1."
@@ -242,11 +242,11 @@ fn initialize() -> Mode {
             Mode::Started
         }
         Ok(s) => {
-            eprintln!("[e2e] `docker compose up` exited with {s}; skipping tests");
+            eprintln!("[e2e] `docker compose up` exited with {s}; runtime unavailable");
             Mode::Unavailable
         }
         Err(e) => {
-            eprintln!("[e2e] failed to invoke `docker compose`: {e}; skipping tests");
+            eprintln!("[e2e] failed to invoke `docker compose`: {e}; runtime unavailable");
             Mode::Unavailable
         }
     }

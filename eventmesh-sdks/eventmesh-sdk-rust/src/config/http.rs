@@ -44,6 +44,8 @@ pub struct HttpClientConfig {
     pub load_balance: LoadBalance,
     /// Use TLS (`https`).
     pub use_tls: bool,
+    /// Read HTTP proxy settings from process environment variables.
+    pub proxy_from_env: bool,
     /// Connection pool max size.
     pub pool_size: usize,
     /// Idle connection eviction timeout.
@@ -63,6 +65,7 @@ impl Default for HttpClientConfig {
             ],
             load_balance: LoadBalance::Random,
             use_tls: false,
+            proxy_from_env: false,
             pool_size: DEFAULT_POOL_SIZE,
             pool_idle_timeout: Duration::from_secs(DEFAULT_IDLE_TIMEOUT_SECS),
             timeout: DEFAULT_TIMEOUT,
@@ -84,6 +87,7 @@ pub struct HttpClientConfigBuilder {
     servers: Option<String>,
     load_balance: Option<LoadBalance>,
     use_tls: Option<bool>,
+    proxy_from_env: Option<bool>,
     pool_size: Option<usize>,
     pool_idle_timeout: Option<Duration>,
     timeout: Option<Duration>,
@@ -113,6 +117,11 @@ impl HttpClientConfigBuilder {
 
     pub fn use_tls(mut self, v: bool) -> Self {
         self.use_tls = Some(v);
+        self
+    }
+
+    pub fn proxy_from_env(mut self, v: bool) -> Self {
+        self.proxy_from_env = Some(v);
         self
     }
 
@@ -182,6 +191,7 @@ impl HttpClientConfigBuilder {
             servers,
             load_balance,
             use_tls,
+            proxy_from_env,
             pool_size,
             pool_idle_timeout,
             timeout,
@@ -241,6 +251,7 @@ impl HttpClientConfigBuilder {
             nodes,
             load_balance: load_balance.unwrap_or_default(),
             use_tls: use_tls.unwrap_or(false),
+            proxy_from_env: proxy_from_env.unwrap_or(false),
             pool_size: pool_size.unwrap_or(DEFAULT_POOL_SIZE),
             pool_idle_timeout: pool_idle_timeout
                 .unwrap_or(Duration::from_secs(DEFAULT_IDLE_TIMEOUT_SECS)),
@@ -256,6 +267,7 @@ impl std::fmt::Debug for HttpClientConfigBuilder {
             .field("servers", &self.servers)
             .field("load_balance", &self.load_balance)
             .field("use_tls", &self.use_tls)
+            .field("proxy_from_env", &self.proxy_from_env)
             .field("pool_size", &self.pool_size)
             .field("pool_idle_timeout", &self.pool_idle_timeout)
             .field("timeout", &self.timeout)

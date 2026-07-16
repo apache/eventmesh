@@ -133,14 +133,16 @@ Run with: `cargo test --features e2e`.
 - The harness (`tests/e2e/runtime.rs`) **auto-starts the `rocketmq` docker-compose
   profile** and tears it down at process exit. Set `EVENTMESH_E2E_EXTERNAL=1` to
   point at a server you started yourself.
-- If neither Docker nor a reachable server is found, **tests skip, not fail**.
+- If neither Docker nor a reachable server is found, tests **fail by default**.
+  Set `EVENTMESH_E2E_ALLOW_SKIP=1` only for an intentional local skip; release
+  verification must not set it.
 - Each test generates a unique topic + consumer group (monotonic counter + nanos
   timestamp), so the suite is parallel-safe on the shared broker.
 - **Standalone (in-memory) broker limitations:** a topic must be created via the
   admin API **and** a consumer subscribed *before* any publish, and it does not
-  implement request/reply. The harness warms topics automatically and the
-  request/reply test self-skips its assertion on standalone — use the `rocketmq`
-  profile (the e2e default) to exercise the full path.
+  implement request/reply. The harness warms topics automatically.
+  Request/reply failures are tolerated only for an externally provided runtime;
+  the harness-started `rocketmq` profile must exercise the full path successfully.
 - Topic creation hits the admin API at `POST /topic`, which expects
   **`application/x-www-form-urlencoded`** (not JSON).
 

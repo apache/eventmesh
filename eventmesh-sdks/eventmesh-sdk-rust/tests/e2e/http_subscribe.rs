@@ -77,25 +77,23 @@ async fn http_unsubscribe_stops_delivery() {
 
     handle
         .consumer()
-        .unsubscribe(Subscription::new(&topic))
+        .unsubscribe(Subscription::new(&topic), handle.webhook_url())
         .await
         .expect("HTTP unsubscribe");
     let_stream_settle().await;
 
-    match producer
+    producer
         .publish(Message::from(EventMeshMessage::new(
             &topic,
             "after-http-unsub",
         )))
         .await
-    {
-        Ok(_) => assert!(
-            matches!(
-                tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
-                Err(_) | Ok(None)
-            ),
-            "webhook delivery leaked after unsubscribe"
+        .expect("HTTP publish after unsubscribe");
+    assert!(
+        matches!(
+            tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
+            Err(_) | Ok(None)
         ),
-        Err(error) => eprintln!("[e2e] broker rejected post-unsubscribe HTTP publish: {error}"),
-    }
+        "webhook delivery leaked after unsubscribe"
+    );
 }

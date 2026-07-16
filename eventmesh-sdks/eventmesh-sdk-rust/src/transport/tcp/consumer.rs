@@ -492,6 +492,17 @@ where
         Ok(response)
     }
 
+    /// Unsubscribe every topic on this TCP session.
+    pub async fn unsubscribe_all(&self) -> Result<PublishResponse> {
+        let items = self.subscriptions.lock().await.clone();
+        if items.is_empty() {
+            return Err(EventMeshError::InvalidArgument(
+                "TCP consumer has no active subscriptions".into(),
+            ));
+        }
+        self.unsubscribe(items).await
+    }
+
     /// Current config.
     pub fn config(&self) -> &TcpClientConfig {
         &self.config

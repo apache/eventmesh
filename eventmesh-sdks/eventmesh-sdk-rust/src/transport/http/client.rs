@@ -48,6 +48,13 @@ impl EventMeshHttpClient {
             .pool_idle_timeout(Some(config.pool_idle_timeout))
             .tcp_nodelay(true);
 
+        // EventMesh nodes are explicit SDK endpoints. Default to the Java
+        // SDK's direct connection behavior, while allowing applications to
+        // opt into reqwest's HTTP_PROXY/HTTPS_PROXY/NO_PROXY handling.
+        if !config.proxy_from_env {
+            builder = builder.no_proxy();
+        }
+
         if config.use_tls {
             builder = builder.https_only(true);
         }

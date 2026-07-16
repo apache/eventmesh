@@ -27,6 +27,7 @@ use crate::transport::tcp::{
 };
 use crate::transport::Publisher as LegacyPublisher;
 use crate::MessageHandler;
+use tracing::warn;
 
 /// A configured EventMesh TCP client.
 #[derive(Clone)]
@@ -101,12 +102,13 @@ impl<H: MessageHandler> TcpConsumer<H> {
         self.inner.subscribe(&[subscription.as_legacy()]).await
     }
 
-    /// Remove a TCP subscription.
-    pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
-        self.inner
-            .unsubscribe(vec![subscription.as_legacy()])
-            .await
-            .map(|_| ())
+    /// Remove every subscription on this TCP consumer session.
+    ///
+    /// The EventMesh TCP runtime ignores topics in `UNSUBSCRIBE_REQUEST` and
+    /// always clears the entire session, matching Java's no-argument
+    /// `unsubscribe()` API.
+    pub async fn unsubscribe_all(&self) -> Result<()> {
+        self.inner.unsubscribe_all().await.map(|_| ())
     }
 
     /// Request consumer shutdown.
@@ -228,18 +230,42 @@ impl TcpProducer {
                     continue;
                 }
                 let Some(message) = Message::decode_tcp(&package) else {
-                    continue;
+                    warn!("failed to decode publisher-side response; closing without ACK");
+                    connection.shutdown().await;
+                    break;
                 };
-                if let Ok(Some(reply)) = handler.handle(message).await {
-                    if let Ok(reply) = reply.encode_tcp_reply() {
-                        let _ = connection.send(reply).await;
+                match handler.handle(message).await {
+                    Ok(Some(reply)) => match reply.encode_tcp_reply() {
+                        Ok(reply) => {
+                            if let Err(error) = connection.send(reply).await {
+                                warn!(%error, "failed to send publisher-side reply; closing without ACK");
+                                connection.shutdown().await;
+                                break;
+                            }
+                        }
+                        Err(error) => {
+                            warn!(%error, "failed to encode publisher-side reply; closing without ACK");
+                            connection.shutdown().await;
+                            break;
+                        }
+                    },
+                    Ok(None) => {}
+                    Err(error) => {
+                        warn!(%error, "publisher-side handler failed; closing without ACK");
+                        connection.shutdown().await;
+                        break;
                     }
                 }
-                let _ = connection
+                if let Err(error) = connection
                     .send(crate::transport::tcp::message::response_to_client_ack(
                         &package,
                     ))
-                    .await;
+                    .await
+                {
+                    warn!(%error, "failed to send publisher-side ACK; closing connection");
+                    connection.shutdown().await;
+                    break;
+                }
             }
         });
         *self.response_driver.lock().await = Some(driver);

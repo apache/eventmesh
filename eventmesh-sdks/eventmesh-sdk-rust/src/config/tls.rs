@@ -19,40 +19,34 @@
 //!
 //! This module is plain data only (no tonic dependency) so that
 //! [`TlsConfig`] is always available regardless of the `tls` cargo feature.
-//! The actual application of TLS settings to the tonic [`Endpoint`] is gated
-//! behind `#[cfg(feature = "tls")]` in [`crate::transport::grpc::client`].
+//! The gRPC transport applies these settings when both the `grpc` and `tls`
+//! cargo features are enabled.
 
 use std::path::PathBuf;
 
 /// TLS configuration for the gRPC channel.
 ///
-/// Set on [`GrpcClientConfig`](super::GrpcClientConfig) and used only when
-/// `use_tls` is `true`. If `use_tls` is `true` but `tls_config` is `None`,
-/// the OS-native trust roots are loaded automatically and the endpoint
-/// authority is used as the SNI domain.
+/// Set on [`GrpcConfig`](super::GrpcConfig). Passing `None` to
+/// [`GrpcConfig::with_tls`](super::GrpcConfig::with_tls) enables TLS with the
+/// OS-native trust roots and uses the endpoint authority as the SNI domain.
 ///
 /// # Examples
 ///
 /// ```ignore
-/// use eventmesh::config::{GrpcClientConfig, TlsConfig, TlsClientIdentity};
+/// use eventmesh::config::{Endpoint, GrpcConfig, TlsConfig, TlsClientIdentity};
 ///
 /// // Self-signed CA
-/// let config = GrpcClientConfig::builder()
-///     .server_addr("eventmesh.internal")
-///     .use_tls(true)
-///     .tls_config(
+/// let config = GrpcConfig::new(Endpoint::new("eventmesh.internal", 10205)?)
+///     .with_tls(Some(
 ///         TlsConfig::builder()
 ///             .ca_cert_path("/etc/ssl/certs/internal-ca.pem")
 ///             .use_native_roots(true)
 ///             .build(),
-///     )
-///     .build();
+///     ));
 ///
 /// // Mutual TLS
-/// let config = GrpcClientConfig::builder()
-///     .server_addr("eventmesh.internal")
-///     .use_tls(true)
-///     .tls_config(
+/// let config = GrpcConfig::new(Endpoint::new("eventmesh.internal", 10205)?)
+///     .with_tls(Some(
 ///         TlsConfig::builder()
 ///             .ca_cert_path("/etc/ssl/certs/ca.pem")
 ///             .client_identity(TlsClientIdentity {
@@ -60,8 +54,8 @@ use std::path::PathBuf;
 ///                 key_pem: std::fs::read("client.key").unwrap(),
 ///             })
 ///             .build(),
-///     )
-///     .build();
+///     ));
+/// # Ok::<(), eventmesh::Error>(())
 /// ```
 #[derive(Clone, Default)]
 pub struct TlsConfig {

@@ -150,9 +150,17 @@ impl HttpConsumer {
     }
 
     /// Remove a previously registered webhook subscription.
-    pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
+    ///
+    /// `webhook_url` must match the URL used when subscribing. A topic may be
+    /// registered to more than one webhook, so the subscription alone does
+    /// not uniquely identify the registration to remove.
+    pub async fn unsubscribe(
+        &self,
+        subscription: Subscription,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
         self.inner
-            .unsubscribe(vec![subscription.as_legacy()])
+            .unsubscribe(vec![subscription.as_legacy()], webhook_url)
             .await
             .map(|_| ())
     }

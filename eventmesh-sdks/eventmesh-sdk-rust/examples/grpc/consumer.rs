@@ -16,7 +16,7 @@
 // under the License.
 
 use eventmesh::{
-    config::{ConsumerOptions, Endpoint, GrpcConfig},
+    config::{Endpoint, GrpcConfig, GrpcConsumerOptions},
     message::Message,
     subscription::Subscription,
     GrpcClient, MessageHandler,
@@ -36,7 +36,7 @@ async fn main() -> eventmesh::Result<()> {
     let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
     let consumer = client
         .stream_consumer(
-            ConsumerOptions::new("test-consumerGroup"),
+            GrpcConsumerOptions::new("test-consumerGroup"),
             [Subscription::new("test-topic-rust-sdk")],
             PrintHandler,
         )

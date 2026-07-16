@@ -23,10 +23,11 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, grpc_client, grpc_producer, let_stream_settle, unique_topic,
-    ReplyingListener,
+    ensure_topic, grpc_client, grpc_consumer_options, grpc_producer, let_stream_settle,
+    unique_topic, ReplyingListener,
 };
 use crate::require_runtime;
+use crate::runtime::{mode, Mode};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn request_reply_roundtrip() {
@@ -35,7 +36,7 @@ async fn request_reply_roundtrip() {
     ensure_topic(&topic).await;
     let consumer = grpc_client()
         .stream_consumer(
-            consumer_options(),
+            grpc_consumer_options(),
             [Subscription::new(&topic).with_delivery_type(DeliveryType::Sync)],
             ReplyingListener {
                 reply_content: "pong".into(),
@@ -49,16 +50,12 @@ async fn request_reply_roundtrip() {
         .request_reply(Message::from(EventMeshMessage::new(&topic, "ping")))
         .await;
     match reply {
-        Ok(Message::EventMesh(message)) => {
-            let unsupported = message
-                .get_prop("responsemessage")
-                .is_some_and(|value| value.to_lowercase().contains("not supported"));
-            if !unsupported {
-                assert_eq!(message.content.as_deref(), Some("pong"));
-            }
-        }
+        Ok(Message::EventMesh(message)) => assert_eq!(message.content.as_deref(), Some("pong")),
         Ok(other) => panic!("expected native reply, got {other:?}"),
-        Err(error) => eprintln!("[e2e] broker does not support gRPC request/reply: {error}"),
+        Err(error) if mode() != Some(Mode::Started) => {
+            eprintln!("[e2e] external broker may not support gRPC request/reply: {error}");
+        }
+        Err(error) => panic!("gRPC request/reply failed on harness runtime: {error}"),
     }
     consumer.shutdown().await;
 }

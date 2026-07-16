@@ -15,37 +15,48 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! The built-in server is the v2 customisation boundary: applications provide
-//! a [`MessageHandler`] and keep their web framework private to the app.
+//! Host an EventMesh webhook in an application-owned axum router.
 
+use axum::{body::Bytes, response::IntoResponse, routing::post, Json, Router};
 use eventmesh::{
     config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
-    message::Message,
+    http::codec::{parse_push_body, WebhookReply},
     subscription::Subscription,
-    webhook::WebhookServer,
-    HttpClient, MessageHandler,
+    HttpClient,
 };
 
-struct PrintHandler;
-
-impl MessageHandler for PrintHandler {
-    async fn handle(&self, message: Message) -> eventmesh::Result<Option<Message>> {
-        println!("received: {message:?}");
-        Ok(None)
+async fn webhook(body: Bytes) -> impl IntoResponse {
+    let body = match std::str::from_utf8(&body) {
+        Ok(body) => body,
+        Err(_) => return Json(WebhookReply::retry("invalid UTF-8")),
+    };
+    match parse_push_body(body).and_then(|push| push.to_event_mesh_message()) {
+        Ok(message) => {
+            println!("received: {message:?}");
+            Json(WebhookReply::ok())
+        }
+        Err(error) => {
+            eprintln!("invalid webhook delivery: {error}");
+            Json(WebhookReply::retry("invalid delivery"))
+        }
     }
 }
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let server = WebhookServer::new("0.0.0.0:8081".parse().unwrap(), PrintHandler)
-        .with_advertise_url("http://127.0.0.1:8081/eventmesh/callback");
+    let address: std::net::SocketAddr = "0.0.0.0:8081".parse().expect("valid bind address");
+    let webhook_url = "http://127.0.0.1:8081/eventmesh/callback";
+    let listener = tokio::net::TcpListener::bind(address).await?;
+    let app = Router::new().route("/eventmesh/callback", post(webhook));
+
     let client = HttpClient::new(HttpConfig::new(EndpointSet::new([Endpoint::new(
         "127.0.0.1",
         10_105,
     )?])?))?;
     let consumer = client.webhook_consumer(ConsumerOptions::new("test-consumerGroup"))?;
     consumer
-        .subscribe(Subscription::new("test-topic-rust-sdk"), server.url())
+        .subscribe(Subscription::new("test-topic-rust-sdk"), webhook_url)
         .await?;
-    server.await
+    axum::serve(listener, app).await?;
+    Ok(())
 }

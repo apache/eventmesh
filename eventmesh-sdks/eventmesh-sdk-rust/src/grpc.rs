@@ -17,7 +17,7 @@
 
 //! gRPC client API.
 
-use crate::config::{ConsumerOptions, GrpcConfig, ProducerOptions};
+use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions, ProducerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
@@ -59,7 +59,7 @@ impl GrpcClient {
     /// additional subscriptions can be added on the returned consumer.
     pub async fn stream_consumer<H>(
         &self,
-        options: ConsumerOptions,
+        options: GrpcConsumerOptions,
         subscriptions: impl IntoIterator<Item = Subscription>,
         handler: H,
     ) -> Result<GrpcConsumer<H>>
@@ -71,7 +71,7 @@ impl GrpcClient {
             .map(|subscription| subscription.as_legacy())
             .collect();
         let inner = LegacyConsumer::subscribe_stream(
-            self.config.legacy(None, Some(&options)),
+            self.config.legacy_stream(&options),
             PublicHandler::new(handler),
             subscriptions,
             None::<std::future::Ready<()>>,
@@ -83,8 +83,9 @@ impl GrpcClient {
     /// Create a gRPC webhook-registration consumer.
     ///
     /// The EventMesh runtime delivers to the URL registered on the returned
-    /// value over HTTP. Use [`crate::WebhookServer`] or an application-owned
-    /// HTTP endpoint to receive those deliveries.
+    /// value over HTTP. Use the SDK's `webhook::WebhookServer` (with the
+    /// `http` feature) or an application-owned HTTP endpoint to receive those
+    /// deliveries.
     pub async fn webhook_consumer(&self, options: ConsumerOptions) -> Result<GrpcWebhookConsumer> {
         Ok(GrpcWebhookConsumer {
             inner: LegacyWebhookConsumer::new(

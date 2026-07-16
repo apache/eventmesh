@@ -19,10 +19,7 @@
 
 use std::time::Duration;
 
-use eventmesh::{
-    message::{EventMeshMessage, Message},
-    subscription::Subscription,
-};
+use eventmesh::message::{EventMeshMessage, Message};
 
 use crate::harness::{ensure_topic, tcp_producer, tcp_warm_topic, unique_topic};
 use crate::require_runtime;
@@ -72,10 +69,7 @@ async fn tcp_unsubscribe_stops_delivery() {
         .await
         .expect("publish before unsubscribe");
     let _ = receive(&mut receiver).await;
-    consumer
-        .unsubscribe(Subscription::new(&topic))
-        .await
-        .expect("TCP unsubscribe");
+    consumer.unsubscribe_all().await.expect("TCP unsubscribe");
 
     match producer
         .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))

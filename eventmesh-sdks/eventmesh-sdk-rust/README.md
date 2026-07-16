@@ -78,7 +78,7 @@ gRPC and TCP close the current delivery stream/connection.
 
 ```rust
 use eventmesh::{
-    config::{ConsumerOptions, Endpoint, GrpcConfig},
+    config::{Endpoint, GrpcConfig, GrpcConsumerOptions},
     message::Message,
     subscription::Subscription,
     GrpcClient, MessageHandler,
@@ -98,7 +98,7 @@ async fn main() -> eventmesh::Result<()> {
     let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
     let consumer = client
         .stream_consumer(
-            ConsumerOptions::new("orders-consumer"),
+            GrpcConsumerOptions::new("orders-consumer"),
             [Subscription::new("orders.created")],
             Log,
         )
@@ -107,7 +107,9 @@ async fn main() -> eventmesh::Result<()> {
 }
 ```
 
-`GrpcConsumer::subscribe` and `unsubscribe` update a live stream. For gRPC
+`GrpcConsumerOptions::with_max_concurrent_handlers` controls bounded concurrent
+handler dispatch on a gRPC stream. `GrpcConsumer::subscribe` and `unsubscribe`
+update a live stream. For gRPC
 webhook registration, create `client.webhook_consumer(...)` and register one
 or more subscriptions with a webhook URL. gRPC batch publishing accepts
 EventMesh/OpenMessaging messages together, or a homogeneous CloudEvents batch;
@@ -119,6 +121,8 @@ HTTP uses a long-lived webhook-registration consumer plus an optional built-in
 webhook server. TCP has a connected producer/consumer and exposes broadcast as
 a TCP-specific producer operation. `producer_with_handler` enables the TCP
 publisher-side response handler equivalent to Java's `registerPubBusiHandler`.
+TCP Runtime unsubscribe is session-wide, so the Rust API names it
+`TcpConsumer::unsubscribe_all()` rather than accepting a misleading topic.
 See `examples/http` and `examples/tcp` for runnable programs.
 
 ```rust
@@ -135,6 +139,7 @@ let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
 let client = HttpClient::new(HttpConfig::new(endpoints))?;
 let consumer = client.webhook_consumer(ConsumerOptions::new("orders-http"))?;
 // consumer.subscribe(Subscription::new("orders.created"), server.url()).await?;
+// consumer.unsubscribe(Subscription::new("orders.created"), server.url()).await?;
 # let _ = (consumer, Subscription::new("orders.created"));
 ```
 
@@ -144,6 +149,10 @@ Every protocol configuration starts with a validated `Endpoint` (HTTP takes a
 non-empty `EndpointSet`). Use `Identity`, `Credentials`, `ClientOptions`, and
 the transport-specific builder-style `with_*` methods to set optional values.
 Secrets are redacted in `Debug` output.
+
+HTTP connects directly by default, matching the Java SDK. Enable process
+environment proxy settings explicitly with `HttpConfig::with_proxy_from_env(true)`;
+reqwest will then honor `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
 
 `ClientOptions::with_request_timeout` supplies the default unary timeout. When
 one request needs a different deadline, each producer exposes
@@ -177,6 +186,8 @@ cargo test --features e2e --no-run
 
 The `e2e` feature compiles the gRPC, HTTP, TCP, and CloudEvents integration
 suite. Running it against a live runtime is documented in `tests/e2e/main.rs`.
+An unavailable runtime fails by default; set `EVENTMESH_E2E_ALLOW_SKIP=1` only
+for an intentional local skip, never for release verification.
 
 ## License
 

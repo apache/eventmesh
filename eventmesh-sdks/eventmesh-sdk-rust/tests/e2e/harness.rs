@@ -23,8 +23,8 @@ use std::time::{Duration, Instant};
 
 use eventmesh::{
     config::{
-        ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, HttpConfig, Identity,
-        ProducerOptions, TcpConfig,
+        ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, GrpcConsumerOptions,
+        HttpConfig, Identity, ProducerOptions, TcpConfig,
     },
     grpc::{GrpcClient, GrpcConsumer, GrpcProducer},
     http::{HttpClient, HttpConsumer},
@@ -71,6 +71,10 @@ pub(crate) fn producer_options() -> ProducerOptions {
 
 pub(crate) fn consumer_options() -> ConsumerOptions {
     ConsumerOptions::new(unique_topic("consumer-group"))
+}
+
+pub(crate) fn grpc_consumer_options() -> GrpcConsumerOptions {
+    GrpcConsumerOptions::new(unique_topic("consumer-group"))
 }
 
 pub(crate) fn grpc_client() -> GrpcClient {
@@ -158,7 +162,11 @@ pub(crate) async fn warm_topic(
 ) {
     let (listener, receiver) = CollectingListener::new();
     let consumer = grpc_client()
-        .stream_consumer(consumer_options(), [Subscription::new(topic)], listener)
+        .stream_consumer(
+            grpc_consumer_options(),
+            [Subscription::new(topic)],
+            listener,
+        )
         .await
         .expect("open gRPC stream consumer");
     let_stream_settle().await;
@@ -187,6 +195,7 @@ async fn wait_for_listen(address: SocketAddr, timeout: Duration) {
 
 pub(crate) struct HttpConsumerHandle {
     consumer: HttpConsumer,
+    webhook_url: String,
     server_task: JoinHandle<()>,
     shutdown_tx: Option<oneshot::Sender<()>>,
 }
@@ -194,6 +203,10 @@ pub(crate) struct HttpConsumerHandle {
 impl HttpConsumerHandle {
     pub(crate) fn consumer(&self) -> &HttpConsumer {
         &self.consumer
+    }
+
+    pub(crate) fn webhook_url(&self) -> &str {
+        &self.webhook_url
     }
 }
 
@@ -234,7 +247,7 @@ pub(crate) async fn http_warm_topic(
         .webhook_consumer(consumer_options())
         .expect("build HTTP consumer");
     consumer
-        .subscribe(Subscription::new(topic), url)
+        .subscribe(Subscription::new(topic), url.clone())
         .await
         .expect("subscribe HTTP webhook");
     let_stream_settle().await;
@@ -242,6 +255,7 @@ pub(crate) async fn http_warm_topic(
     (
         HttpConsumerHandle {
             consumer,
+            webhook_url: url,
             server_task,
             shutdown_tx: Some(shutdown_tx),
         },

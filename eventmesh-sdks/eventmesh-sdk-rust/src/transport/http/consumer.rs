@@ -189,33 +189,29 @@ impl HttpConsumer {
 }
 
 impl HttpConsumer {
-    /// Unsubscribe from topics.
-    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
+    /// Unsubscribe topics from one webhook URL.
+    pub async fn unsubscribe(
+        &self,
+        items: Vec<SubscriptionItem>,
+        url: impl Into<String>,
+    ) -> Result<PublishResponse> {
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
                 "unsubscribe items must not be empty".into(),
             ));
         }
-        // Group topics by their registered webhook URL. The runtime removes a
-        // subscription only when BOTH topic AND url match, and the wire format
-        // carries a single `url` per request — so topics registered under
-        // different URLs must be sent in separate requests.  A topic may be
-        // registered under multiple URLs, so we scan all (topic, url) keys.
-        let url_groups: HashMap<String, Vec<String>> = {
+        let url = url.into();
+        let topics: Vec<String> = items.iter().map(|item| item.topic.clone()).collect();
+        {
             let guard = self.subscriptions.lock().await;
-            let topics: Vec<String> = items.iter().map(|i| i.topic.clone()).collect();
-            let mut groups: HashMap<String, Vec<String>> = HashMap::new();
-            for ((topic, url), _) in guard.iter() {
-                if topics.contains(topic) {
-                    groups.entry(url.clone()).or_default().push(topic.clone());
-                }
+            if let Some(topic) = topics
+                .iter()
+                .find(|topic| !guard.contains_key(&(topic.to_string(), url.clone())))
+            {
+                return Err(EventMeshError::InvalidArgument(format!(
+                    "topic {topic:?} is not subscribed to webhook URL {url:?}"
+                )));
             }
-            groups
-        };
-        if url_groups.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "none of the topics are currently subscribed".into(),
-            ));
         }
         let config = self.client.config();
         let code = codec::unsubscribe_code();
@@ -225,31 +221,26 @@ impl HttpConsumer {
             &config.identity,
         );
         let timeout = config.timeout;
-        let mut last_response = None;
-        for (url, topics) in &url_groups {
-            let body = codec::encode_unsubscribe(topics, url, &config.identity);
-            let text = self
-                .client
-                .post_form(uri::ROOT, &body, &headers, timeout)
-                .await?;
-            let response = codec::parse_response(&text)?;
-            if response.is_success() {
-                let mut guard = self.subscriptions.lock().await;
-                for topic in topics {
-                    guard.remove(&(topic.clone(), url.clone()));
-                }
-                last_response = Some(response);
-            } else {
-                return Err(EventMeshError::Server {
-                    code: response.code.unwrap_or(-1) as i32,
-                    message: response
-                        .message
-                        .unwrap_or_else(|| "unsubscribe failed".into()),
-                });
+        let body = codec::encode_unsubscribe(&topics, &url, &config.identity);
+        let text = self
+            .client
+            .post_form(uri::ROOT, &body, &headers, timeout)
+            .await?;
+        let response = codec::parse_response(&text)?;
+        if response.is_success() {
+            let mut guard = self.subscriptions.lock().await;
+            for topic in topics {
+                guard.remove(&(topic, url.clone()));
             }
+            Ok(response)
+        } else {
+            Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "unsubscribe failed".into()),
+            })
         }
-        last_response
-            .ok_or_else(|| EventMeshError::InvalidArgument("no unsubscribe groups to send".into()))
     }
 }
 

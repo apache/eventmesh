@@ -32,12 +32,10 @@
 //!
 //! To run against an already-running server instead of auto-starting one, set
 //! `EVENTMESH_E2E_EXTERNAL=1`. When neither Docker nor a server is available the
-//! tests skip themselves (rather than fail).
+//! tests fail by default so a missing runtime cannot produce a false green.
 //!
-//! **Release CI must set `EVENTMESH_E2E_STRICT=1`.**  Without it a test that
-//! cannot reach a runtime silently returns and is counted as *passed* by the
-//! test harness — a false green.  Strict mode turns that into a hard failure
-//! so the pipeline goes red when the suite didn't actually execute.
+//! For local compile/smoke checks where skipping is intentional, set
+//! `EVENTMESH_E2E_ALLOW_SKIP=1`. Release CI must never set this escape hatch.
 
 #![cfg(feature = "e2e")]
 
@@ -59,17 +57,14 @@ mod tcp_subscribe;
 /// Guard clause for e2e tests: ensures a runtime is available before
 /// proceeding.
 ///
-/// In normal mode, if no runtime is available the test returns early (counted
-/// as *passed* by libtest).  In strict mode (`EVENTMESH_E2E_STRICT=1`) the test
-/// panics instead, so CI fails when the suite didn't actually run.
+/// A missing runtime is a failure by default. `EVENTMESH_E2E_ALLOW_SKIP=1` is
+/// an explicit local-only escape hatch for environments that only want to
+/// compile the e2e suite.
 macro_rules! require_runtime {
     () => {
         if !crate::runtime::ensure_runtime() {
-            if crate::runtime::is_strict() {
-                panic!(
-                    "EventMesh runtime is not available and EVENTMESH_E2E_STRICT=1; \
-                     refusing to let the test silently pass"
-                );
+            if !crate::runtime::allow_skip() {
+                panic!("EventMesh runtime is not available; set EVENTMESH_E2E_ALLOW_SKIP=1 only when skipping is intentional");
             }
             return;
         }

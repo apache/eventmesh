@@ -17,10 +17,14 @@
 
 //! E2e: bounded concurrent gRPC handler dispatch through the v2 facade.
 
-use std::time::{Duration, Instant};
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use std::time::Duration;
 
 use eventmesh::{
-    config::ConsumerOptions,
+    config::GrpcConsumerOptions,
     message::{EventMeshMessage, Message},
     subscription::Subscription,
     MessageHandler, Result,
@@ -32,15 +36,21 @@ use crate::require_runtime;
 
 const HANDLER_DELAY: Duration = Duration::from_millis(500);
 const COUNT: usize = 5;
+const MAX_CONCURRENT: usize = 2;
 
 struct SlowHandler {
-    tx: mpsc::UnboundedSender<Instant>,
+    active: Arc<AtomicUsize>,
+    max_active: Arc<AtomicUsize>,
+    completed: mpsc::UnboundedSender<()>,
 }
 
 impl MessageHandler for SlowHandler {
     async fn handle(&self, _message: Message) -> Result<Option<Message>> {
-        let _ = self.tx.send(Instant::now());
+        let active = self.active.fetch_add(1, Ordering::SeqCst) + 1;
+        self.max_active.fetch_max(active, Ordering::SeqCst);
         tokio::time::sleep(HANDLER_DELAY).await;
+        self.active.fetch_sub(1, Ordering::SeqCst);
+        let _ = self.completed.send(());
         Ok(None)
     }
 }
@@ -50,18 +60,24 @@ async fn concurrent_dispatch_overlaps_handlers() {
     require_runtime!();
     let topic = unique_topic("concurrent");
     ensure_topic(&topic).await;
-    let (tx, mut receiver) = mpsc::unbounded_channel();
+    let active = Arc::new(AtomicUsize::new(0));
+    let max_active = Arc::new(AtomicUsize::new(0));
+    let (completed, mut completions) = mpsc::unbounded_channel();
     let consumer = grpc_client()
         .stream_consumer(
-            ConsumerOptions::new(unique_topic("concurrent-group")).with_concurrency(COUNT),
+            GrpcConsumerOptions::new(unique_topic("concurrent-group"))
+                .with_max_concurrent_handlers(MAX_CONCURRENT),
             [Subscription::new(&topic)],
-            SlowHandler { tx },
+            SlowHandler {
+                active: Arc::clone(&active),
+                max_active: Arc::clone(&max_active),
+                completed,
+            },
         )
         .await
         .expect("open gRPC consumer");
     let_stream_settle().await;
 
-    let started = Instant::now();
     let producer = grpc_producer();
     for index in 0..COUNT {
         producer
@@ -73,25 +89,20 @@ async fn concurrent_dispatch_overlaps_handlers() {
             .expect("publish");
     }
 
-    let mut starts = Vec::with_capacity(COUNT);
     for _ in 0..COUNT {
-        starts.push(
-            tokio::time::timeout(Duration::from_secs(15), receiver.recv())
-                .await
-                .expect("timed out waiting for handler")
-                .expect("handler channel closed"),
-        );
+        tokio::time::timeout(Duration::from_secs(15), completions.recv())
+            .await
+            .expect("timed out waiting for handler completion")
+            .expect("handler completion channel closed");
     }
+    let observed = max_active.load(Ordering::SeqCst);
     assert!(
-        started.elapsed() < HANDLER_DELAY * COUNT as u32,
-        "handlers should overlap"
+        observed > 1,
+        "expected overlapping handlers, observed maximum was {observed}"
     );
-    starts.sort();
-    let minimum_gap = starts
-        .windows(2)
-        .map(|window| window[1] - window[0])
-        .min()
-        .unwrap();
-    assert!(minimum_gap < HANDLER_DELAY, "handler starts should overlap");
+    assert!(
+        observed <= MAX_CONCURRENT,
+        "handler limit was {MAX_CONCURRENT}, observed {observed}"
+    );
     consumer.shutdown().await;
 }

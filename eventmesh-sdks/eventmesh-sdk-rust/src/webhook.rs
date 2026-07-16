@@ -17,47 +17,6 @@
 
 //! Semantic HTTP webhook acknowledgement helpers.
 
-/// The outcome returned to EventMesh after an HTTP webhook delivery.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Ack {
-    /// The event was accepted.
-    Ok,
-    /// Ask EventMesh to redeliver the event.
-    Retry { message: String },
-    /// Reject the event without retrying.
-    Fail { message: String },
-    /// Tell EventMesh that no listener is available.
-    NoListen { message: String },
-}
-
-impl Ack {
-    /// Acknowledge the event.
-    pub const fn ok() -> Self {
-        Self::Ok
-    }
-
-    /// Request redelivery with a diagnostic message.
-    pub fn retry(message: impl Into<String>) -> Self {
-        Self::Retry {
-            message: message.into(),
-        }
-    }
-
-    /// Reject the event without retrying.
-    pub fn fail(message: impl Into<String>) -> Self {
-        Self::Fail {
-            message: message.into(),
-        }
-    }
-
-    /// Indicate that the listener is unavailable.
-    pub fn no_listen(message: impl Into<String>) -> Self {
-        Self::NoListen {
-            message: message.into(),
-        }
-    }
-}
-
 /// Built-in axum webhook server.
 #[cfg(feature = "http")]
 pub struct WebhookServer<H: crate::MessageHandler> {

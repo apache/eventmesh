@@ -39,8 +39,9 @@ pub mod catalog;
 pub mod workflow;
 
 pub use client::{
-    ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, HttpConfig,
-    Identity, LoadBalance, ProducerOptions, ReconnectPolicy, TcpConfig,
+    ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig,
+    GrpcConsumerOptions, HttpConfig, Identity, LoadBalance, ProducerOptions, ReconnectPolicy,
+    TcpConfig,
 };
 pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
 

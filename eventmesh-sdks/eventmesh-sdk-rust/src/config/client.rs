@@ -255,7 +255,6 @@ impl ProducerOptions {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConsumerOptions {
     group: String,
-    concurrency: usize,
 }
 
 impl ConsumerOptions {
@@ -263,14 +262,43 @@ impl ConsumerOptions {
     pub fn new(group: impl Into<String>) -> Self {
         Self {
             group: group.into(),
-            concurrency: 1,
+        }
+    }
+}
+
+/// Options for a gRPC stream consumer role.
+///
+/// Unlike HTTP webhook delivery and the serial TCP receive loop, gRPC stream
+/// delivery supports an explicit bound on concurrently running handlers.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GrpcConsumerOptions {
+    consumer: ConsumerOptions,
+    max_concurrent_handlers: usize,
+}
+
+impl GrpcConsumerOptions {
+    /// Create options for `group` with serial handler execution by default.
+    pub fn new(group: impl Into<String>) -> Self {
+        Self {
+            consumer: ConsumerOptions::new(group),
+            max_concurrent_handlers: 1,
         }
     }
 
-    /// Allow up to `concurrency` handlers to run concurrently.
-    pub fn with_concurrency(mut self, concurrency: usize) -> Self {
-        self.concurrency = concurrency.max(1);
+    /// Allow up to `max_concurrent_handlers` handlers to run concurrently.
+    pub fn with_max_concurrent_handlers(mut self, max_concurrent_handlers: usize) -> Self {
+        self.max_concurrent_handlers = max_concurrent_handlers.max(1);
         self
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) const fn consumer(&self) -> &ConsumerOptions {
+        &self.consumer
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) const fn max_concurrent_handlers(&self) -> usize {
+        self.max_concurrent_handlers
     }
 }
 
@@ -390,8 +418,15 @@ impl GrpcConfig {
             tls_config: self.tls_config.clone(),
             timeout: self.options.request_timeout,
             identity,
-            max_concurrent_handlers: consumer.map_or(1, |options| options.concurrency),
+            max_concurrent_handlers: 1,
         }
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn legacy_stream(&self, consumer: &GrpcConsumerOptions) -> super::GrpcClientConfig {
+        let mut config = self.legacy(None, Some(consumer.consumer()));
+        config.max_concurrent_handlers = consumer.max_concurrent_handlers();
+        config
     }
 }
 
@@ -404,6 +439,7 @@ pub struct HttpConfig {
     identity: Identity,
     credentials: Credentials,
     use_tls: bool,
+    proxy_from_env: bool,
 }
 
 impl HttpConfig {
@@ -416,6 +452,7 @@ impl HttpConfig {
             identity: Identity::default(),
             credentials: Credentials::default(),
             use_tls: false,
+            proxy_from_env: false,
         }
     }
 
@@ -449,6 +486,16 @@ impl HttpConfig {
         self
     }
 
+    /// Control whether HTTP requests use proxy settings from the environment.
+    ///
+    /// Disabled by default, matching the Java SDK's direct connection
+    /// behavior. When enabled, reqwest honors variables such as `HTTP_PROXY`,
+    /// `HTTPS_PROXY`, and `NO_PROXY`.
+    pub fn with_proxy_from_env(mut self, enabled: bool) -> Self {
+        self.proxy_from_env = enabled;
+        self
+    }
+
     /// Return the configured endpoints.
     pub const fn endpoints(&self) -> &EndpointSet {
         &self.endpoints
@@ -477,6 +524,11 @@ impl HttpConfig {
     /// Whether HTTPS is enabled.
     pub const fn tls_enabled(&self) -> bool {
         self.use_tls
+    }
+
+    /// Whether proxy settings are loaded from the process environment.
+    pub const fn proxy_from_env(&self) -> bool {
+        self.proxy_from_env
     }
 
     #[cfg(feature = "http")]
@@ -519,6 +571,7 @@ impl HttpConfig {
                 }
             },
             use_tls: self.use_tls,
+            proxy_from_env: self.proxy_from_env,
             pool_size: super::http::DEFAULT_POOL_SIZE,
             pool_idle_timeout: Duration::from_secs(super::http::DEFAULT_IDLE_TIMEOUT_SECS),
             timeout: self.options.request_timeout,
@@ -746,12 +799,34 @@ mod tests {
         assert_eq!(legacy.authority(), "[::1]:10205");
     }
 
+    #[cfg(feature = "grpc")]
+    #[test]
+    fn grpc_stream_options_own_handler_concurrency() {
+        let options = GrpcConsumerOptions::new("orders").with_max_concurrent_handlers(8);
+        let legacy =
+            GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205).unwrap()).legacy_stream(&options);
+        assert_eq!(legacy.identity.consumer_group, "orders");
+        assert_eq!(legacy.max_concurrent_handlers, 8);
+    }
+
     #[cfg(feature = "http")]
     #[test]
     fn http_legacy_config_brackets_ipv6_host() {
         let endpoints = EndpointSet::new([Endpoint::new("::1", 10_105).unwrap()]).unwrap();
         let legacy = HttpConfig::new(endpoints).legacy(None, None);
         assert_eq!(legacy.nodes[0].addr(), "[::1]:10105");
+    }
+
+    #[cfg(feature = "http")]
+    #[test]
+    fn http_proxy_from_env_is_explicit() {
+        let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105).unwrap()]).unwrap();
+        let direct = HttpConfig::new(endpoints.clone()).legacy(None, None);
+        let proxied = HttpConfig::new(endpoints)
+            .with_proxy_from_env(true)
+            .legacy(None, None);
+        assert!(!direct.proxy_from_env);
+        assert!(proxied.proxy_from_env);
     }
 
     #[cfg(feature = "tcp")]
