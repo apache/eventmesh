@@ -31,6 +31,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class MySQLTableDef extends RdbTableDefinition {
+
     private List<String> primaryKeys;
     private Map<String, MySQLColumnDef> columnDefinitions;
 }

@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector;
 
-import org.apache.eventmesh.connector.PollEntry;
-
 import java.util.List;
 
 import io.cloudevents.CloudEvent;

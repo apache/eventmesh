@@ -24,19 +24,6 @@ import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.LiteTopicCapable;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageDecoder;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -45,11 +32,9 @@ import org.apache.rocketmq.remoting.netty.NettyRemotingClient;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.remoting.protocol.RequestCode;
 import org.apache.rocketmq.remoting.protocol.ResponseCode;
-import org.apache.rocketmq.remoting.protocol.body.LiteSubscriptionCtlRequestBody;
 import org.apache.rocketmq.remoting.protocol.header.AckMessageRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.CreateTopicRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.GetLiteTopicInfoRequestHeader;
-import org.apache.rocketmq.remoting.protocol.header.PopLiteMessageRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.PopMessageRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.PullMessageRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.SendMessageRequestHeader;
@@ -58,6 +43,17 @@ import org.apache.rocketmq.remoting.protocol.header.namesrv.GetRouteInfoRequestH
 import org.apache.rocketmq.remoting.protocol.route.BrokerData;
 import org.apache.rocketmq.remoting.protocol.route.QueueData;
 import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
 
@@ -185,8 +181,8 @@ public class RocketMQ5RemotingStoragePlugin implements MeshStoragePlugin, LiteTo
         try {
             RemotingCommand response = remotingClient.invokeSync(brokerAddr, request, SEND_TIMEOUT_MS);
             if (response.getCode() == ResponseCode.SUCCESS) {
-                SendMessageResponseHeader respHeader = (SendMessageResponseHeader)
-                    response.decodeCommandCustomHeader(SendMessageResponseHeader.class);
+                SendMessageResponseHeader respHeader =
+                    (SendMessageResponseHeader) response.decodeCommandCustomHeader(SendMessageResponseHeader.class);
                 SendResult result = new SendResult();
                 result.setMessageId(respHeader.getMsgId());
                 result.setTopic(topic);
@@ -433,8 +429,8 @@ public class RocketMQ5RemotingStoragePlugin implements MeshStoragePlugin, LiteTo
                 RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PULL_MESSAGE, header);
                 RemotingCommand response = remotingClient.invokeSync(loc.brokerAddr, request, RPC_TIMEOUT_MS);
                 org.apache.rocketmq.remoting.protocol.header.PullMessageResponseHeader respHeader =
-                    (org.apache.rocketmq.remoting.protocol.header.PullMessageResponseHeader)
-                        response.decodeCommandCustomHeader(org.apache.rocketmq.remoting.protocol.header.PullMessageResponseHeader.class);
+                    (org.apache.rocketmq.remoting.protocol.header.PullMessageResponseHeader) response
+                        .decodeCommandCustomHeader(org.apache.rocketmq.remoting.protocol.header.PullMessageResponseHeader.class);
                 Long next = respHeader.getNextBeginOffset();
                 log.info("pullLite {} {} gq{} (q{}@{}) off{} -> code={} body={} next={} note={}", parentTopic, liteTopic,
                     gq, loc.localQueueId, loc.brokerAddr, offset, response.getCode(),

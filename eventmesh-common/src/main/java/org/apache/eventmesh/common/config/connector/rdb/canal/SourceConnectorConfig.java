@@ -28,5 +28,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class SourceConnectorConfig extends JdbcConfig {
+
     private String connectorName;
 }

@@ -21,8 +21,6 @@ import org.apache.eventmesh.runtime.ingress.UniIngressService;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.cloudevents.CloudEvent;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**

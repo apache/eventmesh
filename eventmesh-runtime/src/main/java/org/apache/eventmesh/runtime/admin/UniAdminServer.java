@@ -33,10 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -412,7 +411,8 @@ public class UniAdminServer {
         Map<String, Object> m = new HashMap<>();
         m.put("error", msg);
         return m;
-    }    private static String param(URI uri, String name) {
+    }
+    private static String param(URI uri, String name) {
         String query = uri.getQuery();
         if (query == null) {
             return null;

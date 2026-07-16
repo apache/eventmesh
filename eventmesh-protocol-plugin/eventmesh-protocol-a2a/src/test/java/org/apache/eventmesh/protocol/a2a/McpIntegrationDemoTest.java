@@ -53,12 +53,12 @@ public class McpIntegrationDemoTest {
         // ==========================================
         // 1. Client Side: Construct and Send Request
         // ==========================================
-        
+
         // Construct MCP JSON-RPC Request
         Map<String, Object> requestParams = new HashMap<>();
         requestParams.put("name", "get_weather");
         requestParams.put("city", "Beijing");
-        
+
         String targetAgent = "weather-service-01";
         requestParams.put("_agentId", targetAgent); // Routing hint
 
@@ -66,7 +66,7 @@ public class McpIntegrationDemoTest {
         requestMap.put("jsonrpc", "2.0");
         requestMap.put("method", "tools/call");
         requestMap.put("params", requestParams);
-        
+
         String requestId = UUID.randomUUID().toString();
         requestMap.put("id", requestId);
 

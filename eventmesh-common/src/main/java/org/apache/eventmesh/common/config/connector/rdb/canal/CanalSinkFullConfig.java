@@ -22,10 +22,10 @@ import org.apache.eventmesh.common.config.connector.SinkConfig;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CanalSinkFullConfig extends SinkConfig {
+
     private SinkConnectorConfig sinkConnectorConfig;
     private String zeroDate;
     private int parallel = 2;

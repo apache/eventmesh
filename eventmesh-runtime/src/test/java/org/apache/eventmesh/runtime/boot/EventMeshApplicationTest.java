@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -33,9 +35,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class EventMeshApplicationTest {
 
     @Test
@@ -46,15 +45,16 @@ class EventMeshApplicationTest {
             app.start();
             // admin endpoint on the admin port
             int adminPort = app.adminPort();
-            java.net.HttpURLConnection admin = (java.net.HttpURLConnection)
-                new java.net.URL("http://127.0.0.1:" + adminPort + "/admin/health").openConnection();
+            java.net.HttpURLConnection admin =
+                (java.net.HttpURLConnection) new java.net.URL("http://127.0.0.1:" + adminPort + "/admin/health").openConnection();
             admin.setReadTimeout(5000);
             assertEquals(200, admin.getResponseCode());
 
             // traffic endpoint on the traffic port (metrics moved to admin, so probe /events/poll)
             int trafficPort = app.trafficPort();
-            java.net.HttpURLConnection poll = (java.net.HttpURLConnection)
-                new java.net.URL("http://127.0.0.1:" + trafficPort + "/events/poll?clientId=x&max=1&timeoutMs=0").openConnection();
+            java.net.HttpURLConnection poll =
+                (java.net.HttpURLConnection) new java.net.URL("http://127.0.0.1:" + trafficPort + "/events/poll?clientId=x&max=1&timeoutMs=0")
+                    .openConnection();
             poll.setReadTimeout(5000);
             assertEquals(200, poll.getResponseCode());
         } finally {

@@ -46,14 +46,18 @@ public class PushService {
     public static final int DEFAULT_MAX_PENDING_PER_CLIENT = 10_000;
 
     /** Slow consumer state machine (§13.6.2). */
-    public enum ClientState { HEALTHY, SLOW, STALLED, EVICTED }
+    public enum ClientState {
+        HEALTHY, SLOW, STALLED, EVICTED
+    }
 
     /** Overflow policy when a client's buffer is full (§13.6.2①). */
-    public enum OverflowPolicy { BLOCK, DROP_OLDEST, DROP_NEWEST, TO_DLQ }
+    public enum OverflowPolicy {
+        BLOCK, DROP_OLDEST, DROP_NEWEST, TO_DLQ
+    }
 
-    private static final int SLOW_THRESHOLD_PERCENT = 80;  // 80% full → SLOW
-    private static final int STALLED_CONSECUTIVE_CHECKS = 3;  // 3 consecutive slow → STALLED
-    private static final int EVICT_AFTER_STALLED_CHECKS = 10;  // 10 consecutive stalled → EVICTED
+    private static final int SLOW_THRESHOLD_PERCENT = 80; // 80% full → SLOW
+    private static final int STALLED_CONSECUTIVE_CHECKS = 3; // 3 consecutive slow → STALLED
+    private static final int EVICT_AFTER_STALLED_CHECKS = 10; // 10 consecutive stalled → EVICTED
 
     private final ConcurrentHashMap<String, LinkedBlockingQueue<BufferedEvent>> buffers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, AckCallback> callbacksByDeliveryId = new ConcurrentHashMap<>();

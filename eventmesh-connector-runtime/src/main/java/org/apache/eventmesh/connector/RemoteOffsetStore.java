@@ -17,11 +17,9 @@
 
 package org.apache.eventmesh.connector;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -48,7 +46,8 @@ public class RemoteOffsetStore implements ConnectorOffsetStore {
 
     public RemoteOffsetStore(String runtimeUrl) {
         this.adminUrl = runtimeUrl.endsWith("/")
-            ? runtimeUrl.substring(0, runtimeUrl.length() - 1) : runtimeUrl;
+            ? runtimeUrl.substring(0, runtimeUrl.length() - 1)
+            : runtimeUrl;
     }
 
     @Override

@@ -21,17 +21,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,7 +52,8 @@ public class EventMeshHttpEndpoint implements EventMeshEndpoint {
 
     public EventMeshHttpEndpoint(String runtimeUrl) {
         this.baseUrl = runtimeUrl.endsWith("/")
-            ? runtimeUrl.substring(0, runtimeUrl.length() - 1) : runtimeUrl;
+            ? runtimeUrl.substring(0, runtimeUrl.length() - 1)
+            : runtimeUrl;
     }
 
     @Override

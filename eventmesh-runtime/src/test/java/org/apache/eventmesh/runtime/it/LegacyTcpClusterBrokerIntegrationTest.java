@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
@@ -42,11 +45,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-
-import io.cloudevents.CloudEvent;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Legacy TCP SDK + real broker + real Nacos Meta integration test. Boots the full
@@ -142,8 +140,8 @@ class LegacyTcpClusterBrokerIntegrationTest {
         subClient.listen();
 
         // 5. Settle: the RocketMQ consumer lazy-subscribes on first poll and needs up to one
-        //    rebalance cycle (~20s) before it owns queues; publish before that and
-        //    CONSUME_FROM_LAST_OFFSET skips the message.
+        // rebalance cycle (~20s) before it owns queues; publish before that and
+        // CONSUME_FROM_LAST_OFFSET skips the message.
         Thread.sleep(25_000L);
 
         // 6. Publisher: real old SDK.
@@ -161,7 +159,7 @@ class LegacyTcpClusterBrokerIntegrationTest {
         pubClient.publish(msg, 10_000L);
 
         // 7. The pull-loop (UniRuntime, 200ms) pulls from RocketMQ → ClusterCoordinator.dispatch →
-        //    deliverLocal → NettyTcpPushChannel → SDK ReceiveMsgHook.
+        // deliverLocal → NettyTcpPushChannel → SDK ReceiveMsgHook.
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
         while (received.isEmpty() && System.nanoTime() < deadline) {
             Thread.sleep(50);

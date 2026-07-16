@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -106,6 +106,7 @@ public class NacosMetaStore implements MetaStore {
         // Other prefixes use ConfigService per-key listeners.
         try {
             config.addListener(dataId(prefix), GROUP, new Listener() {
+
                 @Override
                 public void receiveConfigInfo(String configInfo) {
                     knownKeys.add(prefix);

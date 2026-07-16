@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
 import org.apache.eventmesh.runtime.boot.EventMeshApplication;
@@ -35,9 +38,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import io.cloudevents.CloudEvent;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Full end-to-end Kafka test through the HTTP stack: boots {@link EventMeshApplication} on the kafka

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -50,9 +53,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end TLS integration test (§13.4.1): the traffic {@link UniHttpServer} is booted with
@@ -134,7 +134,8 @@ class TlsIntegrationTest {
     /** A client SSLContext that trusts the self-signed cert (permissive TrustManager). */
     private static SSLContext trustAllContext() throws Exception {
         SSLContext ctx = SSLContext.getInstance("TLSv1.3");
-        ctx.init(null, new TrustManager[] {new X509TrustManager() {
+        ctx.init(null, new TrustManager[]{new X509TrustManager() {
+
             @Override
             public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
                 // no-op

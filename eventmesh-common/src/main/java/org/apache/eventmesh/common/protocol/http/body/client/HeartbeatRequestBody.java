@@ -74,8 +74,6 @@ public class HeartbeatRequestBody extends Body {
         private String url;
         private String instanceId;
 
-
     }
-
 
 }

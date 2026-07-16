@@ -23,7 +23,6 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +76,10 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
 
     @Override
     public void init(Properties properties) throws Exception {
-        if (remotingClient != null) { log.info("RocketMQ remoting storage plugin already initialized"); return; }
+        if (remotingClient != null) {
+            log.info("RocketMQ remoting storage plugin already initialized");
+            return;
+        }
         namesrvAddr = properties.getProperty("namesrvAddr",
             properties.getProperty("eventmesh.server.rocketmq.namesrvAddr", "localhost:9876"));
 
@@ -136,8 +138,8 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                 remotingClient.invokeSync(brokerAddr, request, SEND_TIMEOUT_MS);
             if (response.getCode() == org.apache.rocketmq.common.protocol.ResponseCode.SUCCESS) {
                 org.apache.rocketmq.common.protocol.header.SendMessageResponseHeader respHeader =
-                    (org.apache.rocketmq.common.protocol.header.SendMessageResponseHeader)
-                        response.decodeCommandCustomHeader(org.apache.rocketmq.common.protocol.header.SendMessageResponseHeader.class);
+                    (org.apache.rocketmq.common.protocol.header.SendMessageResponseHeader) response
+                        .decodeCommandCustomHeader(org.apache.rocketmq.common.protocol.header.SendMessageResponseHeader.class);
                 SendResult result = new SendResult();
                 result.setMessageId(respHeader.getMsgId());
                 result.setTopic(topic);
@@ -188,7 +190,9 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                 header.setQueueId(loc.localQueueId);
                 header.setQueueOffset(offset);
                 header.setMaxMsgNums(pullSize);
-                header.setSubscription("*"); header.setSubVersion(0L); header.setSysFlag(org.apache.rocketmq.common.sysflag.PullSysFlag.buildSysFlag(false, false, true, false));
+                header.setSubscription("*");
+                header.setSubVersion(0L);
+                header.setSysFlag(org.apache.rocketmq.common.sysflag.PullSysFlag.buildSysFlag(false, false, true, false));
                 header.setCommitOffset(0L);
                 header.setSuspendTimeoutMillis(PULL_SUSPEND_TIMEOUT_MS);
 
@@ -200,8 +204,8 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                     remotingClient.invokeSync(brokerAddr, request, RPC_TIMEOUT_MS);
 
                 org.apache.rocketmq.common.protocol.header.PullMessageResponseHeader respHeader =
-                    (org.apache.rocketmq.common.protocol.header.PullMessageResponseHeader)
-                        response.decodeCommandCustomHeader(org.apache.rocketmq.common.protocol.header.PullMessageResponseHeader.class);
+                    (org.apache.rocketmq.common.protocol.header.PullMessageResponseHeader) response
+                        .decodeCommandCustomHeader(org.apache.rocketmq.common.protocol.header.PullMessageResponseHeader.class);
                 Long nextOffset = respHeader.getNextBeginOffset();
                 if (nextOffset == null) {
                     // Defensive: a route occasionally lists a broker/queue the broker doesn't host
@@ -283,6 +287,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
     /** Resolved location of one logical (global flattened) queue: which broker owns it and the
      *  per-broker local queueId to send in the RPC. */
     private static final class QueueLoc {
+
         final String brokerAddr;
         final int localQueueId;
         QueueLoc(String brokerAddr, int localQueueId) {
@@ -295,10 +300,14 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
         ConcurrentHashMap<Integer, QueueLoc> cache = queueBrokerCache.get(topic);
         if (cache != null) {
             QueueLoc loc = cache.get(queueId);
-            if (loc != null) { return loc; }
+            if (loc != null) {
+                return loc;
+            }
         }
         org.apache.rocketmq.common.protocol.route.TopicRouteData route = fetchRoute(topic);
-        if (route == null || route.getQueueDatas() == null || route.getBrokerDatas() == null) { return null; }
+        if (route == null || route.getQueueDatas() == null || route.getBrokerDatas() == null) {
+            return null;
+        }
         // Only route to brokers whose data port is reachable; an unreachable broker (e.g. a down
         // broker in an 11-broker cluster) would make every send/poll that lands on its queues fail.
         java.util.Map<String, String> brokerNameToAddr = reachableBrokerNameToAddr(route);
@@ -327,7 +336,10 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
     /** Create a topic on all brokers via UPDATE_AND_CREATE_TOPIC RPC (code 17). */
     public void createTopic(String topic, int queueNums) {
         List<String> brokers = getBrokers("TBW102");
-        if (brokers.isEmpty()) { log.warn("createTopic: no brokers for TBW102"); return; }
+        if (brokers.isEmpty()) {
+            log.warn("createTopic: no brokers for TBW102");
+            return;
+        }
         for (String brokerAddr : brokers.subList(0, Math.min(1, brokers.size()))) {
             try {
                 org.apache.rocketmq.common.protocol.header.CreateTopicRequestHeader header =

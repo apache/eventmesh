@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -26,7 +29,6 @@ import org.apache.eventmesh.runtime.http.UniHttpServer;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +45,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * In-process batch publish E2E: publish 10 events via {@code publishBatch}, verify all received via
@@ -83,9 +82,12 @@ class BatchPublishIntegrationTest {
 
     @AfterEach
     void tearDown() {
-        if (client != null) client.shutdown();
-        if (driver != null) driver.shutdownNow();
-        if (http != null) http.stop();
+        if (client != null)
+            client.shutdown();
+        if (driver != null)
+            driver.shutdownNow();
+        if (http != null)
+            http.stop();
     }
 
     @Test
@@ -109,25 +111,49 @@ class BatchPublishIntegrationTest {
     }
 
     static final class InMemoryStorage implements MeshStoragePlugin {
+
         final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
-        @Override public void init(java.util.Properties p) { }
-        @Override public void send(String topic, CloudEvent event, SendCallback cb) {
-            queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
-            SendResult r = new SendResult(); r.setMessageId(event.getId()); r.setTopic(topic); cb.onSuccess(r);
+        @Override
+        public void init(java.util.Properties p) {
         }
-        @Override public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        @Override
+        public void send(String topic, CloudEvent event, SendCallback cb) {
+            queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
+            SendResult r = new SendResult();
+            r.setMessageId(event.getId());
+            r.setTopic(topic);
+            cb.onSuccess(r);
+        }
+        @Override
+        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
-            if (q == null) return new ArrayList<>();
+            if (q == null)
+                return new ArrayList<>();
             List<CloudEvent> out = new ArrayList<>();
             CloudEvent e;
-            while (out.size() < maxEvents && (e = q.poll()) != null) out.add(e);
+            while (out.size() < maxEvents && (e = q.poll()) != null)
+                out.add(e);
             return out;
         }
-        @Override public void assignPartitions(String topic, List<Integer> partitions) { }
-        @Override public void commitOffset(String topic, int partition, long offset) { }
-        @Override public boolean isStarted() { return true; }
-        @Override public boolean isClosed() { return false; }
-        @Override public void start() { }
-        @Override public void shutdown() { }
+        @Override
+        public void assignPartitions(String topic, List<Integer> partitions) {
+        }
+        @Override
+        public void commitOffset(String topic, int partition, long offset) {
+        }
+        @Override
+        public boolean isStarted() {
+            return true;
+        }
+        @Override
+        public boolean isClosed() {
+            return false;
+        }
+        @Override
+        public void start() {
+        }
+        @Override
+        public void shutdown() {
+        }
     }
 }

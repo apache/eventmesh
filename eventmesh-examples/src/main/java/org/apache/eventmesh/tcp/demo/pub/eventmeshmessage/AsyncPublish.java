@@ -43,13 +43,13 @@ public class AsyncPublish {
         try {
             final UserAgent userAgent = EventMeshTestUtils.generateClient1();
             try (final EventMeshTCPClient<EventMeshMessage> client =
-                     EventMeshTCPClientFactory.createEventMeshTCPClient(
-                         EventMeshTCPClientConfig.builder()
-                             .host(eventMeshIp)
-                             .port(eventMeshTcpPort)
-                             .userAgent(userAgent)
-                             .build(),
-                         EventMeshMessage.class)) {
+                EventMeshTCPClientFactory.createEventMeshTCPClient(
+                    EventMeshTCPClientConfig.builder()
+                        .host(eventMeshIp)
+                        .port(eventMeshTcpPort)
+                        .userAgent(userAgent)
+                        .build(),
+                    EventMeshMessage.class)) {
                 client.init();
 
                 for (int i = 0; i < 5; i++) {

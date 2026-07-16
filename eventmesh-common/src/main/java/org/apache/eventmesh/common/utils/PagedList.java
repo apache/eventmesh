@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.utils;
 import java.util.List;
 
 public class PagedList<T> {
+
     private int totalSize;
     private int totalPage;
     private int size;

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.transport.tcp;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -40,9 +43,6 @@ import org.junit.jupiter.api.Test;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class TcpCompatibilityBridgeTest {
 
     @Test
@@ -50,7 +50,9 @@ class TcpCompatibilityBridgeTest {
         TcpAckRegistry registry = new TcpAckRegistry();
         List<byte[]> written = new ArrayList<>();
         TcpPushChannel channel = new TcpPushChannel(
-            new StubCodec(), frame -> { written.add(frame); }, registry);
+            new StubCodec(), frame -> {
+                written.add(frame);
+            }, registry);
 
         RecordingCallback cb = new RecordingCallback();
         channel.deliver("d-1", event("e-1"), cb);

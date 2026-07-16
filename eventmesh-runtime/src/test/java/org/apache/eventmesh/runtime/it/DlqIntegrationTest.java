@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -32,7 +35,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -47,9 +49,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration test of the dead-letter + replay loop (§13.3.6 / §13.5.4) over real HTTP. A published
@@ -103,9 +102,9 @@ class DlqIntegrationTest {
         assertEquals(1, polled.size(), "event should be delivered to the client buffer");
 
         // 3. Leave the delivery UNacked. Each tick() that finds nextAttemptAtMs elapsed either
-        //    redelivers (bump attempt, reschedule at now+ackTimeout) or, once attempt >= maxAttempts,
-        //    routes the event to the DLQ sink (<topic>_DLQ in storage). Advance the clock past the
-        //    ACK window between ticks so the delivery expires each cycle.
+        // redelivers (bump attempt, reschedule at now+ackTimeout) or, once attempt >= maxAttempts,
+        // routes the event to the DLQ sink (<topic>_DLQ in storage). Advance the clock past the
+        // ACK window between ticks so the delivery expires each cycle.
         clock.addAndGet(2_000L); // past ackTimeoutMs (1s)
         // Tick until the DLQ metric increments (non-destructive — don't poll storage here, that
         // drains the DLQ queue before the assertion can read it).

@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
 import org.apache.eventmesh.runtime.boot.EventMeshApplication;
@@ -36,10 +40,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import io.cloudevents.CloudEvent;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Client-driven integration test over the real runtime + a real broker. Boots the full
@@ -89,7 +89,8 @@ class ClientBrokerIntegrationTest {
         if (storage instanceof org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) {
             ((org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) storage).createTopic(topic, 4);
             for (int w = 0; w < 30; w++) {
-                if (((org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) storage).partitionCount(topic) > 0) break;
+                if (((org.apache.eventmesh.storage.rocketmq.storage.RocketMQRemotingStoragePlugin) storage).partitionCount(topic) > 0)
+                    break;
                 Thread.sleep(1000);
             }
         } else {

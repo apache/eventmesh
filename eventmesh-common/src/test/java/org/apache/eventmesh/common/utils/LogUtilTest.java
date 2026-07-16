@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.eventmesh.common.utils;
 
 import static org.mockito.ArgumentMatchers.same;
@@ -67,7 +66,6 @@ class LogUtilTest {
     @Test
     void testDebugLogsWithSupplierAndException() {
         Throwable throwable = new RuntimeException("Order processing failed");
-
 
         doReturn(mockEventBuilder).when(mockLogger).atDebug();
         doReturn(mockEventBuilder).when(mockEventBuilder).addArgument(same(supplier));

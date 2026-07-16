@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.metrics;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
@@ -230,6 +229,7 @@ public class UniMetrics {
 
     /** A single labelled gauge reading: the OTel attributes + the long value. */
     public static final class LabelledLong {
+
         public final Attributes attributes;
         public final long value;
 

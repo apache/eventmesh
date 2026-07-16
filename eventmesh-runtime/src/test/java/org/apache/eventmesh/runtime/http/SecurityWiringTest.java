@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -29,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -44,8 +45,6 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /** Proves the FilterChain is wired into publish: bad credential → 401, good → 202. */
 class SecurityWiringTest {

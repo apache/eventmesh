@@ -24,6 +24,7 @@ import lombok.Data;
  */
 @Data
 public class RdbTableDefinition {
+
     protected String schemaName;
     protected String tableName;
 }

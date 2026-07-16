@@ -87,7 +87,8 @@ class A2AGatewayServiceTest {
         transport.subscribe(requestTopic, (topic, event) -> {
             String taskId = event.getId();
             String data = event.getData() != null
-                ? new String(event.getData().toBytes(), StandardCharsets.UTF_8) : "";
+                ? new String(event.getData().toBytes(), StandardCharsets.UTF_8)
+                : "";
             String responseTopic = A2ATopicFactory.gatewayResponseTopic(NAMESPACE, GATEWAY_ID, taskId);
             CloudEvent response = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -36,8 +38,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Edge-case tests for UniHttpServer endpoints: bad input validation, lite endpoint 501 on
@@ -125,18 +125,40 @@ class UniHttpServerEndpointTest {
     }
 
     static final class InMemStorage implements MeshStoragePlugin {
-        @Override public void init(Properties p) { }
-        @Override public void send(String topic, CloudEvent event, SendCallback cb) {
-            SendResult r = new SendResult(); r.setMessageId(event.getId()); r.setTopic(topic); cb.onSuccess(r);
+
+        @Override
+        public void init(Properties p) {
         }
-        @Override public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        @Override
+        public void send(String topic, CloudEvent event, SendCallback cb) {
+            SendResult r = new SendResult();
+            r.setMessageId(event.getId());
+            r.setTopic(topic);
+            cb.onSuccess(r);
+        }
+        @Override
+        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             return new ArrayList<>();
         }
-        @Override public void assignPartitions(String topic, List<Integer> partitions) { }
-        @Override public void commitOffset(String topic, int partition, long offset) { }
-        @Override public boolean isStarted() { return true; }
-        @Override public boolean isClosed() { return false; }
-        @Override public void start() { }
-        @Override public void shutdown() { }
+        @Override
+        public void assignPartitions(String topic, List<Integer> partitions) {
+        }
+        @Override
+        public void commitOffset(String topic, int partition, long offset) {
+        }
+        @Override
+        public boolean isStarted() {
+            return true;
+        }
+        @Override
+        public boolean isClosed() {
+            return false;
+        }
+        @Override
+        public void start() {
+        }
+        @Override
+        public void shutdown() {
+        }
     }
 }

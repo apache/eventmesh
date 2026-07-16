@@ -78,7 +78,7 @@ public class A2AGatewayHttpHandler {
     private final A2APublishSubscribeService a2aService;
 
     public A2AGatewayHttpHandler(A2AGatewayService gatewayService,
-                                  A2APublishSubscribeService a2aService) {
+        A2APublishSubscribeService a2aService) {
         this.gatewayService = gatewayService;
         this.a2aService = a2aService;
     }
@@ -528,7 +528,7 @@ public class A2AGatewayHttpHandler {
     }
 
     private int parseIntQueryParam(QueryStringDecoder decoder, String key,
-                                   int defaultValue, int minValue, int maxValue) {
+        int defaultValue, int minValue, int maxValue) {
         String value = getQueryParam(decoder, key);
         if (value == null || value.isEmpty()) {
             return defaultValue;

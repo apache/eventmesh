@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
 import org.apache.eventmesh.runtime.boot.EventMeshApplication;
@@ -36,8 +38,6 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end Lite Topic over HTTP: boots the full {@link EventMeshApplication} on the rocketmq5

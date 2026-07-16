@@ -28,8 +28,12 @@ package org.apache.eventmesh.runtime.security;
  */
 public final class AclRule {
 
-    public enum Action { PUBLISH, SUBSCRIBE, REQUEST, ANY }
-    public enum Effect { ALLOW, DENY }
+    public enum Action {
+        PUBLISH, SUBSCRIBE, REQUEST, ANY
+    }
+    public enum Effect {
+        ALLOW, DENY
+    }
 
     private final String principal;
     private final String resource;

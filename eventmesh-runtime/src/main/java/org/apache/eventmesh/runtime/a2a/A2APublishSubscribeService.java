@@ -345,6 +345,7 @@ public class A2APublishSubscribeService {
     // =========================================================================
 
     private enum AgentStatus {
+
         ONLINE(A2AProtocolConstants.STATUS_ONLINE),
         OFFLINE(A2AProtocolConstants.STATUS_OFFLINE);
 

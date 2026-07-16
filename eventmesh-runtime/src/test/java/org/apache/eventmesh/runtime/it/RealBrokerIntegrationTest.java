@@ -74,8 +74,8 @@ class RealBrokerIntegrationTest {
         }
 
         // 2. Configure + boot the runtime. The thin adapter forwards these properties to the
-        //    underlying Kafka/RocketMQ client; the @Config-injected namesrvAddr comes from the
-        //    storage module's properties file on the classpath (ConfigService bootstrap).
+        // underlying Kafka/RocketMQ client; the @Config-injected namesrvAddr comes from the
+        // storage module's properties file on the classpath (ConfigService bootstrap).
         Properties props = new Properties();
         props.setProperty("namesrvAddr", namesrv);
         props.setProperty("eventMesh.server.kafka.namesrvAddr", namesrv);

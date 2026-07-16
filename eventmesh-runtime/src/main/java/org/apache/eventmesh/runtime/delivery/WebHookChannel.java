@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
-import org.apache.eventmesh.runtime.delivery.AckCallback;
-import org.apache.eventmesh.runtime.delivery.PushChannel;
-
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;

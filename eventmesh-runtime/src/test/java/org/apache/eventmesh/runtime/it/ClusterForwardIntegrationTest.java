@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -45,9 +47,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Two-instance cluster integration test (§13.2): instance A and instance B share one {@link MetaStore}
@@ -157,7 +156,7 @@ class ClusterForwardIntegrationTest {
     }
 
     // ---- in-memory storage (shared logical MQ; each instance has its own map but the test only
-    //      publishes on B and never polls storage on B, so a per-instance map is fine) ----
+    // publishes on B and never polls storage on B, so a per-instance map is fine) ----
 
     static final class InMemoryStorage implements MeshStoragePlugin {
 

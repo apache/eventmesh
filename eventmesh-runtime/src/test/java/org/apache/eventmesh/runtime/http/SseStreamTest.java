@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.runtime.http;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.runtime.boot.UniRuntime;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
-import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -43,8 +43,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** SSE streaming push: subscribe → open /events/stream → publish → read the SSE data frame. */
 class SseStreamTest {

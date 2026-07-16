@@ -223,7 +223,8 @@ public class SubscriptionManager {
     /**
      * Snapshot of active (non-expired) subscriptions for a topic. Mainly for inspection/tests.
      */
-    public List<Subscription> activeSubscriptions(String topic) {        Set<Subscription> subs = topicSubscriptions.get(topic);
+    public List<Subscription> activeSubscriptions(String topic) {
+        Set<Subscription> subs = topicSubscriptions.get(topic);
         if (subs == null || subs.isEmpty()) {
             return Collections.emptyList();
         }

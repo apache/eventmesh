@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.storage.kafka;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -35,9 +38,6 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end test of {@link KafkaMeshStoragePlugin} against a real broker (e.g. wemq-kafka with
@@ -97,8 +97,10 @@ class KafkaBrokerIntegrationTest {
             .withDataContentType("text/plain").withData("hello-kafka".getBytes()).build();
         AtomicReference<String> sendErr = new AtomicReference<>();
         storage.send(TOPIC, event, new SendCallback() {
+
             @Override
-            public void onSuccess(SendResult result) { }
+            public void onSuccess(SendResult result) {
+            }
 
             @Override
             public void onException(OnExceptionContext ctx) {

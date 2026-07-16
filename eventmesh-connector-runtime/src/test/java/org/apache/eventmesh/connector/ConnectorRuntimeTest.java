@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.connector;
 
-import org.apache.eventmesh.connector.PollEntry;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -31,11 +33,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConnectorRuntimeTest {
 
@@ -93,8 +90,10 @@ class ConnectorRuntimeTest {
     }
 
     private static final class FakeSource implements SourceConnector {
-        @Override public void init(Properties props) {}
 
+        @Override
+        public void init(Properties props) {
+        }
 
         final List<CloudEvent> batch;
         CloudEvent lastCommitted;
@@ -115,8 +114,10 @@ class ConnectorRuntimeTest {
     }
 
     private static final class FakeSink implements SinkConnector {
-        @Override public void init(Properties props) {}
 
+        @Override
+        public void init(Properties props) {
+        }
 
         int putCount;
         int committedCount;

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.config.connector;
 
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,7 +25,6 @@ import lombok.EqualsAndHashCode;
 public abstract class SourceConfig extends Config {
 
     private PubSubConfig pubSubConfig;
-
 
     // Polling configuration, e.g. capacity, batch size, wait time, etc.
     private PollConfig pollConfig = new PollConfig();

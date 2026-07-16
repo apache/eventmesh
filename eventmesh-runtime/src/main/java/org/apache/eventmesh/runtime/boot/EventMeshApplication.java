@@ -76,7 +76,7 @@ public class EventMeshApplication {
 
     /** Enable dynamic connector scheduling (§8). {@code metaStore} holds defs + worker registry. */
     public EventMeshApplication withConnectorScheduler(
-            org.apache.eventmesh.runtime.connector.ConnectorScheduler scheduler) {
+        org.apache.eventmesh.runtime.connector.ConnectorScheduler scheduler) {
         this.connectorScheduler = scheduler;
         return this;
     }
@@ -215,7 +215,7 @@ public class EventMeshApplication {
         // passed empty Properties, which forced the kafka/rocketmq default (localhost:9092).
         Properties props = new Properties();
         try (java.io.InputStream is = EventMeshApplication.class.getClassLoader()
-                .getResourceAsStream("eventmesh.properties")) {
+            .getResourceAsStream("eventmesh.properties")) {
             if (is != null) {
                 props.load(is);
                 log.info("loaded eventmesh.properties ({} keys)", props.size());

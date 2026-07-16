@@ -18,6 +18,7 @@
 package org.apache.eventmesh.common.enums;
 
 public enum ComponentType {
+
     CONNECTOR("connector"),
     FUNCTION("function"),
     MESH("mesh");

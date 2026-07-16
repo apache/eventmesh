@@ -17,7 +17,8 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
-import org.apache.eventmesh.runtime.delivery.AckCallback;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.util.Map;
@@ -27,9 +28,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebHookChannelTest {
 

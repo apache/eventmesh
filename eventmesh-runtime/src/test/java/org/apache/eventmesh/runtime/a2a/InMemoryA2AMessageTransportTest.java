@@ -183,7 +183,8 @@ class InMemoryA2AMessageTransportTest {
 
     @Test
     void testSubscriptionIdIsNotNull() throws Exception {
-        String subId = transport.subscribe("a2a/v1/agent/request/agent-a", (topic, event) -> { });
+        String subId = transport.subscribe("a2a/v1/agent/request/agent-a", (topic, event) -> {
+        });
         assertNotNull(subId);
     }
 

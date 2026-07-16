@@ -92,7 +92,6 @@ public class JsonPathUtilsTest {
         assertFalse(JsonPathUtils.isValidAndDefinite(jsonPath5));
     }
 
-
     @Test
     public void testGetJsonPathValue() {
         String jsonContent = "{ \"person\": { \"name\": \"John Doe\", \"age\": 30, \"address\": { \"city\": \"New York\" } } }";

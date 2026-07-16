@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.config.connector.http;
 
-
 import lombok.Data;
 
 @Data
@@ -57,7 +56,6 @@ public class SinkConnectorConfig {
 
     private int parallelism = 2;
 
-
     /**
      * Fill default values if absent (When there are multiple default values for a field)
      *
@@ -65,8 +63,7 @@ public class SinkConnectorConfig {
      */
     public static void populateFieldsWithDefaults(SinkConnectorConfig config) {
         /*
-         * set default values for idleTimeout
-         * recommended scope: common(5s - 10s), webhook(15s - 30s)
+         * set default values for idleTimeout recommended scope: common(5s - 10s), webhook(15s - 30s)
          */
         final int commonHttpIdleTimeout = 5000;
         final int webhookHttpIdleTimeout = 15000;

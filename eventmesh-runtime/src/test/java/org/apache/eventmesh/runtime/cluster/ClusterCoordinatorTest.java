@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.cluster;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
 import java.net.URI;
@@ -29,9 +32,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClusterCoordinatorTest {
 
@@ -86,7 +86,8 @@ class ClusterCoordinatorTest {
         Map<String, List<CloudEvent>> onA = new HashMap<>();
         Map<String, List<CloudEvent>> onB = new HashMap<>();
         Forwarder forwarder = (targetInstance, clientId, topic, event) -> "A".equals(targetInstance)
-            ? record(onA, clientId, event) : record(onB, clientId, event);
+            ? record(onA, clientId, event)
+            : record(onB, clientId, event);
         ClusterCoordinator a = new ClusterCoordinator("A", new ClusterSubscriptionStore(meta),
             (topic, cid, e) -> record(onA, cid, e), forwarder);
         ClusterCoordinator b = new ClusterCoordinator("B", new ClusterSubscriptionStore(meta),

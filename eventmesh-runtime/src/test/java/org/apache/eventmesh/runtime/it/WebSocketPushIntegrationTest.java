@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -44,8 +46,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end WebSocket push: subscriber connects via {@code CloudEventsClient.subscribeWs} to the
@@ -142,7 +142,8 @@ class WebSocketPushIntegrationTest {
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
 
         @Override
-        public void init(java.util.Properties p) { }
+        public void init(java.util.Properties p) {
+        }
 
         @Override
         public void send(String topic, CloudEvent event, SendCallback cb) {
@@ -168,10 +169,12 @@ class WebSocketPushIntegrationTest {
         }
 
         @Override
-        public void assignPartitions(String topic, List<Integer> partitions) { }
+        public void assignPartitions(String topic, List<Integer> partitions) {
+        }
 
         @Override
-        public void commitOffset(String topic, int partition, long offset) { }
+        public void commitOffset(String topic, int partition, long offset) {
+        }
 
         @Override
         public boolean isStarted() {
@@ -184,9 +187,11 @@ class WebSocketPushIntegrationTest {
         }
 
         @Override
-        public void start() { }
+        public void start() {
+        }
 
         @Override
-        public void shutdown() { }
+        public void shutdown() {
+        }
     }
 }

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.push;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 
 import java.net.URI;
@@ -27,8 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConnectionPushPumpTest {
 
@@ -60,6 +60,7 @@ class ConnectionPushPumpTest {
 
     private static AckCallback noopCallback() {
         return new AckCallback() {
+
             @Override
             public void ack() {
             }

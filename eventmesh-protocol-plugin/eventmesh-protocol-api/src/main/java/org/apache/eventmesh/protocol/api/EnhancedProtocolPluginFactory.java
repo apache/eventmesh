@@ -39,14 +39,14 @@ public class EnhancedProtocolPluginFactory {
 
     private static final Map<String, ProtocolAdaptor<ProtocolTransportObject>> PROTOCOL_ADAPTOR_MAP =
         new ConcurrentHashMap<>(32);
-    
-    private static final Map<String, ProtocolMetadata> PROTOCOL_METADATA_MAP = 
+
+    private static final Map<String, ProtocolMetadata> PROTOCOL_METADATA_MAP =
         new ConcurrentHashMap<>(32);
-    
+
     private static final ReentrantReadWriteLock REGISTRY_LOCK = new ReentrantReadWriteLock();
-    
+
     private static volatile boolean initialized = false;
-    
+
     static {
         initializePlugins();
     }
@@ -58,21 +58,21 @@ public class EnhancedProtocolPluginFactory {
         if (initialized) {
             return;
         }
-        
+
         REGISTRY_LOCK.writeLock().lock();
         try {
             if (initialized) {
                 return;
             }
-            
+
             log.info("Initializing protocol plugins...");
-            
+
             // Protocol adaptors will be registered on-demand when first accessed
             log.debug("Enhanced protocol plugin factory initialized");
-            
+
             initialized = true;
             log.info("Initialized {} protocol plugins", PROTOCOL_ADAPTOR_MAP.size());
-            
+
         } finally {
             REGISTRY_LOCK.writeLock().unlock();
         }
@@ -88,30 +88,29 @@ public class EnhancedProtocolPluginFactory {
         try {
             String protocolType = adaptor.getProtocolType();
             if (protocolType == null || protocolType.trim().isEmpty()) {
-                log.warn("Skip registering protocol adaptor with null or empty protocol type: {}", 
+                log.warn("Skip registering protocol adaptor with null or empty protocol type: {}",
                     adaptor.getClass().getName());
                 return;
             }
-            
+
             // Initialize the adaptor
             adaptor.initialize();
-            
+
             // Store adaptor
             PROTOCOL_ADAPTOR_MAP.put(protocolType, adaptor);
-            
+
             // Store metadata
             ProtocolMetadata metadata = new ProtocolMetadata(
                 protocolType,
                 adaptor.getVersion(),
                 adaptor.getPriority(),
                 adaptor.supportsBatchProcessing(),
-                adaptor.getCapabilities()
-            );
+                adaptor.getCapabilities());
             PROTOCOL_METADATA_MAP.put(protocolType, metadata);
-            
-            log.info("Registered protocol adaptor: {} (version: {}, priority: {})", 
+
+            log.info("Registered protocol adaptor: {} (version: {}, priority: {})",
                 protocolType, adaptor.getVersion(), adaptor.getPriority());
-                
+
         } catch (Exception e) {
             log.error("Failed to register protocol adaptor: {}", adaptor.getClass().getName(), e);
         }
@@ -128,7 +127,7 @@ public class EnhancedProtocolPluginFactory {
         if (protocolType == null || protocolType.trim().isEmpty()) {
             throw new IllegalArgumentException("Protocol type cannot be null or empty");
         }
-        
+
         REGISTRY_LOCK.readLock().lock();
         try {
             ProtocolAdaptor<ProtocolTransportObject> adaptor = PROTOCOL_ADAPTOR_MAP.get(protocolType);
@@ -220,7 +219,7 @@ public class EnhancedProtocolPluginFactory {
         if (protocolType == null || protocolType.trim().isEmpty()) {
             return false;
         }
-        
+
         REGISTRY_LOCK.readLock().lock();
         try {
             return PROTOCOL_ADAPTOR_MAP.containsKey(protocolType);
@@ -240,7 +239,7 @@ public class EnhancedProtocolPluginFactory {
         if (capability == null || capability.trim().isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         REGISTRY_LOCK.readLock().lock();
         try {
             return PROTOCOL_ADAPTOR_MAP.values().stream()
@@ -264,13 +263,13 @@ public class EnhancedProtocolPluginFactory {
             if (adaptor != null) {
                 return adaptor;
             }
-            
+
             // Try to load from SPI
             adaptor = EventMeshExtensionFactory.getExtension(ProtocolAdaptor.class, protocolType);
             if (adaptor != null) {
                 registerProtocolAdaptor(adaptor);
             }
-            
+
             return adaptor;
         } finally {
             REGISTRY_LOCK.writeLock().unlock();
@@ -284,7 +283,7 @@ public class EnhancedProtocolPluginFactory {
         REGISTRY_LOCK.writeLock().lock();
         try {
             log.info("Shutting down protocol plugins...");
-            
+
             for (ProtocolAdaptor<ProtocolTransportObject> adaptor : PROTOCOL_ADAPTOR_MAP.values()) {
                 try {
                     adaptor.destroy();
@@ -292,11 +291,11 @@ public class EnhancedProtocolPluginFactory {
                     log.warn("Error destroying protocol adaptor: {}", adaptor.getProtocolType(), e);
                 }
             }
-            
+
             PROTOCOL_ADAPTOR_MAP.clear();
             PROTOCOL_METADATA_MAP.clear();
             initialized = false;
-            
+
             log.info("Protocol plugins shutdown completed");
         } finally {
             REGISTRY_LOCK.writeLock().unlock();
@@ -307,14 +306,15 @@ public class EnhancedProtocolPluginFactory {
      * Protocol metadata holder.
      */
     public static class ProtocolMetadata {
+
         private final String type;
         private final String version;
         private final int priority;
         private final boolean supportsBatch;
         private final java.util.Set<String> capabilities;
 
-        public ProtocolMetadata(String type, String version, int priority, 
-                               boolean supportsBatch, java.util.Set<String> capabilities) {
+        public ProtocolMetadata(String type, String version, int priority,
+            boolean supportsBatch, java.util.Set<String> capabilities) {
             this.type = type;
             this.version = version;
             this.priority = priority;
@@ -322,29 +322,29 @@ public class EnhancedProtocolPluginFactory {
             this.capabilities = capabilities != null ? capabilities : Collections.emptySet();
         }
 
-        public String getType() { 
-            return type; 
+        public String getType() {
+            return type;
         }
 
-        public String getVersion() { 
-            return version; 
+        public String getVersion() {
+            return version;
         }
 
-        public int getPriority() { 
-            return priority; 
+        public int getPriority() {
+            return priority;
         }
 
-        public boolean supportsBatch() { 
-            return supportsBatch; 
+        public boolean supportsBatch() {
+            return supportsBatch;
         }
 
-        public java.util.Set<String> getCapabilities() { 
-            return capabilities; 
+        public java.util.Set<String> getCapabilities() {
+            return capabilities;
         }
 
         @Override
         public String toString() {
-            return String.format("ProtocolMetadata{type='%s', version='%s', priority=%d, batch=%s}", 
+            return String.format("ProtocolMetadata{type='%s', version='%s', priority=%d, batch=%s}",
                 type, version, priority, supportsBatch);
         }
     }

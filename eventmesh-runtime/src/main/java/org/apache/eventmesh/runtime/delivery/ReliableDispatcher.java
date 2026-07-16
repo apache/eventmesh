@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongSupplier;
 
 import io.cloudevents.CloudEvent;
@@ -172,13 +172,15 @@ public class ReliableDispatcher {
             acted++;
             if (d.getAttempt() >= maxAttempts) {
                 metrics.incDlq();
-                io.opentelemetry.api.trace.Span dlqSpan = org.apache.eventmesh.runtime.metrics.UniTrace.startDlq(d.getTopic(), "retry budget exhausted");
+                io.opentelemetry.api.trace.Span dlqSpan =
+                    org.apache.eventmesh.runtime.metrics.UniTrace.startDlq(d.getTopic(), "retry budget exhausted");
                 dlqSink.deadLetter(d.getTopic(), d.getEvent(), "retry budget exhausted", d.getAttempt());
                 org.apache.eventmesh.runtime.metrics.UniTrace.end(dlqSpan);
             } else {
                 // Bump attempt, open a fresh ACK window, and redeliver immediately.
                 metrics.incRedelivery();
-                io.opentelemetry.api.trace.Span retrySpan = org.apache.eventmesh.runtime.metrics.UniTrace.startRetry(d.getDeliveryId(), d.getAttempt());
+                io.opentelemetry.api.trace.Span retrySpan =
+                    org.apache.eventmesh.runtime.metrics.UniTrace.startRetry(d.getDeliveryId(), d.getAttempt());
                 d.reschedule(now + ackTimeoutMs);
                 pending.put(d.getDeliveryId(), d);
                 doDeliver(d);
@@ -198,6 +200,7 @@ public class ReliableDispatcher {
     private void doDeliver(Delivery d) {
         try {
             d.getChannel().deliver(d.getDeliveryId(), d.getEvent(), new AckCallback() {
+
                 @Override
                 public void ack() {
                     ReliableDispatcher.this.ack(d.getDeliveryId());

@@ -63,7 +63,7 @@ public class ObjectConverterTest {
         ConvertInfo convertInfo = new ConvertInfo();
         convertInfo.setProperties(properties);
         convertInfo.setConfigInfo(configInfo);
-        
+
         Field field = Config.class.getDeclaredField("user");
         convertInfo.setField(field);
         convertInfo.setClazz(User.class);
@@ -78,6 +78,7 @@ public class ObjectConverterTest {
 
     @Data
     public static class User {
+
         @ConfigField(field = "name")
         private String name;
         @ConfigField(field = "age")
@@ -86,6 +87,7 @@ public class ObjectConverterTest {
 
     @Data
     public static class Config {
+
         @ConfigField(field = "")
         private User user;
     }

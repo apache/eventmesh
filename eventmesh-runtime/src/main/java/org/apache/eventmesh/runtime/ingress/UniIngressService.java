@@ -143,9 +143,11 @@ public class UniIngressService {
         }
         try {
             storage.send(topic, event, new SendCallback() {
+
                 @Override
                 public void onSuccess(SendResult sendResult) {
-                    metrics.incPublish(); UniTrace.end(UniTrace.startPublish(topic, event));
+                    metrics.incPublish();
+                    UniTrace.end(UniTrace.startPublish(topic, event));
                     future.complete(null);
                 }
 
@@ -381,6 +383,7 @@ public class UniIngressService {
         try {
             ((org.apache.eventmesh.api.storage.LiteTopicCapable) storage).sendLite(parentTopic, liteTopic, event,
                 new SendCallback() {
+
                     @Override
                     public void onSuccess(SendResult sendResult) {
                         future.complete(null);
@@ -677,6 +680,7 @@ public class UniIngressService {
             String dlqTopic = originalTopic + "_DLQ";
             try {
                 storage.send(dlqTopic, event, new SendCallback() {
+
                     @Override
                     public void onSuccess(SendResult sendResult) {
                         log.info("event {} dead-lettered to {} after {} attempts: {}",

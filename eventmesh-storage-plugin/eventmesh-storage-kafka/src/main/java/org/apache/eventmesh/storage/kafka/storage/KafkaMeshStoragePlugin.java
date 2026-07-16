@@ -23,12 +23,10 @@ import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
 
 import io.cloudevents.CloudEvent;
 
@@ -148,8 +146,11 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
                 // Seek to persisted offset (restart recovery) or beginning (new topic)
                 for (org.apache.kafka.common.TopicPartition tp : tps) {
                     Long tracked = pullOffsets.getOrDefault(topic, new ConcurrentHashMap<>()).get(tp.partition());
-                    if (tracked != null && tracked >= 0) { consumer.seek(tp, tracked); }
-                    else { consumer.seekToBeginning(Collections.singleton(tp)); }
+                    if (tracked != null && tracked >= 0) {
+                        consumer.seek(tp, tracked);
+                    } else {
+                        consumer.seekToBeginning(Collections.singleton(tp));
+                    }
                 }
             }
             assignedTopics.put(topic, tps);
@@ -299,10 +300,14 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
     }
 
     private void loadPullOffsets() {
-        if (pullOffsetFile == null || !java.nio.file.Files.exists(pullOffsetFile)) { return; }
+        if (pullOffsetFile == null || !java.nio.file.Files.exists(pullOffsetFile)) {
+            return;
+        }
         try {
             Properties props = new Properties();
-            try (java.io.Reader r = java.nio.file.Files.newBufferedReader(pullOffsetFile)) { props.load(r); }
+            try (java.io.Reader r = java.nio.file.Files.newBufferedReader(pullOffsetFile)) {
+                props.load(r);
+            }
             for (String key : props.stringPropertyNames()) {
                 String[] parts = key.split("#", 2);
                 if (parts.length == 2) {
@@ -311,11 +316,15 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
                 }
             }
             log.info("loaded pull offsets: {} topics from {}", pullOffsets.size(), pullOffsetFile);
-        } catch (Exception e) { log.warn("failed to load pull offsets: {}", e.toString()); }
+        } catch (Exception e) {
+            log.warn("failed to load pull offsets: {}", e.toString());
+        }
     }
 
     private void persistPullOffsets() {
-        if (pullOffsetFile == null) { return; }
+        if (pullOffsetFile == null) {
+            return;
+        }
         try {
             java.nio.file.Files.createDirectories(pullOffsetFile.getParent());
             Properties props = new Properties();
@@ -328,7 +337,9 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
                 props.store(w, "Kafka pull offsets (last consumed offset per topic#partition)");
             }
             log.info("persisted pull offsets: {} topics to {}", pullOffsets.size(), pullOffsetFile);
-        } catch (Exception e) { log.warn("failed to persist pull offsets: {}", e.toString()); }
+        } catch (Exception e) {
+            log.warn("failed to persist pull offsets: {}", e.toString());
+        }
     }
 
     // ---- CloudEvent serialize/deserialize (structured JSON) ----

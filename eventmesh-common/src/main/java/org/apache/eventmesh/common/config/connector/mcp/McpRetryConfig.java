@@ -21,6 +21,7 @@ import lombok.Data;
 
 @Data
 public class McpRetryConfig {
+
     // maximum number of retries, default 2, minimum 0
     private int maxRetries = 2;
 

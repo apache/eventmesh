@@ -54,7 +54,8 @@ public class MeshMessagePackageRouter implements PackageRouter {
         }
         if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK) {
             String deliveryId = pkg.getHeader() != null
-                ? pkg.getHeader().getStringProperty(NettyTcpPushChannel.HEADER_DELIVERY_ID) : null;
+                ? pkg.getHeader().getStringProperty(NettyTcpPushChannel.HEADER_DELIVERY_ID)
+                : null;
             return deliveryId != null ? TcpRequest.ack(deliveryId) : null;
         }
         return null;

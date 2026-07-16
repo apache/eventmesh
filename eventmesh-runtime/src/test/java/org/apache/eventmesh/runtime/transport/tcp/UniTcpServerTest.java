@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.transport.tcp;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -26,7 +30,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
-import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -37,17 +40,12 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.embedded.EmbeddedChannel;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Exercises {@link UniTcpServer.FrameHandler} via netty {@link EmbeddedChannel}: legacy TCP
@@ -114,7 +112,7 @@ class UniTcpServerTest {
         assertSame(Command.HELLO_RESPONSE, ((Package) client.readOutbound()).getHeader().getCommand());
 
         // 1b. client subscribes (body = Subscription{topicList}) → server registers the egress
-        //     NettyTcpPushChannel + replies.
+        // NettyTcpPushChannel + replies.
         org.apache.eventmesh.common.protocol.tcp.Subscription sub =
             new org.apache.eventmesh.common.protocol.tcp.Subscription(java.util.Collections.singletonList(
                 new org.apache.eventmesh.common.protocol.SubscriptionItem("orders",

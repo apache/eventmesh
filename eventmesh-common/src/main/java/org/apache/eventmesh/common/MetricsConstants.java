@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common;
 
-
 public class MetricsConstants {
 
     private MetricsConstants() {
@@ -34,7 +33,7 @@ public class MetricsConstants {
 
     public static final String RPC_SERVICE = "rpc.service";
 
-    //GRPC-https://opentelemetry.io/docs/reference/specification/metrics/semantic_conventions/rpc-metrics/
+    // GRPC-https://opentelemetry.io/docs/reference/specification/metrics/semantic_conventions/rpc-metrics/
     public static final String GRPC_NET_PEER_PORT = "net.peer.port";
 
     public static final String GRPC_NET_PEER_NAME = "net.peer.name";
@@ -53,13 +52,11 @@ public class MetricsConstants {
 
     public static final String HTTP_NET_HOST_PORT = "net.host.port";
 
-    //TCP
+    // TCP
     public static final String TCP_NET_HOST_NAME = "net.host.name";
 
     public static final String TCP_NET_HOST_PORT = "net.host.port";
 
-
     public static final String CLIENT_PROTOCOL_TYPE = "client.protocol.type";
-
 
 }

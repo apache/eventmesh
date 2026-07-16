@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.config.connector.SourceConfig;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class McpSourceConfig extends SourceConfig {

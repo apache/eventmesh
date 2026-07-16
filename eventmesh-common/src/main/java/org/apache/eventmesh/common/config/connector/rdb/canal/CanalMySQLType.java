@@ -23,6 +23,7 @@ import java.util.Map;
 import com.mysql.cj.MysqlType;
 
 public enum CanalMySQLType {
+
     BIT("BIT"),
     TINYINT("TINYINT"),
     SMALLINT("SMALLINT"),

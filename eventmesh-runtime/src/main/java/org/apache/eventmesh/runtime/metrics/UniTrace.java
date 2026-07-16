@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.runtime.metrics;
 
+import io.cloudevents.CloudEvent;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 

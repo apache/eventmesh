@@ -103,7 +103,7 @@ public class EnhancedA2AProtocolAdaptorTest {
 
         List<CloudEvent> events = adaptor.toBatchCloudEvent(obj);
         Assertions.assertEquals(2, events.size());
-        
+
         boolean found1 = false;
         boolean found2 = false;
         for (CloudEvent e : events) {

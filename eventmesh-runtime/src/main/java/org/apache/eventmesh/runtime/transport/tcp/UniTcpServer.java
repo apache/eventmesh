@@ -87,6 +87,7 @@ public class UniTcpServer {
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             .childHandler(new ChannelInitializer<SocketChannel>() {
+
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline()
@@ -243,7 +244,8 @@ public class UniTcpServer {
 
         private static DistributionMode toDistributionMode(SubscriptionMode mode) {
             return mode == SubscriptionMode.CLUSTERING
-                ? DistributionMode.LOAD_BALANCE : DistributionMode.BROADCAST;
+                ? DistributionMode.LOAD_BALANCE
+                : DistributionMode.BROADCAST;
         }
 
         private void respond(ChannelHandlerContext ctx, Package request, boolean ok) {

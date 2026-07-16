@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -40,9 +43,6 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end test of the RocketMQ 5.x remoting storage plugin against a real 5.5 broker.
@@ -96,8 +96,10 @@ class RocketMQ5BrokerIntegrationTest {
             .withDataContentType("text/plain").withData("hello-pop".getBytes()).build();
         AtomicReference<String> sendErr = new AtomicReference<>();
         storage.send(PARENT, normal, new SendCallback() {
+
             @Override
-            public void onSuccess(SendResult result) { }
+            public void onSuccess(SendResult result) {
+            }
 
             @Override
             public void onException(OnExceptionContext ctx) {
@@ -130,8 +132,10 @@ class RocketMQ5BrokerIntegrationTest {
             .withDataContentType("text/plain").withData("hello-lite".getBytes()).build();
         AtomicReference<String> liteSendErr = new AtomicReference<>();
         lite.sendLite(PARENT, LITE, liteEvent, new SendCallback() {
+
             @Override
-            public void onSuccess(SendResult result) { }
+            public void onSuccess(SendResult result) {
+            }
 
             @Override
             public void onException(OnExceptionContext ctx) {

@@ -17,6 +17,12 @@
 
 package org.apache.eventmesh.runtime.ingress;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -42,12 +48,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UniIngressServiceTest {
 
@@ -88,7 +88,8 @@ class UniIngressServiceTest {
     }
 
     @Test
-    void ackTimeoutRedelivers() throws Exception {        AtomicLong clock = new AtomicLong(0L);
+    void ackTimeoutRedelivers() throws Exception {
+        AtomicLong clock = new AtomicLong(0L);
         InMemoryStorage storage = new InMemoryStorage();
         OffsetStore offsets = new InMemoryOffsetStore();
         UniIngressService svc = new UniIngressService(storage, offsets, new SubscriptionManager(),
@@ -119,8 +120,7 @@ class UniIngressServiceTest {
 
         assertTrue(second.isCompletedExceptionally(), "second publish over the limit should be rejected");
         org.apache.eventmesh.runtime.ratelimit.RateLimitedException ex =
-            (org.apache.eventmesh.runtime.ratelimit.RateLimitedException)
-                second.handle((v, t) -> t).get();
+            (org.apache.eventmesh.runtime.ratelimit.RateLimitedException) second.handle((v, t) -> t).get();
         assertEquals("orders", ex.getTopic());
     }
 

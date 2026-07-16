@@ -148,7 +148,8 @@ class A2AClientServerIntegrationTest {
         int status = response.getStatusLine().getStatusCode();
         if (status >= 400) {
             String body = response.getEntity() != null
-                ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "";
+                ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+                : "";
             throw new RuntimeException("Failed to register slow agent: " + status + " " + body);
         }
     }

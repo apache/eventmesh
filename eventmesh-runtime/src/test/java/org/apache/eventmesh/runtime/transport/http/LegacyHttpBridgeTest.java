@@ -17,11 +17,13 @@
 
 package org.apache.eventmesh.runtime.transport.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.runtime.boot.UniRuntime;
-import org.apache.eventmesh.runtime.delivery.CloudEventSerializer;
 import org.apache.eventmesh.runtime.delivery.HttpCaller;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
@@ -43,9 +45,6 @@ import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Legacy EventMesh HTTP clients ({@code EventMeshHttpClient}: webhook-push subscribe + publish)
@@ -72,6 +71,7 @@ class LegacyHttpBridgeTest {
 
         // Stub codec: parses any "body" into the fixed legacy requests the test wants.
         LegacyHttpCodec codec = new LegacyHttpCodec() {
+
             @Override
             public LegacyPublishRequest parsePublish(byte[] body) {
                 return new LegacyPublishRequest("orders", event);
@@ -109,6 +109,7 @@ class LegacyHttpBridgeTest {
     void legacyUnsubscribeDropsSubscriptions() {
         boot();
         LegacyHttpCodec codec = new LegacyHttpCodec() {
+
             @Override
             public LegacyPublishRequest parsePublish(byte[] body) {
                 return null;

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.connector;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -25,11 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 /** Verifies RocksDB offset persistence: write → close → reopen → resume from checkpoint. */
 class CrashRecoveryTest {
@@ -94,6 +92,7 @@ class CrashRecoveryTest {
 
     /** Source connector that records what offset it was asked to resume from. */
     private static class ResumeAwareSource implements SourceConnector {
+
         String resumedFrom = null;
 
         @Override
