@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * RocksDB-backed {@link ConnectorOffsetStore} — durable across process restarts so connectors can
- * resume from the last checkpoint (§8.9 断点续做). Key and value are UTF-8 strings.
+ * resume from the last checkpoint (§8.9 resume-from-checkpoint). Key and value are UTF-8 strings.
  */
 @Slf4j
 public class RocksDBConnectorOffsetStore implements ConnectorOffsetStore {

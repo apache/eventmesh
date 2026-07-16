@@ -56,10 +56,10 @@ public class ConnectorApplication {
     public static void main(String[] args) throws Exception {
         String runtimeUrl = System.getProperty("eventmesh.runtime.url", "http://localhost:8080");
         String offsetPath = System.getProperty("connector.offset.path");
-        int adminPort = Integer.getInteger("connector.admin.port", 0);
-        String workerId = System.getProperty("connector.worker.id", "");
-        String workerAddress = System.getProperty("connector.worker.address", "");
-        boolean registered = !workerId.isEmpty() && !workerAddress.isEmpty();
+        final int adminPort = Integer.getInteger("connector.admin.port", 0);
+        final String workerId = System.getProperty("connector.worker.id", "");
+        final String workerAddress = System.getProperty("connector.worker.address", "");
+        final boolean registered = !workerId.isEmpty() && !workerAddress.isEmpty();
 
         EventMeshHttpEndpoint endpoint = new EventMeshHttpEndpoint(runtimeUrl);
         String offsetMode = System.getProperty("connector.offset.mode", "remote");
