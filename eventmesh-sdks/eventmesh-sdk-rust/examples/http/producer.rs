@@ -15,67 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! HTTP publish + request-reply against a running EventMesh server.
-//!
-//! Assumes `docker compose --profile standalone up` is running (HTTP on
-//! `127.0.0.1:10105`).
-//!
-//! Batch publish is not yet supported over HTTP — see `publish_batch` docs.
-
-use std::time::Duration;
-
 use eventmesh::{
-    config::HttpClientConfig, http::HttpProducer, model::EventMeshMessage, transport::Publisher,
+    config::{Endpoint, EndpointSet, HttpConfig, ProducerOptions},
+    message::{EventMeshMessage, Message},
+    HttpClient,
 };
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .init();
-
-    let config = HttpClientConfig::builder()
-        .servers("127.0.0.1:10105")
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .producer_group("test-producerGroup")
-        .build()?;
-
-    let producer = HttpProducer::new(config)?;
-
-    let topic = "test-topic-rust-http";
-
-    // 1) single publish
-    let msg = EventMeshMessage::builder()
-        .topic(topic)
-        .content("hello from rust http sdk")
-        .build();
-    let resp = producer.publish(msg).await?;
-    println!("[publish]     {resp}");
-
-    // 2) multiple single publishes (HTTP batch is not yet supported)
-    for i in 0..3 {
-        let msg = EventMeshMessage::builder()
-            .topic(topic)
-            .content(format!("message #{i}"))
-            .build();
-        let resp = producer.publish(msg).await?;
-        println!("[publish-{i}]   {resp}");
-    }
-
-    // 3) request-reply (needs a SYNC consumer subscribed to the topic)
-    let rr = EventMeshMessage::builder()
-        .topic(format!("{topic}-rr"))
-        .content("ping")
-        .ttl_millis(4000)
-        .build();
-    match producer.request_reply(rr, Duration::from_secs(6)).await {
-        Ok(reply) => println!("[request-reply] got reply: {reply}"),
-        Err(e) => println!("[request-reply] no reply (is a SYNC consumer running?): {e}"),
-    }
-
+    let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
+    let client = HttpClient::new(HttpConfig::new(endpoints))?;
+    let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
+    let receipt = producer
+        .publish(Message::from(EventMeshMessage::new(
+            "test-topic-rust-sdk",
+            "hello from rust",
+        )))
+        .await?;
+    println!("published: {receipt:?}");
     Ok(())
 }

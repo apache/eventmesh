@@ -15,106 +15,42 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Integration tests for the message <-> CloudEvent codec (no live server).
-
-#![cfg(feature = "grpc")]
-
-use eventmesh::common::ProtocolKey;
 use eventmesh::{
-    config::GrpcClientConfig,
-    grpc::codec,
-    model::{
-        EventMeshMessage, EventMeshProtocolType, SubscriptionItem, SubscriptionMode,
-        SubscriptionType,
-    },
-    proto_gen::{attr_as_str, attr_str, PbCloudEvent, PbData},
+    config::{Endpoint, EndpointSet},
+    message::{EventMeshMessage, Message, MessageKind, OpenMessage},
+    subscription::{DeliveryMode, DeliveryType, Subscription},
 };
 
-fn cfg() -> GrpcClientConfig {
-    GrpcClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10205)
-        .env("env")
-        .idc("idc")
-        .producer_group("pg")
-        .consumer_group("cg")
-        .build()
+#[test]
+fn native_and_open_models_round_trip_without_public_wire_codecs() {
+    let original = OpenMessage::new("orders", "created")
+        .with_header("traceparent", "00-abc")
+        .with_property("region", "cn");
+    let native = Message::from(original.clone()).into_event_mesh().unwrap();
+    let back = Message::from(native).into_open().unwrap();
+    assert_eq!(back, original);
 }
 
 #[test]
-fn round_trip_message() {
-    let cfg = cfg();
-    let msg = EventMeshMessage::builder()
-        .topic("t")
-        .content("c")
-        .biz_seq_no("b")
-        .unique_id("u")
-        .prop("custom", "val")
-        .build();
-    let ce = codec::from_event_mesh_message(&msg, &cfg).unwrap();
-    assert_eq!(codec::get_subject(&ce), "t");
-    assert_eq!(codec::get_text_data(&ce), "c");
-    assert_eq!(ce.attributes.get("custom").map(attr_as_str).unwrap(), "val");
-
-    let back = codec::to_event_mesh_message(&ce);
-    assert_eq!(back.topic.as_deref(), Some("t"));
-    assert_eq!(back.content.as_deref(), Some("c"));
+fn message_kind_is_explicit() {
+    let message = Message::from(EventMeshMessage::new("orders", "created"));
+    assert_eq!(message.kind(), MessageKind::EventMesh);
 }
 
 #[test]
-fn subscription_event_carries_url_and_items() {
-    let cfg = cfg();
-    let items = vec![SubscriptionItem::new(
-        "t",
-        SubscriptionMode::CLUSTERING,
-        SubscriptionType::ASYNC,
-    )];
-    let ce = codec::build_subscription_event(
-        &cfg,
-        EventMeshProtocolType::EventMeshMessage,
-        Some("http://localhost:8080/cb"),
-        &items,
-    )
-    .unwrap();
+fn subscriptions_have_rust_style_defaults_and_setters() {
+    let subscription = Subscription::new("orders")
+        .with_delivery_mode(DeliveryMode::Broadcast)
+        .with_delivery_type(DeliveryType::Async);
+    assert_eq!(subscription.topic, "orders");
+    assert_eq!(subscription.delivery_mode, DeliveryMode::Broadcast);
+}
+
+#[test]
+fn endpoint_sets_require_members() {
+    assert!(EndpointSet::new(Vec::new()).is_err());
     assert_eq!(
-        ce.attributes.get("url").map(attr_as_str).unwrap(),
-        "http://localhost:8080/cb"
+        Endpoint::new("::1", 10_205).unwrap().authority(),
+        "[::1]:10205"
     );
-    assert!(codec::get_text_data(&ce).contains("CLUSTERING"));
-}
-
-#[test]
-fn response_code_success() {
-    let mut ce = PbCloudEvent::default();
-    ce.attributes
-        .insert(ProtocolKey::GRPC_RESPONSE_CODE.into(), attr_str("0"));
-    let resp = codec::to_response(&ce);
-    assert!(resp.is_success());
-}
-
-#[test]
-fn batch_encode() {
-    let cfg = cfg();
-    let msgs: Vec<EventMeshMessage> = (0..3)
-        .map(|i| {
-            EventMeshMessage::builder()
-                .topic("t")
-                .content(format!("c{i}"))
-                .build()
-        })
-        .collect();
-    let batch = codec::from_event_mesh_messages(&msgs, &cfg).unwrap();
-    assert_eq!(batch.events.len(), 3);
-}
-
-#[test]
-fn binary_data_fallback() {
-    let cfg = cfg();
-    let msg = EventMeshMessage::builder()
-        .topic("t")
-        .content("raw-bytes")
-        .prop(ProtocolKey::DATA_CONTENT_TYPE, "application/octet-stream")
-        .build();
-    let ce = codec::from_event_mesh_message(&msg, &cfg).unwrap();
-    assert!(matches!(ce.data, Some(PbData::BinaryData(_))));
 }

@@ -222,8 +222,9 @@ impl GrpcClient {
             stream_client.subscribe_stream(Request::new(ReceiverStream::new(rx))),
         )
         .await
-        .map_err(|_| {
-            EventMeshError::Other(format!(
+        .map_err(|_| EventMeshError::Protocol {
+            transport: "grpc",
+            message: format!(
                 "subscribe_stream did not receive server headers within \
                  {STREAM_OPEN_TIMEOUT:?}. This is almost always caused by a \
                  current-thread tokio runtime (the default for \
@@ -231,7 +232,7 @@ impl GrpcClient {
                  cannot progress. Fix: use #[tokio::test(flavor = \
                  \"multi_thread\")] or \
                  tokio::runtime::Builder::new_multi_thread()"
-            ))
+            ),
         })??;
         Ok((tx, response.into_inner()))
     }

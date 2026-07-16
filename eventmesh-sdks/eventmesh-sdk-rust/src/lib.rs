@@ -17,67 +17,27 @@
 
 //! Apache EventMesh Rust SDK.
 //!
-//! A client library for the [Apache EventMesh](https://eventmesh.apache.org)
-//! serverless event-driven middleware. The SDK speaks the EventMesh wire
-//! protocols and normalizes everything onto a simple [`EventMeshMessage`]
-//! model (with optional native CloudEvents interop behind the `cloud_events`
-//! feature).
-//!
-//! # Transports
-//!
-//! The SDK ships three transports, each gated by its own feature flag:
-//!
-//! - **gRPC** (default, `grpc` feature) — [`grpc::GrpcProducer`] for
-//!   publish / batch / request-reply and [`grpc::GrpcStreamConsumer`] /
-//!   [`grpc::GrpcWebhookConsumer`] for stream and webhook subscription.
-//! - **HTTP** (`http` feature) — [`http::HttpProducer`] for publish /
-//!   request-reply and [`http::HttpConsumer`] for subscribe / heartbeat;
-//!   receive pushes via the built-in [`http::WebhookServer`] or your own
-//!   endpoint built on the [`http::codec`] helpers.
-//! - **TCP** (`tcp` feature) — [`tcp::TcpProducer`] for publish / broadcast /
-//!   request-reply and [`tcp::TcpConsumer`] for subscribe + receive loop,
-//!   over the native binary wire protocol with auto-reconnect.
-//!
-//! # Quick example (gRPC producer)
-//!
-//! Requires the `grpc` feature. The example is compiled by rustdoc only when
-//! `grpc` is enabled; on HTTP-only builds it is marked `ignore` so that
-//! `cargo test --no-default-features --features http` does not try to compile
-//! the `eventmesh::grpc` re-export.
-//!
-#![cfg_attr(feature = "grpc", doc = "```no_run")]
-#![cfg_attr(not(feature = "grpc"), doc = "```ignore")]
-//! use eventmesh::{
-//!     config::GrpcClientConfig, grpc::GrpcProducer, model::EventMeshMessage,
-//!     transport::Publisher,
-//! };
-//!
-//! #[tokio::main]
-//! async fn main() -> eventmesh::Result<()> {
-//!     let config = GrpcClientConfig::builder()
-//!         .server_addr("127.0.0.1")
-//!         .server_port(10205)
-//!         .env("env").idc("idc").sys("sys")
-//!         .producer_group("test-producerGroup")
-//!         .build();
-//!     let mut producer = GrpcProducer::connect(config)?;
-//!     let msg = EventMeshMessage::builder()
-//!         .topic("test-topic")
-//!         .content("hello from rust")
-//!         .build();
-//!     let resp = producer.publish(msg).await?;
-//!     println!("published: {resp:?}");
-//!     Ok(())
-//! }
-//! ```
+//! Version 2 exposes protocol-specific clients and a shared [`message::Message`]
+//! enum.  The enum preserves native EventMesh, OpenMessaging, and (when the
+//! feature is enabled) CloudEvents models; gRPC protobuf, HTTP form, and TCP
+//! frame details are private implementation details.
 
 #![deny(unsafe_code)]
 
-pub mod common;
+// These modules are wire adapters retained behind the v2 public façade. Some
+// protocol-specific compatibility paths are intentionally feature-dependent,
+// so not every helper is referenced in every feature combination.
+#[allow(dead_code, unused_imports)]
+mod common;
 pub mod config;
 pub mod discovery;
-pub mod error;
-pub mod model;
+mod error;
+mod handler;
+pub mod message;
+#[allow(dead_code, unused_imports)]
+mod model;
+pub mod subscription;
+pub mod webhook;
 
 #[cfg(feature = "grpc")]
 pub mod proto_gen;
@@ -94,32 +54,51 @@ pub mod workflow;
 mod service;
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-pub mod transport;
+#[allow(dead_code, unused_imports)]
+mod transport;
 
-/// gRPC transport re-exported at the crate root (`eventmesh::grpc`).
+/// gRPC client API.
 #[cfg(feature = "grpc")]
-pub use transport::grpc;
+pub mod grpc;
 
-/// HTTP transport re-exported at the crate root (`eventmesh::http`).
+/// HTTP client API.
 #[cfg(feature = "http")]
-pub use transport::http;
+pub mod http;
 
-/// TCP transport re-exported at the crate root (`eventmesh::tcp`).
+/// TCP client API.
 #[cfg(feature = "tcp")]
-pub use transport::tcp;
+pub mod tcp;
 
-pub use error::{EventMeshError, Result};
+pub use error::{Error, Result};
+pub use handler::MessageHandler;
+pub use message::{EventMeshMessage, Message, MessageKind, OpenMessage, PublishReceipt};
+pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 
+#[cfg(feature = "grpc")]
+pub use grpc::GrpcClient;
+
+#[cfg(feature = "http")]
+pub use http::HttpClient;
+
+#[cfg(feature = "tcp")]
+pub use tcp::TcpClient;
+
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 use std::future::Future;
 
 /// Convenience trait alias for an async listener of delivered messages.
 ///
 /// A listener returns `Some(message)` to send a reply back to the broker
-/// (request-reply semantics), or `None` for plain async consumption.
-pub trait MessageListener: Send + Sync + 'static {
+/// (request-reply semantics), `None` for plain async consumption, or an error
+/// to tell the adapter that the delivery was not handled successfully.
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+pub(crate) trait MessageListener: Send + Sync + 'static {
     /// The message type this listener accepts.
     type Message: Send;
 
     /// Handle a delivered message. Return `Some` to reply, `None` to ack only.
-    fn handle(&self, message: Self::Message) -> impl Future<Output = Option<Self::Message>> + Send;
+    fn handle(
+        &self,
+        message: Self::Message,
+    ) -> impl Future<Output = Result<Option<Self::Message>>> + Send;
 }

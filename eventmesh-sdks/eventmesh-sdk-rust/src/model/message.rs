@@ -83,8 +83,19 @@ impl fmt::Display for EventMeshMessage {
 }
 
 impl EventMeshMessage {
+    /// Construct a native EventMesh message with a required topic and text
+    /// payload.  Validation still occurs at the sending boundary because a
+    /// caller may subsequently mutate this compatibility model internally.
+    pub fn new(topic: impl Into<String>, content: impl Into<String>) -> Self {
+        Self {
+            topic: Some(topic.into()),
+            content: Some(content.into()),
+            ..Self::default()
+        }
+    }
+
     /// Start a builder. Equivalent to [`EventMeshMessageBuilder::default`].
-    pub fn builder() -> EventMeshMessageBuilder {
+    pub(crate) fn builder() -> EventMeshMessageBuilder {
         EventMeshMessageBuilder::default()
     }
 
@@ -97,6 +108,12 @@ impl EventMeshMessage {
     /// Get a property by key.
     pub fn get_prop(&self, key: &str) -> Option<&str> {
         self.props.get(key).map(|s| s.as_str())
+    }
+
+    /// Return a copy with an additional extension property.
+    pub fn with_property(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.props.insert(key.into(), value.into());
+        self
     }
 }
 

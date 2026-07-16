@@ -186,10 +186,11 @@ pub fn from_event_mesh_message(
             // and `any.toByteArray()` on the consumer side. We mirror both
             // directions so Rust↔Java `application/protobuf` messages are
             // wire-compatible.
-            let any = PbAny::decode(content.as_bytes()).map_err(|e| {
-                EventMeshError::Other(format!(
+            let any = PbAny::decode(content.as_bytes()).map_err(|e| EventMeshError::Protocol {
+                transport: "grpc",
+                message: format!(
                     "failed to decode application/protobuf content as google.protobuf.Any: {e}"
-                ))
+                ),
             })?;
             Some(PbData::ProtoData(any))
         }
@@ -561,9 +562,10 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
         }
         builder = builder.extension(k.as_str(), attr_as_str(&v));
     }
-    builder
-        .build()
-        .map_err(|e| EventMeshError::Other(format!("cloudevents build error: {e}")))
+    builder.build().map_err(|e| EventMeshError::Protocol {
+        transport: "grpc",
+        message: format!("cloudevents build error: {e}"),
+    })
 }
 
 /// Build a heartbeat CloudEvent.

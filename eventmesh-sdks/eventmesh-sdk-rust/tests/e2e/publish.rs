@@ -15,11 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! E2e: producer-side operations (publish / batch / one-way).
+//! E2e: gRPC producer operations through the v2 facade.
 
-use eventmesh::{grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher};
+use eventmesh::message::{EventMeshMessage, Message};
 
-use crate::harness::{ensure_topic, producer_config, unique_topic, warm_topic};
+use crate::harness::{ensure_topic, grpc_producer, unique_topic, warm_topic};
 use crate::require_runtime;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -27,16 +27,16 @@ async fn publish_single() {
     require_runtime!();
     let topic = unique_topic("pub-single");
     ensure_topic(&topic).await;
-    let (_consumer, _rx) = warm_topic(&topic).await;
+    let (_consumer, _receiver) = warm_topic(&topic).await;
 
-    let producer = GrpcProducer::connect(producer_config()).expect("connect producer");
-
-    let msg = EventMeshMessage::builder()
-        .topic(&topic)
-        .content("hello from rust e2e")
-        .build();
-    let resp = producer.publish(msg).await.expect("publish");
-    assert!(resp.is_success(), "publish should succeed: {resp}");
+    let receipt = grpc_producer()
+        .publish(Message::from(EventMeshMessage::new(
+            &topic,
+            "hello from rust e2e",
+        )))
+        .await
+        .expect("publish");
+    assert_eq!(receipt.code, 0, "publish should succeed: {receipt:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -44,20 +44,21 @@ async fn publish_batch() {
     require_runtime!();
     let topic = unique_topic("pub-batch");
     ensure_topic(&topic).await;
-    let (_consumer, _rx) = warm_topic(&topic).await;
+    let (_consumer, _receiver) = warm_topic(&topic).await;
 
-    let producer = GrpcProducer::connect(producer_config()).expect("connect producer");
-
-    let batch: Vec<EventMeshMessage> = (0..3)
-        .map(|i| {
-            EventMeshMessage::builder()
-                .topic(&topic)
-                .content(format!("batch message #{i}"))
-                .build()
+    let messages = (0..3)
+        .map(|index| {
+            Message::from(EventMeshMessage::new(
+                &topic,
+                format!("batch message #{index}"),
+            ))
         })
         .collect();
-    let resp = producer.publish_batch(batch).await.expect("batch publish");
-    assert!(resp.is_success(), "batch publish should succeed: {resp}");
+    let receipt = grpc_producer()
+        .publish_batch(messages)
+        .await
+        .expect("batch publish");
+    assert_eq!(receipt.code, 0, "batch publish should succeed: {receipt:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -65,23 +66,18 @@ async fn publish_one_way() {
     require_runtime!();
     let topic = unique_topic("pub-oneway");
     ensure_topic(&topic).await;
-    let (_consumer, _rx) = warm_topic(&topic).await;
+    let (_consumer, _receiver) = warm_topic(&topic).await;
 
-    let producer = GrpcProducer::connect(producer_config()).expect("connect producer");
-
-    let msg = EventMeshMessage::builder()
-        .topic(&topic)
-        .content("fire-and-forget")
-        .build();
-    producer.publish_one_way(msg).await.unwrap_or_else(|e| {
-        // The EventMesh runtime's gRPC PublisherService does not override
-        // publishOneWay (gRPC UNIMPLEMENTED). Treat that as a skip rather
-        // than a failure.
-        let msg = format!("{e}");
-        if msg.contains("Unimplemented") || msg.contains("unimplemented") {
-            eprintln!("[e2e] skipping publish_one_way: server does not implement it. error: {msg}");
-        } else {
-            panic!("publish_one_way: {e}");
-        }
-    });
+    grpc_producer()
+        .publish_one_way(Message::from(EventMeshMessage::new(
+            &topic,
+            "fire-and-forget",
+        )))
+        .await
+        .unwrap_or_else(|error| {
+            let text = error.to_string();
+            if !(text.contains("Unimplemented") || text.contains("unimplemented")) {
+                panic!("publish_one_way: {error}");
+            }
+        });
 }

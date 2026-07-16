@@ -22,12 +22,13 @@ use tokio::sync::Mutex;
 use crate::config::CatalogClientConfig;
 use crate::discovery::ServiceDiscovery;
 use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, SubscriptionItem};
+use crate::grpc::GrpcConsumer;
+use crate::model::SubscriptionItem;
 use crate::proto_gen::catalog::catalog_client::CatalogClient as CatalogGrpcClient;
 use crate::proto_gen::catalog::{Operation, QueryOperationsRequest};
 use crate::service::resolved_grpc_config;
-use crate::transport::grpc::{GrpcClient, GrpcStreamConsumer};
-use crate::MessageListener;
+use crate::transport::grpc::GrpcClient;
+use crate::MessageHandler;
 
 #[derive(Default)]
 struct CatalogState {
@@ -64,9 +65,9 @@ impl<D: ServiceDiscovery> CatalogClient<D> {
     /// Query Catalog and subscribe the provided stream consumer to the
     /// returned `subscribe` channels. A successful call is idempotent until
     /// [`destroy`](Self::destroy) succeeds.
-    pub async fn init<L>(&self, consumer: &GrpcStreamConsumer<L>) -> Result<()>
+    pub async fn init<H>(&self, consumer: &GrpcConsumer<H>) -> Result<()>
     where
-        L: MessageListener<Message = EventMeshMessage>,
+        H: MessageHandler,
     {
         let _lifecycle = self.lifecycle.lock().await;
         if self.state.lock().await.initialized {
@@ -81,7 +82,7 @@ impl<D: ServiceDiscovery> CatalogClient<D> {
             }
         }
         if !subscriptions.is_empty() {
-            consumer.subscribe(subscriptions.clone()).await?;
+            consumer.subscribe_catalog(subscriptions.clone()).await?;
         }
 
         let mut state = self.state.lock().await;
@@ -94,9 +95,9 @@ impl<D: ServiceDiscovery> CatalogClient<D> {
     ///
     /// If the consumer rejects the unsubscribe, local state is retained so a
     /// subsequent `destroy` can retry it.
-    pub async fn destroy<L>(&self, consumer: &GrpcStreamConsumer<L>) -> Result<()>
+    pub async fn destroy<H>(&self, consumer: &GrpcConsumer<H>) -> Result<()>
     where
-        L: MessageListener<Message = EventMeshMessage>,
+        H: MessageHandler,
     {
         let _lifecycle = self.lifecycle.lock().await;
         let subscriptions = {
@@ -108,7 +109,7 @@ impl<D: ServiceDiscovery> CatalogClient<D> {
         };
 
         if !subscriptions.is_empty() {
-            consumer.unsubscribe_stream(subscriptions).await?;
+            consumer.unsubscribe_catalog(subscriptions).await?;
         }
 
         *self.state.lock().await = CatalogState::default();

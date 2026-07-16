@@ -1,254 +1,174 @@
-
 # eventmesh-rust-sdk
 
-A Rust client SDK for [Apache EventMesh](https://eventmesh.apache.org), the
-serverless event-driven middleware.
-
-This crate (`eventmesh`) speaks the EventMesh **gRPC**, **HTTP**, and **TCP**
-protocols. Messages are modeled with the simple
-[`EventMeshMessage`](src/model/message.rs) type, an OpenMessaging-style
-[`OpenMessage`](src/model/open_message.rs) compatibility model, and optional
-native [CloudEvents](https://cloudevents.io) interop behind the
-`cloud_events` feature.
-
-The gRPC transport supports publish, batch publish, request-reply, stream and
-webhook subscription, and heartbeat. HTTP supports publish, request-reply and
-webhook subscription. TCP supports publish, broadcast, request-reply,
-subscription and automatic reconnection.
+The Rust SDK for [Apache EventMesh](https://eventmesh.apache.org). Version 2
+uses explicit protocol clients, Rust-style configuration values, and one
+non-generic `Message` enum that preserves EventMesh, OpenMessaging, and
+optional CloudEvents messages.
 
 ## Requirements
 
-- Rust toolchain **>= 1.86.0**
-- `protoc` >= 3.15 (the Protocol Buffers compiler) on your `PATH` or pointed to
-  by the `PROTOC` env var. `tonic-build` invokes it at build time.
-- A running EventMesh runtime (gRPC on port `10205`).
-
-### Installing protoc
-
-```bash
-# Ubuntu / Debian
-sudo apt-get install -y protobuf-compiler
-# Alpine
-apk add protobuf-dev protoc
-# macOS
-brew install protobuf
-# or download a release binary from https://github.com/protocolbuffers/protobuf/releases
-```
-
-## Usage
-
-Add the dependency:
-
-```toml
-[dependencies]
-eventmesh = { version = "1.9", features = ["default"] }   # gRPC + EventMeshMessage
-# Optional extras:
-# eventmesh = { version = "1.9", features = ["grpc", "http", "tcp", "cloud_events", "tls"] }
-```
-
-### Publish a message
-
-```rust
-use eventmesh::{
-    config::GrpcClientConfig, grpc::GrpcProducer, model::EventMeshMessage, transport::Publisher,
-};
-
-#[tokio::main]
-async fn main() -> eventmesh::Result<()> {
-    let config = GrpcClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10205)
-        .env("env").idc("idc").sys("sys")
-        .username("eventmesh").password("eventmesh")   // required by the server
-        .producer_group("test-producerGroup")
-        .build();
-
-    let producer = GrpcProducer::connect(config)?;
-
-    let msg = EventMeshMessage::builder()
-        .topic("test-topic-rust-sdk")
-        .content("hello from rust")
-        .build();
-
-    let resp = producer.publish(msg).await?;
-    println!("published: {resp}");
-    Ok(())
-}
-```
-
-`producer.publish_batch(vec![...])` sends many messages in one RPC, and
-`producer.request_reply(msg, timeout)` performs a synchronous request/reply
-(returns the consumer's reply message).
-
-### Subscribe (stream)
-
-```rust
-use std::sync::atomic::{AtomicU64, Ordering};
-use eventmesh::{
-    config::GrpcClientConfig, grpc::GrpcStreamConsumer, model::{EventMeshMessage,
-        SubscriptionItem, SubscriptionMode, SubscriptionType},
-    MessageListener,
-};
-
-struct MyListener { n: AtomicU64 }
-
-impl MessageListener for MyListener {
-    type Message = EventMeshMessage;
-    async fn handle(&self, msg: Self::Message) -> Option<Self::Message> {
-        println!("[{}] topic={:?} content={:?}", self.n.fetch_add(1, Ordering::Relaxed), msg.topic, msg.content);
-        None // None = ack only; Some(msg) = reply (for request/reply topics)
-    }
-}
-
-#[tokio::main]
-async fn main() -> eventmesh::Result<()> {
-    let config = GrpcClientConfig::builder()
-        .server_addr("127.0.0.1").server_port(10205)
-        .env("env").idc("idc").sys("sys")
-        .username("eventmesh").password("eventmesh")
-        .consumer_group("test-consumerGroup")
-        .build();
-
-    let consumer = GrpcStreamConsumer::subscribe_stream(
-        config,
-        MyListener { n: AtomicU64::new(0) },
-        vec![SubscriptionItem::new(
-            "test-topic-rust-sdk", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC,
-        )],
-        Some(async { tokio::signal::ctrl_c().await.ok(); }),
-    ).await?;
-
-    // subscribe/unsubscribe can be called at any time on the open stream
-    // consumer.subscribe(more_items).await?;
-    // consumer.unsubscribe(items).await?;
-
-    // blocks until Ctrl-C or the stream closes
-    consumer.wait_for_shutdown().await;
-    Ok(())
-}
-```
-
-A webhook subscription (`GrpcWebhookConsumer::new` / `subscribe_webhook(items, url)`)
-is also available — the server POSTs delivered events to the given URL.
-
-### Catalog, Workflow, and service discovery
-
-Catalog and Workflow clients use a caller-supplied `ServiceDiscovery`
-implementation. This keeps the SDK independent of a particular registry while
-matching the Java SDK's `Selector` behavior. Implement the trait with your
-existing Nacos, Consul, Kubernetes, or other registry client:
-
-```rust
-use std::future::Future;
-use eventmesh::{
-    config::WorkflowClientConfig,
-    discovery::{ServiceDiscovery, ServiceInstance},
-    workflow::{ExecuteRequest, WorkflowClient},
-    Result,
-};
-
-struct StaticDiscovery;
-
-impl ServiceDiscovery for StaticDiscovery {
-    fn select_one(
-        &self,
-        service_name: String,
-    ) -> impl Future<Output = Result<Option<ServiceInstance>>> + Send {
-        async move {
-            assert_eq!(service_name, "eventmesh-workflow");
-            Ok(Some(ServiceInstance::new("127.0.0.1", 9000)))
-        }
-    }
-}
-
-async fn start_workflow() -> Result<()> {
-    let client = WorkflowClient::new(WorkflowClientConfig::default(), StaticDiscovery);
-    let response = client.execute(ExecuteRequest {
-        id: "order-flow".into(),
-        instance_id: String::new(),
-        task_instance_id: String::new(),
-        input: r#"{"order_no":"42"}"#.into(),
-    }).await?;
-    println!("workflow instance: {}", response.instance_id);
-    Ok(())
-}
-```
-
-To synchronize an existing `GrpcStreamConsumer` with Catalog, construct a
-`CatalogClientConfig` with its required `app_server_name`, then call
-`catalog.init(&consumer).await?`. It queries `QueryOperations`, subscribes to
-`subscribe` operations only, and `catalog.destroy(&consumer).await?` removes
-only the subscriptions it created.
+- Rust 1.86 or newer
+- `protoc` 3.15 or newer when building with the `grpc` feature
+- A compatible EventMesh runtime for network operations
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| `grpc` (default) | gRPC transport (producer, consumer, heartbeat), Catalog and Workflow clients |
-| `http` | HTTP producer, webhook consumer, and built-in webhook server |
-| `tcp` | Native TCP producer and consumer with reconnect support |
-| `cloud_events` | Native `cloudevents::Event` interop |
-| `tls` | TLS for the gRPC channel |
-| `full` | `grpc` + `http` + `tcp` + `cloud_events` + `tls` |
+Transports are opt-in; the default feature set is empty.
 
-## Running the examples
+| Feature | Capability |
+| --- | --- |
+| `grpc` | `GrpcClient`, producer and stream consumer, Catalog and Workflow |
+| `http` | `HttpClient`, webhook registration, and `WebhookServer` |
+| `tcp` | `TcpClient`, producer, consumer, broadcast, and reconnect |
+| `cloud_events` | `Message::CloudEvent(cloudevents::Event)` |
+| `tls` | TLS support for gRPC |
+| `full` | All supported transports, CloudEvents, and TLS |
 
-The examples assume a standalone EventMesh is running on `127.0.0.1`:
-
-```bash
-# from this crate's directory (docker-compose.yml ships with the SDK)
-docker compose --profile standalone up -d
+```toml
+[dependencies]
+eventmesh = { version = "2", features = ["grpc"] }
 ```
 
-> **Standalone-broker note:** the in-memory broker requires a topic to be
-> created **and** a consumer subscribed before a producer can publish. Create
-> the topic once, then start the consumer before the producer:
->
-> ```bash
-> # create the topic via the admin API (port 10106)
-> curl -X POST http://127.0.0.1:10106/topic -H 'Content-Type: application/json' -d '{"name":"test-topic-rust-sdk"}'
->
-> # terminal 1 — receive
-> cargo run --features grpc --example grpc_consumer
-> # terminal 2 — send
-> cargo run --features grpc --example grpc_producer
-> ```
->
-> (With the RocketMQ backend, topics are auto-created and this dance is not
-> needed.)
+## Messages
+
+`Message` is intentionally not generic and is not an SDK serialization
+format. It only selects the public message dialect; the chosen transport owns
+protobuf, HTTP-form, or TCP-frame serialization.
+
+```rust
+use eventmesh::message::{EventMeshMessage, Message, OpenMessage};
+
+let native = Message::from(EventMeshMessage::new("orders.created", "{\"id\": 42}"));
+let open = Message::from(OpenMessage::new("orders.created", "{\"id\": 42}"));
+
+// With `cloud_events` enabled:
+// let cloud_event = Message::from(event);
+```
+
+`Message::into_event_mesh()` and `Message::into_open()` make only the explicit
+EventMesh/OpenMessaging conversions. CloudEvents are never silently flattened
+into another model.
+
+## gRPC
+
+```rust
+use eventmesh::{
+    config::{Endpoint, GrpcConfig, ProducerOptions},
+    message::{EventMeshMessage, Message},
+    GrpcClient,
+};
+
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    let endpoint = Endpoint::new("127.0.0.1", 10_205)?;
+    let client = GrpcClient::new(GrpcConfig::new(endpoint))?;
+    let producer = client.producer(ProducerOptions::new("orders-producer"))?;
+    let receipt = producer
+        .publish(Message::from(EventMeshMessage::new("orders.created", "{\"id\": 42}")))
+        .await?;
+    println!("accepted with code {}", receipt.code);
+    Ok(())
+}
+```
+
+To receive messages, implement `MessageHandler`. `Ok(None)` acknowledges an
+asynchronous message; `Ok(Some(reply))` sends a reply for a synchronous
+delivery. A handler error is not acknowledged: HTTP asks for redelivery, while
+gRPC and TCP close the current delivery stream/connection.
+
+```rust
+use eventmesh::{
+    config::{ConsumerOptions, Endpoint, GrpcConfig},
+    message::Message,
+    subscription::Subscription,
+    GrpcClient, MessageHandler,
+};
+
+struct Log;
+
+impl MessageHandler for Log {
+    async fn handle(&self, message: Message) -> eventmesh::Result<Option<Message>> {
+        println!("received: {message:?}");
+        Ok(None)
+    }
+}
+
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
+    let consumer = client
+        .stream_consumer(
+            ConsumerOptions::new("orders-consumer"),
+            [Subscription::new("orders.created")],
+            Log,
+        )
+        .await?;
+    consumer.join().await
+}
+```
+
+`GrpcConsumer::subscribe` and `unsubscribe` update a live stream. gRPC batch
+publishing accepts EventMesh/OpenMessaging messages together, or a homogeneous
+CloudEvents batch; mixed native/CloudEvents batches are rejected.
+
+## HTTP and TCP
+
+HTTP uses a long-lived webhook-registration consumer plus an optional built-in
+webhook server. TCP has a connected producer/consumer and exposes broadcast as
+a TCP-specific producer operation. See `examples/http` and `examples/tcp` for
+runnable programs.
+
+```rust
+use eventmesh::{
+    config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
+    subscription::Subscription,
+    webhook::WebhookServer,
+    HttpClient,
+};
+
+// Build WebhookServer with a MessageHandler, then register server.url():
+// let server = WebhookServer::new("0.0.0.0:8080".parse()?, handler);
+let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
+let client = HttpClient::new(HttpConfig::new(endpoints))?;
+let consumer = client.webhook_consumer(ConsumerOptions::new("orders-http"))?;
+// consumer.subscribe(Subscription::new("orders.created"), server.url()).await?;
+# let _ = (consumer, Subscription::new("orders.created"));
+```
+
+## Configuration and errors
+
+Every protocol configuration starts with a validated `Endpoint` (HTTP takes a
+non-empty `EndpointSet`). Use `Identity`, `Credentials`, `ClientOptions`, and
+the transport-specific builder-style `with_*` methods to set optional values.
+Secrets are redacted in `Debug` output.
+
+Operations return the public, pattern-matchable `eventmesh::Error`; relevant
+variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`,
+`Server`, `Protocol`, `Unsupported`, and transport errors. There is no public
+catch-all error variant.
+
+## Catalog, Workflow, and discovery
+
+`catalog`, `workflow`, and `discovery` remain public gRPC APIs. Catalog now
+attaches to the public `GrpcConsumer<H>` returned by `GrpcClient`:
+
+```rust,ignore
+catalog.init(&consumer).await?;
+// ...
+catalog.destroy(&consumer).await?;
+```
 
 ## Development
 
 ```bash
-cargo fmt
+cargo fmt --check
 cargo clippy --features full --all-targets -- -D warnings
 cargo test --features full
+cargo test --features e2e --no-run
 ```
 
-## End-to-end tests
-
-The `e2e` test suite (`tests/e2e/`) exercises the full gRPC producer/consumer
-against a live EventMesh runtime. It is gated behind the `e2e` feature so a
-plain `cargo test` never touches Docker.
-
-```bash
-# Auto-start the standalone stack via docker compose, run the suite, then stop it:
-cargo test --features e2e
-
-# ...or run against a server you already started yourself:
-EVENTMESH_E2E_EXTERNAL=1 cargo test --features e2e
-```
-
-When neither Docker nor a reachable server is found, every test skips itself
-rather than failing. Tests run in parallel by default; each one uses a unique
-topic and consumer group so they never collide on the shared broker.
-
-> **Standalone limitations:** the in-memory broker requires a topic to be
-> created *and* a consumer subscribed before publishing (the harness does this
-> automatically), and it does **not** implement synchronous request/reply. The
-> request/reply test detects this and skips the assertion on standalone; switch
-> to the RocketMQ profile (`docker compose --profile rocketmq up -d`) to exercise
-> it fully.
+The `e2e` feature compiles the gRPC, HTTP, TCP, and CloudEvents integration
+suite. Running it against a live runtime is documented in `tests/e2e/main.rs`.
 
 ## License
 

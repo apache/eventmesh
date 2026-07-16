@@ -41,8 +41,18 @@ pub struct OpenMessage {
 }
 
 impl OpenMessage {
+    /// Construct an OpenMessaging-compatible message.
+    pub fn new(topic: impl Into<String>, body: impl Into<String>) -> Self {
+        Self {
+            topic: Some(topic.into()),
+            body: Some(body.into()),
+            headers: HashMap::new(),
+            properties: HashMap::new(),
+        }
+    }
+
     /// Start building an [`OpenMessage`].
-    pub fn builder() -> OpenMessageBuilder {
+    pub(crate) fn builder() -> OpenMessageBuilder {
         OpenMessageBuilder::default()
     }
 
@@ -91,6 +101,18 @@ impl OpenMessage {
             headers,
             properties,
         }
+    }
+
+    /// Return a copy with an OpenMessaging header.
+    pub fn with_header(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.headers.insert(key.into(), value.into());
+        self
+    }
+
+    /// Return a copy with an OpenMessaging property.
+    pub fn with_property(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.properties.insert(key.into(), value.into());
+        self
     }
 }
 

@@ -55,6 +55,7 @@ impl fmt::Display for SubscriptionItem {
 
 /// Delivery distribution: cluster (competing consumers) vs broadcast (all).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)] // Mirrors EventMesh's wire enum names.
 pub enum SubscriptionMode {
     BROADCASTING,
     CLUSTERING,
@@ -90,6 +91,7 @@ impl FromStr for SubscriptionMode {
 
 /// Delivery style.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)] // Mirrors EventMesh's wire enum names.
 pub enum SubscriptionType {
     /// Asynchronous push.
     ASYNC,

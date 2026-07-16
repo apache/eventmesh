@@ -15,90 +15,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! HTTP webhook consumer using the built-in [`WebhookServer`].
-//!
-//! The SDK starts an axum server to receive pushed messages from the
-//! EventMesh runtime. This is the "batteries-included" mode.
-//!
-//! Assumes `docker compose --profile standalone up` is running (HTTP on
-//! `127.0.0.1:10105`). Run the HTTP producer example in another terminal.
-
-use std::net::SocketAddr;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
-
 use eventmesh::{
-    config::HttpClientConfig,
-    http::{HttpConsumer, WebhookServer},
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    MessageListener,
+    config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
+    message::Message,
+    subscription::Subscription,
+    webhook::WebhookServer,
+    HttpClient, MessageHandler,
 };
 
-struct PrintingListener {
-    count: AtomicU64,
-}
+struct PrintHandler;
 
-impl MessageListener for PrintingListener {
-    type Message = EventMeshMessage;
-
-    async fn handle(&self, message: Self::Message) -> Option<Self::Message> {
-        let n = self.count.fetch_add(1, Ordering::Relaxed) + 1;
-        println!(
-            "[received #{n}] topic={:?} content={:?}",
-            message.topic, message.content
-        );
-        None
+impl MessageHandler for PrintHandler {
+    async fn handle(&self, message: Message) -> eventmesh::Result<Option<Message>> {
+        println!("received: {message:?}");
+        Ok(None)
     }
 }
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .init();
-
-    let listener = Arc::new(PrintingListener {
-        count: AtomicU64::new(0),
-    });
-
-    // Start the built-in webhook server on port 9090.
-    // Bind to 0.0.0.0 so Docker-hosted runtimes can reach us, but advertise
-    // 127.0.0.1 since that's where the standalone runtime (on the same host)
-    // can POST back to.
-    let addr: SocketAddr = "0.0.0.0:9090".parse().expect("valid addr");
-    let server = WebhookServer::new(addr, listener.clone())
-        .with_advertise_url("http://127.0.0.1:9090/eventmesh/callback");
-
-    // Register the webhook URL with the EventMesh runtime.
-    let config = HttpClientConfig::builder()
-        .servers("127.0.0.1:10105")
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .consumer_group("test-consumerGroup-http")
-        .build()?;
-
-    let consumer = HttpConsumer::new(config, None::<std::future::Ready<()>>)?;
-
-    let items = vec![SubscriptionItem::new(
-        "test-topic-rust-http",
-        SubscriptionMode::CLUSTERING,
-        SubscriptionType::ASYNC,
-    )];
-    let webhook_url = server.url();
-    println!("webhook URL: {webhook_url}");
-    consumer.subscribe_webhook(items, webhook_url).await?;
-    println!("subscribed; waiting for messages (Ctrl-C to stop)...");
-
-    // Run the server until Ctrl-C.
-    server
-        .with_graceful_shutdown(async {
-            tokio::signal::ctrl_c().await.ok();
-        })
+    let server = WebhookServer::new("0.0.0.0:8080".parse().unwrap(), PrintHandler)
+        .with_advertise_url("http://127.0.0.1:8080/eventmesh/callback");
+    let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
+    let client = HttpClient::new(HttpConfig::new(endpoints))?;
+    let consumer = client.webhook_consumer(ConsumerOptions::new("test-consumerGroup"))?;
+    consumer
+        .subscribe(Subscription::new("test-topic-rust-sdk"), server.url())
         .await?;
-
-    consumer.shutdown().await;
-    Ok(())
+    server.await
 }

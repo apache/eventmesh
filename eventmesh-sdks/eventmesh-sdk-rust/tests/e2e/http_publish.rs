@@ -15,15 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! E2e: HTTP producer-side operations.
-//!
-//! HTTP batch publish is intentionally not supported by the transport (see
-//! `HttpProducer::publish_batch`), so only single-message publish is tested
-//! here.
+//! E2e: HTTP producer operations through the v2 facade.
 
-use eventmesh::{http::HttpProducer, model::EventMeshMessage, transport::Publisher};
+use eventmesh::message::{EventMeshMessage, Message};
 
-use crate::harness::{ensure_topic, http_producer_config, http_warm_topic, unique_topic};
+use crate::harness::{ensure_topic, http_producer, http_warm_topic, unique_topic};
 use crate::require_runtime;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -31,40 +27,14 @@ async fn http_publish_single() {
     require_runtime!();
     let topic = unique_topic("http-pub-single");
     ensure_topic(&topic).await;
-    let (_handle, _rx) = http_warm_topic(&topic).await;
+    let (_handle, _receiver) = http_warm_topic(&topic).await;
 
-    let producer = HttpProducer::new(http_producer_config()).expect("build http producer");
-
-    let msg = EventMeshMessage::builder()
-        .topic(&topic)
-        .content("hello from rust http e2e")
-        .build();
-    let resp = producer.publish(msg).await.expect("http publish");
-    assert!(resp.is_success(), "http publish should succeed: {resp}");
-}
-
-/// Verify that batch publish surfaces a clear `Unsupported` error rather than
-/// silently succeeding or panicking. This documents the known limitation.
-#[tokio::test(flavor = "multi_thread")]
-async fn http_publish_batch_unsupported() {
-    require_runtime!();
-    let producer = HttpProducer::new(http_producer_config()).expect("build http producer");
-
-    let batch: Vec<EventMeshMessage> = (0..2)
-        .map(|i| {
-            EventMeshMessage::builder()
-                .topic("n/a")
-                .content(format!("batch-{i}"))
-                .build()
-        })
-        .collect();
-
-    let err = producer
-        .publish_batch(batch)
+    let receipt = http_producer()
+        .publish(Message::from(EventMeshMessage::new(
+            &topic,
+            "hello from rust http e2e",
+        )))
         .await
-        .expect_err("batch publish should be unsupported over HTTP");
-    assert!(
-        err.to_string().contains("not supported"),
-        "expected an unsupported error, got: {err}"
-    );
+        .expect("HTTP publish");
+    assert_eq!(receipt.code, 0, "HTTP publish should succeed: {receipt:?}");
 }

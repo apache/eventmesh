@@ -17,7 +17,7 @@
 
 [package]
 name = "eventmesh"
-version = "1.9.0"
+version = "2.0.0"
 edition = "2021"
 rust-version = "1.86.0"
 authors = ["Apache EventMesh <dev@eventmesh.apache.org>"]
@@ -33,7 +33,10 @@ name = "eventmesh"
 path = "src/lib.rs"
 
 [features]
-default = ["grpc"]
+# Transports are opt-in.  This keeps the base crate lightweight and, in
+# particular, lets consumers that only use the shared message model avoid
+# compiling a protocol implementation.
+default = []
 # Transport protocols (implemented incrementally).
 grpc = ["dep:tonic", "dep:prost", "dep:prost-types"]
 # HTTP transport (producer, consumer, webhook middleware + built-in server).

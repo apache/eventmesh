@@ -33,7 +33,7 @@ use std::path::PathBuf;
 ///
 /// # Examples
 ///
-/// ```no_run
+/// ```ignore
 /// use eventmesh::config::{GrpcClientConfig, TlsConfig, TlsClientIdentity};
 ///
 /// // Self-signed CA

@@ -15,11 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Client configuration.
+//! Public client configuration.
+//!
+//! All v2 transport configurations require an explicit endpoint.  The old
+//! transport configuration types remain crate-private adapters while Catalog
+//! and Workflow keep their established public configuration contracts.
 
-pub mod grpc;
-pub mod identity;
+#[allow(dead_code)]
+mod grpc;
+#[allow(dead_code)]
+mod http;
+#[allow(dead_code)]
+mod identity;
+#[allow(dead_code)]
+mod tcp;
 pub mod tls;
+mod v2;
 
 #[cfg(feature = "grpc")]
 pub mod catalog;
@@ -27,9 +38,11 @@ pub mod catalog;
 #[cfg(feature = "grpc")]
 pub mod workflow;
 
-pub use grpc::GrpcClientConfig;
-pub use identity::ClientIdentity;
 pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
+pub use v2::{
+    ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, HttpConfig,
+    Identity, LoadBalance, ProducerOptions, ReconnectPolicy, TcpConfig,
+};
 
 #[cfg(feature = "grpc")]
 pub use catalog::{CatalogClientConfig, CatalogClientConfigBuilder};
@@ -37,14 +50,13 @@ pub use catalog::{CatalogClientConfig, CatalogClientConfigBuilder};
 #[cfg(feature = "grpc")]
 pub use workflow::{WorkflowClientConfig, WorkflowClientConfigBuilder};
 
+// Legacy adapters used by the private protocol implementations and retained
+// Catalog/Workflow clients.  Do not make these public again.
+#[cfg(feature = "grpc")]
+pub(crate) use grpc::GrpcClientConfig;
 #[cfg(feature = "http")]
-pub mod http;
-
-#[cfg(feature = "http")]
-pub use http::HttpClientConfig;
-
+pub(crate) use http::HttpClientConfig;
+pub(crate) use identity::ClientIdentity;
+pub(crate) use tcp::ReconnectConfig;
 #[cfg(feature = "tcp")]
-pub mod tcp;
-
-#[cfg(feature = "tcp")]
-pub use tcp::{ReconnectConfig, ReconnectConfigBuilder, TcpClientConfig};
+pub(crate) use tcp::TcpClientConfig;

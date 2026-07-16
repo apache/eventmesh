@@ -15,74 +15,31 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Stream subscription: receive delivered messages via a listener.
-//!
-//! Assumes `docker compose --profile standalone up` is running (gRPC on
-//! `127.0.0.1:10205`). Run the producer example in another terminal to feed
-//! this consumer.
-
-use std::sync::atomic::{AtomicU64, Ordering};
-
 use eventmesh::{
-    config::GrpcClientConfig,
-    grpc::GrpcStreamConsumer,
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    MessageListener,
+    config::{ConsumerOptions, Endpoint, GrpcConfig},
+    message::Message,
+    subscription::Subscription,
+    GrpcClient, MessageHandler,
 };
 
-struct PrintingListener {
-    count: AtomicU64,
-}
+struct PrintHandler;
 
-impl MessageListener for PrintingListener {
-    type Message = EventMeshMessage;
-
-    async fn handle(&self, message: Self::Message) -> Option<Self::Message> {
-        let n = self.count.fetch_add(1, Ordering::Relaxed) + 1;
-        println!(
-            "[received #{n}] topic={:?} content={:?}",
-            message.topic, message.content
-        );
-        None // async ack, no reply
+impl MessageHandler for PrintHandler {
+    async fn handle(&self, message: Message) -> eventmesh::Result<Option<Message>> {
+        println!("received: {message:?}");
+        Ok(None)
     }
 }
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .init();
-
-    let config = GrpcClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10205)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .consumer_group("test-consumerGroup")
-        .build();
-
-    let listener = PrintingListener {
-        count: AtomicU64::new(0),
-    };
-
-    let items = vec![SubscriptionItem::new(
-        "test-topic-rust-sdk",
-        SubscriptionMode::CLUSTERING,
-        SubscriptionType::ASYNC,
-    )];
-    println!("subscribed; waiting for messages (Ctrl-C to stop)...");
-    let consumer = GrpcStreamConsumer::subscribe_stream(
-        config,
-        listener,
-        items,
-        Some(async {
-            tokio::signal::ctrl_c().await.ok();
-        }),
-    )
-    .await?;
-    consumer.wait_for_shutdown().await;
-    Ok(())
+    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
+    let consumer = client
+        .stream_consumer(
+            ConsumerOptions::new("test-consumerGroup"),
+            [Subscription::new("test-topic-rust-sdk")],
+            PrintHandler,
+        )
+        .await?;
+    consumer.join().await
 }

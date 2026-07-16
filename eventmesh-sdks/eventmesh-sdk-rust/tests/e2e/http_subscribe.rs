@@ -15,35 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! E2e: HTTP webhook subscription — subscribe via webhook, receive pushed
-//! messages, then unsubscribe and confirm delivery stops.
+//! E2e: HTTP webhook subscriptions through the v2 facade.
 
 use std::time::Duration;
 
 use eventmesh::{
-    http::HttpProducer,
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::Publisher,
+    message::{EventMeshMessage, Message},
+    subscription::Subscription,
 };
 
 use crate::harness::{
-    ensure_topic, http_producer_config, http_warm_topic, let_stream_settle, unique_topic,
+    ensure_topic, http_producer, http_warm_topic, let_stream_settle, unique_topic,
 };
 use crate::require_runtime;
 
-/// The HTTP transport delivers messages via an HTTP POST callback from the
-/// runtime to the consumer's webhook URL, which adds a network hop compared to
-/// the gRPC bidirectional stream. Allow a generous timeout for delivery.
-const DELIVERY_TIMEOUT: Duration = Duration::from_secs(15);
-
-/// Helper: receive one message from `rx` or panic after `DELIVERY_TIMEOUT`.
-async fn recv_one(
-    rx: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
+async fn receive(
+    receiver: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
 ) -> EventMeshMessage {
-    tokio::time::timeout(DELIVERY_TIMEOUT, rx.recv())
+    tokio::time::timeout(Duration::from_secs(15), receiver.recv())
         .await
-        .expect("timed out waiting for a pushed message")
-        .expect("listener channel closed unexpectedly")
+        .expect("timed out waiting for webhook delivery")
+        .expect("handler channel closed")
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -51,53 +43,19 @@ async fn http_subscribe_and_receive() {
     require_runtime!();
     let topic = unique_topic("http-sub-recv");
     ensure_topic(&topic).await;
-    let (handle, mut rx) = http_warm_topic(&topic).await;
+    let (_handle, mut receiver) = http_warm_topic(&topic).await;
 
-    let producer = HttpProducer::new(http_producer_config()).expect("build http producer");
-    let payload = "delivered-via-http";
-    let msg = EventMeshMessage::builder()
-        .topic(&topic)
-        .content(payload)
-        .build();
-    producer.publish(msg).await.expect("http publish");
-
-    let received = recv_one(&mut rx).await;
+    http_producer()
+        .publish(Message::from(EventMeshMessage::new(
+            &topic,
+            "delivered-via-http",
+        )))
+        .await
+        .expect("HTTP publish");
     assert_eq!(
-        received.content.as_deref(),
-        Some(payload),
-        "delivered content mismatch: {received}"
+        receive(&mut receiver).await.content.as_deref(),
+        Some("delivered-via-http")
     );
-
-    drop(handle);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn http_subscribe_batch_receive() {
-    require_runtime!();
-    let topic = unique_topic("http-sub-batch");
-    ensure_topic(&topic).await;
-    let (handle, mut rx) = http_warm_topic(&topic).await;
-
-    let producer = HttpProducer::new(http_producer_config()).expect("build http producer");
-    // HTTP batch publish is unsupported, so publish individually.
-    for i in 0..3 {
-        let msg = EventMeshMessage::builder()
-            .topic(&topic)
-            .content(format!("m{i}"))
-            .build();
-        producer.publish(msg).await.expect("http publish");
-    }
-
-    // Expect all three to arrive (order not guaranteed).
-    let mut contents = Vec::new();
-    for _ in 0..3 {
-        let msg = recv_one(&mut rx).await;
-        contents.push(msg.content.unwrap_or_default());
-    }
-    contents.sort();
-    assert_eq!(contents, vec!["m0", "m1", "m2"]);
-
-    drop(handle);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -105,59 +63,39 @@ async fn http_unsubscribe_stops_delivery() {
     require_runtime!();
     let topic = unique_topic("http-sub-unsub");
     ensure_topic(&topic).await;
-    let (handle, mut rx) = http_warm_topic(&topic).await;
+    let (handle, mut receiver) = http_warm_topic(&topic).await;
+    let producer = http_producer();
 
-    let producer = HttpProducer::new(http_producer_config()).expect("build http producer");
-
-    // First message should arrive.
     producer
-        .publish(
-            EventMeshMessage::builder()
-                .topic(&topic)
-                .content("before-http-unsub")
-                .build(),
-        )
+        .publish(Message::from(EventMeshMessage::new(
+            &topic,
+            "before-http-unsub",
+        )))
         .await
-        .expect("http publish before unsub");
-    let _ = recv_one(&mut rx).await;
+        .expect("HTTP publish before unsubscribe");
+    let _ = receive(&mut receiver).await;
 
-    // Unsubscribe, then publish again.
     handle
         .consumer()
-        .unsubscribe(vec![SubscriptionItem::new(
-            &topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )])
+        .unsubscribe(Subscription::new(&topic))
         .await
-        .expect("http unsubscribe");
+        .expect("HTTP unsubscribe");
     let_stream_settle().await;
 
     match producer
-        .publish(
-            EventMeshMessage::builder()
-                .topic(&topic)
-                .content("after-http-unsub")
-                .build(),
-        )
+        .publish(Message::from(EventMeshMessage::new(
+            &topic,
+            "after-http-unsub",
+        )))
         .await
     {
-        Ok(_) => {
-            let leaked = tokio::time::timeout(Duration::from_secs(3), rx.recv()).await;
-            assert!(
-                leaked.is_err(),
-                "no message expected after unsubscribe, but got: {:?}",
-                leaked.ok().flatten()
-            );
-        }
-        Err(e) => {
-            // Standalone rejects publish to a topic with no subscribers — the
-            // unsubscribe worked.
-            eprintln!(
-                "[e2e] publish after http unsub rejected by broker (expected on standalone): {e}"
-            );
-        }
+        Ok(_) => assert!(
+            matches!(
+                tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
+                Err(_) | Ok(None)
+            ),
+            "webhook delivery leaked after unsubscribe"
+        ),
+        Err(error) => eprintln!("[e2e] broker rejected post-unsubscribe HTTP publish: {error}"),
     }
-
-    drop(handle);
 }

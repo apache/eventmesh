@@ -106,7 +106,7 @@ impl WebhookHandler {
         );
 
         match state.listener.handle(msg).await {
-            Some(reply) => {
+            Ok(Some(reply)) => {
                 // The listener produced a reply, but the HTTP webhook transport
                 // cannot deliver it: the runtime's protocol adaptor does not
                 // support REPLY_MESSAGE (code 301) on the CloudEvents path, so
@@ -122,7 +122,11 @@ impl WebhookHandler {
                 );
                 Json(WebhookReply::ok()).into_response()
             }
-            None => Json(WebhookReply::ok()).into_response(),
+            Ok(None) => Json(WebhookReply::ok()).into_response(),
+            Err(error) => {
+                warn!(%error, "webhook handler failed; requesting redelivery");
+                Json(WebhookReply::retry("handler failed")).into_response()
+            }
         }
     }
 }

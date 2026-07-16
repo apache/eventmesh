@@ -36,7 +36,7 @@
 //!   ([`WebhookReply::ok()`] returns `retCode: 1`; the runtime also accepts
 //!   `retCode: 0`. A non-zero code other than 1 requests retry).
 //!
-//! ```no_run
+//! ```ignore
 //! # use eventmesh::http::codec::{parse_push_body, WebhookReply};
 //! # use eventmesh::MessageListener;
 //! # use eventmesh::model::EventMeshMessage;
@@ -228,8 +228,9 @@ impl PushMessageRequestBody {
             let trimmed = ext.trim();
             if !trimmed.is_empty() {
                 let props: HashMap<String, String> =
-                    serde_json::from_str(trimmed).map_err(|e| {
-                        EventMeshError::Other(format!("failed to parse extFields JSON: {e}"))
+                    serde_json::from_str(trimmed).map_err(|e| EventMeshError::Protocol {
+                        transport: "http",
+                        message: format!("failed to parse extFields JSON: {e}"),
                     })?;
                 msg.props = props;
             }
@@ -476,8 +477,10 @@ pub fn heartbeat_code() -> i32 {
 
 /// Decode a webhook push body (form-urlencoded) into fields.
 pub fn parse_push_body(body: &str) -> Result<PushMessageRequestBody> {
-    serde_urlencoded::from_str(body)
-        .map_err(|e| EventMeshError::Other(format!("form decode error: {e}")))
+    serde_urlencoded::from_str(body).map_err(|e| EventMeshError::Protocol {
+        transport: "http",
+        message: format!("form decode error: {e}"),
+    })
 }
 
 #[cfg(test)]

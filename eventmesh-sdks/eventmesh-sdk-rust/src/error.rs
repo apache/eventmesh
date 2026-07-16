@@ -21,10 +21,11 @@ use std::time::Duration;
 
 /// All errors produced by the EventMesh SDK.
 ///
-/// Intentionally `pub` (the previous SDK hid this as `pub(crate)` and erased
-/// it to `anyhow`), so callers can `match` on concrete variants.
+/// The type is intentionally public and pattern-matchable.  Protocol adapters
+/// translate their implementation-specific failures into these variants so a
+/// caller never needs to depend on tonic, reqwest, or the TCP frame format.
 #[derive(Debug, thiserror::Error)]
-pub enum EventMeshError {
+pub enum Error {
     /// A client configuration problem (missing field, bad URL, ...).
     #[error("config error: {0}")]
     Config(String),
@@ -35,13 +36,18 @@ pub enum EventMeshError {
 
     /// A gRPC transport / status error.
     #[cfg(feature = "grpc")]
-    #[error("grpc error: {0}")]
-    Grpc(Box<tonic::Status>),
+    #[error("grpc error ({code}): {message}")]
+    Grpc {
+        /// gRPC status code rendered by the transport.
+        code: String,
+        /// Status description returned by the peer.
+        message: String,
+    },
 
     /// A gRPC transport layer (channel/connect) error.
     #[cfg(feature = "grpc")]
     #[error("grpc transport error: {0}")]
-    GrpcTransport(Box<tonic::transport::Error>),
+    GrpcTransport(String),
 
     /// An HTTP transport error (Phase 2).
     #[error("http error: status {status}: {message}")]
@@ -62,6 +68,15 @@ pub enum EventMeshError {
     /// An operation did not complete within its timeout.
     #[error("operation timed out after {0:?}")]
     Timeout(Duration),
+
+    /// A protocol adapter rejected or could not encode a wire-level value.
+    #[error("{transport} protocol error: {message}")]
+    Protocol {
+        /// The protocol that produced the error (for example `grpc` or `tcp`).
+        transport: &'static str,
+        /// A stable, human-readable explanation.
+        message: String,
+    },
 
     /// The EventMesh server returned a non-success response code.
     #[error("server error: code={code} message={message}")]
@@ -86,25 +101,29 @@ pub enum EventMeshError {
     /// No healthy instance was available for a logical service name.
     #[error("service unavailable: {0}")]
     ServiceUnavailable(String),
-
-    /// Anything else, with a free-form message.
-    #[error("{0}")]
-    Other(String),
 }
 
 /// Convenience `Result` alias used throughout the SDK.
-pub type Result<T> = std::result::Result<T, EventMeshError>;
+pub type Result<T> = std::result::Result<T, Error>;
+
+// The protocol implementation is migrated in stages.  Keep this alias crate
+// private so the old spelling remains available to internal modules without
+// becoming part of the 2.0 public API.
+pub(crate) use Error as EventMeshError;
 
 #[cfg(feature = "grpc")]
-impl From<tonic::Status> for EventMeshError {
+impl From<tonic::Status> for Error {
     fn from(status: tonic::Status) -> Self {
-        Self::Grpc(Box::new(status))
+        Self::Grpc {
+            code: status.code().to_string(),
+            message: status.message().to_owned(),
+        }
     }
 }
 
 #[cfg(feature = "grpc")]
-impl From<tonic::transport::Error> for EventMeshError {
+impl From<tonic::transport::Error> for Error {
     fn from(err: tonic::transport::Error) -> Self {
-        Self::GrpcTransport(Box::new(err))
+        Self::GrpcTransport(err.to_string())
     }
 }

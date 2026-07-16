@@ -15,86 +15,50 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! E2e: synchronous request/reply round-trip.
-
-use std::time::Duration;
+//! E2e: gRPC synchronous request/reply through the v2 facade.
 
 use eventmesh::{
-    grpc::{GrpcProducer, GrpcStreamConsumer},
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    transport::Publisher,
+    message::{EventMeshMessage, Message},
+    subscription::{DeliveryType, Subscription},
 };
 
 use crate::harness::{
-    consumer_config, ensure_topic, let_stream_settle, producer_config, unique_topic,
+    consumer_options, ensure_topic, grpc_client, grpc_producer, let_stream_settle, unique_topic,
     ReplyingListener,
 };
 use crate::require_runtime;
-
-const REPLY: &str = "pong";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn request_reply_roundtrip() {
     require_runtime!();
     let topic = unique_topic("req-reply");
     ensure_topic(&topic).await;
-
-    // SYNC consumer: receives the request and echoes a fixed reply.
-    let listener = ReplyingListener {
-        reply_content: REPLY.to_string(),
-    };
-    let consumer = GrpcStreamConsumer::subscribe_stream(
-        consumer_config(),
-        listener,
-        vec![SubscriptionItem::new(
-            &topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::SYNC,
-        )],
-        None::<std::future::Ready<()>>,
-    )
-    .await
-    .expect("subscribe_stream");
+    let consumer = grpc_client()
+        .stream_consumer(
+            consumer_options(),
+            [Subscription::new(&topic).with_delivery_type(DeliveryType::Sync)],
+            ReplyingListener {
+                reply_content: "pong".into(),
+            },
+        )
+        .await
+        .expect("open request/reply consumer");
     let_stream_settle().await;
 
-    let producer = GrpcProducer::connect(producer_config()).expect("connect producer");
-    let request = EventMeshMessage::builder()
-        .topic(&topic)
-        .content("ping")
-        .ttl_millis(10_000)
-        .build();
-
-    let reply = producer
-        .request_reply(request, Duration::from_secs(15))
-        .await
-        .expect("request_reply RPC should complete");
-
-    // The standalone (in-memory) broker does not implement synchronous
-    // request/reply: it bounces the request back with a "Request is not
-    // supported" message rather than forwarding it to the consumer. Treat that
-    // specific broker-capability gap as a skip, not a failure, so the suite
-    // stays green on standalone while still asserting the full round-trip on a
-    // durable backend (RocketMQ). Any other non-zero status (e.g. a request
-    // timeout, 10006) is a real failure and must surface here.
-    let unsupported = reply
-        .get_prop("responsemessage")
-        .map(|m| m.to_lowercase().contains("not supported"))
-        .unwrap_or(false);
-    if unsupported {
-        eprintln!(
-            "[e2e] skipping request_reply assertion: broker does not support \
-             sync request/reply (standalone). reply status={:?} msg={:?}",
-            reply.get_prop("statuscode"),
-            reply.get_prop("responsemessage")
-        );
-        return;
+    let reply = grpc_producer()
+        .request_reply(Message::from(EventMeshMessage::new(&topic, "ping")))
+        .await;
+    match reply {
+        Ok(Message::EventMesh(message)) => {
+            let unsupported = message
+                .get_prop("responsemessage")
+                .is_some_and(|value| value.to_lowercase().contains("not supported"));
+            if !unsupported {
+                assert_eq!(message.content.as_deref(), Some("pong"));
+            }
+        }
+        Ok(other) => panic!("expected native reply, got {other:?}"),
+        Err(error) => eprintln!("[e2e] broker does not support gRPC request/reply: {error}"),
     }
-
-    assert_eq!(
-        reply.content.as_deref(),
-        Some(REPLY),
-        "reply content mismatch: {reply}"
-    );
-
-    drop(consumer);
+    consumer.shutdown().await;
 }

@@ -15,46 +15,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Publish native CloudEvents (`cloudevents::Event`) via the gRPC transport.
-//!
-//! Requires features `grpc` + `cloud_events`. Assumes a standalone EventMesh
-//! server is reachable on `127.0.0.1:10205`.
-
 use cloudevents::{EventBuilder, EventBuilderV10};
-use eventmesh::{config::GrpcClientConfig, grpc::GrpcProducer};
+use eventmesh::{
+    config::{Endpoint, GrpcConfig, ProducerOptions},
+    message::Message,
+    Error, GrpcClient,
+};
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .init();
-
-    let config = GrpcClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10205)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .producer_group("test-producerGroup")
-        .build();
-
-    let producer = GrpcProducer::connect(config)?;
-
     let event = EventBuilderV10::new()
-        .id("1")
-        .source("https://eventmesh.apache.org/rust-sdk/demo")
-        .ty("com.example.ping")
+        .id("rust-example-1")
+        .source("urn:eventmesh:rust-example")
+        .ty("com.example.created")
         .subject("test-topic-rust-sdk")
-        .data(
-            "application/json",
-            serde_json::json!({"msg": "cloudevents hello"}),
-        )
+        .data("application/json", serde_json::json!({"message": "hello"}))
         .build()
-        .map_err(|e| eventmesh::EventMeshError::Other(format!("cloudevents build: {e}")))?;
+        .map_err(|error| Error::InvalidArgument(format!("invalid CloudEvent: {error}")))?;
 
-    let resp = producer.publish_cloud_event(event).await?;
-    println!("[cloudevents publish] {resp}");
+    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
+    let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
+    println!(
+        "published: {:?}",
+        producer.publish(Message::from(event)).await?
+    );
     Ok(())
 }

@@ -216,11 +216,12 @@ struct OpenMessageListener<L> {
 impl<L: MessageListener<Message = OpenMessage>> MessageListener for OpenMessageListener<L> {
     type Message = EventMeshMessage;
 
-    async fn handle(&self, message: EventMeshMessage) -> Option<EventMeshMessage> {
-        self.listener
+    async fn handle(&self, message: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
+        Ok(self
+            .listener
             .handle(OpenMessage::from_event_mesh_message(message))
-            .await
-            .map(|reply| reply.to_event_mesh_message())
+            .await?
+            .map(|reply| reply.to_event_mesh_message()))
     }
 }
 
@@ -622,6 +623,11 @@ where
                                 }
                                 InboundResult::Stop => {
                                     info!("receive loop stopping (disconnect or parse failure)");
+                                    // The consumer keeps an Arc to the connection after the
+                                    // driver exits. Close it here so an unacknowledged delivery
+                                    // is released for server-side redelivery instead of leaving
+                                    // the I/O task and socket alive until the caller joins.
+                                    conn.shutdown().await;
                                     *shutdown_reason.lock().await =
                                         Some(ShutdownReason::ChannelClosed);
                                     break;
@@ -716,7 +722,14 @@ where
     // mirroring Java where the exception escapes to exceptionCaught and
     // closes the channel.  The message is NOT acknowledged.
     let request = (pkg.header.cmd == Command::RequestToClient).then(|| msg.clone());
-    if let Some(mut reply) = listener.handle(msg).await {
+    let reply = match listener.handle(msg).await {
+        Ok(reply) => reply,
+        Err(error) => {
+            warn!(%error, "listener failed; disconnecting without ACK");
+            return InboundResult::Stop;
+        }
+    };
+    if let Some(mut reply) = reply {
         if let Some(request) = request.as_ref() {
             reply.inherit_request_metadata(request);
         }
@@ -759,9 +772,95 @@ mod tests {
     struct NoopListener;
     impl MessageListener for NoopListener {
         type Message = EventMeshMessage;
-        async fn handle(&self, _: EventMeshMessage) -> Option<EventMeshMessage> {
-            None
+        async fn handle(&self, _: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
+            Ok(None)
         }
+    }
+
+    /// A listener failure must tear down the TCP session without ACKing the
+    /// delivery so the server can redeliver it on a subsequent connection.
+    struct FailingListener;
+    impl MessageListener for FailingListener {
+        type Message = EventMeshMessage;
+        async fn handle(&self, _: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
+            Err(EventMeshError::Tcp("listener failure".into()))
+        }
+    }
+
+    #[tokio::test]
+    async fn listener_error_closes_tcp_connection_without_ack() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::HelloResponse,
+                    "hello-seq",
+                )))
+                .await
+                .unwrap();
+
+            let listen = framed.next().await.unwrap().unwrap();
+            assert_eq!(listen.header.cmd, Command::ListenRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::ListenResponse,
+                    listen.header.seq.clone().unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+
+            let delivery = message::build_message_package(
+                &EventMeshMessage::builder()
+                    .topic("topic")
+                    .content("payload")
+                    .build(),
+                Command::AsyncMessageToClient,
+            )
+            .unwrap();
+            framed.send(delivery).await.unwrap();
+
+            tokio::time::timeout(Duration::from_secs(3), async {
+                loop {
+                    match framed.next().await {
+                        Some(Ok(pkg)) if pkg.header.cmd == Command::ClientGoodbyeRequest => {}
+                        Some(Ok(pkg)) => {
+                            panic!(
+                                "listener failure must not ACK delivery; got {:?}",
+                                pkg.header.cmd
+                            )
+                        }
+                        Some(Err(_)) | None => break,
+                    }
+                }
+            })
+            .await
+            .expect("listener failure should close the TCP connection promptly");
+        });
+
+        let config = TcpClientConfig::builder()
+            .server_addr("127.0.0.1")
+            .server_port(port)
+            .consumer_group("g")
+            .timeout(Duration::from_secs(3))
+            .heartbeat_interval(Duration::from_secs(60))
+            .build();
+        let consumer =
+            TcpConsumer::connect(config, FailingListener, None::<std::future::Ready<()>>)
+                .await
+                .expect("connect");
+
+        server.await.unwrap();
+        assert!(
+            !consumer.conn.is_active(),
+            "listener failure must stop the connection I/O task without requiring join"
+        );
     }
 
     #[test]

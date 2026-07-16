@@ -15,39 +15,36 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Shared e2e helpers: config builders, unique resource names, topic creation,
-//! and a collecting message listener.
+//! Shared v2 e2e helpers.
 
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use eventmesh::{
+    config::{
+        ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, HttpConfig, Identity,
+        ProducerOptions, TcpConfig,
+    },
+    grpc::{GrpcClient, GrpcConsumer, GrpcProducer},
+    http::{HttpClient, HttpConsumer},
+    message::{EventMeshMessage, Message},
+    subscription::Subscription,
+    tcp::{TcpClient, TcpConsumer, TcpProducer},
+    webhook::WebhookServer,
+    MessageHandler, Result,
+};
 use tokio::net::TcpStream;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 use tracing::{debug, warn};
-
-use eventmesh::{
-    config::GrpcClientConfig,
-    grpc::GrpcStreamConsumer,
-    http::{HttpConsumer, WebhookServer},
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    MessageListener,
-};
-
-use eventmesh::config::HttpClientConfig;
 
 use crate::runtime::{
     ensure_runtime, webhook_host, ADMIN_PORT, GRPC_PORT, HOST, HTTP_PORT, TCP_PORT,
 };
 
-/// Monotonic counter to make every resource name globally unique, so parallel
-/// tests never collide on a topic or consumer group.
 static SEQ: AtomicU64 = AtomicU64::new(0);
 
-/// A topic name unique to this process + scope.
 pub(crate) fn unique_topic(scope: &str) -> String {
     let n = SEQ.fetch_add(1, Ordering::Relaxed);
     let ts = std::time::SystemTime::now()
@@ -57,54 +54,79 @@ pub(crate) fn unique_topic(scope: &str) -> String {
     format!("e2e-{scope}-{ts}-{n}")
 }
 
-/// A producer config pointing at the local runtime, with a unique group.
-pub(crate) fn producer_config() -> GrpcClientConfig {
-    let group = unique_topic("producer-group");
-    GrpcClientConfig::builder()
-        .server_addr(HOST)
-        .server_port(GRPC_PORT)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .producer_group(group)
-        .build()
+fn identity() -> Identity {
+    Identity::default()
+        .with_env("env")
+        .with_idc("idc")
+        .with_system("sys")
 }
 
-/// A consumer config pointing at the local runtime, with a unique group.
-pub(crate) fn consumer_config() -> GrpcClientConfig {
-    let group = unique_topic("consumer-group");
-    GrpcClientConfig::builder()
-        .server_addr(HOST)
-        .server_port(GRPC_PORT)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .consumer_group(group)
-        .build()
+fn credentials() -> Credentials {
+    Credentials::new().with_basic("eventmesh", "eventmesh")
 }
 
-/// Create a topic via the admin HTTP API (idempotent). The broker requires a
-/// topic to exist before a consumer can rebalance onto it (and the standalone
-/// in-memory broker before a producer may publish), so this runs ahead of
-/// every publish/subscribe test.
+pub(crate) fn producer_options() -> ProducerOptions {
+    ProducerOptions::new(unique_topic("producer-group"))
+}
+
+pub(crate) fn consumer_options() -> ConsumerOptions {
+    ConsumerOptions::new(unique_topic("consumer-group"))
+}
+
+pub(crate) fn grpc_client() -> GrpcClient {
+    let endpoint = Endpoint::new(HOST, GRPC_PORT).expect("valid gRPC endpoint");
+    GrpcClient::new(
+        GrpcConfig::new(endpoint)
+            .with_identity(identity())
+            .with_credentials(credentials()),
+    )
+    .expect("build gRPC client")
+}
+
+pub(crate) fn grpc_producer() -> GrpcProducer {
+    grpc_client()
+        .producer(producer_options())
+        .expect("build gRPC producer")
+}
+
+pub(crate) fn http_client() -> HttpClient {
+    let endpoint = Endpoint::new(HOST, HTTP_PORT).expect("valid HTTP endpoint");
+    HttpClient::new(
+        HttpConfig::new(EndpointSet::new([endpoint]).expect("non-empty endpoints"))
+            .with_identity(identity())
+            .with_credentials(credentials()),
+    )
+    .expect("build HTTP client")
+}
+
+pub(crate) fn http_producer() -> eventmesh::http::HttpProducer {
+    http_client()
+        .producer(producer_options())
+        .expect("build HTTP producer")
+}
+
+pub(crate) fn tcp_client() -> TcpClient {
+    let endpoint = Endpoint::new(HOST, TCP_PORT).expect("valid TCP endpoint");
+    TcpClient::new(
+        TcpConfig::new(endpoint)
+            .with_identity(identity())
+            .with_credentials(credentials()),
+    )
+}
+
+pub(crate) async fn tcp_producer() -> TcpProducer {
+    tcp_client()
+        .producer(producer_options())
+        .await
+        .expect("build TCP producer")
+}
+
 pub(crate) async fn ensure_topic(topic: &str) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
-
     let url = format!("http://{HOST}:{ADMIN_PORT}/topic");
 
-    // The admin `/topic` endpoint parses the POST body as
-    // application/x-www-form-urlencoded (Netty HttpPostRequestDecoder), not
-    // JSON — sending a JSON body yields a blank name and "Topic name can not
-    // be blank". Send the name as a form field instead.
-    //
-    // The endpoint occasionally rejects concurrent creates with a 500; retry
-    // briefly since "already exists" is a perfectly good outcome here.
     for attempt in 0..5u8 {
-        let res = reqwest::Client::builder()
+        let result = reqwest::Client::builder()
             .timeout(Duration::from_secs(5))
             .build()
             .expect("reqwest client")
@@ -112,156 +134,78 @@ pub(crate) async fn ensure_topic(topic: &str) {
             .form(&[("name", topic)])
             .send()
             .await;
-        match res {
-            Ok(resp) => {
-                let status = resp.status();
-                debug!(%topic, %status, "ensure_topic response");
-                if status.is_success() || status.as_u16() == 409 {
-                    return;
-                }
-                // Fall through to retry for other statuses.
+        match result {
+            Ok(response) if response.status().is_success() || response.status().as_u16() == 409 => {
+                return;
             }
-            Err(e) => warn!(%topic, attempt, "ensure_topic error: {e}"),
+            Ok(response) => debug!(%topic, status = %response.status(), "ensure_topic response"),
+            Err(error) => warn!(%topic, attempt, "ensure_topic error: {error}"),
         }
         tokio::time::sleep(Duration::from_millis(300)).await;
     }
-    // Not fatal: a few standalone builds accept the publish anyway. The actual
-    // publish will surface a real failure if the topic truly isn't there.
     warn!(%topic, "ensure_topic gave up after retries; continuing optimistically");
 }
 
-/// Wait briefly so a freshly-opened subscription stream has registered with the
-/// broker before the test starts publishing (matters for the standalone store).
 pub(crate) async fn let_stream_settle() {
     tokio::time::sleep(Duration::from_millis(800)).await;
 }
 
-/// Create a topic and subscribe a collecting consumer to it, returning the
-/// consumer handle (keep it alive for the test) and the message receiver.
-///
-/// The standalone in-memory broker rejects publishes to a topic that has no
-/// live subscriber, so every publish-oriented test warms the topic this way
-/// first. Returns `(consumer, receiver)` so the caller can also assert delivery.
 pub(crate) async fn warm_topic(
     topic: &str,
 ) -> (
-    GrpcStreamConsumer<CollectingListener>,
+    GrpcConsumer<CollectingListener>,
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
-    let (listener, rx) = CollectingListener::new();
-    let consumer = GrpcStreamConsumer::subscribe_stream(
-        consumer_config(),
-        listener,
-        vec![SubscriptionItem::new(
-            topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )],
-        None::<std::future::Ready<()>>,
-    )
-    .await
-    .expect("subscribe_stream");
+    let (listener, receiver) = CollectingListener::new();
+    let consumer = grpc_client()
+        .stream_consumer(consumer_options(), [Subscription::new(topic)], listener)
+        .await
+        .expect("open gRPC stream consumer");
     let_stream_settle().await;
-    (consumer, rx)
+    (consumer, receiver)
 }
 
-// ---------------------------------------------------------------------------
-// HTTP transport helpers
-// ---------------------------------------------------------------------------
-
-/// An HTTP producer config pointing at the local runtime, with a unique group.
-pub(crate) fn http_producer_config() -> HttpClientConfig {
-    let group = unique_topic("http-producer-group");
-    HttpClientConfig::builder()
-        .servers(format!("{HOST}:{HTTP_PORT}"))
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .producer_group(group)
-        .build()
-        .expect("http producer config")
-}
-
-/// An HTTP consumer config pointing at the local runtime, with a unique group.
-pub(crate) fn http_consumer_config() -> HttpClientConfig {
-    let group = unique_topic("http-consumer-group");
-    HttpClientConfig::builder()
-        .servers(format!("{HOST}:{HTTP_PORT}"))
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .consumer_group(group)
-        .build()
-        .expect("http consumer config")
-}
-
-/// Find a free TCP port on the host by briefly binding to port 0.
-///
-/// There is an inherent TOCTOU race between this function returning and the
-/// caller re-binding, but in practice the window is microseconds and perfectly
-/// acceptable for parallel test wiring.
 fn free_port() -> u16 {
-    let listener = std::net::TcpListener::bind("0.0.0.0:0").expect("bind for port probe");
-    let port = listener.local_addr().expect("local_addr").port();
+    let listener = std::net::TcpListener::bind("0.0.0.0:0").expect("bind port probe");
+    let port = listener.local_addr().expect("probe local address").port();
     drop(listener);
     port
 }
 
-/// Poll a TCP address until it accepts a connection or `timeout` elapses.
-async fn wait_for_listen(addr: SocketAddr, timeout: Duration) {
+async fn wait_for_listen(address: SocketAddr, timeout: Duration) {
     let deadline = Instant::now() + timeout;
     loop {
         if Instant::now() >= deadline {
-            panic!("webhook server at {addr} did not start within {timeout:?}");
+            panic!("webhook server at {address} did not start within {timeout:?}");
         }
-        if TcpStream::connect(addr).await.is_ok() {
+        if TcpStream::connect(address).await.is_ok() {
             return;
         }
         tokio::time::sleep(Duration::from_millis(50)).await;
     }
 }
 
-/// Owns an `HttpConsumer` and its webhook server task, cleaning both up on
-/// drop. Tests hold this alive for the duration of the scenario.
 pub(crate) struct HttpConsumerHandle {
-    consumer: Option<HttpConsumer>,
-    server_task: Option<JoinHandle<()>>,
+    consumer: HttpConsumer,
+    server_task: JoinHandle<()>,
     shutdown_tx: Option<oneshot::Sender<()>>,
 }
 
 impl HttpConsumerHandle {
-    /// Borrow the underlying consumer (for unsubscribe, etc.).
     pub(crate) fn consumer(&self) -> &HttpConsumer {
-        self.consumer.as_ref().expect("consumer present")
+        &self.consumer
     }
 }
 
 impl Drop for HttpConsumerHandle {
     fn drop(&mut self) {
-        // Signal the webhook server's graceful-shutdown future.
         if let Some(tx) = self.shutdown_tx.take() {
             let _ = tx.send(());
         }
-        // Abort the server task if it hasn't exited yet.
-        if let Some(handle) = self.server_task.take() {
-            handle.abort();
-        }
-        // Dropping the consumer cancels its heartbeat task (see HttpConsumer::drop).
-        self.consumer.take();
+        self.server_task.abort();
     }
 }
 
-/// Create a topic, start a webhook server, subscribe an HTTP consumer to the
-/// topic via webhook, and return the handle plus the message receiver.
-///
-/// This mirrors the gRPC [`warm_topic`] but for the HTTP transport: the
-/// standalone in-memory broker rejects publishes to topics with no live
-/// subscriber, so every publish-oriented HTTP test warms the topic this way
-/// first. Returns `(handle, receiver)` so the caller can also assert delivery.
 pub(crate) async fn http_warm_topic(
     topic: &str,
 ) -> (
@@ -269,103 +213,42 @@ pub(crate) async fn http_warm_topic(
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
-
-    let (listener, rx) = CollectingListener::new();
-    let listener = Arc::new(listener);
-
-    // Allocate a webhook port and build the advertise URL the runtime will use.
+    let (listener, receiver) = CollectingListener::new();
     let port = free_port();
-    let bind_addr: SocketAddr = format!("0.0.0.0:{port}")
-        .parse()
-        .expect("valid webhook bind addr");
-    let whost = webhook_host();
-    let webhook_url = format!("http://{whost}:{port}/eventmesh/callback");
-
-    // Start the built-in webhook server.
-    let (shutdown_tx, shutdown_rx) = oneshot::channel::<()>();
-    let server = WebhookServer::new(bind_addr, listener.clone())
-        .with_advertise_url(webhook_url.clone())
+    let bind_address: SocketAddr = format!("0.0.0.0:{port}").parse().expect("webhook address");
+    let url = format!("http://{}:{port}/eventmesh/callback", webhook_host());
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let server = WebhookServer::new(bind_address, listener)
+        .with_advertise_url(url.clone())
         .with_graceful_shutdown(async move {
             let _ = shutdown_rx.await;
         });
     let server_task = tokio::spawn(async move {
-        if let Err(e) = server.await {
-            warn!("webhook server exited with error: {e}");
+        if let Err(error) = server.await {
+            warn!(%error, "webhook server exited with error");
         }
     });
-    // Wait for the server to actually bind before subscribing.
-    wait_for_listen(bind_addr, Duration::from_secs(5)).await;
-    debug!(%topic, port, url = %webhook_url, "HTTP webhook server ready");
+    wait_for_listen(bind_address, Duration::from_secs(5)).await;
 
-    // Create the HTTP consumer (spawns heartbeat task) and subscribe.
-    let consumer = HttpConsumer::new(http_consumer_config(), None::<std::future::Ready<()>>)
-        .expect("build http consumer");
+    let consumer = http_client()
+        .webhook_consumer(consumer_options())
+        .expect("build HTTP consumer");
     consumer
-        .subscribe_webhook(
-            vec![SubscriptionItem::new(
-                topic,
-                SubscriptionMode::CLUSTERING,
-                SubscriptionType::ASYNC,
-            )],
-            webhook_url,
-        )
+        .subscribe(Subscription::new(topic), url)
         .await
-        .expect("subscribe_webhook");
-
+        .expect("subscribe HTTP webhook");
     let_stream_settle().await;
 
-    let handle = HttpConsumerHandle {
-        consumer: Some(consumer),
-        server_task: Some(server_task),
-        shutdown_tx: Some(shutdown_tx),
-    };
-
-    (handle, rx)
+    (
+        HttpConsumerHandle {
+            consumer,
+            server_task,
+            shutdown_tx: Some(shutdown_tx),
+        },
+        receiver,
+    )
 }
 
-// ---------------------------------------------------------------------------
-// TCP transport helpers
-// ---------------------------------------------------------------------------
-
-use eventmesh::config::TcpClientConfig;
-use eventmesh::tcp::TcpConsumer;
-
-/// A TCP producer config pointing at the local runtime, with a unique group.
-pub(crate) fn tcp_producer_config() -> TcpClientConfig {
-    let group = unique_topic("tcp-producer-group");
-    TcpClientConfig::builder()
-        .server_addr(HOST)
-        .server_port(TCP_PORT)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .producer_group(group)
-        .build()
-}
-
-/// A TCP consumer config pointing at the local runtime, with a unique group.
-pub(crate) fn tcp_consumer_config() -> TcpClientConfig {
-    let group = unique_topic("tcp-consumer-group");
-    TcpClientConfig::builder()
-        .server_addr(HOST)
-        .server_port(TCP_PORT)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .consumer_group(group)
-        .build()
-}
-
-/// Create a topic and subscribe a TCP collecting consumer to it, returning the
-/// consumer (keep it alive for the test) and the message receiver.
-///
-/// Mirrors the gRPC [`warm_topic`]. The standalone in-memory broker rejects
-/// publishes to topics with no live subscriber, so every publish-oriented TCP
-/// test warms the topic this way first.
 pub(crate) async fn tcp_warm_topic(
     topic: &str,
 ) -> (
@@ -373,72 +256,51 @@ pub(crate) async fn tcp_warm_topic(
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
-
-    let (listener, rx) = CollectingListener::new();
-    let consumer = TcpConsumer::connect(
-        tcp_consumer_config(),
-        listener,
-        None::<std::future::Ready<()>>,
-    )
-    .await
-    .expect("connect tcp consumer");
-    consumer
-        .subscribe(&[SubscriptionItem::new(
-            topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )])
+    let (listener, receiver) = CollectingListener::new();
+    let consumer = tcp_client()
+        .consumer(consumer_options(), listener)
         .await
-        .expect("subscribe");
+        .expect("open TCP consumer");
+    consumer
+        .subscribe(Subscription::new(topic))
+        .await
+        .expect("subscribe TCP consumer");
     let_stream_settle().await;
-    (consumer, rx)
+    (consumer, receiver)
 }
 
-// ---------------------------------------------------------------------------
-// Listeners
-// ---------------------------------------------------------------------------
-
-/// A listener that forwards every delivered message into an mpsc channel, so a
-/// test can assert on what was received. Returns `None` (async ack, no reply).
 pub(crate) struct CollectingListener {
     tx: mpsc::UnboundedSender<EventMeshMessage>,
 }
 
 impl CollectingListener {
     pub(crate) fn new() -> (Self, mpsc::UnboundedReceiver<EventMeshMessage>) {
-        let (tx, rx) = mpsc::unbounded_channel();
-        (Self { tx }, rx)
+        let (tx, receiver) = mpsc::unbounded_channel();
+        (Self { tx }, receiver)
     }
 }
 
-impl MessageListener for CollectingListener {
-    type Message = EventMeshMessage;
-
-    async fn handle(&self, msg: EventMeshMessage) -> Option<EventMeshMessage> {
-        let _ = self.tx.send(msg);
-        None
+impl MessageHandler for CollectingListener {
+    async fn handle(&self, message: Message) -> Result<Option<Message>> {
+        let message = message.into_event_mesh()?;
+        let _ = self.tx.send(message);
+        Ok(None)
     }
 }
 
-/// A listener used for request/reply: it echoes back a fixed reply content so
-/// the producer's `request_reply` call receives a deterministic answer.
 pub(crate) struct ReplyingListener {
     pub(crate) reply_content: String,
 }
 
-impl MessageListener for ReplyingListener {
-    type Message = EventMeshMessage;
-
-    async fn handle(&self, msg: EventMeshMessage) -> Option<EventMeshMessage> {
-        debug!(
-            topic = ?msg.topic,
-            "replying listener received request, echoing reply"
-        );
-        Some(
-            EventMeshMessage::builder()
-                .topic(msg.topic.unwrap_or_default())
-                .content(self.reply_content.clone())
-                .build(),
-        )
+impl MessageHandler for ReplyingListener {
+    async fn handle(&self, message: Message) -> Result<Option<Message>> {
+        let request = message.into_event_mesh()?;
+        Ok(Some(
+            EventMeshMessage::new(
+                request.topic.unwrap_or_default(),
+                self.reply_content.clone(),
+            )
+            .into(),
+        ))
     }
 }

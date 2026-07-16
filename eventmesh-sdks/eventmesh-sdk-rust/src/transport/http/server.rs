@@ -23,7 +23,7 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
 //! # use eventmesh::{
 //! #     config::HttpClientConfig, http::{HttpConsumer, WebhookServer},
 //! #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
@@ -181,7 +181,10 @@ impl IntoFuture for WebhookServer {
             } else {
                 serve.await
             };
-            result.map_err(|e| EventMeshError::Other(format!("webhook server error: {e}")))?;
+            result.map_err(|e| EventMeshError::Protocol {
+                transport: "http",
+                message: format!("webhook server error: {e}"),
+            })?;
             Ok(())
         })
     }

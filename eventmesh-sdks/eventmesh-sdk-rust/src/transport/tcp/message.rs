@@ -387,7 +387,10 @@ pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Eve
     }
     builder
         .build()
-        .map_err(|e| crate::error::EventMeshError::Other(format!("cloudevents build error: {e}")))
+        .map_err(|e| crate::error::EventMeshError::Protocol {
+            transport: "tcp",
+            message: format!("cloudevents build error: {e}"),
+        })
 }
 
 #[cfg(test)]

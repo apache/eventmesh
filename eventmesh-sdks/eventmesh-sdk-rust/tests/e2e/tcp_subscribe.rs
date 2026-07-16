@@ -15,33 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! E2e: TCP subscription — subscribe, receive messages, then unsubscribe.
+//! E2e: TCP subscriptions through the v2 facade.
 
 use std::time::Duration;
 
 use eventmesh::{
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    tcp::TcpProducer,
-    transport::Publisher,
+    message::{EventMeshMessage, Message},
+    subscription::Subscription,
 };
 
-use crate::harness::{
-    ensure_topic, let_stream_settle, tcp_consumer_config, tcp_producer_config, unique_topic,
-    CollectingListener,
-};
+use crate::harness::{ensure_topic, tcp_producer, tcp_warm_topic, unique_topic};
 use crate::require_runtime;
 
-use eventmesh::tcp::TcpConsumer;
-
-/// Helper: receive one message from `rx` or panic after `timeout`.
-async fn recv_one(
-    rx: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
-    timeout: Duration,
+async fn receive(
+    receiver: &mut tokio::sync::mpsc::UnboundedReceiver<EventMeshMessage>,
 ) -> EventMeshMessage {
-    tokio::time::timeout(timeout, rx.recv())
+    tokio::time::timeout(Duration::from_secs(10), receiver.recv())
         .await
-        .expect("timed out waiting for a delivered message")
-        .expect("listener channel closed unexpectedly")
+        .expect("timed out waiting for TCP delivery")
+        .expect("handler channel closed")
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -49,39 +41,18 @@ async fn tcp_subscribe_and_receive() {
     require_runtime!();
     let topic = unique_topic("tcp-sub-recv");
     ensure_topic(&topic).await;
+    let (consumer, mut receiver) = tcp_warm_topic(&topic).await;
+    let producer = tcp_producer().await;
 
-    // Create a TCP consumer with a collecting listener.
-    let (listener, mut rx) = CollectingListener::new();
-    let consumer = TcpConsumer::connect(
-        tcp_consumer_config(),
-        listener,
-        None::<std::future::Ready<()>>,
-    )
-    .await
-    .expect("connect consumer");
-    consumer
-        .subscribe(&[SubscriptionItem::new(
+    producer
+        .publish(Message::from(EventMeshMessage::new(
             &topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )])
+            "delivered-via-tcp",
+        )))
         .await
-        .expect("subscribe");
-    let_stream_settle().await;
-
-    // Publish via TCP producer.
-    let producer = TcpProducer::connect(tcp_producer_config())
-        .await
-        .expect("connect producer");
-    let payload = "delivered-via-tcp";
-    let msg = EventMeshMessage::builder()
-        .topic(&topic)
-        .content(payload)
-        .build();
-    producer.publish(msg).await.expect("publish");
-
-    let received = recv_one(&mut rx, Duration::from_secs(10)).await;
-    assert_eq!(received.content.as_deref(), Some(payload));
+        .expect("TCP publish");
+    let received = receive(&mut receiver).await;
+    assert_eq!(received.content.as_deref(), Some("delivered-via-tcp"));
     assert_eq!(received.topic.as_deref(), Some(topic.as_str()));
 
     producer.shutdown().await;
@@ -93,81 +64,31 @@ async fn tcp_unsubscribe_stops_delivery() {
     require_runtime!();
     let topic = unique_topic("tcp-sub-unsub");
     ensure_topic(&topic).await;
+    let (consumer, mut receiver) = tcp_warm_topic(&topic).await;
+    let producer = tcp_producer().await;
 
-    let (listener, mut rx) = CollectingListener::new();
-    let consumer = TcpConsumer::connect(
-        tcp_consumer_config(),
-        listener,
-        None::<std::future::Ready<()>>,
-    )
-    .await
-    .expect("connect consumer");
-    consumer
-        .subscribe(&[SubscriptionItem::new(
-            &topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )])
-        .await
-        .expect("subscribe");
-    let_stream_settle().await;
-
-    let producer = TcpProducer::connect(tcp_producer_config())
-        .await
-        .expect("connect producer");
-
-    // First message should arrive.
     producer
-        .publish(
-            EventMeshMessage::builder()
-                .topic(&topic)
-                .content("before-unsub")
-                .build(),
-        )
+        .publish(Message::from(EventMeshMessage::new(&topic, "before-unsub")))
         .await
-        .expect("publish before unsub");
-    let _ = recv_one(&mut rx, Duration::from_secs(10)).await;
-
-    // Unsubscribe, then publish again.
+        .expect("publish before unsubscribe");
+    let _ = receive(&mut receiver).await;
     consumer
-        .unsubscribe(vec![SubscriptionItem::new(
-            &topic,
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )])
+        .unsubscribe(Subscription::new(&topic))
         .await
-        .expect("unsubscribe");
-    let_stream_settle().await;
+        .expect("TCP unsubscribe");
 
-    // Publish again. On the standalone broker (which requires a live subscriber
-    // to accept a publish) this errors out — which itself confirms the
-    // unsubscribe took effect. On a durable backend the publish succeeds but
-    // nothing should be delivered.
     match producer
-        .publish(
-            EventMeshMessage::builder()
-                .topic(&topic)
-                .content("after-unsub")
-                .build(),
-        )
+        .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))
         .await
     {
-        Ok(_) => {
-            let leaked = tokio::time::timeout(Duration::from_secs(3), rx.recv()).await;
-            // A timeout (`Err`) is the "nothing leaked" outcome. A closed
-            // channel (`Ok(None)`) also means nothing was delivered — the
-            // server tore down the subscription on unsubscribe — so treat that
-            // as a pass too. Only an actual delivered message (`Ok(Some(..))`)
-            // is a real leak.
-            assert!(
-                matches!(leaked, Err(_) | Ok(None)),
-                "no message expected after unsubscribe, but got: {:?}",
-                leaked.ok().flatten()
-            );
-        }
-        Err(e) => {
-            eprintln!("[e2e] publish after unsub rejected by broker (expected on standalone): {e}");
-        }
+        Ok(_) => assert!(
+            matches!(
+                tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
+                Err(_) | Ok(None)
+            ),
+            "TCP delivery leaked after unsubscribe"
+        ),
+        Err(error) => eprintln!("[e2e] broker rejected post-unsubscribe TCP publish: {error}"),
     }
 
     producer.shutdown().await;

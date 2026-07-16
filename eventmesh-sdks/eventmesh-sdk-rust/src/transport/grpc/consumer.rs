@@ -126,7 +126,7 @@ async fn await_task<T: Send + 'static>(handle: &Mutex<Option<JoinHandle<T>>>) ->
 ///
 /// # Example
 ///
-/// ```no_run
+/// ```ignore
 /// # use eventmesh::{
 /// #     config::GrpcClientConfig, grpc::GrpcStreamConsumer,
 /// #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
@@ -429,7 +429,7 @@ impl<L: MessageListener<Message = EventMeshMessage>> Drop for GrpcStreamConsumer
 ///
 /// # Example
 ///
-/// ```no_run
+/// ```ignore
 /// # use eventmesh::{config::GrpcClientConfig, grpc::GrpcWebhookConsumer};
 /// # use eventmesh::model::{SubscriptionItem, SubscriptionMode, SubscriptionType};
 /// # #[tokio::main]
@@ -753,6 +753,7 @@ fn spawn_stream_driver(
                             Arc::clone(&reply_tx),
                             config.clone(),
                             permit,
+                            shutdown.clone(),
                         ));
                     }
                 },
@@ -798,9 +799,10 @@ async fn handle_one<L: MessageListener<Message = EventMeshMessage>>(
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
     config: crate::config::GrpcClientConfig,
     _permit: tokio::sync::OwnedSemaphorePermit,
+    shutdown: CancellationToken,
 ) {
     match listener.handle(eventmesh_msg).await {
-        Some(reply) => match build_reply(reply, &cloud_event, &config) {
+        Ok(Some(reply)) => match build_reply(reply, &cloud_event, &config) {
             Ok(reply_event) => {
                 if reply_tx.send(reply_event).await.is_err() {
                     warn!("reply channel closed; reply dropped");
@@ -808,7 +810,11 @@ async fn handle_one<L: MessageListener<Message = EventMeshMessage>>(
             }
             Err(e) => error!("failed to encode reply: {e}"),
         },
-        None => { /* async ack: nothing to send back */ }
+        Ok(None) => { /* async ack: nothing to send back */ }
+        Err(error) => {
+            error!(%error, "stream handler failed; closing stream without acknowledgement");
+            shutdown.cancel();
+        }
     }
 }
 

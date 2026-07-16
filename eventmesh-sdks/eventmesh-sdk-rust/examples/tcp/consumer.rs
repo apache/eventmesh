@@ -15,75 +15,30 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! TCP subscription: receive delivered messages via a listener.
-//!
-//! Assumes `docker compose --profile standalone up` is running (TCP on
-//! `127.0.0.1:10000`). Run the TCP producer example in another terminal to
-//! feed this consumer.
-
-use std::sync::atomic::{AtomicU64, Ordering};
-
 use eventmesh::{
-    config::TcpClientConfig,
-    model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-    tcp::TcpConsumer,
-    MessageListener,
+    config::{ConsumerOptions, Endpoint, TcpConfig},
+    message::Message,
+    subscription::Subscription,
+    MessageHandler, TcpClient,
 };
 
-struct PrintingListener {
-    count: AtomicU64,
-}
+struct PrintHandler;
 
-impl MessageListener for PrintingListener {
-    type Message = EventMeshMessage;
-
-    async fn handle(&self, message: Self::Message) -> Option<Self::Message> {
-        let n = self.count.fetch_add(1, Ordering::Relaxed) + 1;
-        println!(
-            "[received #{n}] topic={:?} content={:?}",
-            message.topic, message.content
-        );
-        None
+impl MessageHandler for PrintHandler {
+    async fn handle(&self, message: Message) -> eventmesh::Result<Option<Message>> {
+        println!("received: {message:?}");
+        Ok(None)
     }
 }
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .init();
-
-    let config = TcpClientConfig::builder()
-        .server_addr("127.0.0.1")
-        .server_port(10000)
-        .env("env")
-        .idc("idc")
-        .sys("sys")
-        .username("eventmesh")
-        .password("eventmesh")
-        .consumer_group("test-consumerGroup")
-        .build();
-
-    let consumer = TcpConsumer::connect(
-        config,
-        PrintingListener {
-            count: AtomicU64::new(0),
-        },
-        Some(async {
-            tokio::signal::ctrl_c().await.ok();
-        }),
-    )
-    .await?;
-
-    consumer
-        .subscribe(&[SubscriptionItem::new(
-            "test-topic-rust-tcp",
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::ASYNC,
-        )])
+    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?));
+    let consumer = client
+        .consumer(ConsumerOptions::new("test-consumerGroup"), PrintHandler)
         .await?;
-
-    println!("listening (Ctrl-C to stop)...");
-    consumer.wait_for_shutdown().await;
-    Ok(())
+    consumer
+        .subscribe(Subscription::new("test-topic-rust-sdk"))
+        .await?;
+    consumer.join().await
 }
