@@ -107,16 +107,19 @@ async fn main() -> eventmesh::Result<()> {
 }
 ```
 
-`GrpcConsumer::subscribe` and `unsubscribe` update a live stream. gRPC batch
-publishing accepts EventMesh/OpenMessaging messages together, or a homogeneous
-CloudEvents batch; mixed native/CloudEvents batches are rejected.
+`GrpcConsumer::subscribe` and `unsubscribe` update a live stream. For gRPC
+webhook registration, create `client.webhook_consumer(...)` and register one
+or more subscriptions with a webhook URL. gRPC batch publishing accepts
+EventMesh/OpenMessaging messages together, or a homogeneous CloudEvents batch;
+mixed native/CloudEvents batches are rejected.
 
 ## HTTP and TCP
 
 HTTP uses a long-lived webhook-registration consumer plus an optional built-in
 webhook server. TCP has a connected producer/consumer and exposes broadcast as
-a TCP-specific producer operation. See `examples/http` and `examples/tcp` for
-runnable programs.
+a TCP-specific producer operation. `producer_with_handler` enables the TCP
+publisher-side response handler equivalent to Java's `registerPubBusiHandler`.
+See `examples/http` and `examples/tcp` for runnable programs.
 
 ```rust
 use eventmesh::{
@@ -141,6 +144,11 @@ Every protocol configuration starts with a validated `Endpoint` (HTTP takes a
 non-empty `EndpointSet`). Use `Identity`, `Credentials`, `ClientOptions`, and
 the transport-specific builder-style `with_*` methods to set optional values.
 Secrets are redacted in `Debug` output.
+
+`ClientOptions::with_request_timeout` supplies the default unary timeout. When
+one request needs a different deadline, each producer exposes
+`request_reply_with_timeout(message, Duration)`, matching the Java SDK's
+per-call timeout without changing the client's default.
 
 Operations return the public, pattern-matchable `eventmesh::Error`; relevant
 variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`,

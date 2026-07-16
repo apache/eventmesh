@@ -75,7 +75,7 @@ pub use message::{EventMeshMessage, Message, MessageKind, OpenMessage, PublishRe
 pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 
 #[cfg(feature = "grpc")]
-pub use grpc::GrpcClient;
+pub use grpc::{GrpcClient, GrpcWebhookConsumer};
 
 #[cfg(feature = "http")]
 pub use http::HttpClient;

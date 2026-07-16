@@ -22,7 +22,9 @@ use crate::error::Result;
 use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
-use crate::transport::tcp::{TcpConsumer as LegacyConsumer, TcpProducer as LegacyProducer};
+use crate::transport::tcp::{
+    TcpConsumer as LegacyConsumer, TcpMessage, TcpProducer as LegacyProducer,
+};
 use crate::transport::Publisher as LegacyPublisher;
 use crate::MessageHandler;
 
@@ -43,7 +45,26 @@ impl TcpClient {
         Ok(TcpProducer {
             inner: LegacyProducer::connect(self.config.legacy(Some(&options), None)).await?,
             timeout: self.config.request_timeout(),
+            response_driver: tokio::sync::Mutex::new(None),
         })
+    }
+
+    /// Connect a producer that can handle server `RESPONSE_TO_CLIENT` frames.
+    ///
+    /// This is the Rust equivalent of Java TCP's `registerPubBusiHandler`.
+    /// Normal request/reply responses remain owned by their originating
+    /// `request_reply` futures; this handler receives unmatched server pushes.
+    pub async fn producer_with_handler<H>(
+        &self,
+        options: ProducerOptions,
+        handler: H,
+    ) -> Result<TcpProducer>
+    where
+        H: MessageHandler,
+    {
+        let producer = self.producer(options).await?;
+        producer.start_response_handler(handler).await?;
+        Ok(producer)
     }
 
     /// Connect a long-lived TCP consumer role.
@@ -66,6 +87,7 @@ impl TcpClient {
 pub struct TcpProducer {
     inner: LegacyProducer,
     timeout: std::time::Duration,
+    response_driver: tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 /// A long-lived TCP consumer.
@@ -151,21 +173,30 @@ impl TcpProducer {
 
     /// Send an event and await its reply.
     pub async fn request_reply(&self, message: Message) -> Result<Message> {
+        self.request_reply_with_timeout(message, self.timeout).await
+    }
+
+    /// Send an event and await its reply with a per-operation timeout.
+    pub async fn request_reply_with_timeout(
+        &self,
+        message: Message,
+        timeout: std::time::Duration,
+    ) -> Result<Message> {
         match message {
             Message::EventMesh(message) => self
                 .inner
-                .request_reply(message, self.timeout)
+                .request_reply(message, timeout)
                 .await
                 .map(Message::EventMesh),
             Message::Open(message) => self
                 .inner
-                .request_reply_open_message(message, self.timeout)
+                .request_reply_open_message(message, timeout)
                 .await
                 .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
-                .request_reply_cloud_event(event, self.timeout)
+                .request_reply_cloud_event(event, timeout)
                 .await
                 .map(Message::CloudEvent),
         }
@@ -173,7 +204,56 @@ impl TcpProducer {
 
     /// Shut down the TCP connection.
     pub async fn shutdown(&self) {
+        if let Some(driver) = self.response_driver.lock().await.take() {
+            driver.abort();
+        }
         self.inner.shutdown().await;
+    }
+
+    async fn start_response_handler<H>(&self, handler: H) -> Result<()>
+    where
+        H: MessageHandler,
+    {
+        let conn = self.inner.connection();
+        conn.enable_orphan_response_delivery();
+        let mut inbound = conn.take_inbound_rx().await.ok_or_else(|| {
+            crate::error::EventMeshError::Tcp(
+                "publisher response handler already registered".into(),
+            )
+        })?;
+        let connection = self.inner.shared_connection();
+        let driver = tokio::spawn(async move {
+            while let Some(package) = inbound.recv().await {
+                if package.header.cmd != crate::transport::tcp::frame::Command::ResponseToClient {
+                    continue;
+                }
+                let Some(message) = Message::decode_tcp(&package) else {
+                    continue;
+                };
+                if let Ok(Some(reply)) = handler.handle(message).await {
+                    if let Ok(reply) = reply.encode_tcp_reply() {
+                        let _ = connection.send(reply).await;
+                    }
+                }
+                let _ = connection
+                    .send(crate::transport::tcp::message::response_to_client_ack(
+                        &package,
+                    ))
+                    .await;
+            }
+        });
+        *self.response_driver.lock().await = Some(driver);
+        Ok(())
+    }
+}
+
+impl Drop for TcpProducer {
+    fn drop(&mut self) {
+        if let Ok(mut driver) = self.response_driver.try_lock() {
+            if let Some(driver) = driver.take() {
+                driver.abort();
+            }
+        }
     }
 }
 

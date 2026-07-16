@@ -103,6 +103,9 @@ pub struct TcpConnection {
     reconnect_rx: Mutex<Option<mpsc::Receiver<()>>>,
     /// Pending request-response contexts: `seq → oneshot::Sender`.
     pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+    /// Whether unmatched `RESPONSE_TO_CLIENT` frames should be made available
+    /// to a publisher-side business handler.
+    deliver_orphan_responses: Arc<AtomicBool>,
     /// Shutdown signal shared with the background task.
     cancel: CancellationToken,
     /// Set to `false` by the background task when it exits for any reason
@@ -141,6 +144,7 @@ impl TcpConnection {
         let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
         let (reconnect_tx, reconnect_rx) = mpsc::channel(RECONNECT_CHANNEL_CAPACITY);
         let pending = Arc::new(Mutex::new(HashMap::new()));
+        let deliver_orphan_responses = Arc::new(AtomicBool::new(false));
         let cancel = CancellationToken::new();
         let alive = Arc::new(AtomicBool::new(true));
 
@@ -156,6 +160,7 @@ impl TcpConnection {
             inbound_tx,
             reconnect_tx,
             Arc::clone(&pending),
+            Arc::clone(&deliver_orphan_responses),
             cancel.clone(),
             Arc::clone(&alive),
         ));
@@ -167,6 +172,7 @@ impl TcpConnection {
             inbound_rx: Mutex::new(Some(inbound_rx)),
             reconnect_rx: Mutex::new(Some(reconnect_rx)),
             pending,
+            deliver_orphan_responses,
             cancel,
             alive,
             join: Mutex::new(Some(join)),
@@ -310,6 +316,12 @@ impl TcpConnection {
         self.inbound_rx.lock().await.take()
     }
 
+    /// Deliver unmatched server `RESPONSE_TO_CLIENT` frames to the inbound
+    /// receiver. This is used by TCP publisher-side business handlers.
+    pub fn enable_orphan_response_delivery(&self) {
+        self.deliver_orphan_responses.store(true, Ordering::Release);
+    }
+
     /// Take ownership of the reconnect-event receiver. Called once by the
     /// consumer to get notified when the connection has been automatically
     /// re-established, so it can replay subscriptions.
@@ -363,6 +375,7 @@ impl TcpConnection {
         inbound_tx: mpsc::Sender<Package>,
         reconnect_tx: mpsc::Sender<()>,
         pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+        deliver_orphan_responses: Arc<AtomicBool>,
         cancel: CancellationToken,
         alive: Arc<AtomicBool>,
     ) {
@@ -373,6 +386,7 @@ impl TcpConnection {
                 &mut outbound_rx,
                 &inbound_tx,
                 Arc::clone(&pending),
+                Arc::clone(&deliver_orphan_responses),
                 heartbeat_interval,
                 &cancel,
                 alive.as_ref(),
@@ -475,6 +489,7 @@ impl TcpConnection {
         outbound_rx: &mut mpsc::Receiver<Package>,
         inbound_tx: &mpsc::Sender<Package>,
         pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+        deliver_orphan_responses: Arc<AtomicBool>,
         heartbeat_interval: Duration,
         cancel: &CancellationToken,
         alive: &AtomicBool,
@@ -561,13 +576,13 @@ impl TcpConnection {
                             } else {
                                 // An orphan RESPONSE_TO_CLIENT is a late reply
                                 // to an `io()` call that already timed out and
-                                // removed its pending entry. Drop it silently
-                                // rather than forwarding to the inbound channel:
-                                // on a producer-only connection the inbound
-                                // receiver is never drained, so these would
-                                // pile up and eventually trigger a SlowConsumer
-                                // disconnect.
-                                if pkg.header.cmd == Command::ResponseToClient {
+                                // removed its pending entry. Drop it unless a
+                                // publisher-side handler explicitly requested
+                                // delivery; a default producer has no inbound
+                                // receiver and would otherwise fill the queue.
+                                if pkg.header.cmd == Command::ResponseToClient
+                                    && !deliver_orphan_responses.load(Ordering::Acquire)
+                                {
                                     debug!("dropping orphan RESPONSE_TO_CLIENT");
                                     continue;
                                 }

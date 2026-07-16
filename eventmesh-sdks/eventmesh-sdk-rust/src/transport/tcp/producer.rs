@@ -17,6 +17,7 @@
 
 //! TCP producer.
 
+use std::sync::Arc;
 use std::time::Duration;
 
 use tracing::debug;
@@ -35,7 +36,7 @@ use crate::transport::Publisher;
 /// the HELLO handshake (role = pub), and starts the background heartbeat.
 /// Implements the [`Publisher`] trait.
 pub struct TcpProducer {
-    conn: TcpConnection,
+    conn: Arc<TcpConnection>,
     config: TcpClientConfig,
 }
 
@@ -46,15 +47,17 @@ impl TcpProducer {
     /// after I/O failures (enabled by default).
     pub async fn connect(config: TcpClientConfig) -> Result<Self> {
         let user_agent = UserAgent::from_identity(&config.identity, config.server_port, "pub");
-        let conn = TcpConnection::connect(
-            &config.server_addr,
-            config.server_port,
-            &user_agent,
-            config.heartbeat_interval,
-            config.timeout,
-            config.reconnect.clone(),
-        )
-        .await?;
+        let conn = Arc::new(
+            TcpConnection::connect(
+                &config.server_addr,
+                config.server_port,
+                &user_agent,
+                config.heartbeat_interval,
+                config.timeout,
+                config.reconnect.clone(),
+            )
+            .await?,
+        );
 
         Ok(Self { conn, config })
     }
@@ -207,6 +210,11 @@ impl TcpProducer {
     /// Access the underlying connection (for testing or advanced use).
     pub fn connection(&self) -> &TcpConnection {
         &self.conn
+    }
+
+    /// Clone the shared connection for a background publisher-side handler.
+    pub fn shared_connection(&self) -> Arc<TcpConnection> {
+        Arc::clone(&self.conn)
     }
 
     /// Graceful shutdown.

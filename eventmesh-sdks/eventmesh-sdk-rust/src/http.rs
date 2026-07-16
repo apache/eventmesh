@@ -96,21 +96,30 @@ impl HttpProducer {
 
     /// Send an event and await its reply.
     pub async fn request_reply(&self, message: Message) -> Result<Message> {
+        self.request_reply_with_timeout(message, self.timeout).await
+    }
+
+    /// Send an event and await its reply with a per-operation timeout.
+    pub async fn request_reply_with_timeout(
+        &self,
+        message: Message,
+        timeout: std::time::Duration,
+    ) -> Result<Message> {
         match message {
             Message::EventMesh(message) => self
                 .inner
-                .request_reply(message, self.timeout)
+                .request_reply(message, timeout)
                 .await
                 .map(Message::EventMesh),
             Message::Open(message) => self
                 .inner
-                .request_reply_open_message(message, self.timeout)
+                .request_reply_open_message(message, timeout)
                 .await
                 .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
-                .request_reply_cloud_event(event, self.timeout)
+                .request_reply_cloud_event(event, timeout)
                 .await
                 .map(Message::CloudEvent),
         }

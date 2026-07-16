@@ -24,7 +24,7 @@ use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::grpc::{
     GrpcClient as ChannelClient, GrpcProducer as LegacyProducer,
-    GrpcStreamConsumer as LegacyConsumer,
+    GrpcStreamConsumer as LegacyConsumer, GrpcWebhookConsumer as LegacyWebhookConsumer,
 };
 use crate::transport::Publisher as LegacyPublisher;
 use crate::MessageHandler;
@@ -79,6 +79,21 @@ impl GrpcClient {
         .await?;
         Ok(GrpcConsumer { inner })
     }
+
+    /// Create a gRPC webhook-registration consumer.
+    ///
+    /// The EventMesh runtime delivers to the URL registered on the returned
+    /// value over HTTP. Use [`crate::WebhookServer`] or an application-owned
+    /// HTTP endpoint to receive those deliveries.
+    pub async fn webhook_consumer(&self, options: ConsumerOptions) -> Result<GrpcWebhookConsumer> {
+        Ok(GrpcWebhookConsumer {
+            inner: LegacyWebhookConsumer::new(
+                self.config.legacy(None, Some(&options)),
+                None::<std::future::Ready<()>>,
+            )
+            .await?,
+        })
+    }
 }
 
 /// gRPC publishing capability.
@@ -90,6 +105,59 @@ pub struct GrpcProducer {
 /// A long-lived gRPC stream consumer.
 pub struct GrpcConsumer<H: MessageHandler> {
     inner: LegacyConsumer<PublicHandler<H>>,
+}
+
+/// A gRPC consumer that registers HTTP webhook subscriptions.
+pub struct GrpcWebhookConsumer {
+    inner: LegacyWebhookConsumer,
+}
+
+impl GrpcWebhookConsumer {
+    /// Register one or more subscriptions to an HTTP webhook URL.
+    pub async fn subscribe(
+        &self,
+        subscriptions: impl IntoIterator<Item = Subscription>,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
+        self.inner
+            .subscribe_webhook(
+                subscriptions
+                    .into_iter()
+                    .map(|subscription| subscription.as_legacy())
+                    .collect(),
+                webhook_url,
+            )
+            .await
+            .map(|_| ())
+    }
+
+    /// Remove one or more subscriptions from an HTTP webhook URL.
+    pub async fn unsubscribe(
+        &self,
+        subscriptions: impl IntoIterator<Item = Subscription>,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
+        self.inner
+            .unsubscribe_webhook(
+                subscriptions
+                    .into_iter()
+                    .map(|subscription| subscription.as_legacy())
+                    .collect(),
+                webhook_url,
+            )
+            .await
+            .map(|_| ())
+    }
+
+    /// Stop the heartbeat task.
+    pub async fn shutdown(&self) {
+        self.inner.shutdown().await;
+    }
+
+    /// Wait for the heartbeat task to stop.
+    pub async fn join(&self) {
+        self.inner.wait_for_shutdown().await;
+    }
 }
 
 impl<H: MessageHandler> GrpcConsumer<H> {
@@ -205,21 +273,30 @@ impl GrpcProducer {
 
     /// Send an event and await its reply.
     pub async fn request_reply(&self, message: Message) -> Result<Message> {
+        self.request_reply_with_timeout(message, self.timeout).await
+    }
+
+    /// Send an event and await its reply with a per-operation timeout.
+    pub async fn request_reply_with_timeout(
+        &self,
+        message: Message,
+        timeout: std::time::Duration,
+    ) -> Result<Message> {
         match message {
             Message::EventMesh(message) => self
                 .inner
-                .request_reply(message, self.timeout)
+                .request_reply(message, timeout)
                 .await
                 .map(Message::EventMesh),
             Message::Open(message) => self
                 .inner
-                .request_reply_open_message(message, self.timeout)
+                .request_reply_open_message(message, timeout)
                 .await
                 .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
-                .request_reply_cloud_event(event, self.timeout)
+                .request_reply_cloud_event(event, timeout)
                 .await
                 .map(Message::CloudEvent),
         }
