@@ -89,7 +89,7 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
         HttpCommand request = asyncContext.getRequest();
         String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
         CMD_LOGGER.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(
-                Integer.valueOf(request.getRequestCode())),
+            Integer.valueOf(request.getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
             remoteAddr, localAddress);
 
@@ -227,6 +227,36 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
             eventMeshHTTPServer);
         summaryMetrics.recordSendMsg();
 
+        // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+        String pipelineKey = producerGroup + "-" + topic;
+        event = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor().process(event, pipelineKey);
+
+        if (event == null) {
+            // Message filtered by pipeline - return success
+            HttpCommand filteredResponse = request.createHttpCommandResponse(
+                sendMessageResponseHeader,
+                SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
+                    "Message filtered by pipeline"));
+            asyncContext.onComplete(filteredResponse, httpCommand -> {
+                try {
+                    HTTP_LOGGER.debug("{}", httpCommand);
+                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                    summaryMetrics.recordHTTPReqResTimeCost(
+                        System.currentTimeMillis() - request.getReqTime());
+                } catch (Exception ex) {
+                    // ignore
+                }
+            });
+            MESSAGE_LOGGER.info("message|eventMesh2mq|REQ|ASYNC|filtered|topic={}|bizSeqNo={}|uniqueId={}",
+                topic, bizNo, uniqueId);
+            spanWithException(event, protocolVersion, EventMeshRetCode.SUCCESS);
+            return;
+        }
+
+        // Topic may have been changed by Router
+        sendMessageContext.setEvent(event);
+        final String finalTopic = event.getSubject();
+
         long startTime = System.currentTimeMillis();
 
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
@@ -262,7 +292,7 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
                         long endTime = System.currentTimeMillis();
                         summaryMetrics.recordSendMsgCost(endTime - startTime);
                         MESSAGE_LOGGER.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            endTime - startTime, topic, bizNo, uniqueId);
+                            endTime - startTime, finalTopic, bizNo, uniqueId);
 
                         TraceUtils.finishSpan(span, sendMessageContext.getEvent());
                     }
@@ -281,7 +311,7 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
                         summaryMetrics.recordSendMsgFailed();
                         summaryMetrics.recordSendMsgCost(endTime - startTime);
                         MESSAGE_LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            endTime - startTime, topic, bizNo, uniqueId, context.getException());
+                            endTime - startTime, finalTopic, bizNo, uniqueId, context.getException());
 
                         TraceUtils.finishSpanWithException(span,
                             EventMeshUtil.getCloudEventExtensionMap(protocolVersion, sendMessageContext.getEvent()),
@@ -300,7 +330,7 @@ public class SendAsyncMessageProcessor extends AbstractHttpRequestProcessor {
             eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
             long endTime = System.currentTimeMillis();
             MESSAGE_LOGGER.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                endTime - startTime, topic, bizNo, uniqueId, ex);
+                endTime - startTime, finalTopic, bizNo, uniqueId, ex);
             summaryMetrics.recordSendMsgFailed();
             summaryMetrics.recordSendMsgCost(endTime - startTime);
         }

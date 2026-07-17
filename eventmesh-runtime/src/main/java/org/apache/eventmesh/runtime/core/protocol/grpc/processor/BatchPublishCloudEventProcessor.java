@@ -30,6 +30,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.core.protocol.BatchProcessResult;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
@@ -58,34 +59,68 @@ public class BatchPublishCloudEventProcessor extends AbstractPublishBatchCloudEv
         List<io.cloudevents.CloudEvent> cloudEvents = grpcCommandProtocolAdaptor.toBatchCloudEvent(
             new BatchEventMeshCloudEventWrapper(cloudEventBatch));
 
+        // Create BatchProcessResult to track success/filtered/failed counts
+        final BatchProcessResult batchResult = new BatchProcessResult(cloudEvents.size());
+        final String finalTopic = topic;
+        final String finalProducerGroup = producerGroup;
+
         for (io.cloudevents.CloudEvent event : cloudEvents) {
             String seqNum = event.getId();
             String uniqueId = (event.getExtension(ProtocolKey.UNIQUE_ID) == null) ? "" : event.getExtension(ProtocolKey.UNIQUE_ID).toString();
-            ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
-            EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
+            String eventTopic = event.getSubject();
 
-            SendMessageContext sendMessageContext = new SendMessageContext(seqNum, event, eventMeshProducer, eventMeshGrpcServer);
+            try {
+                // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+                String pipelineKey = finalProducerGroup + "-" + eventTopic;
+                io.cloudevents.CloudEvent processedEvent = eventMeshGrpcServer.getEventMeshServer()
+                    .getIngressProcessor().process(event, pipelineKey);
 
-            eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
-            long startTime = System.currentTimeMillis();
-            eventMeshProducer.send(sendMessageContext, new SendCallback() {
-
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    long endTime = System.currentTimeMillis();
-                    log.info("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, topic, seqNum, uniqueId);
+                if (processedEvent == null) {
+                    // Message filtered by pipeline
+                    batchResult.incrementFiltered();
+                    log.info("Batch message filtered by pipeline: topic={}, seqNum={}, uniqueId={}",
+                        eventTopic, seqNum, uniqueId);
+                    continue;
                 }
 
-                @Override
-                public void onException(OnExceptionContext context) {
-                    long endTime = System.currentTimeMillis();
-                    log.error("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, topic, seqNum, uniqueId, context.getException());
-                }
-            });
+                // Topic may have been changed by Router
+                final String routedTopic = processedEvent.getSubject();
+
+                ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
+                EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(finalProducerGroup);
+
+                SendMessageContext sendMessageContext = new SendMessageContext(seqNum, processedEvent, eventMeshProducer, eventMeshGrpcServer);
+
+                eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
+                long startTime = System.currentTimeMillis();
+                eventMeshProducer.send(sendMessageContext, new SendCallback() {
+
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        batchResult.incrementSuccess();
+                        long endTime = System.currentTimeMillis();
+                        log.info("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                            endTime - startTime, routedTopic, seqNum, uniqueId);
+                    }
+
+                    @Override
+                    public void onException(OnExceptionContext context) {
+                        batchResult.incrementFailed(seqNum);
+                        long endTime = System.currentTimeMillis();
+                        log.error("message|eventMesh2mq|REQ|BatchSend|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                            endTime - startTime, routedTopic, seqNum, uniqueId, context.getException());
+                    }
+                });
+            } catch (Exception e) {
+                batchResult.incrementFailed(seqNum);
+                log.error("Batch message pipeline exception: topic={}, seqNum={}, uniqueId={}",
+                    eventTopic, seqNum, uniqueId, e);
+            }
         }
-        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "batch publish success", emitter);
+
+        ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS,
+            "batch publish success: " + batchResult.toSummary(), emitter);
+        log.info("Batch publish completed: topic={}, result={}", finalTopic, batchResult.toSummary());
     }
 
 }

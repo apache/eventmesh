@@ -46,12 +46,17 @@ public class SinkWorker implements ConnectorWorker {
     private final Sink sink;
     private final SinkConfig config;
 
-    private final EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
+    private EventMeshTCPClient<CloudEvent> eventMeshTCPClient;
 
     public SinkWorker(Sink sink, SinkConfig config) {
         this.sink = sink;
         this.config = config;
-        eventMeshTCPClient = buildEventMeshSubClient(config);
+    }
+
+    private boolean isEmbedded = false;
+
+    public void setEmbedded(boolean isEmbedded) {
+        this.isEmbedded = isEmbedded;
     }
 
     private EventMeshTCPClient<CloudEvent> buildEventMeshSubClient(SinkConfig config) {
@@ -90,7 +95,10 @@ public class SinkWorker implements ConnectorWorker {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        eventMeshTCPClient.init();
+        if (!isEmbedded) {
+            eventMeshTCPClient = buildEventMeshSubClient(config);
+            eventMeshTCPClient.init();
+        }
     }
 
     @Override
@@ -103,20 +111,24 @@ public class SinkWorker implements ConnectorWorker {
             log.error("sink worker[{}] start fail", sink.name(), e);
             return;
         }
-        eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
-            SubscriptionType.ASYNC);
-        eventMeshTCPClient.registerSubBusiHandler(new EventHandler(sink));
-        eventMeshTCPClient.listen();
+        if (eventMeshTCPClient != null) {
+            eventMeshTCPClient.subscribe(config.getPubSubConfig().getSubject(), SubscriptionMode.CLUSTERING,
+                SubscriptionType.ASYNC);
+            eventMeshTCPClient.registerSubBusiHandler(new EventHandler(this));
+            eventMeshTCPClient.listen();
+        }
     }
 
     @Override
     public void stop() {
         log.info("sink worker stopping");
-        try {
-            eventMeshTCPClient.unsubscribe();
-            eventMeshTCPClient.close();
-        } catch (Exception e) {
-            log.error("event mesh client close", e);
+        if (eventMeshTCPClient != null) {
+            try {
+                eventMeshTCPClient.unsubscribe();
+                eventMeshTCPClient.close();
+            } catch (Exception e) {
+                log.error("event mesh client close", e);
+            }
         }
         try {
             sink.stop();
@@ -126,20 +138,24 @@ public class SinkWorker implements ConnectorWorker {
         log.info("source worker stopped");
     }
 
+    public void handle(CloudEvent event) {
+        ConnectRecord connectRecord = CloudEventUtil.convertEventToRecord(event);
+        List<ConnectRecord> connectRecords = new ArrayList<>();
+        connectRecords.add(connectRecord);
+        sink.put(connectRecords);
+    }
+
     static class EventHandler implements ReceiveMsgHook<CloudEvent> {
 
-        private final Sink sink;
+        private final SinkWorker sinkWorker;
 
-        public EventHandler(Sink sink) {
-            this.sink = sink;
+        public EventHandler(SinkWorker sinkWorker) {
+            this.sinkWorker = sinkWorker;
         }
 
         @Override
         public Optional<CloudEvent> handle(CloudEvent event) {
-            ConnectRecord connectRecord = CloudEventUtil.convertEventToRecord(event);
-            List<ConnectRecord> connectRecords = new ArrayList<>();
-            connectRecords.add(connectRecord);
-            sink.put(connectRecords);
+            sinkWorker.handle(event);
             return Optional.empty();
         }
     }

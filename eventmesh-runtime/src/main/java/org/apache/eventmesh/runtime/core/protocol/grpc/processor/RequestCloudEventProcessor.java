@@ -58,7 +58,22 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
-        SendMessageContext sendMessageContext = new SendMessageContext(seqNum, cloudEvent, eventMeshProducer, eventMeshGrpcServer);
+        // Apply Ingress Pipeline to the REQUEST (Filter -> Transformer -> Router)
+        String pipelineKey = producerGroup + "-" + topic;
+        io.cloudevents.CloudEvent processedRequest = eventMeshGrpcServer.getEventMeshServer()
+            .getIngressProcessor().process(cloudEvent, pipelineKey);
+
+        if (processedRequest == null) {
+            // Request filtered by pipeline - return error (request needs response)
+            ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
+                "Request message filtered by pipeline", emitter);
+            log.info("message|grpc|request|filtered|topic={}|seqNum={}|uniqueId={}", topic, seqNum, uniqueId);
+            return;
+        }
+
+        // Topic may have been changed by Router
+        final String finalTopic = processedRequest.getSubject();
+        SendMessageContext sendMessageContext = new SendMessageContext(seqNum, processedRequest, eventMeshProducer, eventMeshGrpcServer);
 
         eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
@@ -67,22 +82,36 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
             @Override
             public void onSuccess(io.cloudevents.CloudEvent event) {
                 try {
+                    // Apply Egress Pipeline to the RESPONSE (Filter -> Transformer, no Router)
+                    String responsePipelineKey = producerGroup + "-" + event.getSubject();
+                    io.cloudevents.CloudEvent processedResponse = eventMeshGrpcServer.getEventMeshServer()
+                        .getEgressProcessor().process(event, responsePipelineKey);
+
+                    if (processedResponse == null) {
+                        // Response filtered by pipeline - return error
+                        ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
+                            "Response message filtered by pipeline", emitter);
+                        log.info("message|grpc|response|filtered|topic={}|seqNum={}|uniqueId={}",
+                            event.getSubject(), seqNum, uniqueId);
+                        return;
+                    }
+
                     eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordReceiveMsgFromQueue();
-                    EventMeshCloudEventWrapper wrapper = (EventMeshCloudEventWrapper) grpcCommandProtocolAdaptor.fromCloudEvent(event);
+                    EventMeshCloudEventWrapper wrapper = (EventMeshCloudEventWrapper) grpcCommandProtocolAdaptor.fromCloudEvent(processedResponse);
 
                     emitter.onNext(wrapper.getMessage());
                     emitter.onCompleted();
 
                     long endTime = System.currentTimeMillis();
                     log.info("message|eventmesh2client|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, topic, seqNum, uniqueId);
+                        endTime - startTime, finalTopic, seqNum, uniqueId);
                     eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToClient(EventMeshCloudEventUtils.getIp(wrapper.getMessage()));
                 } catch (Exception e) {
                     ServiceUtils.sendStreamResponseCompleted(message, StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, EventMeshUtil.stackTrace(e, 2),
                         emitter);
                     long endTime = System.currentTimeMillis();
                     log.error("message|mq2eventmesh|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                        endTime - startTime, topic, seqNum, uniqueId, e);
+                        endTime - startTime, finalTopic, seqNum, uniqueId, e);
                 }
             }
 
@@ -92,7 +121,7 @@ public class RequestCloudEventProcessor extends AbstractPublishCloudEventProcess
                     emitter);
                 long endTime = System.currentTimeMillis();
                 log.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId, e);
+                    endTime - startTime, finalTopic, seqNum, uniqueId, e);
             }
         }, ttl);
     }

@@ -241,6 +241,10 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
         return eventMeshGrpcMetricsManager;
     }
 
+    public EventMeshServer getEventMeshServer() {
+        return eventMeshServer;
+    }
+
     private void initThreadPool() {
         BlockingQueue<Runnable> sendMsgThreadPoolQueue =
             new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.getEventMeshServerSendMsgBlockQueueSize());
@@ -280,8 +284,6 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
             httpClientPool.add(client);
         }
     }
-
-
 
     private void initMetricsMonitor() throws Exception {
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();

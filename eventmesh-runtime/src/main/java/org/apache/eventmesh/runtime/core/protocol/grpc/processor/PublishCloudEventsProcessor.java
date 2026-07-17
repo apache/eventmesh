@@ -59,7 +59,21 @@ public class PublishCloudEventsProcessor extends AbstractPublishCloudEventProces
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
-        SendMessageContext sendMessageContext = new SendMessageContext(seqNum, cloudEvent, eventMeshProducer, eventMeshGrpcServer);
+        // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+        String pipelineKey = producerGroup + "-" + topic;
+        io.cloudevents.CloudEvent processedEvent = eventMeshGrpcServer.getEventMeshServer()
+            .getIngressProcessor().process(cloudEvent, pipelineKey);
+
+        if (processedEvent == null) {
+            // Message filtered by pipeline - return success
+            ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, "Message filtered by pipeline", emitter);
+            log.info("message|grpc|publish|filtered|topic={}|seqNum={}|uniqueId={}", topic, seqNum, uniqueId);
+            return;
+        }
+
+        // Topic may have been changed by Router
+        final String finalTopic = processedEvent.getSubject();
+        SendMessageContext sendMessageContext = new SendMessageContext(seqNum, processedEvent, eventMeshProducer, eventMeshGrpcServer);
 
         eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
@@ -70,7 +84,7 @@ public class PublishCloudEventsProcessor extends AbstractPublishCloudEventProces
                 ServiceUtils.sendResponseCompleted(StatusCode.SUCCESS, sendResult.toString(), emitter);
                 long endTime = System.currentTimeMillis();
                 log.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId);
+                    endTime - startTime, finalTopic, seqNum, uniqueId);
                 eventMeshGrpcServer.getEventMeshGrpcMetricsManager().recordSendMsgToClient(EventMeshCloudEventUtils.getIp(message));
             }
 
@@ -80,7 +94,7 @@ public class PublishCloudEventsProcessor extends AbstractPublishCloudEventProces
                     EventMeshUtil.stackTrace(context.getException(), 2), emitter);
                 long endTime = System.currentTimeMillis();
                 log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId, context.getException());
+                    endTime - startTime, finalTopic, seqNum, uniqueId, context.getException());
             }
         });
     }

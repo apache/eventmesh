@@ -68,6 +68,10 @@ public class TransformerEngine {
         this.consumerManager = consumerManager;
     }
 
+    public TransformerEngine(MetaStorage metaStorage) {
+        this(metaStorage, null, null);
+    }
+
     public void start() {
         Map<String, String> transformerMetaData = metaStorage.getMetaData(transformerPrefix, true);
         for (Entry<String, String> transformerDataEntry : transformerMetaData.entrySet()) {
@@ -81,21 +85,25 @@ public class TransformerEngine {
 
         // addListeners for producerManager & consumerManager
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            ConcurrentHashMap<String, EventMeshProducer> producerMap = producerManager.getProducerTable();
-            for (String producerGroup : producerMap.keySet()) {
-                for (String transformerKey : transformerMap.keySet()) {
-                    if (!StringUtils.contains(transformerKey, producerGroup)) {
-                        addTransformerListener(producerGroup);
-                        log.info("addTransformerListener for producer group: " + producerGroup);
+            if (producerManager != null) {
+                ConcurrentHashMap<String, EventMeshProducer> producerMap = producerManager.getProducerTable();
+                for (String producerGroup : producerMap.keySet()) {
+                    for (String transformerKey : transformerMap.keySet()) {
+                        if (!StringUtils.contains(transformerKey, producerGroup)) {
+                            addTransformerListener(producerGroup);
+                            log.info("addTransformerListener for producer group: " + producerGroup);
+                        }
                     }
                 }
             }
-            ConcurrentHashMap<String, ConsumerGroupManager> consumerMap = consumerManager.getClientTable();
-            for (String consumerGroup : consumerMap.keySet()) {
-                for (String transformerKey : transformerMap.keySet()) {
-                    if (!StringUtils.contains(transformerKey, consumerGroup)) {
-                        addTransformerListener(consumerGroup);
-                        log.info("addTransformerListener for consumer group: " + consumerGroup);
+            if (consumerManager != null) {
+                ConcurrentHashMap<String, ConsumerGroupManager> consumerMap = consumerManager.getClientTable();
+                for (String consumerGroup : consumerMap.keySet()) {
+                    for (String transformerKey : transformerMap.keySet()) {
+                        if (!StringUtils.contains(transformerKey, consumerGroup)) {
+                            addTransformerListener(consumerGroup);
+                            log.info("addTransformerListener for consumer group: " + consumerGroup);
+                        }
                     }
                 }
             }

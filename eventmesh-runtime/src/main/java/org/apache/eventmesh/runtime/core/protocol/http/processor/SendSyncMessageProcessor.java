@@ -195,6 +195,36 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
             new SendMessageContext(bizNo, newEvent, eventMeshProducer, eventMeshHTTPServer);
         summaryMetrics.recordSendMsg();
 
+        // Apply Ingress Pipeline (Filter -> Transformer -> Router)
+        String pipelineKey = producerGroup + "-" + topic;
+        CloudEvent processedEvent = eventMeshHTTPServer.getEventMeshServer().getIngressProcessor()
+            .process(newEvent, pipelineKey);
+
+        if (processedEvent == null) {
+            // Message filtered by pipeline - return success with filtered message
+            HttpCommand filteredResponse = request.createHttpCommandResponse(
+                sendMessageResponseHeader,
+                SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
+                    "Message filtered by pipeline"));
+            asyncContext.onComplete(filteredResponse, httpCommand -> {
+                try {
+                    log.debug("{}", httpCommand);
+                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                    eventMeshHTTPServer.getEventMeshHttpMetricsManager().getHttpMetrics().recordHTTPReqResTimeCost(
+                        System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                } catch (Exception ex) {
+                    log.error("onResponse error", ex);
+                }
+            });
+            log.info("message|eventMesh2mq|REQ|SYNC|filtered|topic={}|bizSeqNo={}|uniqueId={}",
+                topic, bizNo, uniqueId);
+            return;
+        }
+
+        // Topic may have been changed by Router
+        sendMessageContext.setEvent(processedEvent);
+        final String finalTopic = processedEvent.getSubject();
+
         final long startTime = System.currentTimeMillis();
 
         final CompleteHandler<HttpCommand> handler = httpCommand -> {
@@ -216,7 +246,7 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
                 public void onSuccess(final CloudEvent event) {
 
                     log.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                        + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
+                        + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId);
 
                     try {
                         final CloudEvent newEvent = CloudEventBuilder.from(event)
@@ -233,7 +263,7 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
                             sendMessageResponseHeader,
                             SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
                                 JsonUtils.toJSONString(SendMessageResponseBody.ReplyMessage.builder()
-                                    .topic(topic)
+                                    .topic(finalTopic)
                                     .body(rtnMsg)
                                     .properties(EventMeshUtil.getEventProp(newEvent))
                                     .build())));
@@ -264,7 +294,7 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
                     eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
 
                     log.error("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
-                        + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, e);
+                        + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId, e);
 
                 }
             }, Integer.parseInt(ttl));
@@ -279,7 +309,7 @@ public class SendSyncMessageProcessor extends AbstractHttpRequestProcessor {
             summaryMetrics.recordSendMsgCost(endTime - startTime);
 
             log.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                endTime - startTime, topic, bizNo, uniqueId, ex);
+                endTime - startTime, finalTopic, bizNo, uniqueId, ex);
         }
 
         return;

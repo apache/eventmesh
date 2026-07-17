@@ -26,14 +26,17 @@ The configuration is not in local property files but distributed via the MetaSto
 
 - **Data Source**: Configured via `eventMesh.metaStorage.plugin.type`.
 - **Loading Mechanism**: Lazy loading & Hot-reloading.
-- **Key Format**: `{EnginePrefix}-{GroupName}`.
+- **Key Format**: `{EnginePrefix}-{GroupName}-{TopicName}`.
 - **Value Format**: JSON Array.
+- **Pipeline Key**: The engines are invoked using a pipeline key of format `{GroupName}-{TopicName}`, which is used to look up configurations with the prefix.
 
 | Engine | Prefix | Scope | Description |
 | :--- | :--- | :--- | :--- |
 | **Router** | `router-` | Pub Only | Routes messages to different topics. |
 | **Filter** | `filter-` | Pub & Sub | Filters messages based on CloudEvent attributes. |
 | **Transformer** | `transformer-` | Pub & Sub | Transforms message content (Payload/Header). |
+
+**Note**: All protocol processors (TCP, HTTP, gRPC) now use unified `IngressProcessor` (for publishing) and `EgressProcessor` (for consuming) to consistently apply these engines.
 
 ---
 
