@@ -175,4 +175,3 @@ class LegacyTcpClusterBrokerIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
-

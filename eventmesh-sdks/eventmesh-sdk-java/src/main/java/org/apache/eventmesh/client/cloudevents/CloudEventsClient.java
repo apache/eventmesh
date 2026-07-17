@@ -289,13 +289,13 @@ public class CloudEventsClient {
         if (webSocket != null) {
             try {
                 webSocket.sendClose(java.net.http.WebSocket.NORMAL_CLOSURE, "reconnect");
-            } catch (Exception ignored) {
+            } catch (Exception expected) {
             }
         }
         if (wsHttpClient != null) {
             try {
                 wsHttpClient.close();
-            } catch (Exception ignored) {
+            } catch (Exception expected) {
             }
         }
         String wsBase = wsBaseUrl != null ? wsBaseUrl : baseUrl;
@@ -365,17 +365,6 @@ public class CloudEventsClient {
     }
 
     /**
-     * Stop one lite subscription's background pull loop (lite has no server-side registration, so this
-     * is purely client-side). Other lite / normal subscriptions are unaffected.
-     */
-    public void unsubscribeLite(String parentTopic, String liteTopic) {
-        java.util.concurrent.atomic.AtomicBoolean stop = liteSubs.remove(parentTopic + "#" + liteTopic);
-        if (stop != null) {
-            stop.set(true);
-        }
-    }
-
-    /**
      * Unsubscribe everything for this client: remove ALL server-side subscriptions (by clientId),
      * stop the long-poll loop, stop every lite pull loop, and (on {@link #shutdown()}) close the
      * SSE/WS push connections.
@@ -393,6 +382,17 @@ public class CloudEventsClient {
         liteSubs.clear();
     }
 
+    /**
+     * Stop one lite subscription's background pull loop (lite has no server-side registration, so this
+     * is purely client-side). Other lite / normal subscriptions are unaffected.
+     */
+    public void unsubscribeLite(String parentTopic, String liteTopic) {
+        java.util.concurrent.atomic.AtomicBoolean stop = liteSubs.remove(parentTopic + "#" + liteTopic);
+        if (stop != null) {
+            stop.set(true);
+        }
+    }
+
     /** Shut down the client's poll executor. */
     public void shutdown() {
         polling.set(false);
@@ -400,13 +400,13 @@ public class CloudEventsClient {
         if (webSocket != null) {
             try {
                 webSocket.sendClose(java.net.http.WebSocket.NORMAL_CLOSURE, "shutdown");
-            } catch (Exception ignored) {
+            } catch (Exception expected) {
             }
         }
         if (wsHttpClient != null) {
             try {
                 wsHttpClient.close(); // Java 21: terminates the client's selector/callback threads
-            } catch (Exception ignored) {
+            } catch (Exception expected) {
             }
         }
         pollExecutor.shutdownNow();

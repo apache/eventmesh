@@ -19,7 +19,9 @@ package org.apache.eventmesh.connector.jdbc.sink;
 
 import org.apache.eventmesh.connector.SinkConnector;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +35,7 @@ public class JdbcSinkConnector implements SinkConnector {
     private Connection conn;
     private String insertSql;
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
@@ -44,6 +47,7 @@ public class JdbcSinkConnector implements SinkConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
@@ -57,6 +61,7 @@ public class JdbcSinkConnector implements SinkConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

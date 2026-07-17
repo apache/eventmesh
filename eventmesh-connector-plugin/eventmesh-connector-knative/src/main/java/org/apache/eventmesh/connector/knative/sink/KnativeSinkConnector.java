@@ -31,11 +31,13 @@ public class KnativeSinkConnector implements SinkConnector {
 
     private String sinkUrl;
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
         sinkUrl = props.getProperty("connector.sinkUrl", "http://localhost:8080/sink");
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -52,6 +54,7 @@ public class KnativeSinkConnector implements SinkConnector {
             }
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

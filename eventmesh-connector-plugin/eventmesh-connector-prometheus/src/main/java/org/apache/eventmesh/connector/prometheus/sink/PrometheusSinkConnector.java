@@ -29,9 +29,11 @@ public class PrometheusSinkConnector implements SinkConnector {
     @Override
     public void init(Properties props) {
     }
+
     @Override
     public void put(List<CloudEvent> events) {
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
     }

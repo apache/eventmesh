@@ -87,4 +87,3 @@ public final class AclRule {
         return "AclRule{priority=" + priority + ", " + effect + " " + principal + " " + resource + " " + action + "}";
     }
 }
-

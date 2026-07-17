@@ -30,10 +30,12 @@ public class SlackSourceConnector implements SourceConnector {
     @Override
     public void init(Properties props) {
     }
+
     @Override
     public List<CloudEvent> poll() {
         return Collections.emptyList();
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
     }

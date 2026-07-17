@@ -41,6 +41,7 @@ public class MongodbSourceConnector implements SourceConnector {
     private MongoClient client;
     private com.mongodb.client.MongoCollection<Document> collection;
     private com.mongodb.client.ChangeStreamIterable<Document> changeStream;
+
     @Override
     public void init(Properties props) {
         String uri = props.getProperty("connector.mongoUri", "mongodb://localhost:27017");
@@ -50,6 +51,7 @@ public class MongodbSourceConnector implements SourceConnector {
         collection = client.getDatabase(db).getCollection(coll);
         changeStream = collection.watch();
     }
+
     @Override
     public List<CloudEvent> poll() {
         List<CloudEvent> out = new ArrayList<>();
@@ -57,11 +59,13 @@ public class MongodbSourceConnector implements SourceConnector {
             com.mongodb.client.MongoChangeStreamCursor<com.mongodb.client.model.changestream.ChangeStreamDocument<Document>> cursor =
                 changeStream.cursor();
             for (int i = 0; i < 100; i++) {
-                if (!cursor.hasNext())
+                if (!cursor.hasNext()) {
                     break;
+                }
                 com.mongodb.client.model.changestream.ChangeStreamDocument<Document> csd = cursor.next();
-                if (csd == null || csd.getFullDocument() == null)
+                if (csd == null || csd.getFullDocument() == null) {
                     break;
+                }
                 Document doc = csd.getFullDocument();
                 out.add(CloudEventBuilder.v1().withId("mongo-" + doc.get("_id"))
                     .withSource(URI.create("mongodb")).withType("mongodb.change")
@@ -73,6 +77,7 @@ public class MongodbSourceConnector implements SourceConnector {
         }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

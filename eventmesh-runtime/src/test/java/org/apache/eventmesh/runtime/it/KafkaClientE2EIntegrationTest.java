@@ -112,4 +112,3 @@ class KafkaClientE2EIntegrationTest {
             "subscribe over HTTP should receive the kafka event (got " + received + ")");
     }
 }
-

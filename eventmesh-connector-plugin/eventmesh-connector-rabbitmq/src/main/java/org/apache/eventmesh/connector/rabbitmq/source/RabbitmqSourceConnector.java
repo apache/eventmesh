@@ -29,7 +29,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RabbitmqSourceConnector implements SourceConnector {
 
     private LinkedBlockingQueue<byte[]> buffer;
+
     @Override
     public void init(Properties props) {
         try {
@@ -52,17 +55,21 @@ public class RabbitmqSourceConnector implements SourceConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<CloudEvent> poll() {
-        if (buffer == null)
+        if (buffer == null) {
             return Collections.emptyList();
+        }
         List<CloudEvent> out = new ArrayList<>();
         byte[] body;
-        while ((body = buffer.poll()) != null)
+        while ((body = buffer.poll()) != null) {
             out.add(CloudEventBuilder.v1().withId("rabbit-" + System.nanoTime()).withSource(URI.create("rabbitmq")).withType("rabbitmq.message")
                 .withDataContentType("application/octet-stream").withData(body).build());
+        }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

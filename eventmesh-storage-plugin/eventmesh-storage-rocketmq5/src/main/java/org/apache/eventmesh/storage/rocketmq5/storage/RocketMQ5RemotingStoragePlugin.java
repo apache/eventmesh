@@ -158,7 +158,7 @@ public class RocketMQ5RemotingStoragePlugin implements MeshStoragePlugin, LiteTo
             return;
         }
 
-        byte[] body = serialize(event);
+        final byte[] body = serialize(event);
         SendMessageRequestHeader header = new SendMessageRequestHeader();
         header.setProducerGroup(PRODUCER_GROUP);
         header.setTopic(topic);
@@ -660,9 +660,9 @@ public class RocketMQ5RemotingStoragePlugin implements MeshStoragePlugin, LiteTo
             java.nio.file.Files.createDirectories(pullOffsetFile.getParent());
             Properties props = new Properties();
             for (Map.Entry<String, ConcurrentHashMap<Integer, Long>> topicEntry : litePullOffsets.entrySet()) {
-                for (Map.Entry<Integer, Long> qEntry : topicEntry.getValue().entrySet()) {
-                    props.setProperty(topicEntry.getKey() + "@" + qEntry.getKey(),
-                        String.valueOf(qEntry.getValue()));
+                for (Map.Entry<Integer, Long> queueEntry : topicEntry.getValue().entrySet()) {
+                    props.setProperty(topicEntry.getKey() + "@" + queueEntry.getKey(),
+                        String.valueOf(queueEntry.getValue()));
                 }
             }
             try (java.io.Writer w = java.nio.file.Files.newBufferedWriter(pullOffsetFile)) {

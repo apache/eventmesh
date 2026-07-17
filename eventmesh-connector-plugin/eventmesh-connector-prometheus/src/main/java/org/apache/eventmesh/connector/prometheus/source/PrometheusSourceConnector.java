@@ -34,10 +34,12 @@ public class PrometheusSourceConnector implements SourceConnector {
 
     private String metricsUrl;
     private java.net.HttpURLConnection conn;
+
     @Override
     public void init(Properties props) {
         metricsUrl = props.getProperty("connector.metricsUrl", "http://localhost:9090/metrics");
     }
+
     @Override
     public List<CloudEvent> poll() {
         List<CloudEvent> out = new ArrayList<>();
@@ -55,6 +57,7 @@ public class PrometheusSourceConnector implements SourceConnector {
         }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

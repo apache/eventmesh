@@ -30,11 +30,13 @@ import lombok.extern.slf4j.Slf4j;
 public class SpringSinkConnector implements SinkConnector {
 
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
         log.info("Spring sink connector initialized (inject ApplicationEventPublisher in Spring context)");
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         // In Spring context: convert each CloudEvent to ApplicationEvent and publish
@@ -42,6 +44,7 @@ public class SpringSinkConnector implements SinkConnector {
             log.info("spring sink received event: {}", event.getId());
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

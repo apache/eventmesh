@@ -30,10 +30,12 @@ import lombok.extern.slf4j.Slf4j;
 public class HttpSinkConnector implements SinkConnector {
 
     private String url;
+
     @Override
     public void init(Properties props) {
         url = props.getProperty("connector.url", "http://localhost:9090/sink");
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -50,6 +52,7 @@ public class HttpSinkConnector implements SinkConnector {
             }
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

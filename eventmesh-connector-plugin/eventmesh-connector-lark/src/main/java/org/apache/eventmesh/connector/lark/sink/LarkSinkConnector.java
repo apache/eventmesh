@@ -30,10 +30,12 @@ import lombok.extern.slf4j.Slf4j;
 public class LarkSinkConnector implements SinkConnector {
 
     private String webhookUrl;
+
     @Override
     public void init(Properties props) {
         webhookUrl = props.getProperty("connector.webhookUrl", "");
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -50,6 +52,7 @@ public class LarkSinkConnector implements SinkConnector {
             }
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

@@ -19,7 +19,11 @@ package org.apache.eventmesh.connector.pulsar.source;
 
 import org.apache.eventmesh.connector.SourceConnector;
 
-import org.apache.pulsar.client.api.*;
+import org.apache.pulsar.client.api.Consumer;
+import org.apache.pulsar.client.api.Message;
+import org.apache.pulsar.client.api.Messages;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.Schema;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -36,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PulsarSourceConnector implements SourceConnector {
 
     private Consumer<byte[]> consumer;
+
     @Override
     public void init(Properties props) {
         try {
@@ -46,23 +51,27 @@ public class PulsarSourceConnector implements SourceConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<CloudEvent> poll() {
-        if (consumer == null)
+        if (consumer == null) {
             return Collections.emptyList();
+        }
         List<CloudEvent> out = new ArrayList<>();
         try {
             Messages<byte[]> msgs = consumer.batchReceive();
-            for (Message<byte[]> msg : msgs)
+            for (Message<byte[]> msg : msgs) {
                 out.add(CloudEventBuilder.v1().withId(msg.getMessageId().toString()).withSource(URI.create("pulsar")).withType("pulsar.message")
                     .withSubject(msg.getTopicName()).withDataContentType("application/octet-stream")
                     .withData(msg.getData() != null ? msg.getData() : new byte[0]).build());
+            }
             consumer.acknowledge(msgs);
         } catch (Exception e) {
             log.warn("pulsar poll: {}", e.toString());
         }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

@@ -36,6 +36,7 @@ public class MongodbSinkConnector implements SinkConnector {
 
     private com.mongodb.client.MongoCollection<Document> collection;
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
@@ -44,6 +45,7 @@ public class MongodbSinkConnector implements SinkConnector {
         String coll = props.getProperty("connector.collection", "sink");
         collection = MongoClients.create(uri).getDatabase(db).getCollection(coll);
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -51,6 +53,7 @@ public class MongodbSinkConnector implements SinkConnector {
             collection.insertOne(Document.parse(new String(data, StandardCharsets.UTF_8)));
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

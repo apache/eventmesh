@@ -39,6 +39,8 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * End-to-end test of {@link KafkaMeshStoragePlugin} against a real broker (e.g. wemq-kafka with
  * SASL PLAIN / UM auth). Lives in the storage-kafka module (not runtime) so its classpath has only
@@ -56,6 +58,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
  * </pre>
  */
 @EnabledIfSystemProperty(named = "it.storage", matches = "kafka")
+@Slf4j
 class KafkaBrokerIntegrationTest {
 
     private static final String TOPIC = "em-kafka-it-" + System.nanoTime();
@@ -73,8 +76,8 @@ class KafkaBrokerIntegrationTest {
     void publishPollOverRealKafka() throws Exception {
         String bootstrap = System.getProperty("it.namesrv",
             "127.0.0.1:9094");
-        String user = System.getProperty("it.kafka.user", "");
-        String pass = System.getProperty("it.kafka.password", "");
+        final String user = System.getProperty("it.kafka.user", "");
+        final String pass = System.getProperty("it.kafka.password", "");
 
         storage = new KafkaMeshStoragePlugin();
         Properties props = new Properties();
@@ -86,10 +89,10 @@ class KafkaBrokerIntegrationTest {
             "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + user + "\" password=\"" + pass + "\";");
         storage.init(props);
         storage.start();
-        System.out.println("IT-KAFKA: init done (bootstrap=" + bootstrap + ")");
+        log.info("IT-KAFKA: init done (bootstrap={})", bootstrap);
 
         ((KafkaMeshStoragePlugin) storage).createTopic(TOPIC, 3);
-        System.out.println("IT-KAFKA: createTopic " + TOPIC);
+        log.info("IT-KAFKA: createTopic {}", TOPIC);
         Thread.sleep(3_000L);
 
         CloudEvent event = CloudEventBuilder.v1()
@@ -109,7 +112,7 @@ class KafkaBrokerIntegrationTest {
         });
         Thread.sleep(2_000L); // give the async send callback time to fire
         assertNull(sendErr.get(), "kafka send failed: " + sendErr.get());
-        System.out.println("IT-KAFKA: send ok");
+        log.info("IT-KAFKA: send ok");
 
         List<CloudEvent> got = new ArrayList<>();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
@@ -123,6 +126,6 @@ class KafkaBrokerIntegrationTest {
         }
         assertTrue(got.stream().anyMatch(e -> "k-1".equals(e.getId())),
             "kafka poll should receive the published event (got " + got.size() + " events)");
-        System.out.println("IT-KAFKA: received k-1");
+        log.info("IT-KAFKA: received k-1");
     }
 }

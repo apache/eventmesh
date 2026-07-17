@@ -152,4 +152,3 @@ class MultiInstanceRocketMqIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
-

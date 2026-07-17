@@ -22,3 +22,11 @@ generateGrammarSource {
 tasks.named('packageSources') {
     dependsOn tasks.named('generateGrammarSource')
 }
+
+// ANTLR emits generated sources flat under build/generated-src/antlr/main (no package
+// sub-dirs), so the root project's package-path based checkstyle excludes cannot match
+// them. Strip that tree from checkstyle input here to avoid tens of thousands of
+// generated-code warnings failing the build.
+tasks.withType(Checkstyle).configureEach {
+    exclude { it.file.absolutePath.replace(File.separatorChar, (char) '/').contains('/build/generated-src/antlr/') }
+}

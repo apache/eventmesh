@@ -28,7 +28,7 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.redisson.Redisson;
-import org.redisson.api.*;
+import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
 import io.cloudevents.CloudEvent;
@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RedisSourceConnector implements SourceConnector {
 
     private LinkedBlockingQueue<byte[]> buffer;
+
     @Override
     public void init(Properties props) {
         Config cfg = new Config();
@@ -49,17 +50,21 @@ public class RedisSourceConnector implements SourceConnector {
         rc.getTopic(props.getProperty("connector.topic", "source")).addListener(String.class,
             (ch, msg) -> buffer.offer(msg.getBytes(StandardCharsets.UTF_8)));
     }
+
     @Override
     public List<CloudEvent> poll() {
-        if (buffer == null)
+        if (buffer == null) {
             return Collections.emptyList();
+        }
         List<CloudEvent> out = new ArrayList<>();
         byte[] body;
-        while ((body = buffer.poll()) != null)
+        while ((body = buffer.poll()) != null) {
             out.add(CloudEventBuilder.v1().withId("redis-" + System.nanoTime()).withSource(URI.create("redis")).withType("redis.message")
                 .withDataContentType("application/octet-stream").withData(body).build());
+        }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

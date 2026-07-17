@@ -21,7 +21,10 @@ import org.apache.eventmesh.connector.SourceConnector;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -37,6 +40,7 @@ public class JdbcSourceConnector implements SourceConnector {
     private Connection conn;
     private String query;
     private String lastId;
+
     @Override
     public void init(Properties props) {
         String url = props.getProperty("connector.jdbcUrl", "jdbc:mysql://localhost:3306/test");
@@ -48,6 +52,7 @@ public class JdbcSourceConnector implements SourceConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<CloudEvent> poll() {
         List<CloudEvent> out = new ArrayList<>();
@@ -66,6 +71,7 @@ public class JdbcSourceConnector implements SourceConnector {
         }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

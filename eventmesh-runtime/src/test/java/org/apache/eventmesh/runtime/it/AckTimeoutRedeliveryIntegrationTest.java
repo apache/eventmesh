@@ -172,4 +172,3 @@ class AckTimeoutRedeliveryIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
-

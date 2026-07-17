@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.it;
 
-
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.netty.NettyRemotingClient;
@@ -60,5 +59,3 @@ class BrokerListTest {
         client.shutdown();
     }
 }
-
-

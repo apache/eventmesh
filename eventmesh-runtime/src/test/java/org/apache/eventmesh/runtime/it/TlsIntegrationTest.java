@@ -136,6 +136,7 @@ class TlsIntegrationTest {
         SSLContext ctx = SSLContext.getInstance("TLSv1.3");
         TrustManager[] tms = new TrustManager[]{
             new X509TrustManager() {
+
                 @Override
                 public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
                     // no-op
@@ -220,7 +221,3 @@ class TlsIntegrationTest {
         }
     }
 }
-
-
-
-

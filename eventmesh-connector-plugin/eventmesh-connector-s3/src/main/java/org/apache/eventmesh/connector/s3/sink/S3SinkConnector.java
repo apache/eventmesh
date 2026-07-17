@@ -27,7 +27,7 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Slf4j
 public class S3SinkConnector implements SinkConnector {
@@ -35,12 +35,14 @@ public class S3SinkConnector implements SinkConnector {
     private S3Client s3;
     private String bucket;
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
         bucket = props.getProperty("connector.bucket", "sink");
         s3 = S3Client.create();
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -50,6 +52,7 @@ public class S3SinkConnector implements SinkConnector {
                 software.amazon.awssdk.core.sync.RequestBody.fromBytes(data));
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

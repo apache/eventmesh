@@ -33,7 +33,7 @@ import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Native pull-mode Kafka storage plugin (§3.2 MeshStoragePlugin — MQ 无语义).
+ * Native pull-mode Kafka storage plugin (§3.2 MeshStoragePlugin — no MQ semantics).
  *
  * <p>Single Producer + single Consumer, no Consumer Group. The consumer uses manual
  * {@code assign} + {@code seek} + {@code poll} — EventMesh owns the subscription/distribution
@@ -85,7 +85,7 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
             "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         applySecurityProps(consumerProps, properties);
-        // No group.id: assign+seek manual partition mode (§3.2 MQ 无语义). A Kafka group.id here
+        // No group.id: assign+seek manual partition mode (§3.2 no MQ semantics). A Kafka group.id here
         // would register this consumer in __consumer_offsets and trigger broker-side rebalance when
         // multiple EventMesh instances share it — exactly the MQ semantics this architecture avoids.
         this.consumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(consumerProps);

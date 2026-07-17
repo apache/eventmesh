@@ -115,7 +115,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
             throw new StorageRuntimeException("no broker for topic " + topic + " queue " + queueId);
         }
 
-        byte[] body = serialize(event);
+        final byte[] body = serialize(event);
         org.apache.rocketmq.common.protocol.header.SendMessageRequestHeader header =
             new org.apache.rocketmq.common.protocol.header.SendMessageRequestHeader();
         header.setProducerGroup(PRODUCER_GROUP);
@@ -290,6 +290,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
 
         final String brokerAddr;
         final int localQueueId;
+
         QueueLoc(String brokerAddr, int localQueueId) {
             this.brokerAddr = brokerAddr;
             this.localQueueId = localQueueId;
@@ -493,9 +494,9 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
             java.nio.file.Files.createDirectories(pullOffsetFile.getParent());
             Properties props = new Properties();
             for (Map.Entry<String, ConcurrentHashMap<Integer, Long>> topicEntry : pullOffsets.entrySet()) {
-                for (Map.Entry<Integer, Long> qEntry : topicEntry.getValue().entrySet()) {
-                    props.setProperty(topicEntry.getKey() + "#" + qEntry.getKey(),
-                        String.valueOf(qEntry.getValue()));
+                for (Map.Entry<Integer, Long> queueEntry : topicEntry.getValue().entrySet()) {
+                    props.setProperty(topicEntry.getKey() + "#" + queueEntry.getKey(),
+                        String.valueOf(queueEntry.getValue()));
                 }
             }
             try (java.io.Writer w = java.nio.file.Files.newBufferedWriter(pullOffsetFile)) {

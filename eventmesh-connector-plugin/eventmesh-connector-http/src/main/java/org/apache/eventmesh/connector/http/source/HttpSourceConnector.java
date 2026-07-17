@@ -35,6 +35,7 @@ public class HttpSourceConnector implements SourceConnector {
 
     private java.util.concurrent.LinkedBlockingQueue<byte[]> buffer;
     private com.sun.net.httpserver.HttpServer server;
+
     @Override
     public void init(Properties props) {
         int port = Integer.parseInt(props.getProperty("connector.port", "8082"));
@@ -54,17 +55,21 @@ public class HttpSourceConnector implements SourceConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<CloudEvent> poll() {
-        if (buffer == null)
+        if (buffer == null) {
             return Collections.emptyList();
+        }
         List<CloudEvent> out = new ArrayList<>();
         byte[] body;
-        while ((body = buffer.poll()) != null)
+        while ((body = buffer.poll()) != null) {
             out.add(CloudEventBuilder.v1().withId("http-" + System.nanoTime()).withSource(URI.create("http-webhook"))
                 .withType("http.request").withDataContentType("application/octet-stream").withData(body).build());
+        }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

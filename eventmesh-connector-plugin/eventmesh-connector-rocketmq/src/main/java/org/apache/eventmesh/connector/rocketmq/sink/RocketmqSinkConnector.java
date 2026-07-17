@@ -34,6 +34,7 @@ public class RocketmqSinkConnector implements SinkConnector {
 
     private DefaultMQProducer producer;
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
@@ -45,6 +46,7 @@ public class RocketmqSinkConnector implements SinkConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -57,6 +59,7 @@ public class RocketmqSinkConnector implements SinkConnector {
             }
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

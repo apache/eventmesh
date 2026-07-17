@@ -30,7 +30,10 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Slf4j
 public class S3SourceConnector implements SourceConnector {
@@ -39,12 +42,14 @@ public class S3SourceConnector implements SourceConnector {
     private String bucket;
     private String prefix;
     private String lastKey = "";
+
     @Override
     public void init(Properties props) {
         bucket = props.getProperty("connector.bucket", "events");
         prefix = props.getProperty("connector.prefix", "");
         s3 = S3Client.create();
     }
+
     @Override
     public List<CloudEvent> poll() {
         List<CloudEvent> out = new ArrayList<>();
@@ -63,6 +68,7 @@ public class S3SourceConnector implements SourceConnector {
         }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 

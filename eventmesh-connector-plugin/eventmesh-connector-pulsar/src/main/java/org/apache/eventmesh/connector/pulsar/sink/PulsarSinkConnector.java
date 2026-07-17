@@ -19,7 +19,9 @@ package org.apache.eventmesh.connector.pulsar.sink;
 
 import org.apache.eventmesh.connector.SinkConnector;
 
-import org.apache.pulsar.client.api.*;
+import org.apache.pulsar.client.api.Producer;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.Schema;
 
 import java.util.List;
 import java.util.Properties;
@@ -32,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PulsarSinkConnector implements SinkConnector {
 
     private Producer<byte[]> producer;
+
     @Override
     public void init(Properties props) {
         try {
@@ -41,6 +44,7 @@ public class PulsarSinkConnector implements SinkConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -52,6 +56,7 @@ public class PulsarSinkConnector implements SinkConnector {
             }
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

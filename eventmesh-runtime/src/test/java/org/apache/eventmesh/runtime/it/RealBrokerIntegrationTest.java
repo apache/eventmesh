@@ -146,4 +146,3 @@ class RealBrokerIntegrationTest {
         BrokerDiscoverer.ensureTopicOnReachableBroker(namesrv, topic, 4);
     }
 }
-

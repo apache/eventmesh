@@ -24,7 +24,8 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConnectionFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +34,7 @@ public class RabbitmqSinkConnector implements SinkConnector {
 
     private Channel channel;
     private Properties props;
+
     @Override
     public void init(Properties props) {
         this.props = props;
@@ -45,6 +47,7 @@ public class RabbitmqSinkConnector implements SinkConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         String ex = props.getProperty("connector.exchange", "");
@@ -58,6 +61,7 @@ public class RabbitmqSinkConnector implements SinkConnector {
             }
         }
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 
