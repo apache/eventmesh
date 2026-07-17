@@ -26,6 +26,7 @@ public class RouterBuilder {
     }
 
     private static class DefaultRouter implements Router {
+
         private final String targetTopic;
 
         public DefaultRouter(String targetTopic) {

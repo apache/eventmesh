@@ -38,38 +38,65 @@ public class ConnectorRuntimeConfig {
     // Connector source
     private String connectorPluginConfigPath = "conf/connectors/";
 
-    public ConnectorRuntimeConfig() {}
+    public ConnectorRuntimeConfig() {
+    }
 
     // ---- getters ----
 
-    public ConnectorConfig.ThreadPoolMode getThreadPoolMode() { return threadPoolMode; }
-    public int getDedicatedThreadPoolSize() { return dedicatedThreadPoolSize; }
-    public int getSharedThreadPoolSize() { return sharedThreadPoolSize; }
-    public int getMaxConnectors() { return maxConnectors; }
-    public int getHealthIntervalSeconds() { return healthIntervalSeconds; }
-    public int getMonitorReportIntervalSeconds() { return monitorReportIntervalSeconds; }
-    public String getConnectorPluginConfigPath() { return connectorPluginConfigPath; }
+    public ConnectorConfig.ThreadPoolMode getThreadPoolMode() {
+        return threadPoolMode;
+    }
+
+    public int getDedicatedThreadPoolSize() {
+        return dedicatedThreadPoolSize;
+    }
+
+    public int getSharedThreadPoolSize() {
+        return sharedThreadPoolSize;
+    }
+
+    public int getMaxConnectors() {
+        return maxConnectors;
+    }
+
+    public int getHealthIntervalSeconds() {
+        return healthIntervalSeconds;
+    }
+
+    public int getMonitorReportIntervalSeconds() {
+        return monitorReportIntervalSeconds;
+    }
+
+    public String getConnectorPluginConfigPath() {
+        return connectorPluginConfigPath;
+    }
 
     // ---- setters ----
 
     public void setThreadPoolMode(ConnectorConfig.ThreadPoolMode threadPoolMode) {
         this.threadPoolMode = threadPoolMode;
     }
+
     public void setDedicatedThreadPoolSize(int dedicatedThreadPoolSize) {
         this.dedicatedThreadPoolSize = dedicatedThreadPoolSize;
     }
+
     public void setSharedThreadPoolSize(int sharedThreadPoolSize) {
         this.sharedThreadPoolSize = sharedThreadPoolSize;
     }
+
     public void setMaxConnectors(int maxConnectors) {
         this.maxConnectors = maxConnectors;
     }
+
     public void setHealthIntervalSeconds(int healthIntervalSeconds) {
         this.healthIntervalSeconds = healthIntervalSeconds;
     }
+
     public void setMonitorReportIntervalSeconds(int monitorReportIntervalSeconds) {
         this.monitorReportIntervalSeconds = monitorReportIntervalSeconds;
     }
+
     public void setConnectorPluginConfigPath(String connectorPluginConfigPath) {
         this.connectorPluginConfigPath = connectorPluginConfigPath;
     }

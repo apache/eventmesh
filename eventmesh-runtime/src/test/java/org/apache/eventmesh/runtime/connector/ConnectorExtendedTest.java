@@ -23,10 +23,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * Extended tests for ConnectorRuntimeService, OffsetStore, and model classes.
@@ -47,7 +45,8 @@ class ConnectorExtendedTest {
         if (service.isRunning()) {
             try {
                 service.shutdown();
-            } catch (Exception ignored) {}
+            } catch (Exception expected) {
+            }
         }
     }
 
@@ -231,14 +230,14 @@ class ConnectorExtendedTest {
         store.save("conn-a", "orders", 0, "42");
         store.save("conn-b", "orders", 0, "99");
 
-        Map<String, String> aOffsets = store.loadAll("conn-a");
-        Map<String, String> bOffsets = store.loadAll("conn-b");
+        Map<String, String> aoffsets = store.loadAll("conn-a");
+        Map<String, String> boffsets = store.loadAll("conn-b");
 
-        assertEquals(1, aOffsets.size());
-        assertEquals(1, bOffsets.size());
+        assertEquals(1, aoffsets.size());
+        assertEquals(1, boffsets.size());
         assertNotEquals(
-            aOffsets.values().iterator().next(),
-            bOffsets.values().iterator().next());
+            aoffsets.values().iterator().next(),
+            boffsets.values().iterator().next());
     }
 
     // ========================================================================

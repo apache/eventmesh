@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.protocol.pipeline.PipelineResult;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineFilter;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,8 +94,7 @@ public class AclFilter implements PipelineFilter {
                     "",
                     getClientSubsystem(ctx),
                     topic,
-                    0
-                );
+                    0);
             } catch (Exception e) {
                 log.warn("[AclFilter] ACL check failed for event {}: {}", event.getId(), e.getMessage());
                 return PipelineResult.drop(event);

@@ -19,8 +19,6 @@ package org.apache.eventmesh.runtime.boot;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.function.api.Router;
@@ -72,18 +70,18 @@ public class RouterEngineTest {
         // .toString() on TextNode returns "\"targetTopic\"".
         // .asText() returns "targetTopic".
         // The code uses .toString().
-        
+
         // Wait, RouterBuilder.build(String)
         // If it receives "\"targetTopic\"", it returns it.
-        
+
         // Let's verify behavior.
         // Assertions.assertEquals("\"targetTopic\"", target); 
         // Or maybe I should fix RouterEngine to use .asText() if it expects a simple string?
         // But routerConfig can be a complex JSON object for other Routers. 
         // So .toString() is safer for generic config.
-        
+
         // For this test, assuming "targetTopic" -> "\"targetTopic\""
-        
+
         Assertions.assertEquals("\"targetTopic\"", target);
     }
 }

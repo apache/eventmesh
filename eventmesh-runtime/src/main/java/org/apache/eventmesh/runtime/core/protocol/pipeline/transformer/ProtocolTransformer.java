@@ -20,8 +20,6 @@ package org.apache.eventmesh.runtime.core.protocol.pipeline.transformer;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineTransformer;
 
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
 import java.util.Map;
 
 import io.cloudevents.CloudEvent;
@@ -80,8 +78,8 @@ public class ProtocolTransformer implements PipelineTransformer {
 
         // Attach store timestamp for ordered consumers
         Map<String, Object> exts = (Map<String, Object>) (Map<?, ?>) event.getExtensionNames()
-                .stream()
-                .collect(java.util.stream.Collectors.toMap(k -> k, event::getExtension));
+            .stream()
+            .collect(java.util.stream.Collectors.toMap(k -> k, event::getExtension));
         exts.put(ATTR_EVENTMESH_STORE_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
         for (Map.Entry<String, Object> ext : exts.entrySet()) {
             if (ext.getValue() instanceof String) {

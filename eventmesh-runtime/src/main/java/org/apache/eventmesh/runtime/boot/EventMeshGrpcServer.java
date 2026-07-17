@@ -285,8 +285,6 @@ public class EventMeshGrpcServer extends AbstractRemotingServer {
         }
     }
 
-
-
     private void initMetricsMonitor() throws Exception {
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
         Optional.ofNullable(eventMeshGrpcConfiguration.getEventMeshMetricsPluginType()).ifPresent(

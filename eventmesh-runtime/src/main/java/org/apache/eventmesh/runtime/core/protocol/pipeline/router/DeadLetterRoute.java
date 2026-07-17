@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.core.protocol.pipeline.router;
 
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
-import org.apache.eventmesh.common.protocol.pipeline.PipelineResult;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineRouter;
 
 import java.util.Collections;

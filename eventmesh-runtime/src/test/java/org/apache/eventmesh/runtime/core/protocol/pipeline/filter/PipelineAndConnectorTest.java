@@ -17,20 +17,22 @@
 
 package org.apache.eventmesh.runtime.core.protocol.pipeline.filter;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineResult;
-import org.apache.eventmesh.runtime.connector.InMemoryOffsetStore;
+import org.apache.eventmesh.runtime.admin.AdminClient;
+import org.apache.eventmesh.runtime.admin.JobApiController;
 import org.apache.eventmesh.runtime.connector.ConnectorConfig;
+import org.apache.eventmesh.runtime.connector.ConnectorLimitExceededException;
 import org.apache.eventmesh.runtime.connector.ConnectorRuntimeConfig;
 import org.apache.eventmesh.runtime.connector.ConnectorRuntimeService;
-import org.apache.eventmesh.runtime.connector.ConnectorLimitExceededException;
 import org.apache.eventmesh.runtime.connector.ConnectorStatus;
+import org.apache.eventmesh.runtime.connector.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.connector.JobInfo;
-import org.apache.eventmesh.runtime.connector.OffsetStore;
-import org.apache.eventmesh.runtime.admin.AdminClient;
-import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
 import org.apache.eventmesh.runtime.monitor.ConnectorMonitor;
-import org.apache.eventmesh.runtime.admin.JobApiController;
+import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -38,15 +40,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 /**
  * Comprehensive tests for pipeline filters and connector runtime.
@@ -452,13 +450,13 @@ class PipelineAndConnectorTest {
     void adminClient_shouldRecordMetrics() {
         PipelineMonitor pipelineMonitor = new PipelineMonitor();
         ConnectorMonitor connectorMonitor = new ConnectorMonitor();
-        AdminClient client = new AdminClient("localhost:50051", false, null,
-            null, pipelineMonitor, connectorMonitor);
         // Record metrics through the monitors
         pipelineMonitor.recordIngress(12L);
         pipelineMonitor.recordIngressFiltered();
         connectorMonitor.recordSourceRecords("test-connector", 100);
-        
+
+        AdminClient client = new AdminClient("localhost:50051", false, null,
+            null, pipelineMonitor, connectorMonitor);
         Map<String, Object> metrics = client.collectMetrics();
         assertTrue(metrics.containsKey("pipeline.ingress.total.count"));
         assertTrue(metrics.containsKey("connector.test-connector.source.total"));

@@ -49,7 +49,6 @@ import org.apache.eventmesh.runtime.metrics.http.EventMeshHttpMetricsManager;
 import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,13 +63,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import com.google.common.util.concurrent.RateLimiter;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
+
+import com.google.common.util.concurrent.RateLimiter;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -154,7 +153,7 @@ public class SendAsyncEventProcessorTest {
         when(asyncContext.getRequest()).thenReturn(wrapper);
         when(handlerSpecific.getCtx()).thenReturn(ctx);
         when(ctx.channel()).thenReturn(channel);
-        
+
         when(handlerSpecific.getTraceOperation()).thenReturn(traceOperation);
 
         // Mock Wrapper headers
@@ -177,11 +176,11 @@ public class SendAsyncEventProcessorTest {
             .build();
 
         try (MockedStatic<ProtocolPluginFactory> pluginFactoryMock = Mockito.mockStatic(ProtocolPluginFactory.class);
-             MockedStatic<RemotingHelper> remotingHelperMock = Mockito.mockStatic(RemotingHelper.class)) {
-            
+            MockedStatic<RemotingHelper> remotingHelperMock = Mockito.mockStatic(RemotingHelper.class)) {
+
             pluginFactoryMock.when(() -> ProtocolPluginFactory.getProtocolAdaptor("http")).thenReturn(protocolAdaptor);
             when(protocolAdaptor.toCloudEvent(wrapper)).thenReturn(event);
-            
+
             remotingHelperMock.when(() -> RemotingHelper.parseChannelRemoteAddr(channel)).thenReturn("127.0.0.1");
 
             // Mock Producer
@@ -234,7 +233,7 @@ public class SendAsyncEventProcessorTest {
             .build();
 
         try (MockedStatic<ProtocolPluginFactory> pluginFactoryMock = Mockito.mockStatic(ProtocolPluginFactory.class);
-             MockedStatic<RemotingHelper> remotingHelperMock = Mockito.mockStatic(RemotingHelper.class)) {
+            MockedStatic<RemotingHelper> remotingHelperMock = Mockito.mockStatic(RemotingHelper.class)) {
 
             pluginFactoryMock.when(() -> ProtocolPluginFactory.getProtocolAdaptor("http")).thenReturn(protocolAdaptor);
             when(protocolAdaptor.toCloudEvent(wrapper)).thenReturn(event);

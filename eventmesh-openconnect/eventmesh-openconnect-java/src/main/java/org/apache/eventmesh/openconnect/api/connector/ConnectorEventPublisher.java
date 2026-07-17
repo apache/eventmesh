@@ -21,6 +21,10 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendMessageCallb
 
 import io.cloudevents.CloudEvent;
 
+/**
+ * Interface.
+ */
 public interface ConnectorEventPublisher {
+
     void publish(CloudEvent event, SendMessageCallback callback) throws Exception;
 }

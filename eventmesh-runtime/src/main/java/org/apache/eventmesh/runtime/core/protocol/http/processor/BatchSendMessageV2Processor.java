@@ -37,8 +37,8 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.BatchProcessResult;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
@@ -214,7 +214,7 @@ public class BatchSendMessageV2Processor extends AbstractHttpRequestProcessor {
 
         // Create BatchProcessResult to track success/filtered/failed counts
         final BatchProcessResult batchResult = new BatchProcessResult(1);
-        final String finalBizNo = bizNo;  // Make bizNo effectively final for inner classes
+        final String finalBizNo = bizNo; // Make bizNo effectively final for inner classes
 
         // Apply Ingress Pipeline (Filter -> Transformer -> Router)
         String pipelineKey = producerGroup + "-" + topic;

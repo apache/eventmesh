@@ -38,8 +38,8 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.BatchProcessResult;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.metrics.http.HttpMetrics;
@@ -242,14 +242,15 @@ public class BatchSendMessageProcessor extends AbstractHttpRequestProcessor {
 
         // Create BatchProcessResult to track success/filtered/failed counts
         final BatchProcessResult batchResult = new BatchProcessResult(eventList.size());
-        final String finalBatchId = batchId;  // Make batchId effectively final for inner classes
+        final String finalBatchId = batchId; // Make batchId effectively final for inner classes
 
         if (httpConfiguration.isEventMeshServerBatchMsgBatchEnabled()) {
             for (List<CloudEvent> eventlist : topicBatchMessageMappings.values()) {
                 // TODO: Implementation in API. Consider whether to put it in the plug-in.
                 CloudEvent event = null;
                 // TODO: Detect the maximum length of messages for different producers.
-                final SendMessageContext sendMessageContext = new SendMessageContext(finalBatchId, event, batchEventMeshProducer, eventMeshHTTPServer);
+                final SendMessageContext sendMessageContext =
+                    new SendMessageContext(finalBatchId, event, batchEventMeshProducer, eventMeshHTTPServer);
                 batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                     @Override

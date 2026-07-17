@@ -27,10 +27,12 @@ import java.util.Map;
 public class PipelineContext {
 
     /** Pipeline direction */
-    public enum Direction { INGRESS, EGRESS }
+    public enum Direction {
+        INGRESS, EGRESS
+    }
 
     private final Direction direction;
-    private final String entryProtocol;  // tcp / http / grpc / a2a / connector
+    private final String entryProtocol; // tcp / http / grpc / a2a / connector
     private final Map<String, Object> attributes;
     private String traceId;
     private long startTimeMs;
@@ -44,14 +46,29 @@ public class PipelineContext {
 
     // ---- Accessors ----
 
-    public Direction getDirection() { return direction; }
-    public String getEntryProtocol() { return entryProtocol; }
-    public String getTraceId() { return traceId; }
+    public Direction getDirection() {
+        return direction;
+    }
 
-    public void setTraceId(String traceId) { this.traceId = traceId; }
+    public String getEntryProtocol() {
+        return entryProtocol;
+    }
 
-    public long getStartTimeMs() { return startTimeMs; }
-    public long getElapsedMs() { return System.currentTimeMillis() - startTimeMs; }
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
+    public long getStartTimeMs() {
+        return startTimeMs;
+    }
+
+    public long getElapsedMs() {
+        return System.currentTimeMillis() - startTimeMs;
+    }
 
     // ---- Attribute helpers ----
 
@@ -66,8 +83,12 @@ public class PipelineContext {
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String key, Class<T> type) {
         Object v = attributes.get(key);
-        if (v == null) return null;
-        if (type.isInstance(v)) return (T) v;
+        if (v == null) {
+            return null;
+        }
+        if (type.isInstance(v)) {
+            return (T) v;
+        }
         return null;
     }
 

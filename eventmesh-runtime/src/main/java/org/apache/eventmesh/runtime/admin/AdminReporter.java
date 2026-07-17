@@ -49,7 +49,7 @@ public interface AdminReporter {
      * @param connectorStatus connector health summaries
      */
     void reportMonitor(String address, Map<String, Object> metrics,
-                       List<ConnectorStatus> connectorStatus);
+        List<ConnectorStatus> connectorStatus);
 
     /**
      * Sync connector offsets to Admin Server.

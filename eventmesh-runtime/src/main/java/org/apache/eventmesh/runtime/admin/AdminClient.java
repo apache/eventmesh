@@ -19,14 +19,13 @@ package org.apache.eventmesh.runtime.admin;
 
 import org.apache.eventmesh.runtime.connector.ConnectorStatus;
 import org.apache.eventmesh.runtime.connector.OffsetStore;
-import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
 import org.apache.eventmesh.runtime.monitor.ConnectorMonitor;
+import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -47,7 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdminClient {
 
-    public enum RuntimeState { STARTING, RUNNING, DEGRADED, STOPPING, STOPPED }
+    public enum RuntimeState {
+        STARTING, RUNNING, DEGRADED, STOPPING, STOPPED
+    }
 
     private final String runtimeAddress;
     private final boolean adminServerRequired;
@@ -70,8 +71,8 @@ public class AdminClient {
     private Supplier<List<ConnectorStatus>> connectorStatusSupplier = Collections::emptyList;
 
     public AdminClient(String runtimeAddress, boolean adminServerRequired,
-                       OffsetStore offsetStore, AdminReporter reporter,
-                       PipelineMonitor pipelineMonitor, ConnectorMonitor connectorMonitor) {
+        OffsetStore offsetStore, AdminReporter reporter,
+        PipelineMonitor pipelineMonitor, ConnectorMonitor connectorMonitor) {
         this.runtimeAddress = runtimeAddress;
         this.adminServerRequired = adminServerRequired;
         this.offsetStore = offsetStore;
@@ -92,7 +93,7 @@ public class AdminClient {
 
     /** Standalone with offset store */
     public AdminClient(String runtimeAddress, boolean adminServerRequired,
-                       OffsetStore offsetStore) {
+        OffsetStore offsetStore) {
         this(runtimeAddress, adminServerRequired, offsetStore, null, null, null);
     }
 
@@ -120,9 +121,15 @@ public class AdminClient {
 
     public void shutdown() {
         setState(RuntimeState.STOPPING);
-        if (heartbeatTask != null) heartbeatTask.cancel(false);
-        if (monitorTask != null) monitorTask.cancel(false);
-        if (offsetSyncTask != null) offsetSyncTask.cancel(false);
+        if (heartbeatTask != null) {
+            heartbeatTask.cancel(false);
+        }
+        if (monitorTask != null) {
+            monitorTask.cancel(false);
+        }
+        if (offsetSyncTask != null) {
+            offsetSyncTask.cancel(false);
+        }
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -139,7 +146,9 @@ public class AdminClient {
 
     // ---- state management ----
 
-    public RuntimeState getRuntimeState() { return runtimeState; }
+    public RuntimeState getRuntimeState() {
+        return runtimeState;
+    }
 
     public void setState(RuntimeState state) {
         RuntimeState old = this.runtimeState;
@@ -159,8 +168,13 @@ public class AdminClient {
 
     // ---- monitors ----
 
-    public PipelineMonitor getPipelineMonitor() { return pipelineMonitor; }
-    public ConnectorMonitor getConnectorMonitor() { return connectorMonitor; }
+    public PipelineMonitor getPipelineMonitor() {
+        return pipelineMonitor;
+    }
+
+    public ConnectorMonitor getConnectorMonitor() {
+        return connectorMonitor;
+    }
 
     // ---- periodic tasks ----
 
@@ -224,15 +238,33 @@ public class AdminClient {
 
     // -- visibility for tests --
 
-    AdminReporter getReporter() { return reporter; }
+    AdminReporter getReporter() {
+        return reporter;
+    }
 
     // ---- inner: NoopAdminReporter ----
 
     static class NoopAdminReporter implements AdminReporter {
-        @Override public void reportHeartbeat(String addr, String state, int jobs) {}
-        @Override public void reportMonitor(String addr, Map<String, Object> metrics, List<ConnectorStatus> statuses) {}
-        @Override public void syncOffsets(String addr, Map<String, String> offsets) {}
-        @Override public boolean isConnected() { return false; }
-        @Override public void shutdown() {}
+
+        @Override
+        public void reportHeartbeat(String addr, String state, int jobs) {
+        }
+
+        @Override
+        public void reportMonitor(String addr, Map<String, Object> metrics, List<ConnectorStatus> statuses) {
+        }
+
+        @Override
+        public void syncOffsets(String addr, Map<String, String> offsets) {
+        }
+
+        @Override
+        public boolean isConnected() {
+            return false;
+        }
+
+        @Override
+        public void shutdown() {
+        }
     }
 }

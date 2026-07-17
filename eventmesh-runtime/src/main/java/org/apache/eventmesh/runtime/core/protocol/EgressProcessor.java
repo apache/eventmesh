@@ -54,7 +54,7 @@ public class EgressProcessor {
     }
 
     public EgressProcessor(List<PipelineFilter> pipelineFilters, FilterEngine filterEngine,
-                           TransformerEngine transformerEngine) {
+        TransformerEngine transformerEngine) {
         this.pipelineFilters = pipelineFilters;
         this.filterEngine = filterEngine;
         this.transformerEngine = transformerEngine;
@@ -95,8 +95,8 @@ public class EgressProcessor {
                 String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
                 String transformedContent = transformer.transform(content);
                 event = CloudEventBuilder.from(event)
-                        .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
-                        .build();
+                    .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
+                    .build();
             }
 
             return event;

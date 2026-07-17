@@ -17,15 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.pipeline.filter;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineResult;
 import org.apache.eventmesh.runtime.admin.AdminClient;
 import org.apache.eventmesh.runtime.admin.JobApiController;
-import org.apache.eventmesh.runtime.connector.*;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineFilter;
-import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineRouter;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineTransformer;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.router.BroadcastRoute;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.router.DeadLetterRoute;
@@ -35,21 +31,20 @@ import org.apache.eventmesh.runtime.core.protocol.pipeline.transformer.Enrichmen
 import org.apache.eventmesh.runtime.core.protocol.pipeline.transformer.ProtocolTransformer;
 import org.apache.eventmesh.runtime.monitor.ConnectorMonitor;
 import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
+
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.jupiter.api.Assertions.*;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 /**
  * Unified Runtime integration tests — end-to-end coverage across all modules.
@@ -114,10 +109,10 @@ class UnifiedRuntimeIntegrationTest {
         @Test
         @DisplayName("SizeLimitFilter rejects oversized event")
         void sizeLimitFilterRejectsOversized() {
-            SizeLimitFilter filter = new SizeLimitFilter(100);  // small limit for testing
+            SizeLimitFilter filter = new SizeLimitFilter(100); // small limit for testing
             byte[] largeData = new byte[2000];
             CloudEvent event = CloudEventBuilder.from(baseEvent)
-                .withExtension("authtoken", "token")  // needed by auth
+                .withExtension("authtoken", "token") // needed by auth
                 .withData("text/plain", largeData)
                 .build();
             PipelineResult result = filter.filter(event,
@@ -237,7 +232,10 @@ class UnifiedRuntimeIntegrationTest {
         @AfterEach
         void tearDown() {
             if (runtime != null) {
-                try { runtime.shutdown(); } catch (Exception ignored) { }
+                try {
+                    runtime.shutdown();
+                } catch (Exception expected) {
+                }
             }
         }
 
@@ -399,8 +397,14 @@ class UnifiedRuntimeIntegrationTest {
 
         @AfterEach
         void tearDown() {
-            try { adminClient.shutdown(); } catch (Exception ignored) { }
-            try { connectorService.shutdown(); } catch (Exception ignored) { }
+            try {
+                adminClient.shutdown();
+            } catch (Exception expected) {
+            }
+            try {
+                connectorService.shutdown();
+            } catch (Exception expected) {
+            }
         }
 
         @Test
@@ -587,8 +591,7 @@ class UnifiedRuntimeIntegrationTest {
         void multiTransformerChain() {
             List<PipelineTransformer> chain = Arrays.asList(
                 new ProtocolTransformer(),
-                new EnrichmentTransformer()
-            );
+                new EnrichmentTransformer());
             CloudEvent evt = CloudEventBuilder.v1()
                 .withId("chain")
                 .withSource(URI.create("http://s"))
@@ -694,7 +697,6 @@ class UnifiedRuntimeIntegrationTest {
         @DisplayName("Multiple routers chained together")
         void multipleRouterChain() {
             StaticRoute r1 = new StaticRoute();
-            HeaderRoute r2 = new HeaderRoute();
             ingressCtx.setAttribute("StaticRoute.target", "topic-static");
             ingressCtx.setAttribute("HeaderRoute.field", "routeTo");
             CloudEvent evt = CloudEventBuilder.from(baseEvent)
@@ -703,6 +705,7 @@ class UnifiedRuntimeIntegrationTest {
 
             List<String> all = new ArrayList<>();
             all.addAll(r1.route(evt, ingressCtx));
+            HeaderRoute r2 = new HeaderRoute();
             all.addAll(r2.route(evt, ingressCtx));
             assertEquals(2, all.size());
             assertTrue(all.contains("topic-static"));
@@ -796,7 +799,12 @@ class UnifiedRuntimeIntegrationTest {
         void tearDown() throws Exception {
             Files.walk(tempDir)
                 .sorted(Comparator.reverseOrder())
-                .forEach(p -> { try { Files.delete(p); } catch (Exception ignored) { } });
+                .forEach(p -> {
+                    try {
+                        Files.delete(p);
+                    } catch (Exception expected) {
+                    }
+                });
         }
 
         @Test
@@ -878,7 +886,8 @@ class UnifiedRuntimeIntegrationTest {
         @DisplayName("InMemoryOffsetStore concurrent R/W")
         void concurrentOffsetReadWrite() throws Exception {
             InMemoryOffsetStore store = new InMemoryOffsetStore();
-            int threads = 4, ops = 100;
+            int threads = 4;
+            int ops = 100;
             CountDownLatch latch = new CountDownLatch(threads);
             ExecutorService exec = Executors.newFixedThreadPool(threads);
             try {
@@ -891,11 +900,15 @@ class UnifiedRuntimeIntegrationTest {
                                 store.save(c, "topic", tid, String.valueOf(i));
                                 store.load(c, "topic", tid);
                             }
-                        } finally { latch.countDown(); }
+                        } finally {
+                            latch.countDown();
+                        }
                     });
                 }
                 assertTrue(latch.await(10, TimeUnit.SECONDS));
-            } finally { exec.shutdownNow(); }
+            } finally {
+                exec.shutdownNow();
+            }
         }
     }
 

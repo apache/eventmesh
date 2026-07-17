@@ -20,9 +20,6 @@ package org.apache.eventmesh.runtime.core.protocol.pipeline.transformer;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineTransformer;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import io.cloudevents.CloudEvent;

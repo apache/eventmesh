@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol;
 
+import static org.mockito.Mockito.mock;
+
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineResult;
 import org.apache.eventmesh.runtime.boot.FilterEngine;
@@ -33,17 +35,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for IngressProcessor and EgressProcessor — the unified pipeline
@@ -136,9 +133,19 @@ class IngressEgressProcessorTest {
     @DisplayName("Ingress: should return null when filter drops")
     void ingress_shouldReturnNullWhenFilterDrops() {
         PipelineFilter dropFilter = new PipelineFilter() {
-            public String name() { return "DropAll"; }
-            public int order() { return 0; }
-            public boolean isBypassable() { return true; }
+
+            public String name() {
+                return "DropAll";
+            }
+
+            public int order() {
+                return 0;
+            }
+
+            public boolean isBypassable() {
+                return true;
+            }
+
             public PipelineResult filter(CloudEvent e, PipelineContext c) {
                 return PipelineResult.drop(e);
             }
@@ -162,9 +169,19 @@ class IngressEgressProcessorTest {
     @DisplayName("Ingress: should return null but log DLQ when filter returns DLQ")
     void ingress_shouldHandleDLQ() {
         PipelineFilter dlqFilter = new PipelineFilter() {
-            public String name() { return "DlqFilter"; }
-            public int order() { return 0; }
-            public boolean isBypassable() { return true; }
+
+            public String name() {
+                return "DlqFilter";
+            }
+
+            public int order() {
+                return 0;
+            }
+
+            public boolean isBypassable() {
+                return true;
+            }
+
             public PipelineResult filter(CloudEvent e, PipelineContext c) {
                 return PipelineResult.dlq(e, new RuntimeException("test-dlq"));
             }
@@ -188,9 +205,19 @@ class IngressEgressProcessorTest {
     @DisplayName("Ingress: should skip filter when disabled in context")
     void ingress_shouldSkipFilterWhenDisabled() {
         PipelineFilter dropFilter = new PipelineFilter() {
-            public String name() { return "SkipMe"; }
-            public int order() { return 0; }
-            public boolean isBypassable() { return true; }
+
+            public String name() {
+                return "SkipMe";
+            }
+
+            public int order() {
+                return 0;
+            }
+
+            public boolean isBypassable() {
+                return true;
+            }
+
             public PipelineResult filter(CloudEvent e, PipelineContext c) {
                 return PipelineResult.drop(e); // would drop if not skipped
             }
@@ -290,9 +317,19 @@ class IngressEgressProcessorTest {
     @DisplayName("Egress: should return null when filter drops")
     void egress_shouldReturnNullWhenFilterDrops() {
         PipelineFilter dropFilter = new PipelineFilter() {
-            public String name() { return "EgressDrop"; }
-            public int order() { return 0; }
-            public boolean isBypassable() { return true; }
+
+            public String name() {
+                return "EgressDrop";
+            }
+
+            public int order() {
+                return 0;
+            }
+
+            public boolean isBypassable() {
+                return true;
+            }
+
             public PipelineResult filter(CloudEvent e, PipelineContext c) {
                 return PipelineResult.drop(e);
             }

@@ -21,8 +21,6 @@ import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineTransformer;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,8 +127,8 @@ public class FieldMappingTransformer implements PipelineTransformer {
 
             String newContent = toJson(result);
             return CloudEventBuilder.from(event)
-                    .withData(newContent.getBytes(StandardCharsets.UTF_8))
-                    .build();
+                .withData(newContent.getBytes(StandardCharsets.UTF_8))
+                .build();
         } catch (Exception e) {
             log.warn("FieldMappingTransformer: failed to apply field mapping", e);
             return event;
@@ -156,7 +154,9 @@ public class FieldMappingTransformer implements PipelineTransformer {
         String[] pairs = splitJsonPairs(inner);
         for (String pair : pairs) {
             int colon = pair.indexOf(':');
-            if (colon < 0) continue;
+            if (colon < 0) {
+                continue;
+            }
             String key = unquote(pair.substring(0, colon).trim());
             String val = pair.substring(colon + 1).trim();
             map.put(key, parseSimpleValue(val));
@@ -170,10 +170,15 @@ public class FieldMappingTransformer implements PipelineTransformer {
         StringBuilder current = new StringBuilder();
         boolean inString = false;
         for (char c : inner.toCharArray()) {
-            if (c == '"') inString = !inString;
+            if (c == '"') {
+                inString = !inString;
+            }
             if (!inString) {
-                if (c == '{' || c == '[') depth++;
-                else if (c == '}' || c == ']') depth--;
+                if (c == '{' || c == '[') {
+                    depth++;
+                } else if (c == '}' || c == ']') {
+                    depth--;
+                }
             }
             if (c == ',' && depth == 0 && !inString) {
                 result.add(current.toString());
@@ -182,17 +187,29 @@ public class FieldMappingTransformer implements PipelineTransformer {
                 current.append(c);
             }
         }
-        if (current.length() > 0) result.add(current.toString());
+        if (current.length() > 0) {
+            result.add(current.toString());
+        }
         return result.toArray(new String[0]);
     }
 
     static Object parseSimpleValue(String val) {
-        if (val.startsWith("\"") && val.endsWith("\"")) return unquote(val);
-        if ("true".equals(val)) return true;
-        if ("false".equals(val)) return false;
-        if ("null".equals(val)) return null;
+        if (val.startsWith("\"") && val.endsWith("\"")) {
+            return unquote(val);
+        }
+        if ("true".equals(val)) {
+            return true;
+        }
+        if ("false".equals(val)) {
+            return false;
+        }
+        if ("null".equals(val)) {
+            return null;
+        }
         try {
-            if (val.contains(".")) return Double.parseDouble(val);
+            if (val.contains(".")) {
+                return Double.parseDouble(val);
+            }
             return Long.parseLong(val);
         } catch (NumberFormatException e) {
             return val;
@@ -207,7 +224,9 @@ public class FieldMappingTransformer implements PipelineTransformer {
     }
 
     public static Object resolvePath(Map<String, Object> map, String path) {
-        if (!path.contains(".")) return map.get(path);
+        if (!path.contains(".")) {
+            return map.get(path);
+        }
         String[] parts = path.split("\\.");
         Object current = map;
         for (String part : parts) {
@@ -224,7 +243,9 @@ public class FieldMappingTransformer implements PipelineTransformer {
         StringBuilder sb = new StringBuilder("{");
         boolean first = true;
         for (Map.Entry<String, Object> e : map.entrySet()) {
-            if (!first) sb.append(",");
+            if (!first) {
+                sb.append(",");
+            }
             sb.append('"').append(e.getKey()).append('"').append(':');
             sb.append(valueToJson(e.getValue()));
             first = false;
@@ -235,10 +256,18 @@ public class FieldMappingTransformer implements PipelineTransformer {
 
     @SuppressWarnings("unchecked")
     static String valueToJson(Object v) {
-        if (v == null) return "null";
-        if (v instanceof String) return '"' + escapeJson((String) v) + '"';
-        if (v instanceof Number || v instanceof Boolean) return v.toString();
-        if (v instanceof Map) return toJson((Map<String, Object>) v);
+        if (v == null) {
+            return "null";
+        }
+        if (v instanceof String) {
+            return '"' + escapeJson((String) v) + '"';
+        }
+        if (v instanceof Number || v instanceof Boolean) {
+            return v.toString();
+        }
+        if (v instanceof Map) {
+            return toJson((Map<String, Object>) v);
+        }
         return '"' + escapeJson(v.toString()) + '"';
     }
 

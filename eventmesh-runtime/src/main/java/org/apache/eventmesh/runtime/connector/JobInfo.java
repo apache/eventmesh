@@ -22,13 +22,15 @@ package org.apache.eventmesh.runtime.connector;
  */
 public class JobInfo {
 
-    public enum JobState { CREATED, RUNNING, STOPPED, FAILED }
+    public enum JobState {
+        CREATED, RUNNING, STOPPED, FAILED
+    }
 
     private String jobId;
     private String jobName;
     private ConnectorConfig.ConnectorType connectorType;
     private String connectorName;
-    private String config;         // JSON config string
+    private String config; // JSON config string
     private JobState state;
     private long createTime;
     private long updateTime;
@@ -42,30 +44,80 @@ public class JobInfo {
 
     // ---- getters ----
 
-    public String getJobId() { return jobId; }
-    public String getJobName() { return jobName; }
-    public ConnectorConfig.ConnectorType getConnectorType() { return connectorType; }
-    public String getConnectorName() { return connectorName; }
-    public String getConfig() { return config; }
-    public JobState getState() { return state; }
-    public long getCreateTime() { return createTime; }
-    public long getUpdateTime() { return updateTime; }
-    public String getErrorMessage() { return errorMessage; }
+    public String getJobId() {
+        return jobId;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public ConnectorConfig.ConnectorType getConnectorType() {
+        return connectorType;
+    }
+
+    public String getConnectorName() {
+        return connectorName;
+    }
+
+    public String getConfig() {
+        return config;
+    }
+
+    public JobState getState() {
+        return state;
+    }
+
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public long getUpdateTime() {
+        return updateTime;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
     // ---- setters ----
 
-    public void setJobId(String jobId) { this.jobId = jobId; }
-    public void setJobName(String jobName) { this.jobName = jobName; }
-    public void setConnectorType(ConnectorConfig.ConnectorType connectorType) { this.connectorType = connectorType; }
-    public void setConnectorName(String connectorName) { this.connectorName = connectorName; }
-    public void setConfig(String config) { this.config = config; }
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    public void setConnectorType(ConnectorConfig.ConnectorType connectorType) {
+        this.connectorType = connectorType;
+    }
+
+    public void setConnectorName(String connectorName) {
+        this.connectorName = connectorName;
+    }
+
+    public void setConfig(String config) {
+        this.config = config;
+    }
+
     public void setState(JobState state) {
         this.state = state;
         this.updateTime = System.currentTimeMillis();
     }
-    public void setCreateTime(long createTime) { this.createTime = createTime; }
-    public void setUpdateTime(long updateTime) { this.updateTime = updateTime; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
+    }
+
+    public void setUpdateTime(long updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
     @Override
     public String toString() {

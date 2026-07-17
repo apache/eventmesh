@@ -112,6 +112,7 @@ public class ConnectorMonitor {
 
     /** Per-connector statistics holder. */
     private static class ConnectorStats {
+
         final AtomicLong sourceTotal = new AtomicLong(0);
         final AtomicLong sinkTotal = new AtomicLong(0);
         final AtomicLong errorCount = new AtomicLong(0);
@@ -124,6 +125,7 @@ public class ConnectorMonitor {
 
     /** Simple TPS tracker — counts records in the current second. */
     private static class TpsTracker {
+
         volatile long lastTickMs;
         long count;
 

@@ -267,31 +267,31 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
-                    @Override
-                    public void onSuccess(final SendResult sendResult) {
-                        responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
-                        responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg() + sendResult);
+                @Override
+                public void onSuccess(final SendResult sendResult) {
+                    responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                    responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg() + sendResult);
 
-                        log.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId);
-                        handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
-                        handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
-                    }
+                    log.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId);
+                    handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
+                    handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+                }
 
-                    @Override
-                    public void onException(final OnExceptionContext context) {
-                        responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode());
-                        responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()
-                            + EventMeshUtil.stackTrace(context.getException(), 2));
-                        eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
-                        handlerSpecific.getTraceOperation().exceptionLatestTrace(context.getException(),
-                            EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), sendMessageContext.getEvent()));
+                @Override
+                public void onException(final OnExceptionContext context) {
+                    responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode());
+                    responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()
+                        + EventMeshUtil.stackTrace(context.getException(), 2));
+                    eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
+                    handlerSpecific.getTraceOperation().exceptionLatestTrace(context.getException(),
+                        EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), sendMessageContext.getEvent()));
 
-                        handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
-                        log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId, context.getException());
-                    }
-                });
+                    handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+                    log.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        System.currentTimeMillis() - startTime, finalTopic, bizNo, uniqueId, context.getException());
+                }
+            });
 
         } catch (Exception ex) {
             eventMeshHTTPServer.getHttpRetryer().newTimeout(sendMessageContext, 10, TimeUnit.SECONDS);
@@ -305,7 +305,7 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[] {RequestURI.PUBLISH.getRequestURI()};
+        return new String[]{RequestURI.PUBLISH.getRequestURI()};
     }
 
     @Override

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.pipeline.filter;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.apache.eventmesh.common.protocol.pipeline.PipelineContext;
 import org.apache.eventmesh.common.protocol.pipeline.PipelineResult;
 import org.apache.eventmesh.runtime.core.protocol.pipeline.PipelineFilter;
@@ -29,17 +32,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Extended tests covering edge cases for all 6 pipeline filters,
@@ -95,6 +94,7 @@ class PipelineExtendedTest {
     @DisplayName("Auth: should drop with empty AK/SK")
     void auth_shouldDropEmptyAkSk() {
         AuthFilter filter = new AuthFilter() {
+
             @Override
             protected boolean validateAkSk(String ak, String sk, PipelineContext ctx) {
                 return super.validateAkSk(ak, sk, ctx);
@@ -568,9 +568,19 @@ class PipelineExtendedTest {
     @DisplayName("Filter: default implementation contracts")
     void filter_contracts() {
         PipelineFilter f = new PipelineFilter() {
-            public String name() { return "TestFilter"; }
-            public int order() { return 42; }
-            public boolean isBypassable() { return true; }
+
+            public String name() {
+                return "TestFilter";
+            }
+
+            public int order() {
+                return 42;
+            }
+
+            public boolean isBypassable() {
+                return true;
+            }
+
             public PipelineResult filter(CloudEvent e, PipelineContext c) {
                 return PipelineResult.cont(e);
             }
@@ -591,10 +601,19 @@ class PipelineExtendedTest {
     @DisplayName("Transformer: should transform event")
     void transformer_shouldTransform() {
         PipelineTransformer t = new PipelineTransformer() {
-            public String name() { return "Upper"; }
-            public int order() { return 1; }
+
+            public String name() {
+                return "Upper";
+            }
+
+            public int order() {
+                return 1;
+            }
+
             public CloudEvent transform(CloudEvent e, PipelineContext c) {
-                if (e.getData() == null) return e;
+                if (e.getData() == null) {
+                    return e;
+                }
                 String data = new String(e.getData().toBytes(), StandardCharsets.UTF_8);
                 return CloudEventBuilder.from(e)
                     .withData("text/plain", data.toUpperCase().getBytes(StandardCharsets.UTF_8))
@@ -618,7 +637,11 @@ class PipelineExtendedTest {
     @DisplayName("Router: should return target topics")
     void router_shouldReturnTargets() {
         PipelineRouter r = new PipelineRouter() {
-            public String name() { return "MyRouter"; }
+
+            public String name() {
+                return "MyRouter";
+            }
+
             public java.util.List<String> route(CloudEvent e, PipelineContext c) {
                 return Arrays.asList("topic-a", "topic-b");
             }
@@ -632,7 +655,11 @@ class PipelineExtendedTest {
     @DisplayName("Router: empty list means no routing (drop)")
     void router_emptyListMeansDrop() {
         PipelineRouter r = new PipelineRouter() {
-            public String name() { return "NoRoute"; }
+
+            public String name() {
+                return "NoRoute";
+            }
+
             public java.util.List<String> route(CloudEvent e, PipelineContext c) {
                 return Collections.emptyList();
             }

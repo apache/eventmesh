@@ -26,7 +26,6 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
-import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -143,16 +142,14 @@ public class ClientGroupWrapper {
         this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
         this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshStoragePluginType());
-        
+
         this.ingressProcessor = new IngressProcessor(
             eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
             eventMeshTCPServer.getEventMeshServer().getTransformerEngine(),
-            eventMeshTCPServer.getEventMeshServer().getRouterEngine()
-        );
+            eventMeshTCPServer.getEventMeshServer().getRouterEngine());
         this.egressProcessor = new EgressProcessor(
             eventMeshTCPServer.getEventMeshServer().getFilterEngine(),
-            eventMeshTCPServer.getEventMeshServer().getTransformerEngine()
-        );
+            eventMeshTCPServer.getEventMeshServer().getTransformerEngine());
     }
 
     public ConcurrentHashMap<String, Map<String, Session>> getTopic2sessionInGroupMapping() {
@@ -178,7 +175,7 @@ public class ClientGroupWrapper {
 
     public boolean send(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback)
         throws Exception {
-        
+
         // Ingress Pipeline: Filter -> Transformer -> Router
         CloudEvent event = upStreamMsgContext.getEvent();
         String topic = event.getSubject();
@@ -195,12 +192,12 @@ public class ClientGroupWrapper {
                 return true;
             }
         } catch (Exception e) {
-             log.error("Ingress pipeline exception", e);
-             // Fail request
-             OnExceptionContext context = new OnExceptionContext();
-             context.setException(new StorageRuntimeException("Ingress pipeline failed", e));
-             sendCallback.onException(context);
-             return false;
+            log.error("Ingress pipeline exception", e);
+            // Fail request
+            OnExceptionContext context = new OnExceptionContext();
+            context.setException(new StorageRuntimeException("Ingress pipeline failed", e));
+            sendCallback.onException(context);
+            return false;
         }
 
         mqProducerWrapper.send(event, sendCallback);
@@ -493,8 +490,8 @@ public class ClientGroupWrapper {
                     String pipelineKey = group + "-" + topic;
                     event = egressProcessor.process(event, pipelineKey);
                     if (event == null) {
-                         ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
-                         return;
+                        ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
+                        return;
                     }
                 } catch (Exception e) {
                     log.error("Egress pipeline exception", e);
@@ -612,8 +609,8 @@ public class ClientGroupWrapper {
                     String pipelineKey = group + "-" + topic;
                     event = egressProcessor.process(event, pipelineKey);
                     if (event == null) {
-                         ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
-                         return;
+                        ((EventMeshAsyncConsumeContext) context).commit(EventMeshAction.CommitMessage);
+                        return;
                     }
                 } catch (Exception e) {
                     log.error("Egress pipeline exception", e);

@@ -44,8 +44,9 @@ public class AdminCommandHandler {
      * Command received from Admin Server.
      */
     public static class Command {
-        private final String type;     // e.g. JOB.CREATE, RUNTIME.SHUTDOWN
-        private final String jobId;    // target job (null for runtime-level commands)
+
+        private final String type; // e.g. JOB.CREATE, RUNTIME.SHUTDOWN
+        private final String jobId; // target job (null for runtime-level commands)
         private final Map<String, String> params;
 
         public Command(String type, String jobId, Map<String, String> params) {
@@ -54,9 +55,17 @@ public class AdminCommandHandler {
             this.params = params;
         }
 
-        public String getType() { return type; }
-        public String getJobId() { return jobId; }
-        public Map<String, String> getParams() { return params; }
+        public String getType() {
+            return type;
+        }
+
+        public String getJobId() {
+            return jobId;
+        }
+
+        public Map<String, String> getParams() {
+            return params;
+        }
 
         @Override
         public String toString() {
@@ -68,6 +77,7 @@ public class AdminCommandHandler {
      * Result of executing a command.
      */
     public static class CommandResult {
+
         private final boolean success;
         private final String message;
 
@@ -76,11 +86,21 @@ public class AdminCommandHandler {
             this.message = message;
         }
 
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
+        public boolean isSuccess() {
+            return success;
+        }
 
-        public static CommandResult ok(String msg) { return new CommandResult(true, msg); }
-        public static CommandResult fail(String msg) { return new CommandResult(false, msg); }
+        public String getMessage() {
+            return message;
+        }
+
+        public static CommandResult ok(String msg) {
+            return new CommandResult(true, msg);
+        }
+
+        public static CommandResult fail(String msg) {
+            return new CommandResult(false, msg);
+        }
 
         @Override
         public String toString() {

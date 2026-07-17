@@ -58,17 +58,17 @@ public class IngressProcessor {
     private final RouterEngine routerEngine;
 
     public IngressProcessor(FilterEngine filterEngine, TransformerEngine transformerEngine,
-                            RouterEngine routerEngine) {
+        RouterEngine routerEngine) {
         this(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-             filterEngine, transformerEngine, routerEngine);
+            filterEngine, transformerEngine, routerEngine);
     }
 
     public IngressProcessor(List<PipelineFilter> pipelineFilters,
-                            List<PipelineTransformer> pipelineTransformers,
-                            List<PipelineRouter> pipelineRouters,
-                            FilterEngine filterEngine,
-                            TransformerEngine transformerEngine,
-                            RouterEngine routerEngine) {
+        List<PipelineTransformer> pipelineTransformers,
+        List<PipelineRouter> pipelineRouters,
+        FilterEngine filterEngine,
+        TransformerEngine transformerEngine,
+        RouterEngine routerEngine) {
         this.pipelineFilters = (pipelineFilters != null) ? pipelineFilters : Collections.emptyList();
         this.pipelineTransformers = (pipelineTransformers != null) ? pipelineTransformers : Collections.emptyList();
         this.pipelineRouters = (pipelineRouters != null) ? pipelineRouters : Collections.emptyList();
@@ -79,21 +79,21 @@ public class IngressProcessor {
 
     /** Backward-compatible constructor (no PipelineRouter) */
     public IngressProcessor(List<PipelineFilter> pipelineFilters,
-                            List<PipelineTransformer> pipelineTransformers,
-                            FilterEngine filterEngine,
-                            TransformerEngine transformerEngine,
-                            RouterEngine routerEngine) {
+        List<PipelineTransformer> pipelineTransformers,
+        FilterEngine filterEngine,
+        TransformerEngine transformerEngine,
+        RouterEngine routerEngine) {
         this(pipelineFilters, pipelineTransformers, Collections.emptyList(),
-             filterEngine, transformerEngine, routerEngine);
+            filterEngine, transformerEngine, routerEngine);
     }
 
     /** Legacy constructor (no transformers/routers) */
     public IngressProcessor(List<PipelineFilter> pipelineFilters,
-                            FilterEngine filterEngine,
-                            TransformerEngine transformerEngine,
-                            RouterEngine routerEngine) {
+        FilterEngine filterEngine,
+        TransformerEngine transformerEngine,
+        RouterEngine routerEngine) {
         this(pipelineFilters, Collections.emptyList(), Collections.emptyList(),
-             filterEngine, transformerEngine, routerEngine);
+            filterEngine, transformerEngine, routerEngine);
     }
 
     public CloudEvent process(CloudEvent event, String pipelineKey, PipelineContext ctx) {
@@ -137,8 +137,8 @@ public class IngressProcessor {
                 String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
                 String transformedContent = transformer.transform(content);
                 event = CloudEventBuilder.from(event)
-                        .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
-                        .build();
+                    .withData(transformedContent.getBytes(StandardCharsets.UTF_8))
+                    .build();
             }
 
             // ---- Phase 5: Pipeline Router Chain ----
@@ -147,8 +147,8 @@ public class IngressProcessor {
                 if (topics != null && !topics.isEmpty()) {
                     // Route to target topic(s); use first for storage, rest for fanout
                     event = CloudEventBuilder.from(event)
-                            .withSubject(topics.get(0))
-                            .build();
+                        .withSubject(topics.get(0))
+                        .build();
                 }
             }
 
@@ -159,8 +159,8 @@ public class IngressProcessor {
                     String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
                     String newTopic = router.route(content);
                     event = CloudEventBuilder.from(event)
-                            .withSubject(newTopic)
-                            .build();
+                        .withSubject(newTopic)
+                        .build();
                 }
             }
 
@@ -178,7 +178,9 @@ public class IngressProcessor {
 
     /** Handle non-pass filter result — DLQ / RETRY / FAIL */
     private void handleNonPassResult(PipelineResult result, CloudEvent event, PipelineFilter filter) {
-        if (result == null) return;
+        if (result == null) {
+            return;
+        }
         switch (result.getAction()) {
             case DLQ:
                 routeToDLQ(event, filter.name(), result.getCause());
@@ -200,15 +202,16 @@ public class IngressProcessor {
     void routeToDLQ(CloudEvent event, String filterName, Throwable cause) {
         try {
             CloudEvent dlqEvent = CloudEventBuilder.from(event)
-                    .withSubject("eventmesh-dlq")
-                    .withExtension("dlqfilter", filterName.length() > 20
-                        ? filterName.substring(0, 20) : filterName)
-                    .withExtension("dlqtime", String.valueOf(System.currentTimeMillis()))
-                    .withExtension("dlqreason",
-                        cause != null && cause.getMessage() != null
-                            ? cause.getMessage().substring(0, Math.min(cause.getMessage().length(), 100))
-                            : "filtered")
-                    .build();
+                .withSubject("eventmesh-dlq")
+                .withExtension("dlqfilter", filterName.length() > 20
+                    ? filterName.substring(0, 20)
+                    : filterName)
+                .withExtension("dlqtime", String.valueOf(System.currentTimeMillis()))
+                .withExtension("dlqreason",
+                    cause != null && cause.getMessage() != null
+                        ? cause.getMessage().substring(0, Math.min(cause.getMessage().length(), 100))
+                        : "filtered")
+                .build();
             log.warn("Ingress event {} routed to DLQ by filter {}: {}",
                 event.getId(), filterName, cause != null ? cause.getMessage() : "unknown");
         } catch (Exception e) {

@@ -80,9 +80,9 @@ public class EncryptionTransformer implements PipelineTransformer {
             String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
             String encrypted = encryptFields(content, sensitive, ctx);
             return CloudEventBuilder.from(event)
-                    .withData(encrypted.getBytes(StandardCharsets.UTF_8))
-                    .withExtension("eventmesh_encrypted_fields", String.join(",", sensitive))
-                    .build();
+                .withData(encrypted.getBytes(StandardCharsets.UTF_8))
+                .withExtension("eventmesh_encrypted_fields", String.join(",", sensitive))
+                .build();
         } catch (Exception e) {
             log.warn("EncryptionTransformer: failed to encrypt fields, pass-through", e);
             return event;
@@ -103,7 +103,9 @@ public class EncryptionTransformer implements PipelineTransformer {
 
     String encryptFields(String json, Set<String> sensitive, PipelineContext ctx) {
         String key = (String) ctx.getAttribute(KEY_ATTR);
-        if (key == null) key = DEFAULT_AES_KEY;
+        if (key == null) {
+            key = DEFAULT_AES_KEY;
+        }
 
         Map<String, Object> dataMap = FieldMappingTransformer.parseJson(json);
         boolean modified = false;
@@ -120,7 +122,9 @@ public class EncryptionTransformer implements PipelineTransformer {
                 }
             }
         }
-        if (!modified) return json;
+        if (!modified) {
+            return json;
+        }
         return FieldMappingTransformer.toJson(dataMap);
     }
 
@@ -136,9 +140,13 @@ public class EncryptionTransformer implements PipelineTransformer {
 
     static String padKey(String key) {
         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length >= 16) return key.substring(0, 16);
+        if (keyBytes.length >= 16) {
+            return key.substring(0, 16);
+        }
         StringBuilder padded = new StringBuilder(key);
-        while (padded.length() < 16) padded.append('0');
+        while (padded.length() < 16) {
+            padded.append('0');
+        }
         return padded.toString();
     }
 }

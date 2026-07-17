@@ -27,10 +27,14 @@ import io.cloudevents.CloudEvent;
  */
 public interface PipelineTransformer {
 
-    /** @return transformer name for metrics/logging */
+    /**
+     * @return transformer name for metrics/logging
+     */
     String name();
 
-    /** @return execution order (lower = earlier) */
+    /**
+     * @return execution order (lower = earlier)
+     */
     int order();
 
     /**

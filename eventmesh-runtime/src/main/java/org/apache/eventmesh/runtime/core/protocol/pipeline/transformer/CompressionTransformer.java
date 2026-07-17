@@ -84,10 +84,10 @@ public class CompressionTransformer implements PipelineTransformer {
                 originalSize, compressed.length, String.format("%.1f", ratio));
 
             return CloudEventBuilder.from(event)
-                    .withData(encoded.getBytes(StandardCharsets.UTF_8))
-                    .withExtension(EXT_COMPRESSED, "gzip")
-                    .withExtension("eventmesh_uncompressed_size", String.valueOf(originalSize))
-                    .build();
+                .withData(encoded.getBytes(StandardCharsets.UTF_8))
+                .withExtension(EXT_COMPRESSED, "gzip")
+                .withExtension("eventmesh_uncompressed_size", String.valueOf(originalSize))
+                .build();
         } catch (Exception e) {
             log.warn("CompressionTransformer: failed to compress, pass-through", e);
             return event;

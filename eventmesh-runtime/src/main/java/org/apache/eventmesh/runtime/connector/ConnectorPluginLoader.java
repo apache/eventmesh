@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -121,18 +120,20 @@ public class ConnectorPluginLoader {
 
     private void discoverFromSpi(Map<String, ConnectorConfig> discovered) {
         try (InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(SPI_PATH)) {
+            .getResourceAsStream(SPI_PATH)) {
             if (is == null) {
                 log.debug("No SPI file found at {}", SPI_PATH);
                 return;
             }
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 String line;
                 int count = 0;
                 while ((line = reader.readLine()) != null) {
                     line = line.trim();
-                    if (line.isEmpty() || line.startsWith("#")) continue;
+                    if (line.isEmpty() || line.startsWith("#")) {
+                        continue;
+                    }
                     try {
                         Class<?> clazz = Class.forName(line);
                         if (isValidConnectorClass(clazz)) {
@@ -198,16 +199,18 @@ public class ConnectorPluginLoader {
                         try {
                             URL jarUrl = jar.toUri().toURL();
                             try (URLClassLoader singleJarLoader =
-                                     new URLClassLoader(new URL[]{jarUrl}, null)) {
+                                new URLClassLoader(new URL[]{jarUrl}, null)) {
                                 InputStream spiStream = singleJarLoader
                                     .getResourceAsStream(SPI_PATH);
                                 if (spiStream != null) {
                                     try (BufferedReader reader = new BufferedReader(
-                                            new InputStreamReader(spiStream, StandardCharsets.UTF_8))) {
+                                        new InputStreamReader(spiStream, StandardCharsets.UTF_8))) {
                                         String line;
                                         while ((line = reader.readLine()) != null) {
                                             line = line.trim();
-                                            if (line.isEmpty() || line.startsWith("#")) continue;
+                                            if (line.isEmpty() || line.startsWith("#")) {
+                                                continue;
+                                            }
                                             try {
                                                 Class<?> clazz = singleJarLoader.loadClass(line);
                                                 if (isValidConnectorClass(clazz)) {
@@ -251,13 +254,18 @@ public class ConnectorPluginLoader {
     /** Create a ClassLoader that loads from the plugins directory. */
     URLClassLoader createPluginClassLoader() throws IOException {
         Path dir = Paths.get(pluginPath);
-        if (!Files.exists(dir)) return new URLClassLoader(new URL[0]);
+        if (!Files.exists(dir)) {
+            return new URLClassLoader(new URL[0]);
+        }
         List<URL> urls = new ArrayList<>();
         Files.list(dir)
             .filter(p -> p.toString().endsWith(".jar"))
             .forEach(jar -> {
-                try { urls.add(jar.toUri().toURL()); }
-                catch (MalformedURLException e) { log.warn("Bad plugin URL: {}", jar); }
+                try {
+                    urls.add(jar.toUri().toURL());
+                } catch (MalformedURLException e) {
+                    log.warn("Bad plugin URL: {}", jar);
+                }
             });
         return new URLClassLoader(urls.toArray(new URL[0]),
             Thread.currentThread().getContextClassLoader());

@@ -80,16 +80,33 @@ public class PipelineResult {
 
     // ---- Accessors ----
 
-    public Action getAction() { return action; }
-    public void setAction(Action a) { this.action = a; }
+    public Action getAction() {
+        return action;
+    }
 
-    public CloudEvent getEvent() { return event; }
-    public void setEvent(CloudEvent e) { this.event = e; }
+    public void setAction(Action a) {
+        this.action = a;
+    }
 
-    public Throwable getCause() { return cause; }
-    public void setCause(Throwable c) { this.cause = c; }
+    public CloudEvent getEvent() {
+        return event;
+    }
 
-    public Map<String, String> getMetadata() { return metadata; }
+    public void setEvent(CloudEvent e) {
+        this.event = e;
+    }
+
+    public Throwable getCause() {
+        return cause;
+    }
+
+    public void setCause(Throwable c) {
+        this.cause = c;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
 
     public void addMeta(String key, String value) {
         this.metadata.put(key, value);

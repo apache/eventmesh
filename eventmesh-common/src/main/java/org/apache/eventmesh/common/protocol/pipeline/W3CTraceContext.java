@@ -40,7 +40,8 @@ public final class W3CTraceContext {
     private static final String EXT_TRACESTATE = "tracestate";
     private static final String EXT_EVENTMESH_TRACE = "eventmesh_trace_id";
 
-    private W3CTraceContext() {}
+    private W3CTraceContext() {
+    }
 
     /**
      * Extract or generate a trace ID from a CloudEvent.
@@ -53,7 +54,9 @@ public final class W3CTraceContext {
      * </ol>
      */
     public static String extractTraceId(CloudEvent event) {
-        if (event == null) return UUID.randomUUID().toString();
+        if (event == null) {
+            return UUID.randomUUID().toString();
+        }
 
         // 1. W3C traceparent: "00-{trace-id}-{span-id}-{flags}"
         Object traceparent = event.getExtension(EXT_TRACEPARENT);
@@ -79,7 +82,9 @@ public final class W3CTraceContext {
      * Extract or generate a span ID from a CloudEvent.
      */
     public static String extractSpanId(CloudEvent event) {
-        if (event == null) return generateSpanId();
+        if (event == null) {
+            return generateSpanId();
+        }
 
         Object traceparent = event.getExtension(EXT_TRACEPARENT);
         if (traceparent instanceof String) {
@@ -96,7 +101,9 @@ public final class W3CTraceContext {
      * Extract tracestate from a CloudEvent.
      */
     public static String extractTraceState(CloudEvent event) {
-        if (event == null) return null;
+        if (event == null) {
+            return null;
+        }
         Object ts = event.getExtension(EXT_TRACESTATE);
         return ts instanceof String ? (String) ts : null;
     }

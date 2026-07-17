@@ -58,7 +58,7 @@ public class JobApiController {
     // ---- CREATE ----
 
     public JobInfo createJob(String jobName, ConnectorConfig.ConnectorType type,
-                              String connectorClass, Map<String, String> props)
+        String connectorClass, Map<String, String> props)
         throws ConnectorLimitExceededException {
 
         String jobId = UUID.randomUUID().toString().substring(0, 8);
@@ -158,10 +158,14 @@ public class JobApiController {
 
     private static JobInfo.JobState mapState(ConnectorStatus.State state) {
         switch (state) {
-            case RUNNING: return JobInfo.JobState.RUNNING;
-            case STOPPED: return JobInfo.JobState.STOPPED;
-            case FAILED:  return JobInfo.JobState.FAILED;
-            default:      return JobInfo.JobState.CREATED;
+            case RUNNING:
+                return JobInfo.JobState.RUNNING;
+            case STOPPED:
+                return JobInfo.JobState.STOPPED;
+            case FAILED:
+                return JobInfo.JobState.FAILED;
+            default:
+                return JobInfo.JobState.CREATED;
         }
     }
 }

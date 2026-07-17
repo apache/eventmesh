@@ -40,8 +40,8 @@ public class RateLimitFilter implements PipelineFilter {
     public static final String NAME = "RateLimitFilter";
 
     // Default limits
-    private static final int DEFAULT_PER_TOPIC_LIMIT = 10_000;  // ops/sec
-    private static final int DEFAULT_PER_CLIENT_LIMIT = 5_000;  // ops/sec
+    private static final int DEFAULT_PER_TOPIC_LIMIT = 10_000; // ops/sec
+    private static final int DEFAULT_PER_CLIENT_LIMIT = 5_000; // ops/sec
 
     private final int perTopicLimit;
     private final int perClientLimit;

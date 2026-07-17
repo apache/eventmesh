@@ -59,12 +59,18 @@ public class FilePersistentOffsetStore implements OffsetStore {
 
     private static final int FLUSH_INTERVAL_SECONDS = 10;
 
+    /**
+     * Interface.
+     */
     @FunctionalInterface
     public interface RemoteSyncCallback {
+
         void sync(Map<String, String> offsets);
     }
 
-    /** @param dataDir directory to store offset files */
+    /**
+     * @param dataDir directory to store offset files
+     */
     public FilePersistentOffsetStore(String dataDir) {
         this(dataDir, FLUSH_INTERVAL_SECONDS);
     }
@@ -123,7 +129,9 @@ public class FilePersistentOffsetStore implements OffsetStore {
 
     @Override
     public void flush() {
-        if (closed) return;
+        if (closed) {
+            return;
+        }
         try {
             // Write to temp file then atomic rename
             Path tempFile = Paths.get(storePath.toString() + ".tmp");
@@ -179,10 +187,14 @@ public class FilePersistentOffsetStore implements OffsetStore {
             int loaded = 0;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
                 // Format: connectorName:topic:partition:position
                 int lastColon = line.lastIndexOf(':');
-                if (lastColon < 0) continue;
+                if (lastColon < 0) {
+                    continue;
+                }
                 String key = line.substring(0, lastColon);
                 String position = line.substring(lastColon + 1);
                 offsets.put(key, position);

@@ -21,16 +21,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.LinkedHashMap;
 
 /**
  * Per-connector configuration model.
  */
 public class ConnectorConfig {
 
-    public enum ConnectorType { SOURCE, SINK }
+    public enum ConnectorType {
+        SOURCE, SINK
+    }
 
     public enum ThreadPoolMode {
         /** Per-connector dedicated thread pool (production default) */
@@ -47,27 +49,68 @@ public class ConnectorConfig {
     private int threadPoolSize = 2;
     private int maxRetry = 3;
 
-    public ConnectorConfig() {}
+    public ConnectorConfig() {
+    }
 
     // ---- getters ----
 
-    public String getConnectorName() { return connectorName; }
-    public ConnectorType getType() { return type; }
-    public String getPluginClass() { return pluginClass; }
-    public Map<String, String> getProps() { return props; }
-    public ThreadPoolMode getPoolMode() { return poolMode; }
-    public int getThreadPoolSize() { return threadPoolSize; }
-    public int getMaxRetry() { return maxRetry; }
+    public String getConnectorName() {
+        return connectorName;
+    }
+
+    public ConnectorType getType() {
+        return type;
+    }
+
+    public String getPluginClass() {
+        return pluginClass;
+    }
+
+    public Map<String, String> getProps() {
+        return props;
+    }
+
+    public ThreadPoolMode getPoolMode() {
+        return poolMode;
+    }
+
+    public int getThreadPoolSize() {
+        return threadPoolSize;
+    }
+
+    public int getMaxRetry() {
+        return maxRetry;
+    }
 
     // ---- setters ----
 
-    public void setConnectorName(String connectorName) { this.connectorName = connectorName; }
-    public void setType(ConnectorType type) { this.type = type; }
-    public void setPluginClass(String pluginClass) { this.pluginClass = pluginClass; }
-    public void setProps(Map<String, String> props) { this.props = props; }
-    public void setPoolMode(ThreadPoolMode poolMode) { this.poolMode = poolMode; }
-    public void setThreadPoolSize(int threadPoolSize) { this.threadPoolSize = threadPoolSize; }
-    public void setMaxRetry(int maxRetry) { this.maxRetry = maxRetry; }
+    public void setConnectorName(String connectorName) {
+        this.connectorName = connectorName;
+    }
+
+    public void setType(ConnectorType type) {
+        this.type = type;
+    }
+
+    public void setPluginClass(String pluginClass) {
+        this.pluginClass = pluginClass;
+    }
+
+    public void setProps(Map<String, String> props) {
+        this.props = props;
+    }
+
+    public void setPoolMode(ThreadPoolMode poolMode) {
+        this.poolMode = poolMode;
+    }
+
+    public void setThreadPoolSize(int threadPoolSize) {
+        this.threadPoolSize = threadPoolSize;
+    }
+
+    public void setMaxRetry(int maxRetry) {
+        this.maxRetry = maxRetry;
+    }
 
     @Override
     public String toString() {

@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -313,7 +312,7 @@ public class IngressProcessorTest {
 
         // Then: Different results based on pipeline key
         assertNotNull(result1); // Passed filter
-        assertNull(result2);    // Filtered out
+        assertNull(result2); // Filtered out
 
         verify(filterEngine).getFilterPattern("group1-topic1");
         verify(filterEngine).getFilterPattern("group2-topic2");

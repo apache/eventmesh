@@ -28,7 +28,9 @@ import io.cloudevents.CloudEvent;
  */
 public interface PipelineRouter {
 
-    /** @return router name for metrics/logging */
+    /**
+     * @return router name for metrics/logging
+     */
     String name();
 
     /**

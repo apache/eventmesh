@@ -32,6 +32,11 @@ public class ConnectorLimitExceededException extends Exception {
         this.maxCount = maxCount;
     }
 
-    public int getCurrentCount() { return currentCount; }
-    public int getMaxCount() { return maxCount; }
+    public int getCurrentCount() {
+        return currentCount;
+    }
+
+    public int getMaxCount() {
+        return maxCount;
+    }
 }

@@ -22,7 +22,9 @@ package org.apache.eventmesh.runtime.connector;
  */
 public class ConnectorStatus {
 
-    public enum State { CREATED, RUNNING, STOPPED, FAILED, PAUSED }
+    public enum State {
+        CREATED, RUNNING, STOPPED, FAILED, PAUSED
+    }
 
     private final String connectorName;
     private final ConnectorConfig.ConnectorType type;
@@ -42,26 +44,71 @@ public class ConnectorStatus {
 
     // ---- getters ----
 
-    public String getConnectorName() { return connectorName; }
-    public ConnectorConfig.ConnectorType getType() { return type; }
-    public State getState() { return state; }
-    public long getUptimeMs() { return uptimeMs; }
-    public long getMessagesProcessed() { return messagesProcessed; }
-    public long getErrors() { return errors; }
-    public String getErrorMessage() { return errorMessage; }
-    public long getLastHeartbeat() { return lastHeartbeat; }
+    public String getConnectorName() {
+        return connectorName;
+    }
+
+    public ConnectorConfig.ConnectorType getType() {
+        return type;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public long getUptimeMs() {
+        return uptimeMs;
+    }
+
+    public long getMessagesProcessed() {
+        return messagesProcessed;
+    }
+
+    public long getErrors() {
+        return errors;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public long getLastHeartbeat() {
+        return lastHeartbeat;
+    }
 
     // ---- setters ----
 
-    public void setState(State state) { this.state = state; }
-    public void setUptimeMs(long uptimeMs) { this.uptimeMs = uptimeMs; }
-    public void setMessagesProcessed(long n) { this.messagesProcessed = n; }
-    public void setErrors(long e) { this.errors = e; }
-    public void setErrorMessage(String msg) { this.errorMessage = msg; }
-    public void heartbeat() { this.lastHeartbeat = System.currentTimeMillis(); }
+    public void setState(State state) {
+        this.state = state;
+    }
 
-    public void incrementMessages() { this.messagesProcessed++; }
-    public void incrementErrors() { this.errors++; }
+    public void setUptimeMs(long uptimeMs) {
+        this.uptimeMs = uptimeMs;
+    }
+
+    public void setMessagesProcessed(long n) {
+        this.messagesProcessed = n;
+    }
+
+    public void setErrors(long e) {
+        this.errors = e;
+    }
+
+    public void setErrorMessage(String msg) {
+        this.errorMessage = msg;
+    }
+
+    public void heartbeat() {
+        this.lastHeartbeat = System.currentTimeMillis();
+    }
+
+    public void incrementMessages() {
+        this.messagesProcessed++;
+    }
+
+    public void incrementErrors() {
+        this.errors++;
+    }
 
     @Override
     public String toString() {

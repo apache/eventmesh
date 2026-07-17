@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.connector;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,7 +88,9 @@ public class ConnectorRuntimeService {
     // ---- lifecycle ----
 
     public void start() {
-        if (!running.compareAndSet(false, true)) return;
+        if (!running.compareAndSet(false, true)) {
+            return;
+        }
         log.info("ConnectorRuntimeService starting with config: {}", config);
 
         // Initialize shared pool if needed
@@ -105,15 +106,16 @@ public class ConnectorRuntimeService {
             this::healthCheck,
             config.getHealthIntervalSeconds(),
             config.getHealthIntervalSeconds(),
-            TimeUnit.SECONDS
-        );
+            TimeUnit.SECONDS);
 
         log.info("ConnectorRuntimeService started, mode={}, maxConnectors={}",
             config.getThreadPoolMode(), config.getMaxConnectors());
     }
 
     public void shutdown() {
-        if (!running.compareAndSet(true, false)) return;
+        if (!running.compareAndSet(true, false)) {
+            return;
+        }
         log.info("ConnectorRuntimeService shutting down...");
 
         // Stop all connectors
@@ -299,7 +301,9 @@ public class ConnectorRuntimeService {
 
     private void stopConnectorInternal(String name, ConnectorRuntime rt) {
         ConnectorStatus status = statuses.get(name);
-        if (status == null) return;
+        if (status == null) {
+            return;
+        }
 
         status.setState(ConnectorStatus.State.STOPPED);
         try {
@@ -318,7 +322,9 @@ public class ConnectorRuntimeService {
         }
         // DEDICATED
         int size = cfg.getThreadPoolSize();
-        if (size <= 0) size = config.getDedicatedThreadPoolSize();
+        if (size <= 0) {
+            size = config.getDedicatedThreadPoolSize();
+        }
         return Executors.newFixedThreadPool(size, connectorThreadFactory("connector-" + cfg.getConnectorName()));
     }
 
@@ -349,6 +355,7 @@ public class ConnectorRuntimeService {
      * Lightweight wrapper around a single Connector job.
      */
     private static class ConnectorRuntime {
+
         private final ConnectorConfig config;
         private volatile boolean started;
 
@@ -356,7 +363,9 @@ public class ConnectorRuntimeService {
             this.config = config;
         }
 
-        ConnectorConfig getConfig() { return config; }
+        ConnectorConfig getConfig() {
+            return config;
+        }
 
         void start() throws Exception {
             this.started = true;
@@ -377,7 +386,9 @@ public class ConnectorRuntimeService {
         }
 
         void pollAndProcess() throws Exception {
-            if (!started) return;
+            if (!started) {
+                return;
+            }
             // Delegate to connector's poll() or put() via reflection
             // In DEDICATED mode, each Source connector's poll() runs in its own thread
             // The actual processing (Pipeline) happens when the connector

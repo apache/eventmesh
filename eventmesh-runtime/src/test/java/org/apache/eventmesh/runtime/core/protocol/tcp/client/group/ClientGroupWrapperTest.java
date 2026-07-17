@@ -19,7 +19,6 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.function.api.Router;
 import org.apache.eventmesh.function.filter.pattern.Pattern;
 import org.apache.eventmesh.function.transformer.Transformer;
@@ -110,11 +108,11 @@ public class ClientGroupWrapperTest {
         // No setter.
         // We will assume `new MQProducerWrapper("standalone")` works fine (it uses SPI, might fail if no plugin).
         // To verify the pipeline, we mainly care about Engines interaction.
-        
+
         // However, `send` calls `mqProducerWrapper.send`. If that fails, test fails.
         // For unit test, we might need to mock the internal mqProducerWrapper.
         // Since we are mocking `EventMeshTCPServer`, `ClientGroupWrapper` uses it to access engines.
-        
+
         // Let's try to set the internal mqProducerWrapper field using reflection.
         try {
             java.lang.reflect.Field field = ClientGroupWrapper.class.getDeclaredField("mqProducerWrapper");
@@ -135,8 +133,6 @@ public class ClientGroupWrapperTest {
             .withData("data".getBytes(StandardCharsets.UTF_8))
             .build();
 
-        UpStreamMsgContext context = new UpStreamMsgContext(mock(Session.class), event, mock(Header.class), System.currentTimeMillis(), System.currentTimeMillis());
-        SendCallback callback = mock(SendCallback.class);
 
         // 1. Mock Filter (Pass)
         Pattern pattern = mock(Pattern.class);
@@ -153,6 +149,9 @@ public class ClientGroupWrapperTest {
         when(routerEngine.getRouter("group-topic")).thenReturn(router);
         when(router.route(anyString())).thenReturn("newTopic");
 
+        UpStreamMsgContext context =
+            new UpStreamMsgContext(mock(Session.class), event, mock(Header.class), System.currentTimeMillis(), System.currentTimeMillis());
+        SendCallback callback = mock(SendCallback.class);
         clientGroupWrapper.send(context, callback);
 
         // Verify Engines called
@@ -164,12 +163,12 @@ public class ClientGroupWrapperTest {
         // We capture the event passed to producer
         org.mockito.ArgumentCaptor<CloudEvent> captor = org.mockito.ArgumentCaptor.forClass(CloudEvent.class);
         verify(mqProducerWrapper).send(captor.capture(), any());
-        
+
         CloudEvent sentEvent = captor.getValue();
         Assertions.assertEquals("newTopic", sentEvent.getSubject());
         Assertions.assertEquals("transformedData", new String(sentEvent.getData().toBytes(), StandardCharsets.UTF_8));
     }
-    
+
     @Test
     public void testSendWithFilterDrop() throws Exception {
         CloudEvent event = CloudEventBuilder.v1()
@@ -180,7 +179,8 @@ public class ClientGroupWrapperTest {
             .withData("data".getBytes(StandardCharsets.UTF_8))
             .build();
 
-        UpStreamMsgContext context = new UpStreamMsgContext(mock(Session.class), event, mock(Header.class), System.currentTimeMillis(), System.currentTimeMillis());
+        UpStreamMsgContext context =
+            new UpStreamMsgContext(mock(Session.class), event, mock(Header.class), System.currentTimeMillis(), System.currentTimeMillis());
         SendCallback callback = mock(SendCallback.class);
 
         // 1. Mock Filter (Reject)

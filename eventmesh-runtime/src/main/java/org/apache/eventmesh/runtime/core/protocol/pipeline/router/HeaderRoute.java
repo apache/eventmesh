@@ -54,7 +54,9 @@ public class HeaderRoute implements PipelineRouter {
         try {
             field = (String) ctx.getAttribute(FIELD_ATTR);
             String p = (String) ctx.getAttribute(PREFIX_ATTR);
-            if (p != null) prefix = p;
+            if (p != null) {
+                prefix = p;
+            }
         } catch (Exception e) {
             log.debug("HeaderRoute: no routing field configured");
             return Collections.emptyList();

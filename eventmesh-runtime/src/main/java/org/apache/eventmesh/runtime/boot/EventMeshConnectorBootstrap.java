@@ -18,17 +18,14 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.AsyncConsumeContext;
-import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.function.api.Router;
 import org.apache.eventmesh.openconnect.Application;
 import org.apache.eventmesh.openconnect.ConnectorWorker;
 import org.apache.eventmesh.openconnect.SinkWorker;
@@ -40,17 +37,16 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionCon
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendResult;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.EgressProcessor;
-import org.apache.eventmesh.runtime.core.protocol.IngressProcessor;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.EgressProcessor;
+import org.apache.eventmesh.runtime.core.protocol.IngressProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,16 +71,14 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
         if (!config.isEventMeshConnectorPluginEnable()) {
             return;
         }
-        
+
         this.ingressProcessor = new IngressProcessor(
             eventMeshServer.getFilterEngine(),
             eventMeshServer.getTransformerEngine(),
-            eventMeshServer.getRouterEngine()
-        );
+            eventMeshServer.getRouterEngine());
         this.egressProcessor = new EgressProcessor(
             eventMeshServer.getFilterEngine(),
-            eventMeshServer.getTransformerEngine()
-        );
+            eventMeshServer.getTransformerEngine());
 
         String type = config.getEventMeshConnectorPluginType();
         String name = config.getEventMeshConnectorPluginName();
@@ -114,17 +108,18 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
                 sinkConfig.getPubSubConfig().getGroup(), config.getEventMeshCluster()));
             props.put(EventMeshConstants.EVENT_MESH_IDC, config.getEventMeshIDC());
             consumer.init(props);
-            
+
             consumer.subscribe(sinkConfig.getPubSubConfig().getSubject());
 
             consumer.registerEventListener(new EventListener() {
+
                 @Override
                 public void consume(CloudEvent event, AsyncConsumeContext context) {
                     try {
                         // 1. Egress Pipeline
                         String pipelineKey = sinkConfig.getPubSubConfig().getGroup() + "-" + event.getSubject();
                         event = egressProcessor.process(event, pipelineKey);
-                        
+
                         if (event == null) {
                             context.commit(EventMeshAction.CommitMessage);
                             return;
@@ -141,17 +136,17 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
 
         } else if (Application.isSource(connector.getClass())) {
             worker = new SourceWorker((Source) connector, (SourceConfig) connectorConfig);
-            
+
             // Initialize Producer for Source
             SourceConfig sourceConfig = (SourceConfig) connectorConfig;
             producer = new MQProducerWrapper(config.getEventMeshStoragePluginType());
             Properties props = new Properties();
             props.put(EventMeshConstants.PRODUCER_GROUP, sourceConfig.getPubSubConfig().getGroup());
             props.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
-                    sourceConfig.getPubSubConfig().getGroup(), config.getEventMeshCluster()));
+                sourceConfig.getPubSubConfig().getGroup(), config.getEventMeshCluster()));
             props.put(EventMeshConstants.EVENT_MESH_IDC, config.getEventMeshIDC());
             producer.init(props);
-            
+
             ((SourceWorker) worker).setPublisher((event, callback) -> {
                 try {
                     // Save original metadata before pipeline may nullify the event
@@ -174,6 +169,7 @@ public class EventMeshConnectorBootstrap implements EventMeshBootstrap {
                     // 4. Storage
                     final CloudEvent finalEvent = event;
                     producer.send(finalEvent, new SendCallback() {
+
                         @Override
                         public void onSuccess(org.apache.eventmesh.api.SendResult sendResult) {
                             SendResult res = new SendResult();

@@ -76,7 +76,9 @@ public class ConnectorClassLoader extends URLClassLoader {
         if (!isSystemClass(name)) {
             try {
                 c = findClass(name);
-                if (resolve) resolveClass(c);
+                if (resolve) {
+                    resolveClass(c);
+                }
                 return c;
             } catch (ClassNotFoundException e) {
                 // Not in plugin jars — fall through to parent
@@ -91,7 +93,9 @@ public class ConnectorClassLoader extends URLClassLoader {
     public URL getResource(String name) {
         // Child-first resource lookup
         URL url = findResource(name);
-        if (url != null) return url;
+        if (url != null) {
+            return url;
+        }
         return super.getResource(name);
     }
 
@@ -133,8 +137,9 @@ public class ConnectorClassLoader extends URLClassLoader {
             Files.list(dir)
                 .filter(p -> p.toString().endsWith(".jar"))
                 .forEach(jar -> {
-                    try { urls.add(jar.toUri().toURL()); }
-                    catch (MalformedURLException e) {
+                    try {
+                        urls.add(jar.toUri().toURL());
+                    } catch (MalformedURLException e) {
                         log.warn("Bad plugin jar URL: {}", jar);
                     }
                 });

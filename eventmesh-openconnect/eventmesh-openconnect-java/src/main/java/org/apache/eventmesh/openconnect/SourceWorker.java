@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.SystemUtils;
+import org.apache.eventmesh.openconnect.api.connector.ConnectorEventPublisher;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.callback.SendExceptionContext;
@@ -47,8 +48,6 @@ import org.apache.eventmesh.openconnect.util.CloudEventUtil;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
-
-import org.apache.eventmesh.openconnect.api.connector.ConnectorEventPublisher;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -149,7 +148,7 @@ public class SourceWorker implements ConnectorWorker {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
         if (this.publisher == null) {
             this.eventMeshTCPClient = buildEventMeshPubClient(config);
             this.eventMeshTCPClient.init();
@@ -214,6 +213,7 @@ public class SourceWorker implements ConnectorWorker {
                         CountDownLatch latch = new CountDownLatch(1);
                         final Throwable[] exception = new Throwable[1];
                         publisher.publish(event, new SendMessageCallback() {
+
                             @Override
                             public void onSuccess(SendResult result) {
                                 latch.countDown();
@@ -229,7 +229,7 @@ public class SourceWorker implements ConnectorWorker {
                         if (exception[0] != null) {
                             throw exception[0];
                         }
-                        
+
                         this.source.commit(connectRecord);
                         submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
                         callback.ifPresent(cb -> cb.onSuccess(convertToSendResult(event)));
@@ -370,7 +370,7 @@ public class SourceWorker implements ConnectorWorker {
             log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
             if (committableOffsets.hasPending()) {
                 log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
-                        + "The source partition with the most pending messages is {}, with {} pending messages",
+                    + "The source partition with the most pending messages is {}, with {} pending messages",
                     this,
                     committableOffsets.numUncommittableMessages(),
                     committableOffsets.numDeques(),
@@ -378,7 +378,7 @@ public class SourceWorker implements ConnectorWorker {
                     committableOffsets.largestDequeSize());
             } else {
                 log.debug("{} There are currently no pending messages for this offset commit; "
-                        + "all messages dispatched to the task's producer since the last commit have been acknowledged",
+                    + "all messages dispatched to the task's producer since the last commit have been acknowledged",
                     this);
             }
         }

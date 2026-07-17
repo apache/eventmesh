@@ -22,8 +22,8 @@ import org.apache.eventmesh.runtime.connector.ConnectorRuntimeService;
 import org.apache.eventmesh.runtime.connector.ConnectorStatus;
 import org.apache.eventmesh.runtime.connector.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.connector.JobInfo;
-import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
 import org.apache.eventmesh.runtime.monitor.ConnectorMonitor;
+import org.apache.eventmesh.runtime.monitor.PipelineMonitor;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,10 +32,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * Extended tests for AdminClient and JobApiController.
@@ -240,13 +238,13 @@ class AdminJobExtendedTest {
     void admin_metrics() {
         PipelineMonitor pipelineMonitor = new PipelineMonitor();
         ConnectorMonitor connectorMonitor = new ConnectorMonitor();
-        AdminClient client = new AdminClient("localhost:50051", false, null,
-            null, pipelineMonitor, connectorMonitor);
 
         pipelineMonitor.recordIngress(5L);
         pipelineMonitor.recordIngressFiltered();
         connectorMonitor.recordSourceRecords("test-c", 10);
 
+        AdminClient client = new AdminClient("localhost:50051", false, null,
+            null, pipelineMonitor, connectorMonitor);
         Map<String, Object> metrics = client.collectMetrics();
         assertEquals(1L, metrics.get("pipeline.ingress.total.count"));
         assertEquals(1L, metrics.get("pipeline.ingress.filtered.count"));
