@@ -17,22 +17,12 @@
 
 use eventmesh::{
     config::{Endpoint, EndpointSet},
-    message::{EventMeshMessage, Message, MessageKind, OpenMessage},
+    message::{EventMeshMessage, Message, MessageKind},
     subscription::{DeliveryMode, DeliveryType, Subscription},
 };
 
 #[cfg(feature = "http")]
 use eventmesh::http::codec::{parse_push_body, PushMessageRequestBody, WebhookReply};
-
-#[test]
-fn native_and_open_models_round_trip_without_public_wire_codecs() {
-    let original = OpenMessage::new("orders", "created")
-        .with_header("traceparent", "00-abc")
-        .with_property("region", "cn");
-    let native = Message::from(original.clone()).into_event_mesh().unwrap();
-    let back = Message::from(native).into_open().unwrap();
-    assert_eq!(back, original);
-}
 
 #[test]
 fn message_kind_is_explicit() {
@@ -47,6 +37,19 @@ fn subscriptions_have_rust_style_defaults_and_setters() {
         .with_delivery_type(DeliveryType::Async);
     assert_eq!(subscription.topic, "orders");
     assert_eq!(subscription.delivery_mode, DeliveryMode::Broadcast);
+}
+
+#[cfg(feature = "grpc")]
+#[test]
+fn catalog_accepts_public_subscription_modes() {
+    let config = eventmesh::config::CatalogClientConfig::builder()
+        .app_server_name("orders")
+        .subscription_mode(DeliveryMode::Broadcast)
+        .subscription_type(DeliveryType::Sync)
+        .build()
+        .unwrap();
+    assert_eq!(config.subscription_mode, DeliveryMode::Broadcast);
+    assert_eq!(config.subscription_type, DeliveryType::Sync);
 }
 
 #[test]

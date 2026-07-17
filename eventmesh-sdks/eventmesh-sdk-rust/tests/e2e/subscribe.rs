@@ -98,17 +98,15 @@ async fn unsubscribe_stops_delivery() {
         .expect("unsubscribe");
     let_stream_settle().await;
 
-    match producer
+    producer
         .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))
         .await
-    {
-        Ok(_) => assert!(
-            matches!(
-                tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
-                Err(_) | Ok(None)
-            ),
-            "delivery leaked after unsubscribe"
+        .expect("publish after unsubscribe");
+    assert!(
+        matches!(
+            tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
+            Err(_) | Ok(None)
         ),
-        Err(error) => eprintln!("[e2e] broker rejected post-unsubscribe publish: {error}"),
-    }
+        "delivery leaked after unsubscribe"
+    );
 }

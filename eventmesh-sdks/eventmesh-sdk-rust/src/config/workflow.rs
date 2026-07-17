@@ -20,6 +20,7 @@
 use std::time::Duration;
 
 use crate::config::TlsConfig;
+use crate::error::{EventMeshError, Result};
 
 /// Default logical Workflow service name, matching the Java SDK.
 pub const DEFAULT_WORKFLOW_SERVER_NAME: &str = "eventmesh-workflow";
@@ -83,16 +84,28 @@ impl WorkflowClientConfigBuilder {
         self.tls_config = Some(v);
         self
     }
-    pub fn build(self) -> WorkflowClientConfig {
-        WorkflowClientConfig {
-            server_name: self
-                .server_name
-                .filter(|name| !name.trim().is_empty())
-                .unwrap_or_else(|| DEFAULT_WORKFLOW_SERVER_NAME.into()),
-            timeout: self.timeout.unwrap_or(DEFAULT_WORKFLOW_TIMEOUT),
+    pub fn build(self) -> Result<WorkflowClientConfig> {
+        let server_name = match self.server_name {
+            Some(name) if name.trim().is_empty() => {
+                return Err(EventMeshError::Config(
+                    "workflow server_name must not be empty".into(),
+                ));
+            }
+            Some(name) => name,
+            None => DEFAULT_WORKFLOW_SERVER_NAME.into(),
+        };
+        let timeout = self.timeout.unwrap_or(DEFAULT_WORKFLOW_TIMEOUT);
+        if timeout.is_zero() {
+            return Err(EventMeshError::Config(
+                "workflow timeout must be greater than zero".into(),
+            ));
+        }
+        Ok(WorkflowClientConfig {
+            server_name,
+            timeout,
             use_tls: self.use_tls.unwrap_or(false),
             tls_config: self.tls_config,
-        }
+        })
     }
 }
 
@@ -102,9 +115,21 @@ mod tests {
 
     #[test]
     fn defaults_match_java_sdk() {
-        let config = WorkflowClientConfig::builder().build();
+        let config = WorkflowClientConfig::builder().build().unwrap();
         assert_eq!(config.server_name, DEFAULT_WORKFLOW_SERVER_NAME);
         assert_eq!(config.timeout, DEFAULT_WORKFLOW_TIMEOUT);
         assert!(!config.use_tls);
+    }
+
+    #[test]
+    fn explicit_blank_server_name_and_zero_timeout_are_rejected() {
+        assert!(WorkflowClientConfig::builder()
+            .server_name(" ")
+            .build()
+            .is_err());
+        assert!(WorkflowClientConfig::builder()
+            .timeout(Duration::ZERO)
+            .build()
+            .is_err());
     }
 }

@@ -36,8 +36,9 @@ use axum::Json;
 use bytes::Bytes;
 use tracing::{debug, error, warn};
 
+use crate::error::EventMeshError;
 use crate::message::Message;
-use crate::model::{EventMeshMessage, EventMeshProtocolType, OpenMessage};
+use crate::model::{EventMeshMessage, EventMeshProtocolType};
 use crate::transport::http::codec::{parse_push_body, WebhookReply};
 use crate::MessageListener;
 
@@ -67,7 +68,13 @@ impl WebhookMessage for Message {
     ) -> crate::Result<Self> {
         let protocol_type = headers
             .get("protocoltype")
-            .and_then(|value| value.to_str().ok())
+            .map(|value| {
+                value.to_str().map_err(|error| EventMeshError::Protocol {
+                    transport: "http",
+                    message: format!("invalid protocoltype header: {error}"),
+                })
+            })
+            .transpose()?
             .unwrap_or(EventMeshProtocolType::EventMeshMessage.as_str());
 
         if protocol_type == EventMeshProtocolType::CloudEvents.as_str() {
@@ -77,14 +84,21 @@ impl WebhookMessage for Message {
                     .map(Self::CloudEvent)
                     .map_err(crate::error::EventMeshError::Codec);
             }
+
+            #[cfg(not(feature = "cloud_events"))]
+            return Err(EventMeshError::Unsupported(
+                "received a CloudEvent without the 'cloud_events' feature enabled".into(),
+            ));
         }
 
-        let native = body.to_event_mesh_message()?;
-        if protocol_type == EventMeshProtocolType::OpenMessage.as_str() {
-            Ok(Self::Open(OpenMessage::from_event_mesh_message(native)))
-        } else {
-            Ok(Self::EventMesh(native))
+        if protocol_type != EventMeshProtocolType::EventMeshMessage.as_str() {
+            return Err(EventMeshError::Protocol {
+                transport: "http",
+                message: format!("unsupported protocoltype {protocol_type:?}"),
+            });
         }
+
+        Ok(Self::EventMesh(body.to_event_mesh_message()?))
     }
 }
 
@@ -204,11 +218,17 @@ mod tests {
     }
 
     #[test]
-    fn public_message_preserves_open_protocol() {
+    fn public_message_rejects_unknown_protocol() {
         let mut headers = HeaderMap::new();
         headers.insert("protocoltype", "openmessage".parse().unwrap());
-        let decoded = Message::decode_webhook(&push("created".into()), &headers).unwrap();
-        assert!(matches!(decoded, Message::Open(_)));
+        let error = Message::decode_webhook(&push("created".into()), &headers).unwrap_err();
+        assert!(matches!(
+            error,
+            EventMeshError::Protocol {
+                transport: "http",
+                ..
+            }
+        ));
     }
 
     #[cfg(feature = "cloud_events")]

@@ -36,7 +36,7 @@ async fn main() -> eventmesh::Result<()> {
         .build()
         .map_err(|error| Error::InvalidArgument(format!("invalid CloudEvent: {error}")))?;
 
-    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?));
+    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?))?;
     let producer = client
         .producer(ProducerOptions::new("test-producerGroup"))
         .await?;

@@ -95,6 +95,10 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
   are serialized as `application/cloudevents+json` raw bytes (matching the Java
   runtime's codec path).
 - `src/config/tcp.rs` — `TcpClientConfig` + `ReconnectConfig` + fluent builders.
+- Public `TcpConfig` keeps Java-compatible timeout classes separate: TCP
+  connect (1s default), protocol control (20s), business request/response
+  (20s), heartbeat interval (30s), and reconnect backoff. Rust heartbeats and
+  GOODBYE remain fire-and-forget.
 - `src/common/` — `ProtocolKey`, status codes, constants, `LoadBalanceSelector`
   shared across transports.
 
@@ -137,12 +141,14 @@ Run with: `cargo test --features e2e`.
   Set `EVENTMESH_E2E_ALLOW_SKIP=1` only for an intentional local skip; release
   verification must not set it.
 - Each test generates a unique topic + consumer group (monotonic counter + nanos
-  timestamp), so the suite is parallel-safe on the shared broker.
+  timestamp). gRPC and HTTP cases may run in parallel; TCP cases take a shared
+  async test lock and run serially because the runtime's route refresh and
+  RocketMQ rebalance cycles are shared even when topics are distinct.
 - **Standalone (in-memory) broker limitations:** a topic must be created via the
   admin API **and** a consumer subscribed *before* any publish, and it does not
-  implement request/reply. The harness warms topics automatically.
-  Request/reply failures are tolerated only for an externally provided runtime;
-  the harness-started `rocketmq` profile must exercise the full path successfully.
+  implement request/reply. The harness warms topics automatically. Because the
+  suite strictly verifies every advertised operation, use a runtime profile that
+  supports request/reply when running the complete release suite.
 - Topic creation hits the admin API at `POST /topic`, which expects
   **`application/x-www-form-urlencoded`** (not JSON).
 

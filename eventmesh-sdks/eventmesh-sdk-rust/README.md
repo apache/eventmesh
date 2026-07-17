@@ -2,8 +2,8 @@
 
 The Rust SDK for [Apache EventMesh](https://eventmesh.apache.org). Version 2
 uses explicit protocol clients, Rust-style configuration values, and one
-non-generic `Message` enum that preserves EventMesh, OpenMessaging, and
-optional CloudEvents messages.
+non-generic `Message` enum that preserves EventMesh and optional CloudEvents
+messages.
 
 ## Requirements
 
@@ -36,18 +36,16 @@ format. It only selects the public message dialect; the chosen transport owns
 protobuf, HTTP-form, or TCP-frame serialization.
 
 ```rust
-use eventmesh::message::{EventMeshMessage, Message, OpenMessage};
+use eventmesh::message::{EventMeshMessage, Message};
 
 let native = Message::from(EventMeshMessage::new("orders.created", "{\"id\": 42}"));
-let open = Message::from(OpenMessage::new("orders.created", "{\"id\": 42}"));
 
 // With `cloud_events` enabled:
 // let cloud_event = Message::from(event);
 ```
 
-`Message::into_event_mesh()` and `Message::into_open()` make only the explicit
-EventMesh/OpenMessaging conversions. CloudEvents are never silently flattened
-into another model.
+`Message::into_event_mesh()` never silently flattens CloudEvents into the
+native EventMesh model.
 
 ## gRPC
 
@@ -111,9 +109,9 @@ async fn main() -> eventmesh::Result<()> {
 handler dispatch on a gRPC stream. `GrpcConsumer::subscribe` and `unsubscribe`
 update a live stream. For gRPC
 webhook registration, create `client.webhook_consumer(...)` and register one
-or more subscriptions with a webhook URL. gRPC batch publishing accepts
-EventMesh/OpenMessaging messages together, or a homogeneous CloudEvents batch;
-mixed native/CloudEvents batches are rejected.
+or more subscriptions with a webhook URL. gRPC batch publishing accepts a
+native EventMesh batch or a homogeneous CloudEvents batch; mixed
+native/CloudEvents batches are rejected.
 
 ## HTTP and TCP
 
@@ -154,10 +152,25 @@ HTTP connects directly by default, matching the Java SDK. Enable process
 environment proxy settings explicitly with `HttpConfig::with_proxy_from_env(true)`;
 reqwest will then honor `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
 
-`ClientOptions::with_request_timeout` supplies the default unary timeout. When
-one request needs a different deadline, each producer exposes
+The default request timeout is protocol-specific: 5 seconds for gRPC, 15
+seconds for HTTP, and 20 seconds for TCP. `ClientOptions::with_request_timeout`
+overrides that protocol default and rejects a zero duration when the client is
+created. When one request needs a different deadline, each producer exposes
 `request_reply_with_timeout(message, Duration)`, matching the Java SDK's
 per-call timeout without changing the client's default.
+
+TCP additionally separates its 1-second socket connection timeout from its
+20-second protocol-control timeout. Configure them with
+`TcpConfig::with_connect_timeout` and `TcpConfig::with_control_timeout`; the
+latter applies to HELLO, LISTEN, subscribe, unsubscribe, and subscription
+replay after reconnect. The heartbeat interval and reconnect backoff remain
+independent settings. As in the existing Rust implementation, heartbeat and
+GOODBYE frames are fire-and-forget rather than response-waiting Java-style
+control calls.
+
+HTTP endpoint weights must each be positive and no greater than `i32::MAX`;
+their combined weight must also fit in `i32`. This rejects configurations that
+would overflow the Java SDK's weighted load-balancing counters.
 
 Operations return the public, pattern-matchable `eventmesh::Error`; relevant
 variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`,

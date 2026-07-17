@@ -18,7 +18,7 @@
 //! Native TCP client API.
 
 use crate::config::{ConsumerOptions, ProducerOptions, TcpConfig};
-use crate::error::Result;
+use crate::error::{EventMeshError, Result};
 use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
@@ -36,13 +36,16 @@ pub struct TcpClient {
 }
 
 impl TcpClient {
-    /// Create a TCP client handle.  Connections are opened by role factories.
-    pub fn new(config: TcpConfig) -> Self {
-        Self { config }
+    /// Validate and create a TCP client handle. Connections are opened by role
+    /// factories.
+    pub fn new(config: TcpConfig) -> Result<Self> {
+        config.validate()?;
+        Ok(Self { config })
     }
 
     /// Connect a producer role to the TCP endpoint.
     pub async fn producer(&self, options: ProducerOptions) -> Result<TcpProducer> {
+        options.validate()?;
         Ok(TcpProducer {
             inner: LegacyProducer::connect(self.config.legacy(Some(&options), None)).await?,
             timeout: self.config.request_timeout(),
@@ -73,6 +76,7 @@ impl TcpClient {
     where
         H: MessageHandler,
     {
+        options.validate()?;
         Ok(TcpConsumer {
             inner: LegacyConsumer::connect(
                 self.config.legacy(None, Some(&options)),
@@ -149,11 +153,6 @@ impl TcpProducer {
                 .publish(message)
                 .await
                 .map(PublishReceipt::from_legacy),
-            Message::Open(message) => self
-                .inner
-                .publish_open_message(message)
-                .await
-                .map(PublishReceipt::from_legacy),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
@@ -167,7 +166,6 @@ impl TcpProducer {
     pub async fn broadcast(&self, message: Message) -> Result<()> {
         match message {
             Message::EventMesh(message) => self.inner.broadcast(message).await,
-            Message::Open(message) => self.inner.broadcast_open_message(message).await,
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self.inner.broadcast_cloud_event(event).await,
         }
@@ -184,17 +182,17 @@ impl TcpProducer {
         message: Message,
         timeout: std::time::Duration,
     ) -> Result<Message> {
+        if timeout.is_zero() {
+            return Err(EventMeshError::InvalidArgument(
+                "request/reply timeout must be greater than zero".into(),
+            ));
+        }
         match message {
             Message::EventMesh(message) => self
                 .inner
                 .request_reply(message, timeout)
                 .await
                 .map(Message::EventMesh),
-            Message::Open(message) => self
-                .inner
-                .request_reply_open_message(message, timeout)
-                .await
-                .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner

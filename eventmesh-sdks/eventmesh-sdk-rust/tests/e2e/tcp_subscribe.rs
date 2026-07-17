@@ -21,7 +21,7 @@ use std::time::Duration;
 
 use eventmesh::message::{EventMeshMessage, Message};
 
-use crate::harness::{ensure_topic, tcp_producer, tcp_warm_topic, unique_topic};
+use crate::harness::{ensure_topic, serialize_tcp_e2e, tcp_producer, tcp_warm_topic, unique_topic};
 use crate::require_runtime;
 
 async fn receive(
@@ -35,6 +35,7 @@ async fn receive(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_subscribe_and_receive() {
+    let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
     let topic = unique_topic("tcp-sub-recv");
     ensure_topic(&topic).await;
@@ -58,6 +59,7 @@ async fn tcp_subscribe_and_receive() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_unsubscribe_stops_delivery() {
+    let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
     let topic = unique_topic("tcp-sub-unsub");
     ensure_topic(&topic).await;
@@ -71,19 +73,17 @@ async fn tcp_unsubscribe_stops_delivery() {
     let _ = receive(&mut receiver).await;
     consumer.unsubscribe_all().await.expect("TCP unsubscribe");
 
-    match producer
+    producer
         .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))
         .await
-    {
-        Ok(_) => assert!(
-            matches!(
-                tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
-                Err(_) | Ok(None)
-            ),
-            "TCP delivery leaked after unsubscribe"
+        .expect("TCP publish after unsubscribe");
+    assert!(
+        matches!(
+            tokio::time::timeout(Duration::from_secs(3), receiver.recv()).await,
+            Err(_) | Ok(None)
         ),
-        Err(error) => eprintln!("[e2e] broker rejected post-unsubscribe TCP publish: {error}"),
-    }
+        "TCP delivery leaked after unsubscribe"
+    );
 
     producer.shutdown().await;
     consumer.shutdown().await;

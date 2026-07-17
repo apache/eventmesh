@@ -23,14 +23,14 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, let_tcp_subscription_settle, tcp_client, tcp_producer,
-    unique_topic, ReplyingListener,
+    consumer_options, ensure_topic, let_tcp_subscription_settle, serialize_tcp_e2e, tcp_client,
+    tcp_producer, unique_topic, ReplyingListener,
 };
 use crate::require_runtime;
-use crate::runtime::{mode, Mode};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_request_reply_roundtrip() {
+    let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
     let topic = unique_topic("tcp-req-reply");
     ensure_topic(&topic).await;
@@ -52,16 +52,14 @@ async fn tcp_request_reply_roundtrip() {
     let producer = tcp_producer().await;
     let reply = producer
         .request_reply(Message::from(EventMeshMessage::new(&topic, "ping")))
-        .await;
+        .await
+        .expect("TCP request/reply");
     producer.shutdown().await;
     consumer.shutdown().await;
 
     match reply {
-        Ok(Message::EventMesh(message)) => assert_eq!(message.content.as_deref(), Some("pong")),
-        Ok(other) => panic!("expected native reply, got {other:?}"),
-        Err(error) if mode() != Some(Mode::Started) => {
-            eprintln!("[e2e] external broker may not support TCP request/reply: {error}");
-        }
-        Err(error) => panic!("TCP request/reply failed on harness runtime: {error}"),
+        Message::EventMesh(message) => assert_eq!(message.content.as_deref(), Some("pong")),
+        #[cfg(feature = "cloud_events")]
+        other => panic!("expected native reply, got {other:?}"),
     }
 }

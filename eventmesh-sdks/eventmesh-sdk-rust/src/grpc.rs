@@ -41,12 +41,14 @@ impl GrpcClient {
     /// Channel creation remains lazy; network I/O begins with the first
     /// operation or stream consumer.
     pub fn new(config: GrpcConfig) -> Result<Self> {
+        config.validate()?;
         ChannelClient::new(&config.legacy(None, None))?;
         Ok(Self { config })
     }
 
     /// Create a producer role using `options`.
     pub fn producer(&self, options: ProducerOptions) -> Result<GrpcProducer> {
+        options.validate()?;
         Ok(GrpcProducer {
             inner: LegacyProducer::connect(self.config.legacy(Some(&options), None))?,
             timeout: self.config.request_timeout(),
@@ -66,6 +68,7 @@ impl GrpcClient {
     where
         H: MessageHandler,
     {
+        options.validate()?;
         let subscriptions: Vec<_> = subscriptions
             .into_iter()
             .map(|subscription| subscription.as_legacy())
@@ -87,6 +90,7 @@ impl GrpcClient {
     /// `http` feature) or an application-owned HTTP endpoint to receive those
     /// deliveries.
     pub async fn webhook_consumer(&self, options: ConsumerOptions) -> Result<GrpcWebhookConsumer> {
+        options.validate()?;
         Ok(GrpcWebhookConsumer {
             inner: LegacyWebhookConsumer::new(
                 self.config.legacy(None, Some(&options)),
@@ -216,11 +220,6 @@ impl GrpcProducer {
                 .publish(message)
                 .await
                 .map(PublishReceipt::from_legacy),
-            Message::Open(message) => self
-                .inner
-                .publish_open_message(message)
-                .await
-                .map(PublishReceipt::from_legacy),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
@@ -263,7 +262,7 @@ impl GrpcProducer {
             .any(|message| matches!(message, Message::CloudEvent(_)))
         {
             return Err(EventMeshError::Unsupported(
-                "mixed EventMesh/OpenMessaging and CloudEvents gRPC batches".into(),
+                "mixed EventMesh and CloudEvents gRPC batches".into(),
             ));
         }
         self.inner
@@ -283,36 +282,23 @@ impl GrpcProducer {
         message: Message,
         timeout: std::time::Duration,
     ) -> Result<Message> {
+        if timeout.is_zero() {
+            return Err(EventMeshError::InvalidArgument(
+                "request/reply timeout must be greater than zero".into(),
+            ));
+        }
         match message {
             Message::EventMesh(message) => self
                 .inner
                 .request_reply(message, timeout)
                 .await
                 .map(Message::EventMesh),
-            Message::Open(message) => self
-                .inner
-                .request_reply_open_message(message, timeout)
-                .await
-                .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
                 .request_reply_cloud_event(event, timeout)
                 .await
                 .map(Message::CloudEvent),
-        }
-    }
-
-    /// Send an EventMesh or OpenMessaging message without waiting for a
-    /// broker acknowledgement.
-    pub async fn publish_one_way(&self, message: Message) -> Result<()> {
-        match message {
-            Message::EventMesh(message) => self.inner.publish_one_way(message).await,
-            Message::Open(message) => self.inner.publish_one_way_open_message(message).await,
-            #[cfg(feature = "cloud_events")]
-            Message::CloudEvent(_) => Err(EventMeshError::Unsupported(
-                "gRPC one-way CloudEvents publishing".into(),
-            )),
         }
     }
 }

@@ -18,12 +18,10 @@
 //! Message, subscription and response types.
 
 pub mod message;
-pub mod open_message;
 pub mod response;
 pub mod subscription;
 
 pub use message::{EventMeshMessage, EventMeshMessageBuilder};
-pub use open_message::{OpenMessage, OpenMessageBuilder};
 pub use response::PublishResponse;
 pub use subscription::{HeartbeatItem, SubscriptionItem, SubscriptionMode, SubscriptionType};
 
@@ -34,8 +32,6 @@ pub enum EventMeshProtocolType {
     CloudEvents,
     /// The SDK's lightweight `EventMeshMessage`.
     EventMeshMessage,
-    /// OpenMessaging.
-    OpenMessage,
 }
 
 impl EventMeshProtocolType {
@@ -43,7 +39,6 @@ impl EventMeshProtocolType {
         match self {
             Self::CloudEvents => "cloudevents",
             Self::EventMeshMessage => "eventmeshmessage",
-            Self::OpenMessage => "openmessage",
         }
     }
 }

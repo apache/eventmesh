@@ -167,14 +167,6 @@ impl GrpcClient {
             .into_inner())
     }
 
-    /// Fire-and-forget publish via the `publishOneWay` RPC. The server returns
-    /// an empty response (no per-message ack), so callers cannot inspect the
-    /// broker's status code — this is intentional fire-and-forget semantics.
-    pub async fn publish_one_way(&self, event: PbCloudEvent) -> Result<()> {
-        self.publisher.clone().publish_one_way(event).await?;
-        Ok(())
-    }
-
     pub async fn request_reply(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
         Ok(self
             .publisher

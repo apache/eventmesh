@@ -40,57 +40,7 @@ impl GrpcProducer {
         Ok(Self { client, config })
     }
 
-    /// Publish fire-and-forget via `publishOneWay` (no reply expected from the
-    /// broker beyond the RPC ack). Useful when you don't care about per-message
-    /// broker ack codes.
-    pub async fn publish_one_way(&self, message: EventMeshMessage) -> Result<()> {
-        let event = codec::from_event_mesh_message(&message, &self.config)?;
-        timed(self.config.timeout, self.client.publish_one_way(event)).await?;
-        Ok(())
-    }
-
-    /// Publish an OpenMessaging value while retaining its protocol type.
-    pub async fn publish_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-    ) -> Result<PublishResponse> {
-        validate_publish(&message.to_event_mesh_message())?;
-        let event = codec::from_open_message(&message, &self.config)?;
-        let response =
-            codec::to_response(&timed(self.config.timeout, self.client.publish(event)).await?);
-        ensure_success(response, "publish failed")
-    }
-
-    /// Send an OpenMessaging request and decode its reply as OpenMessaging.
-    pub async fn request_reply_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-        timeout: Duration,
-    ) -> Result<crate::model::OpenMessage> {
-        validate_publish(&message.to_event_mesh_message())?;
-        let event = codec::from_open_message(&message, &self.config)?;
-        let response = tokio::time::timeout(timeout, self.client.request_reply(event))
-            .await
-            .map_err(|_| EventMeshError::Timeout(timeout))??;
-        ensure_request_reply_success(codec::to_response(&response), "request-reply failed")?;
-        Ok(crate::model::OpenMessage::from_event_mesh_message(
-            codec::to_event_mesh_message(&response),
-        ))
-    }
-
-    /// Publish an OpenMessaging value without waiting for a broker response.
-    pub async fn publish_one_way_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-    ) -> Result<()> {
-        validate_publish(&message.to_event_mesh_message())?;
-        let event = codec::from_open_message(&message, &self.config)?;
-        timed(self.config.timeout, self.client.publish_one_way(event)).await?;
-        Ok(())
-    }
-
-    /// Publish a native/OpenMessaging batch with a protocol discriminator on
-    /// every element.
+    /// Publish a batch of native EventMesh messages.
     pub(crate) async fn publish_message_batch(
         &self,
         messages: Vec<crate::message::Message>,
@@ -101,10 +51,6 @@ impl GrpcProducer {
                 crate::message::Message::EventMesh(message) => {
                     validate_publish(&message)?;
                     codec::from_event_mesh_message(&message, &self.config)?
-                }
-                crate::message::Message::Open(message) => {
-                    validate_publish(&message.to_event_mesh_message())?;
-                    codec::from_open_message(&message, &self.config)?
                 }
                 #[cfg(feature = "cloud_events")]
                 crate::message::Message::CloudEvent(_) => {
@@ -307,6 +253,12 @@ async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn publish_validation_rejects_missing_topic_or_content() {
+        assert!(validate_publish(&EventMeshMessage::new("", "body")).is_err());
+        assert!(validate_publish(&EventMeshMessage::new("topic", "")).is_err());
+    }
 
     #[test]
     fn request_reply_accepts_statusless_business_reply() {

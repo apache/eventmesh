@@ -146,7 +146,8 @@ mod tests {
         let client = WorkflowClient::new(
             WorkflowClientConfig::builder()
                 .timeout(std::time::Duration::from_secs(1))
-                .build(),
+                .build()
+                .unwrap(),
             StaticDiscovery(ServiceInstance::new("127.0.0.1", port)),
         );
         let response = client

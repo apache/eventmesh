@@ -23,8 +23,8 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, let_tcp_subscription_settle, tcp_client, tcp_producer,
-    tcp_warm_topic, unique_topic, CollectingListener,
+    consumer_options, ensure_topic, let_tcp_subscription_settle, serialize_tcp_e2e, tcp_client,
+    tcp_producer, tcp_warm_topic, unique_topic, CollectingListener,
 };
 use crate::require_runtime;
 use std::time::Duration;
@@ -40,6 +40,7 @@ async fn receive(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_single() {
+    let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
     let topic = unique_topic("tcp-pub-single");
     ensure_topic(&topic).await;
@@ -63,6 +64,7 @@ async fn tcp_publish_single() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_broadcast() {
+    let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
     let topic = unique_topic("tcp-broadcast");
     ensure_topic(&topic).await;

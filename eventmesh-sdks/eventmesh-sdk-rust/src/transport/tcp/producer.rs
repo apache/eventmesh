@@ -53,7 +53,8 @@ impl TcpProducer {
                 config.server_port,
                 &user_agent,
                 config.heartbeat_interval,
-                config.timeout,
+                config.connect_timeout,
+                config.control_timeout,
                 config.reconnect.clone(),
             )
             .await?,
@@ -68,45 +69,6 @@ impl TcpProducer {
         validate_publish(&msg)?;
         let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
         self.conn.send(pkg).await
-    }
-
-    /// Publish an OpenMessaging-style message using the interoperable native
-    /// EventMesh TCP envelope.
-    pub async fn publish_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-    ) -> Result<PublishResponse> {
-        validate_publish(&message.to_event_mesh_message())?;
-        let pkg = message::build_open_message_package(&message, Command::AsyncMessageToServer)?;
-        let response = message::response_from_pkg(&self.conn.io(pkg, self.config.timeout).await?);
-        ensure_success(response, "publish failed")
-    }
-
-    /// Broadcast an OpenMessaging-style message.
-    pub async fn broadcast_open_message(&self, message: crate::model::OpenMessage) -> Result<()> {
-        validate_publish(&message.to_event_mesh_message())?;
-        let pkg = message::build_open_message_package(&message, Command::BroadcastMessageToServer)?;
-        self.conn.send(pkg).await
-    }
-
-    /// Send an OpenMessaging-style request and wait for its reply.
-    pub async fn request_reply_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-        timeout: Duration,
-    ) -> Result<crate::model::OpenMessage> {
-        validate_publish(&message.to_event_mesh_message())?;
-        let pkg = message::build_open_message_package(&message, Command::RequestToServer)?;
-        let response = self.conn.io(pkg, timeout).await?;
-        ensure_success(
-            message::response_from_pkg(&response),
-            "request-reply failed",
-        )?;
-        message::parse_message(&response.body)
-            .map(crate::model::OpenMessage::from_event_mesh_message)
-            .ok_or_else(|| {
-                EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
-            })
     }
 
     /// Publish a native CloudEvent over TCP (requires the `cloud_events`
@@ -136,7 +98,7 @@ impl TcpProducer {
         let pkg = message::build_cloud_event_package(&event, Command::AsyncMessageToServer)?;
         debug!(topic = ?event.subject(), "publishing CloudEvent via TCP");
 
-        let resp = self.conn.io(pkg, self.config.timeout).await?;
+        let resp = self.conn.io(pkg, self.config.request_timeout).await?;
         let response = message::response_from_pkg(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -247,7 +209,7 @@ impl Publisher for TcpProducer {
         let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
         debug!(topic = ?message.topic, "publishing via TCP");
 
-        let resp = self.conn.io(pkg, self.config.timeout).await?;
+        let resp = self.conn.io(pkg, self.config.request_timeout).await?;
         let response = message::response_from_pkg(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {

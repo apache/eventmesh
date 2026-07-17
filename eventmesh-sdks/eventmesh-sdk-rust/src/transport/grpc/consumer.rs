@@ -100,19 +100,27 @@ impl GrpcMessage for Message {
             .map(crate::proto_gen::attr_as_str)
             .unwrap_or_default();
 
-        if protocol_type == EventMeshProtocolType::CloudEvents.as_str() {
-            #[cfg(feature = "cloud_events")]
-            return codec::to_cloudevent(event.clone()).map(Self::CloudEvent);
+        match protocol_type.as_str() {
+            protocol if protocol == EventMeshProtocolType::CloudEvents.as_str() => {
+                #[cfg(feature = "cloud_events")]
+                return codec::to_cloudevent(event.clone()).map(Self::CloudEvent);
+
+                #[cfg(not(feature = "cloud_events"))]
+                return Err(EventMeshError::Unsupported(
+                    "received a CloudEvent without the 'cloud_events' feature enabled".into(),
+                ));
+            }
+            "" => {}
+            protocol if protocol == EventMeshProtocolType::EventMeshMessage.as_str() => {}
+            protocol => {
+                return Err(EventMeshError::Protocol {
+                    transport: "grpc",
+                    message: format!("unsupported protocoltype {protocol:?}"),
+                });
+            }
         }
 
-        let native = codec::to_event_mesh_message(event);
-        if protocol_type == EventMeshProtocolType::OpenMessage.as_str() {
-            Ok(Self::Open(
-                crate::model::OpenMessage::from_event_mesh_message(native),
-            ))
-        } else {
-            Ok(Self::EventMesh(native))
-        }
+        Ok(Self::EventMesh(codec::to_event_mesh_message(event)))
     }
 
     fn encode_grpc(
@@ -121,7 +129,6 @@ impl GrpcMessage for Message {
     ) -> Result<crate::proto_gen::PbCloudEvent> {
         match self {
             Self::EventMesh(message) => codec::from_event_mesh_message(message, config),
-            Self::Open(message) => codec::from_open_message(message, config),
             #[cfg(feature = "cloud_events")]
             Self::CloudEvent(event) => codec::from_cloudevent(event, config),
         }
@@ -967,26 +974,23 @@ mod tests {
     }
 
     #[test]
-    fn public_message_preserves_open_protocol() {
-        let original = Message::Open(crate::model::OpenMessage::new("orders", "created"));
-        let wire = original
-            .encode_grpc(&config())
-            .expect("encode open message");
-        assert_eq!(
-            wire.attributes
-                .get(ProtocolKey::PROTOCOL_TYPE)
-                .map(crate::proto_gen::attr_as_str)
-                .as_deref(),
-            Some(EventMeshProtocolType::OpenMessage.as_str())
+    fn public_message_rejects_unknown_protocol() {
+        let mut wire =
+            codec::from_event_mesh_message(&EventMeshMessage::new("orders", "created"), &config())
+                .unwrap();
+        wire.attributes.insert(
+            ProtocolKey::PROTOCOL_TYPE.into(),
+            crate::proto_gen::attr_str("openmessage"),
         );
-        let decoded = Message::decode_grpc(&wire).expect("decode open message");
-        match decoded {
-            Message::Open(message) => {
-                assert_eq!(message.topic.as_deref(), Some("orders"));
-                assert_eq!(message.body.as_deref(), Some("created"));
+
+        let error = Message::decode_grpc(&wire).unwrap_err();
+        assert!(matches!(
+            error,
+            EventMeshError::Protocol {
+                transport: "grpc",
+                ..
             }
-            other => panic!("expected Open message, got {other:?}"),
-        }
+        ));
     }
 
     #[cfg(feature = "cloud_events")]

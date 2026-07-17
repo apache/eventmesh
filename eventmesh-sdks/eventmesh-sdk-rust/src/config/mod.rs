@@ -41,7 +41,8 @@ pub mod workflow;
 pub use client::{
     ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig,
     GrpcConsumerOptions, HttpConfig, Identity, LoadBalance, ProducerOptions, ReconnectPolicy,
-    TcpConfig,
+    TcpConfig, DEFAULT_GRPC_REQUEST_TIMEOUT, DEFAULT_HTTP_REQUEST_TIMEOUT,
+    DEFAULT_TCP_CONNECT_TIMEOUT, DEFAULT_TCP_CONTROL_TIMEOUT, DEFAULT_TCP_REQUEST_TIMEOUT,
 };
 pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
 

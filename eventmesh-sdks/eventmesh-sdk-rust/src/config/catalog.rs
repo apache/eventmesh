@@ -21,7 +21,7 @@ use std::time::Duration;
 
 use crate::config::TlsConfig;
 use crate::error::{EventMeshError, Result};
-use crate::model::{SubscriptionMode, SubscriptionType};
+use crate::subscription::{DeliveryMode, DeliveryType};
 
 /// Default logical Catalog service name, matching the Java SDK.
 pub const DEFAULT_CATALOG_SERVER_NAME: &str = "eventmesh-catalog";
@@ -36,9 +36,9 @@ pub struct CatalogClientConfig {
     /// Name of the application whose operations are queried from Catalog.
     pub app_server_name: String,
     /// Delivery mode applied to Catalog-provided subscribe operations.
-    pub subscription_mode: SubscriptionMode,
+    pub subscription_mode: DeliveryMode,
     /// Delivery type applied to Catalog-provided subscribe operations.
-    pub subscription_type: SubscriptionType,
+    pub subscription_type: DeliveryType,
     /// Timeout for short Catalog RPCs.
     pub timeout: Duration,
     /// Use TLS for the resolved gRPC endpoint.
@@ -59,8 +59,8 @@ impl CatalogClientConfig {
 pub struct CatalogClientConfigBuilder {
     server_name: Option<String>,
     app_server_name: Option<String>,
-    subscription_mode: Option<SubscriptionMode>,
-    subscription_type: Option<SubscriptionType>,
+    subscription_mode: Option<DeliveryMode>,
+    subscription_type: Option<DeliveryType>,
     timeout: Option<Duration>,
     use_tls: Option<bool>,
     tls_config: Option<TlsConfig>,
@@ -75,11 +75,11 @@ impl CatalogClientConfigBuilder {
         self.app_server_name = Some(v.into());
         self
     }
-    pub fn subscription_mode(mut self, v: SubscriptionMode) -> Self {
+    pub fn subscription_mode(mut self, v: DeliveryMode) -> Self {
         self.subscription_mode = Some(v);
         self
     }
-    pub fn subscription_type(mut self, v: SubscriptionType) -> Self {
+    pub fn subscription_type(mut self, v: DeliveryType) -> Self {
         self.subscription_type = Some(v);
         self
     }
@@ -103,17 +103,27 @@ impl CatalogClientConfigBuilder {
             .app_server_name
             .filter(|name| !name.trim().is_empty())
             .ok_or_else(|| EventMeshError::Config("catalog app_server_name is required".into()))?;
+        let server_name = match self.server_name {
+            Some(name) if name.trim().is_empty() => {
+                return Err(EventMeshError::Config(
+                    "catalog server_name must not be empty".into(),
+                ));
+            }
+            Some(name) => name,
+            None => DEFAULT_CATALOG_SERVER_NAME.into(),
+        };
+        let timeout = self.timeout.unwrap_or(DEFAULT_CATALOG_TIMEOUT);
+        if timeout.is_zero() {
+            return Err(EventMeshError::Config(
+                "catalog timeout must be greater than zero".into(),
+            ));
+        }
         Ok(CatalogClientConfig {
-            server_name: self
-                .server_name
-                .filter(|name| !name.trim().is_empty())
-                .unwrap_or_else(|| DEFAULT_CATALOG_SERVER_NAME.into()),
+            server_name,
             app_server_name,
-            subscription_mode: self
-                .subscription_mode
-                .unwrap_or(SubscriptionMode::CLUSTERING),
-            subscription_type: self.subscription_type.unwrap_or(SubscriptionType::ASYNC),
-            timeout: self.timeout.unwrap_or(DEFAULT_CATALOG_TIMEOUT),
+            subscription_mode: self.subscription_mode.unwrap_or(DeliveryMode::Cluster),
+            subscription_type: self.subscription_type.unwrap_or(DeliveryType::Async),
+            timeout,
             use_tls: self.use_tls.unwrap_or(false),
             tls_config: self.tls_config,
         })
@@ -131,8 +141,8 @@ mod tests {
             .build()
             .unwrap();
         assert_eq!(config.server_name, DEFAULT_CATALOG_SERVER_NAME);
-        assert_eq!(config.subscription_mode, SubscriptionMode::CLUSTERING);
-        assert_eq!(config.subscription_type, SubscriptionType::ASYNC);
+        assert_eq!(config.subscription_mode, DeliveryMode::Cluster);
+        assert_eq!(config.subscription_type, DeliveryType::Async);
         assert_eq!(config.timeout, DEFAULT_CATALOG_TIMEOUT);
         assert!(!config.use_tls);
     }
@@ -140,5 +150,19 @@ mod tests {
     #[test]
     fn app_server_name_is_required() {
         assert!(CatalogClientConfig::builder().build().is_err());
+    }
+
+    #[test]
+    fn explicit_blank_server_name_and_zero_timeout_are_rejected() {
+        assert!(CatalogClientConfig::builder()
+            .server_name(" ")
+            .app_server_name("payment")
+            .build()
+            .is_err());
+        assert!(CatalogClientConfig::builder()
+            .app_server_name("payment")
+            .timeout(Duration::ZERO)
+            .build()
+            .is_err());
     }
 }

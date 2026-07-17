@@ -44,6 +44,16 @@ use crate::runtime::{
 };
 
 static SEQ: AtomicU64 = AtomicU64::new(0);
+static TCP_E2E_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+/// Serializes TCP e2e cases against the shared EventMesh/RocketMQ runtime.
+///
+/// Unique topics isolate message data, but concurrent TCP subscriptions still
+/// compete in the runtime's asynchronous route refresh and RocketMQ rebalance
+/// cycles. Keep the guard alive for the complete test case.
+pub(crate) async fn serialize_tcp_e2e() -> tokio::sync::MutexGuard<'static, ()> {
+    TCP_E2E_LOCK.lock().await
+}
 
 pub(crate) fn unique_topic(scope: &str) -> String {
     let n = SEQ.fetch_add(1, Ordering::Relaxed);
@@ -116,6 +126,7 @@ pub(crate) fn tcp_client() -> TcpClient {
             .with_identity(identity())
             .with_credentials(credentials()),
     )
+    .expect("build TCP client")
 }
 
 pub(crate) async fn tcp_producer() -> TcpProducer {

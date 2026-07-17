@@ -34,9 +34,6 @@ service PublisherService {
   //publish event with reply
   rpc requestReply(CloudEvent) returns (CloudEvent);
 
-  //publish event one way
-  rpc publishOneWay(CloudEvent) returns (google.protobuf.Empty);
-
   // publish batch event
   rpc batchPublish(CloudEventBatch) returns (CloudEvent);
 

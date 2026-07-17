@@ -103,35 +103,6 @@ impl HttpProducer {
         decode_cloud_event_reply(reply)
     }
 
-    /// Publish an OpenMessaging-style message over HTTP using the native,
-    /// interoperable EventMeshMessage envelope.
-    pub async fn publish_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-    ) -> Result<PublishResponse> {
-        self.publish_with_protocol(
-            message.to_event_mesh_message(),
-            EventMeshProtocolType::OpenMessage,
-        )
-        .await
-    }
-
-    /// Send an OpenMessaging-style message and wait for an OpenMessaging-style reply.
-    pub async fn request_reply_open_message(
-        &self,
-        message: crate::model::OpenMessage,
-        timeout: Duration,
-    ) -> Result<crate::model::OpenMessage> {
-        let reply = self
-            .request_reply_with_protocol(
-                message.to_event_mesh_message(),
-                timeout,
-                EventMeshProtocolType::OpenMessage,
-            )
-            .await?;
-        Ok(crate::model::OpenMessage::from_event_mesh_message(reply))
-    }
-
     /// Internal publish with a specific protocol type.
     async fn publish_with_protocol(
         &self,

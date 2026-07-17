@@ -118,5 +118,5 @@ pub mod producer;
 
 #[cfg(feature = "cloud_events")]
 pub use consumer::TcpCloudEventConsumer;
-pub use consumer::{ShutdownReason, TcpConsumer, TcpMessage, TcpOpenMessageConsumer};
+pub use consumer::{ShutdownReason, TcpConsumer, TcpMessage};
 pub use producer::TcpProducer;

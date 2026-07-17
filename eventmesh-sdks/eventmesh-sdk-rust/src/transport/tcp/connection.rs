@@ -121,9 +121,9 @@ impl TcpConnection {
     /// Connect to the server, perform the HELLO handshake, and start the
     /// background I/O + heartbeat task.
     ///
-    /// `timeout` bounds both the TCP connect and the HELLO response wait,
-    /// mirroring Java's `TcpClient.hello()` which goes through
-    /// `io(msg, DEFAULT_TIME_OUT_MILLS)` (20s).
+    /// `connect_timeout` bounds the socket connection and `control_timeout`
+    /// bounds the HELLO response, mirroring Java's separate 1-second Netty
+    /// connect timeout and 20-second protocol request timeout.
     ///
     /// The `reconnect` config controls automatic reconnection after I/O errors.
     /// When enabled, the background task re-establishes the connection with
@@ -133,12 +133,14 @@ impl TcpConnection {
         port: u16,
         user_agent: &super::frame::UserAgent,
         heartbeat_interval: Duration,
-        timeout: Duration,
+        connect_timeout: Duration,
+        control_timeout: Duration,
         reconnect: ReconnectConfig,
     ) -> Result<Self> {
         // Initial connect is inline so the caller gets immediate feedback.
         // Subsequent reconnects happen in the background task.
-        let framed = Self::establish(addr, port, user_agent, timeout).await?;
+        let framed =
+            Self::establish(addr, port, user_agent, connect_timeout, control_timeout).await?;
 
         let (outbound_tx, outbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
         let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
@@ -153,7 +155,8 @@ impl TcpConnection {
             port,
             user_agent.clone(),
             heartbeat_interval,
-            timeout,
+            connect_timeout,
+            control_timeout,
             reconnect,
             framed,
             outbound_rx,
@@ -182,21 +185,22 @@ impl TcpConnection {
     /// Establish a new TCP connection and perform the HELLO handshake.
     ///
     /// Used both by [`connect`] (initial) and the reconnect loop (subsequent).
-    /// Bounded by `timeout` for both the TCP connect and the HELLO response.
+    /// The socket connect and HELLO response have separate timeout bounds.
     async fn establish(
         addr: &str,
         port: u16,
         user_agent: &super::frame::UserAgent,
-        timeout: Duration,
+        connect_timeout: Duration,
+        control_timeout: Duration,
     ) -> Result<Framed<TcpStream, TcpCodec>> {
         // Defer name resolution to Tokio: `TcpStream::connect` accepts a
         // "host:port" string via `ToSocketAddrs`, so DNS names like
         // "localhost" (the default `server_addr`) resolve correctly.
         let peer = format!("{addr}:{port}");
         debug!(%peer, "connecting TCP");
-        let stream = tokio::time::timeout(timeout, TcpStream::connect(&peer))
+        let stream = tokio::time::timeout(connect_timeout, TcpStream::connect(&peer))
             .await
-            .map_err(|_| EventMeshError::Timeout(timeout))??;
+            .map_err(|_| EventMeshError::Timeout(connect_timeout))??;
         stream.set_nodelay(true).ok();
 
         let mut framed = Framed::new(stream, TcpCodec::new());
@@ -210,8 +214,8 @@ impl TcpConnection {
         debug!("sending HELLO");
         let hello_pkg = message::hello(user_agent);
         framed.send(hello_pkg).await?;
-        match tokio::time::timeout(timeout, framed.next()).await {
-            Err(_) => Err(EventMeshError::Timeout(timeout)),
+        match tokio::time::timeout(control_timeout, framed.next()).await {
+            Err(_) => Err(EventMeshError::Timeout(control_timeout)),
             Ok(None) => Err(EventMeshError::Tcp("connection closed during HELLO".into())),
             Ok(Some(Err(e))) => Err(e),
             Ok(Some(Ok(resp))) if resp.header.cmd == Command::HelloResponse => {
@@ -368,7 +372,8 @@ impl TcpConnection {
         port: u16,
         user_agent: super::frame::UserAgent,
         heartbeat_interval: Duration,
-        timeout: Duration,
+        connect_timeout: Duration,
+        control_timeout: Duration,
         reconnect: ReconnectConfig,
         mut framed: Framed<TcpStream, TcpCodec>,
         mut outbound_rx: mpsc::Receiver<Package>,
@@ -453,7 +458,9 @@ impl TcpConnection {
                 }
                 backoff = backoff.saturating_mul(2).min(reconnect.max_backoff);
 
-                match Self::establish(&addr, port, &user_agent, timeout).await {
+                match Self::establish(&addr, port, &user_agent, connect_timeout, control_timeout)
+                    .await
+                {
                     Ok(new_framed) => {
                         info!(
                             attempt,
@@ -672,6 +679,46 @@ mod tests {
     use tokio_stream::StreamExt;
     use tokio_util::codec::Framed;
 
+    #[tokio::test]
+    async fn hello_response_wait_uses_the_control_timeout() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (_stream, _) = listener.accept().await.unwrap();
+            std::future::pending::<()>().await;
+        });
+        let config = TcpClientConfig::builder()
+            .server_addr("127.0.0.1")
+            .server_port(port)
+            .producer_group("g")
+            .connect_timeout(Duration::from_secs(1))
+            .control_timeout(Duration::from_millis(20))
+            .heartbeat_interval(Duration::from_secs(60))
+            .reconnect(ReconnectConfig::builder().enabled(false).build())
+            .build();
+        let user_agent = super::super::frame::UserAgent::from_identity(
+            &config.identity,
+            config.server_port,
+            "pub",
+        );
+
+        let result = TcpConnection::connect(
+            &config.server_addr,
+            config.server_port,
+            &user_agent,
+            config.heartbeat_interval,
+            config.connect_timeout,
+            config.control_timeout,
+            config.reconnect,
+        )
+        .await;
+        assert!(matches!(
+            result,
+            Err(EventMeshError::Timeout(timeout)) if timeout == Duration::from_millis(20)
+        ));
+        server.abort();
+    }
+
     /// Loopback test: a request/reply round-trip must produce a
     /// `RESPONSE_TO_CLIENT_ACK` back to the server (mirroring the Java client).
     #[tokio::test]
@@ -738,7 +785,7 @@ mod tests {
             .server_addr("127.0.0.1")
             .server_port(port)
             .producer_group("g")
-            .timeout(Duration::from_secs(3))
+            .control_timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
             .reconnect(ReconnectConfig::builder().enabled(false).build())
             .build();
@@ -814,7 +861,7 @@ mod tests {
             .server_addr("127.0.0.1")
             .server_port(port)
             .producer_group("g")
-            .timeout(Duration::from_secs(3))
+            .control_timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
             .reconnect(
                 ReconnectConfig::builder()
@@ -835,7 +882,8 @@ mod tests {
             config.server_port,
             &user_agent,
             config.heartbeat_interval,
-            config.timeout,
+            config.connect_timeout,
+            config.control_timeout,
             config.reconnect.clone(),
         )
         .await

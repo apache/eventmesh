@@ -156,8 +156,8 @@ fn subscription_items(
         if operation.r#type == "subscribe" {
             let item = SubscriptionItem::new(
                 operation.channel_name.clone(),
-                config.subscription_mode,
-                config.subscription_type,
+                config.subscription_mode.as_legacy(),
+                config.subscription_type.as_legacy(),
             );
             if !items.contains(&item) {
                 items.push(item);
@@ -264,8 +264,8 @@ mod tests {
     fn applies_configured_subscription_mode_and_type() {
         let config = CatalogClientConfig::builder()
             .app_server_name("payment")
-            .subscription_mode(crate::model::SubscriptionMode::BROADCASTING)
-            .subscription_type(crate::model::SubscriptionType::SYNC)
+            .subscription_mode(crate::subscription::DeliveryMode::Broadcast)
+            .subscription_type(crate::subscription::DeliveryType::Sync)
             .build()
             .unwrap();
         let items = subscription_items(

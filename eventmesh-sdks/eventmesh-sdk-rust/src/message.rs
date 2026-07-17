@@ -18,24 +18,20 @@
 //! Public EventMesh message models.
 //!
 //! [`Message`] is the protocol-independent envelope accepted by every v2
-//! producer and delivered to stream consumers.  It deliberately preserves the
-//! three message dialects EventMesh supports instead of flattening them into a
-//! lossy set of string fields.  Transport-specific wire encoding remains an
-//! implementation detail.
+//! producer and delivered to stream consumers. Transport-specific wire
+//! encoding remains an implementation detail.
 
 #[cfg(feature = "cloud_events")]
 use crate::error::EventMeshError;
 use crate::error::Result;
 
-pub use crate::model::{EventMeshMessage, OpenMessage};
+pub use crate::model::EventMeshMessage;
 
 /// Which public event dialect a [`Message`] contains.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MessageKind {
     /// EventMesh's native message model.
     EventMesh,
-    /// The OpenMessaging-compatible message model.
-    Open,
     /// A CNCF CloudEvent.
     #[cfg(feature = "cloud_events")]
     CloudEvent,
@@ -51,8 +47,6 @@ pub enum MessageKind {
 pub enum Message {
     /// EventMesh's native envelope.
     EventMesh(EventMeshMessage),
-    /// An OpenMessaging-compatible envelope.
-    Open(OpenMessage),
     /// A native CloudEvent.
     #[cfg(feature = "cloud_events")]
     CloudEvent(cloudevents::Event),
@@ -88,7 +82,6 @@ impl Message {
     pub const fn kind(&self) -> MessageKind {
         match self {
             Self::EventMesh(_) => MessageKind::EventMesh,
-            Self::Open(_) => MessageKind::Open,
             #[cfg(feature = "cloud_events")]
             Self::CloudEvent(_) => MessageKind::CloudEvent,
         }
@@ -98,42 +91,21 @@ impl Message {
     pub fn as_event_mesh(&self) -> Option<&EventMeshMessage> {
         match self {
             Self::EventMesh(message) => Some(message),
-            _ => None,
-        }
-    }
-
-    /// Borrow the OpenMessaging message, if this is that dialect.
-    pub fn as_open(&self) -> Option<&OpenMessage> {
-        match self {
-            Self::Open(message) => Some(message),
-            _ => None,
+            #[cfg(feature = "cloud_events")]
+            Self::CloudEvent(_) => None,
         }
     }
 
     /// Convert this message to the EventMesh native model.
     ///
-    /// OpenMessaging conversion is lossless.  CloudEvents are not silently
-    /// collapsed here: callers must select a transport that supports the
-    /// CloudEvents variant directly.
+    /// CloudEvents are not silently collapsed here: callers must select a
+    /// transport that supports the CloudEvents variant directly.
     pub fn into_event_mesh(self) -> Result<EventMeshMessage> {
         match self {
             Self::EventMesh(message) => Ok(message),
-            Self::Open(message) => Ok(message.to_event_mesh_message()),
             #[cfg(feature = "cloud_events")]
             Self::CloudEvent(_) => Err(EventMeshError::Unsupported(
                 "converting CloudEvent to EventMeshMessage loses CloudEvents semantics".into(),
-            )),
-        }
-    }
-
-    /// Convert this message to the OpenMessaging model.
-    pub fn into_open(self) -> Result<OpenMessage> {
-        match self {
-            Self::EventMesh(message) => Ok(OpenMessage::from_event_mesh_message(message)),
-            Self::Open(message) => Ok(message),
-            #[cfg(feature = "cloud_events")]
-            Self::CloudEvent(_) => Err(EventMeshError::Unsupported(
-                "converting CloudEvent to OpenMessage loses CloudEvents semantics".into(),
             )),
         }
     }
@@ -145,30 +117,9 @@ impl From<EventMeshMessage> for Message {
     }
 }
 
-impl From<OpenMessage> for Message {
-    fn from(message: OpenMessage) -> Self {
-        Self::Open(message)
-    }
-}
-
 #[cfg(feature = "cloud_events")]
 impl From<cloudevents::Event> for Message {
     fn from(event: cloudevents::Event) -> Self {
         Self::CloudEvent(event)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn open_message_round_trips_through_native_conversion() {
-        let open = OpenMessage::builder()
-            .topic("orders")
-            .body("created")
-            .build();
-        let native = Message::from(open.clone()).into_event_mesh().unwrap();
-        assert_eq!(Message::from(native).into_open().unwrap(), open);
     }
 }

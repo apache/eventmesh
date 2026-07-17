@@ -24,8 +24,16 @@ use crate::config::ClientIdentity;
 /// Default TCP port of an EventMesh runtime.
 pub const DEFAULT_TCP_PORT: u16 = 10_000;
 
-/// Default request timeout (mirrors the Java SDK `DEFAULT_TIME_OUT_MILLS`).
-pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(20);
+/// Default TCP socket connection timeout (mirrors Java's Netty bootstrap).
+pub const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
+
+/// Default protocol-control response timeout (mirrors the Java SDK
+/// `DEFAULT_TIME_OUT_MILLS`).
+pub const DEFAULT_CONTROL_TIMEOUT: Duration = Duration::from_secs(20);
+
+/// Default business request timeout (mirrors the Java SDK
+/// `DEFAULT_TIME_OUT_MILLS`).
+pub const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(20);
 
 /// Heartbeat interval (mirrors the Java SDK `HEARTBEAT = 30_000 ms`).
 pub const DEFAULT_HEARTBEAT: Duration = Duration::from_secs(30);
@@ -135,8 +143,12 @@ pub struct TcpClientConfig {
     pub server_addr: String,
     /// Server TCP port (default `10000`).
     pub server_port: u16,
-    /// Default request timeout applied when none is given to a call.
-    pub timeout: Duration,
+    /// Timeout for establishing a TCP socket.
+    pub connect_timeout: Duration,
+    /// Timeout for HELLO, LISTEN, subscribe, and unsubscribe responses.
+    pub control_timeout: Duration,
+    /// Default timeout for business request/response operations.
+    pub request_timeout: Duration,
     /// Heartbeat interval.
     pub heartbeat_interval: Duration,
     /// Automatic reconnect policy (default: enabled, infinite retries, 1–30 s
@@ -151,7 +163,9 @@ impl Default for TcpClientConfig {
         Self {
             server_addr: "localhost".into(),
             server_port: DEFAULT_TCP_PORT,
-            timeout: DEFAULT_TIMEOUT,
+            connect_timeout: DEFAULT_CONNECT_TIMEOUT,
+            control_timeout: DEFAULT_CONTROL_TIMEOUT,
+            request_timeout: DEFAULT_REQUEST_TIMEOUT,
             heartbeat_interval: DEFAULT_HEARTBEAT,
             reconnect: ReconnectConfig::default(),
             identity: ClientIdentity::detect(),
@@ -176,7 +190,9 @@ impl TcpClientConfig {
 pub struct TcpClientConfigBuilder {
     server_addr: Option<String>,
     server_port: Option<u16>,
-    timeout: Option<Duration>,
+    connect_timeout: Option<Duration>,
+    control_timeout: Option<Duration>,
+    request_timeout: Option<Duration>,
     heartbeat_interval: Option<Duration>,
     reconnect: Option<ReconnectConfig>,
     identity: Option<ClientIdentity>,
@@ -200,8 +216,16 @@ impl TcpClientConfigBuilder {
         self.server_port = Some(v);
         self
     }
-    pub fn timeout(mut self, v: Duration) -> Self {
-        self.timeout = Some(v);
+    pub fn connect_timeout(mut self, v: Duration) -> Self {
+        self.connect_timeout = Some(v);
+        self
+    }
+    pub fn control_timeout(mut self, v: Duration) -> Self {
+        self.control_timeout = Some(v);
+        self
+    }
+    pub fn request_timeout(mut self, v: Duration) -> Self {
+        self.request_timeout = Some(v);
         self
     }
     pub fn heartbeat_interval(mut self, v: Duration) -> Self {
@@ -253,7 +277,9 @@ impl TcpClientConfigBuilder {
         let TcpClientConfigBuilder {
             server_addr,
             server_port,
-            timeout,
+            connect_timeout,
+            control_timeout,
+            request_timeout,
             heartbeat_interval,
             reconnect,
             identity,
@@ -296,7 +322,9 @@ impl TcpClientConfigBuilder {
         TcpClientConfig {
             server_addr: server_addr.unwrap_or_else(|| "localhost".into()),
             server_port: server_port.unwrap_or(DEFAULT_TCP_PORT),
-            timeout: timeout.unwrap_or(DEFAULT_TIMEOUT),
+            connect_timeout: connect_timeout.unwrap_or(DEFAULT_CONNECT_TIMEOUT),
+            control_timeout: control_timeout.unwrap_or(DEFAULT_CONTROL_TIMEOUT),
+            request_timeout: request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
             heartbeat_interval: heartbeat_interval.unwrap_or(DEFAULT_HEARTBEAT),
             reconnect: reconnect.unwrap_or_default(),
             identity,
@@ -309,7 +337,9 @@ impl std::fmt::Debug for TcpClientConfigBuilder {
         f.debug_struct("TcpClientConfigBuilder")
             .field("server_addr", &self.server_addr)
             .field("server_port", &self.server_port)
-            .field("timeout", &self.timeout)
+            .field("connect_timeout", &self.connect_timeout)
+            .field("control_timeout", &self.control_timeout)
+            .field("request_timeout", &self.request_timeout)
             .field("heartbeat_interval", &self.heartbeat_interval)
             .field("reconnect", &self.reconnect)
             .field("identity", &self.identity)

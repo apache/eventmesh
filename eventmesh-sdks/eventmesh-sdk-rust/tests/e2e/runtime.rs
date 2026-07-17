@@ -160,17 +160,6 @@ pub(crate) fn webhook_host() -> String {
     }
 }
 
-/// The resolved runtime mode, or `None` before [`ensure_runtime`] has been
-/// called.
-///
-/// Tests use this to distinguish the harness-launched broker (always the
-/// `rocketmq` profile, where every feature is expected to work) from an
-/// externally-provided server (which may be the feature-limited standalone
-/// broker).
-pub(crate) fn mode() -> Option<Mode> {
-    MODE.get().copied()
-}
-
 fn initialize() -> Mode {
     // 1) Explicit "use my own server" override.
     if std::env::var_os("EVENTMESH_E2E_EXTERNAL").is_some() {

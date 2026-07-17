@@ -23,7 +23,10 @@ use cloudevents::{AttributesReader, Event, EventBuilder, EventBuilderV10};
 use eventmesh::{message::Message, MessageHandler, Result};
 use tokio::sync::mpsc;
 
-use crate::harness::{consumer_options, ensure_topic, tcp_client, tcp_producer, unique_topic};
+use crate::harness::{
+    consumer_options, ensure_topic, let_tcp_subscription_settle, serialize_tcp_e2e, tcp_client,
+    tcp_producer, unique_topic,
+};
 use crate::require_runtime;
 
 struct CloudEventListener {
@@ -41,6 +44,7 @@ impl MessageHandler for CloudEventListener {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tcp_publish_cloud_event() {
+    let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
     let topic = unique_topic("tcp-ce-pub");
     ensure_topic(&topic).await;
@@ -53,7 +57,7 @@ async fn tcp_publish_cloud_event() {
         .subscribe(eventmesh::subscription::Subscription::new(&topic))
         .await
         .expect("subscribe TCP CloudEvent consumer");
-    tokio::time::sleep(Duration::from_millis(800)).await;
+    let_tcp_subscription_settle().await;
     let producer = tcp_producer().await;
 
     let event = EventBuilderV10::new()

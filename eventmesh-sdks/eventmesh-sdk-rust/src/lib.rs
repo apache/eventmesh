@@ -18,9 +18,9 @@
 //! Apache EventMesh Rust SDK.
 //!
 //! Version 2 exposes protocol-specific clients and a shared [`message::Message`]
-//! enum.  The enum preserves native EventMesh, OpenMessaging, and (when the
-//! feature is enabled) CloudEvents models; gRPC protobuf, HTTP form, and TCP
-//! frame details are private implementation details.
+//! enum. The enum preserves native EventMesh and (when the feature is enabled)
+//! CloudEvents models; gRPC protobuf, HTTP form, and TCP frame details are
+//! private implementation details.
 
 #![deny(unsafe_code)]
 
@@ -71,7 +71,7 @@ pub mod tcp;
 
 pub use error::{Error, Result};
 pub use handler::MessageHandler;
-pub use message::{EventMeshMessage, Message, MessageKind, OpenMessage, PublishReceipt};
+pub use message::{EventMeshMessage, Message, MessageKind, PublishReceipt};
 pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 
 #[cfg(feature = "grpc")]

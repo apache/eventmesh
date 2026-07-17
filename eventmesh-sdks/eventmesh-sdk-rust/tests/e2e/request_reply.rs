@@ -27,7 +27,6 @@ use crate::harness::{
     unique_topic, ReplyingListener,
 };
 use crate::require_runtime;
-use crate::runtime::{mode, Mode};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn request_reply_roundtrip() {
@@ -48,14 +47,12 @@ async fn request_reply_roundtrip() {
 
     let reply = grpc_producer()
         .request_reply(Message::from(EventMeshMessage::new(&topic, "ping")))
-        .await;
+        .await
+        .expect("gRPC request/reply");
     match reply {
-        Ok(Message::EventMesh(message)) => assert_eq!(message.content.as_deref(), Some("pong")),
-        Ok(other) => panic!("expected native reply, got {other:?}"),
-        Err(error) if mode() != Some(Mode::Started) => {
-            eprintln!("[e2e] external broker may not support gRPC request/reply: {error}");
-        }
-        Err(error) => panic!("gRPC request/reply failed on harness runtime: {error}"),
+        Message::EventMesh(message) => assert_eq!(message.content.as_deref(), Some("pong")),
+        #[cfg(feature = "cloud_events")]
+        other => panic!("expected native reply, got {other:?}"),
     }
     consumer.shutdown().await;
 }

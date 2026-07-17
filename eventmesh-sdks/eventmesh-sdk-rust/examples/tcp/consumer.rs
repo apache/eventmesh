@@ -33,7 +33,7 @@ impl MessageHandler for PrintHandler {
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?));
+    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?))?;
     let consumer = client
         .consumer(ConsumerOptions::new("test-consumerGroup"), PrintHandler)
         .await?;

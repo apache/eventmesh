@@ -23,6 +23,18 @@ use crate::error::{EventMeshError, Result};
 
 use super::{ClientIdentity, ReconnectConfig, TlsConfig};
 
+/// Default timeout for short gRPC operations.
+pub const DEFAULT_GRPC_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
+/// Default timeout for HTTP requests.
+pub const DEFAULT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
+/// Default timeout for TCP request/response operations.
+pub const DEFAULT_TCP_REQUEST_TIMEOUT: Duration = Duration::from_secs(20);
+/// Default timeout for establishing a TCP socket, matching Java TCP.
+pub const DEFAULT_TCP_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
+/// Default timeout for TCP protocol-control responses such as HELLO and
+/// subscription commands.
+pub const DEFAULT_TCP_CONTROL_TIMEOUT: Duration = Duration::from_secs(20);
+
 /// A validated EventMesh host and port.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Endpoint {
@@ -45,6 +57,22 @@ impl Endpoint {
             return Err(EventMeshError::Config(
                 "endpoint host must not contain whitespace".into(),
             ));
+        }
+        if host.contains("://") || host.chars().any(|c| matches!(c, '/' | '?' | '#')) {
+            return Err(EventMeshError::Config(
+                "endpoint host must not contain a scheme, path, query, or fragment".into(),
+            ));
+        }
+        if host.contains(':') {
+            let literal = host
+                .strip_prefix('[')
+                .and_then(|host| host.strip_suffix(']'))
+                .unwrap_or(&host);
+            if literal.parse::<std::net::Ipv6Addr>().is_err() {
+                return Err(EventMeshError::Config(
+                    "endpoint host containing ':' must be a valid IPv6 literal".into(),
+                ));
+            }
         }
         if port == 0 {
             return Err(EventMeshError::Config(
@@ -74,6 +102,12 @@ impl Endpoint {
             return Err(EventMeshError::Config(
                 "endpoint weight must be greater than zero".into(),
             ));
+        }
+        if weight > i32::MAX as u32 {
+            return Err(EventMeshError::Config(format!(
+                "endpoint weight must not exceed {}",
+                i32::MAX
+            )));
         }
         self.weight = weight;
         Ok(self)
@@ -112,6 +146,18 @@ impl EndpointSet {
             return Err(EventMeshError::Config(
                 "at least one endpoint is required".into(),
             ));
+        }
+        let total_weight = endpoints
+            .iter()
+            .try_fold(0u64, |total, endpoint| {
+                total.checked_add(u64::from(endpoint.weight))
+            })
+            .ok_or_else(|| EventMeshError::Config("endpoint weight sum overflowed".into()))?;
+        if total_weight > i32::MAX as u64 {
+            return Err(EventMeshError::Config(format!(
+                "endpoint weights must sum to at most {}",
+                i32::MAX
+            )));
         }
         Ok(Self(endpoints))
     }
@@ -210,29 +256,30 @@ impl Identity {
 }
 
 /// Options shared by a protocol client.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ClientOptions {
-    request_timeout: Duration,
-}
-
-impl Default for ClientOptions {
-    fn default() -> Self {
-        Self {
-            request_timeout: Duration::from_secs(5),
-        }
-    }
+    request_timeout: Option<Duration>,
 }
 
 impl ClientOptions {
     /// Override the timeout for unary client operations.
     pub fn with_request_timeout(mut self, request_timeout: Duration) -> Self {
-        self.request_timeout = request_timeout;
+        self.request_timeout = Some(request_timeout);
         self
     }
 
-    /// Return the configured unary-operation timeout.
-    pub const fn request_timeout(&self) -> Duration {
+    /// Return the request-timeout override, or `None` to use the transport's
+    /// default.
+    pub const fn request_timeout(&self) -> Option<Duration> {
         self.request_timeout
+    }
+
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    fn validate(&self) -> Result<()> {
+        if let Some(timeout) = self.request_timeout {
+            validate_non_zero_duration("request timeout", timeout)?;
+        }
+        Ok(())
     }
 }
 
@@ -249,6 +296,10 @@ impl ProducerOptions {
             group: group.into(),
         }
     }
+
+    pub(crate) fn validate(&self) -> Result<()> {
+        validate_group("producer", &self.group)
+    }
 }
 
 /// Options for a consumer role.
@@ -263,6 +314,10 @@ impl ConsumerOptions {
         Self {
             group: group.into(),
         }
+    }
+
+    pub(crate) fn validate(&self) -> Result<()> {
+        validate_group("consumer", &self.group)
     }
 }
 
@@ -287,7 +342,7 @@ impl GrpcConsumerOptions {
 
     /// Allow up to `max_concurrent_handlers` handlers to run concurrently.
     pub fn with_max_concurrent_handlers(mut self, max_concurrent_handlers: usize) -> Self {
-        self.max_concurrent_handlers = max_concurrent_handlers.max(1);
+        self.max_concurrent_handlers = max_concurrent_handlers;
         self
     }
 
@@ -299,6 +354,17 @@ impl GrpcConsumerOptions {
     #[cfg(feature = "grpc")]
     pub(crate) const fn max_concurrent_handlers(&self) -> usize {
         self.max_concurrent_handlers
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn validate(&self) -> Result<()> {
+        self.consumer.validate()?;
+        if self.max_concurrent_handlers == 0 {
+            return Err(EventMeshError::Config(
+                "gRPC max concurrent handlers must be greater than zero".into(),
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -394,8 +460,16 @@ impl GrpcConfig {
     }
 
     #[cfg(feature = "grpc")]
+    pub(crate) fn validate(&self) -> Result<()> {
+        self.options.validate()
+    }
+
+    #[cfg(feature = "grpc")]
     pub(crate) const fn request_timeout(&self) -> Duration {
-        self.options.request_timeout
+        match self.options.request_timeout {
+            Some(timeout) => timeout,
+            None => DEFAULT_GRPC_REQUEST_TIMEOUT,
+        }
     }
 
     #[cfg(feature = "grpc")]
@@ -416,7 +490,7 @@ impl GrpcConfig {
             server_port: self.endpoint.port,
             use_tls: self.use_tls,
             tls_config: self.tls_config.clone(),
-            timeout: self.options.request_timeout,
+            timeout: self.request_timeout(),
             identity,
             max_concurrent_handlers: 1,
         }
@@ -532,8 +606,16 @@ impl HttpConfig {
     }
 
     #[cfg(feature = "http")]
+    pub(crate) fn validate(&self) -> Result<()> {
+        self.options.validate()
+    }
+
+    #[cfg(feature = "http")]
     pub(crate) const fn request_timeout(&self) -> Duration {
-        self.options.request_timeout
+        match self.options.request_timeout {
+            Some(timeout) => timeout,
+            None => DEFAULT_HTTP_REQUEST_TIMEOUT,
+        }
     }
 
     #[cfg(feature = "http")]
@@ -574,7 +656,7 @@ impl HttpConfig {
             proxy_from_env: self.proxy_from_env,
             pool_size: super::http::DEFAULT_POOL_SIZE,
             pool_idle_timeout: Duration::from_secs(super::http::DEFAULT_IDLE_TIMEOUT_SECS),
-            timeout: self.options.request_timeout,
+            timeout: self.request_timeout(),
             identity,
         }
     }
@@ -645,6 +727,18 @@ impl ReconnectPolicy {
     pub const fn max_backoff(&self) -> Duration {
         self.max_backoff
     }
+
+    #[cfg(feature = "tcp")]
+    fn validate(&self) -> Result<()> {
+        validate_non_zero_duration("TCP reconnect initial backoff", self.initial_backoff)?;
+        validate_non_zero_duration("TCP reconnect maximum backoff", self.max_backoff)?;
+        if self.initial_backoff > self.max_backoff {
+            return Err(EventMeshError::Config(
+                "TCP reconnect initial backoff must not exceed maximum backoff".into(),
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// TCP client configuration.
@@ -656,6 +750,8 @@ pub struct TcpConfig {
     credentials: Credentials,
     reconnect: ReconnectPolicy,
     heartbeat_interval: Duration,
+    connect_timeout: Duration,
+    control_timeout: Duration,
 }
 
 impl TcpConfig {
@@ -668,6 +764,8 @@ impl TcpConfig {
             credentials: Credentials::default(),
             reconnect: ReconnectPolicy::default(),
             heartbeat_interval: Duration::from_secs(30),
+            connect_timeout: DEFAULT_TCP_CONNECT_TIMEOUT,
+            control_timeout: DEFAULT_TCP_CONTROL_TIMEOUT,
         }
     }
 
@@ -701,6 +799,19 @@ impl TcpConfig {
         self
     }
 
+    /// Override the TCP socket connection timeout.
+    pub fn with_connect_timeout(mut self, connect_timeout: Duration) -> Self {
+        self.connect_timeout = connect_timeout;
+        self
+    }
+
+    /// Override the timeout for HELLO, LISTEN, subscribe, and unsubscribe
+    /// responses.
+    pub fn with_control_timeout(mut self, control_timeout: Duration) -> Self {
+        self.control_timeout = control_timeout;
+        self
+    }
+
     /// Return the configured server endpoint.
     pub const fn endpoint(&self) -> &Endpoint {
         &self.endpoint
@@ -731,9 +842,31 @@ impl TcpConfig {
         self.heartbeat_interval
     }
 
+    /// Return the TCP socket connection timeout.
+    pub const fn connect_timeout(&self) -> Duration {
+        self.connect_timeout
+    }
+
+    /// Return the TCP protocol-control response timeout.
+    pub const fn control_timeout(&self) -> Duration {
+        self.control_timeout
+    }
+
+    #[cfg(feature = "tcp")]
+    pub(crate) fn validate(&self) -> Result<()> {
+        self.options.validate()?;
+        validate_non_zero_duration("TCP heartbeat interval", self.heartbeat_interval)?;
+        validate_non_zero_duration("TCP connect timeout", self.connect_timeout)?;
+        validate_non_zero_duration("TCP control timeout", self.control_timeout)?;
+        self.reconnect.validate()
+    }
+
     #[cfg(feature = "tcp")]
     pub(crate) const fn request_timeout(&self) -> Duration {
-        self.options.request_timeout
+        match self.options.request_timeout {
+            Some(timeout) => timeout,
+            None => DEFAULT_TCP_REQUEST_TIMEOUT,
+        }
     }
 
     #[cfg(feature = "tcp")]
@@ -752,7 +885,9 @@ impl TcpConfig {
         super::TcpClientConfig {
             server_addr: self.endpoint.authority_host(),
             server_port: self.endpoint.port,
-            timeout: self.options.request_timeout,
+            connect_timeout: self.connect_timeout,
+            control_timeout: self.control_timeout,
+            request_timeout: self.request_timeout(),
             heartbeat_interval: self.heartbeat_interval,
             reconnect: ReconnectConfig {
                 enabled: self.reconnect.enabled,
@@ -763,6 +898,25 @@ impl TcpConfig {
             identity,
         }
     }
+}
+
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+fn validate_non_zero_duration(name: &str, value: Duration) -> Result<()> {
+    if value.is_zero() {
+        return Err(EventMeshError::Config(format!(
+            "{name} must be greater than zero"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_group(role: &str, group: &str) -> Result<()> {
+    if group.trim().is_empty() {
+        return Err(EventMeshError::Config(format!(
+            "{role} group must not be empty"
+        )));
+    }
+    Ok(())
 }
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
@@ -790,6 +944,12 @@ mod tests {
     fn endpoint_brackets_ipv6_authorities() {
         let endpoint = Endpoint::new("::1", 10_205).unwrap();
         assert_eq!(endpoint.authority(), "[::1]:10205");
+    }
+
+    #[test]
+    fn endpoint_rejects_a_url_or_embedded_port() {
+        assert!(Endpoint::new("http://localhost", 10_105).is_err());
+        assert!(Endpoint::new("localhost:10105", 10_105).is_err());
     }
 
     #[cfg(feature = "grpc")]
@@ -836,8 +996,109 @@ mod tests {
         assert_eq!(legacy.authority(), "[::1]:10000");
     }
 
+    #[cfg(feature = "tcp")]
+    #[test]
+    fn tcp_legacy_config_preserves_each_timeout_class() {
+        let legacy = TcpConfig::new(Endpoint::new("127.0.0.1", 10_000).unwrap())
+            .with_options(ClientOptions::default().with_request_timeout(Duration::from_secs(3)))
+            .with_connect_timeout(Duration::from_secs(1))
+            .with_control_timeout(Duration::from_secs(2))
+            .legacy(None, None);
+        assert_eq!(legacy.connect_timeout, Duration::from_secs(1));
+        assert_eq!(legacy.control_timeout, Duration::from_secs(2));
+        assert_eq!(legacy.request_timeout, Duration::from_secs(3));
+    }
+
     #[test]
     fn endpoint_set_requires_an_endpoint() {
         assert!(EndpointSet::new(Vec::new()).is_err());
+    }
+
+    #[cfg(all(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[test]
+    fn transports_keep_their_protocol_specific_default_timeouts() {
+        let endpoint = Endpoint::new("127.0.0.1", 10_205).unwrap();
+        assert_eq!(
+            GrpcConfig::new(endpoint.clone()).request_timeout(),
+            DEFAULT_GRPC_REQUEST_TIMEOUT
+        );
+        let endpoints = EndpointSet::new([endpoint.clone()]).unwrap();
+        assert_eq!(
+            HttpConfig::new(endpoints).request_timeout(),
+            DEFAULT_HTTP_REQUEST_TIMEOUT
+        );
+        assert_eq!(
+            TcpConfig::new(endpoint.clone()).request_timeout(),
+            DEFAULT_TCP_REQUEST_TIMEOUT
+        );
+        let tcp = TcpConfig::new(endpoint);
+        assert_eq!(tcp.connect_timeout(), DEFAULT_TCP_CONNECT_TIMEOUT);
+        assert_eq!(tcp.control_timeout(), DEFAULT_TCP_CONTROL_TIMEOUT);
+    }
+
+    #[test]
+    fn endpoint_weight_must_fit_the_transport_representation() {
+        let endpoint = Endpoint::new("127.0.0.1", 10_105).unwrap();
+        assert!(endpoint.with_weight(i32::MAX as u32 + 1).is_err());
+    }
+
+    #[test]
+    fn endpoint_set_rejects_a_weight_sum_that_exceeds_i32() {
+        let first = Endpoint::new("first", 10_105)
+            .unwrap()
+            .with_weight(i32::MAX as u32)
+            .unwrap();
+        let second = Endpoint::new("second", 10_105).unwrap();
+        assert!(EndpointSet::new([first.clone()]).is_ok());
+        assert!(EndpointSet::new([first, second]).is_err());
+    }
+
+    #[cfg(feature = "grpc")]
+    #[test]
+    fn grpc_config_rejects_zero_request_timeout() {
+        let config = GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205).unwrap())
+            .with_options(ClientOptions::default().with_request_timeout(Duration::ZERO));
+        assert!(config.validate().is_err());
+    }
+
+    #[cfg(feature = "tcp")]
+    #[test]
+    fn tcp_config_rejects_invalid_timing_values() {
+        let endpoint = Endpoint::new("127.0.0.1", 10_000).unwrap();
+        assert!(TcpConfig::new(endpoint.clone())
+            .with_heartbeat_interval(Duration::ZERO)
+            .validate()
+            .is_err());
+        assert!(TcpConfig::new(endpoint.clone())
+            .with_connect_timeout(Duration::ZERO)
+            .validate()
+            .is_err());
+        assert!(TcpConfig::new(endpoint.clone())
+            .with_control_timeout(Duration::ZERO)
+            .validate()
+            .is_err());
+        assert!(TcpConfig::new(endpoint)
+            .with_reconnect(
+                ReconnectPolicy::default()
+                    .with_initial_backoff(Duration::from_secs(2))
+                    .with_max_backoff(Duration::from_secs(1)),
+            )
+            .validate()
+            .is_err());
+    }
+
+    #[test]
+    fn role_groups_must_not_be_blank() {
+        assert!(ProducerOptions::new("  ").validate().is_err());
+        assert!(ConsumerOptions::new("").validate().is_err());
+    }
+
+    #[cfg(feature = "grpc")]
+    #[test]
+    fn grpc_handler_concurrency_must_not_be_zero() {
+        assert!(GrpcConsumerOptions::new("orders")
+            .with_max_concurrent_handlers(0)
+            .validate()
+            .is_err());
     }
 }

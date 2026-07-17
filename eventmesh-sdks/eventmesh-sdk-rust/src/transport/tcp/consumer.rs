@@ -71,7 +71,7 @@ use tracing::{debug, info, warn};
 use crate::config::TcpClientConfig;
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
-use crate::model::{EventMeshMessage, OpenMessage, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
 use crate::transport::tcp::message;
@@ -106,6 +106,9 @@ impl TcpMessage for EventMeshMessage {
             #[cfg(not(feature = "cloud_events"))]
             return None;
         }
+        if !message::is_event_mesh_message(pkg) {
+            return None;
+        }
         message::parse_message(&pkg.body)
     }
 
@@ -131,21 +134,17 @@ impl TcpMessage for Message {
             return None;
         }
 
-        let native = message::parse_message(&pkg.body)?;
-        if message::is_open_message(pkg) {
-            Some(Self::Open(OpenMessage::from_event_mesh_message(native)))
-        } else {
-            Some(Self::EventMesh(native))
+        if !message::is_event_mesh_message(pkg) {
+            return None;
         }
+
+        message::parse_message(&pkg.body).map(Self::EventMesh)
     }
 
     fn encode_tcp_reply(&self) -> Result<Package> {
         match self {
             Self::EventMesh(message) => {
                 message::build_message_package(message, Command::ResponseToServer)
-            }
-            Self::Open(message) => {
-                message::build_open_message_package(message, Command::ResponseToServer)
             }
             #[cfg(feature = "cloud_events")]
             Self::CloudEvent(event) => {
@@ -165,18 +164,15 @@ impl TcpMessage for Message {
             return;
         }
 
-        // TCP correlation metadata has no lossless slot in OpenMessage.
         // Normalize non-CloudEvent replies to EventMeshMessage before merging
-        // request metadata, matching the previous public adapter's behavior.
+        // request metadata.
         let mut reply = match self.clone() {
             Self::EventMesh(message) => message,
-            Self::Open(message) => message.to_event_mesh_message(),
             #[cfg(feature = "cloud_events")]
             Self::CloudEvent(event) => message::cloud_event_to_message(&event),
         };
         let request = match request.clone() {
             Self::EventMesh(message) => message,
-            Self::Open(message) => message.to_event_mesh_message(),
             #[cfg(feature = "cloud_events")]
             Self::CloudEvent(event) => message::cloud_event_to_message(&event),
         };
@@ -264,67 +260,6 @@ pub struct TcpConsumer<L: MessageListener> {
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 }
 
-/// TCP consumer facade for [`OpenMessage`].
-///
-/// EventMesh runtimes route TCP messages through the native EventMeshMessage
-/// envelope. This facade converts at the SDK boundary, giving OpenMessaging
-/// applications a typed listener while retaining interoperable wire data.
-pub struct TcpOpenMessageConsumer<L: MessageListener<Message = OpenMessage>> {
-    inner: TcpConsumer<OpenMessageListener<L>>,
-}
-
-struct OpenMessageListener<L> {
-    listener: Arc<L>,
-}
-
-impl<L: MessageListener<Message = OpenMessage>> MessageListener for OpenMessageListener<L> {
-    type Message = EventMeshMessage;
-
-    async fn handle(&self, message: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
-        Ok(self
-            .listener
-            .handle(OpenMessage::from_event_mesh_message(message))
-            .await?
-            .map(|reply| reply.to_event_mesh_message()))
-    }
-}
-
-impl<L: MessageListener<Message = OpenMessage>> TcpOpenMessageConsumer<L> {
-    /// Connect and start an OpenMessaging-style TCP consumer.
-    pub async fn connect(
-        config: TcpClientConfig,
-        listener: L,
-        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
-    ) -> Result<Self> {
-        let listener = OpenMessageListener {
-            listener: Arc::new(listener),
-        };
-        Ok(Self {
-            inner: TcpConsumer::connect(config, listener, shutdown_signal).await?,
-        })
-    }
-
-    /// Subscribe to additional topics.
-    pub async fn subscribe(&self, items: &[SubscriptionItem]) -> Result<()> {
-        self.inner.subscribe(items).await
-    }
-
-    /// Unsubscribe from topics.
-    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
-        self.inner.unsubscribe(items).await
-    }
-
-    /// Shut down the consumer and its background tasks.
-    pub async fn shutdown(&self) {
-        self.inner.shutdown().await;
-    }
-
-    /// Wait for the consumer to stop.
-    pub async fn wait_for_shutdown(&self) -> ShutdownReason {
-        self.inner.wait_for_shutdown().await
-    }
-}
-
 /// Native CloudEvents TCP consumer.
 ///
 /// Unlike the EventMeshMessage consumer, this type passes the TCP
@@ -360,7 +295,8 @@ where
             config.server_port,
             &user_agent,
             config.heartbeat_interval,
-            config.timeout,
+            config.connect_timeout,
+            config.control_timeout,
             config.reconnect.clone(),
         )
         .await?;
@@ -384,7 +320,7 @@ where
 
         // Send LISTEN_REQUEST and verify it succeeds.
         let listen_pkg = message::listen();
-        let listen_resp = conn.io(listen_pkg, config.timeout).await?;
+        let listen_resp = conn.io(listen_pkg, config.control_timeout).await?;
         let listen_status = message::response_from_pkg(&listen_resp);
         if !listen_status.is_success() {
             return Err(EventMeshError::Server {
@@ -436,7 +372,7 @@ where
     pub async fn subscribe(&self, items: &[SubscriptionItem]) -> Result<()> {
         for item in items {
             let sub_pkg = message::subscribe(&item.topic, std::slice::from_ref(item));
-            let resp = self.conn.io(sub_pkg, self.config.timeout).await?;
+            let resp = self.conn.io(sub_pkg, self.config.control_timeout).await?;
             let response = message::response_from_pkg(&resp);
             if !response.is_success() {
                 return Err(EventMeshError::Server {
@@ -464,7 +400,7 @@ where
             ));
         }
         let unsub_pkg = message::unsubscribe(&items);
-        let resp = self.conn.io(unsub_pkg, self.config.timeout).await?;
+        let resp = self.conn.io(unsub_pkg, self.config.control_timeout).await?;
         let response = message::response_from_pkg(&resp);
 
         if !response.is_success() {
@@ -641,7 +577,7 @@ where
                     for item in &subs_snapshot {
                         let sub_pkg =
                             message::subscribe(&item.topic, std::slice::from_ref(item));
-                        match conn.io(sub_pkg, config.timeout).await {
+                        match conn.io(sub_pkg, config.control_timeout).await {
                             Ok(resp) => {
                                 let r = message::response_from_pkg(&resp);
                                 if !r.is_success() {
@@ -664,7 +600,7 @@ where
                         }
                     }
                     if all_ok {
-                        match conn.io(message::listen(), config.timeout).await {
+                        match conn.io(message::listen(), config.control_timeout).await {
                             Ok(resp) => {
                                 let r = message::response_from_pkg(&resp);
                                 if !r.is_success() {
@@ -863,12 +799,16 @@ mod tests {
     }
 
     #[test]
-    fn public_message_preserves_open_protocol() {
-        let open = OpenMessage::new("orders", "created");
-        let package =
-            message::build_open_message_package(&open, Command::AsyncMessageToClient).unwrap();
-        let decoded = <Message as TcpMessage>::decode_tcp(&package).expect("decode message");
-        assert_eq!(decoded, Message::Open(open));
+    fn public_message_rejects_unknown_protocol() {
+        let mut package = message::build_message_package(
+            &EventMeshMessage::new("orders", "created"),
+            Command::AsyncMessageToClient,
+        )
+        .unwrap();
+        package.header.set_property("protocoltype", "openmessage");
+
+        assert!(<Message as TcpMessage>::decode_tcp(&package).is_none());
+        assert!(<EventMeshMessage as TcpMessage>::decode_tcp(&package).is_none());
     }
 
     #[cfg(feature = "cloud_events")]
@@ -959,7 +899,7 @@ mod tests {
             .server_addr("127.0.0.1")
             .server_port(port)
             .consumer_group("g")
-            .timeout(Duration::from_secs(3))
+            .control_timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
             .build();
         let consumer =
@@ -1080,7 +1020,7 @@ mod tests {
             .server_addr("127.0.0.1")
             .server_port(port)
             .consumer_group("g")
-            .timeout(Duration::from_secs(3))
+            .control_timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
             .build();
 
@@ -1186,7 +1126,7 @@ mod tests {
             .server_addr("127.0.0.1")
             .server_port(port)
             .consumer_group("g")
-            .timeout(Duration::from_secs(3))
+            .control_timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
             .build();
 
@@ -1268,7 +1208,7 @@ mod tests {
             .server_addr("127.0.0.1")
             .server_port(port)
             .consumer_group("g")
-            .timeout(Duration::from_secs(3))
+            .control_timeout(Duration::from_secs(3))
             .heartbeat_interval(Duration::from_secs(60))
             .build();
 

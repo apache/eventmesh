@@ -83,30 +83,3 @@ async fn publish_batch() {
         ["batch message #0", "batch message #1", "batch message #2"]
     );
 }
-
-#[tokio::test(flavor = "multi_thread")]
-async fn publish_one_way() {
-    require_runtime!();
-    let topic = unique_topic("pub-oneway");
-    ensure_topic(&topic).await;
-    let (_consumer, mut receiver) = warm_topic(&topic).await;
-
-    let result = grpc_producer()
-        .publish_one_way(Message::from(EventMeshMessage::new(
-            &topic,
-            "fire-and-forget",
-        )))
-        .await;
-    match result {
-        Ok(()) => assert_eq!(
-            receive(&mut receiver).await.content.as_deref(),
-            Some("fire-and-forget")
-        ),
-        Err(error) => {
-            let text = error.to_string();
-            if !(text.contains("Unimplemented") || text.contains("unimplemented")) {
-                panic!("publish_one_way: {error}");
-            }
-        }
-    }
-}

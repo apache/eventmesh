@@ -25,7 +25,7 @@ pub mod codec {
 }
 
 use crate::config::{ConsumerOptions, HttpConfig, ProducerOptions};
-use crate::error::Result;
+use crate::error::{EventMeshError, Result};
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::{DeliveryType, Subscription};
 use crate::transport::http::{HttpConsumer as LegacyConsumer, HttpProducer as LegacyProducer};
@@ -40,6 +40,7 @@ pub struct HttpClient {
 impl HttpClient {
     /// Validate and create an HTTP client handle.
     pub fn new(config: HttpConfig) -> Result<Self> {
+        config.validate()?;
         // Constructing the private HTTP client validates the endpoint set and
         // request client without issuing network I/O.
         LegacyProducer::new(config.legacy(None, None))?;
@@ -48,6 +49,7 @@ impl HttpClient {
 
     /// Create a publishing role.
     pub fn producer(&self, options: ProducerOptions) -> Result<HttpProducer> {
+        options.validate()?;
         Ok(HttpProducer {
             inner: LegacyProducer::new(self.config.legacy(Some(&options), None))?,
             timeout: self.config.request_timeout(),
@@ -56,6 +58,7 @@ impl HttpClient {
 
     /// Create a long-lived webhook-registration consumer.
     pub fn webhook_consumer(&self, options: ConsumerOptions) -> Result<HttpConsumer> {
+        options.validate()?;
         Ok(HttpConsumer {
             inner: LegacyConsumer::new(
                 self.config.legacy(None, Some(&options)),
@@ -80,11 +83,6 @@ impl HttpProducer {
                 .publish(message)
                 .await
                 .map(PublishReceipt::from_legacy),
-            Message::Open(message) => self
-                .inner
-                .publish_open_message(message)
-                .await
-                .map(PublishReceipt::from_legacy),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
@@ -105,17 +103,17 @@ impl HttpProducer {
         message: Message,
         timeout: std::time::Duration,
     ) -> Result<Message> {
+        if timeout.is_zero() {
+            return Err(EventMeshError::InvalidArgument(
+                "request/reply timeout must be greater than zero".into(),
+            ));
+        }
         match message {
             Message::EventMesh(message) => self
                 .inner
                 .request_reply(message, timeout)
                 .await
                 .map(Message::EventMesh),
-            Message::Open(message) => self
-                .inner
-                .request_reply_open_message(message, timeout)
-                .await
-                .map(Message::Open),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
