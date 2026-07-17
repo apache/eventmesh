@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileSinkConnector implements SinkConnector {
 
     private java.io.PrintStream out;
+
     @Override
     public void init(Properties props) {
         try {
@@ -39,6 +40,7 @@ public class FileSinkConnector implements SinkConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void put(List<CloudEvent> events) {
         for (CloudEvent event : events) {
@@ -47,6 +49,7 @@ public class FileSinkConnector implements SinkConnector {
         }
         out.flush();
     }
+
     @Override
     public void commit(List<CloudEvent> written) {
 

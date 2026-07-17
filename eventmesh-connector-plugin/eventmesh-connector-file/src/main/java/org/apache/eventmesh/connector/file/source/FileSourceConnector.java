@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileSourceConnector implements SourceConnector {
 
     private java.io.BufferedReader reader;
+
     @Override
     public void init(Properties props) {
         try {
@@ -43,10 +44,12 @@ public class FileSourceConnector implements SourceConnector {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public List<CloudEvent> poll() {
-        if (reader == null)
+        if (reader == null) {
             return Collections.emptyList();
+        }
         List<CloudEvent> out = new ArrayList<>();
         try {
             String line;
@@ -61,6 +64,7 @@ public class FileSourceConnector implements SourceConnector {
         }
         return out;
     }
+
     @Override
     public void commit(CloudEvent lastPublished) {
 
