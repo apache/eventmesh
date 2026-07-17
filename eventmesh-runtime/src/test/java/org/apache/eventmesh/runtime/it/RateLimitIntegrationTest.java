@@ -137,7 +137,7 @@ class RateLimitIntegrationTest {
     }
 
     private static CloudEvent cloudEventBuilder() {
-        return io.cloudevents.core.builder.cloudEventBuilder.v1()
+        return io.cloudevents.core.builder.CloudEventBuilder.v1()
             .withId("e1").withSource(URI.create("it")).withType("it.event").build();
     }
 

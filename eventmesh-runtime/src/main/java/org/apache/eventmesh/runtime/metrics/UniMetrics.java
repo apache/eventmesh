@@ -58,15 +58,15 @@ public class UniMetrics {
     private final LongHistogram dispatchLatency;
 
     // Internal mirrors for synchronous reads (tests + admin snapshot). OTel is the export path.
-    private final AtomicLong publish = new AtomicLong();
-    private final AtomicLong publishFailed = new AtomicLong();
-    private final AtomicLong rateLimited = new AtomicLong();
-    private final AtomicLong dispatched = new AtomicLong();
-    private final AtomicLong ack = new AtomicLong();
-    private final AtomicLong redeliveries = new AtomicLong();
-    private final AtomicLong dlq = new AtomicLong();
-    private final AtomicLong requestReply = new AtomicLong();
-    private final AtomicLong dispatchLatencyNanos = new AtomicLong();
+    private final AtomicLong publishMirror = new AtomicLong();
+    private final AtomicLong publishFailedMirror = new AtomicLong();
+    private final AtomicLong rateLimitedMirror = new AtomicLong();
+    private final AtomicLong dispatchedMirror = new AtomicLong();
+    private final AtomicLong ackMirror = new AtomicLong();
+    private final AtomicLong redeliveriesMirror = new AtomicLong();
+    private final AtomicLong dlqMirror = new AtomicLong();
+    private final AtomicLong requestReplyMirror = new AtomicLong();
+    private final AtomicLong dispatchLatencyNanosMirror = new AtomicLong();
 
     public UniMetrics() {
         this(GlobalOpenTelemetry.get().getMeter(METER_NAME));
@@ -92,93 +92,93 @@ public class UniMetrics {
 
     public void incPublish() {
         publishCount.add(1);
-        publish.incrementAndGet();
+        publishMirror.incrementAndGet();
     }
 
     public void incPublishFailed() {
         publishFailed.add(1);
-        publishFailed.incrementAndGet();
+        publishFailedMirror.incrementAndGet();
     }
 
     public void incRateLimited() {
         rateLimited.add(1);
-        rateLimited.incrementAndGet();
+        rateLimitedMirror.incrementAndGet();
     }
 
     public void incDispatched(int n) {
         eventsDispatched.add(n);
-        dispatched.addAndGet(n);
+        dispatchedMirror.addAndGet(n);
     }
 
     public void addDispatchLatencyNanos(long nanos) {
         dispatchLatency.record(nanos);
-        dispatchLatencyNanos.addAndGet(nanos);
+        dispatchLatencyNanosMirror.addAndGet(nanos);
     }
 
     public void incAck() {
         ackCount.add(1);
-        ack.incrementAndGet();
+        ackMirror.incrementAndGet();
     }
 
     public void incRedelivery() {
         redeliveries.add(1);
-        redeliveries.incrementAndGet();
+        redeliveriesMirror.incrementAndGet();
     }
 
     public void incDlq() {
         dlqCount.add(1);
-        dlq.incrementAndGet();
+        dlqMirror.incrementAndGet();
     }
 
     public void incRequestReply() {
         requestReplyCount.add(1);
-        requestReply.incrementAndGet();
+        requestReplyMirror.incrementAndGet();
     }
 
     // ---- synchronous read accessors (mirrors) ----
 
     public long getPublishCount() {
-        return publish.get();
+        return publishMirror.get();
     }
 
     public long getPublishFailed() {
-        return publishFailed.get();
+        return publishFailedMirror.get();
     }
 
     public long getRateLimited() {
-        return rateLimited.get();
+        return rateLimitedMirror.get();
     }
 
     public long getEventsDispatched() {
-        return dispatched.get();
+        return dispatchedMirror.get();
     }
 
     public long getAckCount() {
-        return ack.get();
+        return ackMirror.get();
     }
 
     public long getRedeliveries() {
-        return redeliveries.get();
+        return redeliveriesMirror.get();
     }
 
     public long getDlqCount() {
-        return dlq.get();
+        return dlqMirror.get();
     }
 
     public long getRequestReplyCount() {
-        return requestReply.get();
+        return requestReplyMirror.get();
     }
 
     public long getDispatchLatencyNanos() {
-        return dispatchLatencyNanos.get();
+        return dispatchLatencyNanosMirror.get();
     }
 
     /**
      * Average per-event dispatch latency in nanoseconds (0 before any dispatch).
      */
     public double avgDispatchLatencyNanos() {
-        long dispatched = dispatched.get();
-        return dispatched == 0 ? 0.0 : (double) dispatchLatencyNanos.get() / dispatched;
+        long dispatched = dispatchedMirror.get();
+        return dispatched == 0 ? 0.0 : (double) dispatchLatencyNanosMirror.get() / dispatched;
     }
 
     /**
@@ -244,4 +244,3 @@ public class UniMetrics {
         return meter.counterBuilder(name).setDescription(description).build();
     }
 }
-
