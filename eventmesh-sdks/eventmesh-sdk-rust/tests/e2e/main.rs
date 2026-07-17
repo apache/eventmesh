@@ -39,9 +39,13 @@
 
 #![cfg(feature = "e2e")]
 
+mod grpc_cloud_events;
 mod grpc_concurrent_dispatch;
+mod grpc_webhook;
 mod harness;
+mod http_cloud_events;
 mod http_publish;
+mod http_request_reply;
 mod http_subscribe;
 #[cfg(feature = "interop_e2e")]
 mod interop;
@@ -51,8 +55,10 @@ mod runtime;
 mod subscribe;
 mod tcp_cloud_events;
 mod tcp_publish;
+mod tcp_reconnect;
 mod tcp_request_reply;
 mod tcp_subscribe;
+mod tls;
 
 /// Guard clause for e2e tests: ensures a runtime is available before
 /// proceeding.

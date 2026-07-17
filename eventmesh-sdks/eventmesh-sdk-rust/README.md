@@ -197,8 +197,14 @@ cargo test --features full
 cargo test --features e2e --no-run
 ```
 
-The `e2e` feature compiles the gRPC, HTTP, TCP, and CloudEvents integration
-suite. Running it against a live runtime is documented in `tests/e2e/main.rs`.
+The `e2e` feature compiles the live gRPC, HTTP, TCP, webhook, request/reply,
+and CloudEvents integration suite. It also includes an explicitly ignored,
+destructive TCP reconnect case that restarts the compose-managed runtime; run
+it with `cargo test --features e2e --test e2e tcp_reconnect_replays_subscription_after_runtime_restart -- --ignored`.
+TLS is self-contained: its e2e starts a real TLS gRPC service using a freshly
+generated CA and server certificate, then verifies CA trust and SNI through
+the SDK's Workflow client.
+Running the suite against a live runtime is documented in `tests/e2e/main.rs`.
 An unavailable runtime fails by default; set `EVENTMESH_E2E_ALLOW_SKIP=1` only
 for an intentional local skip, never for release verification.
 

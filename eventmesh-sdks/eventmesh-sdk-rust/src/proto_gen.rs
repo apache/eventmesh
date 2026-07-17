@@ -25,6 +25,12 @@ pub mod pb {
 /// Catalog generated types. Kept crate-private: the public Catalog API is the
 /// Java-SDK-compatible operation-to-subscription lifecycle, not a schema
 /// registry wrapper.
+#[cfg(feature = "e2e")]
+pub mod catalog {
+    tonic::include_proto!("eventmesh.catalog.api.protocol");
+}
+
+#[cfg(not(feature = "e2e"))]
 pub(crate) mod catalog {
     tonic::include_proto!("eventmesh.catalog.api.protocol");
 }
@@ -32,6 +38,12 @@ pub(crate) mod catalog {
 /// Workflow generated types. The public Workflow module re-exports the
 /// request/response messages while keeping generated client/server machinery
 /// internal.
+#[cfg(feature = "e2e")]
+pub mod workflow {
+    tonic::include_proto!("eventmesh.workflow.api.protocol");
+}
+
+#[cfg(not(feature = "e2e"))]
 pub(crate) mod workflow {
     tonic::include_proto!("eventmesh.workflow.api.protocol");
 }

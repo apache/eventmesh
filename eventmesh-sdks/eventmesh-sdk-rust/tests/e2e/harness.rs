@@ -256,6 +256,59 @@ impl Drop for HttpConsumerHandle {
     }
 }
 
+/// A standalone SDK webhook server for transports that own their registration
+/// lifecycle (notably gRPC webhook consumers).
+pub(crate) struct WebhookServerHandle {
+    webhook_url: String,
+    server_task: JoinHandle<()>,
+    shutdown_tx: Option<oneshot::Sender<()>>,
+}
+
+impl WebhookServerHandle {
+    pub(crate) fn webhook_url(&self) -> &str {
+        &self.webhook_url
+    }
+}
+
+impl Drop for WebhookServerHandle {
+    fn drop(&mut self) {
+        if let Some(tx) = self.shutdown_tx.take() {
+            let _ = tx.send(());
+        }
+        self.server_task.abort();
+    }
+}
+
+pub(crate) async fn start_webhook_server() -> (
+    WebhookServerHandle,
+    mpsc::UnboundedReceiver<EventMeshMessage>,
+) {
+    let (listener, receiver) = CollectingListener::new();
+    let port = free_port();
+    let bind_address: SocketAddr = format!("0.0.0.0:{port}").parse().expect("webhook address");
+    let url = format!("http://{}:{port}/eventmesh/callback", webhook_host());
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let server = WebhookServer::new(bind_address, listener)
+        .with_advertise_url(url.clone())
+        .with_graceful_shutdown(async move {
+            let _ = shutdown_rx.await;
+        });
+    let server_task = tokio::spawn(async move {
+        if let Err(error) = server.await {
+            warn!(%error, "webhook server exited with error");
+        }
+    });
+    wait_for_listen(bind_address, Duration::from_secs(5)).await;
+    (
+        WebhookServerHandle {
+            webhook_url: url,
+            server_task,
+            shutdown_tx: Some(shutdown_tx),
+        },
+        receiver,
+    )
+}
+
 pub(crate) async fn http_warm_topic(
     topic: &str,
 ) -> (

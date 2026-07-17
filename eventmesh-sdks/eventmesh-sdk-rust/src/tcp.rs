@@ -283,9 +283,27 @@ impl Drop for TcpProducer {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use super::*;
+    use crate::config::{Endpoint, ProducerOptions, TcpConfig};
+    use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::RedirectInfo;
+    use crate::transport::tcp::frame::{Command, Header, Package, PackageBody};
     use crate::transport::tcp::ShutdownReason;
+    use futures::{SinkExt, StreamExt};
+    use tokio::net::TcpListener;
+    use tokio::sync::{mpsc, oneshot};
+    use tokio_util::codec::Framed;
+
+    struct ResponseHandler(mpsc::UnboundedSender<Message>);
+
+    impl MessageHandler for ResponseHandler {
+        async fn handle(&self, message: Message) -> Result<Option<Message>> {
+            let _ = self.0.send(message);
+            Ok(None)
+        }
+    }
 
     #[test]
     fn abnormal_consumer_shutdown_is_an_error() {
@@ -302,5 +320,62 @@ mod tests {
     #[test]
     fn cancelled_consumer_shutdown_is_clean() {
         assert!(shutdown_result(ShutdownReason::Cancelled).is_ok());
+    }
+
+    #[tokio::test]
+    async fn producer_with_handler_receives_unsolicited_server_response() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let (ack_tx, ack_rx) = oneshot::channel();
+        tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(Command::HelloResponse, "hello")))
+                .await
+                .unwrap();
+
+            let mut header = Header::new(Command::ResponseToClient, "server-push");
+            header.code = 0;
+            framed
+                .send(Package {
+                    header,
+                    body: PackageBody::Text(
+                        serde_json::json!({"topic": "push-topic", "body": "push-body"}).to_string(),
+                    ),
+                })
+                .await
+                .unwrap();
+            let ack = tokio::time::timeout(Duration::from_secs(2), framed.next())
+                .await
+                .ok()
+                .flatten()
+                .and_then(std::result::Result::ok)
+                .filter(|package| package.header.cmd == Command::ResponseToClientAck);
+            let _ = ack_tx.send(ack);
+        });
+
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let client =
+            TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())).unwrap();
+        let producer = client
+            .producer_with_handler(ProducerOptions::new("handler-test"), ResponseHandler(tx))
+            .await
+            .unwrap();
+        let received = tokio::time::timeout(Duration::from_secs(2), rx.recv())
+            .await
+            .unwrap()
+            .unwrap()
+            .into_event_mesh()
+            .unwrap();
+        assert_eq!(received.topic.as_deref(), Some("push-topic"));
+        assert_eq!(received.content.as_deref(), Some("push-body"));
+        assert_eq!(
+            ack_rx.await.unwrap().unwrap().header.seq.as_deref(),
+            Some("server-push")
+        );
+        producer.shutdown().await;
     }
 }

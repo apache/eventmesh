@@ -130,3 +130,70 @@ impl EventMeshHttpClient {
         &self.config
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use axum::{extract::State, routing::post, Router};
+    use tokio::net::TcpListener;
+    use tokio::sync::oneshot;
+
+    use super::*;
+    use crate::common::loadbalance::LoadBalance;
+
+    async fn start_node(
+        name: &'static str,
+        hits: Arc<tokio::sync::Mutex<Vec<&'static str>>>,
+    ) -> (u16, oneshot::Sender<()>) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let (shutdown_tx, shutdown_rx) = oneshot::channel();
+        let app = Router::new()
+            .route(
+                "/",
+                post(move |State(hits): State<Arc<tokio::sync::Mutex<Vec<&'static str>>>>| async move {
+                    hits.lock().await.push(name);
+                    r#"{"retCode":0}"#
+                }),
+            )
+            .with_state(hits);
+        tokio::spawn(async move {
+            axum::serve(listener, app)
+                .with_graceful_shutdown(async move {
+                    let _ = shutdown_rx.await;
+                })
+                .await
+                .unwrap();
+        });
+        (port, shutdown_tx)
+    }
+
+    #[tokio::test]
+    async fn weighted_round_robin_sends_requests_to_each_http_node() {
+        let hits = Arc::new(tokio::sync::Mutex::new(Vec::new()));
+        let (first_port, first_shutdown) = start_node("first", Arc::clone(&hits)).await;
+        let (second_port, second_shutdown) = start_node("second", Arc::clone(&hits)).await;
+        let config = HttpClientConfig::builder()
+            .servers(format!(
+                "127.0.0.1:{first_port}:1,127.0.0.1:{second_port}:1"
+            ))
+            .load_balance(LoadBalance::WeightRoundRobin)
+            .build()
+            .unwrap();
+        let client = EventMeshHttpClient::new(config).unwrap();
+
+        for _ in 0..4 {
+            assert_eq!(
+                client
+                    .post_form("/", &[], &[], Duration::from_secs(2))
+                    .await
+                    .unwrap(),
+                r#"{"retCode":0}"#
+            );
+        }
+        assert_eq!(*hits.lock().await, ["first", "second", "first", "second"]);
+        let _ = first_shutdown.send(());
+        let _ = second_shutdown.send(());
+    }
+}
