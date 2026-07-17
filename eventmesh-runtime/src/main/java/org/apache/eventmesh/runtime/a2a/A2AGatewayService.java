@@ -75,17 +75,17 @@ public class A2AGatewayService {
     private ScheduledExecutorService taskTimeoutScheduler;
 
     public A2AGatewayService(String namespace, String gatewayId,
-                             A2AMessageTransport transport,
-                             TaskRegistry taskRegistry,
-                             A2APublishSubscribeService a2aService) {
+        A2AMessageTransport transport,
+        TaskRegistry taskRegistry,
+        A2APublishSubscribeService a2aService) {
         this(namespace, gatewayId, transport, taskRegistry, a2aService, DEFAULT_TASK_TIMEOUT_MS);
     }
 
     public A2AGatewayService(String namespace, String gatewayId,
-                             A2AMessageTransport transport,
-                             TaskRegistry taskRegistry,
-                             A2APublishSubscribeService a2aService,
-                             long taskTimeoutMs) {
+        A2AMessageTransport transport,
+        TaskRegistry taskRegistry,
+        A2APublishSubscribeService a2aService,
+        long taskTimeoutMs) {
         this.namespace = namespace;
         this.gatewayId = gatewayId;
         this.transport = transport;
@@ -181,7 +181,7 @@ public class A2AGatewayService {
      * Submits an A2A task with a specific task ID.
      */
     public CompletableFuture<TaskResult> submitTask(String taskId, String targetAgent,
-                                                     String message, String parentTaskId) {
+        String message, String parentTaskId) {
         if (!started) {
             CompletableFuture<TaskResult> future = new CompletableFuture<>();
             future.completeExceptionally(new IllegalStateException("Gateway not started"));
@@ -352,7 +352,7 @@ public class A2AGatewayService {
     // =========================================================================
 
     private CloudEvent buildTaskRequestEvent(String taskId, String targetAgent,
-                                              String message, String parentTaskId) {
+        String message, String parentTaskId) {
         CloudEventBuilder builder = CloudEventBuilder.v1()
             .withId(taskId)
             .withType(A2AProtocolConstants.CE_TYPE_PREFIX + "task.request")
@@ -416,6 +416,7 @@ public class A2AGatewayService {
      */
     @FunctionalInterface
     public interface StatusSubscriber {
+
         void onStatus(String taskId, String state, String data);
     }
 }

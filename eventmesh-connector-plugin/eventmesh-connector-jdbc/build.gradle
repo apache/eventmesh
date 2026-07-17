@@ -1,0 +1,32 @@
+plugins {
+    id 'antlr'
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.13.1"
+    implementation 'org.antlr:antlr4-runtime:4.13.1'
+    implementation project(":eventmesh-connector-runtime")
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'org.slf4j:slf4j-api'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+generateGrammarSource {
+    arguments += ['-package', 'org.apache.eventmesh.connector.jdbc.antlr4.autogeneration', '-visitor']
+}
+
+// Gradle 8.7 validation: packageSources (sources jar) consumes the ANTLR-generated
+// sources dir but does not depend on generateGrammarSource, which can order tasks
+// incorrectly. Declare the dependency explicitly so the sources jar always runs after.
+tasks.named('packageSources') {
+    dependsOn tasks.named('generateGrammarSource')
+}
+
+// ANTLR emits generated sources flat under build/generated-src/antlr/main (no package
+// sub-dirs), so the root project's package-path based checkstyle excludes cannot match
+// them. Strip that tree from checkstyle input here to avoid tens of thousands of
+// generated-code warnings failing the build.
+tasks.withType(Checkstyle).configureEach {
+    exclude { it.file.absolutePath.replace(File.separatorChar, (char) '/').contains('/build/generated-src/antlr/') }
+}

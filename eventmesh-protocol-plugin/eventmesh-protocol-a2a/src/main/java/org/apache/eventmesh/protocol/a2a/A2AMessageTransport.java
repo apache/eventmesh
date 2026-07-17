@@ -46,6 +46,7 @@ public interface A2AMessageTransport {
      */
     @FunctionalInterface
     interface MessageCallback {
+
         void onMessage(String topic, CloudEvent event);
     }
 }

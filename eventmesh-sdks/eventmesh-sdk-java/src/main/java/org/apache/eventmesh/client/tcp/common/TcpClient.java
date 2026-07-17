@@ -31,6 +31,8 @@ import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +88,14 @@ public abstract class TcpClient implements Closeable {
 
     protected static final ScheduledExecutorService scheduler = ThreadPoolFactory.createScheduledExecutor(Runtime.getRuntime().availableProcessors(),
         new EventMeshThreadFactory("TCPClientScheduler", true));
+
+    /**
+     * Virtual-thread executor for offloading blocking response waits in {@link #io}. Previously
+     * {@code CompletableFuture.supplyAsync} ran these on the shared {@code ForkJoinPool.commonPool},
+     * starving it under many concurrent blocking waits. A virtual-thread-per-task executor parks each
+     * wait on its own carrier-free thread instead.
+     */
+    private static final ExecutorService asyncPool = Executors.newVirtualThreadPerTaskExecutor();
 
     public TcpClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
@@ -193,7 +203,7 @@ public abstract class TcpClient implements Closeable {
                 throw new RuntimeException(exception);
             }
         };
-        return CompletableFuture.supplyAsync(supplier).get();
+        return CompletableFuture.supplyAsync(supplier, asyncPool).get();
     }
 
     // todo: remove hello

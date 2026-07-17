@@ -91,7 +91,7 @@ public class A2AGatewayServer {
         // 1. Initialize components
         transport = new InMemoryA2AMessageTransport();
         taskRegistry = new TaskRegistry();
-        a2aService = new A2APublishSubscribeService(null);
+        a2aService = new A2APublishSubscribeService();
         a2aService.init();
         a2aService.start();
 
@@ -112,6 +112,7 @@ public class A2AGatewayServer {
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             .childHandler(new ChannelInitializer<SocketChannel>() {
+
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline()
@@ -154,8 +155,7 @@ public class A2AGatewayServer {
                     .url("http://localhost:" + port + "/a2a")
                     .protocolBinding("JSONRPC")
                     .protocolVersion("0.3")
-                    .build()
-            ))
+                    .build()))
             .capabilities(org.apache.eventmesh.protocol.a2a.model.AgentCapabilities.builder()
                 .streaming(false)
                 .pushNotifications(false)
@@ -166,8 +166,7 @@ public class A2AGatewayServer {
                     .name("Get Weather")
                     .description("Get the current weather for a city")
                     .tags(Arrays.asList("weather", "test"))
-                    .build()
-            ))
+                    .build()))
             .defaultInputModes(Arrays.asList("text/plain"))
             .defaultOutputModes(Arrays.asList("text/plain"))
             .build();
@@ -185,7 +184,8 @@ public class A2AGatewayServer {
         transport.subscribe(requestTopic, (topic, event) -> {
             String taskId = event.getId();
             String message = event.getData() != null
-                ? new String(event.getData().toBytes(), StandardCharsets.UTF_8) : "";
+                ? new String(event.getData().toBytes(), StandardCharsets.UTF_8)
+                : "";
 
             log.info("[Weather Agent] Received request: taskId={}, message={}", taskId, message);
 

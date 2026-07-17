@@ -23,6 +23,16 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # EventMesh unified runtime (traffic HTTP + admin).
+          - image: apache/eventmesh
+            dockerfile: ./docker/Dockerfile
+          # Connector-runtime (separate process, talks HTTP+CloudEvents to the runtime).
+          - image: apache/eventmesh-connector
+            dockerfile: ./docker/Dockerfile.connector
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -37,8 +47,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            apache/eventmesh
+          images: ${{ matrix.image }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -46,5 +55,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./docker/Dockerfile_jdk8
+          file: ${{ matrix.dockerfile }}
           context: ./

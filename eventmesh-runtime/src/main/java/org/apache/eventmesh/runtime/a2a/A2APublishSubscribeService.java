@@ -21,7 +21,6 @@ import org.apache.eventmesh.protocol.a2a.A2AProtocolConstants;
 import org.apache.eventmesh.protocol.a2a.AgentCardValidator;
 import org.apache.eventmesh.protocol.a2a.AgentIdentity;
 import org.apache.eventmesh.protocol.a2a.model.AgentCard;
-import org.apache.eventmesh.runtime.boot.EventMeshServer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,7 +52,6 @@ public class A2APublishSubscribeService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final EventMeshServer eventMeshServer;
     private volatile boolean isStarted = false;
 
     private final ConcurrentHashMap<AgentIdentity, RegisteredCard> cardRegistry = new ConcurrentHashMap<>();
@@ -68,12 +66,11 @@ public class A2APublishSubscribeService {
     private final long cleanupIntervalMs;
     private ScheduledExecutorService cleanupExecutor;
 
-    public A2APublishSubscribeService(EventMeshServer eventMeshServer) {
-        this(eventMeshServer, DEFAULT_CARD_TTL_MS, DEFAULT_CLEANUP_INTERVAL_MS);
+    public A2APublishSubscribeService() {
+        this(DEFAULT_CARD_TTL_MS, DEFAULT_CLEANUP_INTERVAL_MS);
     }
 
-    public A2APublishSubscribeService(EventMeshServer eventMeshServer, long cardTtlMs, long cleanupIntervalMs) {
-        this.eventMeshServer = eventMeshServer;
+    public A2APublishSubscribeService(long cardTtlMs, long cleanupIntervalMs) {
         this.cardTtlMs = cardTtlMs;
         this.cleanupIntervalMs = cleanupIntervalMs;
     }
@@ -348,6 +345,7 @@ public class A2APublishSubscribeService {
     // =========================================================================
 
     private enum AgentStatus {
+
         ONLINE(A2AProtocolConstants.STATUS_ONLINE),
         OFFLINE(A2AProtocolConstants.STATUS_OFFLINE);
 

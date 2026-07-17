@@ -32,11 +32,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ProtocolMetrics {
 
     private static final ProtocolMetrics INSTANCE = new ProtocolMetrics();
-    
+
     private final Map<String, ProtocolStats> protocolStats = new ConcurrentHashMap<>();
-    
-    private ProtocolMetrics() {}
-    
+
+    private ProtocolMetrics() {
+    }
+
     public static ProtocolMetrics getInstance() {
         return INSTANCE;
     }
@@ -109,7 +110,7 @@ public class ProtocolMetrics {
      * Protocol statistics holder.
      */
     public static class ProtocolStats {
-        
+
         private final Map<String, OperationStats> operationStats = new ConcurrentHashMap<>();
         private final AtomicLong totalOperations = new AtomicLong(0);
         private final AtomicLong totalErrors = new AtomicLong(0);
@@ -205,7 +206,7 @@ public class ProtocolMetrics {
      * Operation statistics holder.
      */
     public static class OperationStats {
-        
+
         private final AtomicLong successCount = new AtomicLong(0);
         private final AtomicLong failureCount = new AtomicLong(0);
         private final AtomicLong totalDuration = new AtomicLong(0);
@@ -219,7 +220,7 @@ public class ProtocolMetrics {
         void recordSuccess(long duration) {
             successCount.incrementAndGet();
             totalDuration.addAndGet(duration);
-            
+
             // Update min/max duration
             if (duration < minDuration) {
                 minDuration = duration;

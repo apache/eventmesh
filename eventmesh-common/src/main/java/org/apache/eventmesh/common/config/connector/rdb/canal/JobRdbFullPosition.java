@@ -25,6 +25,7 @@ import lombok.ToString;
 @Data
 @ToString
 public class JobRdbFullPosition {
+
     private String jobId;
     private String schema;
     private String tableName;

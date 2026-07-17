@@ -23,6 +23,7 @@ import lombok.Data;
 
 @Data
 public class RdbColumnDefinition {
+
     protected String name;
     protected JDBCType jdbcType;
 }

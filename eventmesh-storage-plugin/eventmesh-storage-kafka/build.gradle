@@ -18,17 +18,14 @@
 dependencies {
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     implementation project(":eventmesh-common")
-    // https://mavenlibs.com/maven/dependency/io.cloudevents/cloudevents-kafka
-    implementation group: 'io.cloudevents', name: 'cloudevents-kafka', version: '2.5.0'
-
-    // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
     implementation 'org.apache.kafka:kafka-clients:3.9.0'
+    implementation 'org.slf4j:slf4j-api'
 
     testImplementation 'org.junit.jupiter:junit-jupiter'
-
     testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     testImplementation project(":eventmesh-common")
-
     testImplementation "org.mockito:mockito-core"
 
     compileOnly 'org.projectlombok:lombok'
@@ -37,4 +34,15 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+test {
+    // Forward -Dit.* (set on the gradle CLI) to the test JVM so KafkaBrokerIntegrationTest can be
+    // enabled + pointed at a broker (with SASL creds).
+    ['it.storage', 'it.namesrv', 'it.kafka.user', 'it.kafka.password'].each { k ->
+        def v = System.getProperty(k)
+        if (v != null) {
+            systemProperty k, v
+        }
+    }
 }

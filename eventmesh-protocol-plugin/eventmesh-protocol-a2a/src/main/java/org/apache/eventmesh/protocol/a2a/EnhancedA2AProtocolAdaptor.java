@@ -236,8 +236,7 @@ public class EnhancedA2AProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             "collaboration",
             "agent-discovery",
             "agent-card-registry",
-            "agent-status"
-        );
+            "agent-status");
     }
 
     @Override

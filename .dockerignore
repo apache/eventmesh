@@ -1,9 +1,15 @@
+# Build outputs — regenerated inside the image, never shipped from context.
 dist/
+dist-connector/
 build/
+**/build/
 
-# VCS
+# VCS and gradle caches (the wrapper is not used; system gradle lives in the
+# builder image).
 .git/
 .gitignore
+.gradle/
+**/.gradle/
 
 # Non-Java SDKs (not included in Gradle build)
 eventmesh-sdks/eventmesh-sdk-rust/
@@ -14,10 +20,12 @@ eventmesh-sdks/eventmesh-sdk-c/
 **/target/
 **/node_modules/
 
-# IDE
+# IDE / editor cruft.
 .idea/
 .vscode/
 *.iml
+*.ipr
+*.iws
 
 # Docs & misc
 docs/

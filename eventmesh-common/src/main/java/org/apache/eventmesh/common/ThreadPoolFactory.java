@@ -62,4 +62,27 @@ public abstract class ThreadPoolFactory {
     public static ExecutorService createSingleExecutor(final String threadName) {
         return Executors.newSingleThreadExecutor(new EventMeshThreadFactory(threadName));
     }
+
+    /**
+     * Unbounded virtual-thread-per-task executor (Java 21). Use for high-fanout blocking-I/O work —
+     * each task runs on its own virtual thread that unmounts from the carrier pool while blocked, so
+     * the runtime isn't capped by a fixed platform-thread count. Virtual threads are daemon by
+     * default, so the JVM won't wait on them at exit.
+     *
+     * <p>Note: virtual threads cannot be scheduled. For periodic tasks ({@code scheduleAtFixedRate}
+     * etc.) keep {@link #createSingleScheduledExecutor} / {@link #createScheduledExecutor} on platform
+     * threads — that is the correct Java 21 idiom, not a Java 8 leftover.
+     */
+    public static ExecutorService createVirtualThreadExecutor() {
+        return Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    /**
+     * Named virtual-thread-per-task executor (Java 21). Like {@link #createVirtualThreadExecutor} but
+     * each spawned virtual thread is named {@code <threadNamePrefix>-<n>} for traceability in thread
+     * dumps and logs.
+     */
+    public static ExecutorService createVirtualThreadExecutor(final String threadNamePrefix) {
+        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name(threadNamePrefix + "-", 1).factory());
+    }
 }

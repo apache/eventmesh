@@ -18,8 +18,6 @@
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
     
     implementation "io.cloudevents:cloudevents-core"
     implementation "io.cloudevents:cloudevents-json-jackson"

@@ -15,44 +15,26 @@
  * limitations under the License.
  */
 
-List rocketmq = [
-        "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
-
-]
-
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
-    /*
-     * The exclusions can be removed after this issue is fixed:
-     * https://github.com/apache/rocketmq/issues/5347
-     */
-    rocketmq.each {
-        implementation(it) {
-            exclude group: 'ch.qos.logback', module: 'logback-classic'
-        }
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.cloudevents:cloudevents-json-jackson'
+    implementation 'org.slf4j:slf4j-api'
+    implementation "org.apache.rocketmq:rocketmq-client:${rocketmq_version}"
+    implementation "org.apache.rocketmq:rocketmq-common:${rocketmq_version}"
+    // NettyRemotingClient only uses NioEventLoopGroup (pure Java); exclude native netty packages
+    // that interfere with the NIO selector on Windows. Module-scoped: other modules (runtime etc.)
+    // still get native netty from their own netty-all dependency on Linux.
+    implementation("org.apache.rocketmq:rocketmq-remoting:${rocketmq_version}") {
+        exclude group: "io.netty", module: "netty-transport-native-unix-common"
+        exclude group: "io.netty", module: "netty-transport-classes-epoll"
+        exclude group: "io.netty", module: "netty-transport-classes-kqueue"
     }
 
     testImplementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
     testImplementation project(":eventmesh-common")
 
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-junit-jupiter"
-
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
 }

@@ -55,7 +55,7 @@ class A2AGatewayEndToEndTest {
     void setUp() throws Exception {
         transport = new InMemoryA2AMessageTransport();
         taskRegistry = new TaskRegistry();
-        a2aService = new A2APublishSubscribeService(null);
+        a2aService = new A2APublishSubscribeService();
         a2aService.init();
         a2aService.start();
         gateway = new A2AGatewayService(NAMESPACE, GATEWAY_ID, transport, taskRegistry, a2aService);
@@ -146,7 +146,7 @@ class A2AGatewayEndToEndTest {
     void testAgentCardTtlExpiry() throws Exception {
         // Use a very short TTL for testing
         a2aService.shutdown();
-        a2aService = new A2APublishSubscribeService(null, 100L, 50L);
+        a2aService = new A2APublishSubscribeService(100L, 50L);
         a2aService.init();
         a2aService.start();
 
@@ -170,7 +170,7 @@ class A2AGatewayEndToEndTest {
     @Test
     void testHeartbeatRefreshesTtl() throws Exception {
         a2aService.shutdown();
-        a2aService = new A2APublishSubscribeService(null, 500L, 250L);
+        a2aService = new A2APublishSubscribeService(500L, 250L);
         a2aService.init();
         a2aService.start();
 

@@ -15,27 +15,29 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.68.0'
-
+// eventmesh-examples — runnable demos for the uni-architecture.
+//
+// Only demos that compile against the new architecture are kept here. The
+// legacy HTTP-client based demos (which depended on the pre-uni-architecture
+// eventmesh-sdk-java client) were removed, since those classes no longer
+// exist after the uni-architecture redesign.
 dependencies {
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-a2a")
+
+    // TCP legacy client demos depend on the (still-present) client.tcp SDK and
+    // the shared eventmesh-common protocol/tcp types.
     implementation project(":eventmesh-sdks:eventmesh-sdk-java")
     implementation project(":eventmesh-common")
-    implementation project(":eventmesh-storage-plugin:eventmesh-storage-api")
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-a2a")
-    implementation project(":eventmesh-connectors:eventmesh-connector-spring")
-    implementation('org.springframework.boot:spring-boot-starter-web') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
-    implementation 'io.netty:netty-all'
+
+    // CloudEvents types used by the tcp cloudevents demos / EventMeshTestUtils.
     implementation "io.cloudevents:cloudevents-core"
     implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.openmessaging:openmessaging-api"
-    implementation 'com.alibaba.nacos:nacos-client'
 
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    // Provided transitively by eventmesh-protocol-a2a at runtime, but its
+    // dependencies are `implementation`-scoped and not exposed to consumers,
+    // so they must be declared here for @Slf4j / @JsonInclude to resolve.
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

@@ -43,8 +43,7 @@ public final class AgentCardTestUtils {
                     .url("http://localhost:10105/a2a")
                     .protocolBinding("JSONRPC")
                     .protocolVersion("0.3")
-                    .build()
-            ))
+                    .build()))
             .capabilities(AgentCapabilities.builder()
                 .streaming(false)
                 .pushNotifications(false)
@@ -57,8 +56,7 @@ public final class AgentCardTestUtils {
                     .name("Test Skill")
                     .description("A test skill")
                     .tags(Collections.singletonList("test"))
-                    .build()
-            ))
+                    .build()))
             .build();
     }
 }

@@ -26,5 +26,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class MySQLColumnDef extends RdbColumnDefinition {
+
     private CanalMySQLType type;
 }

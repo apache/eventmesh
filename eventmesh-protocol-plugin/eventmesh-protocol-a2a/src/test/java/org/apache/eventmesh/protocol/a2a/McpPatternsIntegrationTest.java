@@ -65,7 +65,7 @@ public class McpPatternsIntegrationTest {
         pubMessage.put("jsonrpc", "2.0");
         pubMessage.put("method", "market/update");
         pubMessage.put("params", params);
-        
+
         String broadcastId = UUID.randomUUID().toString();
         pubMessage.put("id", broadcastId);
 

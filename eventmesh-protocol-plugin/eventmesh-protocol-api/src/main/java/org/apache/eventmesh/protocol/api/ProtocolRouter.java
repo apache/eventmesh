@@ -38,13 +38,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ProtocolRouter {
 
     private static final ProtocolRouter INSTANCE = new ProtocolRouter();
-    
+
     private final Map<String, RoutingRule> routingRules = new ConcurrentHashMap<>();
-    
+
     private ProtocolRouter() {
         initializeDefaultRules();
     }
-    
+
     public static ProtocolRouter getInstance() {
         return INSTANCE;
     }
@@ -56,41 +56,41 @@ public class ProtocolRouter {
      * @param preferredProtocol preferred protocol type
      * @return routed CloudEvent
      */
-    public CloudEvent routeMessage(ProtocolTransportObject message, String preferredProtocol) 
+    public CloudEvent routeMessage(ProtocolTransportObject message, String preferredProtocol)
         throws ProtocolHandleException {
-        
+
         // 1. Try preferred protocol first
         if (preferredProtocol != null && EnhancedProtocolPluginFactory.isProtocolSupported(preferredProtocol)) {
             try {
-                ProtocolAdaptor<ProtocolTransportObject> adaptor = 
+                ProtocolAdaptor<ProtocolTransportObject> adaptor =
                     EnhancedProtocolPluginFactory.getProtocolAdaptor(preferredProtocol);
-                
+
                 if (adaptor.isValid(message)) {
                     return adaptor.toCloudEvent(message);
                 }
             } catch (Exception e) {
-                log.warn("Failed to process message with preferred protocol {}: {}", 
+                log.warn("Failed to process message with preferred protocol {}: {}",
                     preferredProtocol, e.getMessage());
             }
         }
-        
+
         // 2. Apply routing rules
         String selectedProtocol = selectProtocolByRules(message);
         if (selectedProtocol != null) {
             try {
-                ProtocolAdaptor<ProtocolTransportObject> adaptor = 
+                ProtocolAdaptor<ProtocolTransportObject> adaptor =
                     EnhancedProtocolPluginFactory.getProtocolAdaptor(selectedProtocol);
                 return adaptor.toCloudEvent(message);
             } catch (Exception e) {
-                log.warn("Failed to process message with rule-selected protocol {}: {}", 
+                log.warn("Failed to process message with rule-selected protocol {}: {}",
                     selectedProtocol, e.getMessage());
             }
         }
-        
+
         // 3. Try protocols by priority
-        List<ProtocolAdaptor<ProtocolTransportObject>> adaptors = 
+        List<ProtocolAdaptor<ProtocolTransportObject>> adaptors =
             EnhancedProtocolPluginFactory.getProtocolAdaptorsByPriority();
-            
+
         for (ProtocolAdaptor<ProtocolTransportObject> adaptor : adaptors) {
             try {
                 if (adaptor.isValid(message)) {
@@ -98,11 +98,11 @@ public class ProtocolRouter {
                     return adaptor.toCloudEvent(message);
                 }
             } catch (Exception e) {
-                log.debug("Protocol {} failed to process message: {}", 
+                log.debug("Protocol {} failed to process message: {}",
                     adaptor.getProtocolType(), e.getMessage());
             }
         }
-        
+
         throw new ProtocolHandleException(
             "No suitable protocol adaptor found for message type: " + message.getClass().getName());
     }
@@ -114,16 +114,16 @@ public class ProtocolRouter {
      * @param targetProtocol target protocol type
      * @return protocol transport object
      */
-    public ProtocolTransportObject routeCloudEvent(CloudEvent cloudEvent, String targetProtocol) 
+    public ProtocolTransportObject routeCloudEvent(CloudEvent cloudEvent, String targetProtocol)
         throws ProtocolHandleException {
-        
+
         if (targetProtocol == null || targetProtocol.trim().isEmpty()) {
             throw new ProtocolHandleException("Target protocol type cannot be null or empty");
         }
-        
-        ProtocolAdaptor<ProtocolTransportObject> adaptor = 
+
+        ProtocolAdaptor<ProtocolTransportObject> adaptor =
             EnhancedProtocolPluginFactory.getProtocolAdaptor(targetProtocol);
-        
+
         return adaptor.fromCloudEvent(cloudEvent);
     }
 
@@ -134,12 +134,12 @@ public class ProtocolRouter {
      * @param condition condition predicate
      * @param targetProtocol target protocol type
      */
-    public void addRoutingRule(String ruleName, Predicate<ProtocolTransportObject> condition, 
-                              String targetProtocol) {
+    public void addRoutingRule(String ruleName, Predicate<ProtocolTransportObject> condition,
+        String targetProtocol) {
         if (ruleName == null || condition == null || targetProtocol == null) {
             throw new IllegalArgumentException("Rule name, condition, and target protocol cannot be null");
         }
-        
+
         routingRules.put(ruleName, new RoutingRule(condition, targetProtocol));
         log.info("Added routing rule: {} -> {}", ruleName, targetProtocol);
     }
@@ -162,9 +162,9 @@ public class ProtocolRouter {
      * @return best protocol adaptor or null if none found
      */
     public ProtocolAdaptor<ProtocolTransportObject> getBestProtocolForCapability(String capability) {
-        List<ProtocolAdaptor<ProtocolTransportObject>> adaptors = 
+        List<ProtocolAdaptor<ProtocolTransportObject>> adaptors =
             EnhancedProtocolPluginFactory.getProtocolAdaptorsByCapability(capability);
-        
+
         return adaptors.isEmpty() ? null : adaptors.get(0);
     }
 
@@ -175,19 +175,19 @@ public class ProtocolRouter {
      * @param preferredProtocol preferred protocol type
      * @return list of CloudEvents
      */
-    public List<CloudEvent> routeMessages(List<ProtocolTransportObject> messages, String preferredProtocol) 
+    public List<CloudEvent> routeMessages(List<ProtocolTransportObject> messages, String preferredProtocol)
         throws ProtocolHandleException {
-        
+
         if (messages == null || messages.isEmpty()) {
             throw new ProtocolHandleException("Messages list cannot be null or empty");
         }
-        
+
         // Check if preferred protocol supports batch processing
         if (preferredProtocol != null) {
             try {
-                ProtocolAdaptor<ProtocolTransportObject> adaptor = 
+                ProtocolAdaptor<ProtocolTransportObject> adaptor =
                     EnhancedProtocolPluginFactory.getProtocolAdaptor(preferredProtocol);
-                
+
                 if (adaptor.supportsBatchProcessing() && messages.size() > 1) {
                     // Try batch processing if supported
                     ProtocolTransportObject batchMessage = createBatchMessage(messages);
@@ -196,11 +196,11 @@ public class ProtocolRouter {
                     }
                 }
             } catch (Exception e) {
-                log.warn("Batch processing failed with preferred protocol {}: {}", 
+                log.warn("Batch processing failed with preferred protocol {}: {}",
                     preferredProtocol, e.getMessage());
             }
         }
-        
+
         // Fall back to individual message routing
         return messages.stream()
             .map(message -> {
@@ -221,7 +221,7 @@ public class ProtocolRouter {
         for (Map.Entry<String, RoutingRule> entry : routingRules.entrySet()) {
             try {
                 if (entry.getValue().condition.test(message)) {
-                    log.debug("Message matched routing rule: {} -> {}", 
+                    log.debug("Message matched routing rule: {} -> {}",
                         entry.getKey(), entry.getValue().targetProtocol);
                     return entry.getValue().targetProtocol;
                 }
@@ -237,21 +237,21 @@ public class ProtocolRouter {
      */
     private void initializeDefaultRules() {
         // HTTP messages
-        addRoutingRule("http-messages", 
-            message -> message.getClass().getName().contains("Http"), 
+        addRoutingRule("http-messages",
+            message -> message.getClass().getName().contains("Http"),
             "cloudevents");
-        
-        // gRPC messages  
+
+        // gRPC messages
         addRoutingRule("grpc-messages",
             message -> message.getClass().getName().contains("Grpc")
                 || message.getClass().getName().contains("CloudEvent"),
             "cloudevents");
-        
+
         // TCP messages
         addRoutingRule("tcp-messages",
             message -> message.getClass().getName().contains("Package"),
             "cloudevents");
-        
+
         // A2A messages
         addRoutingRule("a2a-messages",
             message -> {
@@ -266,7 +266,7 @@ public class ProtocolRouter {
                 return false;
             },
             "A2A");
-        
+
         log.info("Initialized {} default routing rules", routingRules.size());
     }
 
@@ -284,9 +284,10 @@ public class ProtocolRouter {
      * Routing rule definition.
      */
     private static class RoutingRule {
+
         final Predicate<ProtocolTransportObject> condition;
         final String targetProtocol;
-        
+
         RoutingRule(Predicate<ProtocolTransportObject> condition, String targetProtocol) {
             this.condition = condition;
             this.targetProtocol = targetProtocol;

@@ -2,13 +2,12 @@
 
 
 <br /><br />
-<img src="resources/logo.png" width="256">
+<img src="resources/logo.svg" width="256">
 <br />
 
 [![CI status](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/ci.yml?logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/ci.yml)
 [![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
-[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/apache/eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/eventmesh/context:java)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/apache/eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/eventmesh/alerts/)
+[![Code Scanning](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/code-scanning.yml?label=code%20scanning&logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/code-scanning.yml)
 
 [![License](https://img.shields.io/github/license/apache/eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/eventmesh/releases)
@@ -27,28 +26,34 @@
 
 ### EventMesh 架构
 
-![EventMesh Architecture](resources/eventmesh-architecture-6.png)
+![EventMesh Architecture](resources/eventmesh-architecture-7.png)
+
+EventMesh 采用统一的 **CloudEvents-over-MQ** 架构。消息队列（MQ）仅作为持久化的预写日志（WAL）存储层——没有消费者组（consumer group）、没有 Tag，也不承担 Broker 端的订阅语义。所有投递逻辑由无状态的 EventMesh Runtime 掌控：其中的 **SubscriptionManager** 负责维护订阅注册表与位点（offset）跟踪，并以负载均衡（load-balance）、广播（broadcast）、多播（multicast）等语义分发事件。应用通过轻量的 **HTTP + CloudEvents 1.0** SDK（`publish` / `subscribe` / `unsubscribe`）接入，与外部系统的集成则通过 connector SPI 在独立进程的 Connector Runtime 中运行。
 
 
 ## 特性
 
-Apache EventMesh提供了许多功能来帮助用户实现他们的目标，以下是一些EventMesh的关键特点：
+Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动应用。以下是让 EventMesh 与众不同的核心亮点：
 
-- 基于 [CloudEvents](https://cloudevents.io) 规范构建。
-- 快速可扩展的Connector，[connectors](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors)，例如作为Saas、CloudService和数据库等的source 或sink。.
-- 快速可扩展的存储层，使用 [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity)和[Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), 和 [RDMS](https://en.wikipedia.org/wiki/Relational_database)（正在进行中）集成。
-- 快速可扩展的控制器，例如 [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
-- 至少一次的可靠性投递。
-- 在多个EventMesh部署之间传递事件。
-- 通过目录服务进行事件模式管理。
-- 通过 [Serverless workflow](https://serverlessworkflow.io/) 引擎实现强大的事件编排。
-- 强大的事件过滤和转换功能。
-- 快速、无缝的可扩展性。
-- 易于函数开发和框架集成。
+**核心架构**
 
-## 路线图
+- **全链路 CloudEvents 原生** —— 完全基于 [CloudEvents](https://cloudevents.io) 1.0 规范构建，事件天然厂商中立、可移植。
+- **轻量、语言无关的 SDK** —— 纯 HTTP 上仅需 `publish`、`subscribe`、`unsubscribe` 三个操作，无重客户端、无厂商锁定。
+- **订阅与分发由 Runtime 掌控** —— 订阅状态与投递语义（负载均衡 / 广播 / 多播）由 EventMesh 自主管理，而非底层 MQ，无论后端是哪种存储，行为都保持一致。
+- **MQ 仅作纯预写日志（WAL）** —— 仅追加写入，无消费者组、无 Tag；Broker 退化为纯持久化存储，大幅简化运维。
+- **保证至少一次（at-least-once）投递** —— 可靠性由 EventMesh 通过自管 offset + 显式 ACK 掌控。
+- **多种下发通道** —— 订阅者可自由选择 HTTP 长轮询、Server-Sent Events（SSE）或 WebSocket 推送，并支持请求-应答（request-reply）。
+- **轻松水平扩展** —— 无状态 Runtime 实例可无缝扩容，无重平衡成本。
 
-请前往[路线图](https://eventmesh.apache.org/docs/roadmap)查看Apache EventMesh的版本历史和新功能。.
+**扩展性与生态**
+
+- **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/a2a-protocol/README.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
+- **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)、[Apache Kafka](https://kafka.apache.org)、[Apache Pulsar](https://pulsar.apache.org)、[RabbitMQ](https://rabbitmq.com)、[Redis](https://redis.io) 等。
+- **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
+- **可插拔元数据服务** —— [Consul](https://consulproject.org/en/)、[Nacos](https://nacos.io)、[ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
+- **事件模式管理** —— 通过目录（catalog）服务实现。
+- **强大的事件编排** —— 基于 [Serverless workflow](https://serverlessworkflow.io/) 引擎。
+- **强大的事件过滤与转换能力。**
 
 ## 子项目
 
@@ -119,8 +124,10 @@ sudo docker pull apache/eventmesh:latest
 使用以下命令启动 EventMesh 容器：
 
 ```shell
-sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
+sudo docker run -d --name eventmesh -p 8080:8080 -p 8081:8081 -p 8082:8082 -t apache/eventmesh:latest
 ```
+
+> 端口说明：`8080` = 流量 HTTP（`/events/*` CloudEvents API），`8081` = 管理 HTTP（`/admin/*`），`8082` = WebSocket 推送（按需开启）。Connector 运行时镜像另暴露 `8083` 作为其可选的管理端口。
 
 进入容器：
 
@@ -172,6 +179,109 @@ NAME                                  READY   STATUS    RESTARTS   AGE
 connector-rocketmq-0                  1/1     Running   0          9s
 eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
 eventmesh-runtime-0-a-0               1/1     Running   0          15s
+```
+
+### 使用 EventMesh API
+
+应用通过 `/events/*` HTTP 端点以标准 [CloudEvents](https://cloudevents.io) 1.0 与 EventMesh 交互，仅需 `publish` / `subscribe` / `unsubscribe` 等操作。订阅与分发由 EventMesh 自主管理，无需消费者组或 Tag。
+
+#### 1. 发布 CloudEvent
+
+以 CloudEvents 1.0 格式通过 HTTP POST 发布事件（返回 `202 Accepted` 表示事件已写入 WAL）：
+
+```shell
+POST /events/publish HTTP/1.1
+Host: localhost:8080
+Content-Type: application/cloudevents+json
+
+{
+  "specversion": "1.0",
+  "id": "89010a5a-3c6f-4a1e-9b2d-0f7c1f2e3a4b",
+  "source": "/example/producer",
+  "type": "com.example.order.created",
+  "subject": "orders",
+  "datacontenttype": "application/json",
+  "data": {
+    "content": "Hello, EventMesh!"
+  }
+}
+```
+
+#### 2. 订阅 Topic
+
+向 EventMesh 注册订阅（无消费者组、无 Tag）。提供 `clientId`、`topic` 以及分发模式 `mode`（`LOAD_BALANCE`、`BROADCAST`、`MULTICAST` 或 `LOAD_BALANCE_STICKY`），响应返回 `subscriptionId`：
+
+```shell
+POST /events/subscribe HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "clientId": "order-svc",
+  "topic": "orders",
+  "mode": "LOAD_BALANCE"
+}
+```
+
+#### 3. 接收事件
+
+订阅者可通过三种传输方式接收下发的事件，按业务场景任选其一——它们下发相同的 CloudEvents，并遵循 EventMesh 的 ACK / 至少一次语义。
+
+**a) HTTP 长轮询** —— 主动拉取，请求会阻塞直到有事件或超时：
+
+```shell
+GET /events/poll?clientId=order-svc&topics=orders&timeout=30000 HTTP/1.1
+Host: localhost:8080
+```
+
+处理完事件后，进行 ACK 以推进 offset（至少一次投递）：
+
+```shell
+POST /events/ack HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "subId": "sub-123",
+  "clientId": "order-svc",
+  "topic": "orders",
+  "partition": 0,
+  "offset": 42
+}
+```
+
+**b) Server-Sent Events（SSE）** —— 服务端经长连接主动推送，客户端无需轮询：
+
+```shell
+GET /events/stream?clientId=order-svc&topics=orders HTTP/1.1
+Host: localhost:8080
+Accept: text/event-stream
+```
+
+**c) WebSocket** —— 经独立 WebSocket 端口的全双工服务端推送：
+
+```shell
+GET /events/stream HTTP/1.1
+Host: localhost:8082
+Upgrade: websocket
+Connection: Upgrade
+```
+
+> 长轮询、SSE、WebSocket 是可互换的下发传输——订阅者任选其一。SSE 与 WebSocket 由服务端推送（无需轮询循环），长轮询则由客户端驱动。此外还支持请求-应答（`POST /events/request` + `POST /events/reply`）。`CloudEventsClient` Java SDK 封装了以上全部方式（`subscribe` / `subscribeSse` / `subscribeWs`），用法见[CloudEvents 客户端使用指引](docs/eventmesh-cloudevents-client-guide.md)。
+
+#### 4. 取消订阅
+
+当不再需要接收某 Topic 的事件时，按 `clientId` 取消订阅（可选带 `subscriptionId`）：
+
+```shell
+POST /events/unsubscribe HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "clientId": "order-svc",
+  "topic": "orders"
+}
 ```
 
 ## 贡献

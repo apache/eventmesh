@@ -293,7 +293,7 @@ public final class A2ATopicFactory {
         private final String taskId;
 
         public ParsedTopic(String namespace, EntityType entityType, String agentName,
-                           String gatewayId, String taskId) {
+            String gatewayId, String taskId) {
             this.namespace = namespace;
             this.entityType = entityType;
             this.agentName = agentName;

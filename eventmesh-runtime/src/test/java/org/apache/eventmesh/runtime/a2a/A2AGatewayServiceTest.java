@@ -58,7 +58,7 @@ class A2AGatewayServiceTest {
     void setUp() throws Exception {
         transport = new InMemoryA2AMessageTransport();
         taskRegistry = new TaskRegistry();
-        a2aService = new A2APublishSubscribeService(null);
+        a2aService = new A2APublishSubscribeService();
         a2aService.init();
         a2aService.start();
         gateway = new A2AGatewayService(NAMESPACE, GATEWAY_ID, transport, taskRegistry, a2aService);
@@ -87,7 +87,8 @@ class A2AGatewayServiceTest {
         transport.subscribe(requestTopic, (topic, event) -> {
             String taskId = event.getId();
             String data = event.getData() != null
-                ? new String(event.getData().toBytes(), StandardCharsets.UTF_8) : "";
+                ? new String(event.getData().toBytes(), StandardCharsets.UTF_8)
+                : "";
             String responseTopic = A2ATopicFactory.gatewayResponseTopic(NAMESPACE, GATEWAY_ID, taskId);
             CloudEvent response = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())

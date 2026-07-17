@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,6 +74,11 @@ public class A2AClient implements AutoCloseable {
 
     private volatile boolean started = false;
     private ScheduledExecutorService heartbeatExecutor;
+    /**
+     * Virtual-thread executor for async task submission ({@link #sendTask}). Blocking HTTP runs on
+     * virtual threads instead of {@code ForkJoinPool.commonPool}, so the shared pool isn't starved.
+     */
+    private final ExecutorService asyncExecutor = Executors.newVirtualThreadPerTaskExecutor();
     private RequestHandler requestHandler;
 
     private A2AMessageTransport transport;
@@ -113,6 +119,7 @@ public class A2AClient implements AutoCloseable {
         if (heartbeatExecutor != null) {
             heartbeatExecutor.shutdownNow();
         }
+        asyncExecutor.shutdownNow();
         if (transport != null && requestSubscriptionId != null) {
             transport.unsubscribe(requestSubscriptionId);
             requestSubscriptionId = null;
@@ -148,7 +155,8 @@ public class A2AClient implements AutoCloseable {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode >= 400) {
             String respBody = response.getEntity() != null
-                ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "";
+                ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+                : "";
             throw new RuntimeException("Failed to register agent card: " + statusCode + " " + respBody);
         }
         log.info("AgentCard registered: {} -> {}", agentName, statusCode);
@@ -202,7 +210,7 @@ public class A2AClient implements AutoCloseable {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, asyncExecutor);
     }
 
     /**
@@ -225,7 +233,8 @@ public class A2AClient implements AutoCloseable {
         HttpResponse response = httpClient.execute(post);
         int statusCode = response.getStatusLine().getStatusCode();
         String respBody = response.getEntity() != null
-            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "";
+            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+            : "";
 
         if (statusCode >= 400) {
             throw new RuntimeException("Task submission failed: " + statusCode + " " + respBody);
@@ -251,7 +260,8 @@ public class A2AClient implements AutoCloseable {
         HttpResponse response = httpClient.execute(post);
         int statusCode = response.getStatusLine().getStatusCode();
         String respBody = response.getEntity() != null
-            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "";
+            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+            : "";
 
         if (statusCode >= 400) {
             throw new RuntimeException("Task submission failed: " + statusCode + " " + respBody);
@@ -264,7 +274,8 @@ public class A2AClient implements AutoCloseable {
         HttpGet get = new HttpGet(gatewayUrl + "/a2a/tasks/" + taskId);
         HttpResponse response = httpClient.execute(get);
         String respBody = response.getEntity() != null
-            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "";
+            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+            : "";
         return objectMapper.readValue(respBody, TaskResult.class);
     }
 
@@ -293,13 +304,14 @@ public class A2AClient implements AutoCloseable {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             String body = response.getEntity() != null
-                ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "";
+                ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+                : "";
             throw new RuntimeException("SSE stream failed: " + statusCode + " " + body);
         }
 
         try (java.io.InputStream is = response.getEntity().getContent();
-             java.io.BufferedReader reader = new java.io.BufferedReader(
-                 new java.io.InputStreamReader(is, StandardCharsets.UTF_8))) {
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(is, StandardCharsets.UTF_8))) {
             String line;
             StringBuilder eventBuffer = new StringBuilder();
             while ((line = reader.readLine()) != null) {
@@ -340,9 +352,11 @@ public class A2AClient implements AutoCloseable {
         HttpGet get = new HttpGet(gatewayUrl + "/a2a/agents");
         HttpResponse response = httpClient.execute(get);
         String respBody = response.getEntity() != null
-            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8) : "[]";
+            ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+            : "[]";
         List<Map<String, Object>> cards = objectMapper.readValue(respBody,
-            new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {});
+            new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {
+            });
         List<String> names = new ArrayList<>();
         for (Map<String, Object> card : cards) {
             Object name = card.get("name");
@@ -384,7 +398,8 @@ public class A2AClient implements AutoCloseable {
 
         String taskId = event.getId();
         String message = event.getData() != null
-            ? new String(event.getData().toBytes(), StandardCharsets.UTF_8) : "";
+            ? new String(event.getData().toBytes(), StandardCharsets.UTF_8)
+            : "";
 
         log.info("Handling request: taskId={}, from={}", taskId, event.getSource());
 

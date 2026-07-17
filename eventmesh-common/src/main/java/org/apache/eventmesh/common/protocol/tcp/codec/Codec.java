@@ -50,7 +50,7 @@ public class Codec {
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
 
-    private static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length; //13
+    private static final int PREFIX_LENGTH = CONSTANT_MAGIC_FLAG.length + VERSION.length; // 13
 
     private static final int PACKAGE_BYTES_FIELD_LENGTH = 4;
 

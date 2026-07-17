@@ -1,13 +1,12 @@
 <div align="center">
 
 <br /><br />
-<img src="resources/logo.png" width="256">
+<img src="resources/logo.svg" width="256">
 <br />
 
 [![CI status](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/ci.yml?logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/ci.yml)
 [![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
-[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/apache/eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/eventmesh/context:java)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/apache/eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/eventmesh/alerts/)
+[![Code Scanning](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/code-scanning.yml?label=code%20scanning&logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/code-scanning.yml)
 
 [![License](https://img.shields.io/github/license/apache/eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/eventmesh/releases)
@@ -27,27 +26,33 @@
 
 ### EventMesh Architecture
 
-![EventMesh Architecture](resources/eventmesh-architecture-6.png)
+![EventMesh Architecture](resources/eventmesh-architecture-7.png)
+
+EventMesh adopts a unified **CloudEvents-over-MQ** architecture. The message queue (MQ) acts as a pure write-ahead log (WAL) for durable storage only — there are no consumer groups, no tags, and no broker-side subscription semantics. Instead, the stateless EventMesh Runtime owns all delivery logic: its **SubscriptionManager** maintains the subscription registry and offset tracking, and dispatches events with load-balance, broadcast, and multicast semantics. Applications interact through a lightweight **HTTP + CloudEvents 1.0** SDK (`publish` / `subscribe` / `unsubscribe`), while integration with external systems runs in a standalone Connector Runtime via the connector SPI.
 
 ## Features
 
-Apache EventMesh has a vast amount of features to help users achieve their goals. Let us share with you some of the key features EventMesh has to offer:
+Apache EventMesh is packed with features that help users build event-driven applications with ease. Here are the highlights that set EventMesh apart:
 
-- Built around the [CloudEvents](https://cloudevents.io) specification.
-- Rapidty extendsible interconnector layer [connectors](https://github.com/apache/eventmesh/tree/master/eventmesh-connectors) using [openConnect](https://github.com/apache/eventmesh/tree/master/eventmesh-openconnect) such as the source or sink of Saas, CloudService, and Database etc.
-- Rapidty extendsible storage layer such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io).
-- Rapidty extendsible meta such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
-- Guaranteed at-least-once delivery.
-- Deliver events between multiple EventMesh deployments.
-- Event schema management by catalog service.
-- Powerful event orchestration by [Serverless workflow](https://serverlessworkflow.io/) engine.
-- Powerful event filtering and transformation.
-- Rapid, seamless scalability.
-- Easy Function develop and framework integration.
+**Core architecture**
 
-## Roadmap
+- **CloudEvents-native, end to end** — built entirely around the [CloudEvents](https://cloudevents.io) 1.0 specification, so events stay vendor-neutral and portable.
+- **Lightweight, language-agnostic SDK** — just three operations over plain HTTP (`publish`, `subscribe`, `unsubscribe`); no heavyweight client, no vendor lock-in.
+- **Runtime-owned subscription & dispatch** — subscription state and delivery semantics (load-balance / broadcast / multicast) are managed by EventMesh itself, not the underlying MQ, giving you consistent behavior across any storage backend.
+- **MQ as a pure write-ahead log (WAL)** — append-only, no consumer groups, no tags; the broker is reduced to durable storage, dramatically simplifying operations.
+- **Guaranteed at-least-once delivery** — EventMesh owns reliability through self-managed offsets and explicit ACK.
+- **Multiple delivery transports** — subscribers choose HTTP long-polling, Server-Sent Events (SSE), or WebSocket push, with request-reply support.
+- **Effortless horizontal scaling** — stateless Runtime instances scale out seamlessly with no rebalancing cost.
 
-Please go to the [roadmap](https://eventmesh.apache.org/docs/roadmap) to get the release history and new features of Apache EventMesh.
+**Extensibility & ecosystem**
+
+- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/a2a-protocol/README_EN.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
+- **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), and more.
+- **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
+- **Pluggable meta service** — [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io), and [Zookeeper](https://zookeeper.apache.org/).
+- **Event schema management** via catalog service.
+- **Powerful event orchestration** through the [Serverless workflow](https://serverlessworkflow.io/) engine.
+- **Powerful event filtering and transformation.**
 
 ## Subprojects
 
@@ -76,60 +81,106 @@ sudo docker pull apache/eventmesh:latest
 Use the following command to start the EventMesh container:
 
 ```shell
-sudo docker run -d --name eventmesh -p 10000:10000 -p 10105:10105 -p 10205:10205 -p 10106:10106 -t apache/eventmesh:latest
+sudo docker run -d --name eventmesh -p 8080:8080 -p 8081:8081 -p 8082:8082 -t apache/eventmesh:latest
 ```
-#### 3. Creating Topics
-Creating a topic is the first step in using EventMesh. You need to send an HTTP POST request to create a topic.
-Example Request
-```shell
-POST /eventmesh/topic/create HTTP/1.1  
-Host: localhost:10105  
-Content-Type: application/json  
-  
-{  
-  "topic": "example-topic"  
-}
-```
-#### 4. Subscribing to Topics
-After creating a topic, you can subscribe to it to receive messages. EventMesh provides two subscription methods: local subscription and remote subscription.
+
+> Ports: `8080` = traffic HTTP (`/events/*` CloudEvents API), `8081` = admin HTTP (`/admin/*`), `8082` = WebSocket push (opt-in). The connector runtime image exposes `8083` for its optional admin port.
+#### 3. Publishing a CloudEvent
+
+Applications talk to EventMesh over the `/events/*` HTTP endpoints using standard [CloudEvents](https://cloudevents.io) 1.0. Publish an event with an HTTP POST (`202 Accepted` means the event was written to the WAL):
 
 ```shell
-POST /eventmesh/subscribe/local HTTP/1.1  
-Host: localhost:10105  
-Content-Type: application/json  
-{  
-  "url": "http://localhost:8080/callback",  
-  "consumerGroup": "example-consumer-group",  
-  "topic": [  
-    {  
-      "topic": "example-topic",  
-      "mode": "CLUSTERING",  
-      "type": "SYNC"  
-    }  
-  ]  
+POST /events/publish HTTP/1.1
+Host: localhost:8080
+Content-Type: application/cloudevents+json
+
+{
+  "specversion": "1.0",
+  "id": "89010a5a-3c6f-4a1e-9b2d-0f7c1f2e3a4b",
+  "source": "/example/producer",
+  "type": "com.example.order.created",
+  "subject": "orders",
+  "datacontenttype": "application/json",
+  "data": {
+    "content": "Hello, EventMesh!"
+  }
 }
 ```
-#### 5. Sending Messages
-EventMesh provides multiple message sending methods, including asynchronous sending, synchronous sending, and batch sending.
+
+#### 4. Subscribing to a Topic
+
+Subscriptions are registered with EventMesh (there are no consumer groups or tags). Provide a `clientId`, the topic, and a distribution `mode` (`LOAD_BALANCE`, `BROADCAST`, `MULTICAST`, or `LOAD_BALANCE_STICKY`). The response returns a `subscriptionId`:
+
 ```shell
-POST /eventmesh/publish HTTP/1.1  
-Host: localhost:10105  
-Content-Type: application/json    
-eventmesh-message-topic: example-topic 
-{  
-  "content": "Hello, EventMesh!"  
+POST /events/subscribe HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "clientId": "order-svc",
+  "topic": "orders",
+  "mode": "LOAD_BALANCE"
 }
 ```
+
+#### 5. Receiving Events
+
+Subscribers can receive dispatched events through three transports. Pick whichever fits your workload — all of them deliver the same CloudEvents and honor EventMesh's ACK / at-least-once semantics.
+
+**a) HTTP Long-Polling** — pull events; the request blocks until events arrive or the timeout elapses:
+
+```shell
+GET /events/poll?clientId=order-svc&topics=orders&timeout=30000 HTTP/1.1
+Host: localhost:8080
+```
+
+After processing the delivered events, acknowledge them so the offset advances (at-least-once delivery):
+
+```shell
+POST /events/ack HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "subId": "sub-123",
+  "clientId": "order-svc",
+  "topic": "orders",
+  "partition": 0,
+  "offset": 42
+}
+```
+
+**b) Server-Sent Events (SSE)** — server push over a long-lived HTTP connection; the client does not poll:
+
+```shell
+GET /events/stream?clientId=order-svc&topics=orders HTTP/1.1
+Host: localhost:8080
+Accept: text/event-stream
+```
+
+**c) WebSocket** — full-duplex server push over a dedicated WebSocket port:
+
+```shell
+GET /events/stream HTTP/1.1
+Host: localhost:8082
+Upgrade: websocket
+Connection: Upgrade
+```
+
+> Long-polling, SSE, and WebSocket are interchangeable delivery transports — a subscriber chooses one. SSE and WebSocket are pushed by the server (no polling loop), while long-polling is client-driven. Request-reply (`POST /events/request` + `POST /events/reply`) is also supported. The `CloudEventsClient` Java SDK wraps all of these (`subscribe` / `subscribeSse` / `subscribeWs`); see the [CloudEvents client guide](docs/eventmesh-cloudevents-client-guide.md).
+
 #### 6. Unsubscribing
-When you no longer need to receive messages for a topic, you can unsubscribe.
+
+When you no longer need to receive events for a topic, unsubscribe by `clientId` (optionally with the `subscriptionId`):
+
 ```shell
-POST /eventmesh/unsubscribe/local HTTP/1.1  
-Host: localhost:10105  
-Content-Type: application/json  
-{  
-  "url": "http://localhost:8080/callback",  
-  "consumerGroup": "example-consumer-group",  
-  "topics": ["example-topic"]  
+POST /events/unsubscribe HTTP/1.1
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "clientId": "order-svc",
+  "topic": "orders"
 }
 ```
 ## Contributing

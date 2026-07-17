@@ -22,24 +22,25 @@ package org.apache.eventmesh.protocol.a2a.mcp;
  * Reference: https://modelcontextprotocol.io/docs/concepts/architecture
  */
 public class McpMethods {
+
     // Lifecycle
     public static final String INITIALIZE = "initialize";
     public static final String INITIALIZED = "notifications/initialized";
     public static final String PING = "ping";
-    
+
     // Tools
     public static final String TOOLS_LIST = "tools/list";
     public static final String TOOLS_CALL = "tools/call";
-    
+
     // Prompts
     public static final String PROMPTS_LIST = "prompts/list";
     public static final String PROMPTS_GET = "prompts/get";
-    
+
     // Resources
     public static final String RESOURCES_LIST = "resources/list";
     public static final String RESOURCES_READ = "resources/read";
     public static final String RESOURCES_SUBSCRIBE = "resources/subscribe";
-    
+
     // Sampling (Host-side)
     public static final String SAMPLING_CREATE_MESSAGE = "sampling/createMessage";
 

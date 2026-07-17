@@ -44,6 +44,9 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
+# … but keep source service scripts shipped from module bin/ dirs (dist copies them to dist/bin).
+!eventmesh-runtime/bin/
+!eventmesh-connector-runtime/bin/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
@@ -51,3 +54,5 @@ bld/
 
 #rust
 Cargo.lock
+rocketmq-pull-offsets.properties
+kafka-pull-offsets.properties

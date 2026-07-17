@@ -68,8 +68,15 @@ public class TcpMessageProtocolResolver {
             .withSubject(topic)
             .withData(content.getBytes(Constants.DEFAULT_CHARSET));
 
+        // A dataContentType is required for the storage layer's CloudEvent JSON serialization to
+        // base64-encode the byte data (cloudevents-jackson embeds raw bytes as an unquoted JSON
+        // value when dataContentType is absent, producing invalid JSON that won't round-trip). The
+        // legacy EventMeshMessage body is an opaque string, so default to octet-stream when the
+        // client didn't set DATA_CONTENT_TYPE explicitly.
         if (message.getHeaders().containsKey(Constants.DATA_CONTENT_TYPE)) {
             cloudEventBuilder.withDataContentType(message.getHeaders().get(Constants.DATA_CONTENT_TYPE));
+        } else {
+            cloudEventBuilder.withDataContentType("application/octet-stream");
         }
 
         for (Map.Entry<String, Object> prop : header.getProperties().entrySet()) {

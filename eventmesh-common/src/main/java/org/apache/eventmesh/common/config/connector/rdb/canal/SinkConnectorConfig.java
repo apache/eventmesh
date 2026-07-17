@@ -28,5 +28,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class SinkConnectorConfig extends JdbcConfig {
+
     private String connectorName;
 }

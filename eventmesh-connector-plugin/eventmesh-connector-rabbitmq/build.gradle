@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(":eventmesh-connector-runtime")
+    implementation 'io.cloudevents:cloudevents-core'
+    implementation 'org.slf4j:slf4j-api'
+    implementation "com.rabbitmq:amqp-client:5.22.0"
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
