@@ -1,0 +1,19 @@
+# Rust SDK examples
+
+Each example is a small executable with one responsibility. They use the default EventMesh ports and the topic `test-topic-rust-sdk`; start a compatible runtime before running them.
+
+| Transport | Example | What it demonstrates | Command |
+| --- | --- | --- | --- |
+| gRPC | `grpc_producer` | Publish a native EventMesh message | `cargo run --example grpc_producer --features grpc` |
+| gRPC | `grpc_consumer` | Stream consumption with `MessageHandler` | `cargo run --example grpc_consumer --features grpc` |
+| gRPC | `grpc_producer_cloud_events` | Publish a CloudEvent | `cargo run --example grpc_producer_cloud_events --features grpc,cloud_events` |
+| HTTP | `http_producer` | Publish over HTTP | `cargo run --example http_producer --features http` |
+| HTTP | `http_consumer_server` | Built-in `WebhookServer` | `cargo run --example http_consumer_server --features http` |
+| HTTP | `http_consumer_custom` | Application-owned axum webhook endpoint | `cargo run --example http_consumer_custom --features http` |
+| TCP | `tcp_producer` | Connected TCP publish | `cargo run --example tcp_producer --features tcp` |
+| TCP | `tcp_consumer` | Connected TCP subscribe | `cargo run --example tcp_consumer --features tcp` |
+| TCP | `tcp_producer_cloud_events` | Publish a CloudEvent over TCP | `cargo run --example tcp_producer_cloud_events --features tcp,cloud_events` |
+
+Run a consumer first, then run its corresponding producer. The HTTP examples listen on ports 8080 (built-in server) and 8081 (custom endpoint); change the advertised callback URL when EventMesh cannot reach `127.0.0.1`.
+
+The examples intentionally use minimal configuration. For timeouts, identity, credentials, TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.

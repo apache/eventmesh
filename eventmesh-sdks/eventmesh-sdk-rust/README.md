@@ -1,212 +1,109 @@
-# eventmesh-rust-sdk
+# Apache EventMesh Rust SDK
 
-The Rust SDK for [Apache EventMesh](https://eventmesh.apache.org). Version 2
-uses explicit protocol clients, Rust-style configuration values, and one
-non-generic `Message` enum that preserves EventMesh and optional CloudEvents
-messages.
+`eventmesh` is the Rust SDK for [Apache EventMesh](https://eventmesh.apache.org). It provides separate, feature-gated gRPC, HTTP, and TCP clients over a shared message and configuration API.
 
 ## Requirements
 
 - Rust 1.86 or newer
-- `protoc` 3.15 or newer when building with the `grpc` feature
+- `protoc` 3.15 or newer when enabling `grpc` (including `full` or `e2e`)
 - A compatible EventMesh runtime for network operations
 
 ## Features
 
-Transports are opt-in; the default feature set is empty.
+The default feature set is empty. Enable the transport(s) your application uses; `full` is primarily convenient for local verification.
 
-| Feature | Capability |
+| Feature | Provides |
 | --- | --- |
-| `grpc` | `GrpcClient`, producer and stream consumer, Catalog and Workflow |
-| `http` | `HttpClient`, webhook registration, and `WebhookServer` |
-| `tcp` | `TcpClient`, producer, consumer, broadcast, and reconnect |
-| `cloud_events` | `Message::CloudEvent(cloudevents::Event)` |
-| `tls` | TLS support for gRPC |
-| `full` | All supported transports, CloudEvents, and TLS |
+| `grpc` | `GrpcClient`, producer, stream consumer, webhook registration, Catalog, and Workflow |
+| `http` | `HttpClient`, HTTP producer, webhook registration, and `WebhookServer` |
+| `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
+| `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
+| `tls` | TLS support for gRPC (use with `grpc`) |
+| `full` | All transport, CloudEvents, and TLS features |
+| `e2e` | Live-runtime integration tests; implies all runtime features |
 
 ```toml
 [dependencies]
 eventmesh = { version = "2", features = ["grpc"] }
 ```
 
-## Messages
+## Quick start
 
-`Message` is intentionally not generic and is not an SDK serialization
-format. It only selects the public message dialect; the chosen transport owns
-protobuf, HTTP-form, or TCP-frame serialization.
-
-```rust
-use eventmesh::message::{EventMeshMessage, Message};
-
-let native = Message::from(EventMeshMessage::new("orders.created", "{\"id\": 42}"));
-
-// With `cloud_events` enabled:
-// let cloud_event = Message::from(event);
-```
-
-`Message::into_event_mesh()` never silently flattens CloudEvents into the
-native EventMesh model.
-
-## gRPC
+The same `Message`, `EventMeshMessage`, `Subscription`, and role options are used by every transport. Only client construction changes.
 
 ```rust
 use eventmesh::{
     config::{Endpoint, GrpcConfig, ProducerOptions},
-    message::{EventMeshMessage, Message},
-    GrpcClient,
+    EventMeshMessage, GrpcClient, Message,
 };
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let endpoint = Endpoint::new("127.0.0.1", 10_205)?;
-    let client = GrpcClient::new(GrpcConfig::new(endpoint))?;
+    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
     let producer = client.producer(ProducerOptions::new("orders-producer"))?;
     let receipt = producer
-        .publish(Message::from(EventMeshMessage::new("orders.created", "{\"id\": 42}")))
+        .publish(Message::from(EventMeshMessage::new("orders.created", r#"{"id": 42}"#)))
         .await?;
     println!("accepted with code {}", receipt.code);
     Ok(())
 }
 ```
 
-To receive messages, implement `MessageHandler`. `Ok(None)` acknowledges an
-asynchronous message; `Ok(Some(reply))` sends a reply for a synchronous
-delivery. A handler error is not acknowledged: HTTP asks for redelivery, while
-gRPC and TCP close the current delivery stream/connection.
+For a consumer, implement `MessageHandler`. Return `Ok(None)` to acknowledge an asynchronous delivery, `Ok(Some(reply))` for request/reply, and `Err(_)` to report application failure to the transport.
 
-```rust
-use eventmesh::{
-    config::{Endpoint, GrpcConfig, GrpcConsumerOptions},
-    message::Message,
-    subscription::Subscription,
-    GrpcClient, MessageHandler,
-};
-
+```rust,ignore
 struct Log;
 
-impl MessageHandler for Log {
-    async fn handle(&self, message: Message) -> eventmesh::Result<Option<Message>> {
+impl eventmesh::MessageHandler for Log {
+    async fn handle(&self, message: eventmesh::Message) -> eventmesh::Result<Option<eventmesh::Message>> {
         println!("received: {message:?}");
         Ok(None)
     }
 }
-
-#[tokio::main]
-async fn main() -> eventmesh::Result<()> {
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let consumer = client
-        .stream_consumer(
-            GrpcConsumerOptions::new("orders-consumer"),
-            [Subscription::new("orders.created")],
-            Log,
-        )
-        .await?;
-    consumer.join().await
-}
 ```
 
-`GrpcConsumerOptions::with_max_concurrent_handlers` controls bounded concurrent
-handler dispatch on a gRPC stream. `GrpcConsumer::subscribe` and `unsubscribe`
-update a live stream. For gRPC
-webhook registration, create `client.webhook_consumer(...)` and register one
-or more subscriptions with a webhook URL. gRPC batch publishing accepts a
-native EventMesh batch or a homogeneous CloudEvents batch; mixed
-native/CloudEvents batches are rejected.
+See the runnable transport-specific consumer programs in [examples/README.md](examples/README.md).
 
-## HTTP and TCP
+## Transport guide
 
-HTTP uses a long-lived webhook-registration consumer plus an optional built-in
-webhook server. TCP has a connected producer/consumer and exposes broadcast as
-a TCP-specific producer operation. `producer_with_handler` enables the TCP
-publisher-side response handler equivalent to Java's `registerPubBusiHandler`.
-TCP Runtime unsubscribe is session-wide, so the Rust API names it
-`TcpConsumer::unsubscribe_all()` rather than accepting a misleading topic.
-See `examples/http` and `examples/tcp` for runnable programs.
+| Transport | Client | Consumer model | Notable operations |
+| --- | --- | --- | --- |
+| gRPC | `GrpcClient` | `stream_consumer` invokes a `MessageHandler` | batch publish, request/reply, live subscribe/unsubscribe |
+| HTTP | `HttpClient` | register a webhook URL; serve it with `WebhookServer` or your framework | request/reply, weighted endpoint selection |
+| TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
-```rust
-use eventmesh::{
-    config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
-    subscription::Subscription,
-    webhook::WebhookServer,
-    HttpClient,
-};
+HTTP webhook pushes can be handled by the built-in `WebhookServer` or by an application-owned endpoint using `eventmesh::http::codec::{parse_push_body, WebhookReply}`. The custom-handler example shows the latter. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
-// Build WebhookServer with a MessageHandler, then register server.url():
-// let server = WebhookServer::new("0.0.0.0:8080".parse()?, handler);
-let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
-let client = HttpClient::new(HttpConfig::new(endpoints))?;
-let consumer = client.webhook_consumer(ConsumerOptions::new("orders-http"))?;
-// consumer.subscribe(Subscription::new("orders.created"), server.url()).await?;
-// consumer.unsubscribe(Subscription::new("orders.created"), server.url()).await?;
-# let _ = (consumer, Subscription::new("orders.created"));
-```
+`Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
 ## Configuration and errors
 
-Every protocol configuration starts with a validated `Endpoint` (HTTP takes a
-non-empty `EndpointSet`). Use `Identity`, `Credentials`, `ClientOptions`, and
-the transport-specific builder-style `with_*` methods to set optional values.
-Secrets are redacted in `Debug` output.
+All configurations require a validated `Endpoint`; HTTP uses a non-empty `EndpointSet`. Use `with_*` methods to set optional identity, credentials, timeouts, TLS, proxy, and reconnect settings. `Debug` output redacts secrets.
 
-HTTP connects directly by default, matching the Java SDK. Enable process
-environment proxy settings explicitly with `HttpConfig::with_proxy_from_env(true)`;
-reqwest will then honor `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
+Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds (TCP). `ClientOptions::with_request_timeout` changes a client's default; every producer also has `request_reply_with_timeout` for one call. TCP separately has a 1-second connect timeout and a 20-second control timeout.
 
-The default request timeout is protocol-specific: 5 seconds for gRPC, 15
-seconds for HTTP, and 20 seconds for TCP. `ClientOptions::with_request_timeout`
-overrides that protocol default and rejects a zero duration when the client is
-created. When one request needs a different deadline, each producer exposes
-`request_reply_with_timeout(message, Duration)`, matching the Java SDK's
-per-call timeout without changing the client's default.
+Operations return the pattern-matchable `eventmesh::Error`; common variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`, `Server`, `Protocol`, `Unsupported`, and transport-specific errors.
 
-TCP additionally separates its 1-second socket connection timeout from its
-20-second protocol-control timeout. Configure them with
-`TcpConfig::with_connect_timeout` and `TcpConfig::with_control_timeout`; the
-latter applies to HELLO, LISTEN, subscribe, unsubscribe, and subscription
-replay after reconnect. The heartbeat interval and reconnect backoff remain
-independent settings. As in the existing Rust implementation, heartbeat and
-GOODBYE frames are fire-and-forget rather than response-waiting Java-style
-control calls.
+## API documentation
 
-HTTP endpoint weights must each be positive and no greater than `i32::MAX`;
-their combined weight must also fit in `i32`. This rejects configurations that
-would overflow the Java SDK's weighted load-balancing counters.
+Generate and open the API documentation for every supported feature:
 
-Operations return the public, pattern-matchable `eventmesh::Error`; relevant
-variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`,
-`Server`, `Protocol`, `Unsupported`, and transport errors. There is no public
-catch-all error variant.
-
-## Catalog, Workflow, and discovery
-
-`catalog`, `workflow`, and `discovery` remain public gRPC APIs. Catalog now
-attaches to the public `GrpcConsumer<H>` returned by `GrpcClient`:
-
-```rust,ignore
-catalog.init(&consumer).await?;
-// ...
-catalog.destroy(&consumer).await?;
+```bash
+cargo doc --features full --no-deps --open
 ```
 
+The crate root documents the public API map. Module-level rustdoc documents configuration, message models, subscriptions, and each transport. Keep these comments current when changing public behavior; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Development
+
+The authoritative contributor workflow and live-runtime test instructions are in [CONTRIBUTING.md](CONTRIBUTING.md). In short:
 
 ```bash
 cargo fmt --check
 cargo clippy --features full --all-targets -- -D warnings
 cargo test --features full
-cargo test --features e2e --no-run
+cargo doc --features full --no-deps
 ```
-
-The `e2e` feature compiles the live gRPC, HTTP, TCP, webhook, request/reply,
-and CloudEvents integration suite. It also includes an explicitly ignored,
-destructive TCP reconnect case that restarts the compose-managed runtime; run
-it with `cargo test --features e2e --test e2e tcp_reconnect_replays_subscription_after_runtime_restart -- --ignored`.
-TLS is self-contained: its e2e starts a real TLS gRPC service using a freshly
-generated CA and server certificate, then verifies CA trust and SNI through
-the SDK's Workflow client.
-Running the suite against a live runtime is documented in `tests/e2e/main.rs`.
-An unavailable runtime fails by default; set `EVENTMESH_E2E_ALLOW_SKIP=1` only
-for an intentional local skip, never for release verification.
 
 ## License
 

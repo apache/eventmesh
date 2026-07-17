@@ -17,10 +17,33 @@
 
 //! Apache EventMesh Rust SDK.
 //!
-//! Version 2 exposes protocol-specific clients and a shared [`message::Message`]
-//! enum. The enum preserves native EventMesh and (when the feature is enabled)
-//! CloudEvents models; gRPC protobuf, HTTP form, and TCP frame details are
-//! private implementation details.
+//! # API map
+//!
+//! Start with a feature-gated protocol client: [`GrpcClient`] (`grpc`),
+//! [`HttpClient`] (`http`), or [`TcpClient`] (`tcp`). Each client creates a
+//! producer and its transport-specific consumer. Producers accept [`Message`],
+//! while consumers deliver it to [`MessageHandler`]. Use [`config`] for
+//! endpoints, identity, credentials, timeouts, TLS, and reconnect settings;
+//! use [`Subscription`] to declare what a consumer receives.
+//!
+//! `Message` preserves native EventMesh messages and, with `cloud_events`,
+//! `cloudevents::Event`. It is not a serialization format: gRPC protobuf,
+//! HTTP form, and TCP frame encoding remain transport implementation details.
+//!
+//! # Features
+//!
+//! The default feature set is empty. Enable `grpc`, `http`, or `tcp` for a
+//! transport; `cloud_events` adds CloudEvents support and `tls` adds gRPC TLS.
+//! `full` enables every runtime feature. See the repository README and
+//! `examples/` for runnable programs.
+//!
+//! # Delivery and lifecycle
+//!
+//! A [`MessageHandler`] returns `Ok(None)` to acknowledge an asynchronous
+//! delivery, `Ok(Some(reply))` to reply to a synchronous delivery, or `Err(_)`
+//! to report application failure. Long-lived consumers expose `shutdown` and
+//! `join`; HTTP consumers manage webhook registration and heartbeat, so an
+//! HTTP server is provided separately by [`webhook::WebhookServer`].
 
 #![deny(unsafe_code)]
 

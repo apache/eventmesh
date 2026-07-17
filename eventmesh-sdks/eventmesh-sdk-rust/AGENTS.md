@@ -29,7 +29,7 @@ cargo build --features full
 
 | Feature | Notes |
 |---|---|
-| `grpc` (default) | gRPC transport — publish, batch, request-reply, stream/webhook subscribe. |
+| `grpc` | gRPC transport — publish, batch, request-reply, stream/webhook subscribe. |
 | `http` | HTTP transport — `HttpProducer`, `HttpConsumer`, webhook middleware + built-in `WebhookServer`. Uses reqwest + axum. |
 | `tcp` | TCP transport — `TcpProducer`, `TcpConsumer`, native binary wire protocol. Auto-reconnect with exponential backoff. CloudEvents interop behind `cloud_events`. |
 | `cloud_events` | Native `cloudevents::Event` interop (gRPC, HTTP, and TCP). |
@@ -40,14 +40,27 @@ cargo build --features full
 ## Verification (the order the README mandates)
 
 ```bash
-cargo fmt
+cargo fmt --check
 cargo clippy --features full --all-targets -- -D warnings
 cargo test --features full
+cargo doc --features full --no-deps
 ```
 
 Clippy runs with **`-D warnings`** (warnings are errors here). There is no
 `rustfmt.toml`/`clippy.toml` — defaults apply. To run a single test binary:
 `cargo test --features full --test codec_test`.
+
+## Documentation ownership
+
+- `README.md` is the user-facing overview: installation, feature selection,
+  shared behavior, and links to the right entry point.
+- Crate and public-item rustdoc in `src/` is the API reference. Update it with
+  every public API or observable behavior change; include feature and lifecycle
+  requirements where relevant.
+- `examples/README.md` classifies runnable examples and their exact feature
+  flags. Keep it aligned with `[[example]]` entries in `Cargo.toml`.
+- `CONTRIBUTING.md` owns contributor prerequisites and verification; this file
+  owns agent-facing architecture and repository workflow.
 
 ## Generated proto code (do not hand-edit)
 

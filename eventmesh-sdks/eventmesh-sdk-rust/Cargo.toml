@@ -32,6 +32,10 @@ categories = ["api-bindings", "network-programming"]
 name = "eventmesh"
 path = "src/lib.rs"
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [features]
 # Transports are opt-in.  This keeps the base crate lightweight and, in
 # particular, lets consumers that only use the shared message model avoid
