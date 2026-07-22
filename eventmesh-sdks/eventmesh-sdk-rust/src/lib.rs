@@ -42,8 +42,8 @@
 //! A [`MessageHandler`] returns `Ok(None)` to acknowledge an asynchronous
 //! delivery, `Ok(Some(reply))` to reply to a synchronous delivery, or `Err(_)`
 //! to report application failure. Long-lived consumers expose `shutdown` and
-//! `join`; HTTP consumers manage webhook registration and heartbeat, so an
-//! HTTP server is provided separately by [`webhook::WebhookServer`].
+//! `join`; a managed HTTP consumer also owns its callback server, registration,
+//! and heartbeat lifecycle.
 
 #![deny(unsafe_code)]
 

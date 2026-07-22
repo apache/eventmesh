@@ -282,11 +282,13 @@ pub(crate) fn is_event_mesh_message(pkg: &Package) -> bool {
 /// via `EventFormatProvider.resolveFormat(dataContentType)`. The only
 /// registered format is `application/cloudevents+json`; any other value
 /// (e.g. `application/json`, `text/plain`) causes `resolveFormat()` to
-/// return null, which triggers an NPE that silently drops the message.
+/// return null, so runtime delivery fails before the TCP consumer receives the
+/// message. The Java TCP SDK also makes the same lookup on the upload path and
+/// fails before sending when given another value.
 ///
-/// This is a known server-side quirk — the Java SDK works around it by
-/// always setting `datacontenttype = application/cloudevents+json` for TCP
-/// CloudEvents (see `ExampleConstants.CLOUDEVENT_CONTENT_TYPE`).
+/// This is a known EventMesh TCP compatibility constraint. Java examples meet
+/// it by explicitly setting `datacontenttype = application/cloudevents+json`;
+/// the Java SDK does not rewrite the value automatically.
 ///
 /// This mirrors Java's `MessageUtils.buildPackage(cloudEvent, command)`:
 /// the CloudEvent is serialized to JSON by the cloudevents crate's serde

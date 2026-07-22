@@ -25,7 +25,7 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, grpc_client, http_producer, let_stream_settle,
+    consumer_options, ensure_topic, grpc_client, grpc_producer, let_stream_settle,
     start_webhook_server, unique_topic,
 };
 use crate::require_runtime;
@@ -59,7 +59,9 @@ async fn grpc_webhook_consumer_receives_delivery() {
     }
     let_stream_settle().await;
 
-    http_producer()
+    // Keep this test on the gRPC-origin path. The Runtime cannot currently
+    // adapt an HTTP-origin CloudEvent into its gRPC push representation.
+    grpc_producer()
         .publish(Message::from(EventMeshMessage::new(
             &topic,
             "delivered-via-grpc-webhook",

@@ -29,6 +29,7 @@ use crate::harness::{
 use crate::require_runtime;
 
 #[tokio::test(flavor = "multi_thread")]
+#[ignore = "Runtime cannot adapt HTTP-origin sync messages into the gRPC reply path"]
 async fn http_request_reply_roundtrip() {
     require_runtime!();
     let topic = unique_topic("http-req-reply");

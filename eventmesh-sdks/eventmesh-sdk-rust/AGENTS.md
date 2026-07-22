@@ -30,7 +30,7 @@ cargo build --features full
 | Feature | Notes |
 |---|---|
 | `grpc` | gRPC transport — publish, batch, request-reply, stream/webhook subscribe. |
-| `http` | HTTP transport — `HttpProducer`, `HttpConsumer`, webhook middleware + built-in `WebhookServer`. Uses reqwest + axum. |
+| `http` | HTTP transport — `HttpProducer`, managed `HttpConsumer`, external `WebhookRegistration`, and webhook codec helpers. Uses reqwest + axum. |
 | `tcp` | TCP transport — `TcpProducer`, `TcpConsumer`, native binary wire protocol. Auto-reconnect with exponential backoff. CloudEvents interop behind `cloud_events`. |
 | `cloud_events` | Native `cloudevents::Event` interop (gRPC, HTTP, and TCP). |
 | `tls` | TLS on the gRPC channel. |
@@ -41,6 +41,7 @@ cargo build --features full
 
 ```bash
 cargo fmt --check
+cargo clippy --no-default-features --lib -- -D warnings
 cargo clippy --features full --all-targets -- -D warnings
 cargo test --features full
 cargo doc --features full --no-deps
@@ -93,8 +94,8 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
   `LoadBalanceSelector` from `common/loadbalance.rs`.
 - `src/transport/http/webhook.rs` — **internal** axum handler (`WebhookHandler`
   + `WebhookState`) used only by `WebhookServer`. Not part of the public API.
-- `src/transport/http/server.rs` — built-in `WebhookServer` (axum) implementing
-  `IntoFuture` for one-liner `.await` startup with optional graceful shutdown.
+- `src/transport/http/server.rs` — built-in `WebhookServer` (axum). Managed
+  consumers bind it before registration and run it in a background task.
 - `src/transport/tcp/connection.rs` — TCP engine: `establish()` does TCP +
   HELLO handshake; `run()` is an outer reconnect loop that calls `io_loop()`
   (the inner select! over read/write/heartbeat). When `ReconnectConfig::enabled`
@@ -117,11 +118,12 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
 
 ### HTTP transport specifics
 
-- The HTTP consumer is **client-only** (like the Java SDK): it registers a
-  webhook URL with the runtime and sends heartbeats. The runtime POSTs messages
-  to that URL. The SDK provides two ways to receive those pushes:
-  1. **`WebhookServer`** — a built-in axum server (`IntoFuture` + graceful
-     shutdown) for users who don't want to manage their own HTTP server.
+- The public HTTP consumer binds and runs an axum callback server in the
+  background, then owns registration, heartbeat, and shutdown as one lifecycle.
+  The lower-level `WebhookRegistration` is client-only (like the Java SDK) for
+  applications that host their own endpoint. Two receiving modes remain:
+  1. **Managed consumer** — `HttpClient::consumer` binds before registration,
+     preventing connection-refused startup races.
   2. **Custom endpoint** — the user hosts any HTTP server (axum, actix, hyper,
      …) and decodes pushes with the **public codec helpers** in
      `src/transport/http/codec.rs`: `parse_push_body`,

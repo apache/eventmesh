@@ -40,7 +40,7 @@
 //!
 //! let listener = Arc::new(MyListener);
 //! let addr: std::net::SocketAddr = "0.0.0.0:8080".parse().unwrap();
-//! let server = WebhookServer::new(addr, listener.clone());
+//! let server = WebhookServer::bind(addr, listener.clone()).await?;
 //!
 //! let config = HttpClientConfig::builder()
 //!     .servers("127.0.0.1:10105")
@@ -73,7 +73,7 @@ pub const DEFAULT_WEBHOOK_PATH: &str = "/eventmesh/callback";
 
 /// A built-in axum-based webhook server.
 ///
-/// Construct with [`WebhookServer::new`], optionally call
+/// Bind with [`WebhookServer::bind`], optionally call
 /// [`WebhookServer::with_graceful_shutdown`], then `.await` to run.
 ///
 /// The server binds to `addr`, but the URL registered with the EventMesh
@@ -84,13 +84,43 @@ pub const DEFAULT_WEBHOOK_PATH: &str = "/eventmesh/callback";
 pub struct WebhookServer {
     router: Router,
     addr: SocketAddr,
+    listener: Option<tokio::net::TcpListener>,
     path: String,
     advertise_url: Option<String>,
     shutdown: Option<Pin<Box<dyn Future<Output = ()> + Send + 'static>>>,
 }
 
 impl WebhookServer {
-    /// Create a webhook server bound to `addr`, dispatching pushes to `listener`.
+    /// Bind `addr` before returning, so callers can safely register the webhook
+    /// URL without a connection-refused window.
+    pub async fn bind<L>(addr: SocketAddr, listener: Arc<L>) -> Result<Self>
+    where
+        L: MessageListener,
+        L::Message: crate::transport::http::webhook::WebhookMessage,
+    {
+        Self::bind_with_path(addr, listener, DEFAULT_WEBHOOK_PATH).await
+    }
+
+    /// Like [`WebhookServer::bind`] but with a custom webhook path.
+    pub async fn bind_with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Result<Self>
+    where
+        L: MessageListener,
+        L::Message: crate::transport::http::webhook::WebhookMessage,
+    {
+        let socket = tokio::net::TcpListener::bind(addr)
+            .await
+            .map_err(EventMeshError::Io)?;
+        let bound_addr = socket.local_addr().map_err(EventMeshError::Io)?;
+        let mut server = Self::with_path(addr, listener, path);
+        server.addr = bound_addr;
+        server.listener = Some(socket);
+        Ok(server)
+    }
+
+    /// Construct an unbound webhook server.
+    ///
+    /// Prefer [`bind`](Self::bind), which reports address conflicts before the
+    /// callback URL is registered.
     pub fn new<L>(addr: SocketAddr, listener: Arc<L>) -> Self
     where
         L: MessageListener,
@@ -112,6 +142,7 @@ impl WebhookServer {
         Self {
             router,
             addr,
+            listener: None,
             path: path.to_string(),
             advertise_url: None,
             shutdown: None,
@@ -164,15 +195,19 @@ impl IntoFuture for WebhookServer {
         let Self {
             router,
             addr,
+            listener,
             path,
             advertise_url: _,
             shutdown,
         } = self;
 
         Box::pin(async move {
-            let listener = tokio::net::TcpListener::bind(addr)
-                .await
-                .map_err(EventMeshError::Io)?;
+            let listener = match listener {
+                Some(listener) => listener,
+                None => tokio::net::TcpListener::bind(addr)
+                    .await
+                    .map_err(EventMeshError::Io)?,
+            };
             let bound_addr = listener.local_addr().map_err(EventMeshError::Io)?;
             info!("webhook server listening on http://{bound_addr}{path}");
 

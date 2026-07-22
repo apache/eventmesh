@@ -49,7 +49,7 @@ impl GrpcProducer {
         for message in messages {
             events.push(match message {
                 crate::message::Message::EventMesh(message) => {
-                    validate_publish(&message)?;
+                    message.validate_for_publish()?;
                     codec::from_event_mesh_message(&message, &self.config)?
                 }
                 #[cfg(feature = "cloud_events")]
@@ -168,7 +168,7 @@ fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Re
 
 impl Publisher for GrpcProducer {
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        validate_publish(&message)?;
+        message.validate_for_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config)?;
         let resp = timed(self.config.timeout, self.client.publish(event)).await?;
         let response = codec::to_response(&resp);
@@ -189,7 +189,7 @@ impl Publisher for GrpcProducer {
             ));
         }
         for m in &messages {
-            validate_publish(m)?;
+            m.validate_for_publish()?;
         }
         let batch = codec::from_event_mesh_messages(&messages, &self.config)?;
         let resp = timed(self.config.timeout, self.client.batch_publish(batch)).await?;
@@ -210,7 +210,7 @@ impl Publisher for GrpcProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        validate_publish(&message)?;
+        message.validate_for_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config)?;
         let fut = self.client.request_reply(event);
         let resp = tokio::time::timeout(timeout, fut)
@@ -219,26 +219,6 @@ impl Publisher for GrpcProducer {
         ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
         Ok(codec::to_event_mesh_message(&resp))
     }
-}
-
-fn validate_publish(message: &EventMeshMessage) -> Result<()> {
-    if message
-        .topic
-        .as_deref()
-        .map(|t| t.trim().is_empty())
-        .unwrap_or(true)
-    {
-        return Err(EventMeshError::InvalidMessage("topic is required".into()));
-    }
-    if message
-        .content
-        .as_deref()
-        .map(|c| c.is_empty())
-        .unwrap_or(true)
-    {
-        return Err(EventMeshError::InvalidMessage("content is required".into()));
-    }
-    Ok(())
 }
 
 /// Apply the config's default request timeout to a short unary RPC. Long-lived
@@ -256,8 +236,12 @@ mod tests {
 
     #[test]
     fn publish_validation_rejects_missing_topic_or_content() {
-        assert!(validate_publish(&EventMeshMessage::new("", "body")).is_err());
-        assert!(validate_publish(&EventMeshMessage::new("topic", "")).is_err());
+        assert!(EventMeshMessage::new("", "body")
+            .validate_for_publish()
+            .is_err());
+        assert!(EventMeshMessage::new("topic", "")
+            .validate_for_publish()
+            .is_err());
     }
 
     #[test]

@@ -15,7 +15,7 @@ The default feature set is empty. Enable the transport(s) your application uses;
 | Feature | Provides |
 | --- | --- |
 | `grpc` | `GrpcClient`, producer, stream consumer, webhook registration, Catalog, and Workflow |
-| `http` | `HttpClient`, HTTP producer, webhook registration, and `WebhookServer` |
+| `http` | `HttpClient`, managed HTTP consumer, external webhook registration, and webhook codec helpers |
 | `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
 | `tls` | TLS support for gRPC (use with `grpc`) |
@@ -69,12 +69,14 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 | Transport | Client | Consumer model | Notable operations |
 | --- | --- | --- | --- |
 | gRPC | `GrpcClient` | `stream_consumer` invokes a `MessageHandler` | batch publish, request/reply, live subscribe/unsubscribe |
-| HTTP | `HttpClient` | register a webhook URL; serve it with `WebhookServer` or your framework | request/reply, weighted endpoint selection |
+| HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | request/reply, weighted endpoint selection |
 | TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
-HTTP webhook pushes can be handled by the built-in `WebhookServer` or by an application-owned endpoint using `eventmesh::http::codec::{parse_push_body, WebhookReply}`. The custom-handler example shows the latter. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
+`HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
+
+`EventMeshMessage` is likewise a business model rather than a stable serde JSON contract. gRPC, HTTP, and TCP convert it into private transport-specific wire DTOs. Native messages require non-blank topics and content; an explicit `ttl` must be a positive millisecond value no greater than `i32::MAX`. EventMesh does not define a never-expire TTL sentinel.
 
 ## Configuration and errors
 
@@ -100,6 +102,7 @@ The authoritative contributor workflow and live-runtime test instructions are in
 
 ```bash
 cargo fmt --check
+cargo clippy --no-default-features --lib -- -D warnings
 cargo clippy --features full --all-targets -- -D warnings
 cargo test --features full
 cargo doc --features full --no-deps

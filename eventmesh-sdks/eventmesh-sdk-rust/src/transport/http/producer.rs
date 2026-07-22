@@ -109,7 +109,7 @@ impl HttpProducer {
         message: EventMeshMessage,
         protocol_type: EventMeshProtocolType,
     ) -> Result<PublishResponse> {
-        validate_publish(&message)?;
+        message.validate_for_publish()?;
         let config = self.client.config();
         let body = codec::encode_publish(&message, &config.identity);
         let code = codec::publish_code();
@@ -136,7 +136,7 @@ impl HttpProducer {
         timeout: Duration,
         protocol_type: EventMeshProtocolType,
     ) -> Result<EventMeshMessage> {
-        validate_publish(&message)?;
+        message.validate_for_publish()?;
         let config = self.client.config();
         let body = codec::encode_publish(&message, &config.identity);
         let headers =
@@ -209,26 +209,6 @@ fn decode_cloud_event_reply(reply: EventMeshMessage) -> Result<cloudevents::Even
         .data("text/plain", reply.content.unwrap_or_default())
         .build()
         .map_err(|e| EventMeshError::InvalidMessage(format!("invalid CloudEvent reply: {e}")))
-}
-
-fn validate_publish(message: &EventMeshMessage) -> Result<()> {
-    if message
-        .topic
-        .as_deref()
-        .map(|t| t.trim().is_empty())
-        .unwrap_or(true)
-    {
-        return Err(EventMeshError::InvalidMessage("topic is required".into()));
-    }
-    if message
-        .content
-        .as_deref()
-        .map(|c| c.trim().is_empty())
-        .unwrap_or(true)
-    {
-        return Err(EventMeshError::InvalidMessage("content is required".into()));
-    }
-    Ok(())
 }
 
 /// Ensure a CloudEvent extension attribute is present and non-blank,

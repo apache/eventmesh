@@ -19,7 +19,7 @@ use eventmesh::{
     config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
     message::Message,
     subscription::Subscription,
-    webhook::WebhookServer,
+    webhook::WebhookOptions,
     HttpClient, MessageHandler,
 };
 
@@ -34,13 +34,16 @@ impl MessageHandler for PrintHandler {
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let server = WebhookServer::new("0.0.0.0:8080".parse().unwrap(), PrintHandler)
-        .with_advertise_url("http://127.0.0.1:8080/eventmesh/callback");
     let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
     let client = HttpClient::new(HttpConfig::new(endpoints))?;
-    let consumer = client.webhook_consumer(ConsumerOptions::new("test-consumerGroup"))?;
-    consumer
-        .subscribe(Subscription::new("test-topic-rust-sdk"), server.url())
+    let consumer = client
+        .consumer(
+            ConsumerOptions::new("test-consumerGroup"),
+            WebhookOptions::new("0.0.0.0:8080".parse().unwrap())
+                .with_advertise_url("http://127.0.0.1:8080/eventmesh/callback"),
+            [Subscription::new("test-topic-rust-sdk")],
+            PrintHandler,
+        )
         .await?;
-    server.await
+    consumer.join().await
 }

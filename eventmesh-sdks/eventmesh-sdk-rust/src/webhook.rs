@@ -17,6 +17,42 @@
 
 //! Semantic HTTP webhook acknowledgement helpers.
 
+/// Network settings for an SDK-managed HTTP webhook consumer.
+#[cfg(feature = "http")]
+#[derive(Debug, Clone)]
+pub struct WebhookOptions {
+    bind_addr: std::net::SocketAddr,
+    advertise_url: Option<String>,
+}
+
+#[cfg(feature = "http")]
+impl WebhookOptions {
+    /// Listen on `bind_addr` and derive the callback URL from the bound address.
+    pub fn new(bind_addr: std::net::SocketAddr) -> Self {
+        Self {
+            bind_addr,
+            advertise_url: None,
+        }
+    }
+
+    /// Override the URL registered with EventMesh.
+    ///
+    /// This is normally required when binding to `0.0.0.0` or when EventMesh
+    /// runs in a container or on another host.
+    pub fn with_advertise_url(mut self, url: impl Into<String>) -> Self {
+        self.advertise_url = Some(url.into());
+        self
+    }
+
+    pub(crate) const fn bind_addr(&self) -> std::net::SocketAddr {
+        self.bind_addr
+    }
+
+    pub(crate) fn advertise_url(&self) -> Option<&str> {
+        self.advertise_url.as_deref()
+    }
+}
+
 /// Built-in axum webhook server.
 #[cfg(feature = "http")]
 pub struct WebhookServer<H: crate::MessageHandler> {
@@ -26,16 +62,18 @@ pub struct WebhookServer<H: crate::MessageHandler> {
 
 #[cfg(feature = "http")]
 impl<H: crate::MessageHandler> WebhookServer<H> {
-    /// Construct a webhook server that delivers to `handler`.
-    pub fn new(addr: std::net::SocketAddr, handler: H) -> Self {
-        let inner = crate::transport::http::WebhookServer::new(
+    /// Bind before returning, guaranteeing that [`url`](Self::url) is ready to
+    /// register with EventMesh.
+    pub async fn bind(addr: std::net::SocketAddr, handler: H) -> crate::Result<Self> {
+        let inner = crate::transport::http::WebhookServer::bind(
             addr,
             std::sync::Arc::new(crate::handler::PublicHandler::new(handler)),
-        );
-        Self {
+        )
+        .await?;
+        Ok(Self {
             inner,
             _handler: std::marker::PhantomData,
-        }
+        })
     }
 
     /// Return the URL that should be registered with EventMesh.

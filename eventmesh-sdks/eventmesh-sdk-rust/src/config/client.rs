@@ -253,6 +253,22 @@ impl Identity {
         self.system = system.into();
         self
     }
+
+    /// Override the process identifier sent to EventMesh.
+    pub fn with_process_id(mut self, process_id: impl Into<String>) -> Self {
+        self.process_id = process_id.into();
+        self
+    }
+
+    /// Override the client IP advertised to EventMesh.
+    ///
+    /// EventMesh uses this value together with the process identifier to
+    /// distinguish gRPC stream subscribers; it does not need to be a local
+    /// bind address.
+    pub fn with_ip(mut self, ip: impl Into<String>) -> Self {
+        self.ip = ip.into();
+        self
+    }
 }
 
 /// Options shared by a protocol client.
@@ -297,6 +313,7 @@ impl ProducerOptions {
         }
     }
 
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn validate(&self) -> Result<()> {
         validate_group("producer", &self.group)
     }
@@ -316,6 +333,7 @@ impl ConsumerOptions {
         }
     }
 
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn validate(&self) -> Result<()> {
         validate_group("consumer", &self.group)
     }
@@ -910,6 +928,7 @@ fn validate_non_zero_duration(name: &str, value: Duration) -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 fn validate_group(role: &str, group: &str) -> Result<()> {
     if group.trim().is_empty() {
         return Err(EventMeshError::Config(format!(

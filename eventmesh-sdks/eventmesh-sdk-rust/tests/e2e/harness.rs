@@ -31,7 +31,7 @@ use eventmesh::{
     message::{EventMeshMessage, Message},
     subscription::Subscription,
     tcp::{TcpClient, TcpConsumer, TcpProducer},
-    webhook::WebhookServer,
+    webhook::{WebhookOptions, WebhookServer},
     MessageHandler, Result,
 };
 use tokio::net::TcpStream;
@@ -44,6 +44,7 @@ use crate::runtime::{
 };
 
 static SEQ: AtomicU64 = AtomicU64::new(0);
+static IDENTITY_SEQ: AtomicU64 = AtomicU64::new(1);
 static TCP_E2E_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 /// Serializes TCP e2e cases against the shared EventMesh/RocketMQ runtime.
@@ -65,10 +66,16 @@ pub(crate) fn unique_topic(scope: &str) -> String {
 }
 
 fn identity() -> Identity {
+    let identity_id = IDENTITY_SEQ.fetch_add(1, Ordering::Relaxed);
+    let third_octet = (identity_id / 254) % 256;
+    let fourth_octet = identity_id % 254 + 1;
     Identity::default()
         .with_env("env")
         .with_idc("idc")
         .with_system("sys")
+        // 198.18.0.0/15 is reserved for benchmarking. The address is only a
+        // logical gRPC subscriber identity and is never used as a route.
+        .with_ip(format!("198.18.{third_octet}.{fourth_octet}"))
 }
 
 fn credentials() -> Credentials {
@@ -210,7 +217,7 @@ pub(crate) async fn warm_topic(
     (consumer, receiver)
 }
 
-fn free_port() -> u16 {
+pub(crate) fn free_port() -> u16 {
     let listener = std::net::TcpListener::bind("0.0.0.0:0").expect("bind port probe");
     let port = listener.local_addr().expect("probe local address").port();
     drop(listener);
@@ -227,32 +234,6 @@ async fn wait_for_listen(address: SocketAddr, timeout: Duration) {
             return;
         }
         tokio::time::sleep(Duration::from_millis(50)).await;
-    }
-}
-
-pub(crate) struct HttpConsumerHandle {
-    consumer: HttpConsumer,
-    webhook_url: String,
-    server_task: JoinHandle<()>,
-    shutdown_tx: Option<oneshot::Sender<()>>,
-}
-
-impl HttpConsumerHandle {
-    pub(crate) fn consumer(&self) -> &HttpConsumer {
-        &self.consumer
-    }
-
-    pub(crate) fn webhook_url(&self) -> &str {
-        &self.webhook_url
-    }
-}
-
-impl Drop for HttpConsumerHandle {
-    fn drop(&mut self) {
-        if let Some(tx) = self.shutdown_tx.take() {
-            let _ = tx.send(());
-        }
-        self.server_task.abort();
     }
 }
 
@@ -288,7 +269,9 @@ pub(crate) async fn start_webhook_server() -> (
     let bind_address: SocketAddr = format!("0.0.0.0:{port}").parse().expect("webhook address");
     let url = format!("http://{}:{port}/eventmesh/callback", webhook_host());
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
-    let server = WebhookServer::new(bind_address, listener)
+    let server = WebhookServer::bind(bind_address, listener)
+        .await
+        .expect("bind webhook server")
         .with_advertise_url(url.clone())
         .with_graceful_shutdown(async move {
             let _ = shutdown_rx.await;
@@ -311,46 +294,24 @@ pub(crate) async fn start_webhook_server() -> (
 
 pub(crate) async fn http_warm_topic(
     topic: &str,
-) -> (
-    HttpConsumerHandle,
-    mpsc::UnboundedReceiver<EventMeshMessage>,
-) {
+) -> (HttpConsumer, mpsc::UnboundedReceiver<EventMeshMessage>) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
     let (listener, receiver) = CollectingListener::new();
     let port = free_port();
     let bind_address: SocketAddr = format!("0.0.0.0:{port}").parse().expect("webhook address");
     let url = format!("http://{}:{port}/eventmesh/callback", webhook_host());
-    let (shutdown_tx, shutdown_rx) = oneshot::channel();
-    let server = WebhookServer::new(bind_address, listener)
-        .with_advertise_url(url.clone())
-        .with_graceful_shutdown(async move {
-            let _ = shutdown_rx.await;
-        });
-    let server_task = tokio::spawn(async move {
-        if let Err(error) = server.await {
-            warn!(%error, "webhook server exited with error");
-        }
-    });
-    wait_for_listen(bind_address, Duration::from_secs(5)).await;
-
     let consumer = http_client()
-        .webhook_consumer(consumer_options())
-        .expect("build HTTP consumer");
-    consumer
-        .subscribe(Subscription::new(topic), url.clone())
+        .consumer(
+            consumer_options(),
+            WebhookOptions::new(bind_address).with_advertise_url(url),
+            [Subscription::new(topic)],
+            listener,
+        )
         .await
-        .expect("subscribe HTTP webhook");
+        .expect("open HTTP consumer");
     let_stream_settle().await;
 
-    (
-        HttpConsumerHandle {
-            consumer,
-            webhook_url: url,
-            server_task,
-            shutdown_tx: Some(shutdown_tx),
-        },
-        receiver,
-    )
+    (consumer, receiver)
 }
 
 pub(crate) async fn tcp_warm_topic(

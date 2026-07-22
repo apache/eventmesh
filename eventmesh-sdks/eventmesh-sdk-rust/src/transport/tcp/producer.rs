@@ -66,7 +66,7 @@ impl TcpProducer {
     /// Broadcast a message (fire-and-forget). Corresponds to Java
     /// `broadcast` which uses `send()` with `BROADCAST_MESSAGE_TO_SERVER`.
     pub async fn broadcast(&self, msg: EventMeshMessage) -> Result<()> {
-        validate_publish(&msg)?;
+        msg.validate_for_publish()?;
         let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
         self.conn.send(pkg).await
     }
@@ -81,9 +81,12 @@ impl TcpProducer {
     /// # `datacontenttype` requirement
     ///
     /// The event's `datacontenttype` **must** be `application/cloudevents+json`.
-    /// The server uses this value to resolve the serializer on the downlink
-    /// path; other values (e.g. `application/json`, `text/plain`) cause an
-    /// NPE and the message is silently dropped before reaching consumers.
+    /// Both the Java SDK's upload path and the Java runtime's TCP downlink path
+    /// use this value to resolve the serializer for the whole CloudEvent.
+    /// Other values (e.g. `application/json`, `text/plain`) therefore fail in
+    /// the Java SDK before sending or fail during runtime delivery. This SDK
+    /// returns [`EventMeshError::InvalidMessage`] before performing network
+    /// I/O instead.
     ///
     /// ```ignore
     /// EventBuilderV10::new()
@@ -205,7 +208,7 @@ impl Publisher for TcpProducer {
     /// Publish a message and wait for the broker ACK.
     /// Uses `ASYNC_MESSAGE_TO_SERVER` + `io()` (mirrors the Java SDK).
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        validate_publish(&message)?;
+        message.validate_for_publish()?;
         let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
         debug!(topic = ?message.topic, "publishing via TCP");
 
@@ -234,7 +237,7 @@ impl Publisher for TcpProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        validate_publish(&message)?;
+        message.validate_for_publish()?;
         let pkg = super::message::build_message_package(&message, Command::RequestToServer)?;
         debug!(topic = ?message.topic, "request-reply via TCP");
 
@@ -257,29 +260,8 @@ impl Publisher for TcpProducer {
     }
 }
 
-fn validate_publish(message: &EventMeshMessage) -> Result<()> {
-    if message
-        .topic
-        .as_deref()
-        .map(|t| t.trim().is_empty())
-        .unwrap_or(true)
-    {
-        return Err(EventMeshError::InvalidMessage("topic is required".into()));
-    }
-    if message
-        .content
-        .as_deref()
-        .map(|c| c.trim().is_empty())
-        .unwrap_or(true)
-    {
-        return Err(EventMeshError::InvalidMessage("content is required".into()));
-    }
-    Ok(())
-}
-
-/// The `datacontenttype` value the Java runtime's TCP CloudEvents codec
-/// requires. Any other value causes an NPE on the downlink path and the
-/// message is silently dropped before reaching consumers.
+/// The `datacontenttype` value required by the Java SDK and runtime TCP
+/// CloudEvents codecs when selecting the serializer for the whole event.
 #[cfg(feature = "cloud_events")]
 const REQUIRED_CE_DATA_CONTENT_TYPE: &str = "application/cloudevents+json";
 
@@ -292,11 +274,11 @@ fn validate_cloud_event(event: &cloudevents::Event) -> Result<()> {
         Some(REQUIRED_CE_DATA_CONTENT_TYPE) => Ok(()),
         Some(other) => Err(EventMeshError::InvalidMessage(format!(
             "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
-             got \"{other}\" — other values cause the server to silently drop the message"
+             got \"{other}\" — the EventMesh Java TCP codec cannot serialize other values"
         ))),
         None => Err(EventMeshError::InvalidMessage(format!(
             "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
-             but none is set — the server would silently drop the message"
+             but none is set — the EventMesh Java TCP codec requires it as a serializer selector"
         ))),
     }
 }

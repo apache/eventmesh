@@ -53,7 +53,7 @@ async fn main() -> eventmesh::Result<()> {
         "127.0.0.1",
         10_105,
     )?])?))?;
-    let consumer = client.webhook_consumer(ConsumerOptions::new("test-consumerGroup"))?;
+    let consumer = client.webhook_registration(ConsumerOptions::new("test-consumerGroup"))?;
     consumer
         .subscribe(Subscription::new("test-topic-rust-sdk"), webhook_url)
         .await?;

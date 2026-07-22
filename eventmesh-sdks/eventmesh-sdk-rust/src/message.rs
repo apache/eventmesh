@@ -19,7 +19,9 @@
 //!
 //! [`Message`] is the protocol-independent envelope accepted by every v2
 //! producer and delivered to stream consumers. Transport-specific wire
-//! encoding remains an implementation detail.
+//! encoding remains an implementation detail. [`EventMeshMessage`] deliberately
+//! does not implement serde: each transport maps it to a private protobuf,
+//! form, or TCP JSON wire DTO.
 
 #[cfg(feature = "cloud_events")]
 use crate::error::EventMeshError;

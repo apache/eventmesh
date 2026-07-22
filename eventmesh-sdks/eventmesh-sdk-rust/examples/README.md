@@ -8,7 +8,7 @@ Each example is a small executable with one responsibility. They use the default
 | gRPC | `grpc_consumer` | Stream consumption with `MessageHandler` | `cargo run --example grpc_consumer --features grpc` |
 | gRPC | `grpc_producer_cloud_events` | Publish a CloudEvent | `cargo run --example grpc_producer_cloud_events --features grpc,cloud_events` |
 | HTTP | `http_producer` | Publish over HTTP | `cargo run --example http_producer --features http` |
-| HTTP | `http_consumer_server` | Built-in `WebhookServer` | `cargo run --example http_consumer_server --features http` |
+| HTTP | `http_consumer_server` | SDK-managed axum callback server | `cargo run --example http_consumer_server --features http` |
 | HTTP | `http_consumer_custom` | Application-owned axum webhook endpoint | `cargo run --example http_consumer_custom --features http` |
 | TCP | `tcp_producer` | Connected TCP publish | `cargo run --example tcp_producer --features tcp` |
 | TCP | `tcp_consumer` | Connected TCP subscribe | `cargo run --example tcp_consumer --features tcp` |

@@ -30,14 +30,13 @@
 //!
 //! # Receiving pushed messages
 //!
-//! The HTTP consumer is client-only: it registers a webhook URL with the
-//! runtime and sends heartbeats, and the runtime POSTs delivered messages to
-//! that URL. There are two ways to serve that URL:
+//! The protocol-level HTTP consumer registers a webhook URL with the runtime
+//! and sends heartbeats. The public façade normally combines it with a bound,
+//! background axum server; applications that own their endpoint can use the
+//! registration API and these lower-level codec helpers.
 //!
-//! 1. **Built-in server** — [`WebhookServer`] is a batteries-included axum
-//!    server. Construct it, register its [`WebhookServer::url`] via
-//!    [`HttpConsumer::subscribe_webhook`], then `.await` it. See the
-//!    `http_consumer_server` example.
+//! 1. **Built-in server** — [`WebhookServer`] can bind before its URL is
+//!    registered, eliminating the callback startup race.
 //! 2. **Your own endpoint** — host any HTTP server (axum, actix, plain hyper,
 //!    …) and decode pushes with the framework-agnostic
 //!    [`codec`](crate::transport::http::codec) helpers

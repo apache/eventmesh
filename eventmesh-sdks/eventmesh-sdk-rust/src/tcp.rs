@@ -146,6 +146,16 @@ fn shutdown_result(reason: crate::transport::tcp::ShutdownReason) -> Result<()> 
 
 impl TcpProducer {
     /// Publish one event and wait for EventMesh acknowledgement.
+    ///
+    /// # TCP CloudEvents compatibility
+    ///
+    /// When `message` is [`Message::CloudEvent`], its `datacontenttype` must be
+    /// `application/cloudevents+json`. This is a non-standard compatibility
+    /// requirement of EventMesh's Java TCP codec: it uses `datacontenttype` to
+    /// select the serializer for the whole CloudEvent rather than only to
+    /// describe the event's data. The SDK validates this before any network
+    /// I/O and returns [`EventMeshError::InvalidMessage`] for other values,
+    /// including the otherwise standard `application/json` and `text/plain`.
     pub async fn publish(&self, message: Message) -> Result<PublishReceipt> {
         match message {
             Message::EventMesh(message) => self
@@ -163,6 +173,9 @@ impl TcpProducer {
     }
 
     /// Broadcast an event without waiting for a broker acknowledgement.
+    ///
+    /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
+    /// requirement documented on [`publish`](Self::publish).
     pub async fn broadcast(&self, message: Message) -> Result<()> {
         match message {
             Message::EventMesh(message) => self.inner.broadcast(message).await,
@@ -172,11 +185,17 @@ impl TcpProducer {
     }
 
     /// Send an event and await its reply.
+    ///
+    /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
+    /// requirement documented on [`publish`](Self::publish).
     pub async fn request_reply(&self, message: Message) -> Result<Message> {
         self.request_reply_with_timeout(message, self.timeout).await
     }
 
     /// Send an event and await its reply with a per-operation timeout.
+    ///
+    /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
+    /// requirement documented on [`publish`](Self::publish).
     pub async fn request_reply_with_timeout(
         &self,
         message: Message,

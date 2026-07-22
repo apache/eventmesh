@@ -16,6 +16,7 @@ Run these before submitting a Rust SDK change:
 
 ```bash
 cargo fmt --check
+cargo clippy --no-default-features --lib -- -D warnings
 cargo clippy --features full --all-targets -- -D warnings
 cargo test --features full
 cargo doc --features full --no-deps

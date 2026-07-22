@@ -63,7 +63,7 @@ async fn http_unsubscribe_stops_delivery() {
     require_runtime!();
     let topic = unique_topic("http-sub-unsub");
     ensure_topic(&topic).await;
-    let (handle, mut receiver) = http_warm_topic(&topic).await;
+    let (consumer, mut receiver) = http_warm_topic(&topic).await;
     let producer = http_producer();
 
     producer
@@ -75,9 +75,8 @@ async fn http_unsubscribe_stops_delivery() {
         .expect("HTTP publish before unsubscribe");
     let _ = receive(&mut receiver).await;
 
-    handle
-        .consumer()
-        .unsubscribe(Subscription::new(&topic), handle.webhook_url())
+    consumer
+        .unsubscribe(Subscription::new(&topic))
         .await
         .expect("HTTP unsubscribe");
     let_stream_settle().await;

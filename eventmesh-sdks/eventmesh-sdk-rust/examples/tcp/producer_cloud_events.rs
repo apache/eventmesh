@@ -24,6 +24,10 @@ use eventmesh::{
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
+    // EventMesh's Java TCP codec currently uses `datacontenttype` to choose
+    // the serializer for the whole CloudEvent. TCP CloudEvents must therefore
+    // use `application/cloudevents+json`, even when their data is ordinary
+    // JSON. HTTP and gRPC do not have this compatibility restriction.
     let event = EventBuilderV10::new()
         .id("rust-example-1")
         .source("urn:eventmesh:rust-example")

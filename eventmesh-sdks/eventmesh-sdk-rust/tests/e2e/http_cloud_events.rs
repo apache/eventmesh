@@ -17,23 +17,36 @@
 
 //! E2e: HTTP CloudEvents publishing, consumed by a real gRPC stream.
 
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 use cloudevents::{AttributesReader, Event, EventBuilder, EventBuilderV10};
-use eventmesh::{message::Message, subscription::Subscription, MessageHandler, Result};
+use eventmesh::{
+    message::Message, subscription::Subscription, webhook::WebhookOptions, MessageHandler, Result,
+};
 use tokio::sync::mpsc;
 
 use crate::harness::{
-    ensure_topic, grpc_client, grpc_consumer_options, http_producer, let_stream_settle,
+    consumer_options, ensure_topic, free_port, http_client, http_producer, let_stream_settle,
     unique_topic,
 };
 use crate::require_runtime;
+use crate::runtime::webhook_host;
 
 struct CloudEventListener(mpsc::UnboundedSender<Event>);
 
 impl MessageHandler for CloudEventListener {
     async fn handle(&self, message: Message) -> Result<Option<Message>> {
-        if let Message::CloudEvent(event) = message {
+        let event = match message {
+            Message::CloudEvent(event) => Some(event),
+            // The Runtime's HTTP push omits the `protocoltype` header, so the
+            // SDK correctly falls back to EventMeshMessage even though its
+            // content is the complete structured CloudEvent JSON.
+            Message::EventMesh(message) => message
+                .content
+                .as_deref()
+                .and_then(|content| serde_json::from_str(content).ok()),
+        };
+        if let Some(event) = event {
             let _ = self.0.send(event);
         }
         Ok(None)
@@ -46,14 +59,18 @@ async fn http_publish_cloud_event() {
     let topic = unique_topic("http-ce-pub");
     ensure_topic(&topic).await;
     let (tx, mut receiver) = mpsc::unbounded_channel();
-    let consumer = grpc_client()
-        .stream_consumer(
-            grpc_consumer_options(),
+    let port = free_port();
+    let bind_address: SocketAddr = format!("0.0.0.0:{port}").parse().expect("webhook address");
+    let advertise_url = format!("http://{}:{port}/eventmesh/callback", webhook_host());
+    let consumer = http_client()
+        .consumer(
+            consumer_options(),
+            WebhookOptions::new(bind_address).with_advertise_url(advertise_url),
             [Subscription::new(&topic)],
             CloudEventListener(tx),
         )
         .await
-        .expect("open gRPC CloudEvent consumer");
+        .expect("open HTTP CloudEvent consumer");
     let_stream_settle().await;
 
     let event = EventBuilderV10::new()
@@ -81,5 +98,5 @@ async fn http_publish_cloud_event() {
     assert!(serde_json::to_string(&received)
         .expect("serialize received CloudEvent")
         .contains("hello from HTTP CloudEvents"));
-    consumer.shutdown().await;
+    consumer.shutdown().await.expect("shutdown HTTP consumer");
 }

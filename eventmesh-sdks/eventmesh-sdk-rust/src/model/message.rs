@@ -20,9 +20,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::{Deserialize, Serialize};
-
 use crate::common::util::now_millis;
+use crate::error::{EventMeshError, Result};
 
 /// A simple, idiomatic EventMesh message: a topic + string content + arbitrary
 /// string properties.
@@ -31,27 +30,25 @@ use crate::common::util::now_millis;
 /// Java side. It is the primary message type of the SDK; CloudEvents interop is
 /// available behind the `cloud_events` feature (see the conversion impls in
 /// `transport::grpc::codec`).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+///
+/// This business model intentionally does not implement serde. Each transport
+/// owns a private wire DTO: protobuf for gRPC, form fields for HTTP, and the
+/// Java-compatible `body`/`properties` JSON shape for TCP.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EventMeshMessage {
     /// Optional business sequence number (correlates request/reply).
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub biz_seq_no: Option<String>,
     /// Optional application-level unique id.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unique_id: Option<String>,
     /// The destination topic. Required for publish.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub topic: Option<String>,
     /// The message payload as a string.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub content: Option<String>,
     /// Free-form string properties (become CloudEvent attributes on the wire).
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub props: HashMap<String, String>,
     /// Creation time, epoch milliseconds.
     pub create_time: u64,
     /// Optional TTL in milliseconds.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ttl: Option<i64>,
 }
 
@@ -115,6 +112,53 @@ impl EventMeshMessage {
         self.props.insert(key.into(), value.into());
         self
     }
+
+    /// Validate the transport-independent requirements for publishing.
+    ///
+    /// Java's TCP client rejects blank topics and bodies, and every runtime
+    /// path requires non-empty message data. TTL is a positive millisecond
+    /// timeout, not a retention policy; EventMesh has no "never expires"
+    /// sentinel, and several runtime paths parse it as a signed 32-bit integer.
+    pub(crate) fn validate_for_publish(&self) -> Result<()> {
+        if self
+            .topic
+            .as_deref()
+            .map(str::trim)
+            .is_none_or(str::is_empty)
+        {
+            return Err(EventMeshError::InvalidMessage("topic is required".into()));
+        }
+        if self
+            .content
+            .as_deref()
+            .map(str::trim)
+            .is_none_or(str::is_empty)
+        {
+            return Err(EventMeshError::InvalidMessage("content is required".into()));
+        }
+
+        if let Some(ttl) = self.ttl {
+            validate_ttl(ttl)?;
+        } else if let Some(ttl) = self.get_prop(crate::common::ProtocolKey::TTL) {
+            let ttl = ttl.parse::<i64>().map_err(|_| {
+                EventMeshError::InvalidMessage(
+                    "ttl property must be a positive integer number of milliseconds".into(),
+                )
+            })?;
+            validate_ttl(ttl)?;
+        }
+        Ok(())
+    }
+}
+
+fn validate_ttl(ttl: i64) -> Result<()> {
+    if !(1..=i64::from(i32::MAX)).contains(&ttl) {
+        return Err(EventMeshError::InvalidMessage(format!(
+            "ttl must be between 1 and {} milliseconds; EventMesh does not define a never-expire value",
+            i32::MAX
+        )));
+    }
+    Ok(())
 }
 
 /// Fluent builder for [`EventMeshMessage`].
@@ -193,10 +237,29 @@ mod tests {
     }
 
     #[test]
-    fn serde_round_trip() {
-        let m = EventMeshMessage::builder().topic("t").content("c").build();
-        let json = serde_json::to_string(&m).unwrap();
-        let back: EventMeshMessage = serde_json::from_str(&json).unwrap();
-        assert_eq!(m, back);
+    fn publish_validation_rejects_blank_fields_and_non_positive_ttl() {
+        assert!(EventMeshMessage::new(" ", "content")
+            .validate_for_publish()
+            .is_err());
+        assert!(EventMeshMessage::new("topic", "\t")
+            .validate_for_publish()
+            .is_err());
+        let mut message = EventMeshMessage::new("topic", "content");
+        message.ttl = Some(0);
+        assert!(message.validate_for_publish().is_err());
+        message.ttl = Some(-1);
+        assert!(message.validate_for_publish().is_err());
+    }
+
+    #[test]
+    fn publish_validation_accepts_positive_typed_or_property_ttl() {
+        let mut typed = EventMeshMessage::new("topic", "content");
+        typed.ttl = Some(4_000);
+        typed.validate_for_publish().unwrap();
+
+        EventMeshMessage::new("topic", "content")
+            .with_property(crate::common::ProtocolKey::TTL, "4000")
+            .validate_for_publish()
+            .unwrap();
     }
 }

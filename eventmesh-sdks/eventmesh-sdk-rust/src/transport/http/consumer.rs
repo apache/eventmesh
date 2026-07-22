@@ -41,9 +41,7 @@ const HEARTBEAT_INITIAL_DELAY: Duration = Duration::from_secs(10);
 /// A single subscription entry recorded locally for heartbeat/unsubscribe.
 #[derive(Debug, Clone)]
 struct SubscriptionEntry {
-    #[allow(dead_code)]
     item: SubscriptionItem,
-    #[allow(dead_code)]
     url: String,
 }
 
@@ -241,6 +239,29 @@ impl HttpConsumer {
                     .unwrap_or_else(|| "unsubscribe failed".into()),
             })
         }
+    }
+
+    /// Remove every locally tracked webhook registration.
+    ///
+    /// Registrations are grouped by callback URL because the HTTP protocol
+    /// requires the original URL when unsubscribing.
+    pub(crate) async fn unsubscribe_all(&self) -> Result<()> {
+        let registrations = {
+            let guard = self.subscriptions.lock().await;
+            let mut grouped: HashMap<String, Vec<SubscriptionItem>> = HashMap::new();
+            for entry in guard.values() {
+                grouped
+                    .entry(entry.url.clone())
+                    .or_default()
+                    .push(entry.item.clone());
+            }
+            grouped
+        };
+
+        for (url, items) in registrations {
+            self.unsubscribe(items, url).await?;
+        }
+        Ok(())
     }
 }
 
