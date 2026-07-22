@@ -63,7 +63,7 @@ pub mod subscription;
 pub mod webhook;
 
 #[cfg(feature = "grpc")]
-pub mod proto_gen;
+mod proto_gen;
 
 /// Catalog service client, available with the `grpc` feature.
 #[cfg(feature = "grpc")]

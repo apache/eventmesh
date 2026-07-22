@@ -23,11 +23,7 @@ use std::time::Duration;
 use eventmesh::{
     config::{TlsConfig, WorkflowClientConfig},
     discovery::{ServiceDiscovery, ServiceInstance},
-    proto_gen::workflow::{
-        workflow_server::{Workflow, WorkflowServer},
-        ExecuteRequest, ExecuteResponse,
-    },
-    workflow::WorkflowClient,
+    workflow::{ExecuteRequest, WorkflowClient},
     Result,
 };
 use rcgen::{BasicConstraints, Certificate, CertificateParams, IsCa};
@@ -36,6 +32,18 @@ use tokio_stream::wrappers::TcpListenerStream;
 use tonic::{
     transport::{Identity, Server, ServerTlsConfig},
     Request, Response, Status,
+};
+
+// Integration tests are separate crates and deliberately cannot access the
+// SDK's private generated modules. Generate a test-local server contract while
+// exercising the client exclusively through its public Workflow API.
+mod workflow_test_proto {
+    tonic::include_proto!("eventmesh.workflow.api.protocol");
+}
+
+use workflow_test_proto::{
+    workflow_server::{Workflow, WorkflowServer},
+    ExecuteRequest as ServerExecuteRequest, ExecuteResponse as ServerExecuteResponse,
 };
 
 struct StaticDiscovery(ServiceInstance);
@@ -56,10 +64,10 @@ struct TlsWorkflow;
 impl Workflow for TlsWorkflow {
     async fn execute(
         &self,
-        request: Request<ExecuteRequest>,
-    ) -> std::result::Result<Response<ExecuteResponse>, Status> {
+        request: Request<ServerExecuteRequest>,
+    ) -> std::result::Result<Response<ServerExecuteResponse>, Status> {
         assert_eq!(request.into_inner().id, "tls-e2e-workflow");
-        Ok(Response::new(ExecuteResponse {
+        Ok(Response::new(ServerExecuteResponse {
             instance_id: "tls-instance".into(),
         }))
     }

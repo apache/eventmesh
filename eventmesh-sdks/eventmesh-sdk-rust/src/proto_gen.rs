@@ -15,58 +15,42 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Generated gRPC stubs plus convenience type aliases and attribute helpers.
+//! Crate-private generated gRPC stubs, type aliases, and attribute helpers.
 
-/// The raw generated module tree.
-pub mod pb {
+#[allow(clippy::enum_variant_names)]
+pub(crate) mod pb {
     tonic::include_proto!("org.apache.eventmesh.cloudevents.v1");
 }
 
-/// Catalog generated types. Kept crate-private: the public Catalog API is the
-/// Java-SDK-compatible operation-to-subscription lifecycle, not a schema
-/// registry wrapper.
-#[cfg(feature = "e2e")]
-pub mod catalog {
-    tonic::include_proto!("eventmesh.catalog.api.protocol");
-}
-
-#[cfg(not(feature = "e2e"))]
+#[allow(clippy::enum_variant_names)]
 pub(crate) mod catalog {
     tonic::include_proto!("eventmesh.catalog.api.protocol");
 }
 
-/// Workflow generated types. The public Workflow module re-exports the
-/// request/response messages while keeping generated client/server machinery
-/// internal.
-#[cfg(feature = "e2e")]
-pub mod workflow {
-    tonic::include_proto!("eventmesh.workflow.api.protocol");
-}
-
-#[cfg(not(feature = "e2e"))]
+#[allow(clippy::enum_variant_names)]
 pub(crate) mod workflow {
     tonic::include_proto!("eventmesh.workflow.api.protocol");
 }
 
 // ---- convenience aliases used throughout the gRPC transport ----
-pub use pb::cloud_event::cloud_event_attribute_value::Attr as PbAttr;
-pub use pb::cloud_event::CloudEventAttributeValue as PbCloudEventAttributeValue;
-pub use pb::cloud_event::Data as PbData;
-pub use pb::consumer_service_client::ConsumerServiceClient;
-pub use pb::heartbeat_service_client::HeartbeatServiceClient;
-pub use pb::publisher_service_client::PublisherServiceClient;
-pub use pb::CloudEvent as PbCloudEvent;
-pub use pb::CloudEventBatch as PbCloudEventBatch;
+pub(crate) use pb::cloud_event::cloud_event_attribute_value::Attr as PbAttr;
+pub(crate) use pb::cloud_event::CloudEventAttributeValue as PbCloudEventAttributeValue;
+pub(crate) use pb::cloud_event::Data as PbData;
+pub(crate) use pb::consumer_service_client::ConsumerServiceClient;
+pub(crate) use pb::heartbeat_service_client::HeartbeatServiceClient;
+pub(crate) use pb::publisher_service_client::PublisherServiceClient;
+pub(crate) use pb::CloudEvent as PbCloudEvent;
+pub(crate) use pb::CloudEventBatch as PbCloudEventBatch;
 
 /// Build a string-valued CloudEvent attribute.
-pub fn attr_str(value: impl Into<String>) -> PbCloudEventAttributeValue {
+pub(crate) fn attr_str(value: impl Into<String>) -> PbCloudEventAttributeValue {
     PbCloudEventAttributeValue {
         attr: Some(PbAttr::CeString(value.into())),
     }
 }
 
 /// Build an int32-valued CloudEvent attribute.
-pub fn attr_int(value: i32) -> PbCloudEventAttributeValue {
+pub(crate) fn attr_int(value: i32) -> PbCloudEventAttributeValue {
     PbCloudEventAttributeValue {
         attr: Some(PbAttr::CeInteger(value)),
     }
@@ -75,7 +59,7 @@ pub fn attr_int(value: i32) -> PbCloudEventAttributeValue {
 /// Read an attribute's value as a string. EventMesh only ever uses the
 /// string/uri/uri-ref variants for its protocol attributes, but we handle the
 /// others defensively (no `unsafe`).
-pub fn attr_as_str(value: &PbCloudEventAttributeValue) -> String {
+pub(crate) fn attr_as_str(value: &PbCloudEventAttributeValue) -> String {
     match &value.attr {
         Some(PbAttr::CeString(s)) | Some(PbAttr::CeUri(s)) | Some(PbAttr::CeUriRef(s)) => s.clone(),
         Some(PbAttr::CeBoolean(b)) => b.to_string(),
