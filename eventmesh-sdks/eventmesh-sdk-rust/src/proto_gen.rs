@@ -22,16 +22,6 @@ pub(crate) mod pb {
     tonic::include_proto!("org.apache.eventmesh.cloudevents.v1");
 }
 
-#[allow(clippy::enum_variant_names)]
-pub(crate) mod catalog {
-    tonic::include_proto!("eventmesh.catalog.api.protocol");
-}
-
-#[allow(clippy::enum_variant_names)]
-pub(crate) mod workflow {
-    tonic::include_proto!("eventmesh.workflow.api.protocol");
-}
-
 // ---- convenience aliases used throughout the gRPC transport ----
 pub(crate) use pb::cloud_event::cloud_event_attribute_value::Attr as PbAttr;
 pub(crate) use pb::cloud_event::CloudEventAttributeValue as PbCloudEventAttributeValue;

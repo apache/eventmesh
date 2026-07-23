@@ -423,18 +423,6 @@ where
         unsubscribe_stream_rpc(&self.client, &self.config, &self.subscriptions, items).await
     }
 
-    /// Whether this consumer already has a stream subscription for `topic`.
-    ///
-    /// Subscription ownership is not represented by the EventMesh stream
-    /// protocol, so internal collaborators use this to avoid taking ownership
-    /// of a caller-created subscription.
-    pub(crate) async fn has_stream_subscription(&self, topic: &str) -> bool {
-        self.subscriptions
-            .lock()
-            .await
-            .contains_key(&(topic.to_owned(), SDK_STREAM_URL.to_string()))
-    }
-
     /// Unsubscribe webhook-mode topics (registered via `subscribe_webhook`).
     ///
     /// `url` must be the same webhook URL passed to `subscribe_webhook`.

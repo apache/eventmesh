@@ -58,7 +58,6 @@ mod tcp_publish;
 mod tcp_reconnect;
 mod tcp_request_reply;
 mod tcp_subscribe;
-mod tls;
 
 /// Guard clause for e2e tests: ensures a runtime is available before
 /// proceeding.

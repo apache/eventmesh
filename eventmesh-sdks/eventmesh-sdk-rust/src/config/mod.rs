@@ -18,8 +18,7 @@
 //! Public client configuration.
 //!
 //! All transport configurations require an explicit endpoint. The old
-//! transport configuration types remain crate-private adapters while Catalog
-//! and Workflow keep their established public configuration contracts.
+//! transport configuration types remain crate-private adapters.
 
 mod client;
 #[allow(dead_code)]
@@ -32,12 +31,6 @@ mod identity;
 mod tcp;
 pub mod tls;
 
-#[cfg(feature = "grpc")]
-pub mod catalog;
-
-#[cfg(feature = "grpc")]
-pub mod workflow;
-
 pub use client::{
     ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig,
     GrpcConsumerOptions, HttpConfig, Identity, LoadBalance, ProducerOptions, ReconnectPolicy,
@@ -46,14 +39,8 @@ pub use client::{
 };
 pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
 
-#[cfg(feature = "grpc")]
-pub use catalog::{CatalogClientConfig, CatalogClientConfigBuilder};
-
-#[cfg(feature = "grpc")]
-pub use workflow::{WorkflowClientConfig, WorkflowClientConfigBuilder};
-
-// Legacy adapters used by the private protocol implementations and retained
-// Catalog/Workflow clients.  Do not make these public again.
+// Legacy adapters used by the private protocol implementations. Do not make
+// these public again.
 #[cfg(feature = "grpc")]
 pub(crate) use grpc::GrpcClientConfig;
 #[cfg(feature = "http")]

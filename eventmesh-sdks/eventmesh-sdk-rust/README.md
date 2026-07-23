@@ -14,7 +14,7 @@ The default feature set is empty. Enable the transport(s) your application uses;
 
 | Feature | Provides |
 | --- | --- |
-| `grpc` | `GrpcClient`, producer, stream consumer, webhook registration, Catalog, and Workflow |
+| `grpc` | `GrpcClient`, producer, stream consumer, and webhook registration |
 | `http` | `HttpClient`, managed HTTP consumer, external webhook registration, and webhook codec helpers |
 | `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |

@@ -53,7 +53,6 @@
 #[allow(dead_code, unused_imports)]
 mod common;
 pub mod config;
-pub mod discovery;
 mod error;
 mod handler;
 pub mod message;
@@ -64,17 +63,6 @@ pub mod webhook;
 
 #[cfg(feature = "grpc")]
 mod proto_gen;
-
-/// Catalog service client, available with the `grpc` feature.
-#[cfg(feature = "grpc")]
-pub mod catalog;
-
-/// Workflow service client, available with the `grpc` feature.
-#[cfg(feature = "grpc")]
-pub mod workflow;
-
-#[cfg(feature = "grpc")]
-mod service;
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 #[allow(dead_code, unused_imports)]

@@ -93,14 +93,6 @@ pub enum Error {
     /// The operation is not supported by the active transport.
     #[error("unsupported operation: {0}")]
     Unsupported(String),
-
-    /// A service-discovery implementation failed while resolving an endpoint.
-    #[error("service discovery error: {0}")]
-    ServiceDiscovery(String),
-
-    /// No healthy instance was available for a logical service name.
-    #[error("service unavailable: {0}")]
-    ServiceUnavailable(String),
 }
 
 /// Convenience `Result` alias used throughout the SDK.

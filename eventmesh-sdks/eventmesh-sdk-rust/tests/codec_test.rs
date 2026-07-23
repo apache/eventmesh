@@ -39,19 +39,6 @@ fn subscriptions_have_rust_style_defaults_and_setters() {
     assert_eq!(subscription.delivery_mode, DeliveryMode::Broadcast);
 }
 
-#[cfg(feature = "grpc")]
-#[test]
-fn catalog_accepts_public_subscription_modes() {
-    let config = eventmesh::config::CatalogClientConfig::builder()
-        .app_server_name("orders")
-        .subscription_mode(DeliveryMode::Broadcast)
-        .subscription_type(DeliveryType::Sync)
-        .build()
-        .unwrap();
-    assert_eq!(config.subscription_mode, DeliveryMode::Broadcast);
-    assert_eq!(config.subscription_type, DeliveryType::Sync);
-}
-
 #[test]
 fn endpoint_sets_require_members() {
     assert!(EndpointSet::new(Vec::new()).is_err());

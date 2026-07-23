@@ -188,27 +188,6 @@ impl<H: MessageHandler> GrpcConsumer<H> {
     pub async fn join(&self) -> Result<()> {
         self.inner.wait_for_shutdown().await
     }
-
-    pub(crate) async fn has_stream_subscription(&self, topic: &str) -> bool {
-        self.inner.has_stream_subscription(topic).await
-    }
-
-    pub(crate) async fn subscribe_catalog(
-        &self,
-        subscriptions: Vec<crate::model::SubscriptionItem>,
-    ) -> Result<()> {
-        self.inner.subscribe(subscriptions).await
-    }
-
-    pub(crate) async fn unsubscribe_catalog(
-        &self,
-        subscriptions: Vec<crate::model::SubscriptionItem>,
-    ) -> Result<()> {
-        self.inner
-            .unsubscribe_stream(subscriptions)
-            .await
-            .map(|_| ())
-    }
 }
 
 impl GrpcProducer {
