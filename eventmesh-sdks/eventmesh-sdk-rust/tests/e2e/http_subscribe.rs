@@ -25,7 +25,8 @@ use eventmesh::{
 };
 
 use crate::harness::{
-    ensure_topic, http_producer, http_warm_topic, let_stream_settle, unique_topic,
+    ensure_topic, http_producer, http_warm_topic, http_warm_topic_as, unique_topic,
+    wait_for_client_group,
 };
 use crate::require_runtime;
 
@@ -62,9 +63,11 @@ async fn http_subscribe_and_receive() {
 async fn http_unsubscribe_stops_delivery() {
     require_runtime!();
     let topic = unique_topic("http-sub-unsub");
+    let consumer_group = unique_topic("consumer-group");
     ensure_topic(&topic).await;
-    let (consumer, mut receiver) = http_warm_topic(&topic).await;
+    let (consumer, mut receiver) = http_warm_topic_as(&topic, consumer_group.clone()).await;
     let producer = http_producer();
+    wait_for_client_group("http", &consumer_group, true).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(
@@ -79,7 +82,7 @@ async fn http_unsubscribe_stops_delivery() {
         .unsubscribe(Subscription::new(&topic))
         .await
         .expect("HTTP unsubscribe");
-    let_stream_settle().await;
+    wait_for_client_group("http", &consumer_group, false).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(

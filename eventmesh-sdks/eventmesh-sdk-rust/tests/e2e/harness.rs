@@ -229,8 +229,97 @@ pub(crate) async fn let_tcp_subscription_settle() {
     tokio::time::sleep(Duration::from_secs(45)).await;
 }
 
+/// Poll the Runtime's protocol-specific client inventory until `group` is
+/// present or absent. Unique E2E consumer groups make this an unambiguous
+/// server-side subscription assertion even though the current admin response
+/// does not include the topic.
+pub(crate) async fn wait_for_client_group(protocol: &str, group: &str, expected: bool) {
+    let path = match protocol {
+        "http" => "/client/http",
+        "grpc" => "/client/grpc",
+        other => panic!("unsupported admin client protocol {other:?}"),
+    };
+    let url = format!("http://{HOST}:{ADMIN_PORT}{path}");
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .expect("reqwest client");
+    let deadline = Instant::now() + Duration::from_secs(15);
+    let mut last_groups = Vec::new();
+
+    loop {
+        if let Ok(response) = client.get(&url).send().await {
+            if response.status().is_success() {
+                if let Ok(entries) = response.json::<Vec<serde_json::Value>>().await {
+                    last_groups = entries
+                        .iter()
+                        .filter_map(|entry| entry.get("group").and_then(serde_json::Value::as_str))
+                        .map(str::to_owned)
+                        .collect();
+                    let present = last_groups.iter().any(|candidate| candidate == group);
+                    if present == expected {
+                        return;
+                    }
+                }
+            }
+        }
+        assert!(
+            Instant::now() < deadline,
+            "Runtime admin {path} did not report consumer group {group:?} as {} within 15s; \
+             last groups: {last_groups:?}",
+            if expected { "present" } else { "absent" }
+        );
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
+}
+
+/// Poll the Runtime's TCP topic listener inventory until the unique E2E topic
+/// has (or has no) active listening sessions.
+pub(crate) async fn wait_for_tcp_topic_listener(topic: &str, expected: bool) {
+    let url = format!("http://{HOST}:{ADMIN_PORT}/clientManage/showListenClientByTopic");
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .expect("reqwest client");
+    let deadline = Instant::now() + Duration::from_secs(15);
+    let mut last_body = String::new();
+
+    loop {
+        if let Ok(response) = client.get(&url).query(&[("topic", topic)]).send().await {
+            if response.status().is_success() {
+                if let Ok(body) = response.text().await {
+                    let present = !body.trim().is_empty();
+                    last_body = body;
+                    if present == expected {
+                        return;
+                    }
+                }
+            }
+        }
+        assert!(
+            Instant::now() < deadline,
+            "Runtime admin TCP listener query did not report topic {topic:?} as {} within 15s; \
+             last response: {last_body:?}",
+            if expected { "present" } else { "absent" }
+        );
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
+}
+
 pub(crate) async fn warm_topic(
     topic: &str,
+) -> (
+    GrpcConsumer<CollectingListener>,
+    mpsc::UnboundedReceiver<EventMeshMessage>,
+) {
+    warm_topic_as(topic, unique_topic("consumer-group")).await
+}
+
+pub(crate) async fn warm_topic_as(
+    topic: &str,
+    consumer_group: String,
 ) -> (
     GrpcConsumer<CollectingListener>,
     mpsc::UnboundedReceiver<EventMeshMessage>,
@@ -238,7 +327,7 @@ pub(crate) async fn warm_topic(
     let (listener, receiver) = CollectingListener::new();
     let consumer = grpc_client()
         .stream_consumer(
-            grpc_consumer_options(),
+            GrpcConsumerOptions::new(consumer_group),
             [Subscription::new(topic)],
             listener,
         )
@@ -326,6 +415,13 @@ pub(crate) async fn start_webhook_server() -> (
 pub(crate) async fn http_warm_topic(
     topic: &str,
 ) -> (HttpConsumer, mpsc::UnboundedReceiver<EventMeshMessage>) {
+    http_warm_topic_as(topic, unique_topic("consumer-group")).await
+}
+
+pub(crate) async fn http_warm_topic_as(
+    topic: &str,
+    consumer_group: String,
+) -> (HttpConsumer, mpsc::UnboundedReceiver<EventMeshMessage>) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
     let (listener, receiver) = CollectingListener::new();
     let port = free_port();
@@ -333,7 +429,7 @@ pub(crate) async fn http_warm_topic(
     let url = format!("http://{}:{port}/eventmesh/callback", webhook_host());
     let consumer = http_client()
         .consumer(
-            consumer_options(),
+            ConsumerOptions::new(consumer_group),
             WebhookOptions::new(bind_address).with_advertise_url(url),
             [Subscription::new(topic)],
             listener,

@@ -1083,6 +1083,7 @@ mod tests {
             .is_err());
     }
 
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     #[test]
     fn role_groups_must_not_be_blank() {
         assert!(ProducerOptions::new("  ").validate().is_err());

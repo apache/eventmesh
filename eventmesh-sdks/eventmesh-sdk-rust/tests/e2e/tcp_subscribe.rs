@@ -21,7 +21,10 @@ use std::time::Duration;
 
 use eventmesh::message::{EventMeshMessage, Message};
 
-use crate::harness::{ensure_topic, serialize_tcp_e2e, tcp_producer, tcp_warm_topic, unique_topic};
+use crate::harness::{
+    ensure_topic, serialize_tcp_e2e, tcp_producer, tcp_warm_topic, unique_topic,
+    wait_for_tcp_topic_listener,
+};
 use crate::require_runtime;
 
 async fn receive(
@@ -41,6 +44,7 @@ async fn tcp_subscribe_and_receive() {
     ensure_topic(&topic).await;
     let (consumer, mut receiver) = tcp_warm_topic(&topic).await;
     let producer = tcp_producer().await;
+    wait_for_tcp_topic_listener(&topic, true).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(
@@ -65,6 +69,7 @@ async fn tcp_unsubscribe_stops_delivery() {
     ensure_topic(&topic).await;
     let (consumer, mut receiver) = tcp_warm_topic(&topic).await;
     let producer = tcp_producer().await;
+    wait_for_tcp_topic_listener(&topic, true).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(&topic, "before-unsub")))
@@ -72,6 +77,7 @@ async fn tcp_unsubscribe_stops_delivery() {
         .expect("publish before unsubscribe");
     let _ = receive(&mut receiver).await;
     consumer.unsubscribe_all().await.expect("TCP unsubscribe");
+    wait_for_tcp_topic_listener(&topic, false).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))

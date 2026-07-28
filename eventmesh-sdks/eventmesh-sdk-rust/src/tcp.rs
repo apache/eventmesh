@@ -25,7 +25,7 @@ use crate::subscription::Subscription;
 use crate::transport::tcp::{
     TcpConsumer as LegacyConsumer, TcpMessage, TcpProducer as LegacyProducer,
 };
-use crate::transport::Publisher as LegacyPublisher;
+use crate::transport::{Publisher as LegacyPublisher, RequestReply as LegacyRequestReply};
 use crate::MessageHandler;
 use tracing::warn;
 

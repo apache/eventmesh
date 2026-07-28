@@ -17,8 +17,6 @@
 
 //! HTTP producer.
 
-use std::time::Duration;
-
 use tracing::debug;
 
 use crate::config::HttpClientConfig;
@@ -30,8 +28,7 @@ use crate::transport::Publisher;
 
 /// HTTP-based producer.
 ///
-/// Implements fire-and-forget publish, batch publish, and synchronous
-/// request-reply over the EventMesh HTTP protocol.
+/// Implements publishing over the EventMesh HTTP protocol.
 pub struct HttpProducer {
     client: EventMeshHttpClient,
 }
@@ -75,38 +72,6 @@ impl HttpProducer {
             .await
     }
 
-    /// Send a native CloudEvent and wait for a native CloudEvent reply.
-    ///
-    /// The current Runtime cannot complete the HTTP-originated synchronous
-    /// request through its gRPC stream-consumer reply path. This codec remains
-    /// for deployments that provide a compatible HTTP synchronous-reply path.
-    #[cfg(feature = "cloud_events")]
-    pub async fn request_reply_cloud_event(
-        &self,
-        mut event: cloudevents::Event,
-        timeout: Duration,
-    ) -> Result<cloudevents::Event> {
-        use cloudevents::AttributesReader;
-
-        ensure_ce_extension(&mut event, "bizseqno");
-        ensure_ce_extension(&mut event, "uniqueid");
-        ensure_ce_ttl(&mut event);
-        let topic = event
-            .subject()
-            .ok_or_else(|| {
-                EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
-            })?
-            .to_string();
-        let message = EventMeshMessage::builder()
-            .topic(topic)
-            .content(serde_json::to_string(&event)?)
-            .build();
-        let reply = self
-            .request_reply_with_protocol(message, timeout, EventMeshProtocolType::CloudEvents)
-            .await?;
-        decode_cloud_event_reply(reply)
-    }
-
     /// Internal publish with a specific protocol type.
     async fn publish_with_protocol(
         &self,
@@ -133,33 +98,6 @@ impl HttpProducer {
         debug!("published topic={:?}", message.topic);
         Ok(response)
     }
-
-    async fn request_reply_with_protocol(
-        &self,
-        message: EventMeshMessage,
-        timeout: Duration,
-        protocol_type: EventMeshProtocolType,
-    ) -> Result<EventMeshMessage> {
-        message.validate_for_publish()?;
-        let config = self.client.config();
-        let body = codec::encode_publish(&message, &config.identity);
-        let headers =
-            codec::build_headers(codec::publish_sync_code(), protocol_type, &config.identity);
-        let text = self
-            .client
-            .post_form(uri::ROOT, &body, &headers, timeout)
-            .await?;
-        let response = codec::parse_response(&text)?;
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "request-reply failed".into()),
-            });
-        }
-        codec::parse_reply(response.message.as_deref().unwrap_or(""))
-    }
 }
 
 impl Publisher for HttpProducer {
@@ -180,39 +118,6 @@ impl Publisher for HttpProducer {
                 .into(),
         ))
     }
-
-    async fn request_reply(
-        &self,
-        message: EventMeshMessage,
-        timeout: Duration,
-    ) -> Result<EventMeshMessage> {
-        self.request_reply_with_protocol(message, timeout, EventMeshProtocolType::EventMeshMessage)
-            .await
-    }
-}
-
-/// Decode the HTTP reply payload into a native CloudEvent.  EventMesh
-/// installations return either CloudEvents JSON directly or the legacy
-/// `ReplyMessage` envelope; accepting both keeps interop with Java runtimes.
-#[cfg(feature = "cloud_events")]
-fn decode_cloud_event_reply(reply: EventMeshMessage) -> Result<cloudevents::Event> {
-    if let Some(content) = &reply.content {
-        if let Ok(event) = serde_json::from_str(content) {
-            return Ok(event);
-        }
-    }
-    use cloudevents::{EventBuilder, EventBuilderV10};
-    let topic = reply.topic.unwrap_or_default();
-    EventBuilderV10::new()
-        .id(reply
-            .unique_id
-            .unwrap_or_else(|| uuid::Uuid::new_v4().to_string()))
-        .source("eventmesh://http-reply")
-        .ty("eventmesh.reply")
-        .subject(topic)
-        .data("text/plain", reply.content.unwrap_or_default())
-        .build()
-        .map_err(|e| EventMeshError::InvalidMessage(format!("invalid CloudEvent reply: {e}")))
 }
 
 /// Ensure a CloudEvent extension attribute is present and non-blank,

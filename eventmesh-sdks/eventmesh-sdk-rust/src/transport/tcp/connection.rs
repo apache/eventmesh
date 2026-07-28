@@ -672,7 +672,7 @@ mod tests {
     use crate::model::EventMeshMessage;
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody};
-    use crate::transport::Publisher;
+    use crate::transport::{Publisher, RequestReply};
 
     use futures::SinkExt;
     use tokio::net::TcpListener;

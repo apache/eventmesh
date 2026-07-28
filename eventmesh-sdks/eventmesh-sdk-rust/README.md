@@ -73,7 +73,7 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 `HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
-`HttpProducer::request_reply` encodes EventMesh's HTTP synchronous-publish request, but the current stock Runtime cannot route an HTTP-originated synchronous message through a gRPC stream consumer and return its reply to the HTTP request. The corresponding real-Runtime e2e is retained but ignored to make this compatibility gap visible. Use gRPC or TCP for request/reply unless the target deployment provides a compatible HTTP synchronous-reply path.
+HTTP request/reply is not exposed because the current SDK and stock Runtime do not provide a complete HTTP responder path. Use gRPC or TCP for request/reply.
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
@@ -83,7 +83,7 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 All configurations require a validated `Endpoint`; HTTP uses a non-empty `EndpointSet`. Use `with_*` methods to set optional identity, credentials, timeouts, HTTP TLS, proxy, and reconnect settings. EventMesh Runtime's gRPC endpoint is plaintext and the gRPC client intentionally does not expose TLS configuration. `Debug` output redacts secrets.
 
-Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds (TCP). `ClientOptions::with_request_timeout` changes a client's default; every producer also has `request_reply_with_timeout` for one call. TCP separately has a 1-second connect timeout and a 20-second control timeout.
+Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds (TCP). `ClientOptions::with_request_timeout` changes a client's default; gRPC and TCP producers also have `request_reply_with_timeout` for one call. TCP separately has a 1-second connect timeout and a 20-second control timeout.
 
 Operations return the pattern-matchable `eventmesh::Error`; common variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`, `Server`, `Protocol`, `Unsupported`, and transport-specific errors.
 

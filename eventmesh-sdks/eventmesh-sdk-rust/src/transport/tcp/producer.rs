@@ -28,7 +28,7 @@ use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, UserAgent};
 use crate::transport::tcp::message;
-use crate::transport::Publisher;
+use crate::transport::{Publisher, RequestReply};
 
 /// TCP-based producer.
 ///
@@ -229,7 +229,9 @@ impl Publisher for TcpProducer {
             "batch publish is not supported over TCP".into(),
         ))
     }
+}
 
+impl RequestReply for TcpProducer {
     /// Synchronous request/reply. Uses `REQUEST_TO_SERVER` + `io()` and waits
     /// for the `RESPONSE_TO_CLIENT` push from the server.
     async fn request_reply(

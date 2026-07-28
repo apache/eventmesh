@@ -44,7 +44,11 @@ pub trait Publisher {
         &self,
         messages: Vec<EventMeshMessage>,
     ) -> impl Future<Output = crate::Result<PublishResponse>> + Send;
+}
 
+/// Request/reply capability implemented only by transports with a complete
+/// responder path.
+pub trait RequestReply {
     /// Synchronous request/reply. `timeout` bounds how long we wait for the
     /// consumer reply.
     fn request_reply(

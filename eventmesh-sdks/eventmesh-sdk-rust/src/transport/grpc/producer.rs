@@ -25,7 +25,7 @@ use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::grpc::client::GrpcClient;
 use crate::transport::grpc::codec;
-use crate::transport::Publisher;
+use crate::transport::{Publisher, RequestReply};
 
 /// gRPC-based producer.
 pub struct GrpcProducer {
@@ -204,7 +204,9 @@ impl Publisher for GrpcProducer {
         }
         Ok(response)
     }
+}
 
+impl RequestReply for GrpcProducer {
     async fn request_reply(
         &self,
         message: EventMeshMessage,

@@ -37,18 +37,12 @@ struct CloudEventListener(mpsc::UnboundedSender<Event>);
 impl MessageHandler for CloudEventListener {
     async fn handle(&self, message: Message) -> Result<Option<Message>> {
         let event = match message {
-            Message::CloudEvent(event) => Some(event),
-            // The Runtime's HTTP push omits the `protocoltype` header, so the
-            // SDK correctly falls back to EventMeshMessage even though its
-            // content is the complete structured CloudEvent JSON.
-            Message::EventMesh(message) => message
-                .content
-                .as_deref()
-                .and_then(|content| serde_json::from_str(content).ok()),
+            Message::CloudEvent(event) => event,
+            Message::EventMesh(message) => {
+                panic!("expected HTTP CloudEvent to preserve its dialect, got {message:?}")
+            }
         };
-        if let Some(event) = event {
-            let _ = self.0.send(event);
-        }
+        let _ = self.0.send(event);
         Ok(None)
     }
 }

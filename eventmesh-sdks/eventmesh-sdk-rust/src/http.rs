@@ -62,7 +62,6 @@ impl HttpClient {
         options.validate()?;
         Ok(HttpProducer {
             inner: LegacyProducer::new(self.config.legacy(Some(&options), None))?,
-            timeout: self.config.request_timeout(),
         })
     }
 
@@ -155,7 +154,6 @@ impl HttpClient {
 /// HTTP publishing capability.
 pub struct HttpProducer {
     inner: LegacyProducer,
-    timeout: std::time::Duration,
 }
 
 impl HttpProducer {
@@ -173,50 +171,6 @@ impl HttpProducer {
                 .publish_cloud_event(event)
                 .await
                 .map(PublishReceipt::from_legacy),
-        }
-    }
-
-    /// Send an event and await its reply.
-    ///
-    /// # Runtime compatibility
-    ///
-    /// The SDK implements EventMesh's HTTP synchronous-publish wire request,
-    /// but the current EventMesh Runtime cannot route an HTTP-originated
-    /// synchronous message through a gRPC stream consumer and return that
-    /// consumer's reply to the HTTP request. Against the stock Runtime this
-    /// operation can therefore fail or time out; use gRPC or TCP when a
-    /// verified request/reply path is required. Keep this method only for
-    /// deployments that provide a compatible HTTP synchronous-reply path.
-    pub async fn request_reply(&self, message: Message) -> Result<Message> {
-        self.request_reply_with_timeout(message, self.timeout).await
-    }
-
-    /// Send an event and await its reply with a per-operation timeout.
-    ///
-    /// This has the same current Runtime limitation documented on
-    /// [`request_reply`](Self::request_reply).
-    pub async fn request_reply_with_timeout(
-        &self,
-        message: Message,
-        timeout: std::time::Duration,
-    ) -> Result<Message> {
-        if timeout.is_zero() {
-            return Err(EventMeshError::InvalidArgument(
-                "request/reply timeout must be greater than zero".into(),
-            ));
-        }
-        match message {
-            Message::EventMesh(message) => self
-                .inner
-                .request_reply(message, timeout)
-                .await
-                .map(Message::EventMesh),
-            #[cfg(feature = "cloud_events")]
-            Message::CloudEvent(event) => self
-                .inner
-                .request_reply_cloud_event(event, timeout)
-                .await
-                .map(Message::CloudEvent),
         }
     }
 }

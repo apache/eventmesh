@@ -45,7 +45,6 @@ mod grpc_webhook;
 mod harness;
 mod http_cloud_events;
 mod http_publish;
-mod http_request_reply;
 mod http_subscribe;
 #[cfg(feature = "interop_e2e")]
 mod interop;

@@ -24,7 +24,9 @@ use eventmesh::{
     subscription::Subscription,
 };
 
-use crate::harness::{ensure_topic, grpc_producer, let_stream_settle, unique_topic, warm_topic};
+use crate::harness::{
+    ensure_topic, grpc_producer, unique_topic, wait_for_client_group, warm_topic, warm_topic_as,
+};
 use crate::require_runtime;
 
 async fn receive(
@@ -82,9 +84,11 @@ async fn subscribe_batch_receive() {
 async fn unsubscribe_stops_delivery() {
     require_runtime!();
     let topic = unique_topic("sub-unsub");
+    let consumer_group = unique_topic("consumer-group");
     ensure_topic(&topic).await;
-    let (consumer, mut receiver) = warm_topic(&topic).await;
+    let (consumer, mut receiver) = warm_topic_as(&topic, consumer_group.clone()).await;
     let producer = grpc_producer();
+    wait_for_client_group("grpc", &consumer_group, true).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(&topic, "before-unsub")))
@@ -96,7 +100,7 @@ async fn unsubscribe_stops_delivery() {
         .unsubscribe(Subscription::new(&topic))
         .await
         .expect("unsubscribe");
-    let_stream_settle().await;
+    wait_for_client_group("grpc", &consumer_group, false).await;
 
     producer
         .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))

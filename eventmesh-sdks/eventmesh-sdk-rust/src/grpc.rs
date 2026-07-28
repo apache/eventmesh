@@ -26,7 +26,7 @@ use crate::transport::grpc::{
     GrpcClient as ChannelClient, GrpcProducer as LegacyProducer,
     GrpcStreamConsumer as LegacyConsumer, GrpcWebhookConsumer as LegacyWebhookConsumer,
 };
-use crate::transport::Publisher as LegacyPublisher;
+use crate::transport::{Publisher as LegacyPublisher, RequestReply as LegacyRequestReply};
 use crate::MessageHandler;
 
 /// A configured EventMesh gRPC client.

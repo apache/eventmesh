@@ -418,36 +418,6 @@ pub fn parse_response(body: &str) -> Result<PublishResponse> {
     Ok(obj.into())
 }
 
-/// The reply payload returned inside the `retMsg` field of a request-reply
-/// `EventMeshRetObj`.
-///
-/// Mirrors `SendMessageResponseBody.ReplyMessage` on the Java side:
-/// `topic`, `body`, and `properties`.
-#[derive(Debug, Clone, Deserialize)]
-pub struct ReplyMessage {
-    #[serde(default)]
-    pub topic: Option<String>,
-    #[serde(default)]
-    pub body: Option<String>,
-    #[serde(default)]
-    pub properties: HashMap<String, String>,
-}
-
-/// Parse the reply message from the `retMsg` field of a request-reply
-/// response, mapping `body` → `content`, `topic` → `topic`, and
-/// `properties` → `props`.
-///
-/// Mirrors the Java SDK's `EventMeshMessageProducer.transformMessage`, which
-/// deserializes `retMsg` as a `SendMessageResponseBody.ReplyMessage`.
-pub fn parse_reply(ret_msg: &str) -> Result<EventMeshMessage> {
-    let reply: ReplyMessage = serde_json::from_str(ret_msg)?;
-    Ok(EventMeshMessage::builder()
-        .topic(reply.topic.unwrap_or_default())
-        .content(reply.body.unwrap_or_default())
-        .props(reply.properties)
-        .build())
-}
-
 /// Form-encode a list of `(key, value)` pairs into a URL-encoded body string.
 pub fn form_encode(fields: &[(String, String)]) -> String {
     serde_urlencoded::to_string(fields).unwrap_or_default()
@@ -456,11 +426,6 @@ pub fn form_encode(fields: &[(String, String)]) -> String {
 /// Request code for the given operation.
 pub fn publish_code() -> i32 {
     RequestCode::MSG_SEND_ASYNC
-}
-
-/// Request code for synchronous request-reply (code-based routing).
-pub fn publish_sync_code() -> i32 {
-    RequestCode::MSG_SEND_SYNC
 }
 
 pub fn subscribe_code() -> i32 {
@@ -711,12 +676,6 @@ mod tests {
     }
 
     #[test]
-    fn publish_sync_code_is_101() {
-        assert_eq!(publish_sync_code(), RequestCode::MSG_SEND_SYNC);
-        assert_eq!(publish_sync_code(), 101);
-    }
-
-    #[test]
     fn parse_response_success() {
         let body = r#"{"retCode":0,"retMsg":"success","resTime":42}"#;
         let resp = parse_response(body).unwrap();
@@ -739,15 +698,6 @@ mod tests {
     fn parse_response_non_numeric_ret_code_is_error() {
         let body = r#"{"retCode":"abc"}"#;
         assert!(parse_response(body).is_err());
-    }
-
-    #[test]
-    fn parse_reply_from_ret_msg() {
-        let ret_msg = r#"{"topic":"reply-topic","body":"reply-body","properties":{"k":"v"}}"#;
-        let msg = parse_reply(ret_msg).unwrap();
-        assert_eq!(msg.topic.as_deref(), Some("reply-topic"));
-        assert_eq!(msg.content.as_deref(), Some("reply-body"));
-        assert_eq!(msg.get_prop("k"), Some("v"));
     }
 
     #[test]
