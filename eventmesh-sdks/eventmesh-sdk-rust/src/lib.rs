@@ -23,7 +23,7 @@
 //! [`HttpClient`] (`http`), or [`TcpClient`] (`tcp`). Each client creates a
 //! producer and its transport-specific consumer. Producers accept [`Message`],
 //! while consumers deliver it to [`MessageHandler`]. Use [`config`] for
-//! endpoints, identity, credentials, timeouts, TLS, and reconnect settings;
+//! endpoints, identity, credentials, timeouts, HTTP TLS, and reconnect settings;
 //! use [`Subscription`] to declare what a consumer receives.
 //!
 //! `Message` preserves native EventMesh messages and, with `cloud_events`,
@@ -33,8 +33,8 @@
 //! # Features
 //!
 //! The default feature set is empty. Enable `grpc`, `http`, or `tcp` for a
-//! transport; `cloud_events` adds CloudEvents support and `tls` adds gRPC TLS.
-//! `full` enables every runtime feature. See the repository README and
+//! transport; `cloud_events` adds CloudEvents support. `full` enables every
+//! runtime feature. See the repository README and
 //! `examples/` for runnable programs.
 //!
 //! # Delivery and lifecycle

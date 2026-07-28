@@ -18,8 +18,7 @@ The default feature set is empty. Enable the transport(s) your application uses;
 | `http` | `HttpClient`, managed HTTP consumer, external webhook registration, and webhook codec helpers |
 | `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
-| `tls` | TLS support for gRPC (use with `grpc`) |
-| `full` | All transport, CloudEvents, and TLS features |
+| `full` | All transports and CloudEvents support |
 | `e2e` | Live-runtime integration tests; implies all runtime features |
 
 ```toml
@@ -69,10 +68,12 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 | Transport | Client | Consumer model | Notable operations |
 | --- | --- | --- | --- |
 | gRPC | `GrpcClient` | `stream_consumer` invokes a `MessageHandler` | batch publish, request/reply, live subscribe/unsubscribe |
-| HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | request/reply, weighted endpoint selection |
+| HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | publish, weighted endpoint selection |
 | TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
 `HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
+
+`HttpProducer::request_reply` encodes EventMesh's HTTP synchronous-publish request, but the current stock Runtime cannot route an HTTP-originated synchronous message through a gRPC stream consumer and return its reply to the HTTP request. The corresponding real-Runtime e2e is retained but ignored to make this compatibility gap visible. Use gRPC or TCP for request/reply unless the target deployment provides a compatible HTTP synchronous-reply path.
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
@@ -80,7 +81,7 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 ## Configuration and errors
 
-All configurations require a validated `Endpoint`; HTTP uses a non-empty `EndpointSet`. Use `with_*` methods to set optional identity, credentials, timeouts, TLS, proxy, and reconnect settings. `Debug` output redacts secrets.
+All configurations require a validated `Endpoint`; HTTP uses a non-empty `EndpointSet`. Use `with_*` methods to set optional identity, credentials, timeouts, HTTP TLS, proxy, and reconnect settings. EventMesh Runtime's gRPC endpoint is plaintext and the gRPC client intentionally does not expose TLS configuration. `Debug` output redacts secrets.
 
 Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds (TCP). `ClientOptions::with_request_timeout` changes a client's default; every producer also has `request_reply_with_timeout` for one call. TCP separately has a 1-second connect timeout and a 20-second control timeout.
 

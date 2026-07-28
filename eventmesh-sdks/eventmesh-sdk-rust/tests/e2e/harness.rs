@@ -127,10 +127,14 @@ pub(crate) fn http_producer() -> eventmesh::http::HttpProducer {
 }
 
 pub(crate) fn tcp_client() -> TcpClient {
+    tcp_client_with_system("sys")
+}
+
+pub(crate) fn tcp_client_with_system(system: &str) -> TcpClient {
     let endpoint = Endpoint::new(HOST, TCP_PORT).expect("valid TCP endpoint");
     TcpClient::new(
         TcpConfig::new(endpoint)
-            .with_identity(identity())
+            .with_identity(identity().with_system(system))
             .with_credentials(credentials()),
     )
     .expect("build TCP client")
@@ -184,6 +188,33 @@ pub(crate) async fn ensure_topic(topic: &str) {
         );
         tokio::time::sleep(Duration::from_millis(200)).await;
     }
+}
+
+/// Ask the Runtime admin API to gracefully disconnect only TCP sessions whose
+/// HELLO `subsystem` matches `subsystem`. This exercises the same server-side
+/// disconnect path used by operational client management without restarting
+/// the shared Runtime container.
+pub(crate) async fn reject_tcp_subsystem(subsystem: &str) {
+    let url = format!("http://{HOST}:{ADMIN_PORT}/clientManage/rejectClientBySubSystem");
+    let response = reqwest::Client::builder()
+        .no_proxy()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .expect("reqwest client")
+        .get(url)
+        .query(&[("subsystem", subsystem)])
+        .send()
+        .await
+        .expect("reject TCP subsystem through Runtime admin API");
+    assert!(
+        response.status().is_success(),
+        "reject TCP subsystem status"
+    );
+    let body = response.text().await.expect("reject TCP subsystem body");
+    assert!(
+        body.contains("success!") && !body.contains("no session had been closed"),
+        "Runtime did not find the test TCP sessions: {body}"
+    );
 }
 
 pub(crate) async fn let_stream_settle() {

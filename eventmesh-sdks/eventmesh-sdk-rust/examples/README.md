@@ -16,4 +16,4 @@ Each example is a small executable with one responsibility. They use the default
 
 Run a consumer first, then run its corresponding producer. The HTTP examples listen on ports 8080 (built-in server) and 8081 (custom endpoint); change the advertised callback URL when EventMesh cannot reach `127.0.0.1`.
 
-The examples intentionally use minimal configuration. For timeouts, identity, credentials, TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.
+The examples intentionally use minimal configuration. For timeouts, identity, credentials, HTTP TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.

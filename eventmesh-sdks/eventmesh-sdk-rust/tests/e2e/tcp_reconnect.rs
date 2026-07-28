@@ -15,42 +15,50 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Destructive e2e: restart the real runtime and verify TCP replay + publish.
+//! E2e: disconnect isolated TCP sessions through the Runtime admin API and
+//! verify reconnect, subscription replay, and publish.
 
 use std::time::{Duration, Instant};
 
 use eventmesh::message::{EventMeshMessage, Message};
 
 use crate::harness::{
-    ensure_topic, let_tcp_subscription_settle, serialize_tcp_e2e, tcp_producer, tcp_warm_topic,
-    unique_topic,
+    consumer_options, ensure_topic, let_tcp_subscription_settle, producer_options,
+    reject_tcp_subsystem, serialize_tcp_e2e, tcp_client_with_system, unique_topic,
+    CollectingListener,
 };
 use crate::require_runtime;
 
-/// This test restarts the compose-managed runtime, so it is intentionally
-/// ignored in the normal parallel suite. Run it explicitly with:
-/// `cargo test --features e2e --test e2e tcp_reconnect_replays_subscription_after_runtime_restart -- --ignored`
 #[tokio::test(flavor = "multi_thread")]
-#[ignore = "restarts the compose-managed EventMesh runtime"]
-async fn tcp_reconnect_replays_subscription_after_runtime_restart() {
+async fn tcp_reconnect_replays_subscription_after_server_disconnect() {
     let _tcp_e2e_guard = serialize_tcp_e2e().await;
     require_runtime!();
-    assert!(
-        crate::runtime::compose_runtime_started(),
-        "the reconnect e2e requires the runtime started by this test harness"
-    );
 
     let topic = unique_topic("tcp-real-reconnect");
+    let subsystem = unique_topic("tcp-reconnect-subsystem");
     ensure_topic(&topic).await;
-    let (consumer, mut receiver) = tcp_warm_topic(&topic).await;
-    let producer = tcp_producer().await;
+    let client = tcp_client_with_system(&subsystem);
+    let (listener, mut receiver) = CollectingListener::new();
+    let consumer = client
+        .consumer(consumer_options(), listener)
+        .await
+        .expect("open reconnect test consumer");
+    consumer
+        .subscribe(eventmesh::Subscription::new(&topic))
+        .await
+        .expect("subscribe reconnect test consumer");
+    let producer = client
+        .producer(producer_options())
+        .await
+        .expect("open reconnect test producer");
+    let_tcp_subscription_settle().await;
 
-    assert!(
-        crate::runtime::restart_compose_runtime(),
-        "restart EventMesh runtime"
-    );
-    // The consumer replays subscriptions only once its TCP connection has
-    // re-established; the broker also needs its normal route/rebalance period.
+    reject_tcp_subsystem(&subsystem).await;
+    // Runtime sends SERVER_GOODBYE_REQUEST first and closes the session with a
+    // 30-second safety timer after the client ACK. Wait past that existing
+    // server behavior, then allow reconnect + subscription replay + broker
+    // rebalance to settle.
+    tokio::time::sleep(Duration::from_secs(32)).await;
     let_tcp_subscription_settle().await;
 
     let deadline = Instant::now() + Duration::from_secs(60);

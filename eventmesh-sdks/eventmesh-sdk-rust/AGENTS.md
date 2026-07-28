@@ -33,8 +33,7 @@ cargo build --features full
 | `http` | HTTP transport — `HttpProducer`, managed `HttpConsumer`, external `WebhookRegistration`, and webhook codec helpers. Uses reqwest + axum. |
 | `tcp` | TCP transport — `TcpProducer`, `TcpConsumer`, native binary wire protocol. Auto-reconnect with exponential backoff. CloudEvents interop behind `cloud_events`. |
 | `cloud_events` | Native `cloudevents::Event` interop (gRPC, HTTP, and TCP). |
-| `tls` | TLS on the gRPC channel. |
-| `full` | `grpc` + `http` + `tcp` + `cloud_events` + `tls`. Use this for clippy/test so every code path compiles. |
+| `full` | `grpc` + `http` + `tcp` + `cloud_events`. Use this for clippy/test so every code path compiles. |
 | `e2e` | Gates the live-server integration suite (`tests/e2e/`). A plain `cargo test` never touches Docker. |
 
 ## Verification (the order the README mandates)

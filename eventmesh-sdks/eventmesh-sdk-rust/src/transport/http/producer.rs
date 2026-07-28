@@ -76,6 +76,10 @@ impl HttpProducer {
     }
 
     /// Send a native CloudEvent and wait for a native CloudEvent reply.
+    ///
+    /// The current Runtime cannot complete the HTTP-originated synchronous
+    /// request through its gRPC stream-consumer reply path. This codec remains
+    /// for deployments that provide a compatible HTTP synchronous-reply path.
     #[cfg(feature = "cloud_events")]
     pub async fn request_reply_cloud_event(
         &self,

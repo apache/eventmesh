@@ -21,7 +21,7 @@ use std::time::Duration;
 
 use crate::error::{EventMeshError, Result};
 
-use super::{ClientIdentity, ReconnectConfig, TlsConfig};
+use super::{ClientIdentity, ReconnectConfig};
 
 /// Default timeout for short gRPC operations.
 pub const DEFAULT_GRPC_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
@@ -405,8 +405,6 @@ pub struct GrpcConfig {
     options: ClientOptions,
     identity: Identity,
     credentials: Credentials,
-    use_tls: bool,
-    tls_config: Option<TlsConfig>,
 }
 
 impl GrpcConfig {
@@ -417,8 +415,6 @@ impl GrpcConfig {
             options: ClientOptions::default(),
             identity: Identity::default(),
             credentials: Credentials::default(),
-            use_tls: false,
-            tls_config: None,
         }
     }
 
@@ -440,13 +436,6 @@ impl GrpcConfig {
         self
     }
 
-    /// Enable TLS, optionally with explicit TLS material.
-    pub fn with_tls(mut self, tls_config: Option<TlsConfig>) -> Self {
-        self.use_tls = true;
-        self.tls_config = tls_config;
-        self
-    }
-
     /// Return the configured server endpoint.
     pub const fn endpoint(&self) -> &Endpoint {
         &self.endpoint
@@ -465,16 +454,6 @@ impl GrpcConfig {
     /// Return the configured credentials.
     pub const fn credentials(&self) -> &Credentials {
         &self.credentials
-    }
-
-    /// Whether TLS is enabled.
-    pub const fn tls_enabled(&self) -> bool {
-        self.use_tls
-    }
-
-    /// Return explicitly configured TLS material, if any.
-    pub const fn tls_config(&self) -> Option<&TlsConfig> {
-        self.tls_config.as_ref()
     }
 
     #[cfg(feature = "grpc")]
@@ -506,8 +485,6 @@ impl GrpcConfig {
         super::GrpcClientConfig {
             server_addr: self.endpoint.authority_host(),
             server_port: self.endpoint.port,
-            use_tls: self.use_tls,
-            tls_config: self.tls_config.clone(),
             timeout: self.request_timeout(),
             identity,
             max_concurrent_handlers: 1,

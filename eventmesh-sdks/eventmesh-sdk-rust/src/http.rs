@@ -177,11 +177,24 @@ impl HttpProducer {
     }
 
     /// Send an event and await its reply.
+    ///
+    /// # Runtime compatibility
+    ///
+    /// The SDK implements EventMesh's HTTP synchronous-publish wire request,
+    /// but the current EventMesh Runtime cannot route an HTTP-originated
+    /// synchronous message through a gRPC stream consumer and return that
+    /// consumer's reply to the HTTP request. Against the stock Runtime this
+    /// operation can therefore fail or time out; use gRPC or TCP when a
+    /// verified request/reply path is required. Keep this method only for
+    /// deployments that provide a compatible HTTP synchronous-reply path.
     pub async fn request_reply(&self, message: Message) -> Result<Message> {
         self.request_reply_with_timeout(message, self.timeout).await
     }
 
     /// Send an event and await its reply with a per-operation timeout.
+    ///
+    /// This has the same current Runtime limitation documented on
+    /// [`request_reply`](Self::request_reply).
     pub async fn request_reply_with_timeout(
         &self,
         message: Message,

@@ -53,15 +53,13 @@ http = ["dep:reqwest", "dep:serde_urlencoded", "dep:axum", "dep:tower", "dep:tow
 tcp = ["tokio-util/codec"]
 # Message models.
 cloud_events = ["dep:cloudevents", "dep:chrono"]
-# TLS support.
-tls = ["tonic/tls", "tonic/tls-native-roots"]
 # Convenience aggregate.
-full = ["grpc", "http", "tcp", "cloud_events", "tls"]
+full = ["grpc", "http", "tcp", "cloud_events"]
 # End-to-end tests (tests/e2e/*). Gated off by default so plain `cargo test`
 # never needs a live server. Run with `cargo test --features e2e`. Implies all
 # transports + cloud_events so the full suite (gRPC + HTTP + TCP + CE) compiles
 # from a single flag.
-e2e = ["grpc", "http", "tcp", "cloud_events", "tls"]
+e2e = ["grpc", "http", "tcp", "cloud_events"]
 # Cross-SDK E2E: starts the Java SDK peer on the host JVM.
 interop_e2e = ["e2e"]
 
@@ -101,7 +99,6 @@ tracing-subscriber = { version = "0.3", features = ["fmt"] }
 # e2e test harness (only referenced under the `e2e` feature):
 reqwest = { version = "0.12", default-features = false, features = ["json"] }
 ctor = "0.2"
-rcgen = "0.12"
 
 [[example]]
 name = "grpc_producer"

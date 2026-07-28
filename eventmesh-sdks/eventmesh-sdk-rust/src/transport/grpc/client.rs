@@ -49,8 +49,7 @@ impl GrpcClient {
 
     /// Build a lazy gRPC channel from a config.
     pub(crate) fn channel(config: &GrpcClientConfig) -> Result<Channel> {
-        let scheme = if config.use_tls { "https" } else { "http" };
-        let uri = format!("{}://{}", scheme, config.authority());
+        let uri = format!("http://{}", config.authority());
         let endpoint = Endpoint::from_shared(uri.clone())
             .map_err(|e| EventMeshError::Config(format!("bad endpoint {uri:?}: {e}")))?
             .connect_timeout(Duration::from_secs(10))
@@ -62,83 +61,7 @@ impl GrpcClient {
             .tcp_nodelay(true)
             .tcp_keepalive(Some(Duration::from_secs(100)));
 
-        // Apply TLS settings (CA cert, client identity, SNI) when enabled.
-        // When the `tls` cargo feature is OFF, `use_tls=true` is rejected
-        // explicitly instead of silently producing an `https://` URI that
-        // tonic cannot actually encrypt.
-        #[cfg(not(feature = "tls"))]
-        if config.use_tls {
-            return Err(EventMeshError::Config(
-                "use_tls=true but the 'tls' cargo feature is not enabled. \
-                 Add the 'tls' (or 'full') feature to your dependency on \
-                 eventmesh to enable TLS support."
-                    .into(),
-            ));
-        }
-
-        #[cfg(feature = "tls")]
-        let endpoint = if config.use_tls {
-            Self::apply_tls(endpoint, config)?
-        } else {
-            endpoint
-        };
-
         Ok(endpoint.connect_lazy())
-    }
-
-    /// Configure the tonic [`Endpoint`] with [`tonic::transport::ClientTlsConfig`]
-    /// derived from [`GrpcClientConfig`].
-    ///
-    /// When `tls_config` is `None`, the SNI domain is set to `server_addr` and
-    /// the OS-native trust roots are loaded so TLS verification succeeds against
-    /// publicly-trusted certificates. When present, the CA certificate,
-    /// native roots flag, and mTLS client identity are applied.
-    #[cfg(feature = "tls")]
-    fn apply_tls(endpoint: Endpoint, config: &GrpcClientConfig) -> Result<Endpoint> {
-        use tonic::transport::{Certificate, ClientTlsConfig, Identity};
-
-        let tls = config.tls_config.as_ref();
-        let domain = tls
-            .and_then(|t| t.domain.clone())
-            .unwrap_or_else(|| config.server_addr.clone());
-
-        let mut tls_config = ClientTlsConfig::new().domain_name(domain);
-
-        if let Some(tls) = tls {
-            // CA certificate — inline PEM takes precedence over file path.
-            match tls.ca_cert_pem_bytes() {
-                Some(Ok(pem)) => {
-                    tls_config = tls_config.ca_certificate(Certificate::from_pem(pem));
-                }
-                Some(Err(e)) => {
-                    return Err(EventMeshError::Config(format!(
-                        "failed to read CA certificate: {e}"
-                    )));
-                }
-                None => {}
-            }
-
-            // OS-native trust roots.
-            if tls.use_native_roots {
-                tls_config = tls_config.with_native_roots();
-            }
-
-            // mTLS client identity.
-            if let Some(id) = &tls.client_identity {
-                tls_config = tls_config
-                    .identity(Identity::from_pem(id.cert_pem.clone(), id.key_pem.clone()));
-            }
-        } else {
-            // No explicit TLS config — load the OS-native trust roots so
-            // the system trust store is used for certificate verification,
-            // matching the documented default.  Without this, tonic has no
-            // trust anchor and every TLS handshake fails.
-            tls_config = tls_config.with_native_roots();
-        }
-
-        endpoint
-            .tls_config(tls_config)
-            .map_err(|e| EventMeshError::Config(format!("TLS config error: {e}")))
     }
 
     fn from_channel(channel: Channel) -> Self {
@@ -243,28 +166,7 @@ mod tests {
     use super::*;
     use crate::config::GrpcClientConfig;
 
-    /// When the `tls` cargo feature is OFF, `use_tls=true` must return an
-    /// explicit error instead of silently creating an `https://` endpoint
-    /// that tonic cannot encrypt.
-    #[cfg(not(feature = "tls"))]
-    #[test]
-    fn use_tls_without_feature_returns_error() {
-        let config = GrpcClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(10205)
-            .use_tls(true)
-            .build();
-        match GrpcClient::new(&config) {
-            Err(e) => assert!(
-                e.to_string().contains("tls"),
-                "error should mention tls: {e}"
-            ),
-            Ok(_) => panic!("expected error when use_tls=true without tls feature"),
-        }
-    }
-
-    /// Smoke test: `use_tls=false` (or default) always succeeds regardless
-    /// of the `tls` feature — the endpoint is plain HTTP.
+    /// Smoke test: the EventMesh runtime gRPC endpoint is plain HTTP/2.
     #[tokio::test]
     async fn plain_http_always_builds() {
         let config = GrpcClientConfig::builder()

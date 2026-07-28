@@ -19,7 +19,7 @@
 
 use std::time::Duration;
 
-use crate::config::{ClientIdentity, TlsConfig};
+use crate::config::ClientIdentity;
 
 /// Default gRPC port of an EventMesh runtime.
 pub const DEFAULT_GRPC_PORT: u16 = 10_205;
@@ -35,12 +35,6 @@ pub struct GrpcClientConfig {
     pub server_addr: String,
     /// Server gRPC port (default `10205`).
     pub server_port: u16,
-    /// Whether to use TLS (`https`).
-    pub use_tls: bool,
-    /// TLS details (CA cert, client identity, SNI, ...). Applied only when
-    /// `use_tls` is `true` and the `tls` cargo feature is enabled. If `None`,
-    /// tonic uses its built-in defaults.
-    pub tls_config: Option<TlsConfig>,
     /// Default RPC timeout applied when none is given to a call.
     pub timeout: Duration,
     /// Client identity sent with every request.
@@ -58,8 +52,6 @@ impl Default for GrpcClientConfig {
         Self {
             server_addr: "localhost".into(),
             server_port: DEFAULT_GRPC_PORT,
-            use_tls: false,
-            tls_config: None,
             timeout: DEFAULT_TIMEOUT,
             identity: ClientIdentity::detect(),
             max_concurrent_handlers: DEFAULT_MAX_CONCURRENT_HANDLERS,
@@ -84,8 +76,6 @@ impl GrpcClientConfig {
 pub struct GrpcClientConfigBuilder {
     server_addr: Option<String>,
     server_port: Option<u16>,
-    use_tls: Option<bool>,
-    tls_config: Option<TlsConfig>,
     timeout: Option<Duration>,
     identity: Option<ClientIdentity>,
     max_concurrent_handlers: Option<usize>,
@@ -107,14 +97,6 @@ impl GrpcClientConfigBuilder {
     }
     pub fn server_port(mut self, v: u16) -> Self {
         self.server_port = Some(v);
-        self
-    }
-    pub fn use_tls(mut self, v: bool) -> Self {
-        self.use_tls = Some(v);
-        self
-    }
-    pub fn tls_config(mut self, v: TlsConfig) -> Self {
-        self.tls_config = Some(v);
         self
     }
     pub fn timeout(mut self, v: Duration) -> Self {
@@ -166,8 +148,6 @@ impl GrpcClientConfigBuilder {
         let GrpcClientConfigBuilder {
             server_addr,
             server_port,
-            use_tls,
-            tls_config,
             timeout,
             identity,
             max_concurrent_handlers,
@@ -210,8 +190,6 @@ impl GrpcClientConfigBuilder {
         GrpcClientConfig {
             server_addr: server_addr.unwrap_or_else(|| "localhost".into()),
             server_port: server_port.unwrap_or(DEFAULT_GRPC_PORT),
-            use_tls: use_tls.unwrap_or(false),
-            tls_config,
             timeout: timeout.unwrap_or(DEFAULT_TIMEOUT),
             identity,
             max_concurrent_handlers: max_concurrent_handlers
@@ -226,8 +204,6 @@ impl std::fmt::Debug for GrpcClientConfigBuilder {
         f.debug_struct("GrpcClientConfigBuilder")
             .field("server_addr", &self.server_addr)
             .field("server_port", &self.server_port)
-            .field("use_tls", &self.use_tls)
-            .field("tls_config", &self.tls_config)
             .field("timeout", &self.timeout)
             .field("identity", &self.identity)
             .field("max_concurrent_handlers", &self.max_concurrent_handlers)

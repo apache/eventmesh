@@ -15,7 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! E2e: HTTP request/reply, with a gRPC stream consumer supplying the reply.
+//! Known Runtime compatibility gap: HTTP request/reply with a gRPC stream
+//! consumer supplying the reply. The test is intentionally retained and
+//! ignored so the unsupported stock-Runtime path is not mistaken for passing
+//! release coverage.
 
 use eventmesh::{
     message::{EventMeshMessage, Message},

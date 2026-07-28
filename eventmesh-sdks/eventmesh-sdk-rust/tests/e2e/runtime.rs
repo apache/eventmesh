@@ -119,39 +119,6 @@ pub(crate) fn ensure_runtime() -> bool {
     }
 }
 
-/// Restart the EventMesh container managed by this harness and wait until its
-/// admin port is accepting connections again.
-///
-/// This deliberately refuses to mutate an externally managed runtime. It is
-/// used only by the destructive TCP reconnect e2e test.
-pub(crate) fn restart_compose_runtime() -> bool {
-    if MODE.get() != Some(&Mode::Started) {
-        return false;
-    }
-    let compose = compose_file();
-    let project_dir = PathBuf::from(MANIFEST_DIR);
-    let restart = Command::new("docker")
-        .args([
-            "compose",
-            "-f",
-            compose.to_str().expect("utf-8 compose path"),
-            "--project-directory",
-            project_dir.to_str().expect("utf-8 project dir"),
-            "--profile",
-            "rocketmq",
-            "restart",
-            "eventmesh-rocketmq",
-        ])
-        .current_dir(&project_dir)
-        .status();
-    restart.is_ok_and(|status| status.success()) && wait_for_admin(Duration::from_secs(60))
-}
-
-/// Whether this process, rather than the user, owns the compose runtime.
-pub(crate) fn compose_runtime_started() -> bool {
-    MODE.get() == Some(&Mode::Started)
-}
-
 /// Whether an unavailable runtime may be treated as an intentional skip.
 ///
 /// This is an opt-in local escape hatch. Release verification is strict by

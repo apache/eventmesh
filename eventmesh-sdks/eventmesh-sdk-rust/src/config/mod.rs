@@ -29,7 +29,6 @@ mod http;
 mod identity;
 #[allow(dead_code)]
 mod tcp;
-pub mod tls;
 
 pub use client::{
     ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig,
@@ -37,7 +36,6 @@ pub use client::{
     TcpConfig, DEFAULT_GRPC_REQUEST_TIMEOUT, DEFAULT_HTTP_REQUEST_TIMEOUT,
     DEFAULT_TCP_CONNECT_TIMEOUT, DEFAULT_TCP_CONTROL_TIMEOUT, DEFAULT_TCP_REQUEST_TIMEOUT,
 };
-pub use tls::{TlsClientIdentity, TlsConfig, TlsConfigBuilder};
 
 // Legacy adapters used by the private protocol implementations. Do not make
 // these public again.

@@ -34,12 +34,9 @@ cargo test --features e2e
 
 The harness starts the `rocketmq` docker-compose profile unless `EVENTMESH_E2E_EXTERNAL=1` points it at an already running runtime. An absent runtime is a failure by default. `EVENTMESH_E2E_ALLOW_SKIP=1` is only for an intentional local skip and must not be used for release verification.
 
-The destructive TCP reconnect test is ignored by default because it restarts the compose-managed runtime:
-
-```bash
-cargo test --features e2e --test e2e \
-  tcp_reconnect_replays_subscription_after_runtime_restart -- --ignored
-```
+The TCP reconnect test runs in the normal e2e suite. It uses a unique client
+subsystem and the Runtime admin API to disconnect only its own TCP sessions, so
+it does not restart or disrupt the shared Runtime container.
 
 ## Documentation responsibilities
 
