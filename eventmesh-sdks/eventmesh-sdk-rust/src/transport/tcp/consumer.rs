@@ -36,7 +36,7 @@
 //! impl MessageListener for MyListener {
 //!     type Message = EventMeshMessage;
 //!     async fn handle(&self, msg: EventMeshMessage) -> Option<EventMeshMessage> {
-//!         println!("received: {:?}", msg.content);
+//!         println!("received: {:?}", msg.content());
 //!         None
 //!     }
 //! }
@@ -46,7 +46,7 @@
 //!     let config = TcpClientConfig::builder()
 //!         .server_addr("127.0.0.1").server_port(10000)
 //!         .consumer_group("g")
-//!         .build();
+//!         .build().unwrap();
 //!     let consumer = TcpConsumer::connect(
 //!         config,
 //!         MyListener,
@@ -102,7 +102,7 @@ impl TcpMessage for EventMeshMessage {
         if message::is_cloudevents(pkg) {
             #[cfg(feature = "cloud_events")]
             return message::parse_cloud_event(&pkg.body)
-                .map(|event| message::cloud_event_to_message(&event));
+                .and_then(|event| message::cloud_event_to_message(&event).ok());
             #[cfg(not(feature = "cloud_events"))]
             return None;
         }
@@ -166,15 +166,23 @@ impl TcpMessage for Message {
 
         // Normalize non-CloudEvent replies to EventMeshMessage before merging
         // request metadata.
-        let mut reply = match self.clone() {
-            Self::EventMesh(message) => message,
-            #[cfg(feature = "cloud_events")]
+        #[cfg(feature = "cloud_events")]
+        let reply = match self.clone() {
+            Self::EventMesh(message) => Ok(message),
             Self::CloudEvent(event) => message::cloud_event_to_message(&event),
         };
+        #[cfg(feature = "cloud_events")]
         let request = match request.clone() {
-            Self::EventMesh(message) => message,
-            #[cfg(feature = "cloud_events")]
+            Self::EventMesh(message) => Ok(message),
             Self::CloudEvent(event) => message::cloud_event_to_message(&event),
+        };
+        #[cfg(feature = "cloud_events")]
+        let (Ok(mut reply), Ok(request)) = (reply, request) else {
+            return;
+        };
+        #[cfg(not(feature = "cloud_events"))]
+        let (mut reply, request) = match (self.clone(), request.clone()) {
+            (Self::EventMesh(reply), Self::EventMesh(request)) => (reply, request),
         };
         <EventMeshMessage as TcpMessage>::inherit_request_metadata(&mut reply, &request);
         *self = Self::EventMesh(reply);
@@ -444,13 +452,28 @@ where
         &self.config
     }
 
-    /// Explicitly shut down: cancel the shared token, shut down the
-    /// connection, and await the driver task's exit.
-    pub async fn shutdown(&self) {
+    /// Signal the receive-loop driver to stop.
+    pub fn request_shutdown(&self) {
         self.shutdown.cancel();
+    }
+
+    /// Signal shutdown, close the connection, and await the driver task.
+    pub async fn shutdown(&self) {
+        self.request_shutdown();
         self.conn.shutdown().await;
         if let Some(handle) = self.driver_handle.lock().await.take() {
-            let _ = handle.await;
+            match handle.await {
+                Ok(Ok(())) => {}
+                Ok(Err(error)) => {
+                    *self.shutdown_reason.lock().await =
+                        Some(ShutdownReason::Error(error.to_string()));
+                }
+                Err(error) => {
+                    *self.shutdown_reason.lock().await = Some(ShutdownReason::Error(format!(
+                        "receive-loop driver task panicked: {error}"
+                    )));
+                }
+            }
         }
     }
 
@@ -466,42 +489,26 @@ where
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the driver exits naturally.
     pub async fn wait_for_shutdown(&self) -> ShutdownReason {
-        // Take ownership of the driver handle so we can race it against
-        // cancellation.
         let handle = self.driver_handle.lock().await.take();
 
         if let Some(handle) = handle {
-            tokio::select! {
-                biased;
-                _ = self.shutdown.cancelled() => {
-                    // Cancellation fired (user signal, `shutdown()` call, or
-                    // the driver itself called `shutdown.cancel()` before
-                    // exiting). If the driver set a reason, it will be
-                    // available below; otherwise the default is `Cancelled`.
-                    self.conn.shutdown().await;
-                    // The handle was consumed by the select — the driver
-                    // task continues asynchronously and will observe the
-                    // cancellation token / closed inbound channel and exit.
+            match handle.await {
+                Ok(Ok(())) => {}
+                Ok(Err(error)) => {
+                    *self.shutdown_reason.lock().await =
+                        Some(ShutdownReason::Error(error.to_string()));
                 }
-                result = handle => {
-                    // Driver exited before the token was cancelled (redirect,
-                    // channel closed, error, or panic). Cancel to stop any
-                    // signal-watcher task.
-                    self.shutdown.cancel();
-                    // If the driver panicked, capture the JoinError as a
-                    // shutdown reason.
-                    if let Err(join_err) = result {
-                        *self.shutdown_reason.lock().await = Some(ShutdownReason::Error(
-                            format!("receive-loop driver task panicked: {join_err}"),
-                        ));
-                    }
+                Err(error) => {
+                    *self.shutdown_reason.lock().await = Some(ShutdownReason::Error(format!(
+                        "receive-loop driver task panicked: {error}"
+                    )));
                 }
             }
+            self.shutdown.cancel();
         } else {
-            // Handle already taken (concurrent `shutdown()` or previous
-            // `wait_for_shutdown`).
             self.shutdown.cancelled().await;
         }
+        self.conn.shutdown().await;
 
         self.shutdown_reason
             .lock()
@@ -655,6 +662,7 @@ where
             }
         }
 
+        conn.shutdown().await;
         // Signal wait_for_shutdown that we've exited.
         shutdown.cancel();
         Ok(())
@@ -801,7 +809,7 @@ mod tests {
     #[test]
     fn public_message_rejects_unknown_protocol() {
         let mut package = message::build_message_package(
-            &EventMeshMessage::new("orders", "created"),
+            &EventMeshMessage::new("orders", "created").unwrap(),
             Command::AsyncMessageToClient,
         )
         .unwrap();
@@ -871,7 +879,8 @@ mod tests {
                 &EventMeshMessage::builder()
                     .topic("topic")
                     .content("payload")
-                    .build(),
+                    .build()
+                    .unwrap(),
                 Command::AsyncMessageToClient,
             )
             .unwrap();
@@ -921,12 +930,14 @@ mod tests {
             .content("request")
             .prop("cluster", "remote-cluster")
             .prop("correlation-id", "request-id")
-            .build();
+            .build()
+            .unwrap();
         let mut reply = EventMeshMessage::builder()
             .topic("reply-topic")
             .content("reply")
             .prop("correlation-id", "reply-id")
-            .build();
+            .build()
+            .unwrap();
 
         reply.inherit_request_metadata(&request);
         let pkg = reply.encode_tcp_reply().expect("encode reply");

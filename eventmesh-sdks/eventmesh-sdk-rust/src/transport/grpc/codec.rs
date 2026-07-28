@@ -153,11 +153,7 @@ pub fn from_event_mesh_message(
         attr_str(ProtocolKey::PROTOCOL_DESC_GRPC_CLOUD_EVENT),
     );
 
-    if let Some(topic) = &message.topic {
-        if !topic.is_empty() {
-            attrs.insert(ProtocolKey::SUBJECT.into(), attr_str(topic));
-        }
-    }
+    attrs.insert(ProtocolKey::SUBJECT.into(), attr_str(&message.topic));
 
     // Resolve the content type from props (default text/plain).
     let data_content_type = message
@@ -175,10 +171,8 @@ pub fn from_event_mesh_message(
     }
 
     let data = match &message.content {
-        Some(content) if is_text_content(&data_content_type) => {
-            Some(PbData::TextData(content.clone()))
-        }
-        Some(content) if is_proto_content(&data_content_type) => {
+        content if is_text_content(&data_content_type) => Some(PbData::TextData(content.clone())),
+        content if is_proto_content(&data_content_type) => {
             // Match the Java SDK: content bytes are a serialized
             // `google.protobuf.Any` message (produced by `Any.pack(...)` or
             // manual construction, then serialized). Java calls
@@ -194,8 +188,7 @@ pub fn from_event_mesh_message(
             })?;
             Some(PbData::ProtoData(any))
         }
-        Some(content) => Some(PbData::BinaryData(content.as_bytes().to_vec())),
-        None => None,
+        content => Some(PbData::BinaryData(content.as_bytes().to_vec())),
     };
 
     Ok(base_event(attrs, data))
@@ -214,7 +207,7 @@ pub fn from_event_mesh_messages(
 }
 
 /// Decode a delivered CloudEvent back into an [`EventMeshMessage`].
-pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> EventMeshMessage {
+pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> Result<EventMeshMessage> {
     let mut props = HashMap::with_capacity(cloud_event.attributes.len());
     for (key, value) in &cloud_event.attributes {
         props.insert(key.clone(), attr_as_str(value));
@@ -225,15 +218,20 @@ pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> EventMeshMessage {
     let content = get_text_data(cloud_event);
     let ttl = get_ttl(cloud_event).parse::<i64>().ok();
 
-    EventMeshMessage {
-        biz_seq_no: (!biz_seq_no.is_empty()).then_some(biz_seq_no),
-        unique_id: (!unique_id.is_empty()).then_some(unique_id),
-        topic: (!topic.is_empty()).then_some(topic),
-        content: (!content.is_empty()).then_some(content),
-        props,
-        create_time: crate::common::util::now_millis(),
-        ttl,
+    let mut builder = EventMeshMessage::builder()
+        .topic(topic)
+        .content(content)
+        .props(props);
+    if !biz_seq_no.is_empty() {
+        builder = builder.biz_seq_no(biz_seq_no);
     }
+    if !unique_id.is_empty() {
+        builder = builder.unique_id(unique_id);
+    }
+    if let Some(ttl) = ttl {
+        builder = builder.ttl_millis(ttl);
+    }
+    builder.build()
 }
 
 /// Extract the broker [`PublishResponse`] (status_code / message / time).
@@ -624,16 +622,44 @@ mod tests {
             .biz_seq_no("seq-1")
             .unique_id("uid-1")
             .prop("custom", "val")
-            .build();
+            .build()
+            .unwrap();
         let ce = from_event_mesh_message(&msg, &cfg).unwrap();
         assert_eq!(get_subject(&ce), "test-topic");
         assert_eq!(get_seq_num(&ce), "seq-1");
         assert_eq!(get_text_data(&ce), "hello");
         assert_eq!(ce.attributes.get("custom").map(attr_as_str).unwrap(), "val");
 
-        let back = to_event_mesh_message(&ce);
-        assert_eq!(back.topic.as_deref(), Some("test-topic"));
-        assert_eq!(back.content.as_deref(), Some("hello"));
+        let back = to_event_mesh_message(&ce).unwrap();
+        assert_eq!(back.topic(), "test-topic");
+        assert_eq!(back.content(), "hello");
+    }
+
+    #[test]
+    fn decodes_java_compatible_whitespace_content_and_unbounded_ttl() {
+        let cfg = cfg();
+        let msg = EventMeshMessage::builder()
+            .topic("test-topic")
+            .content(" \t")
+            .prop(ProtocolKey::TTL, "2147483648")
+            .build()
+            .unwrap();
+        let wire = from_event_mesh_message(&msg, &cfg).unwrap();
+        let decoded = to_event_mesh_message(&wire).unwrap();
+        assert_eq!(decoded.content(), " \t");
+        assert_eq!(decoded.get_prop(ProtocolKey::TTL), Some("2147483648"));
+        assert_eq!(decoded.ttl_millis(), Some(2_147_483_648));
+
+        let msg = EventMeshMessage::builder()
+            .topic("test-topic")
+            .content("payload")
+            .prop(ProtocolKey::TTL, "java-specific")
+            .build()
+            .unwrap();
+        let wire = from_event_mesh_message(&msg, &cfg).unwrap();
+        let decoded = to_event_mesh_message(&wire).unwrap();
+        assert_eq!(decoded.get_prop(ProtocolKey::TTL), Some("java-specific"));
+        assert_eq!(decoded.ttl_millis(), None);
     }
 
     #[test]

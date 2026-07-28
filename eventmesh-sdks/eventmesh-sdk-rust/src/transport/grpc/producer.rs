@@ -49,7 +49,7 @@ impl GrpcProducer {
         for message in messages {
             events.push(match message {
                 crate::message::Message::EventMesh(message) => {
-                    message.validate_for_publish()?;
+                    message.validate_for_grpc_publish()?;
                     codec::from_event_mesh_message(&message, &self.config)?
                 }
                 #[cfg(feature = "cloud_events")]
@@ -168,7 +168,7 @@ fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Re
 
 impl Publisher for GrpcProducer {
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        message.validate_for_publish()?;
+        message.validate_for_grpc_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config)?;
         let resp = timed(self.config.timeout, self.client.publish(event)).await?;
         let response = codec::to_response(&resp);
@@ -189,7 +189,7 @@ impl Publisher for GrpcProducer {
             ));
         }
         for m in &messages {
-            m.validate_for_publish()?;
+            m.validate_for_grpc_publish()?;
         }
         let batch = codec::from_event_mesh_messages(&messages, &self.config)?;
         let resp = timed(self.config.timeout, self.client.batch_publish(batch)).await?;
@@ -212,14 +212,14 @@ impl RequestReply for GrpcProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        message.validate_for_publish()?;
+        message.validate_for_grpc_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config)?;
         let fut = self.client.request_reply(event);
         let resp = tokio::time::timeout(timeout, fut)
             .await
             .map_err(|_| EventMeshError::Timeout(timeout))??;
         ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
-        Ok(codec::to_event_mesh_message(&resp))
+        codec::to_event_mesh_message(&resp)
     }
 }
 
@@ -237,13 +237,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn publish_validation_rejects_missing_topic_or_content() {
-        assert!(EventMeshMessage::new("", "body")
-            .validate_for_publish()
-            .is_err());
+    fn publish_validation_rejects_missing_topic_or_empty_content() {
+        assert!(EventMeshMessage::new("", "body").is_err());
         assert!(EventMeshMessage::new("topic", "")
-            .validate_for_publish()
+            .unwrap()
+            .validate_for_grpc_publish()
             .is_err());
+        assert!(EventMeshMessage::new("topic", " ")
+            .unwrap()
+            .validate_for_grpc_publish()
+            .is_ok());
     }
 
     #[test]

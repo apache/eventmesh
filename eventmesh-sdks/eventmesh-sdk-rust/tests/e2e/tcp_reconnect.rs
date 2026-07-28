@@ -64,10 +64,9 @@ async fn tcp_reconnect_replays_subscription_after_server_disconnect() {
     let deadline = Instant::now() + Duration::from_secs(60);
     loop {
         match producer
-            .publish(Message::from(EventMeshMessage::new(
-                &topic,
-                "after-real-reconnect",
-            )))
+            .publish(Message::from(
+                EventMeshMessage::new(&topic, "after-real-reconnect").unwrap(),
+            ))
             .await
         {
             Ok(receipt) => {
@@ -85,7 +84,8 @@ async fn tcp_reconnect_replays_subscription_after_server_disconnect() {
         .await
         .expect("timed out waiting for replayed TCP subscription")
         .expect("TCP handler channel closed");
-    assert_eq!(delivered.content.as_deref(), Some("after-real-reconnect"));
+    assert_eq!(delivered.content(), "after-real-reconnect");
     producer.shutdown().await;
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join TCP consumer");
 }

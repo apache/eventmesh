@@ -48,16 +48,15 @@ async fn tcp_publish_single() {
 
     let producer = tcp_producer().await;
     let receipt = producer
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "hello from rust TCP e2e",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "hello from rust TCP e2e").unwrap(),
+        ))
         .await
         .expect("TCP publish");
     assert_eq!(receipt.code, 0, "TCP publish should succeed: {receipt:?}");
     assert_eq!(
-        receive(&mut receiver).await.content.as_deref(),
-        Some("hello from rust TCP e2e")
+        receive(&mut receiver).await.content(),
+        "hello from rust TCP e2e"
     );
     producer.shutdown().await;
 }
@@ -70,10 +69,9 @@ async fn tcp_broadcast() {
     ensure_topic(&topic).await;
     let producer = tcp_producer().await;
     let receipt = producer
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "warm TCP broadcast topic",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "warm TCP broadcast topic").unwrap(),
+        ))
         .await
         .expect("warm TCP broadcast topic");
     assert_eq!(receipt.code, 0, "warm publish should succeed: {receipt:?}");
@@ -90,10 +88,9 @@ async fn tcp_broadcast() {
     let_tcp_subscription_settle().await;
 
     producer
-        .broadcast(Message::from(EventMeshMessage::new(
-            &topic,
-            "broadcast from rust TCP e2e",
-        )))
+        .broadcast(Message::from(
+            EventMeshMessage::new(&topic, "broadcast from rust TCP e2e").unwrap(),
+        ))
         .await
         .expect("TCP broadcast");
     assert_eq!(
@@ -101,10 +98,10 @@ async fn tcp_broadcast() {
             .await
             .expect("timed out waiting for TCP broadcast delivery")
             .expect("broadcast handler channel closed")
-            .content
-            .as_deref(),
-        Some("broadcast from rust TCP e2e")
+            .content(),
+        "broadcast from rust TCP e2e"
     );
     producer.shutdown().await;
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join TCP consumer");
 }

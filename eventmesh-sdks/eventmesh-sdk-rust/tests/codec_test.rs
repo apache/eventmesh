@@ -26,8 +26,33 @@ use eventmesh::http::codec::{parse_push_body, PushMessageRequestBody, WebhookRep
 
 #[test]
 fn message_kind_is_explicit() {
-    let message = Message::from(EventMeshMessage::new("orders", "created"));
+    let message = Message::from(EventMeshMessage::new("orders", "created").unwrap());
     assert_eq!(message.kind(), MessageKind::EventMesh);
+}
+
+#[test]
+fn message_construction_requires_fields_and_builder_is_public() {
+    assert!(EventMeshMessage::new("", "created").is_err());
+    let transport_specific_ttl = EventMeshMessage::builder()
+        .topic("orders")
+        .content("")
+        .ttl_millis(0)
+        .build()
+        .unwrap();
+    assert_eq!(transport_specific_ttl.content(), "");
+    assert_eq!(transport_specific_ttl.ttl_millis(), Some(0));
+
+    let message = EventMeshMessage::builder()
+        .topic("orders")
+        .content("created")
+        .unique_id("event-1")
+        .ttl_millis(1_000)
+        .build()
+        .unwrap();
+    assert_eq!(message.topic(), "orders");
+    assert_eq!(message.content(), "created");
+    assert_eq!(message.unique_id(), Some("event-1"));
+    assert_eq!(message.ttl_millis(), Some(1_000));
 }
 
 #[test]

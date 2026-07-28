@@ -40,16 +40,15 @@ async fn publish_single() {
     let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     let receipt = grpc_producer()
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "hello from rust e2e",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "hello from rust e2e").unwrap(),
+        ))
         .await
         .expect("publish");
     assert_eq!(receipt.code, 0, "publish should succeed: {receipt:?}");
     assert_eq!(
-        receive(&mut receiver).await.content.as_deref(),
-        Some("hello from rust e2e")
+        receive(&mut receiver).await.content(),
+        "hello from rust e2e"
     );
 }
 
@@ -62,10 +61,7 @@ async fn publish_batch() {
 
     let messages = (0..3)
         .map(|index| {
-            Message::from(EventMeshMessage::new(
-                &topic,
-                format!("batch message #{index}"),
-            ))
+            Message::from(EventMeshMessage::new(&topic, format!("batch message #{index}")).unwrap())
         })
         .collect();
     let receipt = grpc_producer()
@@ -75,7 +71,7 @@ async fn publish_batch() {
     assert_eq!(receipt.code, 0, "batch publish should succeed: {receipt:?}");
     let mut contents = Vec::new();
     for _ in 0..3 {
-        contents.push(receive(&mut receiver).await.content.unwrap_or_default());
+        contents.push(receive(&mut receiver).await.content().to_owned());
     }
     contents.sort();
     assert_eq!(

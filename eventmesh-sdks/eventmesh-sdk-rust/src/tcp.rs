@@ -115,9 +115,9 @@ impl<H: MessageHandler> TcpConsumer<H> {
         self.inner.unsubscribe_all().await.map(|_| ())
     }
 
-    /// Request consumer shutdown.
-    pub async fn shutdown(&self) {
-        self.inner.shutdown().await;
+    /// Signal consumer shutdown.
+    pub fn shutdown(&self) {
+        self.inner.request_shutdown();
     }
 
     /// Wait for TCP consumer shutdown.
@@ -389,8 +389,8 @@ mod tests {
             .unwrap()
             .into_event_mesh()
             .unwrap();
-        assert_eq!(received.topic.as_deref(), Some("push-topic"));
-        assert_eq!(received.content.as_deref(), Some("push-body"));
+        assert_eq!(received.topic(), "push-topic");
+        assert_eq!(received.content(), "push-body");
         assert_eq!(
             ack_rx.await.unwrap().unwrap().header.seq.as_deref(),
             Some("server-push")

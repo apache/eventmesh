@@ -41,7 +41,10 @@ async fn main() -> eventmesh::Result<()> {
     let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
     let producer = client.producer(ProducerOptions::new("orders-producer"))?;
     let receipt = producer
-        .publish(Message::from(EventMeshMessage::new("orders.created", r#"{"id": 42}"#)))
+        .publish(Message::from(EventMeshMessage::new(
+            "orders.created",
+            r#"{"id": 42}"#,
+        )?))
         .await?;
     println!("accepted with code {}", receipt.code);
     Ok(())
@@ -73,11 +76,17 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 `HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
+All consumers use the same local lifecycle contract: `shutdown()` only signals
+background work to stop, while `join().await` waits for it and reports task or
+transport failures. HTTP consumers and webhook registrations additionally
+provide `close().await`, which unregisters remote subscriptions before
+signalling shutdown and joining.
+
 HTTP request/reply is not exposed because the current SDK and stock Runtime do not provide a complete HTTP responder path. Use gRPC or TCP for request/reply.
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
-`EventMeshMessage` is likewise a business model rather than a stable serde JSON contract. gRPC, HTTP, and TCP convert it into private transport-specific wire DTOs. Native messages require non-blank topics and content; an explicit `ttl` must be a positive millisecond value no greater than `i32::MAX`. EventMesh does not define a never-expire TTL sentinel.
+`EventMeshMessage` is likewise a business model rather than a stable serde JSON contract. gRPC, HTTP, and TCP convert it into private transport-specific wire DTOs. A topic must be non-blank and content must be present, but empty content is accepted for Java SDK interoperability. Inbound TTL metadata is preserved as received; each transport applies its own outbound content and TTL limits when publishing.
 
 ## Configuration and errors
 

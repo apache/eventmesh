@@ -62,19 +62,16 @@ async fn grpc_webhook_consumer_receives_delivery() {
     // Keep this test on the gRPC-origin path. The Runtime cannot currently
     // adapt an HTTP-origin CloudEvent into its gRPC push representation.
     grpc_producer()
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "delivered-via-grpc-webhook",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "delivered-via-grpc-webhook").unwrap(),
+        ))
         .await
         .expect("publish to gRPC webhook");
     let delivered = tokio::time::timeout(Duration::from_secs(15), receiver.recv())
         .await
         .expect("timed out waiting for gRPC webhook callback")
         .expect("webhook handler channel closed");
-    assert_eq!(
-        delivered.content.as_deref(),
-        Some("delivered-via-grpc-webhook")
-    );
-    webhook.shutdown().await;
+    assert_eq!(delivered.content(), "delivered-via-grpc-webhook");
+    webhook.shutdown();
+    webhook.join().await.expect("join gRPC webhook consumer");
 }

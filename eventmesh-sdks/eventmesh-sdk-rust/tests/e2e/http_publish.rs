@@ -40,15 +40,14 @@ async fn http_publish_single() {
     let (_handle, mut receiver) = http_warm_topic(&topic).await;
 
     let receipt = http_producer()
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "hello from rust http e2e",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "hello from rust http e2e").unwrap(),
+        ))
         .await
         .expect("HTTP publish");
     assert_eq!(receipt.code, 0, "HTTP publish should succeed: {receipt:?}");
     assert_eq!(
-        receive(&mut receiver).await.content.as_deref(),
-        Some("hello from rust http e2e")
+        receive(&mut receiver).await.content(),
+        "hello from rust http e2e"
     );
 }

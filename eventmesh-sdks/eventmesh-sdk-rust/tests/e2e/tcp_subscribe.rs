@@ -47,18 +47,18 @@ async fn tcp_subscribe_and_receive() {
     wait_for_tcp_topic_listener(&topic, true).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "delivered-via-tcp",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "delivered-via-tcp").unwrap(),
+        ))
         .await
         .expect("TCP publish");
     let received = receive(&mut receiver).await;
-    assert_eq!(received.content.as_deref(), Some("delivered-via-tcp"));
-    assert_eq!(received.topic.as_deref(), Some(topic.as_str()));
+    assert_eq!(received.content(), "delivered-via-tcp");
+    assert_eq!(received.topic(), topic.as_str());
 
     producer.shutdown().await;
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join TCP consumer");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -72,7 +72,9 @@ async fn tcp_unsubscribe_stops_delivery() {
     wait_for_tcp_topic_listener(&topic, true).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(&topic, "before-unsub")))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "before-unsub").unwrap(),
+        ))
         .await
         .expect("publish before unsubscribe");
     let _ = receive(&mut receiver).await;
@@ -80,7 +82,9 @@ async fn tcp_unsubscribe_stops_delivery() {
     wait_for_tcp_topic_listener(&topic, false).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "after-unsub").unwrap(),
+        ))
         .await
         .expect("TCP publish after unsubscribe");
     assert!(
@@ -92,5 +96,6 @@ async fn tcp_unsubscribe_stops_delivery() {
     );
 
     producer.shutdown().await;
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join TCP consumer");
 }

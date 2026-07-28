@@ -27,7 +27,7 @@
 use crate::error::EventMeshError;
 use crate::error::Result;
 
-pub use crate::model::EventMeshMessage;
+pub use crate::model::{EventMeshMessage, EventMeshMessageBuilder};
 
 /// Which public event dialect a [`Message`] contains.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

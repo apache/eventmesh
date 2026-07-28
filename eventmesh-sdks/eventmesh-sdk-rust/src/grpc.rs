@@ -154,14 +154,14 @@ impl GrpcWebhookConsumer {
             .map(|_| ())
     }
 
-    /// Stop the heartbeat task.
-    pub async fn shutdown(&self) {
-        self.inner.shutdown().await;
+    /// Signal the heartbeat task to stop.
+    pub fn shutdown(&self) {
+        self.inner.request_shutdown();
     }
 
-    /// Wait for the heartbeat task to stop.
-    pub async fn join(&self) {
-        self.inner.wait_for_shutdown().await;
+    /// Wait for the heartbeat task to stop and report task failure.
+    pub async fn join(&self) -> Result<()> {
+        self.inner.wait_for_shutdown().await
     }
 }
 
@@ -179,9 +179,9 @@ impl<H: MessageHandler> GrpcConsumer<H> {
             .map(|_| ())
     }
 
-    /// Request graceful stream shutdown.
-    pub async fn shutdown(&self) {
-        self.inner.shutdown().await;
+    /// Signal graceful stream shutdown.
+    pub fn shutdown(&self) {
+        self.inner.request_shutdown();
     }
 
     /// Wait for stream shutdown.

@@ -66,7 +66,7 @@ impl TcpProducer {
     /// Broadcast a message (fire-and-forget). Corresponds to Java
     /// `broadcast` which uses `send()` with `BROADCAST_MESSAGE_TO_SERVER`.
     pub async fn broadcast(&self, msg: EventMeshMessage) -> Result<()> {
-        msg.validate_for_publish()?;
+        msg.validate_for_tcp_publish()?;
         let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
         self.conn.send(pkg).await
     }
@@ -208,7 +208,7 @@ impl Publisher for TcpProducer {
     /// Publish a message and wait for the broker ACK.
     /// Uses `ASYNC_MESSAGE_TO_SERVER` + `io()` (mirrors the Java SDK).
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        message.validate_for_publish()?;
+        message.validate_for_tcp_publish()?;
         let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
         debug!(topic = ?message.topic, "publishing via TCP");
 
@@ -239,7 +239,7 @@ impl RequestReply for TcpProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        message.validate_for_publish()?;
+        message.validate_for_tcp_publish()?;
         let pkg = super::message::build_message_package(&message, Command::RequestToServer)?;
         debug!(topic = ?message.topic, "request-reply via TCP");
 

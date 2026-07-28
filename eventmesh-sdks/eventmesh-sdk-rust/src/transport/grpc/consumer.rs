@@ -81,7 +81,7 @@ pub trait GrpcMessage: Send + 'static {
 
 impl GrpcMessage for EventMeshMessage {
     fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self> {
-        Ok(codec::to_event_mesh_message(event))
+        codec::to_event_mesh_message(event)
     }
 
     fn encode_grpc(
@@ -120,7 +120,7 @@ impl GrpcMessage for Message {
             }
         }
 
-        Ok(Self::EventMesh(codec::to_event_mesh_message(event)))
+        Ok(Self::EventMesh(codec::to_event_mesh_message(event)?))
     }
 
     fn encode_grpc(
@@ -157,17 +157,19 @@ fn spawn_signal_watcher(
     }
 }
 
-/// Wait for a background task to finish, returning its result.
-async fn await_task<T: Send + 'static>(handle: &Mutex<Option<JoinHandle<T>>>) -> Option<T> {
+/// Wait for a background task to finish, preserving task panics.
+async fn await_task<T: Send + 'static>(
+    handle: &Mutex<Option<JoinHandle<T>>>,
+    task_name: &str,
+) -> Result<Option<T>> {
     match handle.lock().await.take() {
         Some(h) => match h.await {
-            Ok(result) => Some(result),
-            Err(e) => {
-                warn!("background task panicked: {e}");
-                None
-            }
+            Ok(result) => Ok(Some(result)),
+            Err(error) => Err(EventMeshError::ChannelClosed(format!(
+                "{task_name} task panicked: {error}"
+            ))),
         },
-        None => None,
+        None => Ok(None),
     }
 }
 
@@ -215,7 +217,7 @@ async fn await_task<T: Send + 'static>(handle: &Mutex<Option<JoinHandle<T>>>) ->
 ///     vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
 ///     Some(async { tokio::signal::ctrl_c().await.ok(); }),
 /// ).await?;
-/// consumer.wait_for_shutdown().await;
+/// consumer.wait_for_shutdown().await?;
 /// # Ok(())
 /// # }
 /// ```
@@ -441,12 +443,15 @@ where
         &self.config.identity.consumer_group
     }
 
-    /// Explicitly shut down: cancel the shared token and await the driver and
-    /// heartbeat tasks' exit.
-    pub async fn shutdown(&self) {
+    /// Signal the stream driver and heartbeat task to stop.
+    pub fn request_shutdown(&self) {
         self.shutdown.cancel();
-        await_task(&self.driver_handle).await;
-        await_task(&self.heartbeat_handle).await;
+    }
+
+    /// Signal shutdown and wait for all background work to finish.
+    pub async fn shutdown(&self) -> Result<()> {
+        self.request_shutdown();
+        self.wait_for_shutdown().await
     }
 
     /// Block until the shutdown signal fires or the stream / heartbeat tasks
@@ -455,18 +460,32 @@ where
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the tasks exit naturally (e.g. the server closes the stream).
     pub async fn wait_for_shutdown(&self) -> Result<()> {
-        self.shutdown.cancelled().await;
-        let driver_result = match self.driver_handle.lock().await.take() {
-            Some(handle) => match handle.await {
-                Ok(result) => result,
-                Err(error) => Err(EventMeshError::ChannelClosed(format!(
-                    "gRPC consumer driver task panicked: {error}"
-                ))),
-            },
-            None => Ok(()),
+        let handle = self.driver_handle.lock().await.take();
+        let driver_result = match handle {
+            Some(mut handle) => {
+                tokio::select! {
+                    _ = self.shutdown.cancelled() => {
+                        handle.await.map_err(|error| EventMeshError::ChannelClosed(
+                            format!("gRPC consumer driver task panicked: {error}")
+                        ))?
+                    }
+                    result = &mut handle => {
+                        self.shutdown.cancel();
+                        result.map_err(|error| EventMeshError::ChannelClosed(
+                            format!("gRPC consumer driver task panicked: {error}")
+                        ))?
+                    }
+                }
+            }
+            None => {
+                self.shutdown.cancelled().await;
+                Ok(())
+            }
         };
-        await_task(&self.heartbeat_handle).await;
-        driver_result
+        let heartbeat_result = await_task(&self.heartbeat_handle, "gRPC consumer heartbeat")
+            .await
+            .map(|_| ());
+        driver_result.and(heartbeat_result)
     }
 }
 
@@ -518,7 +537,7 @@ where
 ///     vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
 ///     "http://127.0.0.1:8080/cb",
 /// ).await?;
-/// consumer.wait_for_shutdown().await;
+/// consumer.wait_for_shutdown().await?;
 /// # Ok(())
 /// # }
 /// ```
@@ -591,16 +610,41 @@ impl GrpcWebhookConsumer {
         &self.config.identity.consumer_group
     }
 
-    /// Explicitly shut down: cancel the heartbeat and await its exit.
-    pub async fn shutdown(&self) {
+    /// Signal the heartbeat task to stop.
+    pub fn request_shutdown(&self) {
         self.shutdown.cancel();
-        await_task(&self.heartbeat_handle).await;
+    }
+
+    /// Signal shutdown and wait for the heartbeat task to finish.
+    pub async fn shutdown(&self) -> Result<()> {
+        self.request_shutdown();
+        self.wait_for_shutdown().await
     }
 
     /// Block until the shutdown signal fires or the heartbeat task exits.
-    pub async fn wait_for_shutdown(&self) {
-        self.shutdown.cancelled().await;
-        await_task(&self.heartbeat_handle).await;
+    pub async fn wait_for_shutdown(&self) -> Result<()> {
+        let handle = self.heartbeat_handle.lock().await.take();
+        match handle {
+            Some(mut handle) => {
+                tokio::select! {
+                    _ = self.shutdown.cancelled() => {
+                        handle.await.map_err(|error| EventMeshError::ChannelClosed(
+                            format!("gRPC webhook heartbeat task panicked: {error}")
+                        ))
+                    }
+                    result = &mut handle => {
+                        self.shutdown.cancel();
+                        result.map_err(|error| EventMeshError::ChannelClosed(
+                            format!("gRPC webhook heartbeat task panicked: {error}")
+                        ))
+                    }
+                }
+            }
+            None => {
+                self.shutdown.cancelled().await;
+                Ok(())
+            }
+        }
     }
 }
 
@@ -963,9 +1007,11 @@ mod tests {
 
     #[test]
     fn public_message_rejects_unknown_protocol() {
-        let mut wire =
-            codec::from_event_mesh_message(&EventMeshMessage::new("orders", "created"), &config())
-                .unwrap();
+        let mut wire = codec::from_event_mesh_message(
+            &EventMeshMessage::new("orders", "created").unwrap(),
+            &config(),
+        )
+        .unwrap();
         wire.attributes.insert(
             ProtocolKey::PROTOCOL_TYPE.into(),
             crate::proto_gen::attr_str("openmessage"),
@@ -979,6 +1025,23 @@ mod tests {
                 ..
             }
         ));
+    }
+
+    #[tokio::test]
+    async fn webhook_shutdown_then_join_preserves_task_panic() {
+        let consumer = GrpcWebhookConsumer::new(config(), None::<std::future::Ready<()>>)
+            .await
+            .unwrap();
+        let original = consumer.heartbeat_handle.lock().await.take().unwrap();
+        original.abort();
+        let _ = original.await;
+        *consumer.heartbeat_handle.lock().await = Some(tokio::spawn(async {
+            panic!("heartbeat panic");
+        }));
+
+        consumer.request_shutdown();
+        let error = consumer.wait_for_shutdown().await.unwrap_err();
+        assert!(matches!(error, EventMeshError::ChannelClosed(_)));
     }
 
     #[cfg(feature = "cloud_events")]

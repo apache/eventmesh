@@ -46,15 +46,14 @@ async fn subscribe_and_receive() {
     let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     grpc_producer()
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "delivered-payload",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "delivered-payload").unwrap(),
+        ))
         .await
         .expect("publish");
     let received = receive(&mut receiver).await;
-    assert_eq!(received.content.as_deref(), Some("delivered-payload"));
-    assert_eq!(received.topic.as_deref(), Some(topic.as_str()));
+    assert_eq!(received.content(), "delivered-payload");
+    assert_eq!(received.topic(), topic.as_str());
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -65,7 +64,7 @@ async fn subscribe_batch_receive() {
     let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     let messages = (0..3)
-        .map(|index| Message::from(EventMeshMessage::new(&topic, format!("m{index}"))))
+        .map(|index| Message::from(EventMeshMessage::new(&topic, format!("m{index}")).unwrap()))
         .collect();
     grpc_producer()
         .publish_batch(messages)
@@ -74,7 +73,7 @@ async fn subscribe_batch_receive() {
 
     let mut contents = Vec::new();
     for _ in 0..3 {
-        contents.push(receive(&mut receiver).await.content.unwrap_or_default());
+        contents.push(receive(&mut receiver).await.content().to_owned());
     }
     contents.sort();
     assert_eq!(contents, ["m0", "m1", "m2"]);
@@ -91,7 +90,9 @@ async fn unsubscribe_stops_delivery() {
     wait_for_client_group("grpc", &consumer_group, true).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(&topic, "before-unsub")))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "before-unsub").unwrap(),
+        ))
         .await
         .expect("publish before unsubscribe");
     let _ = receive(&mut receiver).await;
@@ -103,7 +104,9 @@ async fn unsubscribe_stops_delivery() {
     wait_for_client_group("grpc", &consumer_group, false).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(&topic, "after-unsub")))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "after-unsub").unwrap(),
+        ))
         .await
         .expect("publish after unsubscribe");
     assert!(

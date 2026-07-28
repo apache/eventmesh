@@ -41,11 +41,13 @@
 //!
 //! A [`MessageHandler`] returns `Ok(None)` to acknowledge an asynchronous
 //! delivery, `Ok(Some(reply))` to reply to a synchronous delivery, or `Err(_)`
-//! to report application failure. Long-lived consumers expose `shutdown` and
-//! `join`; a managed HTTP consumer also owns its callback server, registration,
-//! and heartbeat lifecycle.
+//! to report application failure. Long-lived consumers use a two-step
+//! lifecycle: `shutdown` only signals cancellation, while `join` waits for
+//! background work and reports failures. Managed HTTP consumers and webhook
+//! registrations additionally expose `close` to unregister remotely before
+//! shutting down and joining.
 
-#![deny(unsafe_code)]
+#![deny(missing_docs, unsafe_code)]
 
 // These modules are wire adapters retained behind the v2 public façade. Some
 // protocol-specific compatibility paths are intentionally feature-dependent,
@@ -82,7 +84,9 @@ pub mod tcp;
 
 pub use error::{Error, Result};
 pub use handler::MessageHandler;
-pub use message::{EventMeshMessage, Message, MessageKind, PublishReceipt};
+pub use message::{
+    EventMeshMessage, EventMeshMessageBuilder, Message, MessageKind, PublishReceipt,
+};
 pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 
 #[cfg(feature = "grpc")]

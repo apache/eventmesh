@@ -47,16 +47,12 @@ async fn http_subscribe_and_receive() {
     let (_handle, mut receiver) = http_warm_topic(&topic).await;
 
     http_producer()
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "delivered-via-http",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "delivered-via-http").unwrap(),
+        ))
         .await
         .expect("HTTP publish");
-    assert_eq!(
-        receive(&mut receiver).await.content.as_deref(),
-        Some("delivered-via-http")
-    );
+    assert_eq!(receive(&mut receiver).await.content(), "delivered-via-http");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -70,10 +66,9 @@ async fn http_unsubscribe_stops_delivery() {
     wait_for_client_group("http", &consumer_group, true).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "before-http-unsub",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "before-http-unsub").unwrap(),
+        ))
         .await
         .expect("HTTP publish before unsubscribe");
     let _ = receive(&mut receiver).await;
@@ -85,10 +80,9 @@ async fn http_unsubscribe_stops_delivery() {
     wait_for_client_group("http", &consumer_group, false).await;
 
     producer
-        .publish(Message::from(EventMeshMessage::new(
-            &topic,
-            "after-http-unsub",
-        )))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "after-http-unsub").unwrap(),
+        ))
         .await
         .expect("HTTP publish after unsubscribe");
     assert!(

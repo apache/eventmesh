@@ -488,11 +488,7 @@ impl MessageHandler for ReplyingListener {
     async fn handle(&self, message: Message) -> Result<Option<Message>> {
         let request = message.into_event_mesh()?;
         Ok(Some(
-            EventMeshMessage::new(
-                request.topic.unwrap_or_default(),
-                self.reply_content.clone(),
-            )
-            .into(),
+            EventMeshMessage::new(request.topic(), self.reply_content.clone())?.into(),
         ))
     }
 }

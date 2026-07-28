@@ -162,13 +162,16 @@ impl From<EventMeshRetObj> for PublishResponse {
 /// camelCase.
 #[derive(Debug, Clone, Serialize)]
 pub struct WebhookReply {
+    /// EventMesh client acknowledgement code.
     #[serde(rename = "retCode")]
     pub ret_code: i32,
+    /// Optional acknowledgement description.
     #[serde(skip_serializing_if = "Option::is_none", rename = "retMsg")]
     pub ret_msg: Option<String>,
 }
 
 impl WebhookReply {
+    /// Return a successful-delivery acknowledgement.
     pub fn ok() -> Self {
         Self {
             ret_code: crate::common::status_code::ClientRetCode::Ok as i32,
@@ -176,6 +179,7 @@ impl WebhookReply {
         }
     }
 
+    /// Ask EventMesh to retry delivery with an explanatory message.
     pub fn retry(msg: impl Into<String>) -> Self {
         Self {
             ret_code: crate::common::status_code::ClientRetCode::Retry as i32,
@@ -192,12 +196,16 @@ impl WebhookReply {
 pub struct PushMessageRequestBody {
     /// Message payload (typically a JSON-serialized CloudEvent or EventMeshMessage).
     pub content: String,
+    /// Optional business sequence number.
     #[serde(default)]
     pub bizseqno: Option<String>,
+    /// Optional application-level unique ID.
     #[serde(default, rename = "uniqueId")]
     pub unique_id: Option<String>,
+    /// Optional runtime-generated random number.
     #[serde(default, rename = "randomNo")]
     pub random_no: Option<String>,
+    /// Optional destination topic.
     #[serde(default)]
     pub topic: Option<String>,
     /// JSON-encoded `Map<String,String>` of extension attributes.
@@ -213,30 +221,32 @@ impl PushMessageRequestBody {
     /// `EventMeshMessage`.  Message metadata (`topic`, `bizseqno`,
     /// `uniqueId`, `extFields`) is taken from the form-level fields.
     pub fn to_event_mesh_message(&self) -> Result<EventMeshMessage> {
-        let mut msg = EventMeshMessage::builder()
-            .content(self.content.clone())
-            .build();
-        msg.topic = self.topic.clone();
-        msg.biz_seq_no = self.bizseqno.clone();
-        msg.unique_id = self.unique_id.clone();
-
-        // Parse extFields JSON into props. Invalid JSON is an error — the
-        // webhook handler returns a retry reply so the runtime redelivers,
-        // matching the Java runtime's PushMessageRequestBody.buildBody()
-        // which throws on parse failure.
+        let topic = self
+            .topic
+            .clone()
+            .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?;
+        let mut props = HashMap::new();
         if let Some(ext) = &self.extfields {
             let trimmed = ext.trim();
             if !trimmed.is_empty() {
-                let props: HashMap<String, String> =
-                    serde_json::from_str(trimmed).map_err(|e| EventMeshError::Protocol {
-                        transport: "http",
-                        message: format!("failed to parse extFields JSON: {e}"),
-                    })?;
-                msg.props = props;
+                props = serde_json::from_str(trimmed).map_err(|e| EventMeshError::Protocol {
+                    transport: "http",
+                    message: format!("failed to parse extFields JSON: {e}"),
+                })?;
             }
         }
 
-        Ok(msg)
+        let mut builder = EventMeshMessage::builder()
+            .topic(topic)
+            .content(self.content.clone())
+            .props(props);
+        if let Some(value) = &self.bizseqno {
+            builder = builder.biz_seq_no(value.clone());
+        }
+        if let Some(value) = &self.unique_id {
+            builder = builder.unique_id(value.clone());
+        }
+        builder.build()
     }
 }
 
@@ -286,8 +296,8 @@ pub fn build_headers(
 pub fn encode_publish(msg: &EventMeshMessage, identity: &ClientIdentity) -> Vec<(String, String)> {
     let mut fields: Vec<(String, String)> = Vec::new();
     fields.push(("producergroup".into(), identity.producer_group.clone()));
-    fields.push(("topic".into(), msg.topic.clone().unwrap_or_default()));
-    fields.push(("content".into(), msg.content.clone().unwrap_or_default()));
+    fields.push(("topic".into(), msg.topic.clone()));
+    fields.push(("content".into(), msg.content.clone()));
     // Always emit a `ttl` form field, falling back to `DEFAULT_MESSAGE_TTL`
     // when the caller did not set one. The runtime's
     // `SendSyncMessageProcessor` rejects a blank TTL with
@@ -459,7 +469,8 @@ mod tests {
             .topic("test-topic")
             .content("hello")
             .biz_seq_no("seq-1")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let encoded = form_encode(&fields);
         assert!(encoded.contains("topic=test-topic"));
@@ -473,7 +484,11 @@ mod tests {
     #[test]
     fn encode_publish_auto_generates_ids_when_missing() {
         let identity = ClientIdentity::detect();
-        let msg = EventMeshMessage::builder().topic("t").content("c").build();
+        let msg = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         let biz = map
@@ -496,7 +511,8 @@ mod tests {
             .content("c")
             .biz_seq_no("my-seq")
             .unique_id("my-uid")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("bizseqno"), Some(&"my-seq".to_string()));
@@ -506,7 +522,11 @@ mod tests {
     #[test]
     fn encode_publish_keeps_identity_out_of_body() {
         let identity = ClientIdentity::detect();
-        let msg = EventMeshMessage::builder().topic("t").content("c").build();
+        let msg = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let encoded = form_encode(&fields);
         // Identity must be in headers, not body.
@@ -524,7 +544,8 @@ mod tests {
             .content("c")
             .prop("key1", "val1")
             .prop("key2", "val2")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ext = map.get("extFields").expect("extFields should be present");
@@ -549,7 +570,8 @@ mod tests {
             .prop("topic", "stale-topic")
             .prop("content", "stale-content")
             .prop("producergroup", "stale-group")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ext = map.get("extFields").expect("extFields should be present");
@@ -574,7 +596,8 @@ mod tests {
             .content("c")
             .prop("ttl", "99000")
             .prop("bizseqno", "stale")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         // All props were reserved keys → no extFields field should be emitted.
         assert!(!fields.iter().any(|(k, _)| k == "extFields"));
@@ -583,7 +606,11 @@ mod tests {
     #[test]
     fn encode_publish_omits_ext_fields_when_empty() {
         let identity = ClientIdentity::detect();
-        let msg = EventMeshMessage::builder().topic("t").content("c").build();
+        let msg = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         assert!(!fields.iter().any(|(k, _)| k == "extFields"));
     }
@@ -593,7 +620,11 @@ mod tests {
         // The runtime's SendSyncMessageProcessor rejects a blank TTL with
         // EVENTMESH_PROTOCOL_BODY_ERR, so encode_publish must always emit one.
         let identity = ClientIdentity::detect();
-        let msg = EventMeshMessage::builder().topic("t").content("c").build();
+        let msg = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ttl = map.get("ttl").expect("ttl should always be present");
@@ -607,7 +638,8 @@ mod tests {
             .topic("t")
             .content("c")
             .ttl_millis(30_000)
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"30000".to_string()));
@@ -622,7 +654,8 @@ mod tests {
             .topic("t")
             .content("c")
             .prop(ProtocolKey::TTL, "99000")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"99000".to_string()));
@@ -636,7 +669,8 @@ mod tests {
             .content("c")
             .ttl_millis(7_000)
             .prop(ProtocolKey::TTL, "99000")
-            .build();
+            .build()
+            .unwrap();
         let fields = encode_publish(&msg, &identity);
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"7000".to_string()));
@@ -723,9 +757,26 @@ mod tests {
         ]);
         let parsed = parse_push_body(&body).unwrap();
         let msg = parsed.to_event_mesh_message().unwrap();
-        assert_eq!(msg.content.as_deref(), Some(business_json));
-        assert_eq!(msg.topic.as_deref(), Some("test-topic"));
+        assert_eq!(msg.content(), business_json);
+        assert_eq!(msg.topic(), "test-topic");
         assert_eq!(msg.biz_seq_no.as_deref(), Some("seq-1"));
+    }
+
+    #[test]
+    fn push_body_preserves_empty_content_and_transport_specific_ttl() {
+        let body = form_encode(&[
+            ("content".to_string(), String::new()),
+            ("topic".to_string(), "test-topic".to_string()),
+            (
+                "extFields".to_string(),
+                r#"{"ttl":"java-specific"}"#.to_string(),
+            ),
+        ]);
+        let msg = parse_push_body(&body)
+            .and_then(|body| body.to_event_mesh_message())
+            .unwrap();
+        assert_eq!(msg.content(), "");
+        assert_eq!(msg.get_prop(ProtocolKey::TTL), Some("java-specific"));
     }
 
     #[test]
@@ -734,6 +785,7 @@ mod tests {
         let props_json = r#"{"prop1":"val1","prop2":"val2"}"#;
         let body = form_encode(&[
             ("content".to_string(), "hello".to_string()),
+            ("topic".to_string(), "orders".to_string()),
             ("extFields".to_string(), props_json.to_string()),
         ]);
         let parsed = parse_push_body(&body).unwrap();

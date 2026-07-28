@@ -46,13 +46,16 @@ async fn request_reply_roundtrip() {
     let_stream_settle().await;
 
     let reply = grpc_producer()
-        .request_reply(Message::from(EventMeshMessage::new(&topic, "ping")))
+        .request_reply(Message::from(
+            EventMeshMessage::new(&topic, "ping").unwrap(),
+        ))
         .await
         .expect("gRPC request/reply");
     match reply {
-        Message::EventMesh(message) => assert_eq!(message.content.as_deref(), Some("pong")),
+        Message::EventMesh(message) => assert_eq!(message.content(), "pong"),
         #[cfg(feature = "cloud_events")]
         other => panic!("expected native reply, got {other:?}"),
     }
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join gRPC consumer");
 }

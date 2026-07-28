@@ -42,7 +42,7 @@
 //!         .producer_group("g")
 //!         .build();
 //!     let producer = TcpProducer::connect(config).await?;
-//!     let msg = EventMeshMessage::builder().topic("t").content("hi").build();
+//!     let msg = EventMeshMessage::builder().topic("t").content("hi").build()?;
 //!     producer.publish(msg).await?;
 //!     Ok(())
 //! }
@@ -61,7 +61,7 @@
 //! impl MessageListener for MyListener {
 //!     type Message = EventMeshMessage;
 //!     async fn handle(&self, msg: EventMeshMessage) -> Option<EventMeshMessage> {
-//!         println!("received: {:?}", msg.content);
+//!         println!("received: {:?}", msg.content());
 //!         None
 //!     }
 //! }

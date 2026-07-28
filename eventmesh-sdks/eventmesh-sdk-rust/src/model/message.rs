@@ -36,34 +36,13 @@ use crate::error::{EventMeshError, Result};
 /// Java-compatible `body`/`properties` JSON shape for TCP.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EventMeshMessage {
-    /// Optional business sequence number (correlates request/reply).
-    pub biz_seq_no: Option<String>,
-    /// Optional application-level unique id.
-    pub unique_id: Option<String>,
-    /// The destination topic. Required for publish.
-    pub topic: Option<String>,
-    /// The message payload as a string.
-    pub content: Option<String>,
-    /// Free-form string properties (become CloudEvent attributes on the wire).
-    pub props: HashMap<String, String>,
-    /// Creation time, epoch milliseconds.
-    pub create_time: u64,
-    /// Optional TTL in milliseconds.
-    pub ttl: Option<i64>,
-}
-
-impl Default for EventMeshMessage {
-    fn default() -> Self {
-        Self {
-            biz_seq_no: None,
-            unique_id: None,
-            topic: None,
-            content: None,
-            props: HashMap::new(),
-            create_time: now_millis(),
-            ttl: None,
-        }
-    }
+    pub(crate) biz_seq_no: Option<String>,
+    pub(crate) unique_id: Option<String>,
+    pub(crate) topic: String,
+    pub(crate) content: String,
+    pub(crate) props: HashMap<String, String>,
+    pub(crate) create_time: u64,
+    pub(crate) ttl: Option<i64>,
 }
 
 impl fmt::Display for EventMeshMessage {
@@ -72,7 +51,7 @@ impl fmt::Display for EventMeshMessage {
             .field("topic", &self.topic)
             .field("biz_seq_no", &self.biz_seq_no)
             .field("unique_id", &self.unique_id)
-            .field("content_len", &self.content.as_ref().map(|c| c.len()))
+            .field("content_len", &self.content.len())
             .field("props", &self.props)
             .field("create_time", &self.create_time)
             .finish()
@@ -80,23 +59,58 @@ impl fmt::Display for EventMeshMessage {
 }
 
 impl EventMeshMessage {
-    /// Construct a native EventMesh message with a required topic and text
-    /// payload.  Validation still occurs at the sending boundary because a
-    /// caller may subsequently mutate this compatibility model internally.
-    pub fn new(topic: impl Into<String>, content: impl Into<String>) -> Self {
-        Self {
-            topic: Some(topic.into()),
-            content: Some(content.into()),
-            ..Self::default()
-        }
+    /// Construct a native EventMesh message with its required fields.
+    ///
+    /// Blank topics are rejected. An empty payload is preserved because it is
+    /// valid on the HTTP transport and may be delivered by another SDK.
+    pub fn new(topic: impl Into<String>, content: impl Into<String>) -> Result<Self> {
+        Self::builder().topic(topic).content(content).build()
     }
 
     /// Start a builder. Equivalent to [`EventMeshMessageBuilder::default`].
-    pub(crate) fn builder() -> EventMeshMessageBuilder {
+    pub fn builder() -> EventMeshMessageBuilder {
         EventMeshMessageBuilder::default()
     }
 
-    /// Insert/overwrite a property.
+    /// Return the destination topic.
+    pub fn topic(&self) -> &str {
+        &self.topic
+    }
+
+    /// Return the text payload.
+    pub fn content(&self) -> &str {
+        &self.content
+    }
+
+    /// Return the optional business sequence number.
+    pub fn biz_seq_no(&self) -> Option<&str> {
+        self.biz_seq_no.as_deref()
+    }
+
+    /// Return the optional application-level unique ID.
+    pub fn unique_id(&self) -> Option<&str> {
+        self.unique_id.as_deref()
+    }
+
+    /// Return all extension properties.
+    pub fn properties(&self) -> &HashMap<String, String> {
+        &self.props
+    }
+
+    /// Return the creation time in epoch milliseconds.
+    pub fn create_time(&self) -> u64 {
+        self.create_time
+    }
+
+    /// Return the optional time-to-live in milliseconds.
+    pub fn ttl_millis(&self) -> Option<i64> {
+        self.ttl
+    }
+
+    /// Insert or overwrite an extension property.
+    ///
+    /// Transport-specific values such as `ttl` are validated when the message
+    /// is sent, while received values are preserved verbatim.
     pub fn set_prop(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
         self.props.insert(key.into(), value.into());
         self
@@ -109,32 +123,14 @@ impl EventMeshMessage {
 
     /// Return a copy with an additional extension property.
     pub fn with_property(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
-        self.props.insert(key.into(), value.into());
+        self.set_prop(key, value);
         self
     }
 
-    /// Validate the transport-independent requirements for publishing.
-    ///
-    /// Java's TCP client rejects blank topics and bodies, and every runtime
-    /// path requires non-empty message data. TTL is a positive millisecond
-    /// timeout, not a retention policy; EventMesh has no "never expires"
-    /// sentinel, and several runtime paths parse it as a signed 32-bit integer.
+    /// Validate requirements shared by all publishing transports.
     pub(crate) fn validate_for_publish(&self) -> Result<()> {
-        if self
-            .topic
-            .as_deref()
-            .map(str::trim)
-            .is_none_or(str::is_empty)
-        {
+        if self.topic.trim().is_empty() {
             return Err(EventMeshError::InvalidMessage("topic is required".into()));
-        }
-        if self
-            .content
-            .as_deref()
-            .map(str::trim)
-            .is_none_or(str::is_empty)
-        {
-            return Err(EventMeshError::InvalidMessage("content is required".into()));
         }
 
         if let Some(ttl) = self.ttl {
@@ -146,6 +142,24 @@ impl EventMeshMessage {
                 )
             })?;
             validate_ttl(ttl)?;
+        }
+        Ok(())
+    }
+
+    /// Validate requirements imposed by the gRPC runtime.
+    pub(crate) fn validate_for_grpc_publish(&self) -> Result<()> {
+        self.validate_for_publish()?;
+        if self.content.is_empty() {
+            return Err(EventMeshError::InvalidMessage("content is required".into()));
+        }
+        Ok(())
+    }
+
+    /// Validate requirements imposed by the Java-compatible TCP client.
+    pub(crate) fn validate_for_tcp_publish(&self) -> Result<()> {
+        self.validate_for_publish()?;
+        if self.content.trim().is_empty() {
+            return Err(EventMeshError::InvalidMessage("content is required".into()));
         }
         Ok(())
     }
@@ -173,45 +187,66 @@ pub struct EventMeshMessageBuilder {
 }
 
 impl EventMeshMessageBuilder {
+    /// Set the optional business sequence number.
     pub fn biz_seq_no(mut self, v: impl Into<String>) -> Self {
         self.biz_seq_no = Some(v.into());
         self
     }
+    /// Set the optional application-level unique ID.
     pub fn unique_id(mut self, v: impl Into<String>) -> Self {
         self.unique_id = Some(v.into());
         self
     }
+    /// Set the required destination topic.
     pub fn topic(mut self, v: impl Into<String>) -> Self {
         self.topic = Some(v.into());
         self
     }
+    /// Set the required text payload.
     pub fn content(mut self, v: impl Into<String>) -> Self {
         self.content = Some(v.into());
         self
     }
+    /// Set the optional time-to-live in milliseconds.
+    ///
+    /// Its transport-specific range is validated when the message is sent.
     pub fn ttl_millis(mut self, v: i64) -> Self {
         self.ttl = Some(v);
         self
     }
+    /// Insert or overwrite an extension property.
     pub fn prop(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.props.insert(key.into(), value.into());
         self
     }
+    /// Replace all extension properties.
     pub fn props(mut self, props: HashMap<String, String>) -> Self {
         self.props = props;
         self
     }
 
-    pub fn build(self) -> EventMeshMessage {
-        EventMeshMessage {
+    /// Validate the required fields and construct the message.
+    ///
+    /// The payload must be present but may be empty. Transport-specific
+    /// constraints such as TTL range are checked when publishing.
+    pub fn build(self) -> Result<EventMeshMessage> {
+        let message = EventMeshMessage {
             biz_seq_no: self.biz_seq_no,
             unique_id: self.unique_id,
-            topic: self.topic,
-            content: self.content,
+            topic: self
+                .topic
+                .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?,
+            content: self
+                .content
+                .ok_or_else(|| EventMeshError::InvalidMessage("content is required".into()))?,
             props: self.props,
             create_time: now_millis(),
             ttl: self.ttl,
+        };
+        if message.topic.trim().is_empty() {
+            return Err(EventMeshError::InvalidMessage("topic is required".into()));
         }
+        Ok(message)
     }
 }
 
@@ -228,36 +263,69 @@ mod tests {
             .unique_id("u")
             .prop("k", "v")
             .ttl_millis(1000)
-            .build();
-        assert_eq!(m.topic.as_deref(), Some("t"));
-        assert_eq!(m.content.as_deref(), Some("c"));
+            .build()
+            .unwrap();
+        assert_eq!(m.topic(), "t");
+        assert_eq!(m.content(), "c");
         assert_eq!(m.get_prop("k"), Some("v"));
-        assert_eq!(m.ttl, Some(1000));
-        assert!(m.create_time > 0);
+        assert_eq!(m.ttl_millis(), Some(1000));
+        assert!(m.create_time() > 0);
     }
 
     #[test]
-    fn publish_validation_rejects_blank_fields_and_non_positive_ttl() {
-        assert!(EventMeshMessage::new(" ", "content")
-            .validate_for_publish()
-            .is_err());
-        assert!(EventMeshMessage::new("topic", "\t")
-            .validate_for_publish()
-            .is_err());
-        let mut message = EventMeshMessage::new("topic", "content");
-        message.ttl = Some(0);
+    fn construction_requires_a_nonblank_topic_but_preserves_empty_content() {
+        assert!(EventMeshMessage::new(" ", "content").is_err());
+        assert_eq!(EventMeshMessage::new("topic", "").unwrap().content(), "");
+        assert_eq!(
+            EventMeshMessage::new("topic", "\t").unwrap().content(),
+            "\t"
+        );
+    }
+
+    #[test]
+    fn publish_validation_is_transport_specific() {
+        let empty = EventMeshMessage::new("topic", "").unwrap();
+        assert!(empty.validate_for_publish().is_ok());
+        assert!(empty.validate_for_grpc_publish().is_err());
+        assert!(empty.validate_for_tcp_publish().is_err());
+
+        let whitespace = EventMeshMessage::new("topic", "\t").unwrap();
+        assert!(whitespace.validate_for_grpc_publish().is_ok());
+        assert!(whitespace.validate_for_tcp_publish().is_err());
+    }
+
+    #[test]
+    fn ttl_is_preserved_at_construction_and_validated_for_publish() {
+        let message = EventMeshMessage::builder()
+            .topic("topic")
+            .content("content")
+            .ttl_millis(0)
+            .build()
+            .unwrap();
+        assert_eq!(message.ttl_millis(), Some(0));
         assert!(message.validate_for_publish().is_err());
-        message.ttl = Some(-1);
+
+        let message = EventMeshMessage::new("topic", "content")
+            .unwrap()
+            .with_property(crate::common::ProtocolKey::TTL, "not-a-number");
+        assert_eq!(
+            message.get_prop(crate::common::ProtocolKey::TTL),
+            Some("not-a-number")
+        );
         assert!(message.validate_for_publish().is_err());
     }
 
     #[test]
     fn publish_validation_accepts_positive_typed_or_property_ttl() {
-        let mut typed = EventMeshMessage::new("topic", "content");
-        typed.ttl = Some(4_000);
-        typed.validate_for_publish().unwrap();
+        EventMeshMessage::builder()
+            .topic("topic")
+            .content("content")
+            .ttl_millis(4_000)
+            .build()
+            .unwrap();
 
         EventMeshMessage::new("topic", "content")
+            .unwrap()
             .with_property(crate::common::ProtocolKey::TTL, "4000")
             .validate_for_publish()
             .unwrap();

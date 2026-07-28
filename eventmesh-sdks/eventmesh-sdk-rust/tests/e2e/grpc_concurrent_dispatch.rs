@@ -81,10 +81,9 @@ async fn concurrent_dispatch_overlaps_handlers() {
     let producer = grpc_producer();
     for index in 0..COUNT {
         producer
-            .publish(Message::from(EventMeshMessage::new(
-                &topic,
-                format!("m{index}"),
-            )))
+            .publish(Message::from(
+                EventMeshMessage::new(&topic, format!("m{index}")).unwrap(),
+            ))
             .await
             .expect("publish");
     }
@@ -104,5 +103,6 @@ async fn concurrent_dispatch_overlaps_handlers() {
         observed <= MAX_CONCURRENT,
         "handler limit was {MAX_CONCURRENT}, observed {observed}"
     );
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join gRPC consumer");
 }

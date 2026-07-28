@@ -326,7 +326,11 @@ pub struct ConsumerOptions {
 }
 
 impl ConsumerOptions {
-    /// Create options for `group` with serial delivery by default.
+    /// Create options for `group`.
+    ///
+    /// Delivery concurrency is transport-specific. HTTP webhook requests may
+    /// run concurrently, TCP delivery is serial, and gRPC stream consumers use
+    /// [`GrpcConsumerOptions`] to configure handler concurrency.
     pub fn new(group: impl Into<String>) -> Self {
         Self {
             group: group.into(),

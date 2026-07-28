@@ -30,7 +30,7 @@ async fn main() -> eventmesh::Result<()> {
         .publish(Message::from(EventMeshMessage::new(
             "test-topic-rust-sdk",
             "hello from rust",
-        )))
+        )?))
         .await?;
     println!("published: {receipt:?}");
     Ok(())

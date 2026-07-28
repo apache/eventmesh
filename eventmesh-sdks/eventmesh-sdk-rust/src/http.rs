@@ -113,7 +113,7 @@ impl HttpClient {
             .await
         {
             lifecycle.cancel();
-            inner.shutdown().await;
+            let _ = inner.shutdown().await;
             let _ = server_handle.await;
             return Err(error);
         }
@@ -121,7 +121,7 @@ impl HttpClient {
         if server_handle.is_finished() {
             lifecycle.cancel();
             let _ = inner.unsubscribe_all().await;
-            inner.shutdown().await;
+            let _ = inner.shutdown().await;
             return match server_handle.await {
                 Ok(Err(error)) => Err(error),
                 Ok(Ok(())) => Err(EventMeshError::ChannelClosed(
@@ -206,20 +206,29 @@ impl HttpConsumer {
         &self.webhook_url
     }
 
-    /// Unregister all subscriptions and stop heartbeat and callback serving.
-    pub async fn shutdown(&self) -> Result<()> {
-        let unregister_result = self.inner.unsubscribe_all().await;
-        self.inner.shutdown().await;
+    /// Signal heartbeat and callback serving to stop.
+    pub fn shutdown(&self) {
+        self.inner.request_shutdown();
         self.lifecycle.cancel();
-        let server_result = self.wait_for_server().await;
-        unregister_result.and(server_result)
     }
 
-    /// Wait until the callback server exits and all background work stops.
+    /// Wait until the callback server exits and report background task failure.
     pub async fn join(&self) -> Result<()> {
-        self.lifecycle.cancelled().await;
-        self.inner.wait_for_shutdown().await;
-        self.wait_for_server().await
+        let server_result = self.wait_for_server().await;
+        // A panicked server task cannot cancel the lifecycle token itself.
+        // Cancel it here so heartbeat shutdown is guaranteed before returning.
+        self.lifecycle.cancel();
+        self.inner.request_shutdown();
+        let heartbeat_result = self.inner.wait_for_shutdown().await;
+        server_result.and(heartbeat_result)
+    }
+
+    /// Unregister all subscriptions, signal shutdown, and join background work.
+    pub async fn close(&self) -> Result<()> {
+        let unregister_result = self.inner.unsubscribe_all().await;
+        self.shutdown();
+        let join_result = self.join().await;
+        unregister_result.and(join_result)
     }
 
     async fn wait_for_server(&self) -> Result<()> {
@@ -272,16 +281,22 @@ impl WebhookRegistration {
             .map(|_| ())
     }
 
-    /// Unregister every tracked subscription and stop the heartbeat task.
-    pub async fn shutdown(&self) -> Result<()> {
-        let unregister_result = self.inner.unsubscribe_all().await;
-        self.inner.shutdown().await;
-        unregister_result
+    /// Signal the heartbeat task to stop.
+    pub fn shutdown(&self) {
+        self.inner.request_shutdown();
     }
 
-    /// Wait for the heartbeat task to stop.
-    pub async fn join(&self) {
-        self.inner.wait_for_shutdown().await;
+    /// Wait for the heartbeat task to stop and report task failure.
+    pub async fn join(&self) -> Result<()> {
+        self.inner.wait_for_shutdown().await
+    }
+
+    /// Unregister every tracked subscription, shut down, and join.
+    pub async fn close(&self) -> Result<()> {
+        let unregister_result = self.inner.unsubscribe_all().await;
+        self.shutdown();
+        let join_result = self.join().await;
+        unregister_result.and(join_result)
     }
 }
 
@@ -399,7 +414,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn managed_consumer_serves_and_unregisters_on_shutdown() {
+    async fn managed_consumer_serves_and_unregisters_on_close() {
         let (client, codes, runtime) = mock_runtime(false).await;
         let (tx, mut rx) = mpsc::unbounded_channel();
         let consumer = client
@@ -430,15 +445,37 @@ mod tests {
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(
-            received.as_event_mesh().unwrap().content.as_deref(),
-            Some("created")
-        );
+        assert_eq!(received.as_event_mesh().unwrap().content(), "created");
 
-        consumer.shutdown().await.unwrap();
+        consumer.close().await.unwrap();
         let codes = codes.lock().await.clone();
         assert!(codes.contains(&crate::common::status_code::RequestCode::SUBSCRIBE));
         assert!(codes.contains(&crate::common::status_code::RequestCode::UNSUBSCRIBE));
+        runtime.abort();
+    }
+
+    #[tokio::test]
+    async fn managed_consumer_shutdown_only_signals_local_tasks() {
+        let (client, codes, runtime) = mock_runtime(false).await;
+        let consumer = client
+            .consumer(
+                ConsumerOptions::new("group"),
+                WebhookOptions::new("127.0.0.1:0".parse().unwrap()),
+                [Subscription::new("orders")],
+                |_message| async { Ok(None) },
+            )
+            .await
+            .unwrap();
+
+        consumer.shutdown();
+        consumer.join().await.unwrap();
+
+        let codes = codes.lock().await.clone();
+        assert!(codes.contains(&crate::common::status_code::RequestCode::SUBSCRIBE));
+        assert!(
+            !codes.contains(&crate::common::status_code::RequestCode::UNSUBSCRIBE),
+            "shutdown must not perform remote cleanup; close owns that operation"
+        );
         runtime.abort();
     }
 

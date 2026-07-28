@@ -49,11 +49,16 @@ pub enum Error {
     #[error("grpc transport error: {0}")]
     GrpcTransport(String),
 
-    /// An HTTP transport error (Phase 2).
+    /// An HTTP transport error.
     #[error("http error: status {status}: {message}")]
-    Http { status: u16, message: String },
+    Http {
+        /// HTTP response status code.
+        status: u16,
+        /// Error description returned by the HTTP transport or peer.
+        message: String,
+    },
 
-    /// A TCP transport error (Phase 3).
+    /// A TCP transport error.
     #[error("tcp error: {0}")]
     Tcp(String),
 
@@ -61,7 +66,7 @@ pub enum Error {
     #[error("codec error: {0}")]
     Codec(#[from] serde_json::Error),
 
-    /// A message failed validation before it was sent on the wire.
+    /// A message failed validation during construction, decoding, or sending.
     #[error("invalid message: {0}")]
     InvalidMessage(String),
 
@@ -80,7 +85,12 @@ pub enum Error {
 
     /// The EventMesh server returned a non-success response code.
     #[error("server error: code={code} message={message}")]
-    Server { code: i32, message: String },
+    Server {
+        /// EventMesh server response code.
+        code: i32,
+        /// Error description returned by the EventMesh server.
+        message: String,
+    },
 
     /// Low-level I/O error.
     #[error("io error: {0}")]

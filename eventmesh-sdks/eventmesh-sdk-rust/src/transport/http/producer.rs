@@ -67,7 +67,7 @@ impl HttpProducer {
         let msg = EventMeshMessage::builder()
             .topic(topic)
             .content(json)
-            .build();
+            .build()?;
         self.publish_with_protocol(msg, EventMeshProtocolType::CloudEvents)
             .await
     }

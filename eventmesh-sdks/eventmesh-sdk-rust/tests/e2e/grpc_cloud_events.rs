@@ -81,5 +81,6 @@ async fn grpc_publish_cloud_event() {
     assert!(serde_json::to_string(&received)
         .expect("serialize received CloudEvent")
         .contains("hello from gRPC CloudEvents"));
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join gRPC consumer");
 }

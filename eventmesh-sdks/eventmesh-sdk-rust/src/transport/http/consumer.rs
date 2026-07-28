@@ -165,12 +165,15 @@ impl HttpConsumer {
         &self.client.config().identity.consumer_group
     }
 
-    /// Explicitly shut down: cancel heartbeat and await its exit.
-    pub async fn shutdown(&self) {
+    /// Signal the heartbeat task to stop.
+    pub fn request_shutdown(&self) {
         self.shutdown.cancel();
-        if let Some(handle) = self.heartbeat_handle.lock().await.take() {
-            let _ = handle.await;
-        }
+    }
+
+    /// Signal shutdown and wait for the heartbeat task to finish.
+    pub async fn shutdown(&self) -> Result<()> {
+        self.request_shutdown();
+        self.wait_for_shutdown().await
     }
 
     /// Block until the shutdown signal fires or the heartbeat task exits.
@@ -178,10 +181,28 @@ impl HttpConsumer {
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the heartbeat task exits (which typically only happens on
     /// explicit shutdown or drop).
-    pub async fn wait_for_shutdown(&self) {
-        self.shutdown.cancelled().await;
-        if let Some(handle) = self.heartbeat_handle.lock().await.take() {
-            let _ = handle.await;
+    pub async fn wait_for_shutdown(&self) -> Result<()> {
+        let handle = self.heartbeat_handle.lock().await.take();
+        match handle {
+            Some(mut handle) => {
+                tokio::select! {
+                    _ = self.shutdown.cancelled() => {
+                        handle.await.map_err(|error| EventMeshError::ChannelClosed(
+                            format!("HTTP heartbeat task panicked: {error}")
+                        ))
+                    }
+                    result = &mut handle => {
+                        self.shutdown.cancel();
+                        result.map_err(|error| EventMeshError::ChannelClosed(
+                            format!("HTTP heartbeat task panicked: {error}")
+                        ))
+                    }
+                }
+            }
+            None => {
+                self.shutdown.cancelled().await;
+                Ok(())
+            }
         }
     }
 }

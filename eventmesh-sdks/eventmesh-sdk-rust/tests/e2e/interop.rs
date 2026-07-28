@@ -90,7 +90,9 @@ async fn rust_publishes_to_java_consumer() {
     let mut child = peer("consume", &topic, None).await;
     tokio::time::sleep(Duration::from_secs(2)).await;
     grpc_producer()
-        .publish(Message::from(EventMeshMessage::new(&topic, "from-rust")))
+        .publish(Message::from(
+            EventMeshMessage::new(&topic, "from-rust").unwrap(),
+        ))
         .await
         .expect("Rust publish");
     let mut lines = BufReader::new(child.stdout.take().expect("peer stdout")).lines();
@@ -122,5 +124,5 @@ async fn java_publishes_to_rust_consumer() {
         .await
         .expect("Rust receive timeout")
         .expect("Rust listener closed");
-    assert_eq!(received.content.as_deref(), Some("from-java"));
+    assert_eq!(received.content(), "from-java");
 }

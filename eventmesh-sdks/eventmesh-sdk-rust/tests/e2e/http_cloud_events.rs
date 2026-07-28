@@ -92,5 +92,5 @@ async fn http_publish_cloud_event() {
     assert!(serde_json::to_string(&received)
         .expect("serialize received CloudEvent")
         .contains("hello from HTTP CloudEvents"));
-    consumer.shutdown().await.expect("shutdown HTTP consumer");
+    consumer.close().await.expect("close HTTP consumer");
 }

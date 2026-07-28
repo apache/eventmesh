@@ -87,5 +87,6 @@ async fn tcp_publish_cloud_event() {
         .contains("hello from rust tcp cloudevents e2e"));
 
     producer.shutdown().await;
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join TCP consumer");
 }

@@ -21,7 +21,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::Result;
+use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
 
 use super::frame::{Command, Header, Package, PackageBody, Subscription, UserAgent};
@@ -61,16 +61,18 @@ struct TcpWireMessage {
 impl From<&EventMeshMessage> for TcpWireMessage {
     fn from(msg: &EventMeshMessage) -> Self {
         Self {
-            topic: msg.topic.clone(),
+            topic: Some(msg.topic.clone()),
             properties: msg.props.clone(),
             headers: HashMap::new(),
-            body: msg.content.clone(),
+            body: Some(msg.content.clone()),
         }
     }
 }
 
-impl From<TcpWireMessage> for EventMeshMessage {
-    fn from(wire: TcpWireMessage) -> Self {
+impl TryFrom<TcpWireMessage> for EventMeshMessage {
+    type Error = crate::Error;
+
+    fn try_from(wire: TcpWireMessage) -> Result<Self> {
         // Merge wire `headers` into `props` so protocol-level metadata
         // (e.g. `datacontenttype`) set by the Java runtime is not lost.
         // The Rust SDK's `EventMeshMessage` model does not have a separate
@@ -79,12 +81,17 @@ impl From<TcpWireMessage> for EventMeshMessage {
         for (k, v) in wire.headers {
             props.entry(k).or_insert(v);
         }
-        EventMeshMessage {
-            topic: wire.topic,
-            content: wire.body,
-            props,
-            ..Default::default()
-        }
+        EventMeshMessage::builder()
+            .topic(
+                wire.topic
+                    .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?,
+            )
+            .content(
+                wire.body
+                    .ok_or_else(|| EventMeshError::InvalidMessage("content is required".into()))?,
+            )
+            .props(props)
+            .build()
     }
 }
 
@@ -238,7 +245,7 @@ pub fn parse_message(body: &PackageBody) -> Option<EventMeshMessage> {
     match body {
         PackageBody::Text(s) => {
             let wire: TcpWireMessage = serde_json::from_str(s).ok()?;
-            Some(EventMeshMessage::from(wire))
+            EventMeshMessage::try_from(wire).ok()
         }
         _ => None,
     }
@@ -345,7 +352,7 @@ pub fn parse_cloud_event(body: &PackageBody) -> Option<cloudevents::Event> {
 ///
 /// This mirrors the gRPC codec's `to_event_mesh_message`.
 #[cfg(feature = "cloud_events")]
-pub fn cloud_event_to_message(event: &cloudevents::Event) -> EventMeshMessage {
+pub fn cloud_event_to_message(event: &cloudevents::Event) -> Result<EventMeshMessage> {
     use cloudevents::{AttributesReader, Data};
 
     let topic = event.subject().map(|s| s.to_string());
@@ -361,12 +368,17 @@ pub fn cloud_event_to_message(event: &cloudevents::Event) -> EventMeshMessage {
         props.insert(k.to_string(), v.to_string());
     }
 
-    EventMeshMessage {
-        topic,
-        content,
-        props,
-        ..Default::default()
-    }
+    EventMeshMessage::builder()
+        .topic(topic.ok_or_else(|| {
+            EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
+        })?)
+        .content(
+            content.ok_or_else(|| {
+                EventMeshError::InvalidMessage("CloudEvent data is required".into())
+            })?,
+        )
+        .props(props)
+        .build()
 }
 
 /// Convert an [`EventMeshMessage`] back into a native [`cloudevents::Event`].
@@ -379,7 +391,7 @@ pub fn cloud_event_to_message(event: &cloudevents::Event) -> EventMeshMessage {
 pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Event> {
     use cloudevents::{EventBuilder, EventBuilderV10};
 
-    let source = msg.topic.as_deref().unwrap_or("/").to_string();
+    let source = msg.topic.clone();
     let mut builder = EventBuilderV10::new()
         .id(msg
             .unique_id
@@ -388,12 +400,8 @@ pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Eve
         .source(source)
         .ty("org.apache.eventmesh");
 
-    if let Some(ref topic) = msg.topic {
-        builder = builder.subject(topic);
-    }
-    if let Some(ref content) = msg.content {
-        builder = builder.data("text/plain", content.clone());
-    }
+    builder = builder.subject(&msg.topic);
+    builder = builder.data("text/plain", msg.content.clone());
     for (k, v) in &msg.props {
         builder = builder.extension(k.as_str(), v.as_str());
     }
@@ -429,7 +437,8 @@ mod tests {
         let msg = EventMeshMessage::builder()
             .topic("test")
             .content("hello")
-            .build();
+            .build()
+            .unwrap();
         let pkg = build_message_package(&msg, Command::AsyncMessageToServer).expect("build pkg");
         assert_eq!(
             pkg.header.get_string_property(PROTOCOL_TYPE_KEY),
@@ -470,7 +479,8 @@ mod tests {
             .topic("test-topic")
             .content("hello-body")
             .prop("ttl", "4000")
-            .build();
+            .build()
+            .unwrap();
         let pkg = build_message_package(&msg, Command::AsyncMessageToServer).expect("build pkg");
         let json = match &pkg.body {
             PackageBody::Text(s) => s.as_str(),
@@ -499,9 +509,17 @@ mod tests {
         // Simulate a JSON body produced by the Java server (uses body/properties).
         let server_json = r#"{"topic":"t","properties":{"k":"v"},"body":"payload"}"#;
         let msg = parse_message(&PackageBody::Text(server_json.into())).expect("parse");
-        assert_eq!(msg.topic.as_deref(), Some("t"));
-        assert_eq!(msg.content.as_deref(), Some("payload"));
+        assert_eq!(msg.topic(), "t");
+        assert_eq!(msg.content(), "payload");
         assert_eq!(msg.get_prop("k"), Some("v"));
+    }
+
+    #[test]
+    fn parse_message_preserves_cross_transport_empty_body_and_ttl() {
+        let server_json = r#"{"topic":"t","properties":{"ttl":"2147483648"},"body":""}"#;
+        let message = parse_message(&PackageBody::Text(server_json.into())).expect("parse");
+        assert_eq!(message.content(), "");
+        assert_eq!(message.get_prop("ttl"), Some("2147483648"));
     }
 
     #[test]
@@ -511,7 +529,7 @@ mod tests {
         // silently discarded when deserializing into EventMeshMessage.
         let server_json = r#"{"topic":"t","headers":{"datacontenttype":"application/json"},"properties":{"k":"v"},"body":"payload"}"#;
         let msg = parse_message(&PackageBody::Text(server_json.into())).expect("parse");
-        assert_eq!(msg.content.as_deref(), Some("payload"));
+        assert_eq!(msg.content(), "payload");
         assert_eq!(msg.get_prop("k"), Some("v"));
         assert_eq!(
             msg.get_prop("datacontenttype"),
@@ -526,7 +544,8 @@ mod tests {
             .topic("round-trip")
             .content("payload")
             .prop("key", "val")
-            .build();
+            .build()
+            .unwrap();
         let pkg =
             build_message_package(&original, Command::AsyncMessageToServer).expect("build pkg");
         let parsed = parse_message(&pkg.body).expect("parse");
@@ -627,9 +646,9 @@ mod tests {
             .build()
             .expect("valid event");
 
-        let msg = cloud_event_to_message(&event);
-        assert_eq!(msg.topic.as_deref(), Some("conv-topic"));
-        assert_eq!(msg.content.as_deref(), Some("conv-content"));
+        let msg = cloud_event_to_message(&event).unwrap();
+        assert_eq!(msg.topic(), "conv-topic");
+        assert_eq!(msg.content(), "conv-content");
         assert_eq!(msg.get_prop("ttl"), Some("5000"));
     }
 }

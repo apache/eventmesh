@@ -797,13 +797,14 @@ mod tests {
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("ping")
-            .build();
+            .build()
+            .unwrap();
         let reply = producer
             .request_reply(msg, Duration::from_secs(3))
             .await
             .expect("request_reply");
-        assert_eq!(reply.topic.as_deref(), Some("reply"));
-        assert_eq!(reply.content.as_deref(), Some("pong"));
+        assert_eq!(reply.topic(), "reply");
+        assert_eq!(reply.content(), "pong");
 
         producer.shutdown().await;
 

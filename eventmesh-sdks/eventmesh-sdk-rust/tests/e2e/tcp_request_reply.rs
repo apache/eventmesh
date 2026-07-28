@@ -51,14 +51,17 @@ async fn tcp_request_reply_roundtrip() {
 
     let producer = tcp_producer().await;
     let reply = producer
-        .request_reply(Message::from(EventMeshMessage::new(&topic, "ping")))
+        .request_reply(Message::from(
+            EventMeshMessage::new(&topic, "ping").unwrap(),
+        ))
         .await
         .expect("TCP request/reply");
     producer.shutdown().await;
-    consumer.shutdown().await;
+    consumer.shutdown();
+    consumer.join().await.expect("join TCP consumer");
 
     match reply {
-        Message::EventMesh(message) => assert_eq!(message.content.as_deref(), Some("pong")),
+        Message::EventMesh(message) => assert_eq!(message.content(), "pong"),
         #[cfg(feature = "cloud_events")]
         other => panic!("expected native reply, got {other:?}"),
     }
