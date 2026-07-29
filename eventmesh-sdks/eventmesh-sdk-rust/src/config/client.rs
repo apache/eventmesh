@@ -392,6 +392,7 @@ impl GrpcConsumerOptions {
 
 /// HTTP endpoint selection policy.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum LoadBalance {
     /// Choose an endpoint at random.
     #[default]

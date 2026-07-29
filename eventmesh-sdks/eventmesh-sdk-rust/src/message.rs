@@ -31,6 +31,7 @@ pub use crate::model::{EventMeshMessage, EventMeshMessageBuilder};
 
 /// Which public event dialect a [`Message`] contains.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum MessageKind {
     /// EventMesh's native message model.
     EventMesh,
@@ -46,6 +47,7 @@ pub enum MessageKind {
 /// the EventMesh protocol wire formats.  The selected transport performs the
 /// corresponding protobuf, form, or TCP-frame encoding internally.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Message {
     /// EventMesh's native envelope.
     EventMesh(EventMeshMessage),

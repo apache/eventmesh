@@ -41,6 +41,7 @@ impl MessageHandler for CloudEventListener {
             Message::EventMesh(message) => {
                 panic!("expected HTTP CloudEvent to preserve its dialect, got {message:?}")
             }
+            _ => panic!("expected HTTP CloudEvent"),
         };
         let _ = self.0.send(event);
         Ok(None)

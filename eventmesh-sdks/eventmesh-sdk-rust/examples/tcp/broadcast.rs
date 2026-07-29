@@ -15,19 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Cross-protocol constants, protocol keys, helpers and load-balancing.
+use eventmesh::{
+    config::{Endpoint, ProducerOptions, TcpConfig},
+    EventMeshMessage, Message, TcpClient,
+};
 
-pub mod constants;
-#[cfg(feature = "http")]
-pub mod loadbalance;
-pub mod protocol_key;
-pub mod status_code;
-pub mod util;
-
-pub use constants::{DataContentType, SpecVersion, DEFAULT_MESSAGE_TTL};
-#[cfg(feature = "http")]
-pub use loadbalance::{LoadBalance, LoadBalanceSelector};
-pub use protocol_key::ProtocolKey;
-pub use util::local_ip_v4;
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-pub use util::RandomStringUtils;
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?))?;
+    let producer = client
+        .producer(ProducerOptions::new("test-producerGroup"))
+        .await?;
+    producer
+        .broadcast(Message::from(EventMeshMessage::new(
+            "test-topic-rust-sdk",
+            "broadcast from rust",
+        )?))
+        .await?;
+    producer.shutdown().await;
+    Ok(())
+}

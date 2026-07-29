@@ -104,15 +104,27 @@ impl EventMeshHttpClient {
             req = req.header(*k, v);
         }
 
-        let resp = req.send().await.map_err(|e| EventMeshError::Http {
-            status: 0,
-            message: format!("request failed: {e}"),
+        let resp = req.send().await.map_err(|e| {
+            if e.is_timeout() {
+                EventMeshError::Timeout(timeout)
+            } else {
+                EventMeshError::Http {
+                    status: 0,
+                    message: format!("request failed: {e}"),
+                }
+            }
         })?;
 
         let status = resp.status().as_u16();
-        let text = resp.text().await.map_err(|e| EventMeshError::Http {
-            status,
-            message: format!("failed to read response body: {e}"),
+        let text = resp.text().await.map_err(|e| {
+            if e.is_timeout() {
+                EventMeshError::Timeout(timeout)
+            } else {
+                EventMeshError::Http {
+                    status,
+                    message: format!("failed to read response body: {e}"),
+                }
+            }
         })?;
 
         if !(200..300).contains(&status) {
@@ -195,5 +207,28 @@ mod tests {
         assert_eq!(*hits.lock().await, ["first", "second", "first", "second"]);
         let _ = first_shutdown.send(());
         let _ = second_shutdown.send(());
+    }
+
+    #[tokio::test]
+    async fn request_timeout_uses_the_transport_independent_error_variant() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let _connection = listener.accept().await.unwrap();
+            std::future::pending::<()>().await;
+        });
+        let client = EventMeshHttpClient::new(
+            HttpClientConfig::builder()
+                .servers(format!("127.0.0.1:{port}"))
+                .build()
+                .unwrap(),
+        )
+        .unwrap();
+        let timeout = Duration::from_millis(25);
+
+        let error = client.post_form("/", &[], &[], timeout).await.unwrap_err();
+
+        assert!(matches!(error, EventMeshError::Timeout(value) if value == timeout));
+        server.abort();
     }
 }

@@ -45,5 +45,11 @@ async fn main() -> eventmesh::Result<()> {
             PrintHandler,
         )
         .await?;
-    consumer.join().await
+    tokio::select! {
+        result = consumer.join() => result,
+        signal = tokio::signal::ctrl_c() => {
+            signal?;
+            consumer.close().await
+        }
+    }
 }

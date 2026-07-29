@@ -15,19 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Cross-protocol constants, protocol keys, helpers and load-balancing.
+use eventmesh::{
+    config::{Endpoint, GrpcConfig, ProducerOptions},
+    EventMeshMessage, GrpcClient, Message,
+};
 
-pub mod constants;
-#[cfg(feature = "http")]
-pub mod loadbalance;
-pub mod protocol_key;
-pub mod status_code;
-pub mod util;
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
+    let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
+    let messages = (1..=3)
+        .map(|index| {
+            EventMeshMessage::new(
+                "test-topic-rust-sdk",
+                format!("hello from rust batch #{index}"),
+            )
+            .map(Message::from)
+        })
+        .collect::<eventmesh::Result<Vec<_>>>()?;
 
-pub use constants::{DataContentType, SpecVersion, DEFAULT_MESSAGE_TTL};
-#[cfg(feature = "http")]
-pub use loadbalance::{LoadBalance, LoadBalanceSelector};
-pub use protocol_key::ProtocolKey;
-pub use util::local_ip_v4;
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-pub use util::RandomStringUtils;
+    println!("published: {:?}", producer.publish_batch(messages).await?);
+    Ok(())
+}

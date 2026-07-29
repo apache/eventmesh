@@ -51,6 +51,36 @@ impl WebhookOptions {
     pub(crate) fn advertise_url(&self) -> Option<&str> {
         self.advertise_url.as_deref()
     }
+
+    pub(crate) fn validate(&self) -> crate::Result<()> {
+        if let Some(url) = self.advertise_url() {
+            validate_webhook_url(url)?;
+        } else if self.bind_addr.ip().is_unspecified() {
+            return Err(crate::Error::Config(
+                "an advertise URL is required when the webhook binds to an unspecified address"
+                    .into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[cfg(any(feature = "grpc", feature = "http"))]
+pub(crate) fn validate_webhook_url(url: &str) -> crate::Result<()> {
+    let uri = url
+        .parse::<http::Uri>()
+        .map_err(|error| crate::Error::InvalidArgument(format!("invalid webhook URL: {error}")))?;
+    if !matches!(uri.scheme_str(), Some("http" | "https")) || uri.authority().is_none() {
+        return Err(crate::Error::InvalidArgument(
+            "webhook URL must be an absolute http:// or https:// URL".into(),
+        ));
+    }
+    if matches!(uri.host(), Some("0.0.0.0" | "::" | "[::]")) {
+        return Err(crate::Error::InvalidArgument(
+            "webhook URL must use an address reachable by EventMesh".into(),
+        ));
+    }
+    Ok(())
 }
 
 /// Built-in axum webhook server.
@@ -105,5 +135,31 @@ impl<H: crate::MessageHandler> std::future::IntoFuture for WebhookServer<H> {
 
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move { self.inner.await })
+    }
+}
+
+#[cfg(all(test, feature = "http"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn webhook_urls_must_be_absolute_http_urls() {
+        assert!(validate_webhook_url("http://127.0.0.1:8080/callback").is_ok());
+        assert!(validate_webhook_url("https://example.com/callback").is_ok());
+        assert!(validate_webhook_url("/callback").is_err());
+        assert!(validate_webhook_url("ftp://example.com/callback").is_err());
+        assert!(validate_webhook_url("http://0.0.0.0:8080/callback").is_err());
+        assert!(validate_webhook_url("http://[::]:8080/callback").is_err());
+        assert!(validate_webhook_url(" ").is_err());
+    }
+
+    #[test]
+    fn unspecified_bind_address_requires_an_advertise_url() {
+        let options = WebhookOptions::new("0.0.0.0:8080".parse().unwrap());
+        assert!(options.validate().is_err());
+        assert!(options
+            .with_advertise_url("http://127.0.0.1:8080/eventmesh/callback")
+            .validate()
+            .is_ok());
     }
 }

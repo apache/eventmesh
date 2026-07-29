@@ -103,6 +103,7 @@ pub struct TcpConsumer<H: MessageHandler> {
 impl<H: MessageHandler> TcpConsumer<H> {
     /// Add a TCP subscription.
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
         self.inner.subscribe(&[subscription.as_legacy()]).await
     }
 

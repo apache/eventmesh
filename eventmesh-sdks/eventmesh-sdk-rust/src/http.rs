@@ -81,6 +81,7 @@ impl HttpClient {
         H: MessageHandler,
     {
         options.validate()?;
+        webhook.validate()?;
         let subscriptions: Vec<_> = subscriptions.into_iter().collect();
         validate_subscriptions(&subscriptions)?;
 
@@ -195,6 +196,7 @@ impl HttpConsumer {
 
     /// Remove a subscription from this consumer's callback URL.
     pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
         self.inner
             .unsubscribe(vec![subscription.as_legacy()], self.webhook_url.clone())
             .await
@@ -263,6 +265,8 @@ impl WebhookRegistration {
         webhook_url: impl Into<String>,
     ) -> Result<()> {
         validate_subscriptions(std::slice::from_ref(&subscription))?;
+        let webhook_url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&webhook_url)?;
         self.inner
             .subscribe_webhook(vec![subscription.as_legacy()], webhook_url)
             .await
@@ -275,6 +279,9 @@ impl WebhookRegistration {
         subscription: Subscription,
         webhook_url: impl Into<String>,
     ) -> Result<()> {
+        subscription.validate()?;
+        let webhook_url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&webhook_url)?;
         self.inner
             .unsubscribe(vec![subscription.as_legacy()], webhook_url)
             .await
@@ -313,6 +320,9 @@ fn validate_subscriptions(subscriptions: &[Subscription]) -> Result<()> {
         return Err(EventMeshError::Unsupported(
             "HTTP request/reply subscriptions".into(),
         ));
+    }
+    for subscription in subscriptions {
+        subscription.validate()?;
     }
     Ok(())
 }

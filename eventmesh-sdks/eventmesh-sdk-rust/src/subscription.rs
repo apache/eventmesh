@@ -51,6 +51,16 @@ impl Subscription {
     }
 
     #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    pub(crate) fn validate(&self) -> crate::Result<()> {
+        if self.topic.trim().is_empty() {
+            return Err(crate::Error::InvalidArgument(
+                "subscription topic must not be empty".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn as_legacy(&self) -> crate::model::SubscriptionItem {
         crate::model::SubscriptionItem::new(
             self.topic.clone(),
@@ -62,6 +72,7 @@ impl Subscription {
 
 /// Consumer distribution mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum DeliveryMode {
     /// Every subscriber receives the event.
     Broadcast,
@@ -81,6 +92,7 @@ impl DeliveryMode {
 
 /// Consumer delivery semantics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum DeliveryType {
     /// Acknowledged asynchronous delivery.
     Async,
@@ -95,5 +107,17 @@ impl DeliveryType {
             Self::Async => crate::model::SubscriptionType::ASYNC,
             Self::Sync => crate::model::SubscriptionType::SYNC,
         }
+    }
+}
+
+#[cfg(all(test, any(feature = "grpc", feature = "http", feature = "tcp")))]
+mod tests {
+    use super::Subscription;
+
+    #[test]
+    fn blank_topics_are_rejected() {
+        assert!(Subscription::new("").validate().is_err());
+        assert!(Subscription::new(" \t").validate().is_err());
+        assert!(Subscription::new("topic").validate().is_ok());
     }
 }

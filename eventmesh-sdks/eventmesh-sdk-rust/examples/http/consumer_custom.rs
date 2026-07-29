@@ -57,6 +57,10 @@ async fn main() -> eventmesh::Result<()> {
     consumer
         .subscribe(Subscription::new("test-topic-rust-sdk"), webhook_url)
         .await?;
-    axum::serve(listener, app).await?;
-    Ok(())
+    axum::serve(listener, app)
+        .with_graceful_shutdown(async {
+            let _ = tokio::signal::ctrl_c().await;
+        })
+        .await?;
+    consumer.close().await
 }

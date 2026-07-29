@@ -69,10 +69,11 @@ impl GrpcClient {
         H: MessageHandler,
     {
         options.validate()?;
-        let subscriptions: Vec<_> = subscriptions
-            .into_iter()
-            .map(|subscription| subscription.as_legacy())
-            .collect();
+        let subscriptions: Vec<_> = subscriptions.into_iter().collect();
+        for subscription in &subscriptions {
+            subscription.validate()?;
+        }
+        let subscriptions = subscriptions.iter().map(Subscription::as_legacy).collect();
         let inner = LegacyConsumer::subscribe_stream(
             self.config.legacy_stream(&options),
             PublicHandler::new(handler),
@@ -113,6 +114,10 @@ pub struct GrpcConsumer<H: MessageHandler> {
 }
 
 /// A gRPC consumer that registers HTTP webhook subscriptions.
+///
+/// [`shutdown`](Self::shutdown) and [`join`](Self::join) only stop local
+/// heartbeat work. Before shutting down, call [`unsubscribe`](Self::unsubscribe)
+/// for every remotely registered subscription and webhook URL.
 pub struct GrpcWebhookConsumer {
     inner: LegacyWebhookConsumer,
 }
@@ -124,6 +129,12 @@ impl GrpcWebhookConsumer {
         subscriptions: impl IntoIterator<Item = Subscription>,
         webhook_url: impl Into<String>,
     ) -> Result<()> {
+        let webhook_url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&webhook_url)?;
+        let subscriptions: Vec<_> = subscriptions.into_iter().collect();
+        for subscription in &subscriptions {
+            subscription.validate()?;
+        }
         self.inner
             .subscribe_webhook(
                 subscriptions
@@ -142,6 +153,12 @@ impl GrpcWebhookConsumer {
         subscriptions: impl IntoIterator<Item = Subscription>,
         webhook_url: impl Into<String>,
     ) -> Result<()> {
+        let webhook_url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&webhook_url)?;
+        let subscriptions: Vec<_> = subscriptions.into_iter().collect();
+        for subscription in &subscriptions {
+            subscription.validate()?;
+        }
         self.inner
             .unsubscribe_webhook(
                 subscriptions
@@ -155,6 +172,10 @@ impl GrpcWebhookConsumer {
     }
 
     /// Signal the heartbeat task to stop.
+    ///
+    /// This does not unregister webhook subscriptions from EventMesh. Call
+    /// [`unsubscribe`](Self::unsubscribe) first when performing a graceful
+    /// shutdown.
     pub fn shutdown(&self) {
         self.inner.request_shutdown();
     }
@@ -168,11 +189,13 @@ impl GrpcWebhookConsumer {
 impl<H: MessageHandler> GrpcConsumer<H> {
     /// Add a subscription to the active stream.
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
         self.inner.subscribe(vec![subscription.as_legacy()]).await
     }
 
     /// Remove a stream subscription.
     pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
         self.inner
             .unsubscribe_stream(vec![subscription.as_legacy()])
             .await

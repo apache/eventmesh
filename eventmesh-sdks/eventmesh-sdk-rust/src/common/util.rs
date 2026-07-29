@@ -19,7 +19,9 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 use rand::Rng;
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 use uuid::Uuid;
 
 /// Best-effort local IPv4 (used to populate the `ip` attribute / header).
@@ -36,7 +38,9 @@ pub fn local_ip_v4() -> String {
 }
 
 /// Random string generators used for `bizSeqNo` / `uniqueId` / CloudEvent id.
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 pub struct RandomStringUtils;
+#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 impl RandomStringUtils {
     /// A random UUID v4 (lowercase, hyphenated).
     pub fn generate_uuid() -> String {
@@ -73,6 +77,7 @@ pub fn now_millis() -> u64 {
 mod tests {
     use super::*;
 
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     #[test]
     fn uuid_is_unique() {
         assert_ne!(
@@ -81,6 +86,7 @@ mod tests {
         );
     }
 
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     #[test]
     fn num_length() {
         let s = RandomStringUtils::generate_num(30);

@@ -42,15 +42,47 @@ rustdoc-args = ["--cfg", "docsrs"]
 # compiling a protocol implementation.
 default = []
 # Transport protocols (implemented incrementally).
-grpc = ["dep:tonic", "dep:prost", "dep:prost-types"]
+grpc = [
+    "dep:tonic",
+    "dep:prost",
+    "dep:prost-types",
+    "dep:tonic-build",
+    "dep:tokio",
+    "dep:tokio-util",
+    "dep:tracing",
+    "dep:rand",
+    "dep:uuid",
+    "dep:http",
+]
 # HTTP transport (producer, consumer, webhook middleware + built-in server).
-http = ["dep:reqwest", "dep:serde_urlencoded", "dep:axum", "dep:tower", "dep:tower-http"]
+http = [
+    "dep:reqwest",
+    "dep:serde_urlencoded",
+    "dep:axum",
+    "dep:tokio",
+    "dep:tokio-util",
+    "dep:tracing",
+    "dep:rand",
+    "dep:uuid",
+    "dep:bytes",
+    "dep:http",
+]
 # TCP transport (producer, consumer, native TCP wire protocol).
 # `tokio-util/codec` is required by the framed codec in
 # `src/transport/tcp/{codec,connection}.rs`; without it the crate fails to
 # compile when `tcp` is enabled without `grpc` (tonic pulls in `codec` only as
 # a side effect of the `grpc` feature).
-tcp = ["tokio-util/codec"]
+tcp = [
+    "dep:tokio",
+    "dep:tokio-stream",
+    "dep:tokio-util",
+    "tokio-util/codec",
+    "dep:futures",
+    "dep:tracing",
+    "dep:rand",
+    "dep:uuid",
+    "dep:bytes",
+]
 # Message models.
 cloud_events = ["dep:cloudevents", "dep:chrono"]
 # Convenience aggregate.
@@ -64,18 +96,18 @@ e2e = ["grpc", "http", "tcp", "cloud_events"]
 interop_e2e = ["e2e"]
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
-tokio-stream = { version = "0.1", features = ["net"] }
-tokio-util = "0.7"
-futures = "0.3"
+tokio = { version = "1", optional = true, features = ["full"] }
+tokio-stream = { version = "0.1", optional = true, features = ["net"] }
+tokio-util = { version = "0.7", optional = true }
+futures = { version = "0.3", optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1"
-bytes = "1"
-rand = "0.8"
-uuid = { version = "1", features = ["v4"] }
-tracing = "0.1"
-http = "1"
+bytes = { version = "1", optional = true }
+rand = { version = "0.8", optional = true }
+uuid = { version = "1", optional = true, features = ["v4"] }
+tracing = { version = "0.1", optional = true }
+http = { version = "1", optional = true }
 # gRPC transport.
 tonic = { version = "0.12", optional = true }
 prost = { version = "0.13", optional = true }
@@ -86,12 +118,10 @@ chrono = { version = "0.4", optional = true, default-features = false, features 
 # HTTP transport.
 reqwest = { version = "0.12", optional = true, features = ["json"] }
 serde_urlencoded = { version = "0.7", optional = true }
-tower = { version = "0.5", optional = true }
-tower-http = { version = "0.6", optional = true }
 axum = { version = "0.7", optional = true }
 
 [build-dependencies]
-tonic-build = "0.12"
+tonic-build = { version = "0.12", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
@@ -111,14 +141,34 @@ path = "examples/grpc/consumer.rs"
 required-features = ["grpc"]
 
 [[example]]
+name = "grpc_webhook_consumer"
+path = "examples/grpc/webhook_consumer.rs"
+required-features = ["grpc"]
+
+[[example]]
 name = "grpc_producer_cloud_events"
 path = "examples/grpc/producer_cloud_events.rs"
 required-features = ["grpc", "cloud_events"]
 
 [[example]]
+name = "grpc_batch"
+path = "examples/grpc/batch.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "grpc_request_reply"
+path = "examples/grpc/request_reply.rs"
+required-features = ["grpc"]
+
+[[example]]
 name = "http_producer"
 path = "examples/http/producer.rs"
 required-features = ["http"]
+
+[[example]]
+name = "http_producer_cloud_events"
+path = "examples/http/producer_cloud_events.rs"
+required-features = ["http", "cloud_events"]
 
 [[example]]
 name = "http_consumer_server"
@@ -144,3 +194,13 @@ required-features = ["tcp"]
 name = "tcp_producer_cloud_events"
 path = "examples/tcp/producer_cloud_events.rs"
 required-features = ["tcp", "cloud_events"]
+
+[[example]]
+name = "tcp_broadcast"
+path = "examples/tcp/broadcast.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "tcp_request_reply"
+path = "examples/tcp/request_reply.rs"
+required-features = ["tcp"]

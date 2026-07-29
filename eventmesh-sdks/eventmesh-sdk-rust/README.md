@@ -82,6 +82,11 @@ transport failures. HTTP consumers and webhook registrations additionally
 provide `close().await`, which unregisters remote subscriptions before
 signalling shutdown and joining.
 
+`GrpcWebhookConsumer` does not automatically unregister remote webhook
+subscriptions when `shutdown()` or `join()` is called. Retain the subscriptions
+and webhook URL, call `unsubscribe(...).await` explicitly, and only then call
+`shutdown()` and `join().await`. See the `grpc_webhook_consumer` example.
+
 HTTP request/reply is not exposed because the current SDK and stock Runtime do not provide a complete HTTP responder path. Use gRPC or TCP for request/reply.
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.

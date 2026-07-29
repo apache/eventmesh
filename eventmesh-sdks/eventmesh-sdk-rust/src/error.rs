@@ -25,6 +25,7 @@ use std::time::Duration;
 /// translate their implementation-specific failures into these variants so a
 /// caller never needs to depend on tonic, reqwest, or the TCP frame format.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     /// A client configuration problem (missing field, bad URL, ...).
     #[error("config error: {0}")]

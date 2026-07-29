@@ -25,6 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
+    #[cfg(feature = "grpc")]
     tonic_build::configure()
         .build_server(false)
         .build_client(true)

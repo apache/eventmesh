@@ -21,8 +21,10 @@
 //! transport configuration types remain crate-private adapters.
 
 mod client;
+#[cfg(feature = "grpc")]
 #[allow(dead_code)]
 mod grpc;
+#[cfg(feature = "http")]
 #[allow(dead_code)]
 mod http;
 #[allow(dead_code)]
