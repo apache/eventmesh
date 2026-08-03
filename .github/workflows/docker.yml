@@ -19,6 +19,7 @@ name: Docker
 on:
   release:
     types: [released]
+  workflow_dispatch:
 
 jobs:
   docker:
@@ -39,6 +40,9 @@ jobs:
         with:
           images: |
             apache/eventmesh
+          tags: |
+            type=raw,value=v1.12.0
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
