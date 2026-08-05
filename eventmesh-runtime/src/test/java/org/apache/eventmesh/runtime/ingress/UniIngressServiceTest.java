@@ -26,7 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
+import org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
 import org.apache.eventmesh.runtime.push.PushService;
@@ -67,7 +69,7 @@ class UniIngressServiceTest {
         assertEquals("o-1", delivered.get(0).getEvent().getId());
 
         assertTrue(svc.ack(delivered.get(0).getDeliveryId()));
-        assertTrue(offsets.readOffset("orders", "client-1", -1) >= 1, "offset advances only on ACK");
+        assertTrue(offsets.readOffset("orders", "client-1", 0) >= 1, "offset advances only on ACK");
     }
 
     @Test
@@ -92,8 +94,8 @@ class UniIngressServiceTest {
         AtomicLong clock = new AtomicLong(0L);
         InMemoryStorage storage = new InMemoryStorage();
         OffsetStore offsets = new InMemoryOffsetStore();
-        UniIngressService svc = new UniIngressService(storage, offsets, new SubscriptionManager(),
-            new PushService(), 10_000L, 3, clock::get);
+        UniIngressService svc = new UniIngressService(storage, offsets, new InMemoryPushOffsetStore(),
+            new SubscriptionManager(), new PushService(), 10_000L, 3, clock::get);
 
         svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
         svc.publish("orders", event("o-1")).get();
@@ -201,6 +203,7 @@ class UniIngressServiceTest {
     private static final class InMemoryStorage implements MeshStoragePlugin {
 
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties properties) {
@@ -224,6 +227,12 @@ class UniIngressServiceTest {
             List<CloudEvent> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
+                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
+                e = CloudEventBuilder.from(e)
+                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
+                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
+                    .build();
                 out.add(e);
             }
             return out;

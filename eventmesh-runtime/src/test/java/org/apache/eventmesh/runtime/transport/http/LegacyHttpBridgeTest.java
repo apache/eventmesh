@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.runtime.boot.UniRuntime;
 import org.apache.eventmesh.runtime.delivery.HttpCaller;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
@@ -39,6 +40,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +103,7 @@ class LegacyHttpBridgeTest {
         assertEquals("e-1", new String(httpCaller.posts.get(0).body, StandardCharsets.UTF_8));
 
         // 4. the webhook returned 2xx → auto-ACK → offset advanced (at-least-once over legacy HTTP).
-        assertTrue(runtime.ingress().getOffsetStore().readOffset("orders", "c1", -1) >= 1,
+        assertTrue(runtime.ingress().getOffsetStore().readOffset("orders", "c1", 0) >= 1,
             "offset advanced after webhook delivery accepted");
     }
 
@@ -174,6 +176,7 @@ class LegacyHttpBridgeTest {
     private static final class InMemoryStorage implements MeshStoragePlugin {
 
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties properties) {
@@ -197,6 +200,12 @@ class LegacyHttpBridgeTest {
             List<CloudEvent> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
+                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
+                e = CloudEventBuilder.from(e)
+                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
+                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
+                    .build();
                 out.add(e);
             }
             return out;

@@ -23,8 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
+import org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore;
 import org.apache.eventmesh.runtime.push.PushService;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 import org.apache.eventmesh.runtime.subscription.SubscriptionManager;
@@ -63,7 +65,7 @@ class UniAdminServiceTest {
         svc.ack(polled.get(0).getDeliveryId());
 
         assertEquals(0, admin.pendingDeliveries());
-        assertTrue(admin.offsets("orders").containsKey("client-1#-1"), "offset recorded under clientId#partition");
+        assertTrue(admin.offsets("orders").containsKey("client-1#0"), "offset recorded under clientId#partition");
     }
 
     @Test
@@ -86,6 +88,7 @@ class UniAdminServiceTest {
         AtomicLong clock = new AtomicLong(0L);
         InMemoryStorage storage = new InMemoryStorage();
         UniIngressService svc = new UniIngressService(storage, new InMemoryOffsetStore(),
+            new InMemoryPushOffsetStore(),
             new SubscriptionManager(), new PushService(), 1_000L, 1, clock::get);
         final UniAdminService admin = new UniAdminService(svc);
 
@@ -119,6 +122,7 @@ class UniAdminServiceTest {
     private static final class InMemoryStorage implements MeshStoragePlugin {
 
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties properties) {
@@ -142,6 +146,12 @@ class UniAdminServiceTest {
             List<CloudEvent> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
+                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
+                e = CloudEventBuilder.from(e)
+                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
+                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
+                    .build();
                 out.add(e);
             }
             return out;

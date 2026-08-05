@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -228,6 +230,11 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                     for (org.apache.rocketmq.common.message.MessageExt msg : msgs) {
                         CloudEvent event = deserialize(msg.getBody());
                         if (event != null) {
+                            // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                            event = CloudEventBuilder.from(event)
+                                .withExtension(OffsetExtensions.EM_MQ_OFFSET, msg.getQueueOffset())
+                                .withExtension(OffsetExtensions.EM_MQ_PARTITION, (long) msg.getQueueId())
+                                .build();
                             events.add(event);
                         }
                     }
@@ -259,6 +266,45 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
     @Override
     public void commitOffset(String topic, int partition, long offset) {
         // Self-managed via pullOffsets + persisted to file.
+    }
+
+    /**
+     * Rewind the RocketMQ 4.x pull cursor for {@code (topic, partition)} to {@code ackOffset}.
+     *
+     * <p>On restart, the persisted {@code pullOffsets} file (nextBeginOffset per topic#queueId) may
+     * be ahead of the ACK offset stored in RocksDB. Without rewind, the gap messages (pulled but
+     * not ACKed) are lost — the next {@link #poll} resumes from the persisted nextBeginOffset,
+     * skipping them.</p>
+     *
+     * <p>This overwrites the in-memory {@code pullOffsets} so the next {@link #poll} uses
+     * {@code ackOffset} as the {@code queueOffset} in the PULL_MESSAGE request.</p>
+     */
+    @Override
+    public boolean alignPullOffset(String topic, int partition, long ackOffset) {
+        if (remotingClient == null || ackOffset < 0) {
+            return false;
+        }
+        ConcurrentHashMap<Integer, Long> topicOffsets = pullOffsets.computeIfAbsent(topic, k -> new ConcurrentHashMap<>());
+        if (partition >= 0) {
+            Long current = topicOffsets.get(partition);
+            if (current != null && current <= ackOffset) {
+                return false;
+            }
+            topicOffsets.put(partition, ackOffset);
+            log.info("aligned pull offset for {}#{}: {} -> {}", topic, partition, current, ackOffset);
+        } else {
+            // partition -1: rewind all queues of this topic
+            boolean anyRewound = false;
+            for (Map.Entry<Integer, Long> e : topicOffsets.entrySet()) {
+                if (e.getValue() > ackOffset) {
+                    log.info("aligned pull offset for {}#{}: {} -> {}", topic, e.getKey(), e.getValue(), ackOffset);
+                    e.setValue(ackOffset);
+                    anyRewound = true;
+                }
+            }
+            return anyRewound;
+        }
+        return true;
     }
 
     @Override

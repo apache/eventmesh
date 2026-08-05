@@ -49,6 +49,15 @@ public interface OffsetStore {
     Map<String, Long> readAllOffsets(String topic);
 
     /**
+     * All topics that have at least one persisted offset entry. Used by the restart recovery
+     * path ({@code UniRuntime.alignPullOffsetsToAck}) to discover which topics need pull-cursor
+     * rewind. Returns an empty set on first run (no offsets persisted yet).
+     */
+    default java.util.Set<String> readAllTopics() {
+        return java.util.Collections.emptySet();
+    }
+
+    /**
      * Force any buffered writes to durable storage.
      */
     void flush();

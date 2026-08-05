@@ -123,4 +123,29 @@ public interface MeshStoragePlugin extends LifeCycle {
     default long endOffset(String topic, int partition) {
         return -1L;
     }
+
+    /**
+     * Rewind the pull cursor for {@code (topic, partition)} to {@code ackOffset} so that messages
+     * already pulled but not yet ACKed by the client are re-pulled after a restart.
+     *
+     * <p>This is the recovery mechanism for the at-least-once contract on restart: the pull offset
+     * (persisted to a local file by Kafka/RocketMQ-4.x plugins) may be ahead of the ACK offset
+     * (persisted in RocksDB {@code OffsetStore}); without rewind, the gap messages are lost because
+     * they are neither in the MQ's unconsumed range nor in the in-memory {@code pending} deliveries
+     * (which is lost on restart).</p>
+     *
+     * <p>Implementations that manage their own pull cursor (Kafka {@code seek}, RocketMQ 4.x
+     * {@code pullOffsets}) MUST override this to rewind that cursor. Broker-managed backends
+     * (RocketMQ 5.x POP — broker re-delivers on invisible-timeout) can keep the default no-op.</p>
+     *
+     * @param topic     EventMesh logical topic
+     * @param partition physical partition (-1 = all partitions of the topic)
+     * @param ackOffset the ACK offset to rewind to (from {@code OffsetStore}); {@code -1} means
+     *                  "no known ACK offset" → keep the existing pull cursor (new topic / first run)
+     * @return {@code true} if the cursor was rewound; {@code false} if the backend does not support
+     *         rewind or {@code ackOffset} was not applicable
+     */
+    default boolean alignPullOffset(String topic, int partition, long ackOffset) {
+        return false;
+    }
 }

@@ -20,6 +20,7 @@ package org.apache.eventmesh.storage.kafka.storage;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -170,6 +172,11 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
             pullOffsets.computeIfAbsent(topic, k -> new ConcurrentHashMap<>()).put(record.partition(), record.offset());
             CloudEvent event = deserialize(record.value());
             if (event != null) {
+                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                event = CloudEventBuilder.from(event)
+                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, record.offset())
+                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, record.partition())
+                    .build();
                 events.add(event);
             }
         }
@@ -200,6 +207,81 @@ public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
     public void commitOffset(String topic, int partition, long offset) {
         // §12.6.6: EventMesh self-manages offset (OffsetStore). NEVER commit MQ offset.
         // This is intentionally a no-op.
+    }
+
+    /**
+     * Rewind the Kafka consumer's pull cursor for {@code (topic, partition)} to {@code ackOffset}.
+     *
+     * <p>On restart, the persisted {@code pullOffsets} file may be ahead of the ACK offset stored
+     * in RocksDB (messages pulled but not yet ACKed by the client). Without rewind, those messages
+     * are lost: they are no longer in Kafka's unconsumed range (seek would skip them) and the
+     * in-memory {@code pending} deliveries were lost on restart.</p>
+     *
+     * <p>This method must be called <em>before</em> the first {@link #poll} for the topic, so the
+     * lazy assignment + seek in {@code poll()} picks up the rewound offset. It overwrites both the
+     * in-memory {@code pullOffsets} (which was loaded from the persisted file in {@link #init})
+     * and, if the consumer is already assigned, issues a direct {@code seek}.</p>
+     */
+    @Override
+    public synchronized boolean alignPullOffset(String topic, int partition, long ackOffset) {
+        if (!consumerReady || ackOffset < 0) {
+            return false;
+        }
+        ConcurrentHashMap<Integer, Long> topicOffsets = pullOffsets.computeIfAbsent(topic, k -> new ConcurrentHashMap<>());
+        if (partition >= 0) {
+            // Single partition rewind
+            Long current = topicOffsets.get(partition);
+            if (current != null && current <= ackOffset) {
+                // Pull cursor is at or behind ACK offset — no rewind needed (no gap messages)
+                return false;
+            }
+            topicOffsets.put(partition, ackOffset);
+            seekIfAssigned(topic, partition, ackOffset);
+            log.info("aligned pull offset for {}#{}: {} -> {}", topic, partition, current, ackOffset);
+        } else {
+            // partition -1: rewind all partitions of this topic
+            java.util.Set<org.apache.kafka.common.TopicPartition> tps = assignedTopics.get(topic);
+            if (tps == null) {
+                // Not yet assigned — poll()'s lazy init will seek to pullOffsets, so just overwrite
+                for (java.util.Map.Entry<Integer, Long> e : topicOffsets.entrySet()) {
+                    if (e.getValue() > ackOffset) {
+                        e.setValue(ackOffset);
+                    }
+                }
+                log.info("aligned pull offset for {} (all partitions, pre-assign) to <= {}", topic, ackOffset);
+                return !topicOffsets.isEmpty();
+            }
+            boolean anyRewound = false;
+            for (org.apache.kafka.common.TopicPartition tp : tps) {
+                Long current = topicOffsets.get(tp.partition());
+                if (current != null && current > ackOffset) {
+                    topicOffsets.put(tp.partition(), ackOffset);
+                    consumer.seek(tp, ackOffset);
+                    log.info("aligned pull offset for {}#{}: {} -> {}", topic, tp.partition(), current, ackOffset);
+                    anyRewound = true;
+                }
+            }
+            return anyRewound;
+        }
+        return true;
+    }
+
+    /**
+     * If the consumer is already assigned to {@code (topic, partition)}, issue a direct
+     * {@code consumer.seek}; otherwise the next {@link #poll} will pick up the updated
+     * {@code pullOffsets} entry during its lazy assignment.
+     */
+    private void seekIfAssigned(String topic, int partition, long offset) {
+        java.util.Set<org.apache.kafka.common.TopicPartition> tps = assignedTopics.get(topic);
+        if (tps == null) {
+            return;
+        }
+        for (org.apache.kafka.common.TopicPartition tp : tps) {
+            if (tp.partition() == partition) {
+                consumer.seek(tp, offset);
+                return;
+            }
+        }
     }
 
     @Override

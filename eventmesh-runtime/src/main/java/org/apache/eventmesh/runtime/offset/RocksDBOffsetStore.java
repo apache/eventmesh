@@ -101,6 +101,25 @@ public class RocksDBOffsetStore implements OffsetStore {
         return result;
     }
 
+    /**
+     * Scan all keys in RocksDB and extract the unique topic prefixes (before the first {@code #}).
+     * Used by the restart recovery path to discover which topics have persisted ACK offsets.
+     */
+    @Override
+    public java.util.Set<String> readAllTopics() {
+        java.util.Set<String> topics = new java.util.HashSet<>();
+        try (RocksIterator it = db.newIterator()) {
+            for (it.seekToFirst(); it.isValid(); it.next()) {
+                String key = new String(it.key(), StandardCharsets.UTF_8);
+                int sep = key.indexOf('#');
+                if (sep > 0) {
+                    topics.add(key.substring(0, sep));
+                }
+            }
+        }
+        return topics;
+    }
+
     @Override
     public void flush() {
         try (FlushOptions flushOptions = new FlushOptions().setWaitForFlush(true)) {

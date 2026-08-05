@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.http.UniHttpServer;
@@ -39,12 +40,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 /**
  * In-process batch publish E2E: publish 10 events via {@code publishBatch}, verify all received via
@@ -116,6 +119,7 @@ class BatchPublishIntegrationTest {
     static final class InMemoryStorage implements MeshStoragePlugin {
 
         final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         @Override
         public void init(java.util.Properties p) {
@@ -139,6 +143,12 @@ class BatchPublishIntegrationTest {
             List<CloudEvent> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
+                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
+                e = CloudEventBuilder.from(e)
+                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
+                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
+                    .build();
                 out.add(e);
             }
             return out;

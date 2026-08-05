@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -40,6 +41,7 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Test;
 
@@ -140,7 +142,7 @@ class UniTcpServerTest {
         clientAck.getHeader().putProperty(NettyTcpPushChannel.HEADER_DELIVERY_ID, deliveryId);
         client.writeInbound(clientAck);
 
-        assertEquals(1, ingress.getOffsetStore().readOffset("orders", "c1", -1),
+        assertEquals(1, ingress.getOffsetStore().readOffset("orders", "c1", 0),
             "offset advanced after the legacy TCP client ACKed the push");
         assertEquals(1, ingress.getMetrics().getAckCount());
     }
@@ -153,6 +155,7 @@ class UniTcpServerTest {
     private static final class InMemoryStorage implements MeshStoragePlugin {
 
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         Queue<CloudEvent> queueOf(String topic) {
             return queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>());
@@ -180,6 +183,12 @@ class UniTcpServerTest {
             List<CloudEvent> out = new java.util.ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
+                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
+                e = CloudEventBuilder.from(e)
+                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
+                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
+                    .build();
                 out.add(e);
             }
             return out;

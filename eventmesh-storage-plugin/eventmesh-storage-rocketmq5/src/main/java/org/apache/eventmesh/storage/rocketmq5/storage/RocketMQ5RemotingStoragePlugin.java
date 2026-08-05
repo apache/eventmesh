@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.LiteTopicCapable;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageDecoder;
@@ -56,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -235,6 +237,11 @@ public class RocketMQ5RemotingStoragePlugin implements MeshStoragePlugin, LiteTo
                         ackNormal(brokerAddr, msg);
                         CloudEvent event = deserialize(msg.getBody());
                         if (event != null) {
+                            // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
+                            event = CloudEventBuilder.from(event)
+                                .withExtension(OffsetExtensions.EM_MQ_OFFSET, msg.getQueueOffset())
+                                .withExtension(OffsetExtensions.EM_MQ_PARTITION, (long) msg.getQueueId())
+                                .build();
                             events.add(event);
                             if (events.size() >= maxEvents) {
                                 break;

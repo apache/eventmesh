@@ -100,6 +100,7 @@ class AckTimeoutRedeliveryIntegrationTest {
         storage.start();
         // Test-friendly ingress: short ACK timeout + low maxAttempts so the test runs in seconds.
         ingress = new UniIngressService(storage, new InMemoryOffsetStore(),
+            new org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore(),
             new org.apache.eventmesh.runtime.subscription.SubscriptionManager(),
             new org.apache.eventmesh.runtime.push.PushService(),
             ACK_TIMEOUT_MS, MAX_ATTEMPTS, System::currentTimeMillis);

@@ -20,12 +20,15 @@ package org.apache.eventmesh.runtime.ingress;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.runtime.delivery.DeadLetterSink;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
 import org.apache.eventmesh.runtime.delivery.ReliableDispatcher;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
 import org.apache.eventmesh.runtime.metrics.UniTrace;
+import org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
+import org.apache.eventmesh.runtime.offset.PushOffsetStore;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
 import org.apache.eventmesh.runtime.push.LongPollingChannel;
 import org.apache.eventmesh.runtime.push.PushService;
@@ -69,6 +72,7 @@ public class UniIngressService {
 
     private final MeshStoragePlugin storage;
     private final OffsetStore offsetStore;
+    private final PushOffsetStore pushOffsetStore;
     private final SubscriptionManager subscriptionManager;
     private final ReliableDispatcher dispatcher;
     private final PushService pushService;
@@ -84,7 +88,6 @@ public class UniIngressService {
     private final UniMetrics metrics;
 
     private final ConcurrentHashMap<String, PushChannel> channels = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, AtomicLong> topicOffsetSeq = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, CompletableFuture<CloudEvent>> pendingRequests = new ConcurrentHashMap<>();
     private final AtomicLong requestSeq = new AtomicLong();
     private final ConcurrentHashMap<String, TokenBucketRateLimiter> topicLimiters = new ConcurrentHashMap<>();
@@ -99,7 +102,7 @@ public class UniIngressService {
     public static final String EXT_CORRELATION_ID = "emcorrelationid";
 
     public UniIngressService(MeshStoragePlugin storage, OffsetStore offsetStore) {
-        this(storage, offsetStore, new SubscriptionManager(), new PushService(),
+        this(storage, offsetStore, new InMemoryPushOffsetStore(), new SubscriptionManager(), new PushService(),
             ReliableDispatcher.DEFAULT_ACK_TIMEOUT_MS, ReliableDispatcher.DEFAULT_MAX_ATTEMPTS,
             System::currentTimeMillis);
     }
@@ -107,11 +110,12 @@ public class UniIngressService {
     /**
      * Test-friendly constructor with an injectable clock and retry parameters.
      */
-    public UniIngressService(MeshStoragePlugin storage, OffsetStore offsetStore,
+    public UniIngressService(MeshStoragePlugin storage, OffsetStore offsetStore, PushOffsetStore pushOffsetStore,
         SubscriptionManager subscriptionManager, PushService pushService,
         long ackTimeoutMs, int maxAttempts, java.util.function.LongSupplier clock) {
         this.storage = storage;
         this.offsetStore = offsetStore;
+        this.pushOffsetStore = pushOffsetStore;
         this.subscriptionManager = subscriptionManager;
         this.pushService = pushService;
         this.metrics = new UniMetrics();
@@ -299,9 +303,15 @@ public class UniIngressService {
                 // Multi-instance: route via the cluster coordinator (local vs cross-instance forward).
                 cluster.dispatch(topic, event);
             } else {
-                long offset = nextOffset(topic);
+                // Read MQ physical offset from CloudEvent extension (written by storage plugin on poll)
+                long mqOffset = OffsetExtensions.readMqOffset(event);
+                int mqPartition = OffsetExtensions.readMqPartition(event);
                 for (Subscription target : subscriptionManager.targetsFor(topic, event)) {
-                    dispatcher.deliver(topic, partition, offset, event, target.getClientId(), channelFor(target.getClientId()));
+                    dispatcher.deliver(topic, mqPartition, mqOffset, event, target.getClientId(), channelFor(target.getClientId()));
+                    // Record push watermark for offset tracking
+                    if (mqOffset >= 0 && mqPartition >= 0) {
+                        pushOffsetStore.writePushOffset(topic, target.getClientId(), mqPartition, mqOffset);
+                    }
                 }
             }
             UniTrace.end(dispatchSpan);
@@ -335,8 +345,14 @@ public class UniIngressService {
      * same-instance targets here while forwarding remote ones.
      */
     public boolean deliverLocal(String topic, String clientId, CloudEvent event) {
-        long offset = nextOffset(topic);
-        dispatcher.deliver(topic, -1, offset, event, clientId, channelFor(clientId));
+        // Read MQ physical offset from CloudEvent extension (written by storage plugin on poll)
+        long mqOffset = OffsetExtensions.readMqOffset(event);
+        int mqPartition = OffsetExtensions.readMqPartition(event);
+        dispatcher.deliver(topic, mqPartition, mqOffset, event, clientId, channelFor(clientId));
+        // Record push watermark for offset tracking
+        if (mqOffset >= 0 && mqPartition >= 0) {
+            pushOffsetStore.writePushOffset(topic, clientId, mqPartition, mqOffset);
+        }
         return true;
     }
 
@@ -571,7 +587,7 @@ public class UniIngressService {
             });
 
         metrics.registerLabelledGauge("eventmesh_offset_lag",
-            "MQ end offset - distributed offset (per topic/partition)",
+            "MQ end offset - max ACK offset (per topic/partition) — total consumer lag",
             () -> {
                 java.util.List<UniMetrics.LabelledLong> out = new java.util.ArrayList<>();
                 if (partitionOwnership == null) {
@@ -582,27 +598,72 @@ public class UniIngressService {
                     if (owned == null) {
                         continue;
                     }
-                    // Max distributed offset per partition across all clients (key = clientId#partition).
-                    java.util.Map<Integer, Long> maxByPart = new java.util.HashMap<>();
+                    // Max ACK offset per partition across all clients (key = clientId#partition).
+                    java.util.Map<Integer, Long> maxAckByPart = new java.util.HashMap<>();
                     for (java.util.Map.Entry<String, Long> e : offsetStore.readAllOffsets(t).entrySet()) {
                         int sep = e.getKey().lastIndexOf('#');
                         if (sep > 0) {
                             try {
                                 int p = Integer.parseInt(e.getKey().substring(sep + 1));
-                                maxByPart.merge(p, e.getValue(), Math::max);
+                                maxAckByPart.merge(p, e.getValue(), Math::max);
                             } catch (NumberFormatException expected) {
                             }
                         }
                     }
                     for (int p : owned) {
                         long end = storage.endOffset(t, p);
-                        long dist = maxByPart.getOrDefault(p, -1L);
-                        if (end >= 0 && dist >= 0) {
+                        long ack = maxAckByPart.getOrDefault(p, -1L);
+                        if (end >= 0 && ack >= 0) {
                             out.add(new UniMetrics.LabelledLong(
                                 io.opentelemetry.api.common.Attributes.of(
                                     io.opentelemetry.api.common.AttributeKey.stringKey("topic"), t,
                                     io.opentelemetry.api.common.AttributeKey.longKey("partition"), (long) p),
-                                Math.max(0, end - dist)));
+                                Math.max(0, end - ack)));
+                        }
+                    }
+                }
+                return out;
+            });
+
+        metrics.registerLabelledGauge("eventmesh_push_ack_lag",
+            "max push offset - max ACK offset (per topic/partition) — in-flight deliveries",
+            () -> {
+                java.util.List<UniMetrics.LabelledLong> out = new java.util.ArrayList<>();
+                for (String t : subscriptionManager.activeTopics()) {
+                    // Max push offset per partition across all clients
+                    java.util.Map<Integer, Long> maxPushByPart = new java.util.HashMap<>();
+                    for (java.util.Map.Entry<String, Long> e : pushOffsetStore.readAllPushOffsets(t).entrySet()) {
+                        int sep = e.getKey().lastIndexOf('#');
+                        if (sep > 0) {
+                            try {
+                                int p = Integer.parseInt(e.getKey().substring(sep + 1));
+                                maxPushByPart.merge(p, e.getValue(), Math::max);
+                            } catch (NumberFormatException expected) {
+                            }
+                        }
+                    }
+                    // Max ACK offset per partition across all clients
+                    java.util.Map<Integer, Long> maxAckByPart = new java.util.HashMap<>();
+                    for (java.util.Map.Entry<String, Long> e : offsetStore.readAllOffsets(t).entrySet()) {
+                        int sep = e.getKey().lastIndexOf('#');
+                        if (sep > 0) {
+                            try {
+                                int p = Integer.parseInt(e.getKey().substring(sep + 1));
+                                maxAckByPart.merge(p, e.getValue(), Math::max);
+                            } catch (NumberFormatException expected) {
+                            }
+                        }
+                    }
+                    for (java.util.Map.Entry<Integer, Long> pushEntry : maxPushByPart.entrySet()) {
+                        int p = pushEntry.getKey();
+                        long pushOff = pushEntry.getValue();
+                        long ackOff = maxAckByPart.getOrDefault(p, -1L);
+                        if (pushOff >= 0 && ackOff >= 0) {
+                            out.add(new UniMetrics.LabelledLong(
+                                io.opentelemetry.api.common.Attributes.of(
+                                    io.opentelemetry.api.common.AttributeKey.stringKey("topic"), t,
+                                    io.opentelemetry.api.common.AttributeKey.longKey("partition"), (long) p),
+                                Math.max(0, pushOff - ackOff)));
                         }
                     }
                 }
@@ -675,8 +736,11 @@ public class UniIngressService {
         return channels.computeIfAbsent(clientId, id -> new LongPollingChannel(pushService, id));
     }
 
-    private long nextOffset(String topic) {
-        return topicOffsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
+    /**
+     * Expose PushOffsetStore for metrics and admin queries.
+     */
+    public PushOffsetStore getPushOffsetStore() {
+        return pushOffsetStore;
     }
 
     private DeadLetterSink deadLetterSink() {

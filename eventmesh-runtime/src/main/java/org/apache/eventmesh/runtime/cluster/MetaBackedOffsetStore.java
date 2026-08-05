@@ -84,6 +84,12 @@ public class MetaBackedOffsetStore implements OffsetStore {
     }
 
     @Override
+    public java.util.Set<String> readAllTopics() {
+        // Delegate to local — it mirrors every write and is the crash-recovery source.
+        return local.readAllTopics();
+    }
+
+    @Override
     public void flush() {
         local.flush();
         flushDirty();

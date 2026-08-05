@@ -121,7 +121,7 @@ class RealBrokerIntegrationTest {
             }
 
             // 4. The offset advanced only on ACK — the core at-least-once contract, now over real MQ.
-            long offset = runtime.ingress().getOffsetStore().readOffset(topic, clientId, -1);
+            long offset = runtime.ingress().getOffsetStore().readOffset(topic, clientId, 0);
             if (offset < 1) {
                 throw new AssertionError("offset did not advance after ACK: " + offset);
             }

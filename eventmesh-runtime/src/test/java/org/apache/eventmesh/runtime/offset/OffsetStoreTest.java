@@ -90,5 +90,21 @@ class OffsetStoreTest {
         assertEquals(99L, all.get("worker-2#0"));
         assertFalse(all.containsKey("worker-1#0".replace("0", "x")));
         assertTrue(all.values().stream().allMatch(v -> v >= 0));
+
+        // readAllTopics returns the set of topics with persisted offsets.
+        java.util.Set<String> topics = store.readAllTopics();
+        assertTrue(topics.contains("orders"));
+        assertTrue(topics.contains("payments"));
+        assertEquals(2, topics.size());
+    }
+
+    /**
+     * readAllTopics on an empty store returns an empty set (first-run scenario).
+     */
+    @Test
+    void emptyStoreReturnsEmptyTopicSet() {
+        InMemoryOffsetStore store = new InMemoryOffsetStore();
+        assertTrue(store.readAllTopics().isEmpty());
+        store.close();
     }
 }

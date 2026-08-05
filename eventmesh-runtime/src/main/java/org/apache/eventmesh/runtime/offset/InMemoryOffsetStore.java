@@ -57,6 +57,18 @@ public class InMemoryOffsetStore implements OffsetStore {
     }
 
     @Override
+    public java.util.Set<String> readAllTopics() {
+        java.util.Set<String> topics = new java.util.HashSet<>();
+        for (String key : table.keySet()) {
+            int sep = key.indexOf('#');
+            if (sep > 0) {
+                topics.add(key.substring(0, sep));
+            }
+        }
+        return topics;
+    }
+
+    @Override
     public void flush() {
         // nothing buffered
     }
