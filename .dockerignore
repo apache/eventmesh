@@ -1,2 +1,31 @@
 dist/
 build/
+**/build/
+
+# VCS and gradle caches (the wrapper is not used; system gradle lives in the
+# builder image).
+.git/
+.gitignore
+.gradle/
+**/.gradle/
+
+# Non-Java SDKs (not included in Gradle build)
+eventmesh-sdks/eventmesh-sdk-rust/
+eventmesh-sdks/eventmesh-sdk-go/
+eventmesh-sdks/eventmesh-sdk-c/
+
+# Rust / Node build artifacts. Keep the pattern slashless so Docker excludes
+# both the target directory itself and everything below it in any SDK context.
+**/target
+**/node_modules/
+
+# IDE / editor cruft.
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Docs & misc
+docs/
+*.md

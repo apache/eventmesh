@@ -7,6 +7,7 @@ This guide covers `eventmesh-sdks/eventmesh-sdk-rust`. Repository-wide Apache Ev
 - Rust 1.86.0 or newer (the crate MSRV)
 - `protoc` on `PATH` for builds that enable `grpc`, `full`, or `e2e`
 - Docker and a compatible EventMesh runtime only for live end-to-end tests
+- Java 8 or newer and Maven for the optional cross-SDK interop tests
 
 `build.rs` invokes `tonic-build`; generated protobuf code lives in `OUT_DIR` and must not be edited or committed.
 
@@ -33,6 +34,17 @@ cargo test --features e2e
 ```
 
 The harness starts the `rocketmq` docker-compose profile unless `EVENTMESH_E2E_EXTERNAL=1` points it at an already running runtime. An absent runtime is a failure by default. `EVENTMESH_E2E_ALLOW_SKIP=1` is only for an intentional local skip and must not be used for release verification.
+
+The bundled compose file pins the Runtime to `apache/eventmesh:v1.12.0`. Run
+the bidirectional Rust/Java gRPC, HTTP, and TCP checks with:
+
+```bash
+cargo test --features interop_e2e --test e2e interop
+```
+
+Those tests build `interop/java-peer` with Maven on first use. The standalone
+peer depends on `org.apache.eventmesh:eventmesh-sdk-java:1.12.0-release`; it
+does not compile or load the Java SDK source tree from this repository.
 
 The TCP reconnect test runs in the normal e2e suite. It uses a unique client
 subsystem and the Runtime admin API to disconnect only its own TCP sessions, so

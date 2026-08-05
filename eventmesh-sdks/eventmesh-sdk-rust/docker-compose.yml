@@ -28,11 +28,11 @@
 # Notes:
 #   - EventMesh image: https://hub.docker.com/r/apache/eventmesh
 #   - Runtime exposes TCP 10000, HTTP 10105, gRPC 10205, Admin 10106.
-#   - To use a locally built image, set IMAGE env var, e.g.:
+#   - Override the pinned release image with IMAGE, e.g.:
 #       IMAGE=yourname/eventmesh:tag docker compose --profile standalone up -d
 #
-# The default, eventmesh:jdk11-test, is a locally built JDK 11 image; set
-# IMAGE=apache/eventmesh:latest to pull the upstream image instead.
+# The default is the Apache EventMesh 1.12.0 release image used by this SDK's
+# protocol compatibility suite.
 #   - `docker compose up` (no profile) starts nothing on purpose, to avoid
 #     accidentally booting the wrong storage backend.
 
@@ -42,7 +42,7 @@ services:
   # Profile: standalone
   # ====================================================================
   eventmesh-standalone:
-    image: ${IMAGE:-eventmesh:jdk11-test}
+    image: ${IMAGE:-apache/eventmesh:v1.12.0}
     container_name: eventmesh-standalone
     profiles: ["standalone"]
     ports:
@@ -110,7 +110,7 @@ services:
     restart: unless-stopped
 
   eventmesh-rocketmq:
-    image: ${IMAGE:-eventmesh:jdk11-test}
+    image: ${IMAGE:-apache/eventmesh:v1.12.0}
     container_name: eventmesh-rocketmq
     profiles: ["rocketmq"]
     depends_on:

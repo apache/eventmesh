@@ -148,8 +148,15 @@ Add convenience aliases in `proto_gen.rs`, not in the generated module.
 
 Run with: `cargo test --features e2e`.
 
+Cross-SDK gRPC, HTTP, and TCP checks run with `cargo test --features
+interop_e2e --test e2e interop`. They build the standalone Maven project under
+`interop/java-peer`, which pins
+`org.apache.eventmesh:eventmesh-sdk-java:1.12.0-release`; do not add a
+dependency on the repository's Java SDK Gradle subproject.
+
 - The harness (`tests/e2e/runtime.rs`) **auto-starts the `rocketmq` docker-compose
-  profile** and tears it down at process exit. Set `EVENTMESH_E2E_EXTERNAL=1` to
+  profile** with `apache/eventmesh:v1.12.0` and tears it down at process exit.
+  Set `EVENTMESH_E2E_EXTERNAL=1` to
   point at a server you started yourself.
 - If neither Docker nor a reachable server is found, tests **fail by default**.
   Set `EVENTMESH_E2E_ALLOW_SKIP=1` only for an intentional local skip; release

@@ -20,6 +20,7 @@ The default feature set is empty. Enable the transport(s) your application uses;
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
 | `full` | All transports and CloudEvents support |
 | `e2e` | Live-runtime integration tests; implies all runtime features |
+| `interop_e2e` | Bidirectional Rust/Java gRPC, HTTP, and TCP tests against Java SDK 1.12.0; implies `e2e` |
 
 ```toml
 [dependencies]

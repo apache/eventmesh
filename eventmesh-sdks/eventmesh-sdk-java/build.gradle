@@ -66,10 +66,3 @@ dependencies {
     testImplementation "org.mockito:mockito-inline"
     testImplementation "org.mockito:mockito-junit-jupiter"
 }
-
-tasks.register('interopPeerClasspath') {
-    dependsOn testClasses
-    doLast {
-        println("INTEROP_PEER_CLASSPATH=${sourceSets.test.runtimeClasspath.asPath}")
-    }
-}

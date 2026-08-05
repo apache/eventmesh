@@ -92,7 +92,8 @@ full = ["grpc", "http", "tcp", "cloud_events"]
 # transports + cloud_events so the full suite (gRPC + HTTP + TCP + CE) compiles
 # from a single flag.
 e2e = ["grpc", "http", "tcp", "cloud_events"]
-# Cross-SDK E2E: starts the Java SDK peer on the host JVM.
+# Cross-SDK E2E: builds the Maven peer in interop/java-peer and starts it on
+# the host JVM. The peer is pinned to eventmesh-sdk-java:1.12.0-release.
 interop_e2e = ["e2e"]
 
 [dependencies]
