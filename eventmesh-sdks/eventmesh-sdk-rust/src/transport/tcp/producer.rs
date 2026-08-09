@@ -97,7 +97,6 @@ impl TcpProducer {
     #[cfg(feature = "cloud_events")]
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
         use cloudevents::AttributesReader;
-        validate_cloud_event(&event)?;
         let pkg = message::build_cloud_event_package(&event, Command::AsyncMessageToServer)?;
         debug!(topic = ?event.subject(), "publishing CloudEvent via TCP");
 
@@ -119,7 +118,6 @@ impl TcpProducer {
     /// `datacontenttype` requirement.
     #[cfg(feature = "cloud_events")]
     pub async fn broadcast_cloud_event(&self, event: cloudevents::Event) -> Result<()> {
-        validate_cloud_event(&event)?;
         let pkg = message::build_cloud_event_package(&event, Command::BroadcastMessageToServer)?;
         self.conn.send(pkg).await
     }
@@ -142,7 +140,6 @@ impl TcpProducer {
         timeout: Duration,
     ) -> Result<cloudevents::Event> {
         use cloudevents::AttributesReader;
-        validate_cloud_event(&event)?;
         let pkg = message::build_cloud_event_package(&event, Command::RequestToServer)?;
         debug!(topic = ?event.subject(), "request-reply CloudEvent via TCP");
 
@@ -259,74 +256,5 @@ impl RequestReply for TcpProducer {
         message::parse_message(&resp.body).ok_or_else(|| {
             EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
         })
-    }
-}
-
-/// The `datacontenttype` value required by the Java SDK and runtime TCP
-/// CloudEvents codecs when selecting the serializer for the whole event.
-#[cfg(feature = "cloud_events")]
-const REQUIRED_CE_DATA_CONTENT_TYPE: &str = "application/cloudevents+json";
-
-/// Validate that a CloudEvent has the `datacontenttype` required by the TCP
-/// transport.
-#[cfg(feature = "cloud_events")]
-fn validate_cloud_event(event: &cloudevents::Event) -> Result<()> {
-    use cloudevents::AttributesReader;
-    match event.datacontenttype() {
-        Some(REQUIRED_CE_DATA_CONTENT_TYPE) => Ok(()),
-        Some(other) => Err(EventMeshError::InvalidMessage(format!(
-            "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
-             got \"{other}\" — the EventMesh Java TCP codec cannot serialize other values"
-        ))),
-        None => Err(EventMeshError::InvalidMessage(format!(
-            "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
-             but none is set — the EventMesh Java TCP codec requires it as a serializer selector"
-        ))),
-    }
-}
-
-#[cfg(all(test, feature = "cloud_events"))]
-mod tests {
-    use super::*;
-    use cloudevents::{AttributesReader, EventBuilder, EventBuilderV10};
-
-    fn make_event(datacontenttype: &str) -> cloudevents::Event {
-        EventBuilderV10::new()
-            .id("ce-1")
-            .source("https://example.com")
-            .ty("com.example.test")
-            .subject("ce-topic")
-            .data(datacontenttype, serde_json::json!({"hello": "world"}))
-            .build()
-            .expect("valid event")
-    }
-
-    #[test]
-    fn accepts_required_content_type() {
-        assert!(validate_cloud_event(&make_event(REQUIRED_CE_DATA_CONTENT_TYPE)).is_ok());
-    }
-
-    #[test]
-    fn rejects_application_json() {
-        let event = make_event("application/json");
-        let err = validate_cloud_event(&event).unwrap_err();
-        assert!(
-            err.to_string().contains("application/cloudevents+json"),
-            "error should mention required content type: {err}"
-        );
-    }
-
-    #[test]
-    fn rejects_missing_content_type() {
-        let event = EventBuilderV10::new()
-            .id("ce-1")
-            .source("https://example.com")
-            .ty("com.example.test")
-            .subject("ce-topic")
-            .build()
-            .expect("valid event");
-
-        assert!(event.datacontenttype().is_none());
-        assert!(validate_cloud_event(&event).is_err());
     }
 }

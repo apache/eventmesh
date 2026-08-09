@@ -15,11 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Low-level gRPC client: one tonic [`Channel`] shared by the three service
-//! stubs.
+//! Low-level gRPC client with a lazily initialized tonic [`Channel`].
 
+use std::sync::Arc;
 use std::time::Duration;
 
+use tokio::sync::OnceCell;
 use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
 use tonic::transport::{Channel, Endpoint};
 use tonic::{Request, Streaming};
@@ -36,19 +37,21 @@ use crate::proto_gen::{
 /// Cheaply cloneable (wraps a multiplexed tonic channel).
 #[derive(Clone)]
 pub struct GrpcClient {
-    publisher: PublisherServiceClient<Channel>,
-    consumer: ConsumerServiceClient<Channel>,
-    heartbeat: HeartbeatServiceClient<Channel>,
+    endpoint: Endpoint,
+    channel: Arc<OnceCell<Channel>>,
 }
 
 impl GrpcClient {
-    /// Build a lazy channel from a config. Does **not** block on connection.
+    /// Validate and store the endpoint configuration without touching Tokio's
+    /// reactor. The channel itself is created by the first async operation.
     pub fn new(config: &GrpcClientConfig) -> Result<Self> {
-        Ok(Self::from_channel(Self::channel(config)?))
+        Ok(Self {
+            endpoint: Self::endpoint(config)?,
+            channel: Arc::new(OnceCell::new()),
+        })
     }
 
-    /// Build a lazy gRPC channel from a config.
-    pub(crate) fn channel(config: &GrpcClientConfig) -> Result<Channel> {
+    fn endpoint(config: &GrpcClientConfig) -> Result<Endpoint> {
         let uri = format!("http://{}", config.authority());
         let endpoint = Endpoint::from_shared(uri.clone())
             .map_err(|e| EventMeshError::Config(format!("bad endpoint {uri:?}: {e}")))?
@@ -60,35 +63,33 @@ impl GrpcClient {
             .keep_alive_while_idle(true)
             .tcp_nodelay(true)
             .tcp_keepalive(Some(Duration::from_secs(100)));
-
-        Ok(endpoint.connect_lazy())
+        Ok(endpoint)
     }
 
-    fn from_channel(channel: Channel) -> Self {
-        Self {
-            publisher: PublisherServiceClient::new(channel.clone()),
-            consumer: ConsumerServiceClient::new(channel.clone()),
-            heartbeat: HeartbeatServiceClient::new(channel),
-        }
+    async fn channel(&self) -> Channel {
+        let endpoint = self.endpoint.clone();
+        self.channel
+            .get_or_init(|| async move { endpoint.connect_lazy() })
+            .await
+            .clone()
     }
 
     pub async fn publish(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
-        Ok(self.publisher.clone().publish(event).await?.into_inner())
+        Ok(PublisherServiceClient::new(self.channel().await)
+            .publish(event)
+            .await?
+            .into_inner())
     }
 
     pub async fn batch_publish(&self, events: PbCloudEventBatch) -> Result<PbCloudEvent> {
-        Ok(self
-            .publisher
-            .clone()
+        Ok(PublisherServiceClient::new(self.channel().await)
             .batch_publish(events)
             .await?
             .into_inner())
     }
 
     pub async fn request_reply(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
-        Ok(self
-            .publisher
-            .clone()
+        Ok(PublisherServiceClient::new(self.channel().await)
             .request_reply(event)
             .await?
             .into_inner())
@@ -97,7 +98,10 @@ impl GrpcClient {
     /// Subscribe via webhook (server POSTs events to the URL). Returns the
     /// broker's ack CloudEvent.
     pub async fn subscribe_webhook(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
-        Ok(self.consumer.clone().subscribe(event).await?.into_inner())
+        Ok(ConsumerServiceClient::new(self.channel().await)
+            .subscribe(event)
+            .await?
+            .into_inner())
     }
 
     /// Open a bidirectional stream subscription. The first message on the
@@ -120,7 +124,7 @@ impl GrpcClient {
         tx.send(first)
             .await
             .map_err(|e| EventMeshError::ChannelClosed(format!("stream open send: {e}")))?;
-        let mut stream_client = self.consumer.clone();
+        let mut stream_client = ConsumerServiceClient::new(self.channel().await);
 
         // The stream-open `.await` resolves once the server sends response
         // headers. On a single-threaded runtime this never completes because
@@ -148,13 +152,14 @@ impl GrpcClient {
     }
 
     pub async fn unsubscribe(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
-        Ok(self.consumer.clone().unsubscribe(event).await?.into_inner())
+        Ok(ConsumerServiceClient::new(self.channel().await)
+            .unsubscribe(event)
+            .await?
+            .into_inner())
     }
 
     pub async fn heartbeat(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
-        Ok(self
-            .heartbeat
-            .clone()
+        Ok(HeartbeatServiceClient::new(self.channel().await)
             .heartbeat(Request::new(event))
             .await?
             .into_inner())
@@ -167,13 +172,14 @@ mod tests {
     use crate::config::GrpcClientConfig;
 
     /// Smoke test: the EventMesh runtime gRPC endpoint is plain HTTP/2.
-    #[tokio::test]
-    async fn plain_http_always_builds() {
+    #[test]
+    fn plain_http_builds_without_a_tokio_runtime() {
         let config = GrpcClientConfig::builder()
             .server_addr("127.0.0.1")
             .server_port(10205)
             .build();
-        // connect_lazy does not actually connect, so this should never fail.
+        // Construction only validates the endpoint and must not spawn tonic's
+        // connection driver.
         let _ = GrpcClient::new(&config).unwrap();
     }
 }

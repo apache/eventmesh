@@ -580,7 +580,7 @@ where
                     }
                     info!("connection reconnected, replaying subscriptions");
                     let subs_snapshot = subscriptions.lock().await.clone();
-                    let mut all_ok = true;
+                    let mut replay_error = None;
                     for item in &subs_snapshot {
                         let sub_pkg =
                             message::subscribe(&item.topic, std::slice::from_ref(item));
@@ -593,7 +593,12 @@ where
                                         code = r.code,
                                         "re-subscribe after reconnect rejected"
                                     );
-                                    all_ok = false;
+                                    replay_error = Some(format!(
+                                        "re-subscribe after reconnect rejected for topic {:?}: \
+                                         server code {:?}",
+                                        item.topic, r.code
+                                    ));
+                                    break;
                                 }
                             }
                             Err(e) => {
@@ -602,23 +607,41 @@ where
                                     error = %e,
                                     "re-subscribe after reconnect error"
                                 );
-                                all_ok = false;
+                                replay_error = Some(format!(
+                                    "re-subscribe after reconnect failed for topic {:?}: {e}",
+                                    item.topic
+                                ));
+                                break;
                             }
                         }
                     }
-                    if all_ok {
-                        match conn.io(message::listen(), config.control_timeout).await {
-                            Ok(resp) => {
-                                let r = message::response_from_pkg(&resp);
-                                if !r.is_success() {
-                                    warn!(code = r.code, "re-LISTEN after reconnect rejected");
-                                } else {
-                                    debug!("re-LISTEN ok after reconnect");
-                                }
+
+                    if let Some(error) = replay_error {
+                        *shutdown_reason.lock().await = Some(ShutdownReason::Error(error));
+                        break;
+                    }
+
+                    match conn.io(message::listen(), config.control_timeout).await {
+                        Ok(resp) => {
+                            let r = message::response_from_pkg(&resp);
+                            if !r.is_success() {
+                                warn!(code = r.code, "re-LISTEN after reconnect rejected");
+                                *shutdown_reason.lock().await = Some(ShutdownReason::Error(
+                                    format!(
+                                        "re-LISTEN after reconnect rejected: server code {:?}",
+                                        r.code
+                                    ),
+                                ));
+                                break;
                             }
-                            Err(e) => {
-                                warn!(error = %e, "re-LISTEN after reconnect error");
-                            }
+                            debug!("re-LISTEN ok after reconnect");
+                        }
+                        Err(e) => {
+                            warn!(error = %e, "re-LISTEN after reconnect error");
+                            *shutdown_reason.lock().await = Some(ShutdownReason::Error(format!(
+                                "re-LISTEN after reconnect failed: {e}"
+                            )));
+                            break;
                         }
                     }
                 }
@@ -777,7 +800,7 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::config::TcpClientConfig;
+    use crate::config::{ReconnectConfig, TcpClientConfig};
     use crate::model::{SubscriptionItem, SubscriptionMode, SubscriptionType};
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody, RedirectInfo};
@@ -1170,6 +1193,104 @@ mod tests {
         consumer.shutdown().await;
         let _ = server.await;
     }
+
+    #[tokio::test]
+    async fn rejected_reconnect_replay_stops_the_consumer() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut first = Framed::new(stream, TcpCodec::new());
+            let hello = first.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            first
+                .send(Package::new(Header::new(
+                    Command::HelloResponse,
+                    hello.header.seq.unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+            let listen = first.next().await.unwrap().unwrap();
+            assert_eq!(listen.header.cmd, Command::ListenRequest);
+            first
+                .send(Package::new(Header::new(
+                    Command::ListenResponse,
+                    listen.header.seq.unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+            let subscribe = first.next().await.unwrap().unwrap();
+            assert_eq!(subscribe.header.cmd, Command::SubscribeRequest);
+            first
+                .send(Package::new(Header::new(
+                    Command::SubscribeResponse,
+                    subscribe.header.seq.unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+            drop(first);
+
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut second = Framed::new(stream, TcpCodec::new());
+            let hello = second.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            second
+                .send(Package::new(Header::new(
+                    Command::HelloResponse,
+                    hello.header.seq.unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+            let replay = second.next().await.unwrap().unwrap();
+            assert_eq!(replay.header.cmd, Command::SubscribeRequest);
+            let mut rejection = Header::new(
+                Command::SubscribeResponse,
+                replay.header.seq.unwrap_or_default(),
+            );
+            rejection.code = 17;
+            rejection.desc = Some("replay rejected".into());
+            second.send(Package::new(rejection)).await.unwrap();
+
+            let _ = tokio::time::timeout(Duration::from_secs(3), second.next()).await;
+        });
+
+        let config = TcpClientConfig::builder()
+            .server_addr("127.0.0.1")
+            .server_port(port)
+            .consumer_group("g")
+            .control_timeout(Duration::from_secs(3))
+            .heartbeat_interval(Duration::from_secs(60))
+            .reconnect(
+                ReconnectConfig::builder()
+                    .enabled(true)
+                    .initial_backoff(Duration::from_millis(20))
+                    .max_backoff(Duration::from_millis(50))
+                    .build(),
+            )
+            .build();
+        let consumer = TcpConsumer::connect(config, NoopListener, None::<std::future::Ready<()>>)
+            .await
+            .expect("connect");
+        consumer
+            .subscribe(&[SubscriptionItem::new(
+                "orders",
+                SubscriptionMode::CLUSTERING,
+                SubscriptionType::ASYNC,
+            )])
+            .await
+            .expect("initial subscribe");
+
+        let reason = tokio::time::timeout(Duration::from_secs(5), consumer.wait_for_shutdown())
+            .await
+            .expect("rejected replay must stop the consumer");
+        assert!(matches!(
+            reason,
+            ShutdownReason::Error(message) if message.contains("re-subscribe")
+        ));
+        server.await.unwrap();
+    }
+
     /// The server sends `REDIRECT_TO_CLIENT` with an `ip`/`port` body.
     /// The receive loop must stop promptly and `wait_for_shutdown` must
     /// return `ShutdownReason::Redirect` carrying the advertised address.

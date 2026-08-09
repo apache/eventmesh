@@ -72,6 +72,11 @@ impl HttpConsumer {
         config: HttpClientConfig,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
+        let runtime = tokio::runtime::Handle::try_current().map_err(|_| {
+            EventMeshError::Config(
+                "HTTP consumer construction requires an active Tokio runtime".into(),
+            )
+        })?;
         let client = EventMeshHttpClient::new(config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
@@ -79,7 +84,7 @@ impl HttpConsumer {
         // Signal watcher.
         if let Some(signal) = shutdown_signal {
             let token = shutdown.clone();
-            tokio::spawn(async move {
+            runtime.spawn(async move {
                 tokio::select! {
                     _ = signal => token.cancel(),
                     _ = token.cancelled() => {}
@@ -87,8 +92,12 @@ impl HttpConsumer {
             });
         }
 
-        let heartbeat_handle =
-            spawn_heartbeat(client.clone(), Arc::clone(&subscriptions), shutdown.clone());
+        let heartbeat_handle = spawn_heartbeat(
+            &runtime,
+            client.clone(),
+            Arc::clone(&subscriptions),
+            shutdown.clone(),
+        );
 
         Ok(Self {
             client,
@@ -279,10 +288,15 @@ impl HttpConsumer {
             grouped
         };
 
+        let mut first_error = None;
         for (url, items) in registrations {
-            self.unsubscribe(items, url).await?;
+            if let Err(error) = self.unsubscribe(items, url).await {
+                if first_error.is_none() {
+                    first_error = Some(error);
+                }
+            }
         }
-        Ok(())
+        first_error.map_or(Ok(()), Err)
     }
 }
 
@@ -300,11 +314,12 @@ impl Drop for HttpConsumer {
 /// Spawn the heartbeat loop. Reads the consumer's subscriptions each tick and
 /// reports them to the broker.
 fn spawn_heartbeat(
+    runtime: &tokio::runtime::Handle,
     client: EventMeshHttpClient,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
 ) -> JoinHandle<()> {
-    tokio::spawn(async move {
+    runtime.spawn(async move {
         tokio::select! {
             _ = tokio::time::sleep(HEARTBEAT_INITIAL_DELAY) => {}
             _ = shutdown.cancelled() => return,

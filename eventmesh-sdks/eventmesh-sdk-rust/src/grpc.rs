@@ -304,3 +304,18 @@ impl GrpcProducer {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::Endpoint;
+
+    #[test]
+    fn client_and_producer_build_without_a_tokio_runtime() {
+        let config = GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205).unwrap());
+        let client = GrpcClient::new(config).unwrap();
+        let _producer = client
+            .producer(ProducerOptions::new("producer-group"))
+            .unwrap();
+    }
+}

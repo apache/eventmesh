@@ -338,13 +338,14 @@ fn server_join_error(error: tokio::task::JoinError) -> EventMeshError {
 mod tests {
     use super::*;
     use axum::{extract::State, http::HeaderMap, routing::post, Json, Router};
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use tokio::sync::mpsc;
 
     #[derive(Clone)]
     struct RuntimeState {
         codes: Arc<Mutex<Vec<i32>>>,
         reject_subscribe: Arc<AtomicBool>,
+        rejected_unsubscribes_remaining: Arc<AtomicUsize>,
     }
 
     async fn runtime_reply(
@@ -357,9 +358,16 @@ mod tests {
             .and_then(|value| value.parse().ok())
             .unwrap_or_default();
         state.codes.lock().await.push(code);
-        let ret_code = if code == crate::common::status_code::RequestCode::SUBSCRIBE
-            && state.reject_subscribe.load(Ordering::Relaxed)
-        {
+        let reject_subscribe = code == crate::common::status_code::RequestCode::SUBSCRIBE
+            && state.reject_subscribe.load(Ordering::Relaxed);
+        let reject_unsubscribe = code == crate::common::status_code::RequestCode::UNSUBSCRIBE
+            && state
+                .rejected_unsubscribes_remaining
+                .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |remaining| {
+                    remaining.checked_sub(1)
+                })
+                .is_ok();
+        let ret_code = if reject_subscribe || reject_unsubscribe {
             17
         } else {
             0
@@ -369,6 +377,7 @@ mod tests {
 
     async fn mock_runtime(
         reject_subscribe: bool,
+        rejected_unsubscribes: usize,
     ) -> (HttpClient, Arc<Mutex<Vec<i32>>>, JoinHandle<()>) {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
@@ -376,6 +385,7 @@ mod tests {
         let state = RuntimeState {
             codes: Arc::clone(&codes),
             reject_subscribe: Arc::new(AtomicBool::new(reject_subscribe)),
+            rejected_unsubscribes_remaining: Arc::new(AtomicUsize::new(rejected_unsubscribes)),
         };
         let task = tokio::spawn(async move {
             axum::serve(
@@ -400,9 +410,23 @@ mod tests {
         address
     }
 
+    #[test]
+    fn webhook_registration_returns_error_without_a_tokio_runtime() {
+        let endpoint = crate::config::Endpoint::new("127.0.0.1", 10_104).unwrap();
+        let endpoints = crate::config::EndpointSet::new([endpoint]).unwrap();
+        let client = HttpClient::new(HttpConfig::new(endpoints)).unwrap();
+
+        let result = client.webhook_registration(ConsumerOptions::new("consumer-group"));
+
+        assert!(matches!(
+            result,
+            Err(EventMeshError::Config(message)) if message.contains("active Tokio runtime")
+        ));
+    }
+
     #[tokio::test]
     async fn managed_consumer_binds_before_registering() {
-        let (client, codes, runtime) = mock_runtime(false).await;
+        let (client, codes, runtime) = mock_runtime(false, 0).await;
         let occupied = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = occupied.local_addr().unwrap();
 
@@ -425,7 +449,7 @@ mod tests {
 
     #[tokio::test]
     async fn managed_consumer_serves_and_unregisters_on_close() {
-        let (client, codes, runtime) = mock_runtime(false).await;
+        let (client, codes, runtime) = mock_runtime(false, 0).await;
         let (tx, mut rx) = mpsc::unbounded_channel();
         let consumer = client
             .consumer(
@@ -466,7 +490,7 @@ mod tests {
 
     #[tokio::test]
     async fn managed_consumer_shutdown_only_signals_local_tasks() {
-        let (client, codes, runtime) = mock_runtime(false).await;
+        let (client, codes, runtime) = mock_runtime(false, 0).await;
         let consumer = client
             .consumer(
                 ConsumerOptions::new("group"),
@@ -491,7 +515,7 @@ mod tests {
 
     #[tokio::test]
     async fn registration_failure_stops_managed_server() {
-        let (client, _codes, runtime) = mock_runtime(true).await;
+        let (client, _codes, runtime) = mock_runtime(true, 0).await;
         let address = available_address();
         let result = client
             .consumer(
@@ -503,6 +527,38 @@ mod tests {
             .await;
         assert!(matches!(result, Err(EventMeshError::Server { .. })));
         assert!(tokio::net::TcpStream::connect(address).await.is_err());
+        runtime.abort();
+    }
+
+    #[tokio::test]
+    async fn registration_close_attempts_every_webhook_url() {
+        let (client, codes, runtime) = mock_runtime(false, 1).await;
+        let registration = client
+            .webhook_registration(ConsumerOptions::new("consumer-group"))
+            .unwrap();
+        registration
+            .subscribe(Subscription::new("orders"), "http://127.0.0.1:30001/orders")
+            .await
+            .unwrap();
+        registration
+            .subscribe(
+                Subscription::new("payments"),
+                "http://127.0.0.1:30002/payments",
+            )
+            .await
+            .unwrap();
+
+        assert!(matches!(
+            registration.close().await,
+            Err(EventMeshError::Server { code: 17, .. })
+        ));
+        let unsubscribe_count = codes
+            .lock()
+            .await
+            .iter()
+            .filter(|code| **code == crate::common::status_code::RequestCode::UNSUBSCRIBE)
+            .count();
+        assert_eq!(unsubscribe_count, 2);
         runtime.abort();
     }
 }

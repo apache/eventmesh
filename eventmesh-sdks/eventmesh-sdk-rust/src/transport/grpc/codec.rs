@@ -430,9 +430,17 @@ pub fn from_cloudevent(
             cloudevents::event::ExtensionValue::Boolean(b) => PbCloudEventAttributeValue {
                 attr: Some(PbAttr::CeBoolean(*b)),
             },
-            cloudevents::event::ExtensionValue::Integer(i) => PbCloudEventAttributeValue {
-                attr: Some(PbAttr::CeInteger(*i as i32)),
-            },
+            cloudevents::event::ExtensionValue::Integer(i) => {
+                let value = i32::try_from(*i).map_err(|_| {
+                    EventMeshError::InvalidMessage(format!(
+                        "CloudEvent integer extension {k:?} value {i} is outside protobuf \
+                         int32 range"
+                    ))
+                })?;
+                PbCloudEventAttributeValue {
+                    attr: Some(PbAttr::CeInteger(value)),
+                }
+            }
         };
         attrs.insert(k.to_string(), attr);
     }
@@ -458,7 +466,7 @@ pub fn from_cloudevent(
 /// native [`cloudevents::Event`].
 #[cfg(feature = "cloud_events")]
 pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
-    use cloudevents::{EventBuilder, EventBuilderV10};
+    use cloudevents::{Data, EventBuilder, EventBuilderV10};
 
     let topic = get_subject(&cloud_event);
     // Use the protobuf `id` field (the standard CE id) rather than the
@@ -494,38 +502,23 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
 
     let mut builder = EventBuilderV10::new().id(ce_id).source(source).ty(ty);
 
-    // Preserve binary vs text data instead of lossy-converting everything
-    // to a string.  When dataschema is present use data_with_schema so the
-    // schema URL round-trips as a standard CE attribute.
-    match (&cloud_event.data, &dataschema) {
-        (Some(PbData::TextData(s)), Some(ds)) => {
-            builder = builder.data_with_schema(content_type.as_str(), ds.as_str(), s.clone());
+    // Preserve the native data variant. ProtoData becomes the complete encoded
+    // `google.protobuf.Any` (including `type_url`), rather than lossy-decoding
+    // only its value bytes as UTF-8.
+    let data = match &cloud_event.data {
+        Some(PbData::TextData(text)) if is_json_content_type(&content_type) => {
+            Some(Data::Json(serde_json::from_str(text)?))
         }
-        (Some(PbData::BinaryData(b)), Some(ds)) => {
-            builder = builder.data_with_schema(content_type.as_str(), ds.as_str(), b.clone());
-        }
-        (Some(PbData::ProtoData(any)), Some(ds)) => {
-            builder = builder.data_with_schema(
-                content_type.as_str(),
-                ds.as_str(),
-                String::from_utf8_lossy(&any.value).into_owned(),
-            );
-        }
-        (Some(PbData::TextData(s)), None) => {
-            builder = builder.data(content_type.as_str(), s.clone());
-        }
-        (Some(PbData::BinaryData(b)), None) => {
-            builder = builder.data(content_type.as_str(), b.clone());
-        }
-        (Some(PbData::ProtoData(any)), None) => {
-            builder = builder.data(
-                content_type.as_str(),
-                String::from_utf8_lossy(&any.value).into_owned(),
-            );
-        }
-        (None, _) => {
-            builder = builder.data(content_type.as_str(), String::new());
-        }
+        Some(PbData::TextData(text)) => Some(Data::String(text.clone())),
+        Some(PbData::BinaryData(bytes)) => Some(Data::Binary(bytes.clone())),
+        Some(PbData::ProtoData(any)) => Some(Data::Binary(any.encode_to_vec())),
+        None => None,
+    };
+    if let Some(data) = data {
+        builder = match &dataschema {
+            Some(ds) => builder.data_with_schema(content_type.as_str(), ds.as_str(), data),
+            None => builder.data(content_type.as_str(), data),
+        };
     }
 
     if !topic.is_empty() {
@@ -558,12 +551,42 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
         ) {
             continue;
         }
-        builder = builder.extension(k.as_str(), attr_as_str(&v));
+        builder = match v.attr {
+            Some(PbAttr::CeBoolean(value)) => builder.extension(k.as_str(), value),
+            Some(PbAttr::CeInteger(value)) => builder.extension(k.as_str(), i64::from(value)),
+            Some(PbAttr::CeString(value))
+            | Some(PbAttr::CeUri(value))
+            | Some(PbAttr::CeUriRef(value)) => builder.extension(k.as_str(), value),
+            Some(PbAttr::CeBytes(value)) => {
+                let value = String::from_utf8(value).map_err(|_| {
+                    EventMeshError::InvalidMessage(format!(
+                        "CloudEvent byte extension {k:?} cannot be represented by the native \
+                         CloudEvents extension model"
+                    ))
+                })?;
+                builder.extension(k.as_str(), value)
+            }
+            Some(PbAttr::CeTimestamp(value)) => {
+                builder.extension(k.as_str(), format!("{}.{}", value.seconds, value.nanos))
+            }
+            None => builder,
+        };
     }
     builder.build().map_err(|e| EventMeshError::Protocol {
         transport: "grpc",
         message: format!("cloudevents build error: {e}"),
     })
+}
+
+#[cfg(feature = "cloud_events")]
+fn is_json_content_type(content_type: &str) -> bool {
+    let media_type = content_type
+        .split(';')
+        .next()
+        .unwrap_or(content_type)
+        .trim()
+        .to_ascii_lowercase();
+    media_type == "application/json" || media_type == "text/json" || media_type.ends_with("+json")
 }
 
 /// Build a heartbeat CloudEvent.
@@ -704,7 +727,7 @@ mod tests {
     #[cfg(feature = "cloud_events")]
     #[test]
     fn cloudevent_roundtrip_preserves_fields() {
-        use cloudevents::{AttributesReader, EventBuilder, EventBuilderV10};
+        use cloudevents::{event::ExtensionValue, AttributesReader, EventBuilder, EventBuilderV10};
 
         let original = EventBuilderV10::new()
             .id("my-ce-id")
@@ -764,6 +787,83 @@ mod tests {
         assert_eq!(back.ty(), "com.example.event");
         assert!(back.time().is_some());
         assert!(back.dataschema().is_some());
+        assert!(matches!(
+            back.extension("bool-ext"),
+            Some(ExtensionValue::Boolean(true))
+        ));
+        assert!(matches!(
+            back.extension("int-ext"),
+            Some(ExtensionValue::Integer(42))
+        ));
+        assert!(matches!(
+            back.data(),
+            Some(cloudevents::Data::Json(value)) if value == &serde_json::json!({"k": "v"})
+        ));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn rejects_cloudevent_integer_extensions_outside_int32_range() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("id")
+            .source("/")
+            .ty("test")
+            .extension("too-large", i64::from(i32::MAX) + 1)
+            .build()
+            .unwrap();
+
+        assert!(matches!(
+            from_cloudevent(&event, &cfg()),
+            Err(EventMeshError::InvalidMessage(message))
+                if message.contains("too-large") && message.contains("int32")
+        ));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn to_cloudevent_leaves_missing_data_absent() {
+        use cloudevents::AttributesReader;
+
+        let pb = PbCloudEvent {
+            id: "empty-id".into(),
+            source: "/".into(),
+            spec_version: "1.0".into(),
+            r#type: "com.example.empty".into(),
+            ..Default::default()
+        };
+
+        assert!(to_cloudevent(pb).unwrap().data().is_none());
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn to_cloudevent_preserves_complete_protobuf_any_as_binary() {
+        use cloudevents::AttributesReader;
+
+        let any = PbAny {
+            type_url: "type.googleapis.com/example.Payload".into(),
+            value: vec![0xff, 0x00, 0x80, 0x01],
+        };
+        let expected = any.encode_to_vec();
+        let mut pb = PbCloudEvent {
+            id: "proto-id".into(),
+            source: "/".into(),
+            spec_version: "1.0".into(),
+            r#type: "com.example.proto".into(),
+            data: Some(PbData::ProtoData(any)),
+            ..Default::default()
+        };
+        pb.attributes.insert(
+            ProtocolKey::DATA_CONTENT_TYPE.into(),
+            attr_str(DataContentType::PROTOBUF),
+        );
+
+        match to_cloudevent(pb).unwrap().data() {
+            Some(cloudevents::Data::Binary(bytes)) => assert_eq!(bytes, &expected),
+            other => panic!("expected encoded protobuf Any bytes, got {other:?}"),
+        }
     }
 
     #[cfg(feature = "cloud_events")]

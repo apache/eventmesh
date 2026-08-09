@@ -1054,7 +1054,7 @@ mod tests {
             .source("urn:test")
             .ty("orders.created")
             .subject("orders")
-            .data("application/json", "created")
+            .data("application/json", serde_json::json!({"status": "created"}))
             .build()
             .expect("build event");
         let original = Message::CloudEvent(event);

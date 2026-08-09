@@ -35,6 +35,8 @@ const PROTOCOL_DESC_KEY: &str = "protocoldesc";
 const EM_MESSAGE_PROTOCOL: &str = "eventmeshmessage";
 const CLOUD_EVENTS_PROTOCOL: &str = "cloudevents";
 const PROTOCOL_DESC_TCP: &str = "tcp";
+#[cfg(feature = "cloud_events")]
+const REQUIRED_CE_DATA_CONTENT_TYPE: &str = "application/cloudevents+json";
 
 /// The TCP wire-format body for `eventmeshmessage` protocol messages.
 ///
@@ -307,6 +309,7 @@ pub(crate) fn is_event_mesh_message(pkg: &Package) -> bool {
 pub fn build_cloud_event_package(event: &cloudevents::Event, cmd: Command) -> Result<Package> {
     use cloudevents::AttributesReader;
 
+    validate_cloud_event(event)?;
     let mut pkg = package(cmd);
     pkg.header
         .set_property(PROTOCOL_TYPE_KEY, CLOUD_EVENTS_PROTOCOL);
@@ -324,6 +327,23 @@ pub fn build_cloud_event_package(event: &cloudevents::Event, cmd: Command) -> Re
     pkg.body = PackageBody::Bytes(json);
 
     Ok(pkg)
+}
+
+#[cfg(feature = "cloud_events")]
+fn validate_cloud_event(event: &cloudevents::Event) -> Result<()> {
+    use cloudevents::AttributesReader;
+
+    match event.datacontenttype() {
+        Some(REQUIRED_CE_DATA_CONTENT_TYPE) => Ok(()),
+        Some(other) => Err(EventMeshError::InvalidMessage(format!(
+            "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
+             got \"{other}\" — the EventMesh Java TCP codec cannot serialize other values"
+        ))),
+        None => Err(EventMeshError::InvalidMessage(format!(
+            "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
+             but none is set — the EventMesh Java TCP codec requires it as a serializer selector"
+        ))),
+    }
 }
 
 /// Parse a CloudEvents body ([`PackageBody::Text`] or [`PackageBody::Bytes`])
@@ -612,7 +632,7 @@ mod tests {
             .source("https://example.com")
             .ty("com.example.test")
             .subject("ce-round-trip")
-            .data("text/plain", "hello cloudevents")
+            .data(REQUIRED_CE_DATA_CONTENT_TYPE, "hello cloudevents")
             .build()
             .expect("valid event");
 
@@ -629,6 +649,44 @@ mod tests {
         };
         let parsed = parse_cloud_event(&body_text).expect("parse cloudevent");
         assert_eq!(parsed.subject(), Some("ce-round-trip"));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn shared_cloudevent_builder_rejects_incompatible_content_type() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("ce-invalid")
+            .source("https://example.com")
+            .ty("com.example.test")
+            .data("application/json", serde_json::json!({"hello": "world"}))
+            .build()
+            .unwrap();
+
+        assert!(matches!(
+            build_cloud_event_package(&event, Command::ResponseToServer),
+            Err(EventMeshError::InvalidMessage(message))
+                if message.contains(REQUIRED_CE_DATA_CONTENT_TYPE)
+        ));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn shared_cloudevent_builder_rejects_missing_content_type() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("ce-invalid")
+            .source("https://example.com")
+            .ty("com.example.test")
+            .build()
+            .unwrap();
+
+        assert!(matches!(
+            build_cloud_event_package(&event, Command::ResponseToServer),
+            Err(EventMeshError::InvalidMessage(_))
+        ));
     }
 
     #[cfg(feature = "cloud_events")]

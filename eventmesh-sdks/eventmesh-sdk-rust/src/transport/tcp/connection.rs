@@ -82,6 +82,17 @@ enum IoExitReason {
     SlowConsumer,
 }
 
+type PendingKey = (u64, String);
+type PendingMap = HashMap<PendingKey, oneshot::Sender<Package>>;
+
+/// Lifecycle state protected by the same lock that serializes the final
+/// enqueue decision with teardown. Each generation identifies one socket.
+#[derive(Debug)]
+struct ConnectionState {
+    generation: u64,
+    active: bool,
+}
+
 /// A connected TCP transport.
 ///
 /// Created by [`TcpConnection::connect`], which performs the TCP connect +
@@ -101,8 +112,10 @@ pub struct TcpConnection {
     /// Reconnect-event receiver (taken by the consumer via
     /// [`take_reconnect_rx`]).
     reconnect_rx: Mutex<Option<mpsc::Receiver<()>>>,
-    /// Pending request-response contexts: `seq → oneshot::Sender`.
-    pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+    /// Pending request-response contexts: `(generation, seq) → sender`.
+    pending: Arc<Mutex<PendingMap>>,
+    /// Serializes enqueue commitment with connection teardown.
+    state: Arc<Mutex<ConnectionState>>,
     /// Whether unmatched `RESPONSE_TO_CLIENT` frames should be made available
     /// to a publisher-side business handler.
     deliver_orphan_responses: Arc<AtomicBool>,
@@ -146,6 +159,10 @@ impl TcpConnection {
         let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
         let (reconnect_tx, reconnect_rx) = mpsc::channel(RECONNECT_CHANNEL_CAPACITY);
         let pending = Arc::new(Mutex::new(HashMap::new()));
+        let state = Arc::new(Mutex::new(ConnectionState {
+            generation: 0,
+            active: true,
+        }));
         let deliver_orphan_responses = Arc::new(AtomicBool::new(false));
         let cancel = CancellationToken::new();
         let alive = Arc::new(AtomicBool::new(true));
@@ -163,6 +180,7 @@ impl TcpConnection {
             inbound_tx,
             reconnect_tx,
             Arc::clone(&pending),
+            Arc::clone(&state),
             Arc::clone(&deliver_orphan_responses),
             cancel.clone(),
             Arc::clone(&alive),
@@ -175,6 +193,7 @@ impl TcpConnection {
             inbound_rx: Mutex::new(Some(inbound_rx)),
             reconnect_rx: Mutex::new(Some(reconnect_rx)),
             pending,
+            state,
             deliver_orphan_responses,
             cancel,
             alive,
@@ -245,17 +264,6 @@ impl TcpConnection {
     ///
     /// Corresponds to Java `TcpClient.io()`.
     pub async fn io(&self, pkg: Package, timeout: Duration) -> Result<Package> {
-        // Fail fast: if the connection is not active (reconnecting, shut down,
-        // or backing off), reject the request immediately. Without this the
-        // package would sit in the outbound mpsc buffer and be sent after a
-        // successful reconnect — a "ghost write" — even though the caller may
-        // have already received a Timeout/ChannelClosed and retried.
-        if !self.is_active() {
-            return Err(EventMeshError::ChannelClosed(
-                "connection is not active (reconnecting or shut down)".into(),
-            ));
-        }
-
         // Client-originated frames always carry a seq (see `message::package`),
         // so this is `Some` in practice. A `None` would mean a programming
         // error; we coalesce it to an empty string so the `pending` lookup
@@ -263,35 +271,38 @@ impl TcpConnection {
         let seq = pkg.header.seq.clone().unwrap_or_default();
         let (tx, rx) = oneshot::channel();
 
-        // Register pending context BEFORE sending so the read loop can match
-        // the response as soon as it arrives.
+        // Reserve capacity first, then commit the pending registration and
+        // enqueue while holding the lifecycle lock. Teardown takes this same
+        // lock before invalidating the generation and draining the queue, so a
+        // sender that slept on a full channel cannot enqueue onto the next
+        // socket after teardown has completed.
+        let generation = self.active_generation().await?;
+        let permit = self
+            .outbound_tx
+            .reserve()
+            .await
+            .map_err(|_| EventMeshError::ChannelClosed("connection send loop exited".into()))?;
+        let pending_key = (generation, seq);
         {
-            let mut guard = self.pending.lock().await;
-            guard.insert(seq.clone(), tx);
-        }
-
-        // Send the package to the background task.
-        if self.outbound_tx.send(pkg).await.is_err() {
-            // The run loop already exited (its `clear()` is why send failed).
-            // Remove our entry to stay symmetric with the timeout/closed paths
-            // below, so no stale `oneshot::Sender` lingers in the map.
-            self.pending.lock().await.remove(&seq);
-            return Err(EventMeshError::ChannelClosed(
-                "connection send loop exited".into(),
-            ));
+            let state = self.state.lock().await;
+            if !state.active || state.generation != generation {
+                return Err(Self::inactive_error());
+            }
+            self.pending.lock().await.insert(pending_key.clone(), tx);
+            permit.send(pkg);
         }
 
         // Wait for the response.
         match tokio::time::timeout(timeout, rx).await {
             Ok(Ok(resp)) => Ok(resp),
             Ok(Err(_)) => {
-                self.pending.lock().await.remove(&seq);
+                self.pending.lock().await.remove(&pending_key);
                 Err(EventMeshError::ChannelClosed(
                     "connection task exited while waiting for response".into(),
                 ))
             }
             Err(_) => {
-                self.pending.lock().await.remove(&seq);
+                self.pending.lock().await.remove(&pending_key);
                 Err(EventMeshError::Timeout(timeout))
             }
         }
@@ -301,17 +312,31 @@ impl TcpConnection {
     ///
     /// Corresponds to Java `TcpClient.send()`.
     pub async fn send(&self, pkg: Package) -> Result<()> {
-        // Same fail-fast rationale as `io()`: prevent ghost writes during
-        // reconnect.
-        if !self.is_active() {
-            return Err(EventMeshError::ChannelClosed(
-                "connection is not active (reconnecting or shut down)".into(),
-            ));
-        }
-        self.outbound_tx
-            .send(pkg)
+        let generation = self.active_generation().await?;
+        let permit = self
+            .outbound_tx
+            .reserve()
             .await
-            .map_err(|_| EventMeshError::ChannelClosed("connection send loop exited".into()))
+            .map_err(|_| EventMeshError::ChannelClosed("connection send loop exited".into()))?;
+        let state = self.state.lock().await;
+        if !state.active || state.generation != generation {
+            return Err(Self::inactive_error());
+        }
+        permit.send(pkg);
+        Ok(())
+    }
+
+    async fn active_generation(&self) -> Result<u64> {
+        let state = self.state.lock().await;
+        if state.active {
+            Ok(state.generation)
+        } else {
+            Err(Self::inactive_error())
+        }
+    }
+
+    fn inactive_error() -> EventMeshError {
+        EventMeshError::ChannelClosed("connection is not active (reconnecting or shut down)".into())
     }
 
     /// Take ownership of the inbound receiver. Called once by the consumer to
@@ -379,12 +404,14 @@ impl TcpConnection {
         mut outbound_rx: mpsc::Receiver<Package>,
         inbound_tx: mpsc::Sender<Package>,
         reconnect_tx: mpsc::Sender<()>,
-        pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+        pending: Arc<Mutex<PendingMap>>,
+        state: Arc<Mutex<ConnectionState>>,
         deliver_orphan_responses: Arc<AtomicBool>,
         cancel: CancellationToken,
         alive: Arc<AtomicBool>,
     ) {
         loop {
+            let generation = state.lock().await.generation;
             // Run the I/O loop with the current framed stream.
             let reason = Self::io_loop(
                 &mut framed,
@@ -392,6 +419,7 @@ impl TcpConnection {
                 &inbound_tx,
                 Arc::clone(&pending),
                 Arc::clone(&deliver_orphan_responses),
+                generation,
                 heartbeat_interval,
                 &cancel,
                 alive.as_ref(),
@@ -402,20 +430,18 @@ impl TcpConnection {
             // waiting `io()` callers get a ChannelClosed error instead of
             // hanging until timeout. Mirrors Java's behavior where orphaned
             // RequestContext entries simply time out, but is more prompt.
-            pending.lock().await.clear();
-            alive.store(false, Ordering::Release);
+            {
+                let mut state = state.lock().await;
+                state.active = false;
+                state.generation = state.generation.wrapping_add(1);
+                alive.store(false, Ordering::Release);
+                pending.lock().await.clear();
 
-            // Drain the outbound queue so stale packages from the dead
-            // connection are never re-sent on the next connection. Without
-            // this, a package enqueued via io()/send() that hadn't been
-            // written to the socket yet would survive in the mpsc buffer
-            // across the reconnect and produce a "ghost write" — a message
-            // sent to the new connection even though the caller already
-            // received a Timeout/ChannelClosed error and may have retried.
-            // (The Java SDK avoids this by writing directly via
-            // `channel.writeAndFlush()` with no user-space queue.)
-            while outbound_rx.try_recv().is_ok() {
-                // Discard; these packages were never written to the wire.
+                // Drain while enqueue commitment is excluded by `state`.
+                // Everything still queued belongs to the dead socket.
+                while outbound_rx.try_recv().is_ok() {
+                    // Discard; these packages were never written to the wire.
+                }
             }
 
             match reason {
@@ -467,6 +493,7 @@ impl TcpConnection {
                             peer = %format!("{addr}:{port}"),
                             "TCP reconnected"
                         );
+                        state.lock().await.active = true;
                         alive.store(true, Ordering::Release);
 
                         // Notify the consumer that it should replay
@@ -495,8 +522,9 @@ impl TcpConnection {
         framed: &mut Framed<TcpStream, TcpCodec>,
         outbound_rx: &mut mpsc::Receiver<Package>,
         inbound_tx: &mpsc::Sender<Package>,
-        pending: Arc<Mutex<HashMap<String, oneshot::Sender<Package>>>>,
+        pending: Arc<Mutex<PendingMap>>,
         deliver_orphan_responses: Arc<AtomicBool>,
+        generation: u64,
         heartbeat_interval: Duration,
         cancel: &CancellationToken,
         alive: &AtomicBool,
@@ -558,7 +586,7 @@ impl TcpConnection {
                             // so `handle_inbound` can ACK them.
                             let entry = {
                                 let mut guard = pending.lock().await;
-                                guard.remove(&seq)
+                                guard.remove(&(generation, seq))
                             };
                             if let Some(tx) = entry {
                                 // A `RESPONSE_TO_CLIENT` (the server's RR reply)
@@ -665,6 +693,7 @@ impl Drop for TcpConnection {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
     use std::time::Duration;
 
     use super::*;
@@ -678,6 +707,98 @@ mod tests {
     use tokio::net::TcpListener;
     use tokio_stream::StreamExt;
     use tokio_util::codec::Framed;
+
+    fn blocked_test_connection() -> (Arc<TcpConnection>, mpsc::Receiver<Package>) {
+        let (outbound_tx, outbound_rx) = mpsc::channel(1);
+        outbound_tx
+            .try_send(Package::new(Header::new(
+                Command::AsyncMessageToServer,
+                "occupied",
+            )))
+            .unwrap();
+        let (_inbound_tx, inbound_rx) = mpsc::channel(1);
+        let (_reconnect_tx, reconnect_rx) = mpsc::channel(1);
+
+        let connection = TcpConnection {
+            outbound_tx,
+            inbound_rx: Mutex::new(Some(inbound_rx)),
+            reconnect_rx: Mutex::new(Some(reconnect_rx)),
+            pending: Arc::new(Mutex::new(HashMap::new())),
+            state: Arc::new(Mutex::new(ConnectionState {
+                generation: 0,
+                active: true,
+            })),
+            deliver_orphan_responses: Arc::new(AtomicBool::new(false)),
+            cancel: CancellationToken::new(),
+            alive: Arc::new(AtomicBool::new(true)),
+            join: Mutex::new(None),
+        };
+        (Arc::new(connection), outbound_rx)
+    }
+
+    async fn simulate_teardown(conn: &TcpConnection, outbound_rx: &mut mpsc::Receiver<Package>) {
+        let mut state = conn.state.lock().await;
+        state.active = false;
+        state.generation = state.generation.wrapping_add(1);
+        conn.alive.store(false, Ordering::Release);
+        conn.pending.lock().await.clear();
+        while outbound_rx.try_recv().is_ok() {}
+    }
+
+    #[tokio::test]
+    async fn blocked_send_cannot_enqueue_after_teardown() {
+        let (conn, mut outbound_rx) = blocked_test_connection();
+        let sender = {
+            let conn = Arc::clone(&conn);
+            tokio::spawn(async move {
+                conn.send(Package::new(Header::new(
+                    Command::AsyncMessageToServer,
+                    "stale",
+                )))
+                .await
+            })
+        };
+        tokio::task::yield_now().await;
+
+        simulate_teardown(&conn, &mut outbound_rx).await;
+
+        assert!(matches!(
+            sender.await.unwrap(),
+            Err(EventMeshError::ChannelClosed(_))
+        ));
+        assert!(matches!(
+            outbound_rx.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
+    }
+
+    #[tokio::test]
+    async fn blocked_io_cannot_register_or_enqueue_after_teardown() {
+        let (conn, mut outbound_rx) = blocked_test_connection();
+        let sender = {
+            let conn = Arc::clone(&conn);
+            tokio::spawn(async move {
+                conn.io(
+                    Package::new(Header::new(Command::RequestToServer, "stale")),
+                    Duration::from_secs(5),
+                )
+                .await
+            })
+        };
+        tokio::task::yield_now().await;
+
+        simulate_teardown(&conn, &mut outbound_rx).await;
+
+        assert!(matches!(
+            sender.await.unwrap(),
+            Err(EventMeshError::ChannelClosed(_))
+        ));
+        assert!(conn.pending.lock().await.is_empty());
+        assert!(matches!(
+            outbound_rx.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
+    }
 
     #[tokio::test]
     async fn hello_response_wait_uses_the_control_timeout() {
