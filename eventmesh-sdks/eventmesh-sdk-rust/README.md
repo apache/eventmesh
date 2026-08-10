@@ -77,16 +77,9 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 `HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
-All consumers use the same local lifecycle contract: `shutdown()` only signals
-background work to stop, while `join().await` waits for it and reports task or
-transport failures. HTTP consumers and webhook registrations additionally
-provide `close().await`, which unregisters remote subscriptions before
-signalling shutdown and joining.
+All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. HTTP consumers and webhook registrations additionally provide `close().await`, which unregisters remote subscriptions before signalling shutdown and joining.
 
-`GrpcWebhookConsumer` does not automatically unregister remote webhook
-subscriptions when `shutdown()` or `join()` is called. Retain the subscriptions
-and webhook URL, call `unsubscribe(...).await` explicitly, and only then call
-`shutdown()` and `join().await`. See the `grpc_webhook_consumer` example.
+`GrpcWebhookConsumer` does not automatically unregister remote webhook subscriptions when `shutdown()` or `join()` is called. Retain the subscriptions and webhook URL, call `unsubscribe(...).await` explicitly, and only then call `shutdown()` and `join().await`. See the `grpc_webhook_consumer` example.
 
 HTTP request/reply is not exposed because the current SDK and stock Runtime do not provide a complete HTTP responder path. Use gRPC or TCP for request/reply.
 
@@ -114,15 +107,7 @@ The crate root documents the public API map. Module-level rustdoc documents conf
 
 ## Development
 
-The authoritative contributor workflow and live-runtime test instructions are in [CONTRIBUTING.md](CONTRIBUTING.md). In short:
-
-```bash
-cargo fmt --check
-cargo clippy --no-default-features --lib -- -D warnings
-cargo clippy --features full --all-targets -- -D warnings
-cargo test --features full
-cargo doc --features full --no-deps
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for prerequisites, required checks, and live-runtime tests. Implementation boundaries and protocol details are recorded in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## License
 

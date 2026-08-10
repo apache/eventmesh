@@ -24,10 +24,6 @@ Run a consumer first, then run its corresponding producer. The HTTP examples lis
 
 The examples intentionally use minimal configuration. For timeouts, identity, credentials, HTTP TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.
 
-The two HTTP consumer examples handle Ctrl-C and call `close().await`, which
-unregisters their remote subscriptions before stopping local background work.
-Use the same shutdown pattern in long-running applications.
+The two HTTP consumer examples handle Ctrl-C and call `close().await`, which unregisters their remote subscriptions before stopping local background work. Use the same shutdown pattern in long-running applications.
 
-The gRPC webhook consumer has no automatic remote cleanup. Its example retains
-the subscription and URL, calls `unsubscribe().await` after Ctrl-C, and then
-stops and joins the local heartbeat task.
+The gRPC webhook consumer has no automatic remote cleanup. Its example retains the subscription and URL, calls `unsubscribe().await` after Ctrl-C, and then stops and joins the local heartbeat task.
