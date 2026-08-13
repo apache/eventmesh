@@ -22,11 +22,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class EncryptUtil {
-    public EncryptUtil() {
-    }
+import lombok.experimental.UtilityClass;
 
-    private static byte[] hexStringToBytes(String hexString) {
+@UtilityClass
+public class EncryptUtil {
+
+    private byte[] hexStringToBytes(String hexString) {
         if (hexString != null && !hexString.equals("")) {
             hexString = hexString.toUpperCase();
             int length = hexString.length() / 2;
@@ -44,7 +45,7 @@ public class EncryptUtil {
         }
     }
 
-    public static String byteToHexString(byte[] b) {
+    public String byteToHexString(byte[] b) {
         String a = "";
 
         for (int i = 0; i < b.length; ++i) {
@@ -59,11 +60,11 @@ public class EncryptUtil {
         return a;
     }
 
-    private static byte charToByte(char c) {
+    private byte charToByte(char c) {
         return (byte) "0123456789ABCDEF".indexOf(c);
     }
 
-    private static String readFileContent(String filePath) {
+    private String readFileContent(String filePath) {
         File file = new File(filePath);
         BufferedReader reader = null;
         StringBuffer key = new StringBuffer();
@@ -100,7 +101,7 @@ public class EncryptUtil {
         return key.toString();
     }
 
-    public static String decrypt(String sysPubKeyFile, String appPrivKeyFile, String encStr) throws Exception {
+    public String decrypt(String sysPubKeyFile, String appPrivKeyFile, String encStr) throws Exception {
         String pubKeyBase64 = readFileContent(sysPubKeyFile);
         String privKeyBase64 = readFileContent(appPrivKeyFile);
         byte[] encBin = hexStringToBytes(encStr);
@@ -109,7 +110,7 @@ public class EncryptUtil {
         return new String(privDecBin);
     }
 
-    public static String decrypt(ParamType pubKeyType, String sysPubKey, ParamType privKeyType, String appPrivKey, ParamType passwdType,
+    public String decrypt(ParamType pubKeyType, String sysPubKey, ParamType privKeyType, String appPrivKey, ParamType passwdType,
                                  String passwd) throws Exception {
         String pubKeyBase64 = pubKeyType == ParamType.FILE ? readFileContent(sysPubKey) : sysPubKey;
         String privKeyBase64 = privKeyType == ParamType.FILE ? readFileContent(appPrivKey) : appPrivKey;
@@ -120,7 +121,7 @@ public class EncryptUtil {
         return new String(privDecBin);
     }
 
-    public static String encrypt(String appPubKeyFile, String sysPrivKeyFile, String passwd) throws Exception {
+    public String encrypt(String appPubKeyFile, String sysPrivKeyFile, String passwd) throws Exception {
         String pubKeyBase64 = readFileContent(appPubKeyFile);
         String privKeyBase64 = readFileContent(sysPrivKeyFile);
         byte[] pubEncBin = RSAUtils.encryptByPublicKeyBlock(passwd.getBytes(), pubKeyBase64);
@@ -128,7 +129,7 @@ public class EncryptUtil {
         return byteToHexString(privEncBin);
     }
 
-    public static String encrypt(ParamType pubKeyType, String appPubKey, ParamType privKeyType, String sysPrivKey, String passwd) throws Exception {
+    public String encrypt(ParamType pubKeyType, String appPubKey, ParamType privKeyType, String sysPrivKey, String passwd) throws Exception {
         String pubKeyBase64 = pubKeyType == ParamType.FILE ? readFileContent(appPubKey) : appPubKey;
         String privKeyBase64 = privKeyType == ParamType.FILE ? readFileContent(sysPrivKey) : sysPrivKey;
         byte[] pubEncBin = RSAUtils.encryptByPublicKeyBlock(passwd.getBytes(), pubKeyBase64);

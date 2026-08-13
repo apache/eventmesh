@@ -19,14 +19,10 @@ package org.apache.eventmesh.connector.jdbc.utils;
 
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class MysqlUtils {
-
-    /**
-     * Private constructor to prevent instantiation from outside the class.
-     */
-    private MysqlUtils() {
-
-    }
 
     /**
      * Generates a wrapped name based on the TableId object.
@@ -34,7 +30,7 @@ public class MysqlUtils {
      * @param tableId The TableId object.
      * @return The generated wrapped name.
      */
-    public static String wrapper(TableId tableId) {
+    public String wrapper(TableId tableId) {
         return wrapper(tableId.getCatalogName()) + "." + wrapper(tableId.getTableName());
     }
 
@@ -44,7 +40,7 @@ public class MysqlUtils {
      * @param original The original string.
      * @return The generated wrapped name.
      */
-    public static String wrapper(String original) {
+    public String wrapper(String original) {
         return "`" + original + "`";
     }
 

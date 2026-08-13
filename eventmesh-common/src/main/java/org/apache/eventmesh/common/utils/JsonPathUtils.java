@@ -36,19 +36,22 @@ import com.jayway.jsonpath.internal.path.CompiledPath;
 import com.jayway.jsonpath.internal.path.PathCompiler;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class JsonPathUtils {
 
-    public static final String JSONPATH_SPLIT = "\\.";
-    public static final String JSONPATH_PREFIX = "$";
-    public static final String JSONPATH_PREFIX_WITH_POINT = "$.";
-    public static final String JSONPATH_DATA = "$.data";
-    private static final ObjectMapper STRICT_OBJECT_MAPPER = new ObjectMapper();
+    public final String JSONPATH_SPLIT = "\\.";
+    public final String JSONPATH_PREFIX = "$";
+    public final String JSONPATH_PREFIX_WITH_POINT = "$.";
+    public final String JSONPATH_DATA = "$.data";
+    private final ObjectMapper STRICT_OBJECT_MAPPER = new ObjectMapper();
 
-    private static final Configuration JSON_PATH_CONFIG = Configuration.builder()
+    private final Configuration JSON_PATH_CONFIG = Configuration.builder()
         .jsonProvider(new JacksonJsonProvider(STRICT_OBJECT_MAPPER))
         .build();
 
-    public static boolean isEmptyJsonObject(String jsonString) {
+    public boolean isEmptyJsonObject(String jsonString) {
         try {
             JsonNode jsonNode = STRICT_OBJECT_MAPPER.readTree(jsonString);
             return jsonNode.isObject() && jsonNode.isEmpty();
@@ -57,7 +60,7 @@ public class JsonPathUtils {
         }
     }
 
-    public static JsonNode parseStrict(String json) throws JsonException {
+    public JsonNode parseStrict(String json) throws JsonException {
         try {
             JsonParser parser = STRICT_OBJECT_MAPPER.getFactory().createParser(json);
             JsonNode result = STRICT_OBJECT_MAPPER.readTree(parser);
@@ -71,7 +74,7 @@ public class JsonPathUtils {
         }
     }
 
-    public static String buildJsonString(String key, Object value) {
+    public String buildJsonString(String key, Object value) {
         Map<String, Object> map = new HashMap<>();
         map.put(key, value);
 
@@ -83,7 +86,7 @@ public class JsonPathUtils {
         }
     }
 
-    public static boolean isValidAndDefinite(String jsonPath) {
+    public boolean isValidAndDefinite(String jsonPath) {
         if (Strings.isNullOrEmpty(jsonPath) || !jsonPath.startsWith(JSONPATH_PREFIX)) {
             return Boolean.FALSE;
         }
@@ -96,7 +99,7 @@ public class JsonPathUtils {
         return compiledPath.isDefinite();
     }
 
-    public static String getJsonPathValue(String content, String jsonPath) {
+    public String getJsonPathValue(String content, String jsonPath) {
         if (Strings.isNullOrEmpty(content) || Strings.isNullOrEmpty(jsonPath)) {
             throw new EventMeshException("invalid config" + jsonPath);
         }
@@ -109,11 +112,11 @@ public class JsonPathUtils {
         return obj.toString();
     }
 
-    public static JsonNode convertToJsonNode(String object) throws JsonProcessingException {
+    public JsonNode convertToJsonNode(String object) throws JsonProcessingException {
         return STRICT_OBJECT_MAPPER.readValue(object, JsonNode.class);
     }
 
-    public static String matchJsonPathValueWithString(String jsonString, String jsonPath) {
+    public String matchJsonPathValueWithString(String jsonString, String jsonPath) {
         Object obj = jsonPathParse(jsonString, jsonPath);
 
         if (obj == null) {
@@ -123,7 +126,7 @@ public class JsonPathUtils {
         return obj.toString();
     }
 
-    public static Object jsonPathParse(String jsonString, String jsonPath) {
+    public Object jsonPathParse(String jsonString, String jsonPath) {
         if (Strings.isNullOrEmpty(jsonPath) || Strings.isNullOrEmpty(jsonString)) {
             throw new EventMeshException("invalid config" + jsonPath);
         }
@@ -137,7 +140,7 @@ public class JsonPathUtils {
         return obj;
     }
 
-    public static String matchJsonPathValue(String jsonString, String jsonPath) throws JsonProcessingException {
+    public String matchJsonPathValue(String jsonString, String jsonPath) throws JsonProcessingException {
         Object obj = jsonPathParse(jsonString, jsonPath);
         return STRICT_OBJECT_MAPPER.writer().writeValueAsString(obj);
     }

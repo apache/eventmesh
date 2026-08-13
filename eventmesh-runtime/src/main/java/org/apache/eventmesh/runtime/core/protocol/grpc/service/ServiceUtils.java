@@ -51,9 +51,12 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ServiceUtils {
 
-    public static boolean validateCloudEventAttributes(CloudEvent cloudEvent) {
+    public boolean validateCloudEventAttributes(CloudEvent cloudEvent) {
         return StringUtils.isNotEmpty(EventMeshCloudEventUtils.getIdc(cloudEvent))
             && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getEnv(cloudEvent))
             && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getIp(cloudEvent))
@@ -65,7 +68,7 @@ public class ServiceUtils {
             && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getLanguage(cloudEvent));
     }
 
-    public static boolean validateCloudEventBatchAttributes(CloudEventBatch cloudEventBatch) {
+    public boolean validateCloudEventBatchAttributes(CloudEventBatch cloudEventBatch) {
         if (cloudEventBatch == null || cloudEventBatch.getEventsCount() < 1) {
             return false;
         }
@@ -79,7 +82,7 @@ public class ServiceUtils {
         return true;
     }
 
-    public static boolean validateCloudEventData(CloudEvent cloudEvent) {
+    public boolean validateCloudEventData(CloudEvent cloudEvent) {
         boolean flag = StringUtils.isNotEmpty(EventMeshCloudEventUtils.getUniqueId(cloudEvent))
             && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getProducerGroup(cloudEvent))
             && StringUtils.isNotEmpty(EventMeshCloudEventUtils.getSubject(cloudEvent))
@@ -98,7 +101,7 @@ public class ServiceUtils {
         return flag && (cloudEvent.getBinaryData() != ByteString.EMPTY);
     }
 
-    public static boolean validateCloudEventBatchData(CloudEventBatch cloudEventBatch) {
+    public boolean validateCloudEventBatchData(CloudEventBatch cloudEventBatch) {
         if (cloudEventBatch == null || cloudEventBatch.getEventsCount() < 1) {
             return false;
         }
@@ -112,7 +115,7 @@ public class ServiceUtils {
         return true;
     }
 
-    public static boolean validateSubscription(GrpcType grpcType, CloudEvent subscription) {
+    public boolean validateSubscription(GrpcType grpcType, CloudEvent subscription) {
         if (GrpcType.WEBHOOK == grpcType && StringUtils.isEmpty(EventMeshCloudEventUtils.getURL(subscription))) {
             return false;
         }
@@ -133,7 +136,7 @@ public class ServiceUtils {
         return true;
     }
 
-    public static boolean validateHeartBeat(CloudEvent heartbeat) {
+    public boolean validateHeartBeat(CloudEvent heartbeat) {
         org.apache.eventmesh.common.protocol.grpc.common.ClientType clientType = EventMeshCloudEventUtils.getClientType(heartbeat);
         if (org.apache.eventmesh.common.protocol.grpc.common.ClientType.SUB == clientType && StringUtils.isEmpty(
             EventMeshCloudEventUtils.getConsumerGroup(heartbeat))) {
@@ -162,7 +165,7 @@ public class ServiceUtils {
      * @param message The message for the response.
      * @param emitter The EventEmitter to send the response event to.
      */
-    public static void sendResponseCompleted(StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
+    public void sendResponseCompleted(StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
 
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder().setId(RandomStringUtils.generateUUID()).setSpecVersion(SpecVersion.V1.toString())
@@ -182,7 +185,7 @@ public class ServiceUtils {
      * @param code    The status code of the response
      * @param emitter The emitter to send the event to
      */
-    public static void sendResponseCompleted(StatusCode code, EventEmitter<CloudEvent> emitter) {
+    public void sendResponseCompleted(StatusCode code, EventEmitter<CloudEvent> emitter) {
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder().setSpecVersion(SpecVersion.V1.toString())
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
@@ -200,7 +203,7 @@ public class ServiceUtils {
      * @param code       The status code of the response
      * @param emitter    The emitter to send the event to
      */
-    public static void sendStreamResponseCompleted(CloudEvent cloudEvent, StatusCode code, EventEmitter<CloudEvent> emitter) {
+    public void sendStreamResponseCompleted(CloudEvent cloudEvent, StatusCode code, EventEmitter<CloudEvent> emitter) {
         sendStreamResponse(cloudEvent, code, emitter);
         emitter.onCompleted();
     }
@@ -213,7 +216,7 @@ public class ServiceUtils {
      * @param message    The custom message for the response
      * @param emitter    The emitter to send the event to
      */
-    public static void sendStreamResponseCompleted(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
+    public void sendStreamResponseCompleted(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
         sendStreamResponse(cloudEvent, code, message, emitter);
         emitter.onCompleted();
     }
@@ -225,7 +228,7 @@ public class ServiceUtils {
      * @param code       The status code of the response
      * @param emitter    The emitter to send the event to
      */
-    public static void sendStreamResponse(CloudEvent cloudEvent, StatusCode code, EventEmitter<CloudEvent> emitter) {
+    public void sendStreamResponse(CloudEvent cloudEvent, StatusCode code, EventEmitter<CloudEvent> emitter) {
         Instant instant = now();
         CloudEvent.Builder builder = CloudEvent.newBuilder(cloudEvent)
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
@@ -244,7 +247,7 @@ public class ServiceUtils {
      * @param message    The custom message for the response
      * @param emitter    The emitter to send the event to
      */
-    public static void sendStreamResponse(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
+    public void sendStreamResponse(CloudEvent cloudEvent, StatusCode code, String message, EventEmitter<CloudEvent> emitter) {
         Instant instant = OffsetDateTime.now().toInstant();
         CloudEvent.Builder builder = CloudEvent.newBuilder(cloudEvent)
             .putAttributes(ProtocolKey.GRPC_RESPONSE_CODE, CloudEventAttributeValue.newBuilder().setCeString(code.getRetCode()).build())
@@ -261,7 +264,7 @@ public class ServiceUtils {
      *
      * @return The current instant
      */
-    private static Instant now() {
+    private Instant now() {
         return OffsetDateTime.of(LocalDateTime.now(ZoneId.systemDefault()), ZoneOffset.UTC).toInstant();
     }
 }

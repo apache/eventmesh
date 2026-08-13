@@ -31,12 +31,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@UtilityClass
 public class ConfigUtil {
 
-    public static Config parse(Class<? extends Config> c) throws Exception {
+    public Config parse(Class<? extends Config> c) throws Exception {
         if (c == null) {
             return null;
         }
@@ -49,7 +51,7 @@ public class ConfigUtil {
         }
     }
 
-    public static <T> T parse(Class<T> c, String filePathName) throws Exception {
+    public <T> T parse(Class<T> c, String filePathName) throws Exception {
         ObjectMapper objectMapper;
         if (filePathName.endsWith("json")) {
             objectMapper = new ObjectMapper();
@@ -68,12 +70,12 @@ public class ConfigUtil {
         return objectMapper.readValue(url, c);
     }
 
-    public static <T> T parse(Map<String, Object> map, Class<T> c) throws Exception {
+    public <T> T parse(Map<String, Object> map, Class<T> c) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.convertValue(map, c);
     }
 
-    private static Config parseSourceConfig(Class<? extends Config> c) throws Exception {
+    private Config parseSourceConfig(Class<? extends Config> c) throws Exception {
         String configFile = System.getProperty(Constants.ENV_SOURCE_CONFIG_FILE, System.getenv(Constants.ENV_SOURCE_CONFIG_FILE));
         if (configFile == null || configFile.isEmpty()) {
             configFile = "source-config.yml";
@@ -81,7 +83,7 @@ public class ConfigUtil {
         return parse(c, configFile);
     }
 
-    private static Config parseSinkConfig(Class<? extends Config> c) throws Exception {
+    private Config parseSinkConfig(Class<? extends Config> c) throws Exception {
         String configFile = System.getProperty(Constants.ENV_SINK_CONFIG_FILE, System.getenv(Constants.ENV_SINK_CONFIG_FILE));
         if (configFile == null || configFile.isEmpty()) {
             configFile = "sink-config.yml";
@@ -89,14 +91,14 @@ public class ConfigUtil {
         return parse(c, configFile);
     }
 
-    public static boolean isSinkConfig(Class<?> c) {
+    public boolean isSinkConfig(Class<?> c) {
         if (c != null && c != Object.class) {
             return SinkConfig.class.isAssignableFrom(c);
         }
         return false;
     }
 
-    public static boolean isSourceConfig(Class<?> c) {
+    public boolean isSourceConfig(Class<?> c) {
         if (c != null && c != Object.class) {
             return SourceConfig.class.isAssignableFrom(c);
         }
