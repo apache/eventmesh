@@ -25,13 +25,14 @@ use std::time::Duration;
 
 use eventmesh::{
     config::GrpcConsumerOptions,
+    grpc::GrpcStreamConsumer,
     message::{EventMeshMessage, Message},
     subscription::Subscription,
     MessageHandler, Result,
 };
 use tokio::sync::mpsc;
 
-use crate::harness::{ensure_topic, grpc_client, grpc_producer, let_stream_settle, unique_topic};
+use crate::harness::{ensure_topic, grpc_channel, grpc_producer, let_stream_settle, unique_topic};
 use crate::require_runtime;
 
 const HANDLER_DELAY: Duration = Duration::from_millis(500);
@@ -63,22 +64,22 @@ async fn concurrent_dispatch_overlaps_handlers() {
     let active = Arc::new(AtomicUsize::new(0));
     let max_active = Arc::new(AtomicUsize::new(0));
     let (completed, mut completions) = mpsc::unbounded_channel();
-    let consumer = grpc_client()
-        .stream_consumer(
-            GrpcConsumerOptions::new(unique_topic("concurrent-group"))
-                .with_max_concurrent_handlers(MAX_CONCURRENT),
-            [Subscription::new(&topic)],
-            SlowHandler {
-                active: Arc::clone(&active),
-                max_active: Arc::clone(&max_active),
-                completed,
-            },
-        )
-        .await
-        .expect("open gRPC consumer");
+    let consumer = GrpcStreamConsumer::open(
+        grpc_channel().await,
+        GrpcConsumerOptions::new(unique_topic("concurrent-group"))
+            .with_max_concurrent_handlers(MAX_CONCURRENT),
+        [Subscription::new(&topic)],
+        SlowHandler {
+            active: Arc::clone(&active),
+            max_active: Arc::clone(&max_active),
+            completed,
+        },
+    )
+    .await
+    .expect("open gRPC consumer");
     let_stream_settle().await;
 
-    let producer = grpc_producer();
+    let producer = grpc_producer().await;
     for index in 0..COUNT {
         producer
             .publish(Message::from(

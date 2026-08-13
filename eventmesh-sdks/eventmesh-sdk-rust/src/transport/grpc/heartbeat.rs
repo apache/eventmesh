@@ -32,7 +32,7 @@ use crate::common::status_code::StatusCode;
 use crate::config::{ConsumerOptions, GrpcConfig};
 use crate::model::{EventMeshProtocolType, SubscriptionItem};
 use crate::proto_gen::PbCloudEvent;
-use crate::transport::grpc::client::GrpcClient;
+use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::consumer::SubscriptionEntry;
 
@@ -97,7 +97,7 @@ pub(crate) async fn stream_sender(stream_tx: &StreamTx) -> Option<mpsc::Sender<P
 ///
 /// Returns the task's [`JoinHandle`] so the owner can await clean exit.
 pub(crate) fn spawn(
-    client: GrpcClient,
+    client: ChannelClient,
     config: GrpcConfig,
     consumer: ConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -175,7 +175,7 @@ pub(crate) fn spawn(
 /// logged and the stream subscriptions are skipped (the user must re-call
 /// `subscribe_stream`).
 async fn resubscribe(
-    client: &GrpcClient,
+    client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,

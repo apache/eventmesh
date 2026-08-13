@@ -32,6 +32,6 @@ pub mod consumer;
 pub mod heartbeat;
 pub mod producer;
 
-pub use client::GrpcClient;
+pub use client::ChannelClient;
 pub use consumer::{GrpcStreamConsumer, GrpcWebhookConsumer};
 pub use producer::GrpcProducer;

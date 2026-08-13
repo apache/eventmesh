@@ -18,12 +18,13 @@
 //! E2e: gRPC synchronous request/reply through the v2 facade.
 
 use eventmesh::{
+    grpc::GrpcStreamConsumer,
     message::{EventMeshMessage, Message},
     subscription::{DeliveryType, Subscription},
 };
 
 use crate::harness::{
-    ensure_topic, grpc_client, grpc_consumer_options, grpc_producer, let_stream_settle,
+    ensure_topic, grpc_channel, grpc_consumer_options, grpc_producer, let_stream_settle,
     unique_topic, ReplyingListener,
 };
 use crate::require_runtime;
@@ -33,19 +34,20 @@ async fn request_reply_roundtrip() {
     require_runtime!();
     let topic = unique_topic("req-reply");
     ensure_topic(&topic).await;
-    let consumer = grpc_client()
-        .stream_consumer(
-            grpc_consumer_options(),
-            [Subscription::new(&topic).with_delivery_type(DeliveryType::Sync)],
-            ReplyingListener {
-                reply_content: "pong".into(),
-            },
-        )
-        .await
-        .expect("open request/reply consumer");
+    let consumer = GrpcStreamConsumer::open(
+        grpc_channel().await,
+        grpc_consumer_options(),
+        [Subscription::new(&topic).with_delivery_type(DeliveryType::Sync)],
+        ReplyingListener {
+            reply_content: "pong".into(),
+        },
+    )
+    .await
+    .expect("open request/reply consumer");
     let_stream_settle().await;
 
     let reply = grpc_producer()
+        .await
         .request_reply(Message::from(
             EventMeshMessage::new(&topic, "ping").unwrap(),
         ))

@@ -51,7 +51,7 @@ use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
-use crate::transport::grpc::client::GrpcClient;
+use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::heartbeat::{self, StreamTx};
 use crate::MessageListener;
@@ -205,27 +205,27 @@ async fn await_task<T: Send + 'static>(
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```no_run
 /// # use eventmesh::{
-/// #     config::{Endpoint, GrpcConfig, GrpcConsumerOptions}, grpc::GrpcStreamConsumer,
-/// #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
-/// #     MessageListener,
+/// #     config::{Endpoint, GrpcConfig, GrpcConsumerOptions},
+/// #     GrpcChannel, GrpcStreamConsumer, Message, MessageHandler, Subscription,
 /// # };
 /// # struct MyListener;
-/// # impl MessageListener for MyListener {
-/// #     type Message = EventMeshMessage;
-/// #     async fn handle(&self, _: Self::Message) -> Option<Self::Message> { None }
+/// # impl MessageHandler for MyListener {
+/// #     async fn handle(&self, _: Message) -> eventmesh::Result<Option<Message>> { Ok(None) }
 /// # }
 /// # #[tokio::main]
 /// # async fn main() -> eventmesh::Result<()> {
-/// let consumer = GrpcStreamConsumer::subscribe_stream(
+/// let channel = GrpcChannel::connect(
 ///     GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?),
-///     GrpcConsumerOptions::new("consumer-group"),
-///     MyListener,
-///     vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
-///     Some(async { tokio::signal::ctrl_c().await.ok(); }),
 /// ).await?;
-/// consumer.wait_for_shutdown().await?;
+/// let consumer = GrpcStreamConsumer::open(
+///     channel,
+///     GrpcConsumerOptions::new("consumer-group"),
+///     [Subscription::new("t")],
+///     MyListener,
+/// ).await?;
+/// consumer.join().await?;
 /// # Ok(())
 /// # }
 /// ```
@@ -233,7 +233,7 @@ pub struct GrpcStreamConsumer<L: MessageListener>
 where
     L::Message: GrpcMessage,
 {
-    client: GrpcClient,
+    client: ChannelClient,
     config: GrpcConfig,
     options: GrpcConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -269,6 +269,7 @@ where
     ///
     /// (`#[tokio::main]` is already multi-threaded by default.)
     pub async fn subscribe_stream(
+        client: ChannelClient,
         config: GrpcConfig,
         options: GrpcConsumerOptions,
         listener: L,
@@ -282,7 +283,6 @@ where
             ));
         }
 
-        let client = GrpcClient::new(&config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
         let stream_tx: StreamTx = Arc::new(Mutex::new(None));
@@ -563,26 +563,30 @@ where
 ///
 /// # Example
 ///
-/// ```ignore
-/// # use eventmesh::{config::{ConsumerOptions, Endpoint, GrpcConfig}, grpc::GrpcWebhookConsumer};
-/// # use eventmesh::model::{SubscriptionItem, SubscriptionMode, SubscriptionType};
+/// ```no_run
+/// # use eventmesh::{
+/// #     config::{ConsumerOptions, Endpoint, GrpcConfig},
+/// #     GrpcChannel, GrpcWebhookConsumer, Subscription,
+/// # };
 /// # #[tokio::main]
 /// # async fn main() -> eventmesh::Result<()> {
-/// let consumer = GrpcWebhookConsumer::new(
+/// let channel = GrpcChannel::connect(
 ///     GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?),
-///     ConsumerOptions::new("consumer-group"),
-///     None::<std::future::Ready<()>>,
 /// ).await?;
-/// consumer.subscribe_webhook(
-///     vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
+/// let consumer = GrpcWebhookConsumer::new(
+///     channel,
+///     ConsumerOptions::new("consumer-group"),
+/// ).await?;
+/// consumer.subscribe(
+///     [Subscription::new("t")],
 ///     "http://127.0.0.1:8080/cb",
 /// ).await?;
-/// consumer.wait_for_shutdown().await?;
+/// consumer.join().await?;
 /// # Ok(())
 /// # }
 /// ```
 pub struct GrpcWebhookConsumer {
-    client: GrpcClient,
+    client: ChannelClient,
     config: GrpcConfig,
     options: ConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -597,12 +601,12 @@ impl GrpcWebhookConsumer {
     /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
     /// initiated by [`shutdown`](Self::shutdown) or drop.
     pub async fn new(
+        client: ChannelClient,
         config: GrpcConfig,
         options: ConsumerOptions,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
         options.validate()?;
-        let client = GrpcClient::new(&config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
 
@@ -626,6 +630,11 @@ impl GrpcWebhookConsumer {
             shutdown,
             heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
         })
+    }
+
+    #[cfg(test)]
+    pub(crate) fn client(&self) -> &ChannelClient {
+        &self.client
     }
 
     /// Subscribe via webhook: the server POSTs delivered events to `url`.
@@ -732,7 +741,7 @@ async fn timed<T>(timeout: Duration, f: impl Future<Output = Result<T>>) -> Resu
 }
 
 async fn subscribe_webhook_rpc(
-    client: &GrpcClient,
+    client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -777,7 +786,7 @@ async fn subscribe_webhook_rpc(
 }
 
 async fn unsubscribe_stream_rpc(
-    client: &GrpcClient,
+    client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -817,7 +826,7 @@ async fn unsubscribe_stream_rpc(
 }
 
 async fn unsubscribe_webhook_rpc(
-    client: &GrpcClient,
+    client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -1096,8 +1105,10 @@ mod tests {
 
     #[tokio::test]
     async fn webhook_shutdown_then_join_preserves_task_panic() {
+        let config = config();
         let consumer = GrpcWebhookConsumer::new(
-            config(),
+            ChannelClient::connect_lazy(&config).unwrap(),
+            config,
             ConsumerOptions::new("consumer"),
             None::<std::future::Ready<()>>,
         )

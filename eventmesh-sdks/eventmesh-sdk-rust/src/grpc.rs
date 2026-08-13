@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! gRPC client API.
+//! gRPC channel and role API.
 
 use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions, ProducerOptions};
 use crate::error::{EventMeshError, Result};
@@ -23,84 +23,35 @@ use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::grpc::{
-    GrpcClient as ChannelClient, GrpcProducer as TransportProducer,
+    ChannelClient as TransportChannel, GrpcProducer as TransportProducer,
     GrpcStreamConsumer as TransportConsumer, GrpcWebhookConsumer as TransportWebhookConsumer,
 };
 use crate::transport::{Publisher as TransportPublisher, RequestReply as TransportRequestReply};
 use crate::MessageHandler;
 
-/// A configured EventMesh gRPC client.
+/// A connected EventMesh gRPC channel.
+///
+/// Create the channel inside the Tokio runtime that will use it. Producers and
+/// consumers built from clones of the channel share one multiplexed HTTP/2
+/// connection. To use EventMesh from another runtime, connect another channel
+/// in that runtime instead of moving this value across runtime lifetimes.
 #[derive(Clone)]
-pub struct GrpcClient {
+pub struct GrpcChannel {
     config: GrpcConfig,
+    inner: TransportChannel,
 }
 
-impl GrpcClient {
-    /// Validate and create a gRPC client handle.
-    ///
-    /// Channel creation remains lazy; network I/O begins with the first
-    /// operation or stream consumer.
-    pub fn new(config: GrpcConfig) -> Result<Self> {
-        config.validate()?;
-        ChannelClient::new(&config)?;
-        Ok(Self { config })
+impl GrpcChannel {
+    /// Validate `config` and connect on the current Tokio runtime.
+    pub async fn connect(config: GrpcConfig) -> Result<Self> {
+        let inner = TransportChannel::connect(&config).await?;
+        Ok(Self { config, inner })
     }
 
-    /// Create a producer role using `options`.
-    pub fn producer(&self, options: ProducerOptions) -> Result<GrpcProducer> {
-        options.validate()?;
-        Ok(GrpcProducer {
-            inner: TransportProducer::connect(self.config.clone(), options)?,
-            timeout: self.config.request_timeout(),
-        })
-    }
-
-    /// Open a long-lived gRPC stream consumer.
-    ///
-    /// gRPC requires at least one initial subscription to open its stream;
-    /// additional subscriptions can be added on the returned consumer.
-    pub async fn stream_consumer<H>(
-        &self,
-        options: GrpcConsumerOptions,
-        subscriptions: impl IntoIterator<Item = Subscription>,
-        handler: H,
-    ) -> Result<GrpcConsumer<H>>
-    where
-        H: MessageHandler,
-    {
-        options.validate()?;
-        let subscriptions: Vec<_> = subscriptions.into_iter().collect();
-        for subscription in &subscriptions {
-            subscription.validate()?;
-        }
-        let subscriptions = subscriptions.iter().map(Subscription::as_legacy).collect();
-        let inner = TransportConsumer::subscribe_stream(
-            self.config.clone(),
-            options,
-            PublicHandler::new(handler),
-            subscriptions,
-            None::<std::future::Ready<()>>,
-        )
-        .await?;
-        Ok(GrpcConsumer { inner })
-    }
-
-    /// Create a gRPC webhook-registration consumer.
-    ///
-    /// The EventMesh runtime delivers to the URL registered on the returned
-    /// value over HTTP. Use the SDK's `webhook::WebhookServer` (with the
-    /// `http` feature) or an application-owned HTTP endpoint to receive those
-    /// deliveries.
-    pub async fn webhook_consumer(&self, options: ConsumerOptions) -> Result<GrpcWebhookConsumer> {
-        options.validate()?;
-        Ok(GrpcWebhookConsumer {
-            inner: TransportWebhookConsumer::new(
-                self.config.clone(),
-                options,
-                None::<std::future::Ready<()>>,
-            )
-            .await?,
-        })
+    #[cfg(test)]
+    fn connect_lazy(config: GrpcConfig) -> Result<Self> {
+        let inner = TransportChannel::connect_lazy(&config)?;
+        Ok(Self { config, inner })
     }
 }
 
@@ -111,7 +62,7 @@ pub struct GrpcProducer {
 }
 
 /// A long-lived gRPC stream consumer.
-pub struct GrpcConsumer<H: MessageHandler> {
+pub struct GrpcStreamConsumer<H: MessageHandler> {
     inner: TransportConsumer<PublicHandler<H>>,
 }
 
@@ -125,6 +76,23 @@ pub struct GrpcWebhookConsumer {
 }
 
 impl GrpcWebhookConsumer {
+    /// Create a webhook-registration consumer over `channel`.
+    ///
+    /// The EventMesh runtime delivers events to the registered URL over HTTP.
+    /// Use the SDK's [`crate::webhook::WebhookServer`] or an application-owned
+    /// HTTP endpoint to receive those deliveries.
+    pub async fn new(channel: GrpcChannel, options: ConsumerOptions) -> Result<Self> {
+        Ok(Self {
+            inner: TransportWebhookConsumer::new(
+                channel.inner,
+                channel.config,
+                options,
+                None::<std::future::Ready<()>>,
+            )
+            .await?,
+        })
+    }
+
     /// Register one or more subscriptions to an HTTP webhook URL.
     pub async fn subscribe(
         &self,
@@ -188,7 +156,36 @@ impl GrpcWebhookConsumer {
     }
 }
 
-impl<H: MessageHandler> GrpcConsumer<H> {
+impl<H: MessageHandler> GrpcStreamConsumer<H> {
+    /// Open a bidirectional subscription stream over `channel`.
+    ///
+    /// At least one initial subscription is required. Additional subscriptions
+    /// can be added after the stream opens with [`subscribe`](Self::subscribe).
+    /// This operation requires a multi-threaded Tokio runtime so tonic's
+    /// connection driver can progress while the stream is being opened.
+    pub async fn open(
+        channel: GrpcChannel,
+        options: GrpcConsumerOptions,
+        subscriptions: impl IntoIterator<Item = Subscription>,
+        handler: H,
+    ) -> Result<Self> {
+        let subscriptions: Vec<_> = subscriptions.into_iter().collect();
+        for subscription in &subscriptions {
+            subscription.validate()?;
+        }
+        let subscriptions = subscriptions.iter().map(Subscription::as_legacy).collect();
+        let inner = TransportConsumer::subscribe_stream(
+            channel.inner,
+            channel.config,
+            options,
+            PublicHandler::new(handler),
+            subscriptions,
+            None::<std::future::Ready<()>>,
+        )
+        .await?;
+        Ok(Self { inner })
+    }
+
     /// Add a subscription to the active stream.
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
         subscription.validate()?;
@@ -216,6 +213,15 @@ impl<H: MessageHandler> GrpcConsumer<H> {
 }
 
 impl GrpcProducer {
+    /// Create a publishing role over `channel`.
+    pub fn new(channel: GrpcChannel, options: ProducerOptions) -> Result<Self> {
+        let timeout = channel.config.request_timeout();
+        Ok(Self {
+            inner: TransportProducer::new(channel.inner, channel.config, options)?,
+            timeout,
+        })
+    }
+
     /// Publish one event and wait for the EventMesh acknowledgement.
     pub async fn publish(&self, message: Message) -> Result<PublishReceipt> {
         match message {
@@ -312,12 +318,37 @@ mod tests {
     use super::*;
     use crate::config::Endpoint;
 
-    #[test]
-    fn client_and_producer_build_without_a_tokio_runtime() {
+    fn channel() -> GrpcChannel {
         let config = GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205).unwrap());
-        let client = GrpcClient::new(config).unwrap();
-        let _producer = client
-            .producer(ProducerOptions::new("producer-group"))
+        GrpcChannel::connect_lazy(config).unwrap()
+    }
+
+    #[tokio::test]
+    async fn cloned_channels_and_their_producers_share_one_connection() {
+        let channel = channel();
+        let cloned_channel = channel.clone();
+        let first = GrpcProducer::new(channel.clone(), ProducerOptions::new("producer-a")).unwrap();
+        let second =
+            GrpcProducer::new(cloned_channel.clone(), ProducerOptions::new("producer-b")).unwrap();
+
+        assert!(channel.inner.shares_channel_with(&cloned_channel.inner));
+        assert!(channel.inner.shares_channel_with(first.inner.client()));
+        assert!(channel.inner.shares_channel_with(second.inner.client()));
+    }
+
+    #[tokio::test]
+    async fn producer_and_webhook_consumer_share_one_channel() {
+        let channel = channel();
+        let producer =
+            GrpcProducer::new(channel.clone(), ProducerOptions::new("producer")).unwrap();
+        let consumer = GrpcWebhookConsumer::new(channel.clone(), ConsumerOptions::new("consumer"))
+            .await
             .unwrap();
+
+        assert!(channel.inner.shares_channel_with(producer.inner.client()));
+        assert!(channel.inner.shares_channel_with(consumer.inner.client()));
+
+        consumer.shutdown();
+        consumer.join().await.unwrap();
     }
 }

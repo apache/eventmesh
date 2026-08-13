@@ -17,13 +17,14 @@
 
 use eventmesh::{
     config::{Endpoint, GrpcConfig, ProducerOptions},
-    EventMeshMessage, GrpcClient, Message,
+    EventMeshMessage, GrpcChannel, GrpcProducer, Message,
 };
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let producer = GrpcProducer::new(channel, ProducerOptions::new("test-producerGroup"))?;
     let messages = (1..=3)
         .map(|index| {
             EventMeshMessage::new(

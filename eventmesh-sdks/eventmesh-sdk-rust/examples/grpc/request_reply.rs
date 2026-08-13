@@ -17,7 +17,7 @@
 
 use eventmesh::{
     config::{Endpoint, GrpcConfig, GrpcConsumerOptions, ProducerOptions},
-    EventMeshMessage, GrpcClient, Message, Subscription,
+    EventMeshMessage, GrpcChannel, GrpcProducer, GrpcStreamConsumer, Message, Subscription,
 };
 use std::time::Duration;
 
@@ -25,21 +25,22 @@ const TOPIC: &str = "test-topic-rust-sdk";
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let consumer = client
-        .stream_consumer(
-            GrpcConsumerOptions::new("test-consumerGroup"),
-            [Subscription::new(TOPIC).with_delivery_type(eventmesh::DeliveryType::Sync)],
-            |request: Message| async move {
-                let request = request.into_event_mesh()?;
-                Ok(Some(Message::from(EventMeshMessage::new(
-                    request.topic(),
-                    "pong",
-                )?)))
-            },
-        )
-        .await?;
-    let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let consumer = GrpcStreamConsumer::open(
+        channel.clone(),
+        GrpcConsumerOptions::new("test-consumerGroup"),
+        [Subscription::new(TOPIC).with_delivery_type(eventmesh::DeliveryType::Sync)],
+        |request: Message| async move {
+            let request = request.into_event_mesh()?;
+            Ok(Some(Message::from(EventMeshMessage::new(
+                request.topic(),
+                "pong",
+            )?)))
+        },
+    )
+    .await?;
+    let producer = GrpcProducer::new(channel, ProducerOptions::new("test-producerGroup"))?;
 
     // Give EventMesh time to make the new subscription routable before the
     // first synchronous request.

@@ -19,7 +19,7 @@ use cloudevents::{EventBuilder, EventBuilderV10};
 use eventmesh::{
     config::{Endpoint, GrpcConfig, ProducerOptions},
     message::Message,
-    Error, GrpcClient,
+    Error, GrpcChannel, GrpcProducer,
 };
 
 #[tokio::main]
@@ -33,8 +33,9 @@ async fn main() -> eventmesh::Result<()> {
         .build()
         .map_err(|error| Error::InvalidArgument(format!("invalid CloudEvent: {error}")))?;
 
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let producer = GrpcProducer::new(channel, ProducerOptions::new("test-producerGroup"))?;
     println!(
         "published: {:?}",
         producer.publish(Message::from(event)).await?

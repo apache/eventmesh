@@ -46,6 +46,7 @@ async fn subscribe_and_receive() {
     let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     grpc_producer()
+        .await
         .publish(Message::from(
             EventMeshMessage::new(&topic, "delivered-payload").unwrap(),
         ))
@@ -67,6 +68,7 @@ async fn subscribe_batch_receive() {
         .map(|index| Message::from(EventMeshMessage::new(&topic, format!("m{index}")).unwrap()))
         .collect();
     grpc_producer()
+        .await
         .publish_batch(messages)
         .await
         .expect("batch publish");
@@ -86,7 +88,7 @@ async fn unsubscribe_stops_delivery() {
     let consumer_group = unique_topic("consumer-group");
     ensure_topic(&topic).await;
     let (consumer, mut receiver) = warm_topic_as(&topic, consumer_group.clone()).await;
-    let producer = grpc_producer();
+    let producer = grpc_producer().await;
     wait_for_client_group("grpc", &consumer_group, true).await;
 
     producer

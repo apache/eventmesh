@@ -17,7 +17,7 @@
 
 use eventmesh::{
     config::{ConsumerOptions, Endpoint, GrpcConfig},
-    GrpcClient, Subscription,
+    GrpcChannel, GrpcWebhookConsumer, Subscription,
 };
 
 const TOPIC: &str = "test-topic-rust-sdk";
@@ -26,10 +26,10 @@ const WEBHOOK_URL: &str = "http://127.0.0.1:8080/eventmesh/callback";
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
     // Start an HTTP endpoint at WEBHOOK_URL before running this example.
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let consumer = client
-        .webhook_consumer(ConsumerOptions::new("test-consumerGroup"))
-        .await?;
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let consumer =
+        GrpcWebhookConsumer::new(channel, ConsumerOptions::new("test-consumerGroup")).await?;
     let subscription = Subscription::new(TOPIC);
 
     consumer

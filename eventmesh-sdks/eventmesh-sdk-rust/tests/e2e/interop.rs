@@ -111,6 +111,7 @@ async fn grpc_rust_publishes_to_java_consumer() {
     let mut lines = BufReader::new(child.stdout.take().expect("peer stdout")).lines();
     wait_for_line(&mut lines, "INTEROP_READY").await;
     grpc_producer()
+        .await
         .publish(Message::from(
             EventMeshMessage::new(&topic, "from-rust-grpc").unwrap(),
         ))

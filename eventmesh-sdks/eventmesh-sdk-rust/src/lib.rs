@@ -19,12 +19,13 @@
 //!
 //! # API map
 //!
-//! Start with a feature-gated protocol client: [`GrpcClient`] (`grpc`),
-//! [`HttpClient`] (`http`), or [`TcpClient`] (`tcp`). Each client creates a
-//! producer and its transport-specific consumer. Producers accept [`Message`],
-//! while consumers deliver it to [`MessageHandler`]. Use [`config`] for
-//! endpoints, identity, credentials, timeouts, HTTP TLS, and reconnect settings;
-//! use [`Subscription`] to declare what a consumer receives.
+//! Start with a feature-gated transport handle: [`GrpcChannel`] (`grpc`),
+//! [`HttpClient`] (`http`), or [`TcpClient`] (`tcp`). A gRPC channel is
+//! connected inside its owning Tokio runtime and passed explicitly to gRPC
+//! producer and consumer roles. Producers accept [`Message`], while consumers
+//! deliver it to [`MessageHandler`]. Use [`config`] for endpoints, identity,
+//! credentials, timeouts, HTTP TLS, and reconnect settings; use
+//! [`Subscription`] to declare what a consumer receives.
 //!
 //! `Message` preserves native EventMesh messages and, with `cloud_events`,
 //! `cloudevents::Event`. It is not a serialization format: gRPC protobuf,
@@ -90,7 +91,7 @@ pub use message::{
 pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 
 #[cfg(feature = "grpc")]
-pub use grpc::{GrpcClient, GrpcWebhookConsumer};
+pub use grpc::{GrpcChannel, GrpcProducer, GrpcStreamConsumer, GrpcWebhookConsumer};
 
 #[cfg(feature = "http")]
 pub use http::HttpClient;

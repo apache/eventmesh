@@ -26,7 +26,7 @@ use eventmesh::{
         ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig, GrpcConsumerOptions,
         HttpConfig, Identity, ProducerOptions, TcpConfig,
     },
-    grpc::{GrpcClient, GrpcConsumer, GrpcProducer},
+    grpc::{GrpcChannel, GrpcProducer, GrpcStreamConsumer},
     http::{HttpClient, HttpConsumer},
     message::{EventMeshMessage, Message},
     subscription::Subscription,
@@ -94,20 +94,19 @@ pub(crate) fn grpc_consumer_options() -> GrpcConsumerOptions {
     GrpcConsumerOptions::new(unique_topic("consumer-group"))
 }
 
-pub(crate) fn grpc_client() -> GrpcClient {
+pub(crate) async fn grpc_channel() -> GrpcChannel {
     let endpoint = Endpoint::new(HOST, GRPC_PORT).expect("valid gRPC endpoint");
-    GrpcClient::new(
+    GrpcChannel::connect(
         GrpcConfig::new(endpoint)
             .with_identity(identity())
             .with_credentials(credentials()),
     )
+    .await
     .expect("build gRPC client")
 }
 
-pub(crate) fn grpc_producer() -> GrpcProducer {
-    grpc_client()
-        .producer(producer_options())
-        .expect("build gRPC producer")
+pub(crate) async fn grpc_producer() -> GrpcProducer {
+    GrpcProducer::new(grpc_channel().await, producer_options()).expect("build gRPC producer")
 }
 
 pub(crate) fn http_client() -> HttpClient {
@@ -311,7 +310,7 @@ pub(crate) async fn wait_for_tcp_topic_listener(topic: &str, expected: bool) {
 pub(crate) async fn warm_topic(
     topic: &str,
 ) -> (
-    GrpcConsumer<CollectingListener>,
+    GrpcStreamConsumer<CollectingListener>,
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     warm_topic_as(topic, unique_topic("consumer-group")).await
@@ -321,18 +320,18 @@ pub(crate) async fn warm_topic_as(
     topic: &str,
     consumer_group: String,
 ) -> (
-    GrpcConsumer<CollectingListener>,
+    GrpcStreamConsumer<CollectingListener>,
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     let (listener, receiver) = CollectingListener::new();
-    let consumer = grpc_client()
-        .stream_consumer(
-            GrpcConsumerOptions::new(consumer_group),
-            [Subscription::new(topic)],
-            listener,
-        )
-        .await
-        .expect("open gRPC stream consumer");
+    let consumer = GrpcStreamConsumer::open(
+        grpc_channel().await,
+        GrpcConsumerOptions::new(consumer_group),
+        [Subscription::new(topic)],
+        listener,
+    )
+    .await
+    .expect("open gRPC stream consumer");
     let_stream_settle().await;
     (consumer, receiver)
 }

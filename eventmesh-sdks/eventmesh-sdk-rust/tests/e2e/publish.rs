@@ -40,6 +40,7 @@ async fn publish_single() {
     let (_consumer, mut receiver) = warm_topic(&topic).await;
 
     let receipt = grpc_producer()
+        .await
         .publish(Message::from(
             EventMeshMessage::new(&topic, "hello from rust e2e").unwrap(),
         ))
@@ -65,6 +66,7 @@ async fn publish_batch() {
         })
         .collect();
     let receipt = grpc_producer()
+        .await
         .publish_batch(messages)
         .await
         .expect("batch publish");

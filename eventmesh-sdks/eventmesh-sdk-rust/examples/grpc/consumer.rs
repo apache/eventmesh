@@ -19,7 +19,7 @@ use eventmesh::{
     config::{Endpoint, GrpcConfig, GrpcConsumerOptions},
     message::Message,
     subscription::Subscription,
-    GrpcClient, MessageHandler,
+    GrpcChannel, GrpcStreamConsumer, MessageHandler,
 };
 
 struct PrintHandler;
@@ -33,13 +33,14 @@ impl MessageHandler for PrintHandler {
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let consumer = client
-        .stream_consumer(
-            GrpcConsumerOptions::new("test-consumerGroup"),
-            [Subscription::new("test-topic-rust-sdk")],
-            PrintHandler,
-        )
-        .await?;
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let consumer = GrpcStreamConsumer::open(
+        channel,
+        GrpcConsumerOptions::new("test-consumerGroup"),
+        [Subscription::new("test-topic-rust-sdk")],
+        PrintHandler,
+    )
+    .await?;
     consumer.join().await
 }

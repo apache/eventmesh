@@ -20,11 +20,13 @@
 use std::time::Duration;
 
 use cloudevents::{AttributesReader, Event, EventBuilder, EventBuilderV10};
-use eventmesh::{message::Message, subscription::Subscription, MessageHandler, Result};
+use eventmesh::{
+    grpc::GrpcStreamConsumer, message::Message, subscription::Subscription, MessageHandler, Result,
+};
 use tokio::sync::mpsc;
 
 use crate::harness::{
-    ensure_topic, grpc_client, grpc_consumer_options, grpc_producer, let_stream_settle,
+    ensure_topic, grpc_channel, grpc_consumer_options, grpc_producer, let_stream_settle,
     unique_topic,
 };
 use crate::require_runtime;
@@ -46,14 +48,14 @@ async fn grpc_publish_cloud_event() {
     let topic = unique_topic("grpc-ce-pub");
     ensure_topic(&topic).await;
     let (tx, mut receiver) = mpsc::unbounded_channel();
-    let consumer = grpc_client()
-        .stream_consumer(
-            grpc_consumer_options(),
-            [Subscription::new(&topic)],
-            CloudEventListener(tx),
-        )
-        .await
-        .expect("open gRPC CloudEvent consumer");
+    let consumer = GrpcStreamConsumer::open(
+        grpc_channel().await,
+        grpc_consumer_options(),
+        [Subscription::new(&topic)],
+        CloudEventListener(tx),
+    )
+    .await
+    .expect("open gRPC CloudEvent consumer");
     let_stream_settle().await;
 
     let event = EventBuilderV10::new()
@@ -68,6 +70,7 @@ async fn grpc_publish_cloud_event() {
         .build()
         .expect("valid CloudEvent");
     let receipt = grpc_producer()
+        .await
         .publish(Message::from(event))
         .await
         .expect("publish gRPC CloudEvent");

@@ -24,27 +24,35 @@ use tracing::debug;
 use crate::config::{GrpcConfig, ProducerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
-use crate::transport::grpc::client::GrpcClient;
+use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::{Publisher, RequestReply};
 
 /// gRPC-based producer.
 pub struct GrpcProducer {
-    client: GrpcClient,
+    client: ChannelClient,
     config: GrpcConfig,
     options: ProducerOptions,
 }
 
 impl GrpcProducer {
-    /// Connect (lazily) using the given config.
-    pub fn connect(config: GrpcConfig, options: ProducerOptions) -> Result<Self> {
+    /// Create a producer over an existing lazily connected gRPC client.
+    pub(crate) fn new(
+        client: ChannelClient,
+        config: GrpcConfig,
+        options: ProducerOptions,
+    ) -> Result<Self> {
         options.validate()?;
-        let client = GrpcClient::new(&config)?;
         Ok(Self {
             client,
             config,
             options,
         })
+    }
+
+    #[cfg(test)]
+    pub(crate) fn client(&self) -> &ChannelClient {
+        &self.client
     }
 
     /// Publish a batch of native EventMesh messages.

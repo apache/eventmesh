@@ -20,12 +20,13 @@
 use std::time::{Duration, Instant};
 
 use eventmesh::{
+    grpc::GrpcWebhookConsumer,
     message::{EventMeshMessage, Message},
     subscription::Subscription,
 };
 
 use crate::harness::{
-    consumer_options, ensure_topic, grpc_client, grpc_producer, let_stream_settle,
+    consumer_options, ensure_topic, grpc_channel, grpc_producer, let_stream_settle,
     start_webhook_server, unique_topic,
 };
 use crate::require_runtime;
@@ -39,8 +40,7 @@ async fn grpc_webhook_consumer_receives_delivery() {
     // The server is deliberately not registered through the HTTP client: this
     // leaves gRPC as the only component that owns the runtime subscription.
     let (webhook_server, mut receiver) = start_webhook_server().await;
-    let webhook = grpc_client()
-        .webhook_consumer(consumer_options())
+    let webhook = GrpcWebhookConsumer::new(grpc_channel().await, consumer_options())
         .await
         .expect("build gRPC webhook consumer");
     let deadline = Instant::now() + Duration::from_secs(20);
@@ -62,6 +62,7 @@ async fn grpc_webhook_consumer_receives_delivery() {
     // Keep this test on the gRPC-origin path. The Runtime cannot currently
     // adapt an HTTP-origin CloudEvent into its gRPC push representation.
     grpc_producer()
+        .await
         .publish(Message::from(
             EventMeshMessage::new(&topic, "delivered-via-grpc-webhook").unwrap(),
         ))

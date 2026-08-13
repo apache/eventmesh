@@ -14,7 +14,7 @@ The default feature set is empty. Enable the transport(s) your application uses;
 
 | Feature | Provides |
 | --- | --- |
-| `grpc` | `GrpcClient`, producer, stream consumer, and webhook registration |
+| `grpc` | `GrpcChannel`, producer, stream consumer, and webhook registration |
 | `http` | `HttpClient`, managed HTTP consumer, external webhook registration, and webhook codec helpers |
 | `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
@@ -29,18 +29,19 @@ eventmesh = { version = "2", features = ["grpc"] }
 
 ## Quick start
 
-The same `Message`, `EventMeshMessage`, `Subscription`, and role options are used by every transport. Only client construction changes.
+The same `Message`, `EventMeshMessage`, `Subscription`, and role options are used by every transport. gRPC connects an explicit channel and passes it to each role; HTTP and TCP use their transport clients as role factories.
 
 ```rust
 use eventmesh::{
     config::{Endpoint, GrpcConfig, ProducerOptions},
-    EventMeshMessage, GrpcClient, Message,
+    EventMeshMessage, GrpcChannel, GrpcProducer, Message,
 };
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
-    let client = GrpcClient::new(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?))?;
-    let producer = client.producer(ProducerOptions::new("orders-producer"))?;
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let producer = GrpcProducer::new(channel, ProducerOptions::new("orders-producer"))?;
     let receipt = producer
         .publish(Message::from(EventMeshMessage::new(
             "orders.created",
@@ -71,13 +72,19 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 | Transport | Client | Consumer model | Notable operations |
 | --- | --- | --- | --- |
-| gRPC | `GrpcClient` | `stream_consumer` invokes a `MessageHandler` | batch publish, request/reply, live subscribe/unsubscribe |
+| gRPC | `GrpcChannel` | `GrpcStreamConsumer` invokes a `MessageHandler` | batch publish, request/reply, live subscribe/unsubscribe |
 | HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | publish, weighted endpoint selection |
 | TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
 `HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
 All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. HTTP consumers and webhook registrations additionally provide `close().await`, which unregisters remote subscriptions before signalling shutdown and joining.
+
+Create each `GrpcChannel` inside the Tokio runtime that will drive it. Clone that
+channel to share one multiplexed HTTP/2 connection among producers and consumers
+in the same runtime. If an application uses another Tokio runtime, call
+`GrpcChannel::connect` again from that runtime instead of carrying over an
+existing channel.
 
 `GrpcWebhookConsumer` does not automatically unregister remote webhook subscriptions when `shutdown()` or `join()` is called. Retain the subscriptions and webhook URL, call `unsubscribe(...).await` explicitly, and only then call `shutdown()` and `join().await`. See the `grpc_webhook_consumer` example.
 
