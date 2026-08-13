@@ -54,31 +54,6 @@ A2A 协议不仅支持传统的 FIPA-ACL 风格语义，更全面拥抱现代大
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Gateway 运行时架构
-
-```
-  protocol-a2a 模块              runtime 模块                    examples 模块
-  ┌─────────────────┐           ┌──────────────────┐           ┌──────────────┐
-  │ A2AMessageTransport(接口)    │ A2AGatewayServer  │           │ A2AGatewayDemo│
-  │ A2AClient (SDK)  │<──HTTP──>│ (main, Netty HTTP)│<──HTTP──>│ (纯客户端)    │
-  │ AgentCard/Topic  │           │ InMemoryTransport │           └──────────────┘
-  └─────────────────┘           │ GatewayService    │
-                                │ TaskRegistry(TTL) │
-                                └──────────────────┘
-```
-
-#### 核心运行时组件
-
-| 组件 | 模块 | 职责 |
-| :--- | :--- | :--- |
-| `A2AGatewayServer` | runtime | Netty HTTP 服务器入口，预注册 mock agent |
-| `A2AGatewayHttpHandler` | runtime | HTTP 请求路由，支持 SSE 流式响应 |
-| `A2AGatewayService` | runtime | 核心编排：任务提交、响应处理、SSE 推送 |
-| `TaskRegistry` | runtime | 内存任务状态机 + TTL 自动清理（5 分钟） |
-| `A2APublishSubscribeService` | runtime | AgentCard 注册、发现、心跳管理 |
-| `InMemoryA2AMessageTransport` | runtime | 内存 pub/sub（可替换为 EventMesh broker） |
-| `A2AClient` | protocol-a2a | Java SDK，提供类型化 API |
-
 ### 异步 RPC 模式
 
 为了在事件驱动架构中支持 MCP 的 Request/Response 模型，A2A 协议定义了以下映射规则：
@@ -196,84 +171,6 @@ public void handle(CloudEvent event) {
 }
 ```
 
-### 3. 通过 Gateway REST API 交互
-
-A2A Gateway 提供完整的 REST API，支持非 Java 客户端通过 HTTP 交互：
-
-```bash
-# 同步提交 task
-curl -X POST 'http://localhost:10105/a2a/tasks?mode=sync' \
-  -H 'Content-Type: application/json' \
-  -d '{"targetAgent":"weather-agent","message":"Beijing"}'
-
-# 异步提交 task
-curl -X POST 'http://localhost:10105/a2a/tasks?mode=async' \
-  -H 'Content-Type: application/json' \
-  -d '{"targetAgent":"weather-agent","message":"Shanghai"}'
-
-# 查询状态
-curl http://localhost:10105/a2a/tasks/{taskId}
-
-# 列出 tasks（支持 state/limit/offset）
-curl 'http://localhost:10105/a2a/tasks?state=COMPLETED&limit=20&offset=0'
-
-# SSE 流式推送（含 heartbeat 保活）
-curl -N http://localhost:10105/a2a/tasks/{taskId}/stream
-
-# 健康检查
-curl http://localhost:10105/a2a/health
-
-# 列出 agents
-curl http://localhost:10105/a2a/agents
-```
-
-#### REST API 端点列表
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/a2a/tasks?mode=sync` | 同步提交 task（等待结果） |
-| POST | `/a2a/tasks?mode=async` | 异步提交 task（立即返回 taskId） |
-| GET | `/a2a/tasks?state=&limit=&offset=` | 分页列出 tasks，可按状态过滤 |
-| GET | `/a2a/tasks/{taskId}` | 查询 task 状态 |
-| DELETE | `/a2a/tasks/{taskId}` | 取消 task |
-| GET | `/a2a/tasks/{taskId}/wait` | 长轮询等待 task 结果 |
-| GET | `/a2a/tasks/{taskId}/stream` | SSE 流式推送 task 状态更新 |
-| GET | `/a2a/agents` | 列出所有已注册 agents |
-| POST | `/a2a/heartbeat` | Agent 心跳 |
-| GET | `/a2a/cards/list` | 列出所有 AgentCard |
-| POST | `/a2a/cards/card/{org}/{unit}/{agent}` | 注册 AgentCard |
-
-### 4. 使用 A2AClient Java SDK
-
-```java
-A2AClient client = A2AClient.builder()
-    .gatewayUrl("http://localhost:10105")
-    .namespace("global")
-    .agentName("my-agent")
-    .agentCard(card)
-    .heartbeatInterval(30_000)
-    .build();
-
-client.start();
-
-// 同步 task（返回类型化 TaskResult）
-TaskResult result = client.sendTaskSync("weather-agent", "Beijing", null);
-
-// 异步 task（返回 taskId）
-String taskId = client.sendTaskAsync("weather-agent", "Shanghai", null);
-
-// 查询状态
-TaskResult status = client.getTaskStatus(taskId);
-
-// 取消
-boolean cancelled = client.cancelTask(taskId);
-
-// 列出 agents（返回 List<String>）
-List<String> agents = client.listAgents();
-
-client.shutdown();
-```
-
 ## 扩展开发
 
 ### 自定义 MCP 方法
@@ -291,15 +188,6 @@ A2A 协议不限制 method 的名称。您可以定义自己的业务方法，�
   - 实现异步 RPC over CloudEvents 模式。
   - 支持 Request/Response 自动识别与语义映射。
   - 保留对 Legacy A2A 协议的完全兼容。
-
-- **v2.1.0**: Gateway 运行时架构
-  - 新增 `A2AGatewayServer` (Netty HTTP) 独立 Gateway 服务。
-  - 实现 `TaskRegistry` 任务状态机 + TTL 自动清理（5 分钟）。
-  - 支持 SSE 流式响应 (`GET /a2a/tasks/{taskId}/stream`)。
-  - `A2AClient` SDK 返回类型化对象 (`TaskResult`, `List<String>`)。
-  - 修复 `pendingTasks` 竞态条件（put-before-publish）。
-  - AgentCard 注册、发现、心跳管理。
-  - 73 个测试场景全部通过。
 
 ## 贡献指南
 
