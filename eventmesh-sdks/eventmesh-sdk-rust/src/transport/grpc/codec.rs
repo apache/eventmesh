@@ -29,7 +29,7 @@ use prost_types::Any as PbAny;
 
 use crate::common::constants::{DataContentType, DEFAULT_MESSAGE_TTL, SDK_STREAM_URL};
 use crate::common::{ProtocolKey, RandomStringUtils};
-use crate::config::GrpcClientConfig;
+use crate::config::GrpcConfig;
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
 use crate::proto_gen::{
@@ -59,25 +59,29 @@ pub fn is_proto_content(content_type: &str) -> bool {
 /// Build the common identity attributes (`env/idc/ip/pid/sys/language/...`)
 /// that every request must carry.
 pub fn common_attributes(
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
     protocol_type: EventMeshProtocolType,
 ) -> HashMap<String, PbCloudEventAttributeValue> {
-    let id = &config.identity;
+    let identity = config.identity();
+    let credentials = config.credentials();
     let mut m = HashMap::with_capacity(16);
-    m.insert(ProtocolKey::ENV.into(), attr_str(&id.env));
-    m.insert(ProtocolKey::IDC.into(), attr_str(&id.idc));
-    m.insert(ProtocolKey::IP.into(), attr_str(&id.ip));
-    m.insert(ProtocolKey::PID.into(), attr_str(&id.pid));
-    m.insert(ProtocolKey::SYS.into(), attr_str(&id.sys));
-    m.insert(ProtocolKey::LANGUAGE.into(), attr_str(&id.language));
-    m.insert(ProtocolKey::USERNAME.into(), attr_str(&id.username));
-    m.insert(ProtocolKey::PASSWD.into(), attr_str(&id.password));
+    m.insert(ProtocolKey::ENV.into(), attr_str(identity.env()));
+    m.insert(ProtocolKey::IDC.into(), attr_str(identity.idc()));
+    m.insert(ProtocolKey::IP.into(), attr_str(identity.ip()));
+    m.insert(ProtocolKey::PID.into(), attr_str(identity.process_id()));
+    m.insert(ProtocolKey::SYS.into(), attr_str(identity.system()));
+    m.insert(ProtocolKey::LANGUAGE.into(), attr_str(identity.language()));
+    m.insert(
+        ProtocolKey::USERNAME.into(),
+        attr_str(credentials.username()),
+    );
+    m.insert(ProtocolKey::PASSWD.into(), attr_str(credentials.password()));
     m.insert(
         ProtocolKey::PROTOCOL_TYPE.into(),
         attr_str(protocol_type.as_str()),
     );
     m.insert(ProtocolKey::PROTOCOL_VERSION.into(), attr_str("1.0"));
-    if let Some(token) = &id.token {
+    if let Some(token) = credentials.token() {
         if !token.is_empty() {
             m.insert("token".into(), attr_str(token));
         }
@@ -88,7 +92,8 @@ pub fn common_attributes(
 /// Build the subscription CloudEvent (carries the `SubscriptionItem` JSON
 /// list in `text_data`, plus the optional webhook `url`).
 pub fn build_subscription_event(
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
+    consumer_group: &str,
     protocol_type: EventMeshProtocolType,
     url: Option<&str>,
     items: &[SubscriptionItem],
@@ -99,10 +104,7 @@ pub fn build_subscription_event(
         ));
     }
     let mut attrs = common_attributes(config, protocol_type);
-    attrs.insert(
-        ProtocolKey::CONSUMERGROUP.into(),
-        attr_str(&config.identity.consumer_group),
-    );
+    attrs.insert(ProtocolKey::CONSUMERGROUP.into(), attr_str(consumer_group));
     attrs.insert(
         ProtocolKey::DATA_CONTENT_TYPE.into(),
         attr_str(DataContentType::JSON),
@@ -120,7 +122,8 @@ pub fn build_subscription_event(
 /// Convert an [`EventMeshMessage`] into the wire CloudEvent for publishing.
 pub fn from_event_mesh_message(
     message: &EventMeshMessage,
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
+    producer_group: &str,
 ) -> Result<PbCloudEvent> {
     let protocol_type = EventMeshProtocolType::EventMeshMessage;
     let mut attrs = common_attributes(config, protocol_type);
@@ -144,10 +147,7 @@ pub fn from_event_mesh_message(
     attrs.insert(ProtocolKey::TTL.into(), attr_str(ttl));
     attrs.insert(ProtocolKey::SEQ_NUM.into(), attr_str(&seq_num));
     attrs.insert(ProtocolKey::UNIQUE_ID.into(), attr_str(&unique_id));
-    attrs.insert(
-        ProtocolKey::PRODUCERGROUP.into(),
-        attr_str(&config.identity.producer_group),
-    );
+    attrs.insert(ProtocolKey::PRODUCERGROUP.into(), attr_str(producer_group));
     attrs.insert(
         ProtocolKey::PROTOCOL_DESC.into(),
         attr_str(ProtocolKey::PROTOCOL_DESC_GRPC_CLOUD_EVENT),
@@ -197,11 +197,12 @@ pub fn from_event_mesh_message(
 /// Build a `CloudEventBatch` from many messages (one RPC, many events).
 pub fn from_event_mesh_messages(
     messages: &[EventMeshMessage],
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
+    producer_group: &str,
 ) -> Result<PbCloudEventBatch> {
     let mut events = Vec::with_capacity(messages.len());
     for m in messages {
-        events.push(from_event_mesh_message(m, config)?);
+        events.push(from_event_mesh_message(m, config, producer_group)?);
     }
     Ok(PbCloudEventBatch { events })
 }
@@ -352,7 +353,8 @@ pub fn mark_as_reply(cloud_event: &mut PbCloudEvent) {
 #[cfg(feature = "cloud_events")]
 pub fn from_cloudevent(
     event: &cloudevents::Event,
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
+    producer_group: &str,
 ) -> Result<PbCloudEvent> {
     use cloudevents::AttributesReader;
 
@@ -380,10 +382,7 @@ pub fn from_cloudevent(
     attrs.insert(ProtocolKey::TTL.into(), attr_str(ttl));
     attrs.insert(ProtocolKey::SEQ_NUM.into(), attr_str(&seq_num));
     attrs.insert(ProtocolKey::UNIQUE_ID.into(), attr_str(&unique_id));
-    attrs.insert(
-        ProtocolKey::PRODUCERGROUP.into(),
-        attr_str(&config.identity.producer_group),
-    );
+    attrs.insert(ProtocolKey::PRODUCERGROUP.into(), attr_str(producer_group));
     attrs.insert(
         ProtocolKey::PROTOCOL_DESC.into(),
         attr_str(ProtocolKey::PROTOCOL_DESC_GRPC_CLOUD_EVENT),
@@ -591,14 +590,12 @@ fn is_json_content_type(content_type: &str) -> bool {
 
 /// Build a heartbeat CloudEvent.
 pub(crate) fn build_heartbeat(
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
+    consumer_group: &str,
     items: &[(String, String)],
 ) -> Result<PbCloudEvent> {
     let mut attrs = common_attributes(config, EventMeshProtocolType::EventMeshMessage);
-    attrs.insert(
-        ProtocolKey::CONSUMERGROUP.into(),
-        attr_str(&config.identity.consumer_group),
-    );
+    attrs.insert(ProtocolKey::CONSUMERGROUP.into(), attr_str(consumer_group));
     attrs.insert(ProtocolKey::CLIENT_TYPE.into(), attr_int(2)); // SUB
     attrs.insert(
         ProtocolKey::DATA_CONTENT_TYPE.into(),
@@ -623,17 +620,83 @@ pub(crate) fn build_heartbeat(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::GrpcClientConfig;
+    use crate::config::{Credentials, Endpoint, GrpcConfig, Identity};
 
-    fn cfg() -> GrpcClientConfig {
-        GrpcClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(10205)
-            .env("env")
-            .idc("idc")
-            .producer_group("pg")
-            .consumer_group("cg")
-            .build()
+    const PRODUCER_GROUP: &str = "pg";
+    const CONSUMER_GROUP: &str = "cg";
+
+    fn cfg() -> GrpcConfig {
+        GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205).unwrap())
+            .with_identity(Identity::default().with_env("env").with_idc("idc"))
+    }
+
+    #[test]
+    fn new_config_fields_and_role_groups_reach_wire_attributes() {
+        let config = cfg()
+            .with_identity(
+                Identity::default()
+                    .with_env("prod")
+                    .with_idc("east")
+                    .with_system("checkout")
+                    .with_process_id("42")
+                    .with_ip("192.0.2.10"),
+            )
+            .with_credentials(
+                Credentials::new()
+                    .with_basic("alice", "secret")
+                    .with_token("token"),
+            );
+        let publish = from_event_mesh_message(
+            &EventMeshMessage::new("orders", "created").unwrap(),
+            &config,
+            PRODUCER_GROUP,
+        )
+        .unwrap();
+        let subscriptions = [SubscriptionItem::new(
+            "orders",
+            crate::model::SubscriptionMode::CLUSTERING,
+            crate::model::SubscriptionType::ASYNC,
+        )];
+        let subscribe = build_subscription_event(
+            &config,
+            CONSUMER_GROUP,
+            EventMeshProtocolType::EventMeshMessage,
+            None,
+            &subscriptions,
+        )
+        .unwrap();
+
+        for (key, expected) in [
+            (ProtocolKey::ENV, "prod"),
+            (ProtocolKey::IDC, "east"),
+            (ProtocolKey::SYS, "checkout"),
+            (ProtocolKey::PID, "42"),
+            (ProtocolKey::IP, "192.0.2.10"),
+            (ProtocolKey::USERNAME, "alice"),
+            (ProtocolKey::PASSWD, "secret"),
+            ("token", "token"),
+        ] {
+            assert_eq!(
+                publish.attributes.get(key).map(attr_as_str).as_deref(),
+                Some(expected)
+            );
+        }
+        assert_eq!(
+            publish
+                .attributes
+                .get(ProtocolKey::PRODUCERGROUP)
+                .map(attr_as_str)
+                .as_deref(),
+            Some(PRODUCER_GROUP)
+        );
+        assert_eq!(
+            subscribe
+                .attributes
+                .get(ProtocolKey::CONSUMERGROUP)
+                .map(attr_as_str)
+                .as_deref(),
+            Some(CONSUMER_GROUP)
+        );
     }
 
     #[test]
@@ -647,7 +710,7 @@ mod tests {
             .prop("custom", "val")
             .build()
             .unwrap();
-        let ce = from_event_mesh_message(&msg, &cfg).unwrap();
+        let ce = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
         assert_eq!(get_subject(&ce), "test-topic");
         assert_eq!(get_seq_num(&ce), "seq-1");
         assert_eq!(get_text_data(&ce), "hello");
@@ -667,7 +730,7 @@ mod tests {
             .prop(ProtocolKey::TTL, "2147483648")
             .build()
             .unwrap();
-        let wire = from_event_mesh_message(&msg, &cfg).unwrap();
+        let wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
         let decoded = to_event_mesh_message(&wire).unwrap();
         assert_eq!(decoded.content(), " \t");
         assert_eq!(decoded.get_prop(ProtocolKey::TTL), Some("2147483648"));
@@ -679,7 +742,7 @@ mod tests {
             .prop(ProtocolKey::TTL, "java-specific")
             .build()
             .unwrap();
-        let wire = from_event_mesh_message(&msg, &cfg).unwrap();
+        let wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
         let decoded = to_event_mesh_message(&wire).unwrap();
         assert_eq!(decoded.get_prop(ProtocolKey::TTL), Some("java-specific"));
         assert_eq!(decoded.ttl_millis(), None);
@@ -695,6 +758,7 @@ mod tests {
         )];
         let ce = build_subscription_event(
             &cfg,
+            CONSUMER_GROUP,
             EventMeshProtocolType::EventMeshMessage,
             Some("http://x/y"),
             &items,
@@ -746,7 +810,7 @@ mod tests {
             .unwrap();
 
         let cfg = cfg();
-        let pb = from_cloudevent(&original, &cfg).unwrap();
+        let pb = from_cloudevent(&original, &cfg, PRODUCER_GROUP).unwrap();
 
         // id is preserved, not replaced with a random UUID.
         assert_eq!(pb.id, "my-ce-id");
@@ -815,7 +879,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            from_cloudevent(&event, &cfg()),
+            from_cloudevent(&event, &cfg(), PRODUCER_GROUP),
             Err(EventMeshError::InvalidMessage(message))
                 if message.contains("too-large") && message.contains("int32")
         ));

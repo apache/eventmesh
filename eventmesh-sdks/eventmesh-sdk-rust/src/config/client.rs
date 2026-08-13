@@ -21,7 +21,9 @@ use std::time::Duration;
 
 use crate::error::{EventMeshError, Result};
 
-use super::{ClientIdentity, ReconnectConfig};
+#[cfg(any(feature = "http", feature = "tcp"))]
+use super::ClientIdentity;
+use super::ReconnectConfig;
 
 /// Default timeout for short gRPC operations.
 pub const DEFAULT_GRPC_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
@@ -198,6 +200,21 @@ impl Credentials {
         self.token = Some(token.into());
         self
     }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn username(&self) -> &str {
+        self.username.as_deref().unwrap_or_default()
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn password(&self) -> &str {
+        self.password.as_deref().unwrap_or_default()
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn token(&self) -> Option<&str> {
+        self.token.as_deref()
+    }
 }
 
 impl std::fmt::Debug for Credentials {
@@ -223,14 +240,13 @@ pub struct Identity {
 
 impl Default for Identity {
     fn default() -> Self {
-        let legacy = ClientIdentity::detect();
         Self {
-            env: legacy.env,
-            idc: legacy.idc,
-            system: legacy.sys,
-            process_id: legacy.pid,
-            ip: legacy.ip,
-            language: legacy.language,
+            env: "env".into(),
+            idc: "default".into(),
+            system: "sys".into(),
+            process_id: std::process::id().to_string(),
+            ip: crate::common::local_ip_v4(),
+            language: "RUST".into(),
         }
     }
 }
@@ -268,6 +284,36 @@ impl Identity {
     pub fn with_ip(mut self, ip: impl Into<String>) -> Self {
         self.ip = ip.into();
         self
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn env(&self) -> &str {
+        &self.env
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn idc(&self) -> &str {
+        &self.idc
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn system(&self) -> &str {
+        &self.system
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn process_id(&self) -> &str {
+        &self.process_id
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn ip(&self) -> &str {
+        &self.ip
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn language(&self) -> &str {
+        &self.language
     }
 }
 
@@ -313,6 +359,11 @@ impl ProducerOptions {
         }
     }
 
+    #[cfg(feature = "grpc")]
+    pub(crate) fn group(&self) -> &str {
+        &self.group
+    }
+
     #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn validate(&self) -> Result<()> {
         validate_group("producer", &self.group)
@@ -335,6 +386,11 @@ impl ConsumerOptions {
         Self {
             group: group.into(),
         }
+    }
+
+    #[cfg(feature = "grpc")]
+    pub(crate) fn group(&self) -> &str {
+        &self.group
     }
 
     #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
@@ -472,35 +528,6 @@ impl GrpcConfig {
             Some(timeout) => timeout,
             None => DEFAULT_GRPC_REQUEST_TIMEOUT,
         }
-    }
-
-    #[cfg(feature = "grpc")]
-    pub(crate) fn legacy(
-        &self,
-        producer: Option<&ProducerOptions>,
-        consumer: Option<&ConsumerOptions>,
-    ) -> super::GrpcClientConfig {
-        let mut identity = legacy_identity(&self.identity, &self.credentials);
-        if let Some(producer) = producer {
-            identity.producer_group = producer.group.clone();
-        }
-        if let Some(consumer) = consumer {
-            identity.consumer_group = consumer.group.clone();
-        }
-        super::GrpcClientConfig {
-            server_addr: self.endpoint.authority_host(),
-            server_port: self.endpoint.port,
-            timeout: self.request_timeout(),
-            identity,
-            max_concurrent_handlers: 1,
-        }
-    }
-
-    #[cfg(feature = "grpc")]
-    pub(crate) fn legacy_stream(&self, consumer: &GrpcConsumerOptions) -> super::GrpcClientConfig {
-        let mut config = self.legacy(None, Some(consumer.consumer()));
-        config.max_concurrent_handlers = consumer.max_concurrent_handlers();
-        config
     }
 }
 
@@ -920,7 +947,7 @@ fn validate_group(role: &str, group: &str) -> Result<()> {
     Ok(())
 }
 
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "http", feature = "tcp"))]
 fn legacy_identity(identity: &Identity, credentials: &Credentials) -> ClientIdentity {
     ClientIdentity {
         env: identity.env.clone(),
@@ -955,19 +982,10 @@ mod tests {
 
     #[cfg(feature = "grpc")]
     #[test]
-    fn grpc_legacy_config_brackets_ipv6_host() {
-        let legacy = GrpcConfig::new(Endpoint::new("::1", 10_205).unwrap()).legacy(None, None);
-        assert_eq!(legacy.authority(), "[::1]:10205");
-    }
-
-    #[cfg(feature = "grpc")]
-    #[test]
     fn grpc_stream_options_own_handler_concurrency() {
         let options = GrpcConsumerOptions::new("orders").with_max_concurrent_handlers(8);
-        let legacy =
-            GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205).unwrap()).legacy_stream(&options);
-        assert_eq!(legacy.identity.consumer_group, "orders");
-        assert_eq!(legacy.max_concurrent_handlers, 8);
+        assert_eq!(options.consumer().group(), "orders");
+        assert_eq!(options.max_concurrent_handlers(), 8);
     }
 
     #[cfg(feature = "http")]

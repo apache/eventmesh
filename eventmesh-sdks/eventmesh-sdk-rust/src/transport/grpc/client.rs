@@ -25,7 +25,7 @@ use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
 use tonic::transport::{Channel, Endpoint};
 use tonic::{Request, Streaming};
 
-use crate::config::GrpcClientConfig;
+use crate::config::GrpcConfig;
 use crate::error::{EventMeshError, Result};
 use crate::proto_gen::{
     ConsumerServiceClient, HeartbeatServiceClient, PbCloudEvent, PbCloudEventBatch,
@@ -44,15 +44,16 @@ pub struct GrpcClient {
 impl GrpcClient {
     /// Validate and store the endpoint configuration without touching Tokio's
     /// reactor. The channel itself is created by the first async operation.
-    pub fn new(config: &GrpcClientConfig) -> Result<Self> {
+    pub fn new(config: &GrpcConfig) -> Result<Self> {
+        config.validate()?;
         Ok(Self {
             endpoint: Self::endpoint(config)?,
             channel: Arc::new(OnceCell::new()),
         })
     }
 
-    fn endpoint(config: &GrpcClientConfig) -> Result<Endpoint> {
-        let uri = format!("http://{}", config.authority());
+    fn endpoint(config: &GrpcConfig) -> Result<Endpoint> {
+        let uri = format!("http://{}", config.endpoint().authority());
         let endpoint = Endpoint::from_shared(uri.clone())
             .map_err(|e| EventMeshError::Config(format!("bad endpoint {uri:?}: {e}")))?
             .connect_timeout(Duration::from_secs(10))
@@ -169,17 +170,20 @@ impl GrpcClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::GrpcClientConfig;
+    use crate::config::{Endpoint as EventMeshEndpoint, GrpcConfig};
 
     /// Smoke test: the EventMesh runtime gRPC endpoint is plain HTTP/2.
     #[test]
     fn plain_http_builds_without_a_tokio_runtime() {
-        let config = GrpcClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(10205)
-            .build();
+        let config = GrpcConfig::new(EventMeshEndpoint::new("127.0.0.1", 10_205).unwrap());
         // Construction only validates the endpoint and must not spawn tonic's
         // connection driver.
+        let _ = GrpcClient::new(&config).unwrap();
+    }
+
+    #[test]
+    fn ipv6_endpoint_builds_from_the_new_config() {
+        let config = GrpcConfig::new(EventMeshEndpoint::new("::1", 10_205).unwrap());
         let _ = GrpcClient::new(&config).unwrap();
     }
 }

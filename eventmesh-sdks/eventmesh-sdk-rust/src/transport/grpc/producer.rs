@@ -21,6 +21,7 @@ use std::time::Duration;
 
 use tracing::debug;
 
+use crate::config::{GrpcConfig, ProducerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::grpc::client::GrpcClient;
@@ -30,14 +31,20 @@ use crate::transport::{Publisher, RequestReply};
 /// gRPC-based producer.
 pub struct GrpcProducer {
     client: GrpcClient,
-    config: crate::config::GrpcClientConfig,
+    config: GrpcConfig,
+    options: ProducerOptions,
 }
 
 impl GrpcProducer {
     /// Connect (lazily) using the given config.
-    pub fn connect(config: crate::config::GrpcClientConfig) -> Result<Self> {
+    pub fn connect(config: GrpcConfig, options: ProducerOptions) -> Result<Self> {
+        options.validate()?;
         let client = GrpcClient::new(&config)?;
-        Ok(Self { client, config })
+        Ok(Self {
+            client,
+            config,
+            options,
+        })
     }
 
     /// Publish a batch of native EventMesh messages.
@@ -50,7 +57,7 @@ impl GrpcProducer {
             events.push(match message {
                 crate::message::Message::EventMesh(message) => {
                     message.validate_for_grpc_publish()?;
-                    codec::from_event_mesh_message(&message, &self.config)?
+                    codec::from_event_mesh_message(&message, &self.config, self.options.group())?
                 }
                 #[cfg(feature = "cloud_events")]
                 crate::message::Message::CloudEvent(_) => {
@@ -62,7 +69,7 @@ impl GrpcProducer {
         }
         let response = codec::to_response(
             &timed(
-                self.config.timeout,
+                self.config.request_timeout(),
                 self.client
                     .batch_publish(crate::proto_gen::PbCloudEventBatch { events }),
             )
@@ -76,8 +83,8 @@ impl GrpcProducer {
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
         use cloudevents::AttributesReader;
 
-        let ce = codec::from_cloudevent(&event, &self.config)?;
-        let resp = timed(self.config.timeout, self.client.publish(ce)).await?;
+        let ce = codec::from_cloudevent(&event, &self.config, self.options.group())?;
+        let resp = timed(self.config.request_timeout(), self.client.publish(ce)).await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -102,10 +109,14 @@ impl GrpcProducer {
         }
         let mut wire_events = Vec::with_capacity(events.len());
         for event in &events {
-            wire_events.push(codec::from_cloudevent(event, &self.config)?);
+            wire_events.push(codec::from_cloudevent(
+                event,
+                &self.config,
+                self.options.group(),
+            )?);
         }
         let resp = timed(
-            self.config.timeout,
+            self.config.request_timeout(),
             self.client
                 .batch_publish(crate::proto_gen::PbCloudEventBatch {
                     events: wire_events,
@@ -131,7 +142,7 @@ impl GrpcProducer {
         event: cloudevents::Event,
         timeout: Duration,
     ) -> Result<cloudevents::Event> {
-        let event = codec::from_cloudevent(&event, &self.config)?;
+        let event = codec::from_cloudevent(&event, &self.config, self.options.group())?;
         let response = tokio::time::timeout(timeout, self.client.request_reply(event))
             .await
             .map_err(|_| EventMeshError::Timeout(timeout))??;
@@ -169,8 +180,8 @@ fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Re
 impl Publisher for GrpcProducer {
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         message.validate_for_grpc_publish()?;
-        let event = codec::from_event_mesh_message(&message, &self.config)?;
-        let resp = timed(self.config.timeout, self.client.publish(event)).await?;
+        let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
+        let resp = timed(self.config.request_timeout(), self.client.publish(event)).await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -191,8 +202,12 @@ impl Publisher for GrpcProducer {
         for m in &messages {
             m.validate_for_grpc_publish()?;
         }
-        let batch = codec::from_event_mesh_messages(&messages, &self.config)?;
-        let resp = timed(self.config.timeout, self.client.batch_publish(batch)).await?;
+        let batch = codec::from_event_mesh_messages(&messages, &self.config, self.options.group())?;
+        let resp = timed(
+            self.config.request_timeout(),
+            self.client.batch_publish(batch),
+        )
+        .await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -213,7 +228,7 @@ impl RequestReply for GrpcProducer {
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
         message.validate_for_grpc_publish()?;
-        let event = codec::from_event_mesh_message(&message, &self.config)?;
+        let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
         let fut = self.client.request_reply(event);
         let resp = tokio::time::timeout(timeout, fut)
             .await

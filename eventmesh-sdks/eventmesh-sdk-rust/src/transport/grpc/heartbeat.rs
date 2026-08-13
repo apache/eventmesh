@@ -29,7 +29,7 @@ use tracing::{debug, info, warn};
 
 use crate::common::constants::SDK_STREAM_URL;
 use crate::common::status_code::StatusCode;
-use crate::config::GrpcClientConfig;
+use crate::config::{ConsumerOptions, GrpcConfig};
 use crate::model::{EventMeshProtocolType, SubscriptionItem};
 use crate::proto_gen::PbCloudEvent;
 use crate::transport::grpc::client::GrpcClient;
@@ -98,7 +98,8 @@ pub(crate) async fn stream_sender(stream_tx: &StreamTx) -> Option<mpsc::Sender<P
 /// Returns the task's [`JoinHandle`] so the owner can await clean exit.
 pub(crate) fn spawn(
     client: GrpcClient,
-    config: GrpcClientConfig,
+    config: GrpcConfig,
+    consumer: ConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     stream_tx: StreamTx,
     shutdown: CancellationToken,
@@ -124,12 +125,12 @@ pub(crate) fn spawn(
                 .collect();
             if items.is_empty() {
                 debug!("heartbeat tick: no subscriptions yet");
-            } else if let Ok(event) = codec::build_heartbeat(&config, &items) {
+            } else if let Ok(event) = codec::build_heartbeat(&config, consumer.group(), &items) {
                 // Bound the RPC and let shutdown interrupt it, so a network
                 // black-hole cannot keep the heartbeat task alive indefinitely.
                 let outcome = await_with_timeout_or_shutdown(
                     &shutdown,
-                    config.timeout,
+                    config.request_timeout(),
                     client.heartbeat(event),
                 )
                 .await;
@@ -138,8 +139,15 @@ pub(crate) fn spawn(
                         let response = codec::to_response(&resp);
                         if response.code == Some(StatusCode::CLIENT_RESUBSCRIBE as i64) {
                             warn!("server requested resubscribe (CLIENT_RESUBSCRIBE)");
-                            resubscribe(&client, &config, &subscriptions, &stream_tx, &shutdown)
-                                .await;
+                            resubscribe(
+                                &client,
+                                &config,
+                                &consumer,
+                                &subscriptions,
+                                &stream_tx,
+                                &shutdown,
+                            )
+                            .await;
                             if shutdown.is_cancelled() {
                                 return;
                             }
@@ -148,7 +156,7 @@ pub(crate) fn spawn(
                     }
                     OperationOutcome::Completed(Err(e)) => warn!("heartbeat failed: {e}"),
                     OperationOutcome::TimedOut => {
-                        warn!("heartbeat timed out after {:?}", config.timeout)
+                        warn!("heartbeat timed out after {:?}", config.request_timeout())
                     }
                     OperationOutcome::Cancelled => return,
                 }
@@ -168,7 +176,8 @@ pub(crate) fn spawn(
 /// `subscribe_stream`).
 async fn resubscribe(
     client: &GrpcClient,
-    config: &GrpcClientConfig,
+    config: &GrpcConfig,
+    consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     stream_tx: &StreamTx,
     shutdown: &CancellationToken,
@@ -195,6 +204,7 @@ async fn resubscribe(
         let is_stream = url == SDK_STREAM_URL;
         let event = match codec::build_subscription_event(
             config,
+            consumer.group(),
             EventMeshProtocolType::EventMeshMessage,
             if is_stream { None } else { Some(&url) },
             &items,
@@ -213,8 +223,12 @@ async fn resubscribe(
                     // A timeout or shutdown therefore cancels only the wait
                     // for capacity. Crucially, the StreamTx mutex was released
                     // by `stream_sender` before this potentially long wait.
-                    match await_with_timeout_or_shutdown(shutdown, config.timeout, tx.reserve())
-                        .await
+                    match await_with_timeout_or_shutdown(
+                        shutdown,
+                        config.request_timeout(),
+                        tx.reserve(),
+                    )
+                    .await
                     {
                         OperationOutcome::Completed(Ok(permit)) => {
                             permit.send(event);
@@ -227,7 +241,7 @@ async fn resubscribe(
                         OperationOutcome::TimedOut => warn!(
                             "resubscribe: stream channel stayed backpressured \
                              for {:?}; stream subscriptions will not be re-sent",
-                            config.timeout
+                            config.request_timeout()
                         ),
                         OperationOutcome::Cancelled => return,
                     }
@@ -240,7 +254,7 @@ async fn resubscribe(
         } else {
             match await_with_timeout_or_shutdown(
                 shutdown,
-                config.timeout,
+                config.request_timeout(),
                 client.subscribe_webhook(event),
             )
             .await
@@ -253,7 +267,7 @@ async fn resubscribe(
                 }
                 OperationOutcome::TimedOut => warn!(
                     "resubscribe: webhook re-register timed out for url={url} after {:?}",
-                    config.timeout
+                    config.request_timeout()
                 ),
                 OperationOutcome::Cancelled => return,
             }

@@ -23,10 +23,10 @@ use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::grpc::{
-    GrpcClient as ChannelClient, GrpcProducer as LegacyProducer,
-    GrpcStreamConsumer as LegacyConsumer, GrpcWebhookConsumer as LegacyWebhookConsumer,
+    GrpcClient as ChannelClient, GrpcProducer as TransportProducer,
+    GrpcStreamConsumer as TransportConsumer, GrpcWebhookConsumer as TransportWebhookConsumer,
 };
-use crate::transport::{Publisher as LegacyPublisher, RequestReply as LegacyRequestReply};
+use crate::transport::{Publisher as TransportPublisher, RequestReply as TransportRequestReply};
 use crate::MessageHandler;
 
 /// A configured EventMesh gRPC client.
@@ -42,7 +42,7 @@ impl GrpcClient {
     /// operation or stream consumer.
     pub fn new(config: GrpcConfig) -> Result<Self> {
         config.validate()?;
-        ChannelClient::new(&config.legacy(None, None))?;
+        ChannelClient::new(&config)?;
         Ok(Self { config })
     }
 
@@ -50,7 +50,7 @@ impl GrpcClient {
     pub fn producer(&self, options: ProducerOptions) -> Result<GrpcProducer> {
         options.validate()?;
         Ok(GrpcProducer {
-            inner: LegacyProducer::connect(self.config.legacy(Some(&options), None))?,
+            inner: TransportProducer::connect(self.config.clone(), options)?,
             timeout: self.config.request_timeout(),
         })
     }
@@ -74,8 +74,9 @@ impl GrpcClient {
             subscription.validate()?;
         }
         let subscriptions = subscriptions.iter().map(Subscription::as_legacy).collect();
-        let inner = LegacyConsumer::subscribe_stream(
-            self.config.legacy_stream(&options),
+        let inner = TransportConsumer::subscribe_stream(
+            self.config.clone(),
+            options,
             PublicHandler::new(handler),
             subscriptions,
             None::<std::future::Ready<()>>,
@@ -93,8 +94,9 @@ impl GrpcClient {
     pub async fn webhook_consumer(&self, options: ConsumerOptions) -> Result<GrpcWebhookConsumer> {
         options.validate()?;
         Ok(GrpcWebhookConsumer {
-            inner: LegacyWebhookConsumer::new(
-                self.config.legacy(None, Some(&options)),
+            inner: TransportWebhookConsumer::new(
+                self.config.clone(),
+                options,
                 None::<std::future::Ready<()>>,
             )
             .await?,
@@ -104,13 +106,13 @@ impl GrpcClient {
 
 /// gRPC publishing capability.
 pub struct GrpcProducer {
-    inner: LegacyProducer,
+    inner: TransportProducer,
     timeout: std::time::Duration,
 }
 
 /// A long-lived gRPC stream consumer.
 pub struct GrpcConsumer<H: MessageHandler> {
-    inner: LegacyConsumer<PublicHandler<H>>,
+    inner: TransportConsumer<PublicHandler<H>>,
 }
 
 /// A gRPC consumer that registers HTTP webhook subscriptions.
@@ -119,7 +121,7 @@ pub struct GrpcConsumer<H: MessageHandler> {
 /// heartbeat work. Before shutting down, call [`unsubscribe`](Self::unsubscribe)
 /// for every remotely registered subscription and webhook URL.
 pub struct GrpcWebhookConsumer {
-    inner: LegacyWebhookConsumer,
+    inner: TransportWebhookConsumer,
 }
 
 impl GrpcWebhookConsumer {

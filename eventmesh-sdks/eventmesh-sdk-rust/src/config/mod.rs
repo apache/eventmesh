@@ -17,13 +17,11 @@
 
 //! Public client configuration.
 //!
-//! All transport configurations require an explicit endpoint. The old
-//! transport configuration types remain crate-private adapters.
+//! All transport configurations require an explicit endpoint. HTTP and TCP
+//! still use crate-private transport adapters while their implementations are
+//! migrated to the shared API.
 
 mod client;
-#[cfg(feature = "grpc")]
-#[allow(dead_code)]
-mod grpc;
 #[cfg(feature = "http")]
 #[allow(dead_code)]
 mod http;
@@ -41,8 +39,6 @@ pub use client::{
 
 // Legacy adapters used by the private protocol implementations. Do not make
 // these public again.
-#[cfg(feature = "grpc")]
-pub(crate) use grpc::GrpcClientConfig;
 #[cfg(feature = "http")]
 pub(crate) use http::HttpClientConfig;
 pub(crate) use identity::ClientIdentity;

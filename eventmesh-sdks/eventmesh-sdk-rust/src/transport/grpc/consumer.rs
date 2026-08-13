@@ -47,6 +47,7 @@ use tracing::{debug, warn};
 
 use crate::common::constants::SDK_STREAM_URL;
 use crate::common::protocol_key::ProtocolKey;
+use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
@@ -54,6 +55,8 @@ use crate::transport::grpc::client::GrpcClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::heartbeat::{self, StreamTx};
 use crate::MessageListener;
+
+const DEFAULT_REPLY_PRODUCER_GROUP: &str = "DefaultProducerGroup";
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -75,7 +78,8 @@ pub trait GrpcMessage: Send + 'static {
 
     fn encode_grpc(
         &self,
-        config: &crate::config::GrpcClientConfig,
+        config: &GrpcConfig,
+        producer_group: &str,
     ) -> Result<crate::proto_gen::PbCloudEvent>;
 }
 
@@ -86,9 +90,10 @@ impl GrpcMessage for EventMeshMessage {
 
     fn encode_grpc(
         &self,
-        config: &crate::config::GrpcClientConfig,
+        config: &GrpcConfig,
+        producer_group: &str,
     ) -> Result<crate::proto_gen::PbCloudEvent> {
-        codec::from_event_mesh_message(self, config)
+        codec::from_event_mesh_message(self, config, producer_group)
     }
 }
 
@@ -125,12 +130,15 @@ impl GrpcMessage for Message {
 
     fn encode_grpc(
         &self,
-        config: &crate::config::GrpcClientConfig,
+        config: &GrpcConfig,
+        producer_group: &str,
     ) -> Result<crate::proto_gen::PbCloudEvent> {
         match self {
-            Self::EventMesh(message) => codec::from_event_mesh_message(message, config),
+            Self::EventMesh(message) => {
+                codec::from_event_mesh_message(message, config, producer_group)
+            }
             #[cfg(feature = "cloud_events")]
-            Self::CloudEvent(event) => codec::from_cloudevent(event, config),
+            Self::CloudEvent(event) => codec::from_cloudevent(event, config, producer_group),
         }
     }
 }
@@ -185,12 +193,11 @@ async fn await_task<T: Send + 'static>(
 /// consumer is dropped or explicitly via [`shutdown`](Self::shutdown) /
 /// [`wait_for_shutdown`](Self::wait_for_shutdown).
 ///
-/// Delivered messages are dispatched to the listener **concurrently** — up to
-/// [`GrpcClientConfig::max_concurrent_handlers`] (default 64) may be in flight
-/// at once.  This means replies can arrive at the broker out of message-arrival
-/// order (each reply is self-correlating via request attributes, so protocol
-/// correctness is unaffected).  Set `max_concurrent_handlers = 1` to restore
-/// strict serial / in-order-reply semantics matching the Java SDK.
+/// [`GrpcConsumerOptions::with_max_concurrent_handlers`] bounds the number of
+/// messages dispatched to the listener at once. The default is one, preserving
+/// the Java SDK's serial / in-order-reply semantics. Larger values allow
+/// concurrent handling and can reorder replies; each reply remains
+/// self-correlating through its request attributes.
 ///
 /// Subscribe and unsubscribe RPCs can be called at any time after construction
 /// — they are sent over the already-open stream (subscribe) or as independent
@@ -200,7 +207,7 @@ async fn await_task<T: Send + 'static>(
 ///
 /// ```ignore
 /// # use eventmesh::{
-/// #     config::GrpcClientConfig, grpc::GrpcStreamConsumer,
+/// #     config::{Endpoint, GrpcConfig, GrpcConsumerOptions}, grpc::GrpcStreamConsumer,
 /// #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
 /// #     MessageListener,
 /// # };
@@ -212,7 +219,8 @@ async fn await_task<T: Send + 'static>(
 /// # #[tokio::main]
 /// # async fn main() -> eventmesh::Result<()> {
 /// let consumer = GrpcStreamConsumer::subscribe_stream(
-///     GrpcClientConfig::builder().build(),
+///     GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?),
+///     GrpcConsumerOptions::new("consumer-group"),
 ///     MyListener,
 ///     vec![SubscriptionItem::new("t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
 ///     Some(async { tokio::signal::ctrl_c().await.ok(); }),
@@ -226,7 +234,8 @@ where
     L::Message: GrpcMessage,
 {
     client: GrpcClient,
-    config: crate::config::GrpcClientConfig,
+    config: GrpcConfig,
+    options: GrpcConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
@@ -260,11 +269,13 @@ where
     ///
     /// (`#[tokio::main]` is already multi-threaded by default.)
     pub async fn subscribe_stream(
-        config: crate::config::GrpcClientConfig,
+        config: GrpcConfig,
+        options: GrpcConsumerOptions,
         listener: L,
         items: Vec<SubscriptionItem>,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
+        options.validate()?;
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
                 "subscription items must not be empty".into(),
@@ -283,6 +294,7 @@ where
         // Build the subscription event (first stream message).
         let event = codec::build_subscription_event(
             &config,
+            options.consumer().group(),
             EventMeshProtocolType::EventMeshMessage,
             None,
             &items,
@@ -315,6 +327,7 @@ where
         let heartbeat_handle = heartbeat::spawn(
             client.clone(),
             config.clone(),
+            options.consumer().clone(),
             Arc::clone(&subscriptions),
             Arc::clone(&stream_tx),
             shutdown.clone(),
@@ -326,6 +339,7 @@ where
             reply_tx,
             Arc::clone(&listener),
             config.clone(),
+            options.max_concurrent_handlers(),
             stream_tx.clone(),
             shutdown.clone(),
         );
@@ -333,6 +347,7 @@ where
         Ok(Self {
             client,
             config,
+            options,
             subscriptions,
             _listener: std::marker::PhantomData,
             shutdown,
@@ -355,6 +370,7 @@ where
         }
         let event = codec::build_subscription_event(
             &self.config,
+            self.options.consumer().group(),
             EventMeshProtocolType::EventMeshMessage,
             None,
             &items,
@@ -366,7 +382,7 @@ where
                 // from being blocked by a backpressured caller subscription.
                 match heartbeat::await_with_timeout_or_shutdown(
                     &self.shutdown,
-                    self.config.timeout,
+                    self.config.request_timeout(),
                     tx.reserve(),
                 )
                 .await
@@ -389,7 +405,7 @@ where
                         Err(EventMeshError::ChannelClosed(format!("subscribe: {e}")))
                     }
                     heartbeat::OperationOutcome::TimedOut => {
-                        Err(EventMeshError::Timeout(self.config.timeout))
+                        Err(EventMeshError::Timeout(self.config.request_timeout()))
                     }
                     heartbeat::OperationOutcome::Cancelled => Err(EventMeshError::ChannelClosed(
                         "stream is shutting down".into(),
@@ -409,7 +425,15 @@ where
         items: Vec<SubscriptionItem>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
-        subscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
+        subscribe_webhook_rpc(
+            &self.client,
+            &self.config,
+            self.options.consumer(),
+            &self.subscriptions,
+            items,
+            url,
+        )
+        .await
     }
 
     /// Unsubscribe stream-mode topics (registered via `subscribe_stream` or
@@ -422,7 +446,14 @@ where
         &self,
         items: Vec<SubscriptionItem>,
     ) -> Result<PublishResponse> {
-        unsubscribe_stream_rpc(&self.client, &self.config, &self.subscriptions, items).await
+        unsubscribe_stream_rpc(
+            &self.client,
+            &self.config,
+            self.options.consumer(),
+            &self.subscriptions,
+            items,
+        )
+        .await
     }
 
     /// Unsubscribe webhook-mode topics (registered via `subscribe_webhook`).
@@ -435,12 +466,20 @@ where
         items: Vec<SubscriptionItem>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
-        unsubscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
+        unsubscribe_webhook_rpc(
+            &self.client,
+            &self.config,
+            self.options.consumer(),
+            &self.subscriptions,
+            items,
+            url,
+        )
+        .await
     }
 
     /// Current consumer group.
     pub fn consumer_group(&self) -> &str {
-        &self.config.identity.consumer_group
+        self.options.consumer().group()
     }
 
     /// Signal the stream driver and heartbeat task to stop.
@@ -525,12 +564,13 @@ where
 /// # Example
 ///
 /// ```ignore
-/// # use eventmesh::{config::GrpcClientConfig, grpc::GrpcWebhookConsumer};
+/// # use eventmesh::{config::{ConsumerOptions, Endpoint, GrpcConfig}, grpc::GrpcWebhookConsumer};
 /// # use eventmesh::model::{SubscriptionItem, SubscriptionMode, SubscriptionType};
 /// # #[tokio::main]
 /// # async fn main() -> eventmesh::Result<()> {
 /// let consumer = GrpcWebhookConsumer::new(
-///     GrpcClientConfig::builder().build(),
+///     GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?),
+///     ConsumerOptions::new("consumer-group"),
 ///     None::<std::future::Ready<()>>,
 /// ).await?;
 /// consumer.subscribe_webhook(
@@ -543,7 +583,8 @@ where
 /// ```
 pub struct GrpcWebhookConsumer {
     client: GrpcClient,
-    config: crate::config::GrpcClientConfig,
+    config: GrpcConfig,
+    options: ConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
@@ -556,9 +597,11 @@ impl GrpcWebhookConsumer {
     /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
     /// initiated by [`shutdown`](Self::shutdown) or drop.
     pub async fn new(
-        config: crate::config::GrpcClientConfig,
+        config: GrpcConfig,
+        options: ConsumerOptions,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
+        options.validate()?;
         let client = GrpcClient::new(&config)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
@@ -568,6 +611,7 @@ impl GrpcWebhookConsumer {
         let heartbeat_handle = heartbeat::spawn(
             client.clone(),
             config.clone(),
+            options.clone(),
             Arc::clone(&subscriptions),
             // Webhook mode has no stream — stream_tx is always None.
             Arc::new(Mutex::new(None)),
@@ -577,6 +621,7 @@ impl GrpcWebhookConsumer {
         Ok(Self {
             client,
             config,
+            options,
             subscriptions,
             shutdown,
             heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
@@ -589,7 +634,15 @@ impl GrpcWebhookConsumer {
         items: Vec<SubscriptionItem>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
-        subscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
+        subscribe_webhook_rpc(
+            &self.client,
+            &self.config,
+            &self.options,
+            &self.subscriptions,
+            items,
+            url,
+        )
+        .await
     }
 
     /// Unsubscribe webhook topics.
@@ -602,12 +655,20 @@ impl GrpcWebhookConsumer {
         items: Vec<SubscriptionItem>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
-        unsubscribe_webhook_rpc(&self.client, &self.config, &self.subscriptions, items, url).await
+        unsubscribe_webhook_rpc(
+            &self.client,
+            &self.config,
+            &self.options,
+            &self.subscriptions,
+            items,
+            url,
+        )
+        .await
     }
 
     /// Current consumer group.
     pub fn consumer_group(&self) -> &str {
-        &self.config.identity.consumer_group
+        self.options.group()
     }
 
     /// Signal the heartbeat task to stop.
@@ -672,7 +733,8 @@ async fn timed<T>(timeout: Duration, f: impl Future<Output = Result<T>>) -> Resu
 
 async fn subscribe_webhook_rpc(
     client: &GrpcClient,
-    config: &crate::config::GrpcClientConfig,
+    config: &GrpcConfig,
+    consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     items: Vec<SubscriptionItem>,
     url: impl Into<String>,
@@ -685,11 +747,12 @@ async fn subscribe_webhook_rpc(
     }
     let event = codec::build_subscription_event(
         config,
+        consumer.group(),
         EventMeshProtocolType::EventMeshMessage,
         Some(&url),
         &items,
     )?;
-    let resp = timed(config.timeout, client.subscribe_webhook(event)).await?;
+    let resp = timed(config.request_timeout(), client.subscribe_webhook(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
         let mut guard = subscriptions.lock().await;
@@ -715,7 +778,8 @@ async fn subscribe_webhook_rpc(
 
 async fn unsubscribe_stream_rpc(
     client: &GrpcClient,
-    config: &crate::config::GrpcClientConfig,
+    config: &GrpcConfig,
+    consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     items: Vec<SubscriptionItem>,
 ) -> Result<PublishResponse> {
@@ -729,11 +793,12 @@ async fn unsubscribe_stream_rpc(
     // not by URL, so url=None is correct here.
     let event = codec::build_subscription_event(
         config,
+        consumer.group(),
         EventMeshProtocolType::EventMeshMessage,
         None,
         &items,
     )?;
-    let resp = timed(config.timeout, client.unsubscribe(event)).await?;
+    let resp = timed(config.request_timeout(), client.unsubscribe(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
         let mut guard = subscriptions.lock().await;
@@ -753,7 +818,8 @@ async fn unsubscribe_stream_rpc(
 
 async fn unsubscribe_webhook_rpc(
     client: &GrpcClient,
-    config: &crate::config::GrpcClientConfig,
+    config: &GrpcConfig,
+    consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     items: Vec<SubscriptionItem>,
     url: impl Into<String>,
@@ -775,11 +841,12 @@ async fn unsubscribe_webhook_rpc(
     };
     let event = codec::build_subscription_event(
         config,
+        consumer.group(),
         EventMeshProtocolType::EventMeshMessage,
         url_ref,
         &items,
     )?;
-    let resp = timed(config.timeout, client.unsubscribe(event)).await?;
+    let resp = timed(config.request_timeout(), client.unsubscribe(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
         let mut guard = subscriptions.lock().await;
@@ -804,19 +871,17 @@ async fn unsubscribe_webhook_rpc(
 /// Spawn the stream receive loop as a background task.
 ///
 /// Dispatches delivered messages to the listener **concurrently** (up to
-/// [`GrpcClientConfig::max_concurrent_handlers`] in flight at once) and sends
+/// the configured maximum number of handlers in flight at once) and sends
 /// back replies as each handler completes.  Concurrency is bounded by a
 /// `Semaphore`: when all permits are held by in-flight handlers, the loop
 /// stops pulling from the gRPC stream, which engages gRPC flow control and
 /// pauses the server — this is the backpressure path.
 ///
-/// Replies are sent in handler-completion order, **not** message-arrival
-/// order.  This is a deliberate divergence from the Java SDK (which processes
-/// serially and replies in order) chosen for throughput.  Each reply carries
-/// the original request's attributes (see [`build_reply`]) so the broker can
-/// correlate it independently of ordering.  Set
-/// `max_concurrent_handlers = 1` to restore strict serial / in-order-reply
-/// semantics.
+/// With a concurrency bound greater than one, replies are sent in
+/// handler-completion order rather than message-arrival order. Each reply
+/// carries the original request's attributes (see [`build_reply`]) so the
+/// broker can correlate it independently of ordering. The default bound of one
+/// preserves strict serial / in-order-reply semantics.
 ///
 /// On shutdown (`shutdown` token cancelled or the stream ends) the loop stops
 /// accepting new messages and then **drains** all in-flight handlers to
@@ -827,7 +892,8 @@ fn spawn_stream_driver<L>(
     mut stream: tonic::Streaming<crate::proto_gen::PbCloudEvent>,
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
     listener: Arc<L>,
-    config: crate::config::GrpcClientConfig,
+    config: GrpcConfig,
+    max_concurrent_handlers: usize,
     stream_tx: StreamTx,
     shutdown: CancellationToken,
 ) -> JoinHandle<Result<()>>
@@ -836,7 +902,7 @@ where
     L::Message: GrpcMessage,
 {
     tokio::spawn(async move {
-        let semaphore = Arc::new(Semaphore::new(config.max_concurrent_handlers.max(1)));
+        let semaphore = Arc::new(Semaphore::new(max_concurrent_handlers));
         let mut join_set: JoinSet<Result<()>> = JoinSet::new();
         let mut terminal_error = None;
 
@@ -955,7 +1021,7 @@ async fn handle_one<L: MessageListener>(
     message: L::Message,
     listener: Arc<L>,
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
-    config: crate::config::GrpcClientConfig,
+    config: GrpcConfig,
     _permit: tokio::sync::OwnedSemaphorePermit,
 ) -> Result<()>
 where
@@ -984,9 +1050,9 @@ where
 pub(crate) fn build_reply<M: GrpcMessage>(
     reply: &M,
     request: &crate::proto_gen::PbCloudEvent,
-    config: &crate::config::GrpcClientConfig,
+    config: &GrpcConfig,
 ) -> Result<crate::proto_gen::PbCloudEvent> {
-    let mut event = reply.encode_grpc(config)?;
+    let mut event = reply.encode_grpc(config, DEFAULT_REPLY_PRODUCER_GROUP)?;
     for (key, value) in &request.attributes {
         event
             .attributes
@@ -1001,8 +1067,8 @@ pub(crate) fn build_reply<M: GrpcMessage>(
 mod tests {
     use super::*;
 
-    fn config() -> crate::config::GrpcClientConfig {
-        crate::config::GrpcClientConfig::builder().build()
+    fn config() -> GrpcConfig {
+        GrpcConfig::new(crate::config::Endpoint::new("127.0.0.1", 10_205).unwrap())
     }
 
     #[test]
@@ -1010,6 +1076,7 @@ mod tests {
         let mut wire = codec::from_event_mesh_message(
             &EventMeshMessage::new("orders", "created").unwrap(),
             &config(),
+            "producer",
         )
         .unwrap();
         wire.attributes.insert(
@@ -1029,9 +1096,13 @@ mod tests {
 
     #[tokio::test]
     async fn webhook_shutdown_then_join_preserves_task_panic() {
-        let consumer = GrpcWebhookConsumer::new(config(), None::<std::future::Ready<()>>)
-            .await
-            .unwrap();
+        let consumer = GrpcWebhookConsumer::new(
+            config(),
+            ConsumerOptions::new("consumer"),
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .unwrap();
         let original = consumer.heartbeat_handle.lock().await.take().unwrap();
         original.abort();
         let _ = original.await;
@@ -1059,7 +1130,7 @@ mod tests {
             .expect("build event");
         let original = Message::CloudEvent(event);
         let mut request = original
-            .encode_grpc(&config())
+            .encode_grpc(&config(), "producer")
             .expect("encode CloudEvent request");
         request.attributes.insert(
             "correlation-id".into(),
