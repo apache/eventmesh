@@ -150,15 +150,17 @@ impl GrpcProducer {
     }
 
     /// Send a native CloudEvent and wait for a native CloudEvent reply.
+    ///
+    /// `timeout` is applied as a gRPC deadline (see
+    /// [`ChannelClient::request_reply`]); expiry surfaces as
+    /// [`Error::Timeout`](crate::Error::Timeout).
     pub async fn request_reply_cloud_event(
         &self,
         event: cloudevents::Event,
         timeout: Duration,
     ) -> Result<cloudevents::Event> {
         let event = codec::from_cloudevent(&event, &self.config, self.options.group())?;
-        let response = tokio::time::timeout(timeout, self.client.request_reply(event))
-            .await
-            .map_err(|_| EventMeshError::Timeout(timeout))??;
+        let response = self.client.request_reply(event, timeout).await?;
         ensure_request_reply_success(
             codec::to_response(&response),
             "CloudEvents request/reply failed",
@@ -244,10 +246,7 @@ impl RequestReply for GrpcProducer {
     ) -> Result<EventMeshMessage> {
         message.validate_for_grpc_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
-        let fut = self.client.request_reply(event);
-        let resp = tokio::time::timeout(timeout, fut)
-            .await
-            .map_err(|_| EventMeshError::Timeout(timeout))??;
+        let resp = self.client.request_reply(event, timeout).await?;
         ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
         codec::to_event_mesh_message(&resp)
     }

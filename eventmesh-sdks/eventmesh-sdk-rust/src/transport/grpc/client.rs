@@ -55,9 +55,9 @@ impl ChannelClient {
             .map_err(|e| EventMeshError::Config(format!("bad endpoint {uri:?}: {e}")))?
             .connect_timeout(Duration::from_secs(10))
             // No channel-wide request timeout: it would wrongly cap the
-            // long-lived subscribe_stream and caller-controlled request_reply
-            // RPCs. Per-call timeouts are applied by the producer/consumer
-            // wrappers instead.
+            // long-lived subscribe_stream RPC. Publish, batch, and
+            // request_reply calls apply per-request gRPC deadlines instead
+            // (see `finish_unary`).
             .keep_alive_while_idle(true)
             .tcp_nodelay(true)
             .tcp_keepalive(Some(Duration::from_secs(100)));
@@ -82,15 +82,14 @@ impl ChannelClient {
     }
 
     /// Publish one event. The timeout is applied per request via tonic's
-    /// gRPC deadline (`grpc-timeout`); a late response fails with a
-    /// `cancelled` status.
+    /// gRPC deadline (`grpc-timeout`); tonic enforces it locally in its
+    /// channel `GrpcTimeout` layer and servers may enforce it too, so an
+    /// expired deadline surfaces as [`Error::Timeout`].
     pub async fn publish(&self, event: PbCloudEvent, timeout: Duration) -> Result<PbCloudEvent> {
         let mut request = Request::new(event);
         request.set_timeout(timeout);
-        Ok(PublisherServiceClient::new(self.channel())
-            .publish(request)
-            .await?
-            .into_inner())
+        let mut client = PublisherServiceClient::new(self.channel());
+        Self::finish_unary(client.publish(request), timeout).await
     }
 
     /// Publish a batch of events with the same per-request gRPC deadline as
@@ -102,17 +101,47 @@ impl ChannelClient {
     ) -> Result<PbCloudEvent> {
         let mut request = Request::new(events);
         request.set_timeout(timeout);
-        Ok(PublisherServiceClient::new(self.channel())
-            .batch_publish(request)
-            .await?
-            .into_inner())
+        let mut client = PublisherServiceClient::new(self.channel());
+        Self::finish_unary(client.batch_publish(request), timeout).await
     }
 
-    pub async fn request_reply(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
-        Ok(PublisherServiceClient::new(self.channel())
-            .request_reply(event)
-            .await?
-            .into_inner())
+    /// Send a request and await the reply. `timeout` is applied as a gRPC
+    /// deadline so the server can observe it; expiry surfaces as
+    /// [`Error::Timeout`].
+    pub async fn request_reply(
+        &self,
+        event: PbCloudEvent,
+        timeout: Duration,
+    ) -> Result<PbCloudEvent> {
+        let mut request = Request::new(event);
+        request.set_timeout(timeout);
+        let mut client = PublisherServiceClient::new(self.channel());
+        Self::finish_unary(client.request_reply(request), timeout).await
+    }
+
+    /// Await a unary RPC and translate deadline expirations into
+    /// [`Error::Timeout`].
+    ///
+    /// tonic's local `GrpcTimeout` layer reports an expired `grpc-timeout`
+    /// as a `cancelled` status ("Timeout expired"), while a server that
+    /// observes the deadline replies `deadline-exceeded`. Both mean the
+    /// per-request deadline passed; anything else is a real RPC failure.
+    async fn finish_unary<T, F>(call: F, timeout: Duration) -> Result<T>
+    where
+        F: std::future::Future<Output = std::result::Result<tonic::Response<T>, tonic::Status>>,
+    {
+        match call.await {
+            Ok(response) => Ok(response.into_inner()),
+            Err(status)
+                if matches!(
+                    status.code(),
+                    tonic::Code::DeadlineExceeded | tonic::Code::Cancelled
+                ) =>
+            {
+                Err(EventMeshError::Timeout(timeout))
+            }
+            Err(status) => Err(EventMeshError::from(status)),
+        }
     }
 
     /// Subscribe via webhook (server POSTs events to the URL). Returns the
