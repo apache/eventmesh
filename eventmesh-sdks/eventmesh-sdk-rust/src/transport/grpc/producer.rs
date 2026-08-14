@@ -76,23 +76,29 @@ impl GrpcProducer {
             });
         }
         let response = codec::to_response(
-            &timed(
-                self.config.request_timeout(),
-                self.client
-                    .batch_publish(crate::proto_gen::PbCloudEventBatch { events }),
-            )
-            .await?,
+            &self
+                .client
+                .batch_publish(
+                    crate::proto_gen::PbCloudEventBatch { events },
+                    self.config.request_timeout(),
+                )
+                .await?,
         );
         ensure_success(response, "batch publish failed")
     }
+}
 
-    #[cfg(feature = "cloud_events")]
+#[cfg(feature = "cloud_events")]
+impl GrpcProducer {
     /// Publish a native CloudEvent.
     pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
         use cloudevents::AttributesReader;
 
         let ce = codec::from_cloudevent(&event, &self.config, self.options.group())?;
-        let resp = timed(self.config.request_timeout(), self.client.publish(ce)).await?;
+        let resp = self
+            .client
+            .publish(ce, self.config.request_timeout())
+            .await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -105,7 +111,6 @@ impl GrpcProducer {
     }
 
     /// Publish several native CloudEvents in a single gRPC batch RPC.
-    #[cfg(feature = "cloud_events")]
     pub async fn publish_cloud_event_batch(
         &self,
         events: Vec<cloudevents::Event>,
@@ -123,14 +128,15 @@ impl GrpcProducer {
                 self.options.group(),
             )?);
         }
-        let resp = timed(
-            self.config.request_timeout(),
-            self.client
-                .batch_publish(crate::proto_gen::PbCloudEventBatch {
+        let resp = self
+            .client
+            .batch_publish(
+                crate::proto_gen::PbCloudEventBatch {
                     events: wire_events,
-                }),
-        )
-        .await?;
+                },
+                self.config.request_timeout(),
+            )
+            .await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -144,7 +150,6 @@ impl GrpcProducer {
     }
 
     /// Send a native CloudEvent and wait for a native CloudEvent reply.
-    #[cfg(feature = "cloud_events")]
     pub async fn request_reply_cloud_event(
         &self,
         event: cloudevents::Event,
@@ -189,7 +194,10 @@ impl Publisher for GrpcProducer {
     async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         message.validate_for_grpc_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
-        let resp = timed(self.config.request_timeout(), self.client.publish(event)).await?;
+        let resp = self
+            .client
+            .publish(event, self.config.request_timeout())
+            .await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -211,11 +219,10 @@ impl Publisher for GrpcProducer {
             m.validate_for_grpc_publish()?;
         }
         let batch = codec::from_event_mesh_messages(&messages, &self.config, self.options.group())?;
-        let resp = timed(
-            self.config.request_timeout(),
-            self.client.batch_publish(batch),
-        )
-        .await?;
+        let resp = self
+            .client
+            .batch_publish(batch, self.config.request_timeout())
+            .await?;
         let response = codec::to_response(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -244,15 +251,6 @@ impl RequestReply for GrpcProducer {
         ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
         codec::to_event_mesh_message(&resp)
     }
-}
-
-/// Apply the config's default request timeout to a short unary RPC. Long-lived
-/// RPCs (subscribe stream) and caller-controlled RPCs (request_reply) bypass
-/// this and use their own timeouts.
-async fn timed<T>(timeout: Duration, f: impl std::future::Future<Output = Result<T>>) -> Result<T> {
-    tokio::time::timeout(timeout, f)
-        .await
-        .map_err(|_| EventMeshError::Timeout(timeout))?
 }
 
 #[cfg(test)]

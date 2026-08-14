@@ -81,16 +81,29 @@ impl ChannelClient {
         })
     }
 
-    pub async fn publish(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
+    /// Publish one event. The timeout is applied per request via tonic's
+    /// gRPC deadline (`grpc-timeout`); a late response fails with a
+    /// `cancelled` status.
+    pub async fn publish(&self, event: PbCloudEvent, timeout: Duration) -> Result<PbCloudEvent> {
+        let mut request = Request::new(event);
+        request.set_timeout(timeout);
         Ok(PublisherServiceClient::new(self.channel())
-            .publish(event)
+            .publish(request)
             .await?
             .into_inner())
     }
 
-    pub async fn batch_publish(&self, events: PbCloudEventBatch) -> Result<PbCloudEvent> {
+    /// Publish a batch of events with the same per-request gRPC deadline as
+    /// [`ChannelClient::publish`].
+    pub async fn batch_publish(
+        &self,
+        events: PbCloudEventBatch,
+        timeout: Duration,
+    ) -> Result<PbCloudEvent> {
+        let mut request = Request::new(events);
+        request.set_timeout(timeout);
         Ok(PublisherServiceClient::new(self.channel())
-            .batch_publish(events)
+            .batch_publish(request)
             .await?
             .into_inner())
     }
