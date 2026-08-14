@@ -15,8 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Load-balancing across multiple EventMesh nodes (used by the HTTP
-//! transport and multi-endpoint gRPC clients).
+//! Load-balancing across multiple EventMesh nodes, used by the HTTP transport.
 //!
 //! Ported from `org.apache.eventmesh.common.loadbalance`.
 
