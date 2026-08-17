@@ -53,7 +53,7 @@
 //! ```ignore
 //! use eventmesh::{
 //!     config::TcpClientConfig, tcp::TcpConsumer,
-//!     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
+//!     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
 //!     MessageListener,
 //! };
 //!

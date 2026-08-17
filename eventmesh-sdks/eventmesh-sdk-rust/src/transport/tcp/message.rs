@@ -22,7 +22,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, PublishResponse};
+use crate::subscription::Subscription as TopicSubscription;
 
 use super::frame::{Command, Header, Package, PackageBody, Subscription, UserAgent};
 
@@ -153,14 +154,14 @@ pub fn listen() -> Package {
 }
 
 /// SUBSCRIBE_REQUEST with a single-item `Subscription` body.
-pub fn subscribe(topic: &str, items: &[SubscriptionItem]) -> Package {
+pub fn subscribe(topic: &str, items: &[TopicSubscription]) -> Package {
     let _ = topic; // topic is in the items; kept for API symmetry with Java
     let sub = Subscription::new(items.to_vec());
     package(Command::SubscribeRequest).with_body(PackageBody::Subscription(sub))
 }
 
 /// UNSUBSCRIBE_REQUEST with a `Subscription` body.
-pub fn unsubscribe(items: &[SubscriptionItem]) -> Package {
+pub fn unsubscribe(items: &[TopicSubscription]) -> Package {
     let sub = Subscription::new(items.to_vec());
     package(Command::UnsubscribeRequest).with_body(PackageBody::Subscription(sub))
 }

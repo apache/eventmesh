@@ -106,13 +106,7 @@ impl GrpcWebhookConsumer {
             subscription.validate()?;
         }
         self.inner
-            .subscribe_webhook(
-                subscriptions
-                    .into_iter()
-                    .map(|subscription| subscription.as_legacy())
-                    .collect(),
-                webhook_url,
-            )
+            .subscribe_webhook(subscriptions, webhook_url)
             .await
             .map(|_| ())
     }
@@ -130,13 +124,7 @@ impl GrpcWebhookConsumer {
             subscription.validate()?;
         }
         self.inner
-            .unsubscribe_webhook(
-                subscriptions
-                    .into_iter()
-                    .map(|subscription| subscription.as_legacy())
-                    .collect(),
-                webhook_url,
-            )
+            .unsubscribe_webhook(subscriptions, webhook_url)
             .await
             .map(|_| ())
     }
@@ -173,7 +161,6 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
         for subscription in &subscriptions {
             subscription.validate()?;
         }
-        let subscriptions = subscriptions.iter().map(Subscription::as_legacy).collect();
         let inner = TransportConsumer::subscribe_stream(
             channel.inner,
             channel.config,
@@ -189,14 +176,14 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
     /// Add a subscription to the active stream.
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
         subscription.validate()?;
-        self.inner.subscribe(vec![subscription.as_legacy()]).await
+        self.inner.subscribe(vec![subscription]).await
     }
 
     /// Remove a stream subscription.
     pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
         subscription.validate()?;
         self.inner
-            .unsubscribe_stream(vec![subscription.as_legacy()])
+            .unsubscribe_stream(vec![subscription])
             .await
             .map(|_| ())
     }

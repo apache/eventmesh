@@ -30,8 +30,9 @@ use tracing::{debug, info, warn};
 use crate::common::constants::SDK_STREAM_URL;
 use crate::common::status_code::StatusCode;
 use crate::config::{ConsumerOptions, GrpcConfig};
-use crate::model::{EventMeshProtocolType, SubscriptionItem};
+use crate::model::EventMeshProtocolType;
 use crate::proto_gen::PbCloudEvent;
+use crate::subscription::Subscription;
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::consumer::SubscriptionEntry;
@@ -183,12 +184,12 @@ async fn resubscribe(
     shutdown: &CancellationToken,
 ) {
     // Collect and group subscriptions by URL. We hold the lock only briefly.
-    let groups: HashMap<String, Vec<SubscriptionItem>> = {
+    let groups: HashMap<String, Vec<Subscription>> = {
         let guard = subscriptions.lock().await;
         if guard.is_empty() {
             return;
         }
-        let mut groups: HashMap<String, Vec<SubscriptionItem>> = HashMap::new();
+        let mut groups: HashMap<String, Vec<Subscription>> = HashMap::new();
         for entry in guard.values() {
             groups
                 .entry(entry.url.clone())

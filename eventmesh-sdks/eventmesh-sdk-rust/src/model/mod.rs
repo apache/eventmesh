@@ -23,7 +23,7 @@ pub mod subscription;
 
 pub use message::{EventMeshMessage, EventMeshMessageBuilder};
 pub use response::PublishResponse;
-pub use subscription::{HeartbeatItem, SubscriptionItem, SubscriptionMode, SubscriptionType};
+pub use subscription::HeartbeatItem;
 
 /// Wire protocol the SDK advertises to the server (`protocoltype` attribute).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

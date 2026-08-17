@@ -26,7 +26,7 @@
 //! ```ignore
 //! # use eventmesh::{
 //! #     config::HttpClientConfig, http::{HttpConsumer, WebhookServer},
-//! #     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
+//! #     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
 //! #     MessageListener,
 //! # };
 //! # struct MyListener;
@@ -47,7 +47,7 @@
 //!     .build()?;
 //! let consumer = HttpConsumer::new(config, None::<std::future::Ready<()>>)?;
 //! consumer.subscribe_webhook(
-//!     vec![SubscriptionItem::new("test-topic", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC)],
+//!     vec![Subscription::new("test-topic")],
 //!     server.url(),
 //! ).await?;
 //!

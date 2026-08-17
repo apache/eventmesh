@@ -28,7 +28,7 @@
 //! ```ignore
 //! use eventmesh::{
 //!     config::TcpClientConfig, tcp::TcpConsumer,
-//!     model::{EventMeshMessage, SubscriptionItem, SubscriptionMode, SubscriptionType},
+//!     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
 //!     MessageListener,
 //! };
 //!
@@ -52,8 +52,8 @@
 //!         MyListener,
 //!         async { tokio::signal::ctrl_c().await.ok(); },
 //!     ).await?;
-//!     consumer.subscribe(vec![SubscriptionItem::new(
-//!         "t", SubscriptionMode::CLUSTERING, SubscriptionType::ASYNC,
+//!     consumer.subscribe(vec![Subscription::new(
+//!         "t", DeliveryMode::Cluster, DeliveryType::Async,
 //!     )]).await?;
 //!     consumer.wait_for_shutdown().await;
 //!     Ok(())
@@ -71,7 +71,8 @@ use tracing::{debug, info, warn};
 use crate::config::TcpClientConfig;
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
-use crate::model::{EventMeshMessage, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, PublishResponse};
+use crate::subscription::Subscription;
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
 use crate::transport::tcp::message;
@@ -261,7 +262,7 @@ pub struct TcpConsumer<L: MessageListener> {
     config: TcpClientConfig,
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
-    subscriptions: Arc<Mutex<Vec<SubscriptionItem>>>,
+    subscriptions: Arc<Mutex<Vec<Subscription>>>,
     driver_handle: Mutex<Option<JoinHandle<Result<()>>>>,
     /// Filled by the driver before it exits, so `wait_for_shutdown` can
     /// return a structured [`ShutdownReason`].
@@ -377,7 +378,7 @@ where
     ///
     /// This can be called at any time after construction — the connection is
     /// already open and the receive loop is running.
-    pub async fn subscribe(&self, items: &[SubscriptionItem]) -> Result<()> {
+    pub async fn subscribe(&self, items: &[Subscription]) -> Result<()> {
         for item in items {
             let sub_pkg = message::subscribe(&item.topic, std::slice::from_ref(item));
             let resp = self.conn.io(sub_pkg, self.config.control_timeout).await?;
@@ -401,7 +402,7 @@ where
     /// Note: the runtime's TCP `UnSubscribeProcessor` ignores the request body
     /// and drops **all** session topics.  The local subscription list is
     /// cleared entirely on success.
-    pub async fn unsubscribe(&self, items: Vec<SubscriptionItem>) -> Result<PublishResponse> {
+    pub async fn unsubscribe(&self, items: Vec<Subscription>) -> Result<PublishResponse> {
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
                 "unsubscribe items must not be empty".into(),
@@ -547,7 +548,7 @@ fn spawn_driver<L>(
     mut reconnect_rx: Option<tokio::sync::mpsc::Receiver<()>>,
     listener: Arc<L>,
     config: TcpClientConfig,
-    subscriptions: Arc<Mutex<Vec<SubscriptionItem>>>,
+    subscriptions: Arc<Mutex<Vec<Subscription>>>,
     shutdown: CancellationToken,
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 ) -> JoinHandle<Result<()>>
@@ -801,7 +802,7 @@ mod tests {
 
     use super::*;
     use crate::config::{ReconnectConfig, TcpClientConfig};
-    use crate::model::{SubscriptionItem, SubscriptionMode, SubscriptionType};
+    use crate::subscription::{DeliveryMode, DeliveryType, Subscription};
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody, RedirectInfo};
 
@@ -1063,10 +1064,8 @@ mod tests {
             .expect("connect");
 
         // Subscribe to two topics. Each call records into `self.subscriptions`.
-        let item_a =
-            SubscriptionItem::new("A", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
-        let item_b =
-            SubscriptionItem::new("B", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
+        let item_a = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
+        let item_b = Subscription::new("B").with_delivery_type(DeliveryType::Sync);
         consumer
             .subscribe(&[item_a, item_b])
             .await
@@ -1078,8 +1077,7 @@ mod tests {
 
         // Unsubscribe only A. The server drops ALL topics, so the local map
         // must be fully cleared — not left with a phantom B entry.
-        let item_a =
-            SubscriptionItem::new("A", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
+        let item_a = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
         consumer
             .unsubscribe(vec![item_a])
             .await
@@ -1168,11 +1166,11 @@ mod tests {
             .await
             .expect("connect");
 
-        let item = SubscriptionItem::new("A", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
+        let item = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
         consumer.subscribe(&[item]).await.expect("subscribe");
 
         // Server returns code 1 → must be Err, not Ok.
-        let item = SubscriptionItem::new("A", SubscriptionMode::CLUSTERING, SubscriptionType::SYNC);
+        let item = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
         let err = consumer
             .unsubscribe(vec![item])
             .await
@@ -1273,11 +1271,7 @@ mod tests {
             .await
             .expect("connect");
         consumer
-            .subscribe(&[SubscriptionItem::new(
-                "orders",
-                SubscriptionMode::CLUSTERING,
-                SubscriptionType::ASYNC,
-            )])
+            .subscribe(&[Subscription::new("orders")])
             .await
             .expect("initial subscribe");
 

@@ -31,11 +31,12 @@ use crate::common::constants::{DataContentType, DEFAULT_MESSAGE_TTL, SDK_STREAM_
 use crate::common::{ProtocolKey, RandomStringUtils};
 use crate::config::GrpcConfig;
 use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::proto_gen::{
     attr_as_str, attr_int, attr_str, PbAttr, PbCloudEvent, PbCloudEventAttributeValue,
     PbCloudEventBatch, PbData,
 };
+use crate::subscription::Subscription;
 
 /// The CloudEvent `type` for EventMesh-internal events.
 const CLOUD_EVENT_TYPE: &str = "org.apache.eventmesh";
@@ -89,14 +90,14 @@ pub fn common_attributes(
     m
 }
 
-/// Build the subscription CloudEvent (carries the `SubscriptionItem` JSON
+/// Build the subscription CloudEvent (carries the `Subscription` JSON
 /// list in `text_data`, plus the optional webhook `url`).
 pub fn build_subscription_event(
     config: &GrpcConfig,
     consumer_group: &str,
     protocol_type: EventMeshProtocolType,
     url: Option<&str>,
-    items: &[SubscriptionItem],
+    items: &[Subscription],
 ) -> Result<PbCloudEvent> {
     if items.is_empty() {
         return Err(EventMeshError::InvalidArgument(
@@ -652,11 +653,7 @@ mod tests {
             PRODUCER_GROUP,
         )
         .unwrap();
-        let subscriptions = [SubscriptionItem::new(
-            "orders",
-            crate::model::SubscriptionMode::CLUSTERING,
-            crate::model::SubscriptionType::ASYNC,
-        )];
+        let subscriptions = [Subscription::new("orders")];
         let subscribe = build_subscription_event(
             &config,
             CONSUMER_GROUP,
@@ -751,11 +748,7 @@ mod tests {
     #[test]
     fn builds_subscription_event_with_url() {
         let cfg = cfg();
-        let items = vec![SubscriptionItem::new(
-            "t",
-            crate::model::SubscriptionMode::CLUSTERING,
-            crate::model::SubscriptionType::ASYNC,
-        )];
+        let items = vec![Subscription::new("t")];
         let ce = build_subscription_event(
             &cfg,
             CONSUMER_GROUP,

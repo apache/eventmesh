@@ -50,7 +50,8 @@ use crate::common::protocol_key::ProtocolKey;
 use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
-use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
+use crate::subscription::Subscription;
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::heartbeat::{self, StreamTx};
@@ -66,7 +67,7 @@ const DEFAULT_REPLY_PRODUCER_GROUP: &str = "DefaultProducerGroup";
 #[derive(Debug, Clone)]
 pub(crate) struct SubscriptionEntry {
     #[allow(dead_code)]
-    pub(crate) item: SubscriptionItem,
+    pub(crate) item: Subscription,
     pub(crate) url: String,
 }
 
@@ -273,7 +274,7 @@ where
         config: GrpcConfig,
         options: GrpcConsumerOptions,
         listener: L,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
         options.validate()?;
@@ -362,7 +363,7 @@ where
     /// The subscription CloudEvent is sent through the stream's request
     /// channel. Returns an error if the stream is no longer active, is shutting
     /// down, or remains backpressured beyond the configured timeout.
-    pub async fn subscribe(&self, items: Vec<SubscriptionItem>) -> Result<()> {
+    pub async fn subscribe(&self, items: Vec<Subscription>) -> Result<()> {
         if items.is_empty() {
             return Err(EventMeshError::InvalidArgument(
                 "subscription items must not be empty".into(),
@@ -422,7 +423,7 @@ where
     /// called on a stream consumer to mix stream and webhook subscriptions.
     pub async fn subscribe_webhook(
         &self,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
         subscribe_webhook_rpc(
@@ -442,10 +443,7 @@ where
     /// This is an independent unary RPC — it is **not** sent over the open
     /// stream. The server matches stream clients by IP + PID, so no URL is
     /// needed.
-    pub async fn unsubscribe_stream(
-        &self,
-        items: Vec<SubscriptionItem>,
-    ) -> Result<PublishResponse> {
+    pub async fn unsubscribe_stream(&self, items: Vec<Subscription>) -> Result<PublishResponse> {
         unsubscribe_stream_rpc(
             &self.client,
             &self.config,
@@ -463,7 +461,7 @@ where
     /// it leaves a ghost subscription that continues to receive pushes.
     pub async fn unsubscribe_webhook(
         &self,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
         unsubscribe_webhook_rpc(
@@ -640,7 +638,7 @@ impl GrpcWebhookConsumer {
     /// Subscribe via webhook: the server POSTs delivered events to `url`.
     pub async fn subscribe_webhook(
         &self,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
         subscribe_webhook_rpc(
@@ -661,7 +659,7 @@ impl GrpcWebhookConsumer {
     /// it leaves a ghost subscription that continues to receive pushes.
     pub async fn unsubscribe_webhook(
         &self,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
         unsubscribe_webhook_rpc(
@@ -745,7 +743,7 @@ async fn subscribe_webhook_rpc(
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
-    items: Vec<SubscriptionItem>,
+    items: Vec<Subscription>,
     url: impl Into<String>,
 ) -> Result<PublishResponse> {
     let url = url.into();
@@ -790,7 +788,7 @@ async fn unsubscribe_stream_rpc(
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
-    items: Vec<SubscriptionItem>,
+    items: Vec<Subscription>,
 ) -> Result<PublishResponse> {
     if items.is_empty() {
         return Err(EventMeshError::InvalidArgument(
@@ -830,7 +828,7 @@ async fn unsubscribe_webhook_rpc(
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
     subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
-    items: Vec<SubscriptionItem>,
+    items: Vec<Subscription>,
     url: impl Into<String>,
 ) -> Result<PublishResponse> {
     let url = url.into();

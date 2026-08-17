@@ -25,7 +25,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{EventMeshError, Result};
-use crate::model::SubscriptionItem;
+use crate::subscription::Subscription as TopicSubscription;
 
 // ---------------------------------------------------------------------------
 // Command
@@ -460,11 +460,11 @@ impl std::fmt::Debug for UserAgent {
 pub struct Subscription {
     /// Matches Java field name `topicList` (camelCase).
     #[serde(rename = "topicList")]
-    pub topic_list: Vec<SubscriptionItem>,
+    pub topic_list: Vec<TopicSubscription>,
 }
 
 impl Subscription {
-    pub fn new(topics: Vec<SubscriptionItem>) -> Self {
+    pub fn new(topics: Vec<TopicSubscription>) -> Self {
         Self { topic_list: topics }
     }
 }

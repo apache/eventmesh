@@ -29,7 +29,8 @@ use tracing::{debug, warn};
 
 use crate::config::HttpClientConfig;
 use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshProtocolType, PublishResponse, SubscriptionItem, SubscriptionType};
+use crate::model::{EventMeshProtocolType, PublishResponse};
+use crate::subscription::{DeliveryType, Subscription};
 use crate::transport::http::client::EventMeshHttpClient;
 use crate::transport::http::codec::{self, uri};
 
@@ -41,7 +42,7 @@ const HEARTBEAT_INITIAL_DELAY: Duration = Duration::from_secs(10);
 /// A single subscription entry recorded locally for heartbeat/unsubscribe.
 #[derive(Debug, Clone)]
 struct SubscriptionEntry {
-    item: SubscriptionItem,
+    item: Subscription,
     url: String,
 }
 
@@ -111,7 +112,7 @@ impl HttpConsumer {
     /// POST messages to `url`.
     pub async fn subscribe_webhook(
         &self,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
         let url = url.into();
@@ -126,7 +127,7 @@ impl HttpConsumer {
         // MSG_SEND_SYNC/MSG_SEND_ASYNC/MSG_BATCH_SEND* and throws on anything
         // else — so there is no wire path to deliver listener replies back to
         // the original requester. Use the gRPC transport for request/reply.
-        if items.iter().any(|i| i.r#type == SubscriptionType::SYNC) {
+        if items.iter().any(|i| i.delivery_type == DeliveryType::Sync) {
             return Err(EventMeshError::InvalidArgument(
                 "HTTP transport does not support SYNC (request/reply) subscriptions; \
                  use the gRPC transport for request/reply"
@@ -220,7 +221,7 @@ impl HttpConsumer {
     /// Unsubscribe topics from one webhook URL.
     pub async fn unsubscribe(
         &self,
-        items: Vec<SubscriptionItem>,
+        items: Vec<Subscription>,
         url: impl Into<String>,
     ) -> Result<PublishResponse> {
         if items.is_empty() {
@@ -278,7 +279,7 @@ impl HttpConsumer {
     pub(crate) async fn unsubscribe_all(&self) -> Result<()> {
         let registrations = {
             let guard = self.subscriptions.lock().await;
-            let mut grouped: HashMap<String, Vec<SubscriptionItem>> = HashMap::new();
+            let mut grouped: HashMap<String, Vec<Subscription>> = HashMap::new();
             for entry in guard.values() {
                 grouped
                     .entry(entry.url.clone())
@@ -369,7 +370,7 @@ fn spawn_heartbeat(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::SubscriptionMode;
+    use crate::subscription::DeliveryMode;
 
     fn make_consumer() -> HttpConsumer {
         HttpConsumer::new(HttpClientConfig::default(), None::<std::future::Ready<()>>).unwrap()
@@ -378,11 +379,7 @@ mod tests {
     #[tokio::test]
     async fn subscribe_webhook_rejects_sync_only() {
         let consumer = make_consumer();
-        let item = SubscriptionItem::new(
-            "sync-topic",
-            SubscriptionMode::CLUSTERING,
-            SubscriptionType::SYNC,
-        );
+        let item = Subscription::new("sync-topic").with_delivery_type(DeliveryType::Sync);
         let result = consumer
             .subscribe_webhook(vec![item], "http://localhost:9999/cb")
             .await;
@@ -399,16 +396,8 @@ mod tests {
     async fn subscribe_webhook_rejects_mixed_sync_and_async() {
         let consumer = make_consumer();
         let items = vec![
-            SubscriptionItem::new(
-                "async-topic",
-                SubscriptionMode::CLUSTERING,
-                SubscriptionType::ASYNC,
-            ),
-            SubscriptionItem::new(
-                "sync-topic",
-                SubscriptionMode::CLUSTERING,
-                SubscriptionType::SYNC,
-            ),
+            Subscription::new("async-topic"),
+            Subscription::new("sync-topic").with_delivery_type(DeliveryType::Sync),
         ];
         let result = consumer
             .subscribe_webhook(items, "http://localhost:9999/cb")

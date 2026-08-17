@@ -78,7 +78,8 @@ use crate::common::util::RandomStringUtils;
 use crate::common::{ProtocolKey, DEFAULT_MESSAGE_TTL};
 use crate::config::ClientIdentity;
 use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse, SubscriptionItem};
+use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
+use crate::subscription::Subscription;
 
 /// Default protocol version string sent in the `version` and
 /// `protocolversion` headers.
@@ -99,7 +100,7 @@ const PROTOCOL_VERSION: &str = "1.0";
 ///    (`LocalSubscribeEventProcessor` / `LocalUnSubscribeEventProcessor`).
 ///    These path handlers parse the body as JSON: a form-urlencoded `topic`
 ///    field becomes a string value that cannot be deserialized as
-///    `List<SubscriptionItem>`, so **form-based subscribe/unsubscribe must
+///    `List<Subscription>`, so **form-based subscribe/unsubscribe must
 ///    avoid these paths**.
 /// 2. **Code-header-based** (`httpRequestProcessorTable`): if no path matches,
 ///    the runtime reads the `code` header and looks up the processor by request
@@ -370,7 +371,7 @@ pub fn encode_publish(msg: &EventMeshMessage, identity: &ClientIdentity) -> Vec<
 
 /// Encode subscribe body fields.
 pub fn encode_subscribe(
-    items: &[SubscriptionItem],
+    items: &[Subscription],
     url: &str,
     identity: &ClientIdentity,
 ) -> Vec<(String, String)> {

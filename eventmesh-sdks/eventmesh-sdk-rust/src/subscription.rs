@@ -17,14 +17,23 @@
 
 //! Subscription declarations shared by all transports.
 
+use std::fmt;
+use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
+
+use crate::error::{EventMeshError, Result};
+
 /// A requested subscription.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Subscription {
     /// The topic to receive.
     pub topic: String,
     /// How messages are distributed among consumers.
+    #[serde(rename = "mode")]
     pub delivery_mode: DeliveryMode,
     /// Whether delivery is asynchronous or request/reply.
+    #[serde(rename = "type")]
     pub delivery_type: DeliveryType,
 }
 
@@ -59,65 +68,121 @@ impl Subscription {
         }
         Ok(())
     }
+}
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-    pub(crate) fn as_legacy(&self) -> crate::model::SubscriptionItem {
-        crate::model::SubscriptionItem::new(
-            self.topic.clone(),
-            self.delivery_mode.as_legacy(),
-            self.delivery_type.as_legacy(),
+impl fmt::Display for Subscription {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Subscription(topic={}, mode={}, type={})",
+            self.topic, self.delivery_mode, self.delivery_type
         )
     }
 }
 
 /// Consumer distribution mode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum DeliveryMode {
     /// Every subscriber receives the event.
+    #[serde(rename = "BROADCASTING")]
     Broadcast,
     /// One consumer in the group receives the event.
+    #[serde(rename = "CLUSTERING")]
     Cluster,
 }
 
 impl DeliveryMode {
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-    pub(crate) const fn as_legacy(self) -> crate::model::SubscriptionMode {
+    /// Return the EventMesh wire value.
+    pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Broadcast => crate::model::SubscriptionMode::BROADCASTING,
-            Self::Cluster => crate::model::SubscriptionMode::CLUSTERING,
+            Self::Broadcast => "BROADCASTING",
+            Self::Cluster => "CLUSTERING",
+        }
+    }
+}
+
+impl fmt::Display for DeliveryMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for DeliveryMode {
+    type Err = EventMeshError;
+
+    fn from_str(value: &str) -> Result<Self> {
+        match value {
+            "BROADCASTING" => Ok(Self::Broadcast),
+            "CLUSTERING" => Ok(Self::Cluster),
+            other => Err(EventMeshError::InvalidArgument(format!(
+                "unknown DeliveryMode: {other}"
+            ))),
         }
     }
 }
 
 /// Consumer delivery semantics.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum DeliveryType {
     /// Acknowledged asynchronous delivery.
+    #[serde(rename = "ASYNC")]
     Async,
     /// Request/reply delivery.
+    #[serde(rename = "SYNC")]
     Sync,
 }
 
 impl DeliveryType {
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-    pub(crate) const fn as_legacy(self) -> crate::model::SubscriptionType {
+    /// Return the EventMesh wire value.
+    pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Async => crate::model::SubscriptionType::ASYNC,
-            Self::Sync => crate::model::SubscriptionType::SYNC,
+            Self::Async => "ASYNC",
+            Self::Sync => "SYNC",
+        }
+    }
+}
+
+impl fmt::Display for DeliveryType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for DeliveryType {
+    type Err = EventMeshError;
+
+    fn from_str(value: &str) -> Result<Self> {
+        match value {
+            "ASYNC" => Ok(Self::Async),
+            "SYNC" => Ok(Self::Sync),
+            other => Err(EventMeshError::InvalidArgument(format!(
+                "unknown DeliveryType: {other}"
+            ))),
         }
     }
 }
 
 #[cfg(all(test, any(feature = "grpc", feature = "http", feature = "tcp")))]
 mod tests {
-    use super::Subscription;
+    use super::{DeliveryMode, DeliveryType, Subscription};
 
     #[test]
     fn blank_topics_are_rejected() {
         assert!(Subscription::new("").validate().is_err());
         assert!(Subscription::new(" \t").validate().is_err());
         assert!(Subscription::new("topic").validate().is_ok());
+    }
+
+    #[test]
+    fn subscription_uses_eventmesh_wire_names() {
+        let subscription = Subscription::new("t")
+            .with_delivery_mode(DeliveryMode::Cluster)
+            .with_delivery_type(DeliveryType::Async);
+        let json = serde_json::to_string(&subscription).unwrap();
+        assert_eq!(json, r#"{"topic":"t","mode":"CLUSTERING","type":"ASYNC"}"#);
+        let decoded: Subscription = serde_json::from_str(&json).unwrap();
+        assert_eq!(decoded, subscription);
     }
 }

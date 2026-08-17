@@ -107,10 +107,7 @@ impl HttpClient {
         });
 
         if let Err(error) = inner
-            .subscribe_webhook(
-                subscriptions.iter().map(Subscription::as_legacy).collect(),
-                webhook_url.clone(),
-            )
+            .subscribe_webhook(subscriptions.clone(), webhook_url.clone())
             .await
         {
             lifecycle.cancel();
@@ -189,7 +186,7 @@ impl HttpConsumer {
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
         validate_subscriptions(std::slice::from_ref(&subscription))?;
         self.inner
-            .subscribe_webhook(vec![subscription.as_legacy()], self.webhook_url.clone())
+            .subscribe_webhook(vec![subscription], self.webhook_url.clone())
             .await
             .map(|_| ())
     }
@@ -198,7 +195,7 @@ impl HttpConsumer {
     pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
         subscription.validate()?;
         self.inner
-            .unsubscribe(vec![subscription.as_legacy()], self.webhook_url.clone())
+            .unsubscribe(vec![subscription], self.webhook_url.clone())
             .await
             .map(|_| ())
     }
@@ -268,7 +265,7 @@ impl WebhookRegistration {
         let webhook_url = webhook_url.into();
         crate::webhook::validate_webhook_url(&webhook_url)?;
         self.inner
-            .subscribe_webhook(vec![subscription.as_legacy()], webhook_url)
+            .subscribe_webhook(vec![subscription], webhook_url)
             .await
             .map(|_| ())
     }
@@ -283,7 +280,7 @@ impl WebhookRegistration {
         let webhook_url = webhook_url.into();
         crate::webhook::validate_webhook_url(&webhook_url)?;
         self.inner
-            .unsubscribe(vec![subscription.as_legacy()], webhook_url)
+            .unsubscribe(vec![subscription], webhook_url)
             .await
             .map(|_| ())
     }
