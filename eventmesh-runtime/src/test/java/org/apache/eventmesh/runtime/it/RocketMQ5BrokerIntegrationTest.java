@@ -25,6 +25,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.storage.LiteTopicCapable;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 import org.apache.eventmesh.storage.rocketmq5.storage.RocketMQ5RemotingStoragePlugin;
 
@@ -95,7 +96,7 @@ class RocketMQ5BrokerIntegrationTest {
             .withId("pop-1").withSource(URI.create("it")).withType("it.event")
             .withDataContentType("text/plain").withData("hello-pop".getBytes()).build();
         AtomicReference<String> sendErr = new AtomicReference<>();
-        storage.send(PARENT, normal, new SendCallback() {
+        storage.send(PARENT, EventMeshFrame.fromCloudEvent(normal), new SendCallback() {
 
             @Override
             public void onSuccess(SendResult result) {
@@ -131,7 +132,7 @@ class RocketMQ5BrokerIntegrationTest {
             .withId("lite-1").withSource(URI.create("it")).withType("it.event")
             .withDataContentType("text/plain").withData("hello-lite".getBytes()).build();
         AtomicReference<String> liteSendErr = new AtomicReference<>();
-        lite.sendLite(PARENT, LITE, liteEvent, new SendCallback() {
+        lite.sendLite(PARENT, LITE, EventMeshFrame.fromCloudEvent(liteEvent), new SendCallback() {
 
             @Override
             public void onSuccess(SendResult result) {
@@ -158,8 +159,10 @@ class RocketMQ5BrokerIntegrationTest {
         List<CloudEvent> all = new ArrayList<>();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec);
         while (System.nanoTime() < deadline) {
-            List<CloudEvent> batch = s.poll(topic, -1, -1, 100, 500L);
-            all.addAll(batch);
+            List<EventMeshFrame> batch = s.poll(topic, -1, -1, 100, 500L);
+            for (EventMeshFrame f : batch) {
+                all.add(f.toCloudEvent());
+            }
             if (all.stream().anyMatch(e -> id.equals(e.getId()))) {
                 return all;
             }
@@ -174,7 +177,9 @@ class RocketMQ5BrokerIntegrationTest {
         List<CloudEvent> all = new ArrayList<>();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec);
         while (System.nanoTime() < deadline) {
-            all.addAll(lite.pullLite(parent, liteTopic, 100, 500L));
+            for (EventMeshFrame f : lite.pullLite(parent, liteTopic, 100, 500L)) {
+                all.add(f.toCloudEvent());
+            }
             if (all.stream().anyMatch(e -> id.equals(e.getId()))) {
                 return all;
             }

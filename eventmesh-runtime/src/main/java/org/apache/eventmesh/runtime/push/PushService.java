@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.push;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 
 import java.util.ArrayList;
@@ -25,8 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,37 +82,44 @@ public class PushService {
      *         BLOCK/DROP_NEWEST/TO_DLQ policy (caller should nack → retry/DLQ). Under DROP_OLDEST
      *         a full buffer drops the oldest entry and accepts the new one.
      */
-    public boolean offer(String clientId, String deliveryId, CloudEvent event, AckCallback callback) {
+    public boolean offer(String clientId, String deliveryId, EventMeshFrame event, AckCallback callback) {
         LinkedBlockingQueue<BufferedEvent> queue = buffers.computeIfAbsent(clientId, k -> new LinkedBlockingQueue<>());
-        ClientState state = clientStates.getOrDefault(clientId, ClientState.HEALTHY);
-        if (state == ClientState.STALLED || state == ClientState.EVICTED) {
-            // §13.6.2③ STALLED pauses new deliveries (avoids avalanche retry); caller nacks and the
-            // dispatcher's backoff (§13.3.2 + jitter) keeps retries from thundering.
-            return false;
-        }
-        if (queue.size() >= maxPendingPerClient) {
-            updateClientState(clientId, queue.size(), true);
-            switch (overflowPolicy) {
-                case DROP_OLDEST:
-                    queue.poll(); // drop oldest
-                    queue.offer(new BufferedEvent(deliveryId, event));
-                    callbacksByDeliveryId.put(deliveryId, callback);
-                    log.warn("client {} buffer full ({}), DROP_OLDEST applied", clientId, maxPendingPerClient);
-                    return true;
-                case DROP_NEWEST:
-                case TO_DLQ:
-                case BLOCK:
-                default:
-                    log.warn("client {} buffer full ({}), state={}, policy={}", clientId, maxPendingPerClient,
-                        clientStates.get(clientId), overflowPolicy);
-                    return false;
+        // P1-4 fix: synchronize the state check + queue cap check + state transition to prevent
+        // TOCTOU over-fill and racing SLOW→STALLED→EVICTED transitions from concurrent dispatchers.
+        synchronized (queue) {
+            ClientState state = clientStates.getOrDefault(clientId, ClientState.HEALTHY);
+            if (state == ClientState.STALLED || state == ClientState.EVICTED) {
+                return false;
             }
+            if (queue.size() >= maxPendingPerClient) {
+                updateClientState(clientId, queue.size(), true);
+                switch (overflowPolicy) {
+                    case DROP_OLDEST:
+                        BufferedEvent dropped = queue.poll();
+                        if (dropped != null) {
+                            AckCallback droppedCb = callbacksByDeliveryId.remove(dropped.getDeliveryId());
+                            if (droppedCb != null) {
+                                droppedCb.nack(new IllegalStateException("buffer overflow DROP_OLDEST: " + clientId));
+                            }
+                        }
+                        queue.offer(new BufferedEvent(deliveryId, event));
+                        callbacksByDeliveryId.put(deliveryId, callback);
+                        log.warn("client {} buffer full ({}), DROP_OLDEST applied", clientId, maxPendingPerClient);
+                        return true;
+                    case DROP_NEWEST:
+                    case TO_DLQ:
+                    case BLOCK:
+                    default:
+                        log.warn("client {} buffer full ({}), state={}, policy={}", clientId, maxPendingPerClient,
+                            clientStates.get(clientId), overflowPolicy);
+                        return false;
+                }
+            }
+            updateClientState(clientId, queue.size(), false);
+            queue.offer(new BufferedEvent(deliveryId, event));
+            callbacksByDeliveryId.put(deliveryId, callback);
+            return true;
         }
-        // Track slow consumer: if buffer is above 80% threshold
-        updateClientState(clientId, queue.size(), false);
-        queue.offer(new BufferedEvent(deliveryId, event));
-        callbacksByDeliveryId.put(deliveryId, callback);
-        return true;
     }
 
     /** Configure the overflow policy (default {@link OverflowPolicy#BLOCK}). */

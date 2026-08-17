@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
@@ -67,10 +69,19 @@ public class WebHookChannel implements PushChannel {
     }
 
     @Override
-    public void deliver(String deliveryId, CloudEvent event, AckCallback callback) {
+    public void deliver(String deliveryId, EventMeshFrame event, AckCallback callback) {
+        // Egress: Frame → CloudEvent → serializer bytes (the serializer is injectable).
+        CloudEvent ce;
+        try {
+            ce = event.toCloudEvent();
+        } catch (RuntimeException e) {
+            log.warn("webhook frame->CloudEvent conversion failed for delivery={}", deliveryId, e);
+            callback.nack(e);
+            return;
+        }
         byte[] body;
         try {
-            body = serializer.serialize(event);
+            body = serializer.serialize(ce);
         } catch (RuntimeException e) {
             log.warn("webhook serialize failed for delivery={}", deliveryId, e);
             callback.nack(e);

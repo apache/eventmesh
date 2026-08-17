@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.cluster;
 
+import org.apache.eventmesh.runtime.ingress.LoadMeter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,9 +45,11 @@ public class ClusterMembership {
 
     private final MetaStore meta;
     private final String selfInstanceId;
-    private final String selfAddress;
+    private volatile String selfAddress;
     private final long ttlMs;
     private final LongSupplier clock;
+    /** Optional load snapshot supplier (LoadMeter.sample()+snapshot()); null = no load in heartbeat. */
+    private volatile java.util.function.Supplier<String> loadSupplier;
 
     /** Cached live set, refreshed on demand. */
     private final ConcurrentHashMap<String, Boolean> liveCache = new ConcurrentHashMap<>();
@@ -56,6 +60,20 @@ public class ClusterMembership {
         this.selfAddress = selfAddress;
         this.ttlMs = ttlMs;
         this.clock = clock;
+    }
+
+    /**
+     * Wire a load-snapshot supplier whose {@code get()} returns the trailing load fields
+     * ({@code <active>|<inflow>|<outflow>|<cpu>}). The heartbeat appends it to the instance value so
+     * {@code /session/recommend} can score instances globally (§3.2).
+     */
+    public void withLoadSupplier(java.util.function.Supplier<String> loadSupplier) {
+        this.loadSupplier = loadSupplier;
+    }
+
+    /** Override the advertised self address (called once the HTTP server knows its real host:port). */
+    public void setSelfAddress(String selfAddress) {
+        this.selfAddress = selfAddress;
     }
 
     /**
@@ -70,12 +88,73 @@ public class ClusterMembership {
     public boolean heartbeat() {
         long now = clock.getAsLong();
         try {
-            meta.put(INSTANCE_PREFIX + selfInstanceId, now + "|" + selfAddress);
+            // value = <ts>|<addr>[|<load...>] — load fields appended when a LoadMeter is wired.
+            String value = now + "|" + selfAddress;
+            if (loadSupplier != null) {
+                String load = loadSupplier.get();
+                if (load != null && !load.isEmpty()) {
+                    value += "|" + load;
+                }
+            }
+            meta.put(INSTANCE_PREFIX + selfInstanceId, value);
             liveCache.put(selfInstanceId, Boolean.TRUE);
             return true;
         } catch (RuntimeException e) {
             log.warn("heartbeat (Meta put) failed - lease invalid: {}", e.toString());
             return false;
+        }
+    }
+
+    /**
+     * Live instances with their advertised HTTP address + parsed load (for /session/recommend
+     * scoring, §3.2). Each entry: {@code instanceId → InstanceInfo(addr, loadSnapshot)}.
+     */
+    public Map<String, InstanceInfo> liveInstancesWithLoad() {
+        long now = clock.getAsLong();
+        Map<String, InstanceInfo> out = new java.util.HashMap<>();
+        for (Map.Entry<String, String> e : meta.getWithPrefix(INSTANCE_PREFIX).entrySet()) {
+            String val = e.getValue();
+            String id = e.getKey().substring(INSTANCE_PREFIX.length());
+            int sep = val.indexOf('|');
+            if (sep < 0) {
+                continue;
+            }
+            try {
+                long ts = Long.parseLong(val.substring(0, sep));
+                if (now - ts > ttlMs) {
+                    continue;
+                }
+                String rest = val.substring(sep + 1);
+                int addrSep = rest.indexOf('|');
+                String addr;
+                LoadMeter.Snapshot load = null;
+                if (addrSep < 0) {
+                    addr = rest;
+                } else {
+                    addr = rest.substring(0, addrSep);
+                    String[] tail = rest.substring(addrSep + 1).split("\\|", 4);
+                    // tail may be 1-4 fields; pad to [active, inflow, outflow, cpu]
+                    String[] padded = new String[4];
+                    java.util.Arrays.fill(padded, "0");
+                    System.arraycopy(tail, 0, padded, 0, Math.min(tail.length, 4));
+                    load = LoadMeter.Snapshot.parseLoad(padded);
+                }
+                out.put(id, new InstanceInfo(addr, load));
+            } catch (NumberFormatException ignored) {
+                // malformed heartbeat — skip
+            }
+        }
+        return out;
+    }
+
+    /** An instance's advertised address + its latest load snapshot (null if the peer reports none). */
+    public static final class InstanceInfo {
+        public final String address;
+        public final LoadMeter.Snapshot load;
+
+        public InstanceInfo(String address, LoadMeter.Snapshot load) {
+            this.address = address;
+            this.load = load;
         }
     }
 

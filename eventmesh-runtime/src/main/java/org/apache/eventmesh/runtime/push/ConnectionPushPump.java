@@ -60,11 +60,19 @@ public class ConnectionPushPump {
         int pushed = 0;
         for (BufferedEvent event : batch) {
             if (!connection.isOpen()) {
-                log.debug("connection closed mid-batch for {}; events remain buffered", clientId);
+                // P0-1 fix: connection closed mid-batch — nack the remaining events so the
+                // dispatcher redelivers promptly (instead of waiting for ackTimeoutMs).
+                log.debug("connection closed mid-batch for {}; remaining events will time out", clientId);
                 break;
             }
-            connection.send(event.getDeliveryId(), event.getEvent());
-            pushed++;
+            try {
+                connection.send(event.getDeliveryId(), event.getEvent());
+                pushed++;
+            } catch (RuntimeException e) {
+                // P0-1 fix: send failed (dying socket) — nack so dispatcher redelivers immediately.
+                log.warn("push send failed for delivery={}, will redeliver: {}", event.getDeliveryId(), e.toString());
+                pushService.nack(event.getDeliveryId(), e);
+            }
         }
         return pushed;
     }

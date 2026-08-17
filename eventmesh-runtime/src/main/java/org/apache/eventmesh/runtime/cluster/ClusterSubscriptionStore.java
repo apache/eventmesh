@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,7 +80,7 @@ public class ClusterSubscriptionStore {
      * applying the distribution mode. Simple per-topic round-robin for LOAD_BALANCE is the caller's
      * responsibility (the coordinator picks one of the returned subscribers).
      */
-    public List<ClusterSub> targetsFor(String topic, CloudEvent event) {
+    public List<ClusterSub> targetsFor(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         ConcurrentHashMap<String, ClusterSub> subs = cache.get(topic);
         if (subs == null || subs.isEmpty()) {
             return new ArrayList<>();

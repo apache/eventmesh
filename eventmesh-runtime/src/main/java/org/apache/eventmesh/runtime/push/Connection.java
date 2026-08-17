@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.push;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * A live push connection to a subscriber — a WebSocket frame writer or an SSE response stream (§7.2).
@@ -25,6 +25,9 @@ import io.cloudevents.CloudEvent;
  * <p>The netty/{@code AbstractHTTPServer} wiring produces one of these per connected subscriber;
  * {@link ConnectionPushPump} drains the subscriber's {@link PushService} buffer onto it. Long-polling
  * has no {@code Connection} — the client pulls via {@link PushService#poll}.</p>
+ *
+ * <p>The event arrives as an {@link EventMeshFrame} (internal wire unit); the connection converts it
+ * to the client's protocol (CloudEvents-JSON for SSE/WS) at the egress boundary.</p>
  */
 public interface Connection {
 
@@ -34,5 +37,5 @@ public interface Connection {
      * Push one buffered delivery. The {@code deliveryId} travels with the event so the subscriber
      * can {@code POST /events/ack} later (at-least-once).
      */
-    void send(String deliveryId, CloudEvent event);
+    void send(String deliveryId, EventMeshFrame event);
 }

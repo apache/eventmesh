@@ -78,6 +78,13 @@ public class UniHttpServer {
     private org.apache.eventmesh.runtime.transport.http.LegacyHttpBridge legacyBridge;
     private String selfInstanceId;
     private org.apache.eventmesh.runtime.cluster.HttpForwarder forwarder;
+    private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
+    private org.apache.eventmesh.runtime.session.Matchmaker matchmaker;
+    private org.apache.eventmesh.runtime.session.SessionRouter sessionRouter;
+    /** Cluster membership for /session/recommend (reads live instances + load). Null = single instance. */
+    private org.apache.eventmesh.runtime.cluster.ClusterMembership clusterMembership;
+    /** This instance's advertised address (host:port) for instanceUrl; null = not configured (SDK falls back). */
+    private String advertisedAddr;
 
     public UniHttpServer(UniIngressService ingress, UniAdminService admin) {
         this.ingress = ingress;
@@ -102,6 +109,18 @@ public class UniHttpServer {
         return this;
     }
 
+    /**
+     * Require client certificate authentication (mTLS): the HTTPS handshake demands a client cert
+     * signed by the truststore. Configure via {@code -Deventmesh.tls.needClientAuth=true} plus
+     * {@code -Deventmesh.tls.truststore=<path>} [+ .password]. No-op when TLS isn't enabled.
+     */
+    public UniHttpServer withClientAuth(boolean needClientAuth) {
+        this.needClientAuth = needClientAuth;
+        return this;
+    }
+
+    private volatile boolean needClientAuth;
+
     /** Wire the ingress security filter chain (auth/acl/signature) into publish (§4.5). */
     public UniHttpServer withFilterChain(org.apache.eventmesh.runtime.security.FilterChain filterChain) {
         this.filterChain = filterChain;
@@ -118,6 +137,45 @@ public class UniHttpServer {
         return this;
     }
 
+    /** Wire cluster membership so {@code /session/recommend} can read live instances + load (§3.2). */
+    public UniHttpServer withClusterMembership(org.apache.eventmesh.runtime.cluster.ClusterMembership membership) {
+        this.clusterMembership = membership;
+        return this;
+    }
+
+    /** Set this instance's advertised address ({@code host:port}); returned as instanceUrl (§3.4). */
+    public UniHttpServer withAdvertisedAddr(String advertisedAddr) {
+        this.advertisedAddr = advertisedAddr;
+        return this;
+    }
+
+    /**
+     * Wire the agent control-plane registrar so {@code POST /agent/register|ready|heartbeat|unregister}
+     * (§5.2) are served. Without this those endpoints return 503.
+     */
+    public UniHttpServer withAgentRegistrar(org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar) {
+        this.agentRegistrar = agentRegistrar;
+        return this;
+    }
+
+    /**
+     * Wire the session matchmaker so {@code POST /session/open} (handshake + matchmaking) and
+     * {@code POST /session/close/{sessionId}} (§5②⑤) are served. Without this they return 503.
+     */
+    public UniHttpServer withMatchmaker(org.apache.eventmesh.runtime.session.Matchmaker matchmaker) {
+        this.matchmaker = matchmaker;
+        return this;
+    }
+
+    /**
+     * Wire the v2 session router so {@code POST /session/stream/{sessionId}} (SSE) is served. Without
+     * this the endpoint returns 503.
+     */
+    public UniHttpServer withSessionRouter(org.apache.eventmesh.runtime.session.SessionRouter sessionRouter) {
+        this.sessionRouter = sessionRouter;
+        return this;
+    }
+
     /**
      * Bind to {@code port} (0 = auto-select) and start serving.
      *
@@ -126,7 +184,18 @@ public class UniHttpServer {
     public int start(int port) throws IOException {
         if (sslContext != null) {
             com.sun.net.httpserver.HttpsServer https = com.sun.net.httpserver.HttpsServer.create(new InetSocketAddress(port), 0);
-            https.setHttpsConfigurator(new com.sun.net.httpserver.HttpsConfigurator(sslContext));
+            final boolean clientAuth = needClientAuth;
+            https.setHttpsConfigurator(new com.sun.net.httpserver.HttpsConfigurator(sslContext) {
+                @Override
+                public void configure(com.sun.net.httpserver.HttpsParameters params) {
+                    params.setNeedClientAuth(clientAuth);
+                    try {
+                        params.setSSLParameters(sslContext.getDefaultSSLParameters());
+                    } catch (Exception e) {
+                        log.warn("failed to apply SSL parameters: {}", e.toString());
+                    }
+                }
+            });
             server = https;
         } else {
             server = HttpServer.create(new InetSocketAddress(port), 0);
@@ -141,8 +210,22 @@ public class UniHttpServer {
         server.createContext("/events/reply", this::reply);
         server.createContext("/events/stream", this::stream);
         server.createContext("/events/lite/create", this::liteCreate);
+        // NOTE: publish-bytes/poll-bytes must precede publish/poll — HttpServer matches by longest
+        // prefix and "/events/lite/publish" is a prefix of "/events/lite/publish-bytes".
+        server.createContext("/events/lite/publish-bytes", this::litePublishBytes);
+        server.createContext("/events/lite/poll-bytes", this::litePollBytes);
         server.createContext("/events/lite/publish", this::litePublish);
         server.createContext("/events/lite/poll", this::litePoll);
+        server.createContext("/agent/register", this::agentRegister);
+        server.createContext("/agent/ready", this::agentReady);
+        server.createContext("/agent/heartbeat", this::agentHeartbeat);
+        server.createContext("/agent/unregister", this::agentUnregister);
+        server.createContext("/session/open", this::sessionOpen);
+        server.createContext("/session/recommend", this::sessionRecommend);
+        server.createContext("/session/close", this::sessionClose);
+        server.createContext("/session/stream", this::sessionStream);
+        server.createContext("/session/publish", this::sessionPublish);
+        server.createContext("/session/subscribe", this::sessionSubscribe);
         server.createContext("/internal/forward", this::forwardInternal);
         server.createContext("/internal/reply-forward", this::replyForwardInternal);
         if (legacyBridge != null) {
@@ -203,7 +286,8 @@ public class UniHttpServer {
                     writeJson(exchange, 413, error("payload too large (max " + MAX_MESSAGE_SIZE + " bytes)"));
                     return;
                 }
-            } catch (NumberFormatException expected) {
+            } catch (NumberFormatException ignored) {
+                // Content-Length is not a valid number; ignore and proceed with normal parsing
             }
         }
         String topic = param(exchange.getRequestURI(), "topic");
@@ -300,6 +384,9 @@ public class UniHttpServer {
         String subId = ingress.subscribe(topic, clientId, mode, null);
         Map<String, String> out = new HashMap<>();
         out.put("subscriptionId", subId);
+        // Return the instance the subscriber should pin its subsequent polls to (load balancing, §3.4).
+        // Empty when no advertised address is configured → SDK keeps using its original baseUrl.
+        out.put("instanceUrl", selfInstanceUrl());
         writeJson(exchange, 200, out);
     }
 
@@ -376,8 +463,8 @@ public class UniHttpServer {
         // Each entry is {deliveryId, event:<structured CloudEvent JSON>}.
         List<ObjectNode> out = new java.util.ArrayList<>(events.size());
         for (BufferedEvent be : events) {
-            byte[] serialized = EventFormatProvider.getInstance()
-                .resolveFormat(JsonFormat.CONTENT_TYPE).serialize(be.getEvent());
+            // Egress: push buffer carries Frame; serialize as CloudEvents-JSON via the FrameAdaptor SPI.
+            byte[] serialized = org.apache.eventmesh.protocol.api.FrameAdaptors.toCloudEventsJson(be.getEvent());
             ObjectNode entry = mapper.createObjectNode();
             entry.put("deliveryId", be.getDeliveryId());
             entry.set("event", mapper.readTree(serialized));
@@ -460,7 +547,10 @@ public class UniHttpServer {
             String topic = text(body, "topic");
             CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
                 .deserialize(mapper.writeValueAsBytes(body.get("event")));
-            boolean ok = ingress.deliverLocal(topic, clientId, event);
+            // Ingress boundary: the forward arrived as CloudEvents-JSON (HTTP wire); convert to the
+            // internal EventMeshFrame before delivering locally.
+            boolean ok = ingress.deliverLocal(topic, clientId,
+                org.apache.eventmesh.common.wire.EventMeshFrame.fromCloudEvent(event));
             writeJson(exchange, ok ? 200 : 404, ack(ok ? "delivered" : "no local subscriber"));
         } catch (Exception e) {
             writeJson(exchange, 500, error("forward error: " + e.getMessage()));
@@ -516,6 +606,12 @@ public class UniHttpServer {
         }
     }
 
+    private void writeSse(OutputStream out, org.apache.eventmesh.common.stream.StreamChunk chunk) throws IOException {
+        String json = mapper.writeValueAsString(chunk);
+        out.write(("data: " + json + "\n\n").getBytes(StandardCharsets.UTF_8));
+        out.flush();
+    }
+
     // ---- lite topic handlers (RIP-83, 5.x-only) ----
 
     /** {@code POST /events/lite/create?topic=<parent>&lite=<lite>} — ensure parent is lite-capable + declare lite sub-topic. */
@@ -539,7 +635,12 @@ public class UniHttpServer {
         }
         try {
             readAll(exchange); // drain any body
-            ingress.createLiteTopic(parent, lite);
+            int qc = intParam(exchange.getRequestURI(), "queueCount", 4);
+            if (qc == 4) {
+                ingress.createLiteTopic(parent, lite);
+            } else {
+                ingress.createLiteTopic(parent, lite, qc);
+            }
             writeJson(exchange, 200, ack("created"));
         } catch (Exception e) {
             writeJson(exchange, 500, error("create lite topic failed: " + e.getMessage()));
@@ -608,6 +709,522 @@ public class UniHttpServer {
             writeJson(exchange, 400, error("invalid max/timeoutMs parameter"));
         } catch (Exception e) {
             writeJson(exchange, 500, error("lite poll failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * {@code POST /events/lite/publish-bytes?topic=<parent>&lite=<lite>} — publish a raw byte payload
+     * (a {@link org.apache.eventmesh.common.wire.EventMeshFrame}) to a lite topic, bypassing CloudEvents
+     * serialization. The request body IS the frame bytes (Content-Type arbitrary). The internal
+     * runtime↔agent streaming wire uses this endpoint (§1.3). 202 on success.
+     */
+    private void litePublishBytes(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (!ingress.isLiteCapable()) {
+            writeJson(exchange, 501, error("storage does not support lite topic (needs rocketmq5)"));
+            return;
+        }
+        String parent = param(exchange.getRequestURI(), "topic");
+        String lite = param(exchange.getRequestURI(), "lite");
+        if (parent == null || lite == null) {
+            writeJson(exchange, 400, error("missing query param 'topic' and/or 'lite'"));
+            return;
+        }
+        if (!checkSecurity(exchange, parent, null)) {
+            return;
+        }
+        try {
+            byte[] payload = readAll(exchange);
+            if (payload.length == 0) {
+                writeJson(exchange, 400, error("empty body"));
+                return;
+            }
+            ingress.publishLiteBytes(parent, lite, payload).get(10, TimeUnit.SECONDS);
+            writeJson(exchange, 202, ack("accepted"));
+        } catch (Exception e) {
+            writeJson(exchange, 500, error("lite publish-bytes failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * {@code GET /events/lite/poll-bytes?topic=<parent>&lite=<lite>&max=&timeoutMs=} → JSON array of
+     * base64-encoded raw payloads from the LMQ (each a {@link org.apache.eventmesh.common.wire.EventMeshFrame}).
+     * The byte counterpart of {@link #litePoll}; used by the agent over the internal streaming wire.
+     */
+    private void litePollBytes(HttpExchange exchange) throws IOException {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (!ingress.isLiteCapable()) {
+            writeJson(exchange, 501, error("storage does not support lite topic (needs rocketmq5)"));
+            return;
+        }
+        String parent = param(exchange.getRequestURI(), "topic");
+        String lite = param(exchange.getRequestURI(), "lite");
+        if (parent == null || lite == null) {
+            writeJson(exchange, 400, error("missing query param 'topic' and/or 'lite'"));
+            return;
+        }
+        if (!checkSecurity(exchange, parent, null)) {
+            return;
+        }
+        try {
+            int max = intParam(exchange.getRequestURI(), "max", 100);
+            long timeoutMs = longParam(exchange.getRequestURI(), "timeoutMs", 1000L);
+            java.util.List<byte[]> payloads = ingress.pollLiteBytes(parent, lite, max, timeoutMs);
+            com.fasterxml.jackson.databind.node.ArrayNode arr = mapper.createArrayNode();
+            java.util.Base64.Encoder b64 = java.util.Base64.getEncoder();
+            for (byte[] p : payloads) {
+                arr.add(b64.encodeToString(p));
+            }
+            writeJson(exchange, 200, arr);
+        } catch (NumberFormatException e) {
+            writeJson(exchange, 400, error("invalid max/timeoutMs parameter"));
+        } catch (Exception e) {
+            writeJson(exchange, 500, error("lite poll-bytes failed: " + e.getMessage()));
+        }
+    }
+
+    // ---- agent control endpoints (§5.2) ----
+
+    private void agentRegister(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (agentRegistrar == null) {
+            writeJson(exchange, 503, error("agent registrar not configured"));
+            return;
+        }
+        JsonNode body = readJson(exchange);
+        String agentId = text(body, "agentId");
+        if (agentId == null) {
+            writeJson(exchange, 400, error("missing 'agentId'"));
+            return;
+        }
+        int capacity = body.has("capacity") ? body.get("capacity").asInt() : 100;
+        List<String> caps = new java.util.ArrayList<>();
+        if (body.has("capabilities") && body.get("capabilities").isArray()) {
+            body.get("capabilities").forEach(n -> caps.add(n.asText()));
+        }
+        try {
+            var res = agentRegistrar.register(agentId, caps, capacity);
+            java.util.Map<String, Object> out = new java.util.HashMap<>();
+            out.put("parent", res.parent());
+            out.put("clientParent", res.clientParent());
+            writeJson(exchange, 200, out);
+        } catch (Exception e) {
+            writeJson(exchange, 500, error("register failed: " + e.getMessage()));
+        }
+    }
+
+    private void agentReady(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (agentRegistrar == null) {
+            writeJson(exchange, 503, error("agent registrar not configured"));
+            return;
+        }
+        String agentId = text(readJson(exchange), "agentId");
+        if (agentId == null) {
+            writeJson(exchange, 400, error("missing 'agentId'"));
+            return;
+        }
+        writeJson(exchange, agentRegistrar.ready(agentId) ? 200 : 404, ack("ok"));
+    }
+
+    private void agentHeartbeat(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (agentRegistrar == null) {
+            writeJson(exchange, 503, error("agent registrar not configured"));
+            return;
+        }
+        JsonNode body = readJson(exchange);
+        String agentId = text(body, "agentId");
+        if (agentId == null) {
+            writeJson(exchange, 400, error("missing 'agentId'"));
+            return;
+        }
+        int activeSessions = body.has("activeSessions") ? body.get("activeSessions").asInt() : 0;
+        writeJson(exchange, agentRegistrar.heartbeat(agentId, activeSessions) ? 200 : 404, ack("ok"));
+    }
+
+    private void agentUnregister(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (agentRegistrar == null) {
+            writeJson(exchange, 503, error("agent registrar not configured"));
+            return;
+        }
+        String agentId = text(readJson(exchange), "agentId");
+        if (agentId == null) {
+            writeJson(exchange, 400, error("missing 'agentId'"));
+            return;
+        }
+        agentRegistrar.unregister(agentId);
+        writeJson(exchange, 200, ack("ok"));
+    }
+
+    private void sessionOpen(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (matchmaker == null) {
+            writeJson(exchange, 503, error("matchmaker not configured"));
+            return;
+        }
+        JsonNode body = readJson(exchange);
+        String clientId = text(body, "clientId");
+        if (clientId == null) {
+            writeJson(exchange, 400, error("missing 'clientId'"));
+            return;
+        }
+        String model = text(body, "model");
+        try {
+            var res = matchmaker.open(clientId, model);
+            java.util.Map<String, Object> out = new java.util.HashMap<>();
+            out.put("sessionId", res.sessionId());
+            out.put("agentId", res.agentId());
+            // Return the instance the client should pin subsequent turns/close to (§3.4). Empty when
+            // no advertised address is configured → SDK keeps using its original baseUrl.
+            out.put("instanceUrl", selfInstanceUrl());
+            writeJson(exchange, 200, out);
+        } catch (org.apache.eventmesh.runtime.session.Matchmaker.NoAgentAvailableException e) {
+            writeJson(exchange, 429, error(e.getMessage()));
+        }
+    }
+
+    /**
+     * {@code GET /session/recommend?clientId=&limit=} — pick the least-loaded instance for a new
+     * session, returning its {@code instanceUrl}. Single-instance (no cluster membership) → returns
+     * self. Scoring (§3.3): {@code activeSessions×w1 + inflowBytesPerSec×w2 + cpuLoad×w3}, lowest
+     * wins; byte-rate/CPU dominate so a heavy client doesn't pile onto one instance. Overload
+     * avoidance: instances past the load threshold have their score inflated (negative feedback).
+     */
+    private void sessionRecommend(HttpExchange exchange) throws IOException {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        String clientId = param(exchange.getRequestURI(), "clientId");
+        java.util.Map<String, Object> out = new java.util.HashMap<>();
+        String url = recommendInstanceUrl(clientId);
+        out.put("instanceUrl", url);
+        writeJson(exchange, 200, out);
+    }
+
+    /**
+     * Pick the best instance's URL for a new session, or self's advertised URL when not clustered.
+     */
+    private String recommendInstanceUrl(String clientId) {
+        // Single-instance or no membership: return self (or empty if not advertised).
+        if (clusterMembership == null) {
+            return selfInstanceUrl();
+        }
+        java.util.Map<String, org.apache.eventmesh.runtime.cluster.ClusterMembership.InstanceInfo> live =
+            clusterMembership.liveInstancesWithLoad();
+        if (live.isEmpty()) {
+            return selfInstanceUrl();
+        }
+        // Score each live instance; pick the lowest. Weights make byte-rate + CPU dominate over
+        // session count (a heavy client shouldn't pick the instance it already overloads).
+        final double wSessions = 1.0;
+        final double wBytes = 0.001; // bytes/s in the hundreds-to-millions → scale down
+        final double wCpu = 1000.0;  // cpuLoad ∈ [0,1] → scale up to compete with bytes
+        String bestId = null;
+        double bestScore = Double.POSITIVE_INFINITY;
+        for (java.util.Map.Entry<String, org.apache.eventmesh.runtime.cluster.ClusterMembership.InstanceInfo> e : live.entrySet()) {
+            org.apache.eventmesh.runtime.ingress.LoadMeter.Snapshot load = e.getValue().load;
+            double score;
+            if (load == null) {
+                // Peer reports no load → treat as lightly loaded (prefer peers that DO report only if
+                // they're genuinely lighter; a no-report peer gets a neutral mid score).
+                score = 500.0;
+            } else {
+                score = load.activeSessions * wSessions
+                    + load.inflowBytesPerSec * wBytes
+                    + load.outflowBytesPerSec * wBytes
+                    + load.cpuLoad * wCpu;
+                // Overload negative feedback: an instance near saturation is pushed to the back so new
+                // sessions flow to lighter peers (§3.3 mechanism 3).
+                if (load.cpuLoad > 0.8 || load.inflowBytesPerSec > 5_000_000) {
+                    score += 10000.0;
+                }
+            }
+            if (score < bestScore) {
+                bestScore = score;
+                bestId = e.getKey();
+            }
+        }
+        if (bestId == null) {
+            return selfInstanceUrl();
+        }
+        org.apache.eventmesh.runtime.cluster.ClusterMembership.InstanceInfo best = live.get(bestId);
+        // Address may be instanceId placeholder if advertisedAddr isn't configured; fall back to self.
+        String addr = best.address != null && !best.address.isEmpty() ? best.address : null;
+        if (addr == null || addr.equals(bestId)) {
+            // Best is self or peer without a real address → return self's URL (sticky to this instance).
+            return selfInstanceUrl();
+        }
+        return "http://" + addr;
+    }
+
+    /** This instance's own instanceUrl, or empty string if no advertised address configured. */
+    private String selfInstanceUrl() {
+        return advertisedAddr != null && !advertisedAddr.isEmpty() ? "http://" + advertisedAddr : "";
+    }
+
+    private void sessionClose(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (matchmaker == null) {
+            writeJson(exchange, 503, error("matchmaker not configured"));
+            return;
+        }
+        // path: /session/close/<sessionId>
+        String path = exchange.getRequestURI().getPath();
+        String sessionId = path.startsWith("/session/close/") ? path.substring("/session/close/".length()) : null;
+        if (sessionId == null || sessionId.isEmpty()) {
+            writeJson(exchange, 400, error("missing sessionId in path"));
+            return;
+        }
+        boolean closed = matchmaker.close(sessionId);
+        if (closed && sessionRouter != null) {
+            // Explicit close tears the session's channel down: in mode 2 the per-session reply
+            // consumer + the agent's per-session request subscription (kept alive across turns by
+            // endTurn) are released here. Idempotent.
+            sessionRouter.cancel(sessionId);
+        }
+        writeJson(exchange, closed ? 200 : 404, ack("ok"));
+    }
+
+    /**
+     * {@code POST /session/stream/{sessionId}} — v2 SSE streaming (§5③). Resolves the session's agent +
+     * channel via the router, publishes one STREAM_REQ, and drains CHUNKs to the client until a terminal
+     * chunk, the deadline, or disconnect.
+     */
+    private void sessionStream(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (!ingress.isLiteCapable()) {
+            writeJson(exchange, 501, error("storage does not support lite topic (needs rocketmq5)"));
+            return;
+        }
+        if (sessionRouter == null) {
+            writeJson(exchange, 503, error("session router not configured"));
+            return;
+        }
+        String path = exchange.getRequestURI().getPath();
+        String sessionId = path.startsWith("/session/stream/") ? path.substring("/session/stream/".length()) : null;
+        if (sessionId == null || sessionId.isEmpty()) {
+            writeJson(exchange, 400, error("missing sessionId in path"));
+            return;
+        }
+        JsonNode body = readJson(exchange);
+        String prompt = text(body, "prompt");
+        if (prompt == null) {
+            writeJson(exchange, 400, error("missing 'prompt' in body"));
+            return;
+        }
+        String model = text(body, "model");
+        long timeoutMs = body.has("timeoutMs") ? body.get("timeoutMs").asLong() : 0L;
+
+        org.apache.eventmesh.runtime.session.SessionRouter.StreamSink sink;
+        try {
+            sink = sessionRouter.startStream(sessionId, prompt, model, timeoutMs);
+        } catch (org.apache.eventmesh.runtime.session.SessionRouter.NoSuchSessionException e) {
+            writeJson(exchange, 404, error(e.getMessage()));
+            return;
+        } catch (Exception e) {
+            writeJson(exchange, 500, error("stream start failed: " + e.getMessage()));
+            return;
+        }
+
+        // true once a terminal (done/error/timeout) chunk reached the client → the turn ended
+        // naturally (keep the session channel alive for multi-turn). False on a mid-stream
+        // disconnect → tear the session down. (See SessionRouter.endTurn vs cancel.)
+        boolean terminalSent = false;
+        try {
+            // Header send lives inside the try so an early client disconnect (sendResponseHeaders
+            // throws IOException after startStream already registered the sink + published STREAM_REQ)
+            // still hits the finally and cancels the session — otherwise the sink orphans until reaper.
+            exchange.getResponseHeaders().add("Content-Type", "text/event-stream");
+            exchange.getResponseHeaders().add("Cache-Control", "no-cache");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStream out = exchange.getResponseBody();
+            while (sink.isActive()) {
+                long remaining = sink.remainingMs();
+                if (remaining <= 0) {
+                    writeSse(out, sessionTimeoutChunk(sink));
+                    terminalSent = true;
+                    break;
+                }
+                org.apache.eventmesh.common.stream.StreamChunk chunk;
+                try {
+                    chunk = sink.poll(remaining);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                if (chunk == null) {
+                    writeSse(out, sessionTimeoutChunk(sink));
+                    terminalSent = true;
+                    break;
+                }
+                writeSse(out, chunk);
+                if (chunk.isDone()) {
+                    terminalSent = true;
+                    break;
+                }
+            }
+            // Flush any chunk the reply consumer offered but we didn't drain. The consumer offers the
+            // terminal chunk then cancels the sink; if that cancel wins the race with our poll() above,
+            // the terminal chunk would be stranded in the queue and the client's last chunk would be
+            // non-terminal. Drain so the terminal done/error marker always reaches the client.
+            org.apache.eventmesh.common.stream.StreamChunk tail;
+            while ((tail = sink.pollNoWait()) != null) {
+                writeSse(out, tail);
+                if (tail.isDone()) {
+                    terminalSent = true;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            log.debug("session-stream client disconnected: {}", e.toString());
+        } finally {
+            if (terminalSent) {
+                sessionRouter.endTurn(sessionId);
+            } else {
+                sessionRouter.cancel(sessionId);
+            }
+            exchange.close();
+        }
+    }
+
+    private static org.apache.eventmesh.common.stream.StreamChunk sessionTimeoutChunk(
+        org.apache.eventmesh.runtime.session.SessionRouter.StreamSink sink) {
+        return org.apache.eventmesh.common.stream.StreamChunk.builder()
+            .sessionId(sink.sessionId).seq(-1).chunk("").done(true).error("timeout").build();
+    }
+
+    /**
+     * {@code POST /session/publish/{sessionId}} (§5④, mode 2 pub/sub) — publish one chunk onto the
+     * session's lite topic. Body is a {@link org.apache.eventmesh.common.stream.StreamChunk}; the
+     * lite key is derived deterministically from {@code sessionId} ({@code session.<sessionId>}), so
+     * the publisher and subscriber always agree on the physical topic. One POST per chunk.
+     */
+    private void sessionPublish(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (!ingress.isLiteCapable()) {
+            writeJson(exchange, 501, error("storage does not support lite topic (needs rocketmq5)"));
+            return;
+        }
+        if (sessionRouter == null || !sessionRouter.isMode2Enabled()) {
+            writeJson(exchange, 503, error("session publish/subscribe not configured on this runtime"));
+            return;
+        }
+        String path = exchange.getRequestURI().getPath();
+        String sessionId = path.startsWith("/session/publish/")
+            ? path.substring("/session/publish/".length()) : null;
+        if (sessionId == null || sessionId.isEmpty()) {
+            writeJson(exchange, 400, error("missing sessionId in path"));
+            return;
+        }
+        org.apache.eventmesh.common.stream.StreamChunk chunk =
+            mapper.treeToValue(readJson(exchange), org.apache.eventmesh.common.stream.StreamChunk.class);
+        if (chunk == null) {
+            writeJson(exchange, 400, error("missing StreamChunk body"));
+            return;
+        }
+        // Stamp the sessionId from the path so the chunk is self-describing on the lite topic even if
+        // the publisher omitted it (it must match the routing key).
+        chunk.setSessionId(sessionId);
+        try {
+            sessionRouter.publishSession(sessionId, chunk);
+            writeJson(exchange, 201, ack("published"));
+        } catch (Exception e) {
+            writeJson(exchange, 500, error("publish failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * {@code GET /session/subscribe/{sessionId}} (§5④, mode 2 pub/sub) — open an SSE stream that
+     * drains the session's lite topic to the subscriber. Single-cursor: a fresh subscribe replays
+     * from the head of the lite (persistence-backed), so a crashed-and-restarted consumer resyncs
+     * without coordination. One subscriber per session at a time.
+     */
+    private void sessionSubscribe(HttpExchange exchange) throws IOException {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        if (!ingress.isLiteCapable()) {
+            writeJson(exchange, 501, error("storage does not support lite topic (needs rocketmq5)"));
+            return;
+        }
+        if (sessionRouter == null || !sessionRouter.isMode2Enabled()) {
+            writeJson(exchange, 503, error("session publish/subscribe not configured on this runtime"));
+            return;
+        }
+        String path = exchange.getRequestURI().getPath();
+        String sessionId = path.startsWith("/session/subscribe/")
+            ? path.substring("/session/subscribe/".length()) : null;
+        if (sessionId == null || sessionId.isEmpty()) {
+            writeJson(exchange, 400, error("missing sessionId in path"));
+            return;
+        }
+        org.apache.eventmesh.runtime.session.SessionRouter.StreamSink sink;
+        try {
+            sink = sessionRouter.startSubscribe(sessionId);
+        } catch (IllegalStateException e) {
+            writeJson(exchange, 409, error(e.getMessage())); // already a subscriber for this session
+            return;
+        }
+        try {
+            exchange.getResponseHeaders().add("Content-Type", "text/event-stream");
+            exchange.getResponseHeaders().add("Cache-Control", "no-cache");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStream out = exchange.getResponseBody();
+            while (sink.isActive()) {
+                org.apache.eventmesh.common.stream.StreamChunk chunk;
+                try {
+                    chunk = sink.poll(sink.remainingMs());
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                if (chunk == null) {
+                    continue;
+                }
+                writeSse(out, chunk);
+                if (chunk.isDone()) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            log.debug("session-subscribe client disconnected: {}", e.toString());
+        } finally {
+            sessionRouter.cancelSubscribe(sessionId);
+            exchange.close();
         }
     }
 

@@ -17,10 +17,13 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * A single in-flight (delivered but not yet ACKed) delivery tracked by {@link ReliableDispatcher}.
+ *
+ * <p>The carried event is an {@link EventMeshFrame} (EventMesh's internal wire unit); the egress
+ * channel converts it to the client's protocol (CloudEvents / MeshMessage) at delivery time.</p>
  *
  * <p>Mutable only on the attempt/nextAttemptAt fields, which the dispatcher updates under its own
  * lock-free invariants (a delivery lives behind a single ConcurrentHashMap entry and is touched by
@@ -32,15 +35,22 @@ public final class Delivery {
     private final String topic;
     private final int partition;
     private final long offset;
-    private final CloudEvent event;
+    private final EventMeshFrame event;
     private final String clientId;
     private final PushChannel channel;
+    /** MQ-layer ACK callback (RocketMQ 5.x POP mode: ACK broker on client ACK, not on poll). Null = no MQ ACK needed. */
+    private final Runnable mqAckCallback;
 
-    private int attempt;
-    private long nextAttemptAtMs;
+    private volatile int attempt;
+    private volatile long nextAttemptAtMs;
 
-    public Delivery(String deliveryId, String topic, int partition, long offset, CloudEvent event,
+    public Delivery(String deliveryId, String topic, int partition, long offset, EventMeshFrame event,
         String clientId, PushChannel channel, int attempt, long nextAttemptAtMs) {
+        this(deliveryId, topic, partition, offset, event, clientId, channel, attempt, nextAttemptAtMs, null);
+    }
+
+    public Delivery(String deliveryId, String topic, int partition, long offset, EventMeshFrame event,
+        String clientId, PushChannel channel, int attempt, long nextAttemptAtMs, Runnable mqAckCallback) {
         this.deliveryId = deliveryId;
         this.topic = topic;
         this.partition = partition;
@@ -50,10 +60,28 @@ public final class Delivery {
         this.channel = channel;
         this.attempt = attempt;
         this.nextAttemptAtMs = nextAttemptAtMs;
+        this.mqAckCallback = mqAckCallback;
     }
 
     public String getDeliveryId() {
         return deliveryId;
+    }
+
+    /**
+     * MQ physical offset/partition for this delivery, stamped on the frame by the storage plugin
+     * at poll time (frame attributes {@code emmqoffset}/{@code emmqpartition}); -1 when the
+     * backend doesn't stamp (RocketMQ 5.x POP — broker re-delivers on invisible-timeout, no
+     * cursor alignment needed). Recorded in the OffsetStore on client ACK so that
+     * {@code UniRuntime.alignPullOffsetsToAck} can rewind the plugin's pull cursor on restart.
+     */
+    public long mqOffset() {
+        String v = event.attributes().get("emmqoffset");
+        return v == null ? -1L : Long.parseLong(v);
+    }
+
+    public int mqPartition() {
+        String v = event.attributes().get("emmqpartition");
+        return v == null ? -1 : Integer.parseInt(v);
     }
 
     public String getTopic() {
@@ -68,7 +96,7 @@ public final class Delivery {
         return offset;
     }
 
-    public CloudEvent getEvent() {
+    public EventMeshFrame getEvent() {
         return event;
     }
 
@@ -86,6 +114,11 @@ public final class Delivery {
 
     public long getNextAttemptAtMs() {
         return nextAttemptAtMs;
+    }
+
+    /** MQ-layer ACK callback (null = no MQ ACK needed, e.g. Kafka/RocketMQ4 PULL mode). */
+    public Runnable getMqAckCallback() {
+        return mqAckCallback;
     }
 
     /**

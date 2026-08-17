@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.runtime.push;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
- * A CloudEvent buffered in a client's push queue, paired with the delivery id the subscriber must
- * ACK once it has processed the event.
+ * An event buffered in a client's push queue, paired with the delivery id the subscriber must ACK
+ * once it has processed it. The event is an {@link EventMeshFrame} (internal wire unit); the egress
+ * connection converts it to the client's protocol at send time.
  */
 public final class BufferedEvent {
 
     private final String deliveryId;
-    private final CloudEvent event;
+    private final EventMeshFrame event;
 
-    public BufferedEvent(String deliveryId, CloudEvent event) {
+    public BufferedEvent(String deliveryId, EventMeshFrame event) {
         this.deliveryId = deliveryId;
         this.event = event;
     }
@@ -37,7 +38,7 @@ public final class BufferedEvent {
         return deliveryId;
     }
 
-    public CloudEvent getEvent() {
+    public EventMeshFrame getEvent() {
         return event;
     }
 }

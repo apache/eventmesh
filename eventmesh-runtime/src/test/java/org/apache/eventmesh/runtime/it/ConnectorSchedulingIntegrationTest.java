@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.connector.ConnectorAdminServer;
 import org.apache.eventmesh.connector.ConnectorManager;
 import org.apache.eventmesh.connector.EventMeshHttpEndpoint;
@@ -141,7 +142,9 @@ class ConnectorSchedulingIntegrationTest {
         List<CloudEvent> received = new ArrayList<>();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);
         while (received.size() < FakeSource.BATCH_SIZE && System.nanoTime() < deadline) {
-            received.addAll(storage.poll("it-topic", -1, -1, 100, 0));
+            for (EventMeshFrame f : storage.poll("it-topic", -1, -1, 100, 0)) {
+                received.add(f.toCloudEvent());
+            }
             Thread.sleep(50);
         }
         assertEquals(FakeSource.BATCH_SIZE, received.size(),
@@ -267,7 +270,8 @@ class ConnectorSchedulingIntegrationTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback callback) {
+        public void send(String topic, EventMeshFrame frame, SendCallback callback) {
+            CloudEvent event = frame.toCloudEvent();
             queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -276,15 +280,15 @@ class ConnectorSchedulingIntegrationTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
             if (q == null) {
                 return new ArrayList<>();
             }
-            List<CloudEvent> out = new ArrayList<>();
+            List<EventMeshFrame> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
-                out.add(e);
+                out.add(EventMeshFrame.fromCloudEvent(e));
             }
             return out;
         }

@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 
 import java.net.URI;
@@ -39,8 +40,8 @@ class PushServiceTest {
         push.register("client-1");
 
         RecordingCallback cb = new RecordingCallback();
-        assertTrue(push.offer("client-1", "d-1", event("e-1"), cb));
-        assertTrue(push.offer("client-1", "d-2", event("e-2"), cb));
+        assertTrue(push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb));
+        assertTrue(push.offer("client-1", "d-2", EventMeshFrame.fromCloudEvent(event("e-2")), cb));
 
         java.util.List<BufferedEvent> polled = push.poll("client-1", 10, 0);
         assertEquals(2, polled.size());
@@ -54,7 +55,7 @@ class PushServiceTest {
         push.register("client-1");
 
         RecordingCallback cb = new RecordingCallback();
-        push.offer("client-1", "d-1", event("e-1"), cb);
+        push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb);
 
         assertTrue(push.ack("d-1"));
         assertEquals(1, cb.acks.get());
@@ -67,9 +68,9 @@ class PushServiceTest {
         push.register("client-1");
         RecordingCallback cb = new RecordingCallback();
 
-        assertTrue(push.offer("client-1", "d-1", event("e-1"), cb));
-        assertTrue(push.offer("client-1", "d-2", event("e-2"), cb));
-        assertFalse(push.offer("client-1", "d-3", event("e-3"), cb), "third offer over capacity");
+        assertTrue(push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb));
+        assertTrue(push.offer("client-1", "d-2", EventMeshFrame.fromCloudEvent(event("e-2")), cb));
+        assertFalse(push.offer("client-1", "d-3", EventMeshFrame.fromCloudEvent(event("e-3")), cb), "third offer over capacity");
         assertEquals(2, push.pending("client-1"));
     }
 
@@ -81,8 +82,8 @@ class PushServiceTest {
 
         RecordingCallback cb1 = new RecordingCallback();
         RecordingCallback cb2 = new RecordingCallback();
-        channel.deliver("d-1", event("e-1"), cb1);
-        channel.deliver("d-2", event("e-2"), cb2); // over capacity
+        channel.deliver("d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb1);
+        channel.deliver("d-2", EventMeshFrame.fromCloudEvent(event("e-2")), cb2); // over capacity
 
         assertEquals(0, cb1.nacks.get(), "first delivery buffered, not rejected");
         assertEquals(1, cb2.nacks.get(), "overflow delivery nacked");

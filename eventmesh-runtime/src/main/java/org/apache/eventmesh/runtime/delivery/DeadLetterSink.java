@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * Sink for messages that exhausted their retry budget (§5.5). The runtime wires this to publish to
@@ -28,9 +28,9 @@ public interface DeadLetterSink {
 
     /**
      * @param originalTopic the topic the event was on before being dead-lettered
-     * @param event         the original CloudEvent
+     * @param event         the original event (EventMeshFrame, internal wire unit)
      * @param reason        why it was dead-lettered (last failure / timeout)
      * @param attempts      total delivery attempts made
      */
-    void deadLetter(String originalTopic, CloudEvent event, String reason, int attempts);
+    void deadLetter(String originalTopic, EventMeshFrame event, String reason, int attempts);
 }

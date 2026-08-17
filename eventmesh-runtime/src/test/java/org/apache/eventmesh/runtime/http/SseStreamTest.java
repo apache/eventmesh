@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.boot.UniRuntime;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 
@@ -122,7 +123,8 @@ class SseStreamTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback cb) {
+        public void send(String topic, EventMeshFrame frame, SendCallback cb) {
+            CloudEvent event = frame.toCloudEvent();
             topicQueues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -130,15 +132,15 @@ class SseStreamTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> queue = topicQueues.get(topic);
             if (queue == null) {
                 return new ArrayList<>();
             }
-            List<CloudEvent> out = new ArrayList<>();
+            List<EventMeshFrame> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = queue.poll()) != null) {
-                out.add(e);
+                out.add(EventMeshFrame.fromCloudEvent(e));
             }
             return out;
         }

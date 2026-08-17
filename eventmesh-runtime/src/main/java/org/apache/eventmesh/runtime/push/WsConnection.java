@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.runtime.push;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.nio.charset.StandardCharsets;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
@@ -32,6 +31,9 @@ import lombok.extern.slf4j.Slf4j;
  * transport). Each delivered event is written as one {@code TextWebSocketFrame} carrying the JSON
  * {@code {deliveryId, event}} pair, mirroring {@link SseConnection}'s SSE frame so the subscriber
  * can {@code POST /events/ack} (or send a WS control frame) after processing.
+ *
+ * <p>Egress boundary: the internal {@link EventMeshFrame} is converted back to a CloudEvent here
+ * (the WS client speaks CloudEvents-JSON).</p>
  *
  * <p>Control frames (ack / unsubscribe) travel the other direction and are parsed by the server's
  * frame handler, not here — this class only owns the server→client push path.</p>
@@ -52,19 +54,21 @@ public class WsConnection implements Connection {
     }
 
     @Override
-    public void send(String deliveryId, CloudEvent event) {
+    public void send(String deliveryId, EventMeshFrame event) {
         if (!isOpen()) {
             return;
         }
         try {
-            byte[] eventJson = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(event);
+            // Egress: Frame → CloudEvents-JSON via the FrameAdaptor SPI.
+            byte[] eventJson = org.apache.eventmesh.protocol.api.FrameAdaptors.toCloudEventsJson(event);
             // One JSON object per frame: {"deliveryId":"...", "event":{...}}
             String frame = "{\"deliveryId\":\"" + deliveryId + "\",\"event\":"
                 + new String(eventJson, StandardCharsets.UTF_8) + "}";
             channel.writeAndFlush(new TextWebSocketFrame(frame));
         } catch (Exception e) {
             open = false;
-            log.debug("ws client disconnected: {}", e.toString());
+            log.warn("ws client write failed (delivery={}): {}", deliveryId, e.toString());
+            throw new RuntimeException("ws write failed: " + e.getMessage(), e);
         }
     }
 

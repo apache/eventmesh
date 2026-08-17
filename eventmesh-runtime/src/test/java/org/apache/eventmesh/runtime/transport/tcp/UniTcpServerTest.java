@@ -24,11 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
-import org.apache.eventmesh.api.storage.OffsetExtensions;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 
@@ -41,7 +41,6 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +67,8 @@ class UniTcpServerTest {
                     .withSource(URI.create("legacy-tcp"))
                     .withType("eventmesh.message")
                     .build();
-                return TcpRequest.publish(String.valueOf(body.get("topic")), event);
+                return TcpRequest.publish(String.valueOf(body.get("topic")),
+                    org.apache.eventmesh.common.wire.EventMeshFrame.fromCloudEvent(event));
             }
             return null;
         };
@@ -142,7 +142,7 @@ class UniTcpServerTest {
         clientAck.getHeader().putProperty(NettyTcpPushChannel.HEADER_DELIVERY_ID, deliveryId);
         client.writeInbound(clientAck);
 
-        assertEquals(1, ingress.getOffsetStore().readOffset("orders", "c1", 0),
+        assertEquals(1, ingress.getOffsetStore().readOffset("orders", "c1", -1),
             "offset advanced after the legacy TCP client ACKed the push");
         assertEquals(1, ingress.getMetrics().getAckCount());
     }
@@ -155,7 +155,6 @@ class UniTcpServerTest {
     private static final class InMemoryStorage implements MeshStoragePlugin {
 
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
-        private final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         Queue<CloudEvent> queueOf(String topic) {
             return queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>());
@@ -166,7 +165,8 @@ class UniTcpServerTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback callback) {
+        public void send(String topic, EventMeshFrame frame, SendCallback callback) {
+            CloudEvent event = frame.toCloudEvent();
             queueOf(topic).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -175,21 +175,15 @@ class UniTcpServerTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
             if (q == null) {
                 return new java.util.ArrayList<>();
             }
-            List<CloudEvent> out = new java.util.ArrayList<>();
+            List<EventMeshFrame> out = new java.util.ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
-                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
-                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
-                e = CloudEventBuilder.from(e)
-                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
-                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
-                    .build();
-                out.add(e);
+                out.add(EventMeshFrame.fromCloudEvent(e));
             }
             return out;
         }

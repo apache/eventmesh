@@ -91,7 +91,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
             }
             listen();
         } catch (Exception ex) {
-            //
+            log.error("reconnect failed for sub-client", ex);
         }
     }
 

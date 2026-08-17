@@ -217,7 +217,7 @@ public class UniTcpServer {
             }
             clientChannels.put(clientId, ctx.channel());
             // Register the egress push channel so the dispatcher can deliver to this TCP client.
-            ingress.registerChannel(clientId, new NettyTcpPushChannel(ctx.channel(), bodyMapper, ackRegistry));
+            ingress.registerChannel(clientId, new NettyTcpPushChannel(ctx.channel(), ackRegistry));
             for (SubscriptionItem item : items) {
                 ingress.subscribe(item.getTopic(), clientId, toDistributionMode(item.getMode()), null);
             }

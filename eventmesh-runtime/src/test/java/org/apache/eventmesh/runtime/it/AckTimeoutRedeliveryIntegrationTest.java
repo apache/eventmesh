@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.http.UniHttpServer;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
@@ -100,7 +101,6 @@ class AckTimeoutRedeliveryIntegrationTest {
         storage.start();
         // Test-friendly ingress: short ACK timeout + low maxAttempts so the test runs in seconds.
         ingress = new UniIngressService(storage, new InMemoryOffsetStore(),
-            new org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore(),
             new org.apache.eventmesh.runtime.subscription.SubscriptionManager(),
             new org.apache.eventmesh.runtime.push.PushService(),
             ACK_TIMEOUT_MS, MAX_ATTEMPTS, System::currentTimeMillis);
@@ -159,7 +159,8 @@ class AckTimeoutRedeliveryIntegrationTest {
         deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
         List<CloudEvent> dlqed;
         do {
-            dlqed = storage.poll(TOPIC + "_DLQ", -1, -1, 100, 0);
+            dlqed = storage.poll(TOPIC + "_DLQ", -1, -1, 100, 0).stream()
+                .map(EventMeshFrame::toCloudEvent).collect(java.util.stream.Collectors.toList());
             Thread.sleep(500);
         } while ((dlqed == null || dlqed.isEmpty()) && System.nanoTime() < deadline);
         assertTrue(dlqed != null && !dlqed.isEmpty(),

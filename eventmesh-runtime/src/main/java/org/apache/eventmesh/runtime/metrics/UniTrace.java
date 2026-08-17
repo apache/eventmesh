@@ -43,8 +43,18 @@ public final class UniTrace {
         return start("publish", topic, event);
     }
 
+    /** Start a span for a publish operation (EventMeshFrame overload — reads id/type from attributes). */
+    public static Span startPublish(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
+        return start("publish", topic, event);
+    }
+
     /** Start a span for a dispatch (pull + route) operation. */
     public static Span startDispatch(String topic, CloudEvent event) {
+        return start("dispatch", topic, event);
+    }
+
+    /** Start a span for a dispatch operation (EventMeshFrame overload). */
+    public static Span startDispatch(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         return start("dispatch", topic, event);
     }
 
@@ -93,6 +103,21 @@ public final class UniTrace {
         }
         if (event != null && event.getType() != null) {
             b.setAttribute("cloudEventType", event.getType());
+        }
+        return b.startSpan();
+    }
+
+    private static Span start(String operation, String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
+        io.opentelemetry.api.trace.SpanBuilder b = TRACER.spanBuilder(operation).setAttribute("topic", topic);
+        if (event != null) {
+            String id = event.attributes().get("id");
+            String type = event.attributes().get("type");
+            if (id != null) {
+                b.setAttribute("cloudEventId", id);
+            }
+            if (type != null) {
+                b.setAttribute("cloudEventType", type);
+            }
         }
         return b.startSpan();
     }

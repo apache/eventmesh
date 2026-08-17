@@ -53,15 +53,72 @@ public class EventMeshApplication {
     private org.apache.eventmesh.runtime.cluster.PartitionOwnership partitionOwnership;
     private org.apache.eventmesh.runtime.cluster.HttpForwarder httpForwarder;
     private String selfInstanceId;
+    private String advertisedAddr;
     private javax.net.ssl.SSLContext sslContext;
     private org.apache.eventmesh.runtime.http.UniWsServer wsServer;
     private int wsPort = -1;
     private int wsBoundPort = -1;
     private org.apache.eventmesh.runtime.connector.ConnectorScheduler connectorScheduler;
+    private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
+    private org.apache.eventmesh.runtime.session.Matchmaker matchmaker;
+    private org.apache.eventmesh.runtime.session.SessionRouter sessionRouter;
 
     /** Enable HTTPS on the traffic port (§13.4.1). Chain before {@link #start()}. */
     public EventMeshApplication withTls(javax.net.ssl.SSLContext sslContext) {
         this.sslContext = sslContext;
+        return this;
+    }
+
+    /** Require client certificate auth (mTLS) on the traffic port. Needs a truststore-backed SSLContext. */
+    public EventMeshApplication withClientAuth(boolean needClientAuth) {
+        this.needClientAuth = needClientAuth;
+        return this;
+    }
+
+    private boolean needClientAuth;
+
+    /** Wire the v2 agent control-plane registrar (enables {@code POST /agent/*}, §5.2). */
+    public EventMeshApplication withAgentRegistrar(org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar) {
+        this.agentRegistrar = agentRegistrar;
+        return this;
+    }
+
+    /** Wire the v2 session matchmaker (enables {@code POST /session/open|close}, §5②⑤). */
+    public EventMeshApplication withMatchmaker(org.apache.eventmesh.runtime.session.Matchmaker matchmaker) {
+        this.matchmaker = matchmaker;
+        return this;
+    }
+
+    /**
+     * Wire the v2 session router (enables {@code POST /session/stream/{sessionId}} SSE, §5③). The
+     * {@link org.apache.eventmesh.runtime.session.ChannelStrategy} passed to {@code SessionRouter}'s
+     * constructor determines the lite-topology for mode-1 streaming calls (e.g.
+     * {@code AgentAnchoredStrategy}). Mode 2 (publish/subscribe) is configured via the
+     * {@code sessionStreamParent} parameter on the 6-arg constructor.
+     *
+     * <p>The shipped {@code main()} does NOT auto-wire the session layer; an embedder wires all three
+     * pieces (agent registrar + matchmaker + session router) before {@link #start()}. Pattern:</p>
+     * <pre>{@code
+     *   UniIngressService ingress = app.runtime().ingress();
+     *   SessionRegistry registry = new SessionRegistry(metaStore, 30_000L);
+     *   app.withAgentRegistrar(new AgentRegistrar(registry,
+     *       p -> ingress.createLiteTopic(p, "init", 1), agentParent, clientParent));
+     *   app.withMatchmaker(new Matchmaker(registry, BrokerGroupHealth.alwaysHealthy(), 1_800_000L));
+     *   // Mode 1 only (streaming call via agent):
+     *   app.withSessionRouter(new SessionRouter(ingress, registry,
+     *       new AgentAnchoredStrategy(clientParent), 120_000L));
+     *   // Mode 2 (pub/sub session stream, no agent):
+     *   app.withSessionRouter(new SessionRouter(ingress, registry,
+     *       new AgentAnchoredStrategy(clientParent), 120_000L, 300_000L, sessionParent));
+     * }</pre>
+     */
+    public EventMeshApplication withSessionRouter(org.apache.eventmesh.runtime.session.SessionRouter sessionRouter) {
+        this.sessionRouter = sessionRouter;
+        // Load meter reads active stream count from the session router; wire it to ingress so
+        // publish/SSE points account inflow/outflow bytes (§3.2).
+        org.apache.eventmesh.runtime.ingress.LoadMeter lm =
+            new org.apache.eventmesh.runtime.ingress.LoadMeter(sessionRouter::activeStreamCount);
+        runtime.ingress().withLoadMeter(lm);
         return this;
     }
 
@@ -76,7 +133,7 @@ public class EventMeshApplication {
 
     /** Enable dynamic connector scheduling (§8). {@code metaStore} holds defs + worker registry. */
     public EventMeshApplication withConnectorScheduler(
-        org.apache.eventmesh.runtime.connector.ConnectorScheduler scheduler) {
+            org.apache.eventmesh.runtime.connector.ConnectorScheduler scheduler) {
         this.connectorScheduler = scheduler;
         return this;
     }
@@ -90,32 +147,30 @@ public class EventMeshApplication {
     /** Enable multi-instance coordination via a Meta-backed ClusterCoordinator (§13.2). */
     public void enableCluster(org.apache.eventmesh.runtime.cluster.MetaStore metaStore, String selfInstanceId) {
         this.selfInstanceId = selfInstanceId;
-        // §13.2.8② heartbeat lease; value carries timestamp|httpAddress for cross-instance forwarding.
+        // Full-sticky model (§3.1 / §5 stage 3): each instance pulls ALL partitions for the topics its
+        // local subscribers need and delivers locally — NO cross-instance forwarding, NO partition
+        // ownership assignment. Subscribers are pinned to one instance via the instanceUrl returned by
+        // /events/subscribe (SDK poll+ack land on that instance). The cluster layer keeps only the
+        // membership heartbeat (so /session/recommend can score instances globally by load).
         this.clusterMembership = new org.apache.eventmesh.runtime.cluster.ClusterMembership(
             metaStore, selfInstanceId, selfInstanceId, 15_000L, System::currentTimeMillis);
-        this.httpForwarder = new org.apache.eventmesh.runtime.cluster.HttpForwarder(clusterMembership);
-
-        org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore subStore =
-            new org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore(metaStore);
-        this.clusterCoordinator = new org.apache.eventmesh.runtime.cluster.ClusterCoordinator(
-            selfInstanceId, subStore,
-            (topic, clientId, event) -> {
-                runtime.ingress().deliverLocal(topic, clientId, event);
-                return true;
-            },
-            httpForwarder);
-        runtime.ingress().withCluster(clusterCoordinator);
-
-        // §13.2.3 / §13.2.8① ②④: heartbeat + deterministic assign + gen fencing.
-        this.partitionOwnership = new org.apache.eventmesh.runtime.cluster.PartitionOwnership(
-            clusterMembership, metaStore, runtime.ingress().getStorage(), selfInstanceId, 5_000L, System::currentTimeMillis);
-        this.partitionOwnership.start(() -> runtime.ingress().activeTopicsClustered());
-        runtime.ingress().withPartitionOwnership(partitionOwnership);
+        // Append the self-collected load snapshot to each heartbeat so /session/recommend can score.
+        org.apache.eventmesh.runtime.ingress.LoadMeter lm = runtime.ingress().loadMeter();
+        if (lm != null) {
+            this.clusterMembership.withLoadSupplier(() -> {
+                lm.sample();
+                return lm.snapshot().toString();
+            });
+        }
+        // PartitionOwnership + ClusterCoordinator/HttpForwarder are intentionally NOT wired: they
+        // implemented the old "partition%n assign + cross-instance forward" broadcast model, which the
+        // sticky model replaces. pullAndDispatch now pulls all partitions (ownedPartitions unset) and
+        // delivers to local subscribers only. The classes are retained for an opt-in broadcast mode.
 
         // §13.6.3 dynamic config hot-reload: watch Meta for rate-limit rule changes.
         new org.apache.eventmesh.runtime.cluster.DynamicConfigWatcher(metaStore, runtime.ingress()).start();
 
-        log.info("cluster coordination enabled: instance={} (partition ownership + gen fencing, leaseTtl=15s)", selfInstanceId);
+        log.info("cluster enabled (sticky model): instance={} (membership + load heartbeat; no forwarding)", selfInstanceId);
     }
 
     /** Start runtime + traffic HTTP + admin HTTP. */
@@ -126,9 +181,37 @@ public class EventMeshApplication {
         httpServer = new UniHttpServer(runtime.ingress(), adminService);
         if (sslContext != null) {
             httpServer.withTls(sslContext);
+            if (needClientAuth) {
+                httpServer.withClientAuth(true);
+            }
+        }
+        // Advertised address: -Deventmesh.http.advertisedAddr=host:port (empty by default).
+        // Only when the operator explicitly sets it do we surface an instanceUrl for client pinning
+        // (§3.4) — empty keeps the client using whatever baseUrl it connected with (localhost in tests,
+        // or the LB address). ClusterMembership still needs a routable self-address for cross-instance
+        // forwarding; fall back to localIP:httpPort there only (forwarding path, not advertised to
+        // clients).
+        String advertised = System.getProperty("eventmesh.http.advertisedAddr", "");
+        this.advertisedAddr = advertised;
+        httpServer.withAdvertisedAddr(advertised);
+        String forwardAddr = advertised.isEmpty()
+            ? org.apache.eventmesh.common.utils.IPUtils.getLocalAddress() + ":" + httpPort
+            : advertised;
+        if (clusterMembership != null) {
+            clusterMembership.setSelfAddress(forwardAddr);
+            httpServer.withClusterMembership(clusterMembership);
         }
         if (selfInstanceId != null && httpForwarder != null) {
             httpServer.withCluster(selfInstanceId, httpForwarder);
+        }
+        if (agentRegistrar != null) {
+            httpServer.withAgentRegistrar(agentRegistrar);
+        }
+        if (matchmaker != null) {
+            httpServer.withMatchmaker(matchmaker);
+        }
+        if (sessionRouter != null) {
+            httpServer.withSessionRouter(sessionRouter);
         }
         trafficBoundPort = httpServer.start(httpPort);
         adminServer = new UniAdminServer(adminService);
@@ -161,6 +244,9 @@ public class EventMeshApplication {
         if (wsServer != null) {
             wsServer.stop();
         }
+        if (sessionRouter != null) {
+            sessionRouter.shutdown();
+        }
         // §13.6.4 step 5 / G12: release the partition lease so peers re-assume ownership without
         // waiting for the TTL (15s) to expire — minimises the handover gap on graceful shutdown.
         if (partitionOwnership != null) {
@@ -189,7 +275,7 @@ public class EventMeshApplication {
     }
 
     /**
-     *  @return the actual bound WebSocket push port, or -1 if the WS transport isn't enabled. 
+     * @return the actual bound WebSocket push port, or -1 if the WS transport isn't enabled.
      */
     public int wsPort() {
         return wsBoundPort;
@@ -217,7 +303,7 @@ public class EventMeshApplication {
         // passed empty Properties, which forced the kafka/rocketmq default (localhost:9092).
         Properties props = new Properties();
         try (java.io.InputStream is = EventMeshApplication.class.getClassLoader()
-            .getResourceAsStream("eventmesh.properties")) {
+                .getResourceAsStream("eventmesh.properties")) {
             if (is != null) {
                 props.load(is);
                 log.info("loaded eventmesh.properties ({} keys)", props.size());
@@ -241,14 +327,22 @@ public class EventMeshApplication {
             metaStore = new org.apache.eventmesh.runtime.cluster.InMemoryMetaStore();
             log.info("meta store: in-memory (single-instance; cluster coordination disabled)");
         }
-        // Two-tier offset store only when clustered (real remote Meta tier); plain RocksDB otherwise.
+        // Offset store: local RocksDB by default (the deliver/ack progress layer). The remote Meta
+        // tier (MetaBackedOffsetStore) is OPT-IN via -Deventmesh.offset.meta=true — it writes every
+        // (topic#clientId#partition) offset to Meta every 1s, which scales poorly (millions of keys)
+        // and isn't load-bearing for takeover on the rocketmq5 backend (POP gives broker-side
+        // at-least-once; pullAndDispatch passes startOffset=-1 so the storage plugin self-resumes).
+        // See docs/eventmesh-architecture-refinement.md §2 (offset path-②).
         org.apache.eventmesh.runtime.offset.OffsetStore offsets;
         org.apache.eventmesh.runtime.offset.RocksDBOffsetStore localOffsets =
             new org.apache.eventmesh.runtime.offset.RocksDBOffsetStore(offsetPath);
-        if (clustered) {
+        boolean offsetMeta = Boolean.parseBoolean(System.getProperty("eventmesh.offset.meta", "false"));
+        if (clustered && offsetMeta) {
             offsets = new org.apache.eventmesh.runtime.cluster.MetaBackedOffsetStore(localOffsets, metaStore, 1000L);
+            log.info("offset store: meta-backed (remote tier ON, flush=1s) — opt-in via eventmesh.offset.meta=true");
         } else {
             offsets = localOffsets;
+            log.info("offset store: local RocksDB (meta tier off)");
         }
 
         EventMeshApplication app = new EventMeshApplication(storage, offsets, httpPort, adminPort);
@@ -275,7 +369,17 @@ public class EventMeshApplication {
                     tlsKeystore, tlsPass, tlsTrust.isEmpty() ? null : tlsTrust,
                     tlsTrust.isEmpty() ? tlsPass : tlsTrustPass, tlsProto);
             app.withTls(ctx);
-            log.info("TLS enabled on traffic port: keystore={} protocol={}", tlsKeystore, tlsProto);
+            // mTLS (§13.4.1): -Deventmesh.tls.needClientAuth=true + truststore → require client cert.
+            boolean needClientAuth = Boolean.parseBoolean(System.getProperty("eventmesh.tls.needClientAuth", "false"));
+            if (needClientAuth) {
+                if (tlsTrust.isEmpty()) {
+                    log.warn("eventmesh.tls.needClientAuth=true but no truststore configured — client auth cannot verify certs; ignoring");
+                } else {
+                    app.withClientAuth(true);
+                    log.info("mTLS client-auth enabled on traffic port: truststore={}", tlsTrust);
+                }
+            }
+            log.info("TLS enabled on traffic port: keystore={} protocol={} clientAuth={}", tlsKeystore, tlsProto, needClientAuth);
         }
 
         // WebSocket push transport (optional, §15.6): -Deventmesh.ws.port=8082 (0 = auto, omit = disabled)
@@ -284,6 +388,11 @@ public class EventMeshApplication {
             app.withWs(wsPort);
             log.info("WebSocket push transport enabled on port {}", wsPort);
         }
+
+        // v2 streaming sessions are NOT auto-wired here: the channel strategy is an explicit choice,
+        // so an embedder wires the session layer via builders before start(), passing the strategy as a
+        // parameter (no -D). See withSessionRouter's javadoc and LiteStreamCallIntegrationTest for the
+        // launcher pattern.
 
         Runtime.getRuntime().addShutdownHook(new Thread(app::shutdown, "eventmesh-shutdown"));
         app.start();

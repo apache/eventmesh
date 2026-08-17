@@ -72,10 +72,10 @@ class KafkaClientE2EIntegrationTest {
 
     @Test
     void publishSubscribeOverHttpToKafka() throws Exception {
-        String bootstrap = System.getProperty("it.namesrv",
-            "127.0.0.1:9094");
-        final String user = System.getProperty("it.kafka.user", "");
-        final String pass = System.getProperty("it.kafka.password", "");
+        // E2EConfig defaults point at the real 3-broker SASL cluster; -D overrides work too.
+        String bootstrap = E2EConfig.KAFKA_BOOTSTRAP;
+        final String user = E2EConfig.KAFKA_USER;
+        final String pass = E2EConfig.KAFKA_PASSWORD;
 
         MeshStoragePlugin storage = EventMeshExtensionFactory.getExtension(MeshStoragePlugin.class, "kafka");
         assertNotNull(storage, "no MeshStoragePlugin registered for 'kafka'");

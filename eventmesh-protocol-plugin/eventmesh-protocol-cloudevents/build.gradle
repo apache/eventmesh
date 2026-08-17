@@ -1,0 +1,7 @@
+// CloudEvents protocol plugin — CloudEvents-JSON ↔ EventMeshFrame FrameAdaptor.
+// The default external protocol for HTTP/SSE/WS clients speaking CloudEvents 1.0.
+dependencies {
+    api project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    implementation "io.cloudevents:cloudevents-core"
+    implementation "io.cloudevents:cloudevents-json-jackson"
+}

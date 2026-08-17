@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.boot.UniRuntime;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.security.FilterChain;
@@ -110,7 +111,8 @@ class SecurityWiringTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback cb) {
+        public void send(String topic, EventMeshFrame frame, SendCallback cb) {
+            CloudEvent event = frame.toCloudEvent();
             queue.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -118,7 +120,7 @@ class SecurityWiringTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             return new ArrayList<>();
         }
 

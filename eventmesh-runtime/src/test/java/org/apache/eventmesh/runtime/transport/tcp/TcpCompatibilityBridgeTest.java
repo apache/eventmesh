@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
@@ -55,7 +56,7 @@ class TcpCompatibilityBridgeTest {
             }, registry);
 
         RecordingCallback cb = new RecordingCallback();
-        channel.deliver("d-1", event("e-1"), cb);
+        channel.deliver("d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb);
 
         assertEquals(1, written.size(), "push frame written to the socket");
         assertEquals(1, registry.pending(), "ACK callback parked until client ACKs");
@@ -74,7 +75,8 @@ class TcpCompatibilityBridgeTest {
             String s = new String(frame, StandardCharsets.UTF_8);
             if (s.startsWith("PUB:")) {
                 String topic = s.substring("PUB:".length(), s.indexOf('|'));
-                return TcpRequest.publish(topic, event(s.substring(s.indexOf('|') + 1)));
+                return TcpRequest.publish(topic,
+                    org.apache.eventmesh.common.wire.EventMeshFrame.fromCloudEvent(event(s.substring(s.indexOf('|') + 1))));
             }
             if (s.startsWith("SUB:")) {
                 String[] parts = s.substring("SUB:".length()).split("/");
@@ -149,7 +151,8 @@ class TcpCompatibilityBridgeTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback callback) {
+        public void send(String topic, EventMeshFrame frame, SendCallback callback) {
+            CloudEvent event = frame.toCloudEvent();
             queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -158,7 +161,7 @@ class TcpCompatibilityBridgeTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             return new ArrayList<>();
         }
 

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 
@@ -27,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongSupplier;
-
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,6 +55,14 @@ public class ReliableDispatcher {
     /** ±20% retry jitter (§13.3.2 / A.3) — spreads retry storms. 0 = deterministic (tests). */
     public static final double DEFAULT_JITTER_RATIO = 0.2;
     static final long BACKOFF_BASE_MS = 1_000L;
+
+    /**
+     * Reserved clientId under which the MQ physical pull cursor per {@code topic#partition} is
+     * persisted in the OffsetStore (written on each client ACK, read by
+     * {@code UniRuntime.alignPullOffsetsToAck} on restart). The reserved-prefix form makes it
+     * impossible to collide with a real subscriber's id.
+     */
+    public static final String MQ_CURSOR_CLIENT = "__mqcursor__";
     static final long BACKOFF_CAP_MS = 16_000L;
 
     private final long ackTimeoutMs;
@@ -106,13 +113,22 @@ public class ReliableDispatcher {
      *
      * @return the delivery id (also surfaced to the subscriber so it can {@code POST /events/ack})
      */
-    public String deliver(String topic, int partition, long offset, CloudEvent event,
+    public String deliver(String topic, int partition, long offset, EventMeshFrame event,
         String clientId, PushChannel channel) {
+        return deliver(topic, partition, offset, event, clientId, channel, null);
+    }
+
+    /**
+     * Deliver with an optional MQ-layer ACK callback (P2 fix: RocketMQ 5.x POP mode defers broker
+     * ACK until the client ACKs). The callback runs inside {@link #ack(String)} after offset advance.
+     */
+    public String deliver(String topic, int partition, long offset, EventMeshFrame event,
+        String clientId, PushChannel channel, Runnable mqAckCallback) {
         String deliveryId = nextDeliveryId();
         long now = clock.getAsLong();
         // First attempt waits the full ACK window; tick() redelivers if it expires unacked.
         Delivery delivery = new Delivery(deliveryId, topic, partition, offset, event, clientId, channel,
-            1, now + ackTimeoutMs);
+            1, now + ackTimeoutMs, mqAckCallback);
         pending.put(deliveryId, delivery);
         doDeliver(delivery);
         return deliveryId;
@@ -131,6 +147,26 @@ public class ReliableDispatcher {
             return false;
         }
         offsetStore.writeOffset(d.getTopic(), d.getClientId(), d.getPartition(), d.getOffset());
+        // Record the MQ PHYSICAL offset (stamped on the frame by the storage plugin at poll time)
+        // so UniRuntime.alignPullOffsetsToAck can rewind the plugin's pull cursor on restart
+        // (at-least-once for broker-unmanaged backends: Kafka / RocketMQ 4.x). Keyed under a
+        // reserved clientId so it never collides with per-subscriber logical offsets.
+        long mqOffset = d.mqOffset();
+        int mqPartition = d.mqPartition();
+        if (mqOffset >= 0 && mqPartition >= 0) {
+            offsetStore.writeOffset(d.getTopic(), MQ_CURSOR_CLIENT, mqPartition, mqOffset);
+        }
+        // P2 fix: ACK the MQ broker AFTER the client ACKs (not on poll). This restores
+        // at-least-once — if EventMesh crashes between poll and client ACK, the broker's
+        // POP invisibleTime expires and the message is redelivered (not lost).
+        if (d.getMqAckCallback() != null) {
+            try {
+                d.getMqAckCallback().run();
+            } catch (RuntimeException e) {
+                log.warn("MQ-layer ACK failed for delivery={} (broker will redeliver after invisibleTime): {}",
+                    deliveryId, e.toString());
+            }
+        }
         metrics.incAck();
         org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
         return true;
@@ -182,7 +218,12 @@ public class ReliableDispatcher {
                 final io.opentelemetry.api.trace.Span retrySpan =
                     org.apache.eventmesh.runtime.metrics.UniTrace.startRetry(d.getDeliveryId(), d.getAttempt());
                 d.reschedule(now + ackTimeoutMs);
-                pending.put(d.getDeliveryId(), d);
+                // P1-6 fix: use putIfAbsent — if ack() raced and removed this delivery during the
+                // iterator's remove→re-insert window, don't resurrect it (would double-deliver).
+                if (pending.putIfAbsent(d.getDeliveryId(), d) != null) {
+                    log.debug("skip redeliver for {} — already acked during tick window", d.getDeliveryId());
+                    continue;
+                }
                 doDeliver(d);
                 org.apache.eventmesh.runtime.metrics.UniTrace.end(retrySpan);
             }

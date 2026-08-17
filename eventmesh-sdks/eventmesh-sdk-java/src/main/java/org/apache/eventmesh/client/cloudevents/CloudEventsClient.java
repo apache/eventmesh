@@ -17,6 +17,14 @@
 
 package org.apache.eventmesh.client.cloudevents;
 
+import org.apache.eventmesh.client.cloudevents.stream.DefaultStreamingOperations;
+import org.apache.eventmesh.client.cloudevents.stream.DefaultStreamingResponse;
+import org.apache.eventmesh.client.cloudevents.stream.SessionPublisher;
+import org.apache.eventmesh.client.cloudevents.stream.StreamRequest;
+import org.apache.eventmesh.client.cloudevents.stream.StreamingOperations;
+import org.apache.eventmesh.client.cloudevents.stream.StreamingResponse;
+import org.apache.eventmesh.common.stream.StreamChunk;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -80,6 +88,7 @@ public class CloudEventsClient {
 
     CloudEventsClient(String runtimeUrl, String clientId, long pollIntervalMs, String wsUrl) {
         this.baseUrl = runtimeUrl.endsWith("/") ? runtimeUrl.substring(0, runtimeUrl.length() - 1) : runtimeUrl;
+        this.pollBaseUrl = this.baseUrl;
         this.clientId = clientId;
         this.wsBaseUrl = wsUrl == null ? null : (wsUrl.endsWith("/") ? wsUrl.substring(0, wsUrl.length() - 1) : wsUrl);
         this.pollIntervalMs = pollIntervalMs;
@@ -89,6 +98,25 @@ public class CloudEventsClient {
         // submitted loop; virtual threads are daemon by default.
         this.pollExecutor = Executors.newThreadPerTaskExecutor(
             Thread.ofVirtual().name("eventmesh-client-poll-" + clientId + "-", 1).factory());
+    }
+
+    /** This client's base URL. */
+    public String baseUrl() {
+        return baseUrl;
+    }
+
+    /** Base URL for the poll loop — pinned to the instance returned by /events/subscribe (§3.4), or
+     *  {@link #baseUrl} when the runtime didn't advertise one. */
+    private volatile String pollBaseUrl;
+
+    /**
+     * A lightweight clone pointing at {@code url} instead of this client's baseUrl, for session
+     * pinning (StreamingSession pins its turns/close to the instanceUrl returned by /session/open,
+     * §3.4). Shares the mapper; the pollExecutor is fresh (the pinned clone only does session calls,
+     * not long-poll subscriptions, so it never submits to the executor).
+     */
+    public CloudEventsClient withBaseUrl(String url) {
+        return new CloudEventsClient(url, this.clientId, this.pollIntervalMs, this.wsBaseUrl);
     }
 
     public static CloudEventsClientBuilder builder() {
@@ -211,6 +239,220 @@ public class CloudEventsClient {
     }
 
     /**
+     * Publish a raw byte payload to a lite topic, bypassing CloudEvents (the internal private-wire
+     * path — e.g. a {@link org.apache.eventmesh.common.wire.EventMeshFrame}). Body IS the payload bytes.
+     * @return true on 202; false on non-lite backend or error.
+     */
+    public boolean publishLiteBytes(String parentTopic, String liteTopic, byte[] payload) {
+        return post(baseUrl + "/events/lite/publish-bytes?topic=" + enc(parentTopic) + "&lite=" + enc(liteTopic),
+            payload, "application/octet-stream") == 202;
+    }
+
+    /**
+     * Subscribe to a lite topic as raw byte payloads (the byte counterpart of {@link #subscribeLite}).
+     * Each polled payload (base64 on the wire) is decoded and handed to {@code handler}; the caller
+     * interprets it as a {@link org.apache.eventmesh.common.wire.EventMeshFrame}. Stop with
+     * {@link #unsubscribeLite(String)} or {@link #shutdown()}.
+     */
+    public void subscribeLiteBytes(String parentTopic, String liteTopic, java.util.function.Consumer<byte[]> handler) {
+        String liteKey = parentTopic + "#" + liteTopic;
+        java.util.concurrent.atomic.AtomicBoolean stop = new java.util.concurrent.atomic.AtomicBoolean(false);
+        java.util.concurrent.atomic.AtomicBoolean old = liteSubs.put(liteKey, stop);
+        if (old != null) {
+            old.set(true);
+        }
+        pollExecutor.submit(() -> {
+            java.util.Base64.Decoder b64 = java.util.Base64.getDecoder();
+            while (!stop.get()) {
+                try {
+                    byte[] resp = getBytes(baseUrl + "/events/lite/poll-bytes?topic=" + enc(parentTopic)
+                        + "&lite=" + enc(liteTopic) + "&max=100&timeoutMs=" + pollIntervalMs);
+                    boolean got = false;
+                    if (resp != null && resp.length > 0) {
+                        JsonNode arr = mapper.readTree(resp);
+                        for (JsonNode el : arr) {
+                            try {
+                                handler.accept(b64.decode(el.asText()));
+                                got = true;
+                            } catch (IllegalArgumentException bad) {
+                                log.debug("lite poll-bytes: skipping non-base64 entry: {}", bad.toString());
+                            }
+                        }
+                    }
+                    if (!got) {
+                        Thread.sleep(pollIntervalMs);
+                    }
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    log.warn("subscribeLiteBytes poll error: {}", e.toString());
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+            }
+        });
+    }
+
+    // v1 streamCall (shared req-lite + per-stream resp-<id>) removed — replaced by the v2 session
+    // flow openSession/streamSession/close (Phase 7). The agent side uses subscribeLite /
+    // publishLite directly (unchanged).
+
+    // -------------------- v2 session flow --------------------
+
+    /** Result of {@code POST /session/open}: the minted sessionId + the chosen agentId. */
+    public static class SessionHandle {
+        public final String sessionId;
+        public final String agentId;
+        /** Instance URL the client should pin subsequent turns/close to (§3.4); empty = keep baseUrl. */
+        public final String instanceUrl;
+
+        public SessionHandle(String sessionId, String agentId) {
+            this(sessionId, agentId, "");
+        }
+
+        public SessionHandle(String sessionId, String agentId, String instanceUrl) {
+            this.sessionId = sessionId;
+            this.agentId = agentId;
+            this.instanceUrl = instanceUrl == null ? "" : instanceUrl;
+        }
+    }
+
+    /**
+     * {@code GET /session/recommend?clientId=} → {@code {instanceUrl}}: the least-loaded instance for
+     * a new session (§3.3). Single-instance deployments return the contacted instance's URL.
+     */
+    public String recommendInstance(String clientId) {
+        try {
+            byte[] resp = getBytes(baseUrl + "/session/recommend?clientId=" + enc(clientId));
+            if (resp == null) {
+                return "";
+            }
+            JsonNode node = mapper.readTree(resp);
+            JsonNode url = node.get("instanceUrl");
+            return url == null ? "" : url.asText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * {@code POST /session/open {clientId, model?}} → {@code {sessionId, agentId, instanceUrl}} (mode 1
+     * handshake, §5②). The matchmaker binds the client to an agent and mints a sessionId. The
+     * returned {@code instanceUrl} is the instance the client should pin to for load balancing.
+     */
+    public SessionHandle openSession(String clientId, String model) {
+        try {
+            ObjectNode body = mapper.createObjectNode();
+            body.put("clientId", clientId);
+            if (model != null) {
+                body.put("model", model);
+            }
+            byte[] resp = postBytes(baseUrl + "/session/open", json(body), "application/json");
+            if (resp == null) {
+                throw new RuntimeException("openSession failed (runtime returned non-2xx)");
+            }
+            JsonNode node = mapper.readTree(resp);
+            String sid = node.get("sessionId").asText();
+            String agentId = node.get("agentId").asText();
+            JsonNode url = node.get("instanceUrl");
+            return new SessionHandle(sid, agentId, url == null ? "" : url.asText());
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("openSession failed: " + e, e);
+        }
+    }
+
+    /** Convenience: {@code openSession(clientId, null)}. */
+    public SessionHandle openSession(String clientId) {
+        return openSession(clientId, null);
+    }
+
+    /**
+     * {@code POST /session/stream/{sessionId} {prompt}} → drain SSE {@code data:{...}} frames into
+     * {@code handler} until a terminal ({@code done=true}) chunk, error, or disconnect. The returned
+     * future completes when the stream ends. Now a thin wrapper over {@link #openStreamResponse}
+     * (reuses the SSE→queue→callback logic in {@link DefaultStreamingResponse}); prefer
+     * {@link #streaming()} for new code (it returns a first-class {@link StreamingResponse}).
+     */
+    public java.util.concurrent.CompletableFuture<Void> streamSession(String sessionId, String prompt,
+                                                                      Consumer<StreamChunk> handler) {
+        StreamRequest req = StreamRequest.builder().prompt(prompt).build();
+        StreamingResponse resp = openStreamResponse(sessionId, "", req, () -> {
+        });
+        return resp.forEach(handler).whenComplete((v, ex) -> resp.close());
+    }
+
+    /** {@code POST /session/close/{sessionId}} — drop the session (best-effort). */
+    public void closeSession(String sessionId) {
+        postBytes(baseUrl + "/session/close/" + enc(sessionId), new byte[0], "application/json");
+    }
+
+    /** This client's configured clientId (used by one-shot calls). */
+    public String clientId() {
+        return clientId;
+    }
+
+    /**
+     * Entry point for the first-class streaming API. Returns a facade that wraps this client's
+     * session methods with {@link org.apache.eventmesh.client.cloudevents.stream.StreamingSession}
+     * and one-shot entry points.
+     */
+    public StreamingOperations streaming() {
+        return DefaultStreamingOperations.forClient(this);
+    }
+
+    /**
+     * Open one turn's SSE stream as a {@link StreamingResponse} (the queue + three consumption
+     * postures). Public so the streaming-session types (in the {@code stream} subpackage) can build
+     * a response without accessing this client's {@code baseUrl} / {@code mapper} directly.
+     *
+     * @param sessionId the session id to stream under
+     * @param agentId   the agent id (returned by {@code /session/open}), surfaced via
+     *                  {@link StreamingResponse#agentId()}
+     * @param req       the request (prompt + optional model / per-call timeout)
+     * @param onClose   hook run when the response is closed (no-op for multi-turn; session-close
+     *                  for one-shot)
+     */
+    public StreamingResponse openStreamResponse(String sessionId, String agentId,
+                                                StreamRequest req, Runnable onClose) {
+        return DefaultStreamingResponse.start(baseUrl, mapper, sessionId, agentId,
+            req.toJsonString(), DefaultStreamingResponse.DEFAULT_QUEUE_CAPACITY, onClose);
+    }
+
+    /**
+     * Mode 2 (publish/subscribe, §5④) — subscribe to a session's stream as a {@link StreamingResponse}
+     * (the same {@code forEach} consumption posture as mode 1). Opens {@code GET /session/subscribe/
+     * {sessionId}} (SSE); the runtime drains the session's lite topic. The lite key is derived from
+     * the sessionId deterministically, so the publisher and subscriber always agree on the physical
+     * topic without a binding table. Single-cursor replay-from-start lets a crashed-and-restarted
+     * consumer resync.
+     *
+     * @param sessionId the session id to subscribe to (the routing key)
+     * @return a live streaming response — call {@link StreamingResponse#forEach} to consume, then
+     *         {@link StreamingResponse#close()} to unsubscribe
+     */
+    public StreamingResponse subscribeSession(String sessionId) {
+        return DefaultStreamingResponse.startSubscribe(baseUrl, mapper, sessionId,
+            DefaultStreamingResponse.DEFAULT_QUEUE_CAPACITY, () -> {
+            });
+    }
+
+    /**
+     * Mode 2 (publish/subscribe, §5④) — open a publisher for a session stream. Each {@code publish}
+     * POSTs one chunk to {@code /session/publish/{sessionId}}; the runtime writes it onto the
+     * session's lite topic. {@link SessionPublisher#close()} emits the terminal chunk.
+     */
+    public SessionPublisher openSessionPublisher(String sessionId) {
+        return new SessionPublisher(baseUrl, mapper, sessionId);
+    }
+
+    /**
      * Subscribe and drive {@code handler} with each delivered event (long-poll loop). Each event is
      * ACKed automatically after the handler returns.
      */
@@ -221,7 +463,7 @@ public class CloudEventsClient {
         body.put("clientId", clientId);
         body.put("topic", topic);
         body.put("mode", mode);
-        post(baseUrl + "/events/subscribe", json(body), "application/json");
+        capturePollInstance(postBytes(baseUrl + "/events/subscribe", json(body), "application/json"));
         subscribedTopics.add(topic);
         startPollLoop();
     }
@@ -239,9 +481,28 @@ public class CloudEventsClient {
         body.put("clientId", clientId);
         body.put("topic", topic);
         body.put("mode", mode);
-        post(baseUrl + "/events/subscribe", json(body), "application/json");
+        capturePollInstance(postBytes(baseUrl + "/events/subscribe", json(body), "application/json"));
         subscribedTopics.add(topic);
         startPollLoop();
+    }
+
+    /**
+     * Read the {@code instanceUrl} from a /events/subscribe response and pin subsequent polls to it
+     * (load balancing, §3.4). Empty → keep the original baseUrl.
+     */
+    private void capturePollInstance(byte[] resp) {
+        if (resp == null || resp.length == 0) {
+            return;
+        }
+        try {
+            JsonNode node = mapper.readTree(resp);
+            JsonNode url = node.get("instanceUrl");
+            if (url != null && !url.asText().isEmpty()) {
+                this.pollBaseUrl = url.asText();
+            }
+        } catch (Exception ignored) {
+            // older runtime without instanceUrl in the response → poll against baseUrl
+        }
     }
 
     /**
@@ -289,13 +550,15 @@ public class CloudEventsClient {
         if (webSocket != null) {
             try {
                 webSocket.sendClose(java.net.http.WebSocket.NORMAL_CLOSURE, "reconnect");
-            } catch (Exception expected) {
+            } catch (Exception ignored) {
+                // best-effort close during reconnect
             }
         }
         if (wsHttpClient != null) {
             try {
                 wsHttpClient.close();
-            } catch (Exception expected) {
+            } catch (Exception ignored) {
+                // best-effort close during reconnect
             }
         }
         String wsBase = wsBaseUrl != null ? wsBaseUrl : baseUrl;
@@ -312,7 +575,6 @@ public class CloudEventsClient {
             .build();
         java.util.concurrent.CompletableFuture<java.net.http.WebSocket> wsConnect = wsHttpClient.newWebSocketBuilder()
             .buildAsync(java.net.URI.create(wsUrl), new java.net.http.WebSocket.Listener() {
-
                 @Override
                 public java.util.concurrent.CompletionStage<?> onText(java.net.http.WebSocket ws, CharSequence data, boolean last) {
                     parsePushFrame(data.toString(), handler);
@@ -400,13 +662,15 @@ public class CloudEventsClient {
         if (webSocket != null) {
             try {
                 webSocket.sendClose(java.net.http.WebSocket.NORMAL_CLOSURE, "shutdown");
-            } catch (Exception expected) {
+            } catch (Exception ignored) {
+                // best-effort close during shutdown
             }
         }
         if (wsHttpClient != null) {
             try {
                 wsHttpClient.close(); // Java 21: terminates the client's selector/callback threads
-            } catch (Exception expected) {
+            } catch (Exception ignored) {
+                // best-effort close during shutdown
             }
         }
         pollExecutor.shutdownNow();
@@ -419,7 +683,7 @@ public class CloudEventsClient {
         pollExecutor.submit(() -> {
             while (polling.get()) {
                 try {
-                    byte[] resp = getBytes(baseUrl + "/events/poll?clientId=" + enc(clientId) + "&max=100&timeoutMs=" + pollIntervalMs);
+                    byte[] resp = getBytes(pollBaseUrl + "/events/poll?clientId=" + enc(clientId) + "&max=100&timeoutMs=" + pollIntervalMs);
                     if (resp == null || resp.length == 0) {
                         continue;
                     }
@@ -458,14 +722,15 @@ public class CloudEventsClient {
     private boolean ack(String deliveryId) {
         ObjectNode body = mapper.createObjectNode();
         body.put("deliveryId", deliveryId);
-        return post(baseUrl + "/events/ack", json(body), "application/json") == 200;
+        return post(pollBaseUrl + "/events/ack", json(body), "application/json") == 200;
     }
 
     // ---- HTTP helpers (HttpURLConnection, Java 8) ----
 
     private int post(String url, byte[] body, String contentType) {
+        HttpURLConnection conn = null;
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", contentType);
@@ -480,12 +745,17 @@ public class CloudEventsClient {
         } catch (IOException e) {
             log.warn("POST {} failed: {}", url, e.toString());
             return -1;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
     private byte[] postBytes(String url, byte[] body, String contentType) {
+        HttpURLConnection conn = null;
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", contentType);
@@ -505,20 +775,31 @@ public class CloudEventsClient {
         } catch (IOException e) {
             log.warn("POST {} failed: {}", url, e.toString());
             return null;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
     private byte[] getBytes(String url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("GET");
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(70000);
-        if (conn.getResponseCode() >= 400) {
-            drain(conn);
-            return null;
-        }
-        try (java.io.InputStream is = conn.getInputStream()) {
-            return is.readAllBytes();
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(70000);
+            if (conn.getResponseCode() >= 400) {
+                drain(conn);
+                return null;
+            }
+            try (java.io.InputStream is = conn.getInputStream()) {
+                return is.readAllBytes();
+            }
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 

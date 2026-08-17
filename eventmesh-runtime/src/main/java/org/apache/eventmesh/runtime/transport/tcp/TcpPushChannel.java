@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.transport.tcp;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
 
@@ -55,10 +56,19 @@ public class TcpPushChannel implements PushChannel {
     }
 
     @Override
-    public void deliver(String deliveryId, CloudEvent event, AckCallback callback) {
+    public void deliver(String deliveryId, EventMeshFrame event, AckCallback callback) {
+        // Egress boundary: convert the internal Frame to a CloudEvent for the legacy TCP wire format.
+        CloudEvent ce;
+        try {
+            ce = event.toCloudEvent();
+        } catch (RuntimeException e) {
+            log.warn("tcp push frame->CloudEvent conversion failed for delivery={}", deliveryId, e);
+            callback.nack(e);
+            return;
+        }
         byte[] frame;
         try {
-            frame = codec.encodePush(deliveryId, event);
+            frame = codec.encodePush(deliveryId, ce);
         } catch (RuntimeException e) {
             log.warn("tcp push encode failed for delivery={}", deliveryId, e);
             callback.nack(e);

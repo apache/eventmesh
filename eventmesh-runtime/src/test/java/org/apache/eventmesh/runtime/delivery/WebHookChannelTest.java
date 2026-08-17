@@ -20,6 +20,8 @@ package org.apache.eventmesh.runtime.delivery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,7 +41,7 @@ class WebHookChannelTest {
         CapturingHttp http = new CapturingHttp(200);
         WebHookChannel hook = new WebHookChannel("https://svc/hook", SECRET, http, WebHookChannelTest::idBody, 1_000L);
 
-        hook.deliver("d-1", event("e-1"), cb);
+        hook.deliver("d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb);
 
         assertEquals(1, cb.acks.get());
         assertEquals(0, cb.nacks.get());
@@ -56,7 +58,7 @@ class WebHookChannelTest {
         WebHookChannel hook = new WebHookChannel("https://svc/hook", SECRET, new CapturingHttp(503),
             WebHookChannelTest::idBody, 1_000L);
 
-        hook.deliver("d-1", event("e-1"), cb);
+        hook.deliver("d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb);
 
         assertEquals(0, cb.acks.get());
         assertEquals(1, cb.nacks.get(), "non-2xx must nack so ReliableDispatcher retries");
@@ -70,7 +72,7 @@ class WebHookChannelTest {
                 throw new RuntimeException("connection refused");
             }, WebHookChannelTest::idBody, 1_000L);
 
-        hook.deliver("d-1", event("e-1"), cb);
+        hook.deliver("d-1", EventMeshFrame.fromCloudEvent(event("e-1")), cb);
 
         assertTrue(cb.nacks.get() == 1 && cb.acks.get() == 0);
     }

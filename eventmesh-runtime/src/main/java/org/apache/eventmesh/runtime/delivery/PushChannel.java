@@ -17,10 +17,13 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
- * A push transport that actually hands a CloudEvent to a subscriber.
+ * A push transport that actually hands an event to a subscriber.
+ *
+ * <p>The event is carried as an {@link EventMeshFrame} (internal wire unit); the channel impl
+ * converts it to the subscriber's protocol (CloudEvents / MeshMessage) at the egress boundary.</p>
  *
  * <p>In the full architecture this is a {@code TransportChannel} (WebSocket / SSE / Long-Polling,
  * §7.2). For the reliability layer it is abstracted so the ACK + retry + DLQ logic can be built
@@ -37,5 +40,5 @@ public interface PushChannel {
      *
      * @param deliveryId the id the subscriber must echo back on {@code POST /events/ack}
      */
-    void deliver(String deliveryId, CloudEvent event, AckCallback callback);
+    void deliver(String deliveryId, EventMeshFrame event, AckCallback callback);
 }

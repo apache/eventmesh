@@ -20,20 +20,21 @@ package org.apache.eventmesh.runtime.transport.tcp;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+import org.apache.eventmesh.protocol.api.FrameAdaptors;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
 
-import io.cloudevents.CloudEvent;
 import io.netty.channel.Channel;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Egress side of the TCP compat bridge: when the new {@code ReliableDispatcher} delivers a CloudEvent
- * to a legacy TCP subscriber, this channel encodes it into a {@code Package} (Command
- * {@code ASYNC_MESSAGE_TO_CLIENT}) carrying the delivery id, writes it to the client's netty
- * {@link Channel}, and parks the ACK callback in {@link TcpAckRegistry} until the client's
- * {@code ASYNC_MESSAGE_TO_CLIENT_ACK} frame comes back.
+ * Egress side of the TCP compat bridge: converts an {@link EventMeshFrame} directly to a MeshMessage
+ * {@code Package} (Command {@code ASYNC_MESSAGE_TO_CLIENT}) via {@link MeshMessageFrameCodec} — no
+ * CloudEvent intermediary (the legacy SDK only speaks MeshMessage). Carries the delivery id, writes
+ * to the client's netty {@link Channel}, parks the ACK callback in {@link TcpAckRegistry} until the
+ * client's {@code ASYNC_MESSAGE_TO_CLIENT_ACK} frame arrives.
  *
  * <p>So the legacy TCP push target enjoys the same at-least-once reliability (redelivery, DLQ) as
  * every other transport — the dispatcher just sees another {@link PushChannel}.</p>
@@ -45,38 +46,33 @@ public class NettyTcpPushChannel implements PushChannel {
     public static final String HEADER_DELIVERY_ID = "deliveryId";
 
     private final Channel channel;
-    private final CloudEventToPackageBody bodyMapper;
     private final TcpAckRegistry ackRegistry;
 
-    public NettyTcpPushChannel(Channel channel, CloudEventToPackageBody bodyMapper, TcpAckRegistry ackRegistry) {
+    public NettyTcpPushChannel(Channel channel, TcpAckRegistry ackRegistry) {
         this.channel = channel;
-        this.bodyMapper = bodyMapper;
         this.ackRegistry = ackRegistry;
     }
 
     @Override
-    public void deliver(String deliveryId, CloudEvent event, AckCallback callback) {
-        Object body;
+    public void deliver(String deliveryId, EventMeshFrame event, AckCallback callback) {
+        // Egress: Frame → MeshMessage Package directly (no CloudEvent).
+        Package push;
         try {
-            body = bodyMapper.toBody(event);
+            push = (Package) FrameAdaptors.get("meshmessage").fromFrameSilent(event);
+            push.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT, 0, "ok", null));
+            push.getHeader().putProperty(HEADER_DELIVERY_ID, deliveryId);
         } catch (RuntimeException e) {
-            log.warn("tcp egress body encode failed for delivery={}", deliveryId, e);
+            log.warn("tcp egress frame->MeshMessage encode failed for delivery={}", deliveryId, e);
             callback.nack(e);
             return;
         }
-        Header header = new Header(Command.ASYNC_MESSAGE_TO_CLIENT, 0, "ok", null);
-        header.putProperty(HEADER_DELIVERY_ID, deliveryId);
-        Package push = new Package(header, body);
         try {
-            // Fire-and-forget write; reliability comes from the ACK registry (client ACKs the
-            // delivery id, or the dispatcher times out and redelivers).
             channel.writeAndFlush(push);
         } catch (RuntimeException e) {
             log.warn("tcp egress write failed for delivery={}", deliveryId, e);
             callback.nack(e);
             return;
         }
-        // Client ACKs asynchronously via ASYNC_MESSAGE_TO_CLIENT_ACK; the registry resolves it.
         ackRegistry.register(deliveryId, callback);
     }
 }

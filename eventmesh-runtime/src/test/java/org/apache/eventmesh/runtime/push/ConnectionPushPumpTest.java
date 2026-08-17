@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.push;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 
 import java.net.URI;
@@ -36,8 +37,8 @@ class ConnectionPushPumpTest {
     void drainsBufferOntoOpenConnectionInOrder() {
         PushService push = new PushService();
         push.register("client-1");
-        push.offer("client-1", "d-1", event("e-1"), noopCallback());
-        push.offer("client-1", "d-2", event("e-2"), noopCallback());
+        push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), noopCallback());
+        push.offer("client-1", "d-2", EventMeshFrame.fromCloudEvent(event("e-2")), noopCallback());
 
         FakeConnection conn = new FakeConnection(true);
         ConnectionPushPump pump = new ConnectionPushPump(push, "client-1", conn);
@@ -51,7 +52,7 @@ class ConnectionPushPumpTest {
     void closedConnectionLeavesEventsBuffered() {
         PushService push = new PushService();
         push.register("client-1");
-        push.offer("client-1", "d-1", event("e-1"), noopCallback());
+        push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), noopCallback());
 
         ConnectionPushPump pump = new ConnectionPushPump(push, "client-1", new FakeConnection(false));
         assertEquals(0, pump.pumpOnce(10), "nothing pushed to a closed connection");
@@ -91,9 +92,9 @@ class ConnectionPushPumpTest {
         }
 
         @Override
-        public void send(String deliveryId, CloudEvent event) {
+        public void send(String deliveryId, EventMeshFrame event) {
             sentDeliveryIds.add(deliveryId);
-            sentIds.add(event.getId());
+            sentIds.add(event.attributes().get("id"));
         }
     }
 }

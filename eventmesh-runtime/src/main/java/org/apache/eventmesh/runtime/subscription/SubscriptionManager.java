@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,7 +81,7 @@ public class SubscriptionManager {
      * @return the new subscription id
      */
     public String subscribe(String topic, String clientId, DistributionMode mode,
-        CloudEventFilter filter, Consumer<CloudEvent> handler) {
+        CloudEventFilter filter, Consumer<org.apache.eventmesh.common.wire.EventMeshFrame> handler) {
         String subId = UUID.randomUUID().toString();
         Subscription sub = new Subscription(subId, clientId, topic, mode, filter, handler, clock.getAsLong());
         topicSubscriptions.computeIfAbsent(topic, k -> ConcurrentHashMap.newKeySet()).add(sub);
@@ -175,14 +174,21 @@ public class SubscriptionManager {
      * @return the number of events pulled (and considered for dispatch)
      */
     public int pollAndDispatch(String topic, MeshStoragePlugin storage, int maxEvents, long timeoutMs) {
-        List<CloudEvent> events = storage.poll(topic, -1, -1, maxEvents, timeoutMs);
-        if (events == null || events.isEmpty()) {
+        // Pull EventMeshFrames (internal wire) and dispatch each as a Frame.
+        List<org.apache.eventmesh.common.wire.EventMeshFrame> frames = storage.poll(topic, -1, -1, maxEvents, timeoutMs);
+        if (frames == null || frames.isEmpty()) {
             return 0;
         }
-        for (CloudEvent event : events) {
-            dispatch(topic, event);
+        int n = 0;
+        for (org.apache.eventmesh.common.wire.EventMeshFrame f : frames) {
+            try {
+                dispatch(topic, f);
+                n++;
+            } catch (Exception e) {
+                log.warn("dispatch error on topic {} for frame {}: {}", topic, f.attributes().get("id"), e.toString());
+            }
         }
-        return events.size();
+        return n;
     }
 
     /**
@@ -190,7 +196,7 @@ public class SubscriptionManager {
      * distribution mode and pruning expired subscriptions. Exposed so an external reliability layer
      * ({@code ReliableDispatcher}) can own delivery/ACK while this class owns routing.
      */
-    public List<Subscription> targetsFor(String topic, CloudEvent event) {
+    public List<Subscription> targetsFor(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         return selectTargets(topic, event);
     }
 
@@ -240,7 +246,7 @@ public class SubscriptionManager {
         return active;
     }
 
-    private void dispatch(String topic, CloudEvent event) {
+    private void dispatch(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         List<Subscription> targets = selectTargets(topic, event);
         if (targets.isEmpty()) {
             return;
@@ -250,7 +256,7 @@ public class SubscriptionManager {
         }
     }
 
-    private List<Subscription> selectTargets(String topic, CloudEvent event) {
+    private List<Subscription> selectTargets(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         Set<Subscription> subs = topicSubscriptions.get(topic);
         if (subs == null || subs.isEmpty()) {
             return Collections.emptyList();
@@ -302,7 +308,7 @@ public class SubscriptionManager {
         }
     }
 
-    private void deliver(Subscription target, CloudEvent event) {
+    private void deliver(Subscription target, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         try {
             target.getHandler().accept(event);
         } catch (RuntimeException e) {
@@ -316,8 +322,8 @@ public class SubscriptionManager {
         return (roundRobinCounter.getAndIncrement() & 0x7fffffff) % size;
     }
 
-    private int stickyIndex(CloudEvent event, int size) {
-        Object key = event.getExtension("partitionkey");
+    private int stickyIndex(org.apache.eventmesh.common.wire.EventMeshFrame event, int size) {
+        String key = event.attributes().get("partitionkey");
         int hash = key == null ? nextIndex(size) : key.hashCode();
         return Math.floorMod(hash, size);
     }

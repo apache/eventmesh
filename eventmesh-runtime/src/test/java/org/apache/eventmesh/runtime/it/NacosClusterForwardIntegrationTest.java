@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.cluster.ClusterCoordinator;
 import org.apache.eventmesh.runtime.cluster.ClusterMembership;
@@ -128,7 +129,7 @@ class NacosClusterForwardIntegrationTest {
             received.addAll(instA.ingress.poll("c1", 100, 100L));
         }
         assertEquals(1, received.size(), "A should receive the event via B's cross-instance forward");
-        assertEquals("nf-1", received.get(0).getEvent().getId());
+        assertEquals("nf-1", received.get(0).getEvent().attributes().get("id"));
     }
 
     /** Boot one instance: own NacosMetaStore + own in-memory storage + traffic HTTP (for
@@ -195,7 +196,8 @@ class NacosClusterForwardIntegrationTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback cb) {
+        public void send(String topic, EventMeshFrame frame, SendCallback cb) {
+            CloudEvent event = frame.toCloudEvent();
             queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -204,15 +206,15 @@ class NacosClusterForwardIntegrationTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
             if (q == null) {
                 return new ArrayList<>();
             }
-            List<CloudEvent> out = new ArrayList<>();
+            List<EventMeshFrame> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
-                out.add(e);
+                out.add(EventMeshFrame.fromCloudEvent(e));
             }
             return out;
         }

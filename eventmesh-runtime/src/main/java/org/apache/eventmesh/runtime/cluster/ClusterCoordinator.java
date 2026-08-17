@@ -22,7 +22,6 @@ import org.apache.eventmesh.runtime.subscription.DistributionMode;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -77,7 +76,7 @@ public class ClusterCoordinator {
      *
      * @return number of subscribers the event was handed to (locally or forwarded)
      */
-    public int dispatch(String topic, CloudEvent event) {
+    public int dispatch(String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         List<ClusterSub> targets = subscriptions.targetsFor(topic, event);
         if (targets.isEmpty()) {
             return 0;
@@ -98,7 +97,7 @@ public class ClusterCoordinator {
         return delivered;
     }
 
-    private List<ClusterSub> selectByMode(List<ClusterSub> targets, CloudEvent event) {
+    private List<ClusterSub> selectByMode(List<ClusterSub> targets, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         DistributionMode mode = targets.get(0).getMode();
         switch (mode) {
             case LOAD_BALANCE_STICKY: {
@@ -107,7 +106,7 @@ public class ClusterCoordinator {
                 // first so every instance computes the same index for the same key/subscriber-set.
                 java.util.List<ClusterSub> ordered = new java.util.ArrayList<>(targets);
                 ordered.sort(java.util.Comparator.comparing(ClusterSub::getClientId));
-                Object key = event.getExtension("partitionkey");
+                String key = event.attributes().get("partitionkey");
                 int idx = (key == null)
                     ? (roundRobin.getAndIncrement() & 0x7fffffff) % ordered.size()
                     : Math.floorMod(key.hashCode(), ordered.size());

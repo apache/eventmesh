@@ -46,6 +46,7 @@ dependencies {
 
     // 协议适配 (TCP/HTTP 桥 + A2A Agent 通信)
     implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-api')
+    implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-cloudevents')
     implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-meshmessage')
     implementation project(':eventmesh-protocol-plugin:eventmesh-protocol-a2a')
 
@@ -62,10 +63,12 @@ dependencies {
     testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-kafka')
     // Topic creation in RealBrokerIntegrationTest (broker may have autoCreateTopicEnable=false).
     testImplementation 'org.apache.rocketmq:rocketmq-tools:4.9.5'
-    // A2AClientServerIntegrationTest drives the A2A Gateway over HTTP.
-    testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
     // ClientBrokerIntegrationTest drives the runtime via the real CloudEventsClient SDK over HTTP.
     testImplementation project(':eventmesh-sdks:eventmesh-sdk-java')
+    // LiteStreamCallIntegrationTest boots the agent (StreamingAgent + OpenAiLlmClient) in-process.
+    testImplementation project(':eventmesh-agent')
+    // StreamingCallDemoE2ETest drives the demo's main() against a real booted runtime + agent.
+    testImplementation project(':eventmesh-examples')
 }
 
 // Resolve the lz4-java capability conflict when kafka-clients and rocketmq are both on the test
@@ -77,16 +80,162 @@ configurations.all {
     exclude group: 'org.lz4', module: 'lz4-java'
 }
 
-test {
-    // Forward -Dit.* (set on the gradle CLI) to the test JVM so RealBrokerIntegrationTest can be
-    // enabled + pointed at a broker. Only forwarded when actually set, so the test's own defaults
-    // (it.topic=em-it-orders, it.namesrv=localhost:9092) still apply otherwise.
-    // Enable + run: -Dit.storage=rocketmq -Dit.namesrv=host:9876 [-Dit.topic=...]
+// Dev runner: boots EventMeshApplication with the rocketmq5 storage plugin on the classpath (so the
+// SPI loads it without a dist/plugin dir). Forwards eventmesh*/eventMesh*/llm.*/it.* -D flags.
+task runRuntime(type: JavaExec) {
+    group = 'application'
+    mainClass = 'org.apache.eventmesh.runtime.boot.EventMeshApplication'
+    classpath = sourceSets.main.runtimeClasspath
+    classpath += project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5').sourceSets.main.output
+    classpath += project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5').configurations.runtimeClasspath
+    classpath += files('conf') // so conf/log4j2.xml is auto-discovered (INFO console)
+    systemProperties = System.properties.findAll { k, v ->
+        k.startsWith('eventmesh') || k.startsWith('eventMesh') || k.startsWith('llm.')
+            || k.startsWith('it.') || k.startsWith('log4j2')
+    }
     jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
-    ['it.storage', 'it.topic', 'it.namesrv', 'it.nacos', 'it.storage5', 'it.namesrv5'].each { k ->
+}
+
+// Broker integration tests need real brokers (rocketmq4/5/kafka/nacos) and are flaky from a dev
+// machine, so they run ON-DEMAND via `gradle :eventmesh-runtime:e2e-test` - NOT in the default
+// `test` task (which stays fast + green: unit tests + in-memory ITs only). They auto-detect infra
+// via E2EConfig (assumeTrue) - no -D needed.
+//
+// rocketmq 4.9.5 and 5.5.0 cannot coexist on one classpath (5.x moved common.protocol.* ->
+// remoting.protocol.*), so the 4.9 broker ITs (which reference 4.9.5 classes directly) run in a
+// separate task with storage-rocketmq5 excluded; the 5.x/kafka/nacos ITs run in another task with
+// the full classpath. `e2e-test` is a lifecycle task that runs both (two JVMs).
+final List<String> BROKER_IT_5X_CLASSES = [
+    'org.apache.eventmesh.runtime.it.LiteStreamCallIntegrationTest',
+    'org.apache.eventmesh.runtime.it.StreamingSdkE2ETest',
+    'org.apache.eventmesh.runtime.it.RocketMQ5BrokerIntegrationTest',
+    'org.apache.eventmesh.runtime.it.RocketMQ5LiteHttpIntegrationTest',
+    'org.apache.eventmesh.runtime.it.KafkaClientE2EIntegrationTest',
+    'org.apache.eventmesh.runtime.it.NacosClusterForwardIntegrationTest'
+]
+final List<String> BROKER_IT_4_CLASSES = [
+    'org.apache.eventmesh.runtime.it.RealBrokerIntegrationTest',
+    'org.apache.eventmesh.runtime.it.AckTimeoutRedeliveryIntegrationTest',
+    'org.apache.eventmesh.runtime.it.BrokerListTest',
+    'org.apache.eventmesh.runtime.it.ClientBrokerIntegrationTest',
+    'org.apache.eventmesh.runtime.it.LoadThroughputIntegrationTest',
+    'org.apache.eventmesh.runtime.it.LegacyTcpClusterBrokerIntegrationTest',
+    'org.apache.eventmesh.runtime.it.MultiInstanceRocketMqIntegrationTest'
+]
+
+test {
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+    ['it.storage', 'it.topic', 'it.namesrv', 'it.nacos', 'it.storage5', 'it.namesrv5',
+     'llm.base.url', 'llm.api.key', 'llm.model'].each { k ->
         def v = System.getProperty(k)
         if (v != null) {
             systemProperty k, v
         }
     }
+    // Exclude all broker ITs - they run on-demand via `e2e-test`.
+    (BROKER_IT_5X_CLASSES + BROKER_IT_4_CLASSES).each { cls -> filter { excludeTestsMatching cls } }
+}
+
+// --- isolated classpath for the 4.9 broker ITs (excludes storage-rocketmq5 so 4.9.5 wins) ---
+configurations {
+    rocketmq4TestRuntimeClasspath {
+        canBeResolved = true
+        canBeConsumed = false
+        extendsFrom configurations.implementation, configurations.runtimeOnly,
+                     configurations.testImplementation, configurations.testRuntimeOnly
+    }
+}
+configurations.rocketmq4TestRuntimeClasspath.exclude(
+    group: 'org.apache.eventmesh', module: 'eventmesh-storage-rocketmq5')
+
+// 5.x/kafka/nacos broker ITs: full test classpath (storage-rocketmq5 present -> 5.5.0 wins).
+task e2eTest5x(type: Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    BROKER_IT_5X_CLASSES.each { cls -> filter { includeTestsMatching cls } }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+    ['it.storage', 'it.topic', 'it.namesrv', 'it.nacos', 'it.storage5', 'it.namesrv5',
+     'it.kafka.bootstrap', 'it.kafka.user', 'it.kafka.password',
+     'llm.base.url', 'llm.api.key', 'llm.model'].each { k ->
+        def v = System.getProperty(k)
+        if (v != null) { systemProperty k, v }
+    }
+}
+
+// 4.9 broker ITs: isolated classpath (storage-rocketmq5 excluded -> 4.9.5 wins).
+task e2eTest4(type: Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = configurations.rocketmq4TestRuntimeClasspath + sourceSets.main.output + sourceSets.test.output
+    useJUnitPlatform()
+    BROKER_IT_4_CLASSES.each { cls -> filter { includeTestsMatching cls } }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+    ['it.storage', 'it.topic', 'it.namesrv', 'it.nacos'].each { k ->
+        def v = System.getProperty(k)
+        if (v != null) { systemProperty k, v }
+    }
+}
+
+// On-demand: run ALL broker ITs (5.x + 4.9, in two separate JVMs).
+// `gradle :eventmesh-runtime:e2e-test`
+task('e2e-test') {
+    group = 'verification'
+    description = 'Runs all broker integration tests (auto-detect real brokers via E2EConfig).'
+    dependsOn 'e2eTest5x', 'e2eTest4'
+}
+
+// One-command demo runner: boots an in-process EventMeshApplication + StreamingAgent (mock LLM)
+// against a real RocketMQ 5.x broker, then drives the StreamingCallDemo client (eventmesh-examples).
+// Override the broker: -Dit.namesrv5=host:9876 (default = E2EConfig.ROCKETMQ5_NAMESRV).
+task runDemo(type: JavaExec) {
+    group = 'application'
+    mainClass = 'org.apache.eventmesh.runtime.it.StreamingDemoRunner'
+    classpath = sourceSets.test.runtimeClasspath
+    classpath += project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5').sourceSets.main.output
+    classpath += project(':eventmesh-examples').sourceSets.main.output
+    systemProperties = System.properties.findAll { k, v ->
+        k.startsWith('it.') || k.startsWith('eventmesh') || k.startsWith('eventMesh') || k.startsWith('llm.')
+    }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+}
+
+// --- standalone launchers for the streaming demo (real-LLM, multi-process deployment) ---
+// Start in 3 separate terminals: startRuntime → startAgent (×N) → demo client.
+
+// Terminal 1: the EventMesh Runtime (session layer, dual channel mode). Blocks.
+task startRuntime(type: JavaExec) {
+    group = 'application'
+    mainClass = 'org.apache.eventmesh.runtime.it.RuntimeLauncher'
+    classpath = sourceSets.test.runtimeClasspath
+    classpath += project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5').sourceSets.main.output
+    systemProperties = System.properties.findAll { k, v ->
+        k.startsWith('it.') || k.startsWith('eventmesh') || k.startsWith('eventMesh') || k.startsWith('em.')
+    }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+}
+
+// Terminal 2..N: one streaming Agent per invocation, connected to the real LLM gateway.
+//   gradle :eventmesh-runtime:startAgent --args="agent1" -Dllm.api.key=sk-...
+task startAgent(type: JavaExec) {
+    group = 'application'
+    mainClass = 'org.apache.eventmesh.runtime.it.AgentLauncher'
+    classpath = sourceSets.test.runtimeClasspath
+    classpath += project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5').sourceSets.main.output
+    systemProperties = System.properties.findAll { k, v ->
+        k.startsWith('it.') || k.startsWith('eventmesh') || k.startsWith('eventMesh') || k.startsWith('llm.') || k.startsWith('em.')
+    }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+}
+
+// Demo client (pure HTTP). Requires startRuntime + at least one startAgent already running.
+//   gradle :eventmesh-runtime:runDemoClient
+task runDemoClient(type: JavaExec) {
+    group = 'application'
+    mainClass = 'org.apache.eventmesh.cloudevents.demo.stream.StreamingCallDemo'
+    classpath = sourceSets.test.runtimeClasspath
+    classpath += project(':eventmesh-examples').sourceSets.main.output
+    systemProperties = System.properties.findAll { k, v ->
+        k.startsWith('it.') || k.startsWith('eventmesh') || k.startsWith('eventMesh') || k.startsWith('llm.') || k.startsWith('em.')
+    }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
 }

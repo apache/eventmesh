@@ -18,10 +18,9 @@
 package org.apache.eventmesh.api.storage;
 
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 import java.util.List;
-
-import io.cloudevents.CloudEvent;
 
 /**
  * Optional capability for storage plugins that support RocketMQ 5.x <b>Lite Topic</b> (RIP-83): a
@@ -45,14 +44,26 @@ public interface LiteTopicCapable {
     void createLiteTopic(String parentTopic, String liteTopic) throws Exception;
 
     /**
-     * Publish one CloudEvent to a lite topic. The broker routes it into the lite topic's LMQ consume
-     * queue under the parent.
+     * Declare a lite topic under a parent and (re)create the parent with the given queue count. The
+     * queue count controls sharding: {@code sendLite} round-robins across parent queues and
+     * {@code pullLite} drains them in index order, so cross-queue send order is lost. Use
+     * {@code queueCount=1} when the caller needs strict in-order delivery (e.g. a streaming-call
+     * response channel); the default 2-arg form keeps the storage default (4). Idempotent.
      */
-    void sendLite(String parentTopic, String liteTopic, CloudEvent event, SendCallback callback) throws Exception;
+    default void createLiteTopic(String parentTopic, String liteTopic, int queueCount) throws Exception {
+        createLiteTopic(parentTopic, liteTopic);
+    }
 
     /**
-     * Pull a batch of CloudEvents from a lite topic (5.x pop semantics — broker pops from the lite
-     * topic this client has subscribed to). Never {@code null}.
+     * Publish one {@link EventMeshFrame} to a lite topic. The broker routes it into the lite topic's
+     * LMQ consume queue under the parent; the frame's encoded bytes are the stored message body.
      */
-    List<CloudEvent> pullLite(String parentTopic, String liteTopic, int maxEvents, long timeoutMs);
+    void sendLite(String parentTopic, String liteTopic, EventMeshFrame frame, SendCallback callback) throws Exception;
+
+    /**
+     * Pull a batch of {@link EventMeshFrame}s from a lite topic (5.x pop semantics — broker pops from
+     * the lite topic this client has subscribed to). Never {@code null}.
+     */
+    List<EventMeshFrame> pullLite(String parentTopic, String liteTopic, int maxEvents, long timeoutMs);
+
 }

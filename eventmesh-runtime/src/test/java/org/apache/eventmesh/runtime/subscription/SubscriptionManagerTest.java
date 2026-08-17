@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -54,9 +55,9 @@ class SubscriptionManagerTest {
         List<String> a = new ArrayList<>();
         List<String> b = new ArrayList<>();
         List<String> c = new ArrayList<>();
-        manager.subscribe(TOPIC, "worker-1", DistributionMode.LOAD_BALANCE, null, e -> a.add(e.getId()));
-        manager.subscribe(TOPIC, "worker-2", DistributionMode.LOAD_BALANCE, null, e -> b.add(e.getId()));
-        manager.subscribe(TOPIC, "worker-3", DistributionMode.LOAD_BALANCE, null, e -> c.add(e.getId()));
+        manager.subscribe(TOPIC, "worker-1", DistributionMode.LOAD_BALANCE, null, e -> a.add(e.attributes().get("id")));
+        manager.subscribe(TOPIC, "worker-2", DistributionMode.LOAD_BALANCE, null, e -> b.add(e.attributes().get("id")));
+        manager.subscribe(TOPIC, "worker-3", DistributionMode.LOAD_BALANCE, null, e -> c.add(e.attributes().get("id")));
 
         storage.enqueue(List.of(event("order.created", "1"), event("order.created", "2"), event("order.created", "3")));
         int pulled = manager.pollAndDispatch(TOPIC, storage, 100, 0);
@@ -78,8 +79,8 @@ class SubscriptionManagerTest {
 
         List<String> a = new ArrayList<>();
         List<String> b = new ArrayList<>();
-        manager.subscribe(TOPIC, "svc-a", DistributionMode.BROADCAST, null, e -> a.add(e.getId()));
-        manager.subscribe(TOPIC, "svc-b", DistributionMode.BROADCAST, null, e -> b.add(e.getId()));
+        manager.subscribe(TOPIC, "svc-a", DistributionMode.BROADCAST, null, e -> a.add(e.attributes().get("id")));
+        manager.subscribe(TOPIC, "svc-b", DistributionMode.BROADCAST, null, e -> b.add(e.attributes().get("id")));
 
         storage.enqueue(List.of(event("config.change", "42")));
         manager.pollAndDispatch(TOPIC, storage, 100, 0);
@@ -100,9 +101,9 @@ class SubscriptionManagerTest {
         List<String> orders = new ArrayList<>();
         List<String> payments = new ArrayList<>();
         manager.subscribe(TOPIC, "order-svc", DistributionMode.MULTICAST, CloudEventFilter.byType("order.created"),
-            e -> orders.add(e.getId()));
+            e -> orders.add(e.attributes().get("id")));
         manager.subscribe(TOPIC, "pay-svc", DistributionMode.MULTICAST, CloudEventFilter.byType("payment.completed"),
-            e -> payments.add(e.getId()));
+            e -> payments.add(e.attributes().get("id")));
 
         storage.enqueue(List.of(
             event("order.created", "o-1"),
@@ -125,7 +126,7 @@ class SubscriptionManagerTest {
         SubscriptionManager manager = new SubscriptionManager(maxIdleMs, clock::get);
 
         List<String> received = new ArrayList<>();
-        final String subId = manager.subscribe(TOPIC, "worker-1", DistributionMode.BROADCAST, null, e -> received.add(e.getId()));
+        final String subId = manager.subscribe(TOPIC, "worker-1", DistributionMode.BROADCAST, null, e -> received.add(e.attributes().get("id")));
         assertTrue(manager.activeSubscriptions(TOPIC).size() >= 1);
 
         // Advance the clock past the idle window without heartbeating.
@@ -150,7 +151,7 @@ class SubscriptionManagerTest {
         SubscriptionManager manager = new SubscriptionManager(maxIdleMs, clock::get);
 
         List<String> received = new ArrayList<>();
-        String subId = manager.subscribe(TOPIC, "worker-1", DistributionMode.BROADCAST, null, e -> received.add(e.getId()));
+        String subId = manager.subscribe(TOPIC, "worker-1", DistributionMode.BROADCAST, null, e -> received.add(e.attributes().get("id")));
 
         clock.set(1_000L + 5_000L);
         assertTrue(manager.heartbeat(subId));
@@ -174,8 +175,8 @@ class SubscriptionManagerTest {
 
         List<String> a = new ArrayList<>();
         List<String> b = new ArrayList<>();
-        manager.subscribe(TOPIC, "svc-a", DistributionMode.BROADCAST, null, e -> a.add(e.getId()));
-        manager.subscribe(TOPIC, "svc-b", DistributionMode.BROADCAST, null, e -> b.add(e.getId()));
+        manager.subscribe(TOPIC, "svc-a", DistributionMode.BROADCAST, null, e -> a.add(e.attributes().get("id")));
+        manager.subscribe(TOPIC, "svc-b", DistributionMode.BROADCAST, null, e -> b.add(e.attributes().get("id")));
         assertEquals(2, manager.activeSubscriptions(TOPIC).size());
 
         assertTrue(manager.unsubscribe(TOPIC, "svc-a"));
@@ -212,8 +213,15 @@ class SubscriptionManagerTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
-            return batches.isEmpty() ? Collections.emptyList() : batches.poll();
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+            if (batches.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<EventMeshFrame> out = new ArrayList<>();
+            for (CloudEvent ce : batches.poll()) {
+                out.add(EventMeshFrame.fromCloudEvent(ce));
+            }
+            return out;
         }
 
         @Override
@@ -221,7 +229,8 @@ class SubscriptionManagerTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback callback) {
+        public void send(String topic, EventMeshFrame frame, SendCallback callback) {
+            CloudEvent event = frame.toCloudEvent();
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
             r.setTopic(topic);

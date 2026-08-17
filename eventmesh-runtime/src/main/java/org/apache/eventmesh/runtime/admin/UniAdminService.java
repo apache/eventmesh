@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,10 +70,16 @@ public class UniAdminService {
     }
 
     /**
-     * Distribution offsets for a topic, keyed by {@code clientId#partition}.
+     * Distribution offsets for a topic, keyed by {@code clientId#partition}. The reserved
+     * {@code __mqcursor__} entry (internal MQ physical pull cursor, not a subscriber) is filtered
+     * out of the user-facing view.
      */
     public Map<String, Long> offsets(String topic) {
-        return offsetStore.readAllOffsets(topic);
+        Map<String, Long> all = offsetStore.readAllOffsets(topic);
+        String reservedPrefix =
+            org.apache.eventmesh.runtime.delivery.ReliableDispatcher.MQ_CURSOR_CLIENT + "#";
+        all.keySet().removeIf(k -> k.startsWith(reservedPrefix));
+        return all;
     }
 
     /**
@@ -111,12 +116,13 @@ public class UniAdminService {
      */
     public int dlqReplay(String topic, int maxEvents) {
         String dlqTopic = topic + "_DLQ";
-        List<CloudEvent> dead = storage.poll(dlqTopic, -1, -1, maxEvents, 0);
+        // DLQ stores EventMeshFrames; decode to CE and re-publish (ingress re-encodes to Frame).
+        List<org.apache.eventmesh.common.wire.EventMeshFrame> dead = storage.poll(dlqTopic, -1, -1, maxEvents, 0);
         if (dead == null || dead.isEmpty()) {
             return 0;
         }
         CompletableFuture<?>[] futures = dead.stream()
-            .map(e -> ingress.publish(topic, e))
+            .map(f -> ingress.publish(topic, f.toCloudEvent()))
             .toArray(CompletableFuture[]::new);
         CompletableFuture.allOf(futures).join();
         return dead.size();
@@ -127,13 +133,13 @@ public class UniAdminService {
      * without re-publishing.
      */
     public List<String> dlqBrowse(String topic, int maxEvents) {
-        List<CloudEvent> dead = storage.poll(topic + "_DLQ", -1, -1, maxEvents, 0);
+        List<org.apache.eventmesh.common.wire.EventMeshFrame> dead = storage.poll(topic + "_DLQ", -1, -1, maxEvents, 0);
         if (dead == null || dead.isEmpty()) {
             return java.util.Collections.emptyList();
         }
         List<String> ids = new java.util.ArrayList<>(dead.size());
-        for (CloudEvent e : dead) {
-            ids.add(e.getId());
+        for (org.apache.eventmesh.common.wire.EventMeshFrame f : dead) {
+            ids.add(f.attributes().get("id"));
         }
         return ids;
     }

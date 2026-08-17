@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.runtime.transport.tcp;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
-
-import io.cloudevents.CloudEvent;
 
 /**
  * A decoded legacy TCP client request (ingress side of the compatibility bridge). Only the fields
- * relevant to its {@link Kind} are populated.
+ * relevant to its {@link Kind} are populated. The publish payload is carried as an
+ * {@link EventMeshFrame} (the internal wire unit) — a MeshMessage client's frame is built directly
+ * from its {@code EventMeshMessage} (no CloudEvent intermediary), a CloudEvents-TCP client's frame
+ * from its CloudEvent.
  */
 public final class TcpRequest {
 
@@ -36,10 +38,10 @@ public final class TcpRequest {
     private final String clientId;
     private final DistributionMode mode;
     private final String deliveryId;
-    private final CloudEvent event;
+    private final EventMeshFrame event;
 
     private TcpRequest(Kind kind, String topic, String clientId, DistributionMode mode,
-        String deliveryId, CloudEvent event) {
+        String deliveryId, EventMeshFrame event) {
         this.kind = kind;
         this.topic = topic;
         this.clientId = clientId;
@@ -48,7 +50,7 @@ public final class TcpRequest {
         this.event = event;
     }
 
-    public static TcpRequest publish(String topic, CloudEvent event) {
+    public static TcpRequest publish(String topic, EventMeshFrame event) {
         return new TcpRequest(Kind.PUBLISH, topic, null, null, null, event);
     }
 
@@ -84,7 +86,7 @@ public final class TcpRequest {
         return deliveryId;
     }
 
-    public CloudEvent getEvent() {
+    public EventMeshFrame getEvent() {
         return event;
     }
 }

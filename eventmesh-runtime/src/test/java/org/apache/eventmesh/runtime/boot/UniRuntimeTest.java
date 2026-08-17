@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
@@ -74,7 +75,7 @@ class UniRuntimeTest {
         }
         assertFalse(received.isEmpty(), "background loop should have delivered the event");
 
-        assertEquals("o-1", received.get(0).getEvent().getId());
+        assertEquals("o-1", received.get(0).getEvent().attributes().get("id"));
         assertTrue(runtime.ingress().ack(received.get(0).getDeliveryId()));
     }
 
@@ -91,7 +92,8 @@ class UniRuntimeTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback callback) {
+        public void send(String topic, EventMeshFrame frame, SendCallback callback) {
+            CloudEvent event = frame.toCloudEvent();
             queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -100,15 +102,15 @@ class UniRuntimeTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
             if (q == null) {
                 return new ArrayList<>();
             }
-            List<CloudEvent> out = new ArrayList<>();
+            List<EventMeshFrame> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
-                out.add(e);
+                out.add(EventMeshFrame.fromCloudEvent(e));
             }
             return out;
         }

@@ -99,17 +99,18 @@ class KafkaBrokerIntegrationTest {
             .withId("k-1").withSource(URI.create("it")).withType("it.event")
             .withDataContentType("text/plain").withData("hello-kafka".getBytes()).build();
         AtomicReference<String> sendErr = new AtomicReference<>();
-        storage.send(TOPIC, event, new SendCallback() {
+        storage.send(TOPIC, org.apache.eventmesh.common.wire.EventMeshFrame.fromCloudEvent(event),
+            new SendCallback() {
 
-            @Override
-            public void onSuccess(SendResult result) {
-            }
+                @Override
+                public void onSuccess(SendResult result) {
+                }
 
-            @Override
-            public void onException(OnExceptionContext ctx) {
-                sendErr.set(ctx.getException().getMessage());
-            }
-        });
+                @Override
+                public void onException(OnExceptionContext ctx) {
+                    sendErr.set(ctx.getException().getMessage());
+                }
+            });
         Thread.sleep(2_000L); // give the async send callback time to fire
         assertNull(sendErr.get(), "kafka send failed: " + sendErr.get());
         log.info("IT-KAFKA: send ok");
@@ -118,7 +119,9 @@ class KafkaBrokerIntegrationTest {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         while (got.stream().noneMatch(e -> "k-1".equals(e.getId())) && System.nanoTime() < deadline) {
             try {
-                got.addAll(storage.poll(TOPIC, -1, -1, 100, 1000L));
+                for (org.apache.eventmesh.common.wire.EventMeshFrame f : storage.poll(TOPIC, -1, -1, 100, 1000L)) {
+                    got.add(f.toCloudEvent());
+                }
             } catch (Exception e) {
                 // metadata not ready yet — retry
             }

@@ -271,4 +271,151 @@ EVENTMESH_STORAGE_TYPE=kafka bin/start.sh
 - 4.x 存储插件：`eventmesh-storage-plugin/eventmesh-storage-rocketmq`（SPI key `rocketmq`）
 - 5.x 存储插件：`eventmesh-storage-plugin/eventmesh-storage-rocketmq5`（SPI key `rocketmq5`，含 `LiteTopicCapable`）
 - Kafka 存储插件：`eventmesh-storage-plugin/eventmesh-storage-kafka`（SPI key `kafka`，assign+seek+poll + SASL 透传）
-- 设计文档：`docs/eventmesh-uni-architecture-redesign.md`
+- 设计文档：`docs/eventmesh-uni-architecture-redesign.md`（§20–§21 流式调用设计）
+
+---
+
+# 流式调用使用指南（整合 sdk-streaming-call-guide）
+
+> 面向**应用开发者**：如何用 EventMesh 客户端 SDK 做 LLM 风格的**流式调用**（token 逐片返回、支持多轮上下文）。
+
+## 7. 流式调用：它是什么
+
+流式调用让客户端发起一次请求后，**持续接收一串文本分片（token / delta）**，直到收到结束标记——和 OpenAI Chat Completions 的 `stream: true`、SSE 打字机效果一致。
+
+EventMesh 提供两种流式模式：
+
+| 模式 | 用途 | 入口 | 角色 |
+|------|------|------|------|
+| **Mode 1 — 流式调用** | 客户端发起请求，Agent（接 LLM）逐 token 回复 | `openSession` → `call` → `forEach` | HTTP/SSE 客户端（无 MQ 依赖） |
+| **Mode 2 — 发布/订阅** | 生产者往 session 的 MQ 通道写 chunks，消费者通过 SSE 订阅读取 | `subscribeSession` / `openSessionPublisher` | 生产者 + 消费者（解耦、跨进程、跨时间） |
+
+**前置条件**：一个已运行的 EventMesh Runtime（默认 `http://localhost:8080`），其上注册了至少一个流式 Agent（Mode 1）或启用了 Mode 2 的发布/订阅。
+
+---
+
+## 8. Mode 1：流式调用（30 秒快速开始）
+
+```java
+import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
+import org.apache.eventmesh.client.cloudevents.stream.*;
+
+CloudEventsClient client = CloudEventsClient.builder()
+        .runtimeUrl("http://localhost:8080")
+        .clientId("my-app")
+        .build();
+
+// 开一个 session，发一轮，收 token，关 session
+StreamingSession session = client.streaming()
+        .openSession(OpenSession.builder().clientId(client.clientId()).build());
+try {
+    try (StreamingResponse r = session.call("用三句话介绍 EventMesh")) {
+        r.forEach(chunk -> System.out.print(chunk.getChunk())).join();
+    }
+} finally {
+    session.close();
+}
+```
+
+`forEach` 每收到一个分片就回调一次，`.join()` 阻塞到流结束。
+
+---
+
+## 9. Mode 1：多轮会话（Session）
+
+```java
+StreamingSession session = client.streaming()
+        .openSession(OpenSession.builder().clientId("my-app").build());
+
+try {
+    System.out.println("sessionId = " + session.sessionId());
+
+    // 第一轮
+    try (StreamingResponse r1 = session.call("我叫张三，是一名 Java 工程师")) {
+        r1.forEach(chunk -> System.out.print(chunk.getChunk())).join();
+    }
+
+    // 第二轮（同一 session，Agent 记得上一轮）
+    try (StreamingResponse r2 = session.call("我叫什么名字？做什么工作？")) {
+        r2.forEach(chunk -> System.out.print(chunk.getChunk())).join();
+    }
+} finally {
+    session.close();   // 最终销毁会话（幂等）
+}
+```
+
+**三条极易踩的语义**：
+1. 关闭某一轮的 `StreamingResponse` 只结束这一轮的读取，**不会关闭 session**。
+2. 多轮上下文由 Agent 端的 `ConversationStore` 按 `sessionId` 维护。
+3. `OpenSession` 有 `clientId`（必填）、`model`（可选）；`StreamRequest` 有 `prompt`（必填）、`model`（可选）、`timeout`（可选）。
+
+---
+
+## 10. Mode 2：发布/订阅
+
+Mode 2 把 session 的流式数据**外化到 MQ**（LiteTopic），实现**跨进程/跨时间**的流式消费。
+
+### 10.1 订阅（消费）
+
+```java
+StreamingResponse sub = client.subscribeSession("my-session-id");
+sub.forEach(chunk -> {
+    System.out.println("[" + chunk.getSeq() + "] " + chunk.getChunk());
+}).join();
+sub.close();
+```
+
+### 10.2 发布（生产）
+
+```java
+SessionPublisher pub = client.openSessionPublisher("my-session-id");
+pub.publish("Hello", false);     // 非终止帧
+pub.publish(" world", false);
+pub.publish("", true);           // 终止帧 → 订阅者的 forEach 完成
+pub.close();
+```
+
+---
+
+## 11. Mode 1：实现一个流式 Agent
+
+Agent 收到请求后契约四步：
+1. 解析 `sessionId`、`prompt`、`replyTo`
+2. 每产生一个 token → 发非终止帧 `{chunk: token, done: false}`
+3. 流正常结束 → 发终止帧 `{chunk: "", done: true}`
+4. 出异常 → 发终止错误帧 `{chunk: "", done: true, error: "..."}`
+
+参考实现 `eventmesh-agent/.../StreamingAgent.java` 接 OpenAI 兼容 LLM：
+
+```java
+StreamingAgent agent = new StreamingAgent(agentClient, agentParent, agentId, llm, conversations);
+agent.start();          // 订阅 agent 控制信道
+control.ready(agentId); // 向 runtime 报告就绪
+```
+
+---
+
+## 12. 部署配置
+
+### Mode 1（流式调用）
+
+预创建 agent + client parent topics，配 `AgentAnchoredStrategy`，4 参 SessionRouter。
+
+### Mode 2（发布/订阅，可选）
+
+额外预创建 `sessionStreamParent`，用 6 参 SessionRouter（`sessionTtlMs` + `sessionStreamParent`）。
+
+两种模式可同时启用（入口不同，互不干扰）。
+
+---
+
+## 13. 流式调用常见问题
+
+**Q: Mode 1 和 Mode 2 怎么选？**
+需要 Agent 承载 LLM、多轮对话上下文 → Mode 1。需要跨进程/跨时间消费流式数据、崩溃恢复 → Mode 2。
+
+**Q: 报 `IllegalStateException: posture already active`？**
+同一个 `StreamingResponse` 只能用一次 `forEach`。
+
+**Q: 如何排错"收不到响应"？**
+① Runtime 是否起、Agent 是否 `ready` + 心跳；② `/session/open` 是否返回 200 且有 `agentId`；③ parent 是否预创建为 LiteTopic；④ broker 是否开了 LiteTopic。

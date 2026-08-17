@@ -19,9 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
-import org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
-import org.apache.eventmesh.runtime.offset.PushOffsetStore;
 
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -46,7 +44,6 @@ public class UniRuntime {
 
     private final MeshStoragePlugin storage;
     private final OffsetStore offsetStore;
-    private final PushOffsetStore pushOffsetStore;
     private final UniIngressService ingress;
 
     private final long pollIntervalMs;
@@ -72,16 +69,9 @@ public class UniRuntime {
 
     public UniRuntime(MeshStoragePlugin storage, OffsetStore offsetStore,
         long pollIntervalMs, long tickIntervalMs, int maxBatchPerTopic, long pollTimeoutMs) {
-        this(storage, offsetStore, new InMemoryPushOffsetStore(), pollIntervalMs, tickIntervalMs,
-            maxBatchPerTopic, pollTimeoutMs);
-    }
-
-    public UniRuntime(MeshStoragePlugin storage, OffsetStore offsetStore, PushOffsetStore pushOffsetStore,
-        long pollIntervalMs, long tickIntervalMs, int maxBatchPerTopic, long pollTimeoutMs) {
         this.storage = storage;
         this.offsetStore = offsetStore;
-        this.pushOffsetStore = pushOffsetStore;
-        this.ingress = new UniIngressService(storage, offsetStore, pushOffsetStore,
+        this.ingress = new UniIngressService(storage, offsetStore,
             new org.apache.eventmesh.runtime.subscription.SubscriptionManager(),
             new org.apache.eventmesh.runtime.push.PushService(),
             org.apache.eventmesh.runtime.delivery.ReliableDispatcher.DEFAULT_ACK_TIMEOUT_MS,
@@ -91,10 +81,6 @@ public class UniRuntime {
         this.tickIntervalMs = tickIntervalMs;
         this.maxBatchPerTopic = maxBatchPerTopic;
         this.pollTimeoutMs = pollTimeoutMs;
-    }
-
-    public PushOffsetStore getPushOffsetStore() {
-        return pushOffsetStore;
     }
 
     /**
@@ -127,15 +113,23 @@ public class UniRuntime {
     }
 
     /**
-     * For every topic with persisted ACK offsets, rewind the storage plugin's pull cursor to the
-     * minimum ACK offset across all clients for each partition. This ensures at-least-once delivery
-     * after a restart: messages in the gap [ackOffset, pullOffset) are re-pulled and re-delivered.
+     * Restart recovery: rewind the storage plugin's pull cursor to the recorded MQ physical offset
+     * so messages in the gap [cursorOffset, pullOffset) — pulled before the crash but not yet
+     * ACKed by any client — are re-pulled and re-delivered (at-least-once).
      *
-     * <p>Keyed by {@code clientId#partition} in {@link OffsetStore#readAllOffsets}, so the min ACK
-     * offset per partition is computed across all clients that subscribed to that topic. Using min
-     * (not max) guarantees the slowest client still receives its gap messages.</p>
+     * <p>Frame-architecture semantics: the dispatcher records the MQ PHYSICAL offset on each
+     * client ACK under the reserved clientId {@code __mqcursor__} (frame attributes
+     * {@code emmqoffset}/{@code emmqpartition} are stamped by the Kafka / RocketMQ-4.x plugins at
+     * poll time; RocketMQ-5.x POP stamps none — the broker re-delivers on invisible-timeout, so
+     * alignment is a no-op there). Rewind reads ONLY the reserved key: per-subscriber entries
+     * hold logical sequence numbers, which must never be passed to
+     * {@code alignPullOffset} as MQ offsets.</p>
      *
-     * <p>Topics without any persisted ACK offset (first run / new topic) are skipped — the storage
+     * <p>Crash-window note: a hard crash (kill -9) relies on the RocksDB WAL for cursor
+     * durability — the recorded cursor may be a few entries stale, so alignment replays slightly
+     * more than the exact gap (at-least-once direction, safe).</p>
+     *
+     * <p>Topics without any persisted cursor (first run / new topic) are skipped — the storage
      * plugin keeps its default cursor (beginning or latest per its own init logic).</p>
      */
     private void alignPullOffsetsToAck() {
@@ -143,40 +137,38 @@ public class UniRuntime {
         // This is the reliable recovery path: the store knows what it persisted across restarts.
         java.util.Set<String> topicsWithAckOffsets = offsetStore.readAllTopics();
         if (topicsWithAckOffsets.isEmpty()) {
-            log.info("pull-offset alignment: no persisted ACK offsets (first run), skipping");
+            log.info("pull-offset alignment: no persisted offsets (first run), skipping");
             return;
         }
 
+        // Frame-architecture semantics: the MQ PHYSICAL pull cursor is recorded by the dispatcher
+        // on client ACK under the reserved clientId MQ_CURSOR_CLIENT (frame attributes
+        // emmqoffset/emmqpartition stamped by Kafka / RocketMQ-4.x at poll time). Rewind reads
+        // ONLY that reserved key — the per-subscriber entries hold logical sequence numbers, which
+        // must never be passed to alignPullOffset as MQ offsets.
         int aligned = 0;
         for (String topic : topicsWithAckOffsets) {
-            java.util.Map<String, Long> ackOffsets = offsetStore.readAllOffsets(topic);
-            if (ackOffsets == null || ackOffsets.isEmpty()) {
-                continue;
-            }
-            // Compute min ACK offset per partition across all clients.
-            // Key format: clientId#partition → offset
-            java.util.Map<Integer, Long> minAckByPartition = new java.util.HashMap<>();
-            for (java.util.Map.Entry<String, Long> e : ackOffsets.entrySet()) {
-                int sep = e.getKey().lastIndexOf('#');
-                if (sep <= 0) {
-                    continue;
+            java.util.Map<Integer, Long> cursorByPartition = new java.util.HashMap<>();
+            String prefix = org.apache.eventmesh.runtime.delivery.ReliableDispatcher.MQ_CURSOR_CLIENT + "#";
+            for (java.util.Map.Entry<String, Long> e : offsetStore.readAllOffsets(topic).entrySet()) {
+                if (!e.getKey().startsWith(prefix)) {
+                    continue; // per-subscriber logical offset — not a physical cursor
                 }
                 try {
-                    int partition = Integer.parseInt(e.getKey().substring(sep + 1));
-                    minAckByPartition.merge(partition, e.getValue(), Math::min);
+                    int partition = Integer.parseInt(e.getKey().substring(prefix.length()));
+                    cursorByPartition.merge(partition, e.getValue(), Math::min);
                 } catch (NumberFormatException ignored) {
                     // key format mismatch — skip
                 }
             }
 
-            for (java.util.Map.Entry<Integer, Long> e : minAckByPartition.entrySet()) {
-                int partition = e.getKey();
+            for (java.util.Map.Entry<Integer, Long> e : cursorByPartition.entrySet()) {
                 long ackOffset = e.getValue();
                 if (ackOffset >= 0) {
-                    boolean rewound = storage.alignPullOffset(topic, partition, ackOffset);
+                    boolean rewound = storage.alignPullOffset(topic, e.getKey(), ackOffset);
                     if (rewound) {
                         aligned++;
-                        log.info("pull-offset alignment: {}#{} rewound to ACK offset {}", topic, partition, ackOffset);
+                        log.info("pull-offset alignment: {}#{} rewound to MQ offset {}", topic, e.getKey(), ackOffset);
                     }
                 }
             }
@@ -255,6 +247,7 @@ public class UniRuntime {
                 try {
                     ingress.dispatcherTick();
                 } catch (Exception expected) {
+                    log.debug("dispatcher tick during graceful shutdown: {}", expected.toString());
                 }
                 pending = ingress.getDispatcher().pendingCount();
             }
@@ -263,14 +256,7 @@ public class UniRuntime {
             }
         }
 
-        // 4. Clear push offset store (in-memory only, no persistence)
-        try {
-            pushOffsetStore.clear();
-        } catch (Exception e) {
-            log.warn("push offset store clear failed", e);
-        }
-
-        // 5. Flush + close offset store
+        // 4. Flush + close offset store
         try {
             offsetStore.flush();
         } catch (Exception e) {

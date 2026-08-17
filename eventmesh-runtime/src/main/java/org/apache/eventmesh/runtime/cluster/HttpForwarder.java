@@ -51,7 +51,7 @@ public class HttpForwarder implements Forwarder {
     }
 
     @Override
-    public boolean forward(String targetInstance, String clientId, String topic, CloudEvent event) {
+    public boolean forward(String targetInstance, String clientId, String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         String address = membership.addressOf(targetInstance);
         if (address == null) {
             log.warn("forward: no address for instance {}, dropping", targetInstance);
@@ -70,12 +70,13 @@ public class HttpForwarder implements Forwarder {
         return post("http://" + address + "/internal/reply-forward", buildReplyBody(correlationId, replyEvent));
     }
 
-    private byte[] buildForwardBody(String clientId, String topic, CloudEvent event) {
+    private byte[] buildForwardBody(String clientId, String topic, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         try {
+            // Egress: forward body is CloudEvents-JSON over HTTP; Frame → CE-JSON via FrameAdaptor SPI.
+            byte[] eventJson = org.apache.eventmesh.protocol.api.FrameAdaptors.toCloudEventsJson(event);
             ObjectNode body = mapper.createObjectNode();
             body.put("clientId", clientId);
             body.put("topic", topic);
-            byte[] eventJson = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(event);
             body.set("event", mapper.readTree(eventJson));
             return mapper.writeValueAsBytes(body);
         } catch (Exception e) {

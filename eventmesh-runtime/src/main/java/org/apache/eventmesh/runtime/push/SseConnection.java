@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.runtime.push;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +28,9 @@ import lombok.extern.slf4j.Slf4j;
  * A {@link Connection} backed by a held-open SSE HTTP response stream: each delivered event is
  * written as an SSE {@code data:} frame carrying the structured CloudEvent JSON plus the delivery
  * id (so the subscriber can {@code POST /events/ack}). Used by {@code GET /events/stream}.
+ *
+ * <p>Egress boundary: the internal {@link EventMeshFrame} is converted back to a CloudEvent here
+ * (the SSE client speaks CloudEvents-JSON).</p>
  */
 @Slf4j
 public class SseConnection implements Connection {
@@ -47,24 +48,33 @@ public class SseConnection implements Connection {
     }
 
     @Override
-    public void send(String deliveryId, CloudEvent event) {
+    public void send(String deliveryId, EventMeshFrame event) {
         if (!open) {
             return;
         }
-        try {
-            byte[] eventJson = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(event);
-            // SSE frame: two lines — the delivery id, then the event JSON.
-            String frame = "data: {\"deliveryId\":\"" + deliveryId + "\",\"event\":"
-                + new String(eventJson, StandardCharsets.UTF_8) + "}\n\n";
-            out.write(frame.getBytes(StandardCharsets.UTF_8));
-            out.flush();
-        } catch (Exception e) {
-            open = false;
-            log.debug("sse client disconnected: {}", e.toString());
+        // P2-2 fix: synchronize on OutputStream — two pump threads (or pump + close) writing
+        // concurrently would interleave SSE data: frames and corrupt the client's event stream.
+        synchronized (out) {
+            if (!open) {
+                return;
+            }
+            try {
+                byte[] eventJson = org.apache.eventmesh.protocol.api.FrameAdaptors.toCloudEventsJson(event);
+                String frame = "data: {\"deliveryId\":\"" + deliveryId + "\",\"event\":"
+                    + new String(eventJson, StandardCharsets.UTF_8) + "}\n\n";
+                out.write(frame.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+            } catch (Exception e) {
+                open = false;
+                log.warn("sse client write failed (delivery={}): {}", deliveryId, e.toString());
+                throw new RuntimeException("sse write failed: " + e.getMessage(), e);
+            }
         }
     }
 
     public void close() {
-        open = false;
+        synchronized (out) {
+            open = false;
+        }
     }
 }

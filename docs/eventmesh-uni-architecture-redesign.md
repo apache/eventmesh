@@ -1,8 +1,14 @@
 # EventMesh 架构简化重构方案
 
-> 分支：`refactor/unified-runtime-pipeline` → 基于本次讨论的全新方向
+> 分支：`refactor/unified-runtime-pipeline` → 基于 本次讨论的全新方向
 >
-> 核心变化：**丢弃 MQ 的 Producer Group / Consumer Group 语义，MQ 仅作存储层，EventMesh 自主维护订阅分发语义（负载均衡 / 多播 / 广播）。SDK 简化为 HTTP-only，全部基于 CloudEvents。**
+> 核心变化：**丢弃 MQ 的 Producer Group / Consumer Group 语义，MQ 仅作存储层，EventMesh 自主维护订阅分发语义。内部全程 `EventMeshFrame`（CloudEvent 退化为对外入口格式之一）；对外多协议（CloudEvents / MeshMessage / A2A）经 `FrameAdaptor` SPI 直接转 Frame，互不转换。SDK 简化为 HTTP-only。**
+>
+> **v2.0 架构深化（2026-08-13 整合 `eventmesh-architecture-refinement.md`）**：
+> - 内部全程 `EventMeshFrame`（storage SPI + dispatch 管线 + 载体全翻 Frame）。
+> - 对外协议转换收进 `FrameAdaptor` SPI（CloudEvents/MeshMessage/A2A 各独立插件，零 CE 互转）。
+> - Offset 路②（纯本地、不上报 meta、不给 group.id、接管靠 MQ 重放）。
+> - 全面粘性负载均衡（session 分配层 recommend、实例自采负载、不转发）。
 
 ---
 
@@ -28,10 +34,10 @@
 | **EventMesh 自主订阅** | 订阅分发逻辑（谁收哪条消息、按什么策略分发）全部由 EventMesh 自己维护，不委托给 MQ |
 | **EventMesh 自主 Offset** | EventMesh 自主管理每个订阅关系的消费位点（topic#clientId#partition → offset），参考 RocketMQ Client OffsetStore 实现，使用 RocksDB 持久化，不依赖 MQ Consumer Group offset |
 | **SDK 极简** | 只有一个 SDK（HTTP），只暴露两个对象（CloudEvent + Subscription），只有三个 API（publish / subscribe / unsubscribe） |
-| **全链路 CloudEvents** | 从 SDK → EventMesh Runtime → MQ 存储 → 下发客户端，全部使用 CloudEvents 1.0 规范，不再有自定义的 EventMeshMessage / Package 等中间格式 |
+| **内部 EventMeshFrame** | 内部全程 `EventMeshFrame`（定长头+KV属性+raw data），CloudEvent 退化为对外入口格式之一；对外多协议（CloudEvents/MeshMessage/A2A）经 `FrameAdaptor` SPI 直接转 Frame，互不转换 |
 | **Connector 独立部署** | Connector Runtime 是独立进程，与 EventMesh Runtime 通过 HTTP + CloudEvents 接口通信，不共享内部组件，各自有独立的生命周期和 OffsetStore |
 
-> **🔎 实现状态速览（v1.11 / 2026-07-06 盘点）**：五条铁律中，"全链路 CloudEvents / Connector 独立部署 / SDK 极简（HTTP-only）"已落实；"EventMesh 自主订阅 / 自主 Offset"单实例成立。**但"MQ 无语义"在 Kafka 实现侧有矛盾**——`KafkaMeshStoragePlugin` 仍设 `group.id`（附录 F G7），多实例下会触发 Kafka rebalance，须修复。各铁律的逐 Phase 落实状态见 §11 各 Phase 标题处标注与附录 F。
+> **🔎 实现状态速览（v2.0 / 2026-08-13 盘点）**：五条铁律中，"内部 EventMeshFrame / Connector 独立部署 / SDK 极简（HTTP-only）"已落实；"EventMesh 自主订阅 / 自主 Offset"单实例成立（offset 路②纯本地 + MQ 重放接管，meta 上报默认关）。多实例协调改为**全面粘性**（session 分配层 recommend，停用转发层）。对外协议经 `FrameAdaptor` SPI（CloudEvents 独立插件 + MeshMessage + A2A 各自直接转 Frame，零 CE 互转）。详见 §19 架构深化。
 
 ### 1.2 与当前设计的本质区别
 
@@ -4565,7 +4571,389 @@ CompletableFuture<CloudEvent> request(CloudEvent event, Duration timeout);
 
 ---
 
-*文档版本：v1.10 | EventMesh 简化重构方案 | 基于 unified-runtime-design.md v2.1 演进 | 2026-07-03*
+## 十九、架构深化：内部 EventMeshFrame + FrameAdaptor SPI + 全面粘性（v2.0，2026-08-13）
+
+> 本节整合自 `eventmesh-architecture-refinement.md` v2.0。三块深化落地全绿（全 unit + 5.x E2E，含 RocketMQ5BrokerIntegrationTest 普通 pub/sub 2/2 + LegacyTcpClientIntegrationTest 旧 TCP SDK）。
+
+### 19.1 内部全程 EventMeshFrame
+
+#### 架构分层
+
+```
+┌─ 对外协议层(FrameAdaptor SPI)──────────────────────────────────────┐
+│  CloudEvents(HTTP/SSE/WS)  → CloudEventsFrameAdaptor  → EventMeshFrame │
+│  MeshMessage(legacy TCP)   → MeshMessageFrameAdaptor   → EventMeshFrame │
+│  A2A(JSON-RPC 2.0)         → A2AFrameAdaptor           → EventMeshFrame │
+│  未来新协议                → 新 FrameAdaptor            → EventMeshFrame │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │ 对外协议直接转 Frame,不经 CloudEvent 互转
+┌───────────────────────────────▼───────────────────────────────────────┐
+│  内部(runtime + storage):全程 EventMeshFrame                            │
+│  ingress publish → Frame → storage.send(Frame) → MQ 字节                 │
+│  MQ 字节 → storage.poll()→Frame → dispatch/filter/TTL → Frame → egress   │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │ egress: Frame → 对应 FrameAdaptor → 客户端协议
+┌───────────────────────────────▼───────────────────────────────────────┐
+│  egress(FrameAdaptor SPI,按客户端连接协议)                                │
+│  Frame → CloudEvents-JSON(SSE/WS/HTTP poll)                              │
+│  Frame → MeshMessage Package(legacy TCP)                                  │
+│  Frame → A2A JSON-RPC bytes(A2A 回调)                                     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+**CloudEvent 不是内部表示**——它是 CloudEvents 客户端的对外入口格式,经 `CloudEventsFrameAdaptor` 转 Frame 后进入内部。MeshMessage 和 A2A 同理,各自有独立 adaptor,互不经过 CloudEvent。
+
+#### EventMeshFrame wire 格式
+
+```
+定长头 14B: [magic=0xEF][ver][msgType:1][flags:1][seq:4][keyCount:2][dataLen:4]
+KV 属性段:  keyCount × [nameLen:2][name][valLen:4][value]   ← 通用,所有 msgType 共用
+data:       raw bytes(streaming 的 chunk/prompt / 事件的业务 data)
+
+msgType = STREAM_REQ | STREAM_CHUNK | EVENT
+flags   = done | hasError | hasMeta(streaming 用)
+```
+
+- **STREAM_REQ**:KV(`sid`/`replyTo`/`model`/`conv`)+ data=prompt。
+- **STREAM_CHUNK**:`seq`(定长)+ `done`(flag)+ KV(`sid`/`etype`/`err`/`meta`)+ data=chunk。一个 `"He"` token ~25B vs CE-JSON ~250B(**~10×**)。
+- **EVENT**:KV(`id`/`type`/`subject`/`time`/`emttl`/`emcorrelationid`/用户扩展...)+ data=业务载荷。
+
+#### WireCodec SPI（内部 MQ wire 编码）
+
+内部 MQ wire 的字节编解码由 `WireCodec` SPI 定义(`eventmesh-common/.../wire/`),默认实现 `EventMeshFrameCodec`(EventMeshFrame↔byte[]),可通过 `-Deventmesh.wire.codec=<fqcn>` 替换。
+
+#### 落地范围
+
+- **storage SPI**:`MeshStoragePlugin.send/poll` + `LiteTopicCapable.sendLite/pullLite` 全改 EventMeshFrame(3 插件迁,带 legacy CE-JSON fallback)。
+- **runtime dispatch 管线**:Delivery/BufferedEvent/PushChannel/Connection/DeadLetterSink/ReliableDispatcher/PushService/所有 channel + CloudEventFilter/SubscriptionManager 全翻 Frame。
+- **streaming**:Mode-1(runtime↔agent 跨进程)+ Mode-2(runtime 内部 pub/sub)全用 EventMeshFrame。
+- **legacy 连接器 SPI**(Producer/Consumer)不动(独立子系统,说 CE,边界转换)。
+
+### 19.2 FrameAdaptor SPI（协议转换收进插件）
+
+对外协议 ↔ EventMeshFrame 的双向转换由 `FrameAdaptor` SPI 定义(`eventmesh-protocol-api/.../FrameAdaptor.java`),各协议插件各自实现。runtime 不直接调 `EventMeshFrame.fromCloudEvent()` / `.toCloudEvent()` / `MeshMessageFrameCodec`——全部经 `FrameAdaptors.get(协议名)` 加载对应 adaptor。**加新协议只需实现 `FrameAdaptor` + 注册 SPI,不改 runtime 代码。**
+
+#### 协议插件模块清单
+
+| 模块 | 职责 |
+|------|------|
+| **eventmesh-protocol-api** | SPI 接口(`FrameAdaptor` + `ProtocolAdaptor`)+ `FrameAdaptors` 加载器(零 adaptor 实现) |
+| **eventmesh-protocol-cloudevents** | `CloudEventsFrameAdaptor`:CloudEvents-JSON ↔ EventMeshFrame(注册 `cloudevents`) |
+| **eventmesh-protocol-meshmessage** | `MeshMessageFrameAdaptor`:Package ↔ EventMeshFrame(注册 `meshmessage`,零 CE 中转)+ 旧 `MeshMessageProtocolAdaptor`(兼容) |
+| **eventmesh-protocol-a2a** | `A2AFrameAdaptor`:JSON-RPC ↔ EventMeshFrame(注册 `a2a`,零 CE 中转)+ `EnhancedA2AProtocolAdaptor`(兼容) |
+| ~~eventmesh-protocol-grpc~~ | **已删除**(空壳无源码,gRPC 解析在 meshmessage 模块) |
+
+#### MeshMessage ↔ Frame 直接转换（零 CloudEvent）
+
+`MeshMessageFrameAdaptor`(meshmessage 插件)直接映射 Package ↔ EventMeshFrame,不经 CloudEvent:
+
+- **ingress**:`MeshMessagePackageRouter` → `FrameAdaptors.get("meshmessage").toFrameSilent(pkg)` → EventMeshFrame。字段映射:topic→`subject`,body→`data`,header.seq→`id`,properties→KV。
+- **egress**:`NettyTcpPushChannel` → `FrameAdaptors.get("meshmessage").fromFrameSilent(frame)` → Package。字段反向映射。
+
+旧 TCP SDK 全程 MeshMessage,内部全程 EventMeshFrame,零 CloudEvent 中转。
+
+### 19.3 Offset 路②：自管 + MQ 重放接管
+
+#### 两层 offset
+
+| 层 | 含义 | key 维度 | 实现 |
+|----|------|----------|------|
+| **pull offset** | 从 MQ 存储拉到哪 | `parent#lite@queue` / `topic#partition` | storage 插件本地(properties 文件) |
+| **deliver/ack offset** | 投递给 client 到哪 + client ack 到哪 | `topic#clientId#partition` | `OffsetStore`(RocksDB 本地) |
+
+两层**不强行合并**(语义不同、解耦),各留各的本地存储。
+
+#### 路②细则
+
+- **不给 group.id**,EventMesh 完全自管 offset(MQ 仅作持久 FIFO)。
+- **offset 纯本地**,**meta 上报默认关**(`-Deventmesh.offset.meta=true` 显式开)。淘汰 `MetaBackedOffsetStore`(百万 key 上报),类保留备用。
+- **接管 = MQ 重放(无状态迁移)**:实例挂 → client 经 §19.4 负载推荐重连新实例 → 从业务 topic 重拉 → in-flight 走 at-least-once 重投(业务幂等兜底)。
+- 核实结论:`pullAndDispatchPartition` 传 `startOffset=-1` 给 `storage.poll`(插件自管游标),`OffsetStore` 不在接管路径上;rocketmq5 用 POP(broker 侧 at-least-once),`assignPartitions` 是 no-op。
+
+### 19.4 负载均衡：session 分配层 + 全面粘性
+
+#### 架构定位
+
+> **均衡做在 session 分配层(入口 recommend),不在拉取/分发层。**
+
+实例只为自己代理的 client 被动按需拉取,不对等、不转发。先均衡"哪个 client 归哪个实例"(session 层),自然导致"各实例拉取量大致相当"。
+
+#### 客户端零负担——负载全自采
+
+EventMesh 实例本地自采负载指标(`LoadMeter`):
+- `activeSessions` ← `SessionRouter` sinks/subscribeSinks size
+- `inflowBytes/s`、`outflowBytes/s` ← `UniIngressService` 入口/出口 data 字节累加(按 clientId 分桶)
+- `cpuLoad` ← `OperatingSystemMXBean`
+
+随 5s 心跳写入 `/em/instances/<id>` = `<ts>|<addr>|<activeSessions>|<byteRate>|<cpuLoad>`。
+
+#### 均衡闭环
+
+- `/session/recommend`:读集群全局负载评分,返回推荐实例 `instanceUrl`(score = sessions + byteRate + cpuLoad 加权,过载负反馈)。
+- `/session/open` + `/events/subscribe`:返回 `instanceUrl`,SDK pin 后续 turn/close/poll/ack。
+- 大 client 分散:recommend 检查 client 现有 session 分布,散到多实例。
+- SDK 失败跨实例转移:open 失败重新 recommend。
+- `advertisedAddr` 默认空(单实例/测试/LB 兼容),显式配 `-Deventmesh.http.advertisedAddr` 才 pin。
+
+#### 全面粘性（广播域也走实例自治）
+
+`enableCluster` 不再接线 `PartitionOwnership`/`ClusterCoordinator`/`HttpForwarder`(类保留备用),只保留 `ClusterMembership` 心跳(供 recommend 评分)。实例拉全分区本地分发,**不跨实例转发**。
+
+### 19.5 验证
+
+1. **单测**:`EventMeshFrame` 全 msgType 互转(12 例);`OffsetStore` 两 key 空间共存;`LoadMeter` 指标 + 每 client 画像;`ClusterMembership` 心跳负载;dispatch 管线 Frame 化(ReliableDispatcher/SubscriptionManager/ClusterCoordinator)。
+2. **E2E**(真 broker):streaming 多轮 + Mode 2 pub/sub + **普通 pub/sub(RocketMQ5BrokerIntegrationTest 2/2)**全绿,内部全程 EventMeshFrame 往返正确;**LegacyTcpClientIntegrationTest(旧 TCP SDK)全绿**(MeshMessage↔Frame 直接转换)。
+3. **构建**:系统 gradle 8.5 + WEOA Nexus(offline)。
+
+---
+
+## 二十、流式调用设计（整合 streaming-session-design + sdk-streaming-call-design + lite-streaming-call）
+
+> 本节整合自 `streaming-session-design.md`、`sdk-streaming-call-design.md`、`lite-streaming-call.md`(POC v1 参考)。
+
+### 20.1 概述
+
+EventMesh 流式调用让客户端发起请求后，**持续接收一串文本分片（token / delta）**，直到收到结束标记——和 OpenAI Chat Completions 的 `stream: true`、SSE 打字机效果一致。
+
+两种正交模式：
+
+| 模式 | 用途 | 入口 | 机制 |
+|------|------|------|------|
+| **Mode 1 — 流式调用** | 客户端发起请求，Agent（接 LLM）逐 token 回复 | `openSession` → `call` → `forEach` | runtime 中介，通道多路复用 + client 亲和 |
+| **Mode 2 — 发布/订阅** | 生产者往 session lite 写 chunks，消费者 SSE 订阅 | `subscribeSession` / `openSessionPublisher` | 确定性 lite 命名，无 agent、无撮合 |
+
+**SDK 零 MQ 依赖**——只发 HTTP/SSE，runtime 是唯一接 MQ 的。内部全程 EventMeshFrame（§19.1），streaming 帧 msgType = STREAM_REQ / STREAM_CHUNK。
+
+### 20.2 Mode 1 — 流式调用
+
+#### 通道拓扑（AgentAnchoredStrategy）
+
+| 通道 | lite | 用途 |
+|------|------|------|
+| 请求 | `agent.<agentId>`（挂 `agent-parent-<i>`） | agent **启动时订阅一次**，所有 session 请求进这条、按 sessionId 解复用 |
+| 回复 | `client.<clientId>`（挂 `client-parent`） | runtime 持有该 client SSE 的实例消费，同 client 多 session 共用、按 sessionId 解复用 |
+
+**sessionId 格式 = `<agentId>:<uuid>`**（runtime 从 `:` 前缀零查表路由到 agent）。
+
+#### Session 生命周期
+
+```
+① agent 上线:   POST /agent/register → runtime 分配 parent + 写 MetaStore → 回 parent
+                  → agent subscribe (agent-parent-<i>, agent.<agentId>) + ready
+② 握手(open):   client POST /session/open {clientId}
+                  runtime 查 MetaStore clientId→agent: 撮合或复用 → 生成 sessionId
+                  回 {sessionId, agentId, instanceUrl}
+③ 流式(stream): client POST /session/stream/{sessionId} {prompt}
+                  runtime: 注册 StreamSink → publish STREAM_REQ → agent lite
+                  agent: 取上下文 + 调 LLM → chunk 发到 replyTo(client.<clientId>)
+                  runtime: poll reply lite → demux → SSE 给 client
+                  done: endTurn（drop sink，保留 consumer 跨 turn 复用）
+④ 多轮:         同 sessionId 再 POST /session/stream → 同 agent + 累积上下文
+⑤ 关闭(close):  POST /session/close/{sessionId} → cancel（清本地状态）
+```
+
+**关键分离**: `endTurn`（自然终止，drop sink 保留 consumer）vs `cancel`（销毁 session）。修复了多轮重复 chunk bug。
+
+#### agent 注册协议（ready-before-route）
+
+agent 是薄 HTTP 客户端，不直连 broker/MetaStore。`status:READY` 必须在 subscribe 之后才置位——撮合只选 `READY && 心跳新鲜` 的 agent，保证不丢首包。
+
+#### 内部 wire（EventMeshFrame）
+
+- STREAM_REQ: `WireCodec.encode(StreamRequest)` → EventMeshFrame(STREAM_REQ)。KV(`sid`/`replyTo`/`model`/`conv`)+ data=prompt。
+- STREAM_CHUNK: `WireCodec.encode(StreamChunk)` → EventMeshFrame(STREAM_CHUNK)。`seq`(定长)+ `done`(flag)+ KV(`sid`/`etype`/`err`/`meta`)+ data=chunk。
+
+### 20.3 Mode 2 — 发布/订阅
+
+**确定性 lite 命名**（无绑定表、无撮合）：
+- **parent** = 固定配置常量（`sessionStreamParent`，6 参 SessionRouter 构造器传入）
+- **liteKey** = `"session." + sessionId`（sessionId 的纯函数）
+
+两端用同一规则算出相同 (parent, liteKey) → 同一物理 lite topic。
+
+| 入口 | 方法 | 作用 |
+|------|------|------|
+| `/session/publish/{sessionId}` | POST | 发布一帧 chunk → `publishLite(parent, "session."+sid)`；首次懒惰 `createLiteTopic`；返回 201 |
+| `/session/subscribe/{sessionId}` | GET | SSE 订阅 → `pollLite(parent, "session."+sid)` → SSE 流；每 session 至多一个订阅消费者 |
+
+**单游标 + 免费重放**:lite 单分区 1-queue，崩溃重启可从 lite 头重新播放。
+
+### 20.4 SessionRouter 内部机制
+
+#### 构造器
+
+```java
+// 4 参：Mode 1 专用
+SessionRouter(ingress, registry, strategy, defaultTimeoutMs)
+// 6 参：Mode 1 + Mode 2
+SessionRouter(ingress, registry, strategy, defaultTimeoutMs, sessionTtlMs, sessionStreamParent)
+```
+
+#### 核心方法
+
+| 方法 | 模式 | 作用 |
+|------|------|------|
+| `startStream` | 1 | 发 STREAM_REQ 到 agent lite，创建 StreamSink |
+| `endTurn` | 1 | 自然结束：drop sink + demux 移除（保留 reply consumer 跨 turn） |
+| `cancel` | 1 | 销毁 session：drop sink + demux + 清 SessionRegistry |
+| `addReplySession` | 1 | 注册 demux 映射（clientId → sessionId → StreamSink） |
+| `ensureReplyConsumer` / `runReplyConsumer` | 1 | poll reply lite → 按 sessionId demux → StreamSink |
+| `publishSession` | 2 | 懒惰 createLiteTopic + publishLite |
+| `startSubscribe` / `cancelSubscribe` | 2 | putIfAbsent 守卫单订阅 + pollLite 循环 → StreamSink |
+
+#### StreamSink（有界队列）
+
+容量 1024(`MAX_BUFFERED_CHUNKS`)。SSE 写出线程 drain。队满丢帧（记录 warning，bounded memory）。
+
+#### Session Reaper
+
+后台定时（`Math.min(sessionTtlMs/2, 60s)`）回收 idle session（`registry.expireStaleSessions` → `cancel`）。
+
+### 20.5 消息协议（CloudEvents 分帧）
+
+内部 wire 只有 EventMeshFrame（STREAM_REQ / STREAM_CHUNK）。**没有独立的 OPEN/CLOSE/DONE 帧走 MQ**。终止（DONE）折叠进 STREAM_CHUNK 的 `done=true`。session 的 open/close 是 HTTP 控制面操作。
+
+```java
+STREAM_REQ(msgType=1):
+  data = prompt(text/plain)
+  KV: sid(=sessionId), replyTo(=parent#lite), model?, conv?
+
+STREAM_CHUNK(msgType=2):
+  data = chunk text
+  KV: sid, etype?, err?, meta?(JSON)
+  seq = 流内序号(定长头)
+  done = flag bit
+```
+
+### 20.6 上下文存储（Mode 1）
+
+| 方案 | 绑定 | 上下文 | 抗 agent 重启 |
+|------|------|------|------|
+| **A（当前）** | MetaStore | agent 进程内（ConversationStore） | ❌ 重启丢（re-handshake 或降级） |
+| B | MetaStore | MetaStore（截断/限轮） | ✅ 受大小限制 |
+| C | MetaStore | Redis | ✅ 但引入 Redis |
+
+agent 重启则该 agent 的上下文丢失（绑定仍在）。接口预留方案 C（Redis）。
+
+### 20.7 POC v1 历史（lite-streaming-call）
+
+v1（POC）已被 v2 取代。v1 问题：每流一个 lite（高基数）、req 广播（多 agent 重复处理）、无持久 session、无 client→agent 绑定。v2 用通道多路复用 + client 亲和 + 持久 sessionId 解决。v1 文档保留作历史参考。
+
+---
+
+## 二十一、SDK 流式调用接口设计（整合 sdk-streaming-call-design）
+
+> 本节整合自 `sdk-streaming-call-design.md`，描述客户端侧 SDK 封装。
+
+### 21.1 架构分层
+
+```
+┌─ SDK (eventmesh-sdk-java) ─────────────────────────────────┐
+│  CloudEventsClient.streaming() → HTTP + SSE 客户端          │
+│  • Mode 1: openSession → call → forEach                     │
+│  • Mode 2: subscribeSession / openSessionPublisher          │
+└───────────────────────┬────────────────────────────────────┘
+                        │ POST /session/*  (HTTP + SSE)
+┌───────────────────────▼────────────────────────────────────┐
+│  Runtime session 层 (SessionRouter / Matchmaker /           │
+│  AgentRegistrar / ChannelStrategy)                          │
+└───────────────────────┬────────────────────────────────────┘
+                        │ publishLite / pollLite (EventMeshFrame)
+┌───────────────────────▼────────────────────────────────────┐
+│  Storage (RocketMQ5RemotingStoragePlugin, LiteTopicCapable) │
+└───────────────────────▲────────────────────────────────────┘
+                        │ publish CHUNKs → reply lite
+┌───────────────────────┴────────────────────────────────────┐
+│  Agent (eventmesh-agent: StreamingAgent)                    │
+│   订阅 req lite → 调 LLM → chunk 流 publish 到 replyTo       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 21.2 SDK 消费侧
+
+**唯一消费姿态 `forEach`**：
+
+```java
+public interface StreamingResponse extends AutoCloseable {
+    String sessionId();
+    String agentId();
+    CompletableFuture<Void> forEach(Consumer<StreamChunk> onChunk);
+    @Override void close();
+}
+```
+
+**设计决策——为什么只有 `forEach`**：
+- `forEach` 覆盖所有场景：回调消费、`.join()` 阻塞、`.orTimeout()` 超时、`CompletableFuture` 组合。
+- 删除了 `subscribe(StreamHandler)`、`iterator()`、`publisher(Flow)`、`blockAsString()`——API 表面积最小。
+- 删除 `callOneShot`——`openSession` + `call` + `forEach` + `close` 更清晰（session 生命周期显式）。
+
+### 21.3 多轮入口
+
+```java
+public interface StreamingOperations {
+    StreamingSession openSession(OpenSession req);
+}
+
+public interface StreamingSession extends AutoCloseable {
+    String sessionId();
+    String agentId();
+    String instanceUrl();        // pin 的实例 URL（空=用原 baseUrl）
+    StreamingResponse call(String prompt);
+    StreamingResponse call(StreamRequest req);
+    @Override void close();
+}
+```
+
+- `openSession` → `POST /session/open` → 匹配 Agent → `{sessionId, agentId, instanceUrl}`
+- `session.call(prompt)` → `POST /session/stream/{sessionId}` → SSE 流
+- `session.close()` → `POST /session/close/{sessionId}` → 销毁会话
+- 若 `instanceUrl` 非空，`StreamingSession` 用 `client.withBaseUrl(instanceUrl)` pin 后续 turn/close
+
+### 21.4 内部机制：SSE 读取 → 有界队列 → `forEach`
+
+```
+SSE 读取 VT ──offer──►  [有界 LinkedBlockingQueue (1024)]
+ (POST /session/stream)     │
+                            └── forEach: 独立 VT drain 队列 → 调 onChunk
+```
+
+- 队满丢帧（bounded memory）。
+- `forEach` 在独立虚拟线程上 drain；收到终止帧后 complete future。
+- 单消费者守卫：每个 `StreamingResponse` 只能调一次 `forEach`。
+
+### 21.5 Mode 2 SDK
+
+```java
+// 订阅（消费）
+StreamingResponse sub = client.subscribeSession("my-session-id");
+sub.forEach(c -> ...).join();
+
+// 发布（生产）
+SessionPublisher pub = client.openSessionPublisher("my-session-id");
+pub.publish("Hello", false);
+pub.publish("", true);  // 终止帧
+```
+
+`subscribeSession` 返回的 `StreamingResponse` 与 Mode 1 完全相同——`forEach` 是唯一消费方式。`SessionPublisher` 每次 `publish()` 发一个独立 HTTP POST，拥有 seq 计数器。
+
+### 21.6 SDK 零 MQ 依赖
+
+SDK 只发 HTTP/读 SSE，**不引入任何 MQ 客户端依赖**。这是硬性设计规则。Mode 1: `POST /session/open` → `POST /session/stream/{sid}` → 读 SSE → `POST /session/close/{sid}`。Mode 2: `POST /session/publish/{sid}`（生产）或 `GET /session/subscribe/{sid}`（消费 SSE）。
+
+### 21.7 HTTP 端点
+
+| 路径 | 方法 | 作用 |
+|------|------|------|
+| `/session/open` | POST | 开 session（握手 + 匹配 Agent），返回 `{sessionId, agentId, instanceUrl}` |
+| `/session/stream/{sessionId}` | POST | 发起一轮流式调用（Mode 1），返回 SSE 流 |
+| `/session/close/{sessionId}` | POST | 关闭 session |
+| `/session/publish/{sessionId}` | POST | 发布一帧 chunk（Mode 2），返回 201 |
+| `/session/subscribe/{sessionId}` | GET | 订阅 session 流（Mode 2），返回 SSE 流 |
+| `/session/recommend` | GET | 推荐实例（负载均衡），返回 `{instanceUrl}` |
+
+---
+
+*文档版本：v2.1 | EventMesh 简化重构方案 | 基于 unified-runtime-design.md v2.1 演进 + architecture-refinement v2.0 + streaming docs 整合 | 2026-08-13*
 *v1.10 变更：**老协议不直接删——保留为边缘协议适配器以兼容老客户端。** ① TCP 退化为新架构 ingress/egress 传输（与 HTTP/WebHook/长轮询并列）：保留线协议(`Package`/`Command`/`Codec`)+翻译层(`TcpMessageProtocolResolver`/`MeshMessageProtocolAdaptor`)+netty server 骨架，删除 TCP 自有核心(`ClientSession`/`ClientGroupPack`/rebalance、Consumer Group)。新增 `transport.tcp` 包(`TcpPushChannel`/`TcpAckRegistry`/`TcpIngressBridge`/`TcpFrameCodec`+`TcpFrameDecoder`)。② legacy HTTP(`EventMeshHttpClient`/`EventMeshMessage`/`/eventmesh/*` webhook-push)同理：`transport.http.legacy` 包(`LegacyHttpBridge`/`LegacyHttpCodec`)，老 HTTP subscribe(url+topics) 映射为 `WebHookChannel` 出向推送，publish 翻译为 CloudEvent→核心。老 TCP/HTTP 客户端零改动。更新 Phase 8 DoD。*
 *v1.9 变更：四项决策固化——① **可观测只用 OpenTelemetry，默认接 Prometheus**（metrics 走 OTel Meter 仪表、trace 走 OTel Tracer Span，默认经 OTel Prometheus exporter 暴露；legacy `eventmesh-metrics-prometheus` / `eventmesh-trace-plugin`(zipkin/jaeger/pinpoint) 不再接线、无 SPI 扩展点，附录 D.8）；② **弃用 `eventmesh-registry`，只用 `eventmesh-meta`（MetaService）** 作为唯一控制面（附录 D.7 registry 行改为弃用）；③ **retry 内置 `ReliableDispatcher`，不暴露 SPI 插件扩展**（`eventmesh-retry` 不接线，附录 D.9）；④ **security 不用 SPI 插件扩展，用内置 FilterChain + IngressFilter**（`eventmesh-security-plugin` 不接线，扩展 = 新增 IngressFilter 实现，附录 D.6）。更新 §13.5、§13.3.2、§13.4.2、§13.2.7、§15.5、Phase 4.5/5.5/5.6。实现侧 `UniMetrics`（OTel 仪表）、`ReliableDispatcher`（内置重试）、`FilterChain`/`IngressFilter`（filter 安全）均已落地。*
 *v1.1 变更：新增 §13「能力缺口与设计补充」——对照 develop 分支现有能力，补齐多实例协调、下发可靠性、安全、可观测性、运维、接入扩展、协议工程化 7 类缺口设计，并更新 §14 实施 Phase 影响。*

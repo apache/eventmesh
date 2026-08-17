@@ -56,3 +56,7 @@ bld/
 Cargo.lock
 rocketmq-pull-offsets.properties
 kafka-pull-offsets.properties
+
+# runtime state / dev tooling (never commit)
+.claude/
+eventmesh-runtime/data/

@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.cluster;
 
-import io.cloudevents.CloudEvent;
 
 /**
  * Delivers a CloudEvent to a subscriber that lives on a <em>different</em> instance (§13.2.5).
@@ -35,5 +34,5 @@ public interface Forwarder {
      * @param topic the event's topic (needed so the target knows which subscription to deliver to)
      * @return true if the target accepted the delivery (used for retry decisions)
      */
-    boolean forward(String targetInstance, String clientId, String topic, CloudEvent event);
+    boolean forward(String targetInstance, String clientId, String topic, org.apache.eventmesh.common.wire.EventMeshFrame event);
 }

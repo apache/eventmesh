@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.delivery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 
@@ -44,7 +45,7 @@ class ReliableDispatcherTest {
         FakeChannel channel = new FakeChannel();
         ReliableDispatcher dispatcher = newDispatcher(offsets, channel);
 
-        dispatcher.deliver("orders", 0, 42L, event("e-1"), "client-1", channel);
+        dispatcher.deliver("orders", 0, 42L, EventMeshFrame.fromCloudEvent(event("e-1")), "client-1", channel);
 
         assertEquals(1, dispatcher.pendingCount());
         channel.last().ack();
@@ -61,7 +62,7 @@ class ReliableDispatcherTest {
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, clock::get, offsets,
             deadLetters(), new org.apache.eventmesh.runtime.metrics.UniMetrics());
 
-        dispatcher.deliver("orders", 0, 10L, event("e-1"), "client-1", channel);
+        dispatcher.deliver("orders", 0, 10L, EventMeshFrame.fromCloudEvent(event("e-1")), "client-1", channel);
         assertEquals(1, channel.deliverCount);
 
         // Client rejects: retry scheduled at now + backoff(1) = 1s.
@@ -84,7 +85,7 @@ class ReliableDispatcherTest {
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, clock::get, offsets,
             deadLetters(), new org.apache.eventmesh.runtime.metrics.UniMetrics());
 
-        dispatcher.deliver("orders", 0, 7L, event("e-1"), "client-1", channel);
+        dispatcher.deliver("orders", 0, 7L, EventMeshFrame.fromCloudEvent(event("e-1")), "client-1", channel);
         // No ack, no nack — let the ACK window expire.
         clock.addAndGet(ACK_TIMEOUT);
         dispatcher.tick();
@@ -101,10 +102,10 @@ class ReliableDispatcherTest {
         FakeChannel channel = new FakeChannel();
         List<String> deadLetters = new ArrayList<>();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, clock::get, offsets,
-            (topic, event, reason, attempts) -> deadLetters.add(event.getId()),
+            (topic, event, reason, attempts) -> deadLetters.add(event.attributes().get("id")),
             new org.apache.eventmesh.runtime.metrics.UniMetrics());
 
-        dispatcher.deliver("orders", 0, 99L, event("doomed"), "client-1", channel);
+        dispatcher.deliver("orders", 0, 99L, EventMeshFrame.fromCloudEvent(event("doomed")), "client-1", channel);
 
         // MAX_ATTEMPTS = 3: attempt 1 delivered; two timeouts redeliver (attempts 2, 3); the third
         // timeout dead-letters.
@@ -166,7 +167,7 @@ class ReliableDispatcherTest {
         int deliverCount = 0;
 
         @Override
-        public void deliver(String deliveryId, CloudEvent event, AckCallback callback) {
+        public void deliver(String deliveryId, EventMeshFrame event, AckCallback callback) {
             deliverCount++;
             callbacks.add(callback);
         }

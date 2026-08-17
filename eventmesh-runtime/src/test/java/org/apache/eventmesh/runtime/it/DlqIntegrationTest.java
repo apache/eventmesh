@@ -23,13 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
-import org.apache.eventmesh.api.storage.OffsetExtensions;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.admin.UniAdminServer;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.http.UniHttpServer;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
-import org.apache.eventmesh.runtime.offset.InMemoryPushOffsetStore;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
@@ -116,7 +115,8 @@ class DlqIntegrationTest {
             clock.addAndGet(2_000L); // advance past the next ACK window
             Thread.sleep(10);
         }
-        List<CloudEvent> dlqed = storage.poll(DLQ_TOPIC, -1, -1, 100, 0);
+        List<CloudEvent> dlqed = storage.poll(DLQ_TOPIC, -1, -1, 100, 0).stream()
+            .map(EventMeshFrame::toCloudEvent).collect(java.util.stream.Collectors.toList());
         assertEquals(1, dlqed.size(), "event should land in <topic>_DLQ after maxAttempts");
         assertEquals("e1", dlqed.get(0).getId());
         assertTrue(ingress.getMetrics().getDlqCount() >= 1, "dlqCount metric should increment");
@@ -136,14 +136,13 @@ class DlqIntegrationTest {
             replayed.addAll(ingress.poll("c1", 100, 100L));
         }
         assertEquals(1, replayed.size(), "replayed event should be redelivered to the client");
-        assertEquals("e1", replayed.get(0).getEvent().getId());
+        assertEquals("e1", replayed.get(0).getEvent().attributes().get("id"));
     }
 
     private void boot(int maxAttempts) throws Exception {
         storage = new InMemoryStorage();
         // Test-friendly ingress: inject the clock so tick() advances without wall-clock waits.
         ingress = new UniIngressService(storage, new InMemoryOffsetStore(),
-            new InMemoryPushOffsetStore(),
             new org.apache.eventmesh.runtime.subscription.SubscriptionManager(),
             new org.apache.eventmesh.runtime.push.PushService(),
             1_000L, maxAttempts, clock::get);
@@ -159,7 +158,6 @@ class DlqIntegrationTest {
     static final class InMemoryStorage implements MeshStoragePlugin {
 
         private final ConcurrentHashMap<String, Queue<CloudEvent>> queues = new ConcurrentHashMap<>();
-        private final ConcurrentHashMap<String, AtomicLong> offsetSeq = new ConcurrentHashMap<>();
 
         @Override
         public void init(Properties p) {
@@ -167,7 +165,8 @@ class DlqIntegrationTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback cb) {
+        public void send(String topic, EventMeshFrame frame, SendCallback cb) {
+            CloudEvent event = frame.toCloudEvent();
             queues.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).offer(event);
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
@@ -176,21 +175,15 @@ class DlqIntegrationTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             Queue<CloudEvent> q = queues.get(topic);
             if (q == null) {
                 return new ArrayList<>();
             }
-            List<CloudEvent> out = new ArrayList<>();
+            List<EventMeshFrame> out = new ArrayList<>();
             CloudEvent e;
             while (out.size() < maxEvents && (e = q.poll()) != null) {
-                // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
-                long offset = offsetSeq.computeIfAbsent(topic, k -> new AtomicLong()).incrementAndGet();
-                e = CloudEventBuilder.from(e)
-                    .withExtension(OffsetExtensions.EM_MQ_OFFSET, offset)
-                    .withExtension(OffsetExtensions.EM_MQ_PARTITION, 0)
-                    .build();
-                out.add(e);
+                out.add(EventMeshFrame.fromCloudEvent(e));
             }
             return out;
         }

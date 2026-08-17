@@ -17,19 +17,23 @@
 
 package org.apache.eventmesh.runtime.subscription;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.util.Objects;
 
-import io.cloudevents.CloudEvent;
-
 /**
- * Predicate a subscriber registers to decide, in {@link DistributionMode#MULTICAST}, whether a
- * given CloudEvent should be delivered to it. MQ tag filtering is never used (§3.2); EventMesh
- * filters on CloudEvents attributes itself.
+ * Predicate a subscriber registers to decide, in {@link DistributionMode#MULTICAST}, whether a given
+ * event should be delivered to it. MQ tag filtering is never used (§3.2); EventMesh filters on the
+ * event's own attributes.
+ *
+ * <p>Operates on the internal {@link EventMeshFrame} (no CloudEvent internally); reads the standard
+ * CE attribute names ({@code type}/{@code subject}) from the frame's attribute map, since
+ * {@code EventMeshFrame} preserves all CloudEvents attributes in its KV section.</p>
  */
 @FunctionalInterface
 public interface CloudEventFilter {
 
-    boolean match(CloudEvent event);
+    boolean match(EventMeshFrame event);
 
     /**
      * A filter that accepts every event.
@@ -37,18 +41,18 @@ public interface CloudEventFilter {
     CloudEventFilter ACCEPT_ALL = event -> true;
 
     /**
-     * Matches on the CloudEvents standard {@code type} attribute.
+     * Matches on the CloudEvents standard {@code type} attribute (carried in the frame's attributes).
      */
     static CloudEventFilter byType(String type) {
         Objects.requireNonNull(type, "type");
-        return event -> type.equals(event.getType());
+        return event -> type.equals(event.attributes().get("type"));
     }
 
     /**
-     * Matches on the CloudEvents standard {@code subject} attribute.
+     * Matches on the CloudEvents standard {@code subject} attribute (carried in the frame's attributes).
      */
     static CloudEventFilter bySubject(String subject) {
         Objects.requireNonNull(subject, "subject");
-        return event -> subject.equals(event.getSubject());
+        return event -> subject.equals(event.attributes().get("subject"));
     }
 }

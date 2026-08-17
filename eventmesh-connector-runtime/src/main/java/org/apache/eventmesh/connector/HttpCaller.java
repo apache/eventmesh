@@ -20,7 +20,7 @@ package org.apache.eventmesh.connector;
 import java.util.Map;
 
 /**
- * Minimal HTTP POST client used by {@link WebHookChannel} (§8.5). The production implementation uses
+ * Minimal HTTP POST client used by {@code WebHookChannel} (§8.5). The production implementation uses
  * an async HTTP client (e.g. okhttp/netty); tests substitute a fake that returns a fixed status.
  */
 @FunctionalInterface

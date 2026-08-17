@@ -73,15 +73,32 @@ public class RocksDBOffsetStore implements OffsetStore {
         }
     }
 
+    private volatile long offsetWriteFailures = 0;
+
     @Override
     public void writeOffset(String topic, String clientId, int partition, long offset) {
+        byte[] keyBytes = key(topic, clientId, partition);
         try {
-            db.put(key(topic, clientId, partition), Long.toString(offset).getBytes(StandardCharsets.US_ASCII));
+            byte[] existing = db.get(keyBytes);
+            long current = existing != null
+                ? Long.parseLong(new String(existing, StandardCharsets.US_ASCII))
+                : -1L;
+            if (offset <= current) {
+                return;
+            }
+            db.put(keyBytes, Long.toString(offset).getBytes(StandardCharsets.US_ASCII));
         } catch (RocksDBException e) {
-            // Offset persistence is best-effort between flushes; log and continue rather than
-            // killing the dispatch loop. The next ACK re-writes the same key.
-            log.warn("RocksDB put failed for {}/{}/{} offset={}", topic, clientId, partition, offset, e);
+            offsetWriteFailures++;
+            log.warn("RocksDB put failed for {}/{}/{} offset={} (total failures={})",
+                topic, clientId, partition, offset, offsetWriteFailures, e);
         }
+    }
+
+    /**
+     * @return cumulative count of RocksDB write failures (for metrics/health checks).
+     */
+    public long getOffsetWriteFailures() {
+        return offsetWriteFailures;
     }
 
     @Override

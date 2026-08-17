@@ -82,7 +82,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
             }
             listen();
         } catch (Exception ex) {
-            //
+            log.error("reconnect failed for sub-client", ex);
         }
     }
 

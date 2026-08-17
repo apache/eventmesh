@@ -40,7 +40,7 @@ buildscript {
     dependencies {
         classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.2.5"
         classpath "io.spring.gradle:dependency-management-plugin:1.1.6"
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.25.0"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
 
         classpath "org.apache.httpcomponents:httpclient:4.5.14"
         classpath "commons-io:commons-io:2.18.0"
@@ -136,6 +136,7 @@ allprojects {
 
     test {
         useJUnitPlatform()
+        jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
     }
 
     // Disable doclint: it is overly strict on JDK 11+ and breaks javadoc generation
@@ -282,6 +283,43 @@ tasks.register('dist-connector') {
         copy {
             from 'tools/dist-license'
             into rootProject.file('dist-connector')
+        }
+    }
+}
+
+tasks.register('dist-agent') {
+    subprojects.forEach { subProject ->
+        dependsOn("${subProject.path}:jar")
+    }
+    dependsOn('generateDistLicense', 'generateDistNotice')
+    doLast {
+        // Core: the agent process jar + its third-party deps (sdk-java, common, cloudevents,
+        // jackson, log4j binding). The agent talks to the runtime only over HTTP + lite topics.
+        def core = findProject('eventmesh-agent')
+        logger.lifecycle('Install module: module: {}', core.name)
+        copy {
+            from core.jar.archivePath
+            into rootProject.file('dist-agent/apps')
+        }
+        copy {
+            from core.configurations.runtimeClasspath
+            into rootProject.file('dist-agent/lib')
+            exclude 'eventmesh-*'
+        }
+        copy {
+            from core.file('bin')
+            into rootProject.file('dist-agent/bin')
+        }
+        copy {
+            from core.file('conf')
+            from core.sourceSets.main.resources.srcDirs
+            into rootProject.file('dist-agent/conf')
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            exclude 'META-INF'
+        }
+        copy {
+            from 'tools/dist-license'
+            into rootProject.file('dist-agent')
         }
     }
 }

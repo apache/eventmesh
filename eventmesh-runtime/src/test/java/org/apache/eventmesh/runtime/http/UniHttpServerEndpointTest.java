@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
@@ -131,7 +132,8 @@ class UniHttpServerEndpointTest {
         }
 
         @Override
-        public void send(String topic, CloudEvent event, SendCallback cb) {
+        public void send(String topic, EventMeshFrame frame, SendCallback cb) {
+            CloudEvent event = frame.toCloudEvent();
             SendResult r = new SendResult();
             r.setMessageId(event.getId());
             r.setTopic(topic);
@@ -139,7 +141,7 @@ class UniHttpServerEndpointTest {
         }
 
         @Override
-        public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+        public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
             return new ArrayList<>();
         }
 

@@ -19,13 +19,12 @@ package org.apache.eventmesh.api.storage;
 
 import org.apache.eventmesh.api.LifeCycle;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
 import java.util.List;
 import java.util.Properties;
-
-import io.cloudevents.CloudEvent;
 
 /**
  * Unified storage plugin interface for the simplified EventMesh architecture.
@@ -59,18 +58,18 @@ public interface MeshStoragePlugin extends LifeCycle {
     void init(Properties properties) throws Exception;
 
     /**
-     * Publish a single CloudEvent to the given topic. EventMesh holds the only producer; callers
-     * never pass a producerGroup.
+     * Publish a single {@link EventMeshFrame} (EventMesh's internal wire unit) to the given topic.
+     * EventMesh holds the only producer; callers never pass a producerGroup.
      *
      * @param topic    EventMesh logical topic (mapped 1:1 to the MQ topic)
-     * @param event    the CloudEvent to persist
+     * @param frame    the EventMeshFrame to persist (the plugin maps it to the MQ's native message)
      * @param callback async send callback
      */
-    void send(String topic, CloudEvent event, SendCallback callback) throws Exception;
+    void send(String topic, EventMeshFrame frame, SendCallback callback) throws Exception;
 
     /**
-     * Pull a batch of CloudEvents for a topic. EventMesh drives the consumption pace; the MQ never
-     * pushes.
+     * Pull a batch of {@link EventMeshFrame}s for a topic. EventMesh drives the consumption pace; the
+     * MQ never pushes.
      *
      * @param topic       EventMesh logical topic
      * @param partition   physical partition (-1 = any / step-1 adapter treats topic as a whole)
@@ -78,9 +77,9 @@ public interface MeshStoragePlugin extends LifeCycle {
      *                    adapter ignores this and drains its internal push buffer
      * @param maxEvents   upper bound of events to return in this call
      * @param timeoutMs   max wait when no event is immediately available
-     * @return a possibly-empty list of CloudEvents; never null
+     * @return a possibly-empty list of EventMeshFrames; never null
      */
-    List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs);
+    List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs);
 
     /**
      * Assign the set of partitions EventMesh owns for a topic. Reserved for Phase 2.5 multi-instance
@@ -93,14 +92,25 @@ public interface MeshStoragePlugin extends LifeCycle {
 
     /**
      * Advance EventMesh's own distribution offset for a partition. EventMesh persists this in its
-     * own offset store (RocksDB + Meta); the underlying MQ offset is never committed. Step-1
-     * adapter is a no-op.
+     * own offset store; the underlying MQ offset is never committed. Step-1 adapter is a no-op.
      *
      * @param topic     EventMesh logical topic
      * @param partition physical partition
      * @param offset    the offset up to which EventMesh has dispatched
      */
     void commitOffset(String topic, int partition, long offset);
+
+    /**
+     * Trigger the MQ-layer ACK for a message that was pulled but not yet broker-acked (P2 fix:
+     * RocketMQ 5.x POP mode — ACK broker only after the client ACKs, restoring at-least-once).
+     * The {@code ackKey} is a backend-specific identifier stamped on the frame (e.g. POP check key).
+     * Default no-op for backends that don't need deferred MQ ACK (Kafka, RocketMQ 4.x PULL).
+     *
+     * @return true if the ACK was found and executed; false if no pending ACK for this key.
+     */
+    default boolean ackPulledMessage(String topic, String ackKey) {
+        return false;
+    }
 
     /**
      * Number of physical partitions for {@code topic}, or {@code -1} if unknown. Used by the

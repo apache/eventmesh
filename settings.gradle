@@ -48,9 +48,6 @@ include 'eventmesh-runtime'
 include 'eventmesh-common'
 include 'eventmesh-spi'
 
-// 可运行示例（仅保留能基于新架构编译的 demo，依赖见 eventmesh-examples/build.gradle）
-include 'eventmesh-examples'
-
 // SDK (多语言: c / go / java / rust, 此处 java 进 gradle 构建; 其余作为源码保留)
 include 'eventmesh-sdks:eventmesh-sdk-java'
 
@@ -63,12 +60,18 @@ include 'eventmesh-storage-plugin:eventmesh-storage-rocketmq5'
 // 协议适配 (老协议兼容 + A2A, 待基于新架构重实现适配)
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
-include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-a2a'
 
 // Connector Runtime — 独立模块 (与 EventMesh Runtime 经 HTTP 通信, 不互相依赖)
 include 'eventmesh-connector-runtime'
+
+// Agent — 独立进程, 经 lite topic + CloudEvents 与 Runtime 通信, 调用真实 LLM (OpenAI 兼容)
+include 'eventmesh-agent'
+
+// Examples — 可运行 demo (uni-architecture: 流式调用等); 依赖 SDK + common + a2a 协议
+include 'eventmesh-examples'
 
 // Connector 插件 (保留, 待基于新 ConnectorRuntime 重实现)
 include 'eventmesh-connector-plugin:eventmesh-connector-openfunction'

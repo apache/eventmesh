@@ -27,7 +27,7 @@ import io.cloudevents.CloudEvent;
  * <p>Production does {@code POST /events/publish} (source side) and {@code GET /events/poll} +
  * {@code POST /events/ack} (sink side) against the EventMesh Runtime URL discovered via Meta.
  * Tests substitute an in-process implementation that hands events straight to a
- * {@link org.apache.eventmesh.runtime.ingress.UniIngressService}.</p>
+ * {@code org.apache.eventmesh.runtime.ingress.UniIngressService}.</p>
  */
 public interface EventMeshEndpoint {
 

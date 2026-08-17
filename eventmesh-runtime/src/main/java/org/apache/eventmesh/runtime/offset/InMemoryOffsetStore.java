@@ -41,7 +41,10 @@ public class InMemoryOffsetStore implements OffsetStore {
 
     @Override
     public void writeOffset(String topic, String clientId, int partition, long offset) {
-        table.computeIfAbsent(OffsetStore.buildKey(topic, clientId, partition), k -> new AtomicLong()).set(offset);
+        // Monotonic write: offset only advances, never regresses. Prevents a slow group's replay
+        // (after restart) from overwriting a fast group's already-acked progress.
+        table.computeIfAbsent(OffsetStore.buildKey(topic, clientId, partition), k -> new AtomicLong(-1L))
+            .accumulateAndGet(offset, Math::max);
     }
 
     @Override

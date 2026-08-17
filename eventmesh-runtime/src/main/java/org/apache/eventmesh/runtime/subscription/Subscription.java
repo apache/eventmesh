@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.subscription;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import io.cloudevents.CloudEvent;
 
 /**
  * A single client subscription registered with {@link SubscriptionManager}.
@@ -36,13 +35,13 @@ public final class Subscription {
     private final String topic;
     private final DistributionMode mode;
     private final CloudEventFilter filter;
-    private final Consumer<CloudEvent> handler;
+    private final Consumer<org.apache.eventmesh.common.wire.EventMeshFrame> handler;
 
     // Heartbeat bookkeeping — a subscription whose heartbeat expires is pruned from dispatch.
     private volatile long lastHeartbeatMs;
 
     public Subscription(String subscriptionId, String clientId, String topic, DistributionMode mode,
-        CloudEventFilter filter, Consumer<CloudEvent> handler, long nowMs) {
+        CloudEventFilter filter, Consumer<org.apache.eventmesh.common.wire.EventMeshFrame> handler, long nowMs) {
         this.subscriptionId = Objects.requireNonNull(subscriptionId, "subscriptionId");
         this.clientId = Objects.requireNonNull(clientId, "clientId");
         this.topic = Objects.requireNonNull(topic, "topic");
@@ -72,7 +71,7 @@ public final class Subscription {
         return filter;
     }
 
-    public Consumer<CloudEvent> getHandler() {
+    public Consumer<org.apache.eventmesh.common.wire.EventMeshFrame> getHandler() {
         return handler;
     }
 

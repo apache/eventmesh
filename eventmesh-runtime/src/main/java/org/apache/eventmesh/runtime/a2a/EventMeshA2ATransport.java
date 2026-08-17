@@ -101,7 +101,8 @@ public class EventMeshA2ATransport implements A2AMessageTransport {
             try {
                 List<BufferedEvent> batch = ingress.poll(clientId, 100, 500L);
                 for (BufferedEvent be : batch) {
-                    CloudEvent event = be.getEvent();
+                    // Egress boundary: the push buffer carries Frame; convert to CloudEvent for the A2A callback.
+                    CloudEvent event = be.getEvent().toCloudEvent();
                     String topic = event.getSubject() != null ? event.getSubject() : "default";
                     MessageCallback cb = callbacks.get(topic);
                     if (cb != null) {

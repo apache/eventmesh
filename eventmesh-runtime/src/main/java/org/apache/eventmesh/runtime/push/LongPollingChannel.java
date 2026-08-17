@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.runtime.push;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
-
-import io.cloudevents.CloudEvent;
 
 /**
  * A {@link PushChannel} backed by a {@link PushService} long-polling buffer for one client.
@@ -41,7 +40,7 @@ public class LongPollingChannel implements PushChannel {
     }
 
     @Override
-    public void deliver(String deliveryId, CloudEvent event, AckCallback callback) {
+    public void deliver(String deliveryId, EventMeshFrame event, AckCallback callback) {
         if (!pushService.offer(clientId, deliveryId, event, callback)) {
             // Buffer full: reject so the dispatcher retries after backoff (backpressure, §6.6).
             callback.nack(new IllegalStateException("client buffer full: " + clientId));

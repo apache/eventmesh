@@ -75,6 +75,9 @@ public class UniAdminServer {
     public int start(int port) throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/admin/metrics", this::metrics);
+        // Prometheus scrape endpoint: text/plain exposition of the UniMetrics counters/gauges.
+        // No OTel SDK dependency needed — reads the internal mirrors directly.
+        server.createContext("/metrics", this::prometheusMetrics);
         server.createContext("/admin/subscriptions", this::subscriptions);
         server.createContext("/admin/offsets", this::offsets);
         server.createContext("/admin/clients", this::clients);
@@ -111,6 +114,41 @@ public class UniAdminServer {
         out.put("dlqCount", admin.metrics().getDlqCount());
         out.put("pendingDeliveries", admin.pendingDeliveries());
         writeJson(exchange, 200, out);
+    }
+
+    /**
+     * Prometheus text exposition (v0.0.4 format) of the runtime counters — the scrape endpoint
+     * {@code GET /metrics} on the admin port. Counter names match the OTel instrument names;
+     * Prometheus appends {@code _total} to counters automatically, matching the alert rules in
+     * production-readiness §9.3.
+     */
+    private void prometheusMetrics(HttpExchange exchange) throws IOException {
+        var m = admin.metrics();
+        StringBuilder sb = new StringBuilder(2048);
+        counter(sb, "eventmesh_publish_count", m.getPublishCount());
+        counter(sb, "eventmesh_publish_failed_count", m.getPublishFailed());
+        counter(sb, "eventmesh_rate_limited_count", m.getRateLimited());
+        counter(sb, "eventmesh_dispatched_count", m.getEventsDispatched());
+        counter(sb, "eventmesh_ack_count", m.getAckCount());
+        counter(sb, "eventmesh_redeliveries_count", m.getRedeliveries());
+        counter(sb, "eventmesh_dlq_count", m.getDlqCount());
+        gauge(sb, "eventmesh_pending_deliveries", admin.pendingDeliveries());
+        byte[] body = sb.toString().getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+        exchange.sendResponseHeaders(200, body.length);
+        try (var os = exchange.getResponseBody()) {
+            os.write(body);
+        }
+    }
+
+    private static void counter(StringBuilder sb, String name, long value) {
+        sb.append("# TYPE ").append(name).append(" counter\n")
+          .append(name).append(' ').append(value).append('\n');
+    }
+
+    private static void gauge(StringBuilder sb, String name, long value) {
+        sb.append("# TYPE ").append(name).append(" gauge\n")
+          .append(name).append(' ').append(value).append('\n');
     }
 
     private void subscriptions(HttpExchange exchange) throws IOException {

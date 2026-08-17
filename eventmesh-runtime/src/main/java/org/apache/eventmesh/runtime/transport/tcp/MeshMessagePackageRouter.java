@@ -19,36 +19,30 @@ package org.apache.eventmesh.runtime.transport.tcp;
 
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolAdaptor;
-
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+import org.apache.eventmesh.protocol.api.FrameAdaptors;
 
 /**
- * Production {@link PackageRouter} backed by the legacy {@link MeshMessageProtocolAdaptor}, so a
- * real legacy TCP client's frames are translated to/from CloudEvents with full fidelity (no stub).
+ * Production {@link PackageRouter} for the legacy MeshMessage TCP protocol. Converts a MeshMessage
+ * directly to an {@link EventMeshFrame} (no CloudEvent intermediary — MeshMessage and CloudEvent
+ * are peer external protocols; the legacy SDK only speaks MeshMessage).
  *
  * <p>Ingress: {@code ASYNC_MESSAGE_TO_SERVER} / {@code BROADCAST_MESSAGE_TO_SERVER} →
- * {@code adaptor.toCloudEvent(pkg)} → publish; the topic is the CloudEvent {@code subject} (the
- * resolver's bidirectional mapping). {@code ASYNC_MESSAGE_TO_CLIENT_ACK} → resolves the egress
- * delivery by id (echoed in the header property).</p>
+ * {@link MeshMessageFrameCodec#fromMeshMessage} → publish; topic = the message's topic.
+ * {@code ASYNC_MESSAGE_TO_CLIENT_ACK} → resolves the egress delivery by id (echoed in the header
+ * property).</p>
  */
 public class MeshMessagePackageRouter implements PackageRouter {
-
-    private final MeshMessageProtocolAdaptor adaptor = new MeshMessageProtocolAdaptor();
 
     @Override
     public TcpRequest route(Package pkg) {
         Command cmd = pkg.getHeader() != null ? pkg.getHeader().getCommand() : null;
         if (cmd == Command.ASYNC_MESSAGE_TO_SERVER || cmd == Command.BROADCAST_MESSAGE_TO_SERVER) {
             try {
-                CloudEvent event = adaptor.toCloudEvent(pkg);
-                if (event == null) {
-                    return null;
-                }
-                String topic = event.getSubject() != null ? event.getSubject() : "default";
-                return TcpRequest.publish(topic, event);
-            } catch (ProtocolHandleException e) {
+                EventMeshFrame frame = FrameAdaptors.get("meshmessage").toFrameSilent(pkg);
+                String topic = frame.attributes().getOrDefault("subject", "default");
+                return TcpRequest.publish(topic, frame);
+            } catch (Exception e) {
                 throw new IllegalArgumentException("tcp publish decode failed", e);
             }
         }

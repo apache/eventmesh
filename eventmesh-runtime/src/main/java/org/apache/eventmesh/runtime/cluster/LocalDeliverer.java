@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.cluster;
 
-import io.cloudevents.CloudEvent;
 
 /**
  * Local (same-instance) delivery sink used by {@link ClusterCoordinator} when a target subscriber
@@ -31,5 +30,5 @@ public interface LocalDeliverer {
      * @param topic the EventMesh topic the event was published to
      * @return true if the local delivery was accepted (buffered / handed to a subscriber)
      */
-    boolean deliver(String topic, String clientId, CloudEvent event);
+    boolean deliver(String topic, String clientId, org.apache.eventmesh.common.wire.EventMeshFrame event);
 }

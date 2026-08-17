@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.cluster;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
 import java.net.URI;
@@ -38,8 +39,8 @@ class ClusterCoordinatorTest {
     @Test
     void subscribeOnADispatchOnBDeliversViaForward() {
         InMemoryMetaStore meta = new InMemoryMetaStore();
-        Map<String, List<CloudEvent>> onA = new HashMap<>();
-        Map<String, List<CloudEvent>> onB = new HashMap<>();
+        Map<String, List<EventMeshFrame>> onA = new HashMap<>();
+        Map<String, List<EventMeshFrame>> onB = new HashMap<>();
 
         Forwarder forwarder = (targetInstance, clientId, topic, event) -> {
             if ("A".equals(targetInstance)) {
@@ -68,7 +69,7 @@ class ClusterCoordinatorTest {
     @Test
     void localSubscriberDeliveredWithoutForward() {
         InMemoryMetaStore meta = new InMemoryMetaStore();
-        Map<String, List<CloudEvent>> onA = new HashMap<>();
+        Map<String, List<EventMeshFrame>> onA = new HashMap<>();
         Forwarder forwarder = (inst, cid, topic, e) -> {
             throw new AssertionError("local delivery must not forward");
         };
@@ -83,8 +84,8 @@ class ClusterCoordinatorTest {
     @Test
     void loadBalancePicksOneAcrossInstances() {
         InMemoryMetaStore meta = new InMemoryMetaStore();
-        Map<String, List<CloudEvent>> onA = new HashMap<>();
-        Map<String, List<CloudEvent>> onB = new HashMap<>();
+        Map<String, List<EventMeshFrame>> onA = new HashMap<>();
+        Map<String, List<EventMeshFrame>> onB = new HashMap<>();
         Forwarder forwarder = (targetInstance, clientId, topic, event) -> "A".equals(targetInstance)
             ? record(onA, clientId, event)
             : record(onB, clientId, event);
@@ -108,23 +109,24 @@ class ClusterCoordinatorTest {
         assertEquals(4, w1 + w2, "no fan-out under LOAD_BALANCE");
     }
 
-    private static boolean record(Map<String, List<CloudEvent>> sink, String clientId, CloudEvent event) {
+    private static boolean record(Map<String, List<EventMeshFrame>> sink, String clientId, EventMeshFrame event) {
         sink.computeIfAbsent(clientId, k -> new ArrayList<>()).add(event);
         return true;
     }
 
-    private static List<String> ids(List<CloudEvent> events) {
+    private static List<String> ids(List<EventMeshFrame> events) {
         List<String> out = new ArrayList<>();
         if (events == null) {
             return out;
         }
-        for (CloudEvent e : events) {
-            out.add(e.getId());
+        for (EventMeshFrame e : events) {
+            out.add(e.attributes().get("id"));
         }
         return out;
     }
 
-    private static CloudEvent event(String id) {
-        return CloudEventBuilder.v1().withId(id).withSource(URI.create("test")).withType("t").build();
+    private static EventMeshFrame event(String id) {
+        CloudEvent ce = CloudEventBuilder.v1().withId(id).withSource(URI.create("test")).withType("t").build();
+        return EventMeshFrame.fromCloudEvent(ce);
     }
 }

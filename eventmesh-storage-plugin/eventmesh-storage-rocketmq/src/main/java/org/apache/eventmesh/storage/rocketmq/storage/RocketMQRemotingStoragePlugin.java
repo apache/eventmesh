@@ -22,7 +22,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
-import org.apache.eventmesh.api.storage.OffsetExtensions;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -99,7 +98,9 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
     }
 
     @Override
-    public void send(String topic, CloudEvent event, SendCallback callback) throws Exception {
+    public void send(String topic, EventMeshFrame frame, SendCallback callback) throws Exception {
+        // SPI carries EventMeshFrame (EventMesh's internal wire unit). Encode it to bytes and store —
+        // the MQ stores the frame's binary encoding as the message body (no CloudEvents envelope).
         int qc = getQueueCount(topic);
         int queueId = Math.floorMod(queueRouter.getAndIncrement(), Math.max(1, qc > 0 ? qc : 1));
         QueueLoc loc0 = getBrokerForQueue(topic, queueId);
@@ -117,7 +118,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
             throw new StorageRuntimeException("no broker for topic " + topic + " queue " + queueId);
         }
 
-        final byte[] body = serialize(event);
+        final byte[] body = frame.encode();
         org.apache.rocketmq.common.protocol.header.SendMessageRequestHeader header =
             new org.apache.rocketmq.common.protocol.header.SendMessageRequestHeader();
         header.setProducerGroup(PRODUCER_GROUP);
@@ -162,7 +163,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
     }
 
     @Override
-    public List<CloudEvent> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
+    public List<EventMeshFrame> poll(String topic, int partition, long startOffset, int maxEvents, long timeoutMs) {
         int queueCount = getQueueCount(topic);
         if (queueCount <= 0) {
             return Collections.emptyList();
@@ -170,8 +171,8 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
         Set<Integer> owned = assignedQueues.get(topic);
         ConcurrentHashMap<Integer, Long> topicOffsets = pullOffsets.computeIfAbsent(topic, k -> new ConcurrentHashMap<>());
 
-        List<CloudEvent> events = new ArrayList<>();
-        for (int q = 0; q < queueCount && events.size() < maxEvents; q++) {
+        List<EventMeshFrame> frames = new ArrayList<>();
+        for (int q = 0; q < queueCount && frames.size() < maxEvents; q++) {
             if (owned != null && !owned.contains(q)) {
                 continue;
             }
@@ -181,7 +182,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                 continue;
             }
             long offset = topicOffsets.getOrDefault(q, 0L);
-            int remaining = maxEvents - events.size();
+            int remaining = maxEvents - frames.size();
             int pullSize = Math.min(remaining, PULL_MAX_MSGS);
 
             try {
@@ -228,14 +229,24 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                     && response.getBody() != null && response.getBody().length > 0) {
                     List<org.apache.rocketmq.common.message.MessageExt> msgs = decodeMessages(response.getBody());
                     for (org.apache.rocketmq.common.message.MessageExt msg : msgs) {
-                        CloudEvent event = deserialize(msg.getBody());
-                        if (event != null) {
-                            // Write MQ physical offset and partition to CloudEvent extensions for unified offset tracking
-                            event = CloudEventBuilder.from(event)
-                                .withExtension(OffsetExtensions.EM_MQ_OFFSET, msg.getQueueOffset())
-                                .withExtension(OffsetExtensions.EM_MQ_PARTITION, (long) msg.getQueueId())
-                                .build();
-                            events.add(event);
+                        // The stored body is an EventMeshFrame; decode it back. Legacy CE-JSON bodies
+                        // (written before the frame migration) are converted to a frame via the codec.
+                        try {
+                            EventMeshFrame frame = EventMeshFrame.decode(msg.getBody());
+                            // Stamp MQ physical offset/partition for restart-cursor alignment
+                            // (Frame-native replacement of develop's OffsetExtensions).
+                            frame.attributes().put("emmqoffset", Long.toString(msg.getQueueOffset()));
+                            frame.attributes().put("emmqpartition", Integer.toString(msg.getQueueId()));
+                            frames.add(frame);
+                        } catch (Exception decodeEx) {
+                            // fall back: legacy CloudEvents-JSON → CE → frame
+                            CloudEvent legacy = deserialize(msg.getBody());
+                            if (legacy != null) {
+                                EventMeshFrame frame = EventMeshFrame.fromCloudEvent(legacy);
+                                frame.attributes().put("emmqoffset", Long.toString(msg.getQueueOffset()));
+                                frame.attributes().put("emmqpartition", Integer.toString(msg.getQueueId()));
+                                frames.add(frame);
+                            }
                         }
                     }
                 } else if (response.getCode() != org.apache.rocketmq.common.protocol.ResponseCode.SUCCESS
@@ -249,7 +260,7 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
                 log.warn("pull failed for {} queue {} offset {}: {}", topic, q, offset, e.toString());
             }
         }
-        return events;
+        return frames;
     }
 
     @Override
@@ -269,15 +280,10 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
     }
 
     /**
-     * Rewind the RocketMQ 4.x pull cursor for {@code (topic, partition)} to {@code ackOffset}.
-     *
-     * <p>On restart, the persisted {@code pullOffsets} file (nextBeginOffset per topic#queueId) may
-     * be ahead of the ACK offset stored in RocksDB. Without rewind, the gap messages (pulled but
-     * not ACKed) are lost — the next {@link #poll} resumes from the persisted nextBeginOffset,
-     * skipping them.</p>
-     *
-     * <p>This overwrites the in-memory {@code pullOffsets} so the next {@link #poll} uses
-     * {@code ackOffset} as the {@code queueOffset} in the PULL_MESSAGE request.</p>
+     * Rewind the self-managed pull cursor ({@code pullOffsets}) for {@code (topic, partition)} to
+     * {@code ackOffset} (restart recovery, at-least-once). The persisted pull-offsets file may be
+     * ahead of the ACK offset (messages pulled but not ACKed before the crash). No seek needed —
+     * every poll issues a PULL_MESSAGE with the current pullOffsets value.
      */
     @Override
     public boolean alignPullOffset(String topic, int partition, long ackOffset) {
@@ -288,23 +294,22 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
         if (partition >= 0) {
             Long current = topicOffsets.get(partition);
             if (current != null && current <= ackOffset) {
-                return false;
+                return false; // no gap
             }
             topicOffsets.put(partition, ackOffset);
             log.info("aligned pull offset for {}#{}: {} -> {}", topic, partition, current, ackOffset);
-        } else {
-            // partition -1: rewind all queues of this topic
-            boolean anyRewound = false;
-            for (Map.Entry<Integer, Long> e : topicOffsets.entrySet()) {
-                if (e.getValue() > ackOffset) {
-                    log.info("aligned pull offset for {}#{}: {} -> {}", topic, e.getKey(), e.getValue(), ackOffset);
-                    e.setValue(ackOffset);
-                    anyRewound = true;
-                }
-            }
-            return anyRewound;
+            return true;
         }
-        return true;
+        // partition -1: rewind all queues of this topic
+        boolean anyRewound = false;
+        for (Map.Entry<Integer, Long> e : topicOffsets.entrySet()) {
+            if (e.getValue() > ackOffset) {
+                log.info("aligned pull offset for {}#{}: {} -> {}", topic, e.getKey(), e.getValue(), ackOffset);
+                e.setValue(ackOffset);
+                anyRewound = true;
+            }
+        }
+        return anyRewound;
     }
 
     @Override
@@ -554,14 +559,10 @@ public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
         }
     }
 
-    // ---- CloudEvent serialize/deserialize ----
+    // ---- CloudEvent deserialize — legacy fallback for pre-frame bodies ----
 
     private static final io.cloudevents.core.format.EventFormat FORMAT =
         io.cloudevents.core.provider.EventFormatProvider.getInstance().resolveFormat(io.cloudevents.jackson.JsonFormat.CONTENT_TYPE);
-
-    private byte[] serialize(CloudEvent event) {
-        return FORMAT.serialize(event);
-    }
 
     private CloudEvent deserialize(byte[] bytes) {
         if (bytes == null || bytes.length == 0) {
