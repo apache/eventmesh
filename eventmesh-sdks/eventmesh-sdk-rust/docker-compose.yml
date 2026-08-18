@@ -1,0 +1,160 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Docker Compose for EventMesh Runtime.
+#
+# Two profiles are provided. Pick ONE with the `--profile` flag:
+#
+#   1. Standalone (default, in-memory store, no external dependencies):
+#        docker compose --profile standalone up -d
+#
+#   2. RocketMQ (namesrv + broker + runtime, durable Event Store):
+#        docker compose --profile rocketmq up -d
+#
+# Notes:
+#   - EventMesh image: https://hub.docker.com/r/apache/eventmesh
+#   - Runtime exposes TCP 10000, HTTP 10105, gRPC 10205, Admin 10106.
+#   - Override the pinned release image with IMAGE, e.g.:
+#       IMAGE=yourname/eventmesh:tag docker compose --profile standalone up -d
+#
+# The default is the Apache EventMesh 1.12.0 release image used by this SDK's
+# protocol compatibility suite.
+#   - `docker compose up` (no profile) starts nothing on purpose, to avoid
+#     accidentally booting the wrong storage backend.
+
+services:
+
+  # ====================================================================
+  # Profile: standalone
+  # ====================================================================
+  eventmesh-standalone:
+    image: ${IMAGE:-apache/eventmesh:v1.12.0}
+    container_name: eventmesh-standalone
+    profiles: ["standalone"]
+    ports:
+      - "10000:10000"
+      - "10105:10105"
+      - "10106:10106"
+      - "10205:10205"
+    # Allow the runtime container to reach webhook servers running on the host
+    # (needed by the HTTP transport consumer e2e tests). `host-gateway` is a
+    # special Docker keyword (Docker 20.10+) that resolves to the host IP.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./docker/conf/eventmesh-standalone.properties:/data/app/eventmesh/conf/eventmesh.properties:ro,z
+      - eventmesh-standalone-logs:/data/app/eventmesh/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'server state:RUNNING' /data/app/eventmesh/logs/eventmesh.out || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # ====================================================================
+  # Profile: rocketmq
+  # ====================================================================
+  namesrv:
+    image: apache/rocketmq:4.9.4
+    container_name: rocketmq-namesrv
+    profiles: ["rocketmq"]
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+    volumes:
+      - namesrv-logs:/home/rocketmq/logs
+      - namesrv-store:/home/rocketmq/store
+    environment:
+      JAVA_OPT_EXT: "-server -Xms256m -Xmx256m -Xmn128m"
+    restart: unless-stopped
+
+  broker:
+    image: apache/rocketmq:4.9.4
+    container_name: rocketmq-broker
+    profiles: ["rocketmq"]
+    depends_on:
+      - namesrv
+    command: sh mqbroker -c /etc/rocketmq/broker.conf
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+    volumes:
+      - ./docker/conf/broker.conf:/etc/rocketmq/broker.conf:ro,z
+      # NOTE: broker-logs/broker-store named volumes are intentionally NOT used
+      # here. The rocketmq image doesn't ship /home/rocketmq/{logs,store}, so a
+      # named volume would be created root-owned and the broker (uid 3000)
+      # couldn't write to it, crashing on store init (exit 253). The broker
+      # creates these dirs itself (rocketmq-owned) inside the container layer.
+    environment:
+      NAMESRV_ADDR: "namesrv:9876"
+      # runbroker.sh otherwise auto-calculates heap from total host RAM and
+      # adds -XX:+AlwaysPreTouch, which commits the whole heap at boot. On a
+      # memory-constrained host that prevents the broker from starting (silent
+      # exit 253). Keep the footprint small and cap direct memory explicitly.
+      JAVA_OPT_EXT: "-server -Xms128m -Xmx256m -Xmn96m -XX:MaxDirectMemorySize=256m"
+    restart: unless-stopped
+
+  eventmesh-rocketmq:
+    image: ${IMAGE:-apache/eventmesh:v1.12.0}
+    container_name: eventmesh-rocketmq
+    profiles: ["rocketmq"]
+    depends_on:
+      - namesrv
+      - broker
+    # The published image ships rocketmq-*.jar in lib/ (system classpath). With
+    # them there, parent-first classloading always picks rocketmq-client's own
+    # ConsumeMessageConcurrentlyService over EventMesh's shadow copy that lives
+    # in the storage plugin, causing a ClassCastException that silently drops
+    # every consumed message (apache/eventmesh#5213). The plugin classloader
+    # (JarExtensionClassLoader) sorts its URLs alphabetically, so once the
+    # rocketmq jars sit next to eventmesh-storage-rocketmq.jar under
+    # plugin/storage/rocketmq/, the shadow class loads first and consumption
+    # works. Move them before starting the runtime.
+    command:
+      - bash
+      - -c
+      - |
+        mkdir -p plugin/storage/rocketmq
+        mv lib/rocketmq-*.jar plugin/storage/rocketmq/ 2>/dev/null || true
+        exec bash bin/start.sh
+    ports:
+      - "10000:10000"
+      - "10105:10105"
+      - "10106:10106"
+      - "10205:10205"
+    # Allow the runtime container to reach webhook servers running on the host
+    # (needed by the HTTP transport consumer e2e tests).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./docker/conf/eventmesh-rocketmq.properties:/data/app/eventmesh/conf/eventmesh.properties:ro,z
+      - ./docker/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties:ro,z
+      - eventmesh-rocketmq-logs:/data/app/eventmesh/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'server state:RUNNING' /data/app/eventmesh/logs/eventmesh.out || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  eventmesh-standalone-logs:
+  eventmesh-rocketmq-logs:
+  namesrv-logs:
+  namesrv-store:

@@ -1,0 +1,55 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+use eventmesh::{
+    config::{Endpoint, GrpcConfig, GrpcConsumerOptions, ProducerOptions},
+    EventMeshMessage, GrpcChannel, GrpcProducer, GrpcStreamConsumer, Message, Subscription,
+};
+use std::time::Duration;
+
+const TOPIC: &str = "test-topic-rust-sdk";
+
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    let channel =
+        GrpcChannel::connect(GrpcConfig::new(Endpoint::new("127.0.0.1", 10_205)?)).await?;
+    let consumer = GrpcStreamConsumer::open(
+        channel.clone(),
+        GrpcConsumerOptions::new("test-consumerGroup"),
+        [Subscription::new(TOPIC).with_delivery_type(eventmesh::DeliveryType::Sync)],
+        |request: Message| async move {
+            let request = request.into_event_mesh()?;
+            Ok(Some(Message::from(EventMeshMessage::new(
+                request.topic(),
+                "pong",
+            )?)))
+        },
+    )
+    .await?;
+    let producer = GrpcProducer::new(channel, ProducerOptions::new("test-producerGroup"))?;
+
+    // Give EventMesh time to make the new subscription routable before the
+    // first synchronous request.
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    let reply = producer
+        .request_reply(Message::from(EventMeshMessage::new(TOPIC, "ping")?))
+        .await?;
+    println!("reply: {reply:?}");
+
+    consumer.shutdown();
+    consumer.join().await
+}

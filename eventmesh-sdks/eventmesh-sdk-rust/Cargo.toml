@@ -1,86 +1,207 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 [package]
 name = "eventmesh"
-version = "1.9.0"
+version = "2.0.0"
 edition = "2021"
-authors = [
-    "mxsm <mxsm@apache.org>"
-]
-msrv = "1.75.0"
-description = "Rust client for Apache EventMesh"
+rust-version = "1.86.0"
+authors = ["Apache EventMesh <dev@eventmesh.apache.org>"]
 license = "Apache-2.0"
-keywords = ["EventMesh", "SDK", "rust-client", "rust", "eventmesh-rust-sdk"]
-readme = "./README.md"
-homepage = "https://github.com/apache/eventmesh"
+description = "Apache EventMesh Rust SDK"
+homepage = "https://eventmesh.apache.org"
 repository = "https://github.com/apache/eventmesh"
+keywords = ["eventmesh", "messaging", "cloud-events", "grpc"]
+categories = ["api-bindings", "network-programming"]
+
+[lib]
+name = "eventmesh"
+path = "src/lib.rs"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
-default = ["grpc", "eventmesh_message"]
-full = ["grpc", "eventmesh_message","cloud_events"]
-eventmesh_message = []
-cloud_events = []
-tls = []
-grpc = []
+# Transports are opt-in.  This keeps the base crate lightweight and, in
+# particular, lets consumers that only use the shared message model avoid
+# compiling a protocol implementation.
+default = []
+# Transport protocols (implemented incrementally).
+grpc = [
+    "dep:tonic",
+    "dep:prost",
+    "dep:prost-types",
+    "dep:tonic-build",
+    "dep:tokio",
+    "dep:tokio-util",
+    "dep:tracing",
+    "dep:rand",
+    "dep:uuid",
+    "dep:http",
+]
+# HTTP transport (producer, consumer, webhook middleware + built-in server).
+http = [
+    "dep:reqwest",
+    "dep:serde_urlencoded",
+    "dep:axum",
+    "dep:tokio",
+    "dep:tokio-util",
+    "dep:tracing",
+    "dep:rand",
+    "dep:uuid",
+    "dep:bytes",
+    "dep:http",
+]
+# TCP transport (producer, consumer, native TCP wire protocol).
+# `tokio-util/codec` is required by the framed codec in
+# `src/transport/tcp/{codec,connection}.rs`; without it the crate fails to
+# compile when `tcp` is enabled without `grpc` (tonic pulls in `codec` only as
+# a side effect of the `grpc` feature).
+tcp = [
+    "dep:tokio",
+    "dep:tokio-stream",
+    "dep:tokio-util",
+    "tokio-util/codec",
+    "dep:futures",
+    "dep:tracing",
+    "dep:rand",
+    "dep:uuid",
+    "dep:bytes",
+]
+# Message models.
+cloud_events = ["dep:cloudevents", "dep:chrono"]
+# Convenience aggregate.
+full = ["grpc", "http", "tcp", "cloud_events"]
+# End-to-end tests (tests/e2e/*). Gated off by default so plain `cargo test`
+# never needs a live server. Run with `cargo test --features e2e`. Implies all
+# transports + cloud_events so the full suite (gRPC + HTTP + TCP + CE) compiles
+# from a single flag.
+e2e = ["grpc", "http", "tcp", "cloud_events"]
+# Cross-SDK E2E: builds the Maven peer in interop/java-peer and starts it on
+# the host JVM. The peer is pinned to eventmesh-sdk-java:1.12.0-release.
+interop_e2e = ["e2e"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-# common
-anyhow = "1.0"
-
-#Rust grpc
-tonic = "0.10"
-prost = "0.12"
-prost-types = "0.12"
-
-#tokio
-tokio = { version = "1.32.0", features = ["full"] }
-
-#serde
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-
-#log
-tracing = "0.1"
-tracing-subscriber = "0.3"
-
-#cloudEvents
-cloudevents-sdk = "0.7.0"
-
-# tools crate
-thiserror = "1.0"
-bytes = "1"
-rand = "0.8"
-uuid = { version = "1.4.1", features = ["v4"] }
-local-ip-address = "0.5.6"
-futures = "0.3"
-log = "0.4.20"
-chrono = "0.4"
+tokio = { version = "1", optional = true, features = ["full"] }
+tokio-stream = { version = "0.1", optional = true, features = ["net"] }
+tokio-util = { version = "0.7", optional = true }
+futures = { version = "0.3", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+bytes = { version = "1", optional = true }
+rand = { version = "0.8", optional = true }
+uuid = { version = "1", optional = true, features = ["v4"] }
+tracing = { version = "0.1", optional = true }
+http = { version = "1", optional = true }
+# gRPC transport.
+tonic = { version = "0.12", optional = true }
+prost = { version = "0.13", optional = true }
+prost-types = { version = "0.13", optional = true }
+# CloudEvents interop.
+cloudevents = { package = "cloudevents-sdk", version = "0.7", optional = true }
+chrono = { version = "0.4", optional = true, default-features = false, features = ["std", "clock"] }
+# HTTP transport.
+reqwest = { version = "0.12", optional = true, features = ["json"] }
+serde_urlencoded = { version = "0.7", optional = true }
+axum = { version = "0.7", optional = true }
 
 [build-dependencies]
-tonic-build = "0.10"
+tonic-build = { version = "0.12", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+# e2e test harness (only referenced under the `e2e` feature):
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+ctor = "0.2"
 
 [[example]]
-name = "producer_example"
-path = "examples/grpc/producer_example.rs"
-required-features = ["grpc", "eventmesh_message","cloud_events"]
+name = "grpc_producer"
+path = "examples/grpc/producer.rs"
+required-features = ["grpc"]
 
 [[example]]
-name = "consumer_example"
-path = "examples/grpc/consumer_example.rs"
-required-features = ["grpc", "eventmesh_message"]
+name = "grpc_consumer"
+path = "examples/grpc/consumer.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "grpc_webhook_consumer"
+path = "examples/grpc/webhook_consumer.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "grpc_producer_cloud_events"
+path = "examples/grpc/producer_cloud_events.rs"
+required-features = ["grpc", "cloud_events"]
+
+[[example]]
+name = "grpc_batch"
+path = "examples/grpc/batch.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "grpc_request_reply"
+path = "examples/grpc/request_reply.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "http_producer"
+path = "examples/http/producer.rs"
+required-features = ["http"]
+
+[[example]]
+name = "http_producer_cloud_events"
+path = "examples/http/producer_cloud_events.rs"
+required-features = ["http", "cloud_events"]
+
+[[example]]
+name = "http_consumer_server"
+path = "examples/http/consumer_server.rs"
+required-features = ["http"]
+
+[[example]]
+name = "http_consumer_custom"
+path = "examples/http/consumer_custom.rs"
+required-features = ["http"]
+
+[[example]]
+name = "tcp_producer"
+path = "examples/tcp/producer.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "tcp_consumer"
+path = "examples/tcp/consumer.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "tcp_producer_cloud_events"
+path = "examples/tcp/producer_cloud_events.rs"
+required-features = ["tcp", "cloud_events"]
+
+[[example]]
+name = "tcp_broadcast"
+path = "examples/tcp/broadcast.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "tcp_request_reply"
+path = "examples/tcp/request_reply.rs"
+required-features = ["tcp"]

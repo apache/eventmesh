@@ -1,0 +1,272 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+//! TCP producer.
+
+use std::sync::Arc;
+use std::time::Duration;
+
+use tracing::debug;
+
+use crate::config::{ProducerOptions, TcpConfig};
+use crate::error::{EventMeshError, Result};
+use crate::model::{EventMeshMessage, PublishResponse};
+use crate::transport::tcp::connection::TcpConnection;
+use crate::transport::tcp::frame::{Command, UserAgent};
+use crate::transport::tcp::message;
+use crate::transport::{Publisher, RequestReply};
+
+/// TCP-based producer.
+///
+/// Created via [`TcpProducer::connect`], which opens a TCP connection, performs
+/// the HELLO handshake (role = pub), and starts the background heartbeat.
+/// Implements the [`Publisher`] trait.
+pub struct TcpProducer {
+    conn: Arc<TcpConnection>,
+    config: TcpConfig,
+    request_timeout: std::time::Duration,
+}
+
+impl TcpProducer {
+    /// Connect to the EventMesh TCP endpoint and perform the HELLO handshake.
+    ///
+    /// The reconnect policy from the config controls automatic reconnection
+    /// after I/O failures (enabled by default).
+    pub async fn connect(config: TcpConfig, options: &ProducerOptions) -> Result<Self> {
+        let user_agent = UserAgent::from_role(
+            config.identity(),
+            config.credentials(),
+            options.group(),
+            config.endpoint().port(),
+            "pub",
+        );
+        let conn = Arc::new(
+            TcpConnection::connect(
+                &config.endpoint().authority_host(),
+                config.endpoint().port(),
+                &user_agent,
+                config.heartbeat_interval(),
+                config.connect_timeout(),
+                config.control_timeout(),
+                config.reconnect().clone(),
+            )
+            .await?,
+        );
+        let request_timeout = config.request_timeout();
+
+        Ok(Self {
+            conn,
+            config,
+            request_timeout,
+        })
+    }
+
+    /// Broadcast a message (fire-and-forget). Corresponds to Java
+    /// `broadcast` which uses `send()` with `BROADCAST_MESSAGE_TO_SERVER`.
+    pub async fn broadcast(&self, msg: EventMeshMessage) -> Result<()> {
+        msg.validate_for_tcp_publish()?;
+        let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
+        self.conn.send(pkg).await
+    }
+
+    /// Publish a native CloudEvent over TCP (requires the `cloud_events`
+    /// feature).
+    ///
+    /// The event is serialized as CloudEvents JSON
+    /// (`application/cloudevents+json`) with `protocoltype=cloudevents`,
+    /// matching the Java runtime's TCP CloudEvents codec path.
+    ///
+    /// # `datacontenttype` requirement
+    ///
+    /// The event's `datacontenttype` **must** be `application/cloudevents+json`.
+    /// Both the Java SDK's upload path and the Java runtime's TCP downlink path
+    /// use this value to resolve the serializer for the whole CloudEvent.
+    /// Other values (e.g. `application/json`, `text/plain`) therefore fail in
+    /// the Java SDK before sending or fail during runtime delivery. This SDK
+    /// returns [`EventMeshError::InvalidMessage`] before performing network
+    /// I/O instead.
+    ///
+    /// ```ignore
+    /// EventBuilderV10::new()
+    ///     .id("1").source("...").ty("...").subject(topic)
+    ///     .data("application/cloudevents+json", json!({"msg": "hi"}))
+    ///     .build()?;
+    /// ```
+    #[cfg(feature = "cloud_events")]
+    pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
+        use cloudevents::AttributesReader;
+        let pkg = message::build_cloud_event_package(&event, Command::AsyncMessageToServer)?;
+        debug!(topic = ?event.subject(), "publishing CloudEvent via TCP");
+
+        let resp = self.conn.io(pkg, self.request_timeout).await?;
+        let response = message::response_from_pkg(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response.message.unwrap_or_else(|| "publish failed".into()),
+            });
+        }
+        Ok(response)
+    }
+
+    /// Broadcast a native CloudEvent (fire-and-forget, requires the
+    /// `cloud_events` feature).
+    ///
+    /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
+    /// `datacontenttype` requirement.
+    #[cfg(feature = "cloud_events")]
+    pub async fn broadcast_cloud_event(&self, event: cloudevents::Event) -> Result<()> {
+        let pkg = message::build_cloud_event_package(&event, Command::BroadcastMessageToServer)?;
+        self.conn.send(pkg).await
+    }
+
+    /// Synchronous request/reply with a native CloudEvent (requires the
+    /// `cloud_events` feature).
+    ///
+    /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
+    /// `datacontenttype` requirement.
+    ///
+    /// Sends the CloudEvent as `REQUEST_TO_SERVER` and waits for the reply.
+    /// The reply is parsed as a CloudEvent if the server tags it
+    /// `protocoltype=cloudevents`; otherwise it is parsed as a TCP-wire
+    /// `EventMeshMessage` and converted to a CloudEvent for a uniform return
+    /// type.
+    #[cfg(feature = "cloud_events")]
+    pub async fn request_reply_cloud_event(
+        &self,
+        event: cloudevents::Event,
+        timeout: Duration,
+    ) -> Result<cloudevents::Event> {
+        use cloudevents::AttributesReader;
+        let pkg = message::build_cloud_event_package(&event, Command::RequestToServer)?;
+        debug!(topic = ?event.subject(), "request-reply CloudEvent via TCP");
+
+        let resp = self.conn.io(pkg, timeout).await?;
+        let response = message::response_from_pkg(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "request-reply failed".into()),
+            });
+        }
+
+        // Try CloudEvents first; fall back to EventMeshMessage → convert.
+        if message::is_cloudevents(&resp) {
+            message::parse_cloud_event(&resp.body).ok_or_else(|| {
+                EventMeshError::Codec(serde::de::Error::custom(
+                    "failed to parse CloudEvent reply body",
+                ))
+            })
+        } else {
+            let msg = message::parse_message(&resp.body).ok_or_else(|| {
+                EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
+            })?;
+            message::message_to_cloud_event(&msg)
+        }
+    }
+
+    /// Access the underlying connection (for testing or advanced use).
+    pub fn connection(&self) -> &TcpConnection {
+        &self.conn
+    }
+
+    /// Clone the shared connection for a background publisher-side handler.
+    pub fn shared_connection(&self) -> Arc<TcpConnection> {
+        Arc::clone(&self.conn)
+    }
+
+    /// Graceful shutdown.
+    pub async fn shutdown(&self) {
+        self.conn.shutdown().await;
+    }
+
+    /// Current config.
+    pub fn config(&self) -> &TcpConfig {
+        &self.config
+    }
+}
+
+fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishResponse> {
+    if response.is_success() {
+        Ok(response)
+    } else {
+        Err(EventMeshError::Server {
+            code: response.code.unwrap_or(-1) as i32,
+            message: response.message.unwrap_or_else(|| fallback.into()),
+        })
+    }
+}
+
+impl Publisher for TcpProducer {
+    /// Publish a message and wait for the broker ACK.
+    /// Uses `ASYNC_MESSAGE_TO_SERVER` + `io()` (mirrors the Java SDK).
+    async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
+        message.validate_for_tcp_publish()?;
+        let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
+        debug!(topic = ?message.topic, "publishing via TCP");
+
+        let resp = self.conn.io(pkg, self.request_timeout).await?;
+        let response = message::response_from_pkg(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response.message.unwrap_or_else(|| "publish failed".into()),
+            });
+        }
+        Ok(response)
+    }
+
+    /// TCP has no batch semantics — returns [`EventMeshError::Unsupported`].
+    async fn publish_batch(&self, _messages: Vec<EventMeshMessage>) -> Result<PublishResponse> {
+        Err(EventMeshError::Unsupported(
+            "batch publish is not supported over TCP".into(),
+        ))
+    }
+}
+
+impl RequestReply for TcpProducer {
+    /// Synchronous request/reply. Uses `REQUEST_TO_SERVER` + `io()` and waits
+    /// for the `RESPONSE_TO_CLIENT` push from the server.
+    async fn request_reply(
+        &self,
+        message: EventMeshMessage,
+        timeout: Duration,
+    ) -> Result<EventMeshMessage> {
+        message.validate_for_tcp_publish()?;
+        let pkg = super::message::build_message_package(&message, Command::RequestToServer)?;
+        debug!(topic = ?message.topic, "request-reply via TCP");
+
+        let resp = self.conn.io(pkg, timeout).await?;
+        // Surface server-side failures (ACL/TPS/routing) before attempting to
+        // parse the body. The runtime sets header.code on the RESPONSE_TO_CLIENT
+        // reply via `new Header(cmd, OPStatus.<status>.getCode(), desc, seq)`.
+        let response = message::response_from_pkg(&resp);
+        if !response.is_success() {
+            return Err(EventMeshError::Server {
+                code: response.code.unwrap_or(-1) as i32,
+                message: response
+                    .message
+                    .unwrap_or_else(|| "request-reply failed".into()),
+            });
+        }
+        message::parse_message(&resp.body).ok_or_else(|| {
+            EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
+        })
+    }
+}

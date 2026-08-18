@@ -1,0 +1,52 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+use cloudevents::{EventBuilder, EventBuilderV10};
+use eventmesh::{
+    config::{Endpoint, ProducerOptions, TcpConfig},
+    message::Message,
+    Error, TcpClient,
+};
+
+#[tokio::main]
+async fn main() -> eventmesh::Result<()> {
+    // EventMesh's Java TCP codec currently uses `datacontenttype` to choose
+    // the serializer for the whole CloudEvent. TCP CloudEvents must therefore
+    // use `application/cloudevents+json`, even when their data is ordinary
+    // JSON. HTTP and gRPC do not have this compatibility restriction.
+    let event = EventBuilderV10::new()
+        .id("rust-example-1")
+        .source("urn:eventmesh:rust-example")
+        .ty("com.example.created")
+        .subject("test-topic-rust-sdk")
+        .data(
+            "application/cloudevents+json",
+            serde_json::json!({"message": "hello"}),
+        )
+        .build()
+        .map_err(|error| Error::InvalidArgument(format!("invalid CloudEvent: {error}")))?;
+
+    let client = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?))?;
+    let producer = client
+        .producer(ProducerOptions::new("test-producerGroup"))
+        .await?;
+    println!(
+        "published: {:?}",
+        producer.publish(Message::from(event)).await?
+    );
+    Ok(())
+}
