@@ -27,7 +27,7 @@
 //!
 //! ```ignore
 //! use eventmesh::{
-//!     config::TcpClientConfig, tcp::TcpConsumer,
+//!     config::{ConsumerOptions, Endpoint, TcpConfig}, tcp::TcpConsumer,
 //!     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
 //!     MessageListener,
 //! };
@@ -68,7 +68,7 @@ use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
-use crate::config::TcpClientConfig;
+use crate::config::{ConsumerOptions, TcpConfig};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
 use crate::model::{EventMeshMessage, PublishResponse};
@@ -259,7 +259,7 @@ enum InboundResult {
 /// via [`shutdown`](Self::shutdown) / [`wait_for_shutdown`](Self::wait_for_shutdown).
 pub struct TcpConsumer<L: MessageListener> {
     conn: Arc<TcpConnection>,
-    config: TcpClientConfig,
+    config: TcpConfig,
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
     subscriptions: Arc<Mutex<Vec<Subscription>>>,
@@ -294,19 +294,26 @@ where
     /// the receive loop automatically replays all subscriptions and re-issues
     /// `LISTEN_REQUEST`.
     pub async fn connect(
-        config: TcpClientConfig,
+        config: TcpConfig,
+        options: &ConsumerOptions,
         listener: L,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
-        let user_agent = UserAgent::from_identity(&config.identity, config.server_port, "sub");
+        let user_agent = UserAgent::from_role(
+            config.identity(),
+            config.credentials(),
+            options.group(),
+            config.endpoint().port(),
+            "sub",
+        );
         let conn = TcpConnection::connect(
-            &config.server_addr,
-            config.server_port,
+            &config.endpoint().authority_host(),
+            config.endpoint().port(),
             &user_agent,
-            config.heartbeat_interval,
-            config.connect_timeout,
-            config.control_timeout,
-            config.reconnect.clone(),
+            config.heartbeat_interval(),
+            config.connect_timeout(),
+            config.control_timeout(),
+            config.reconnect().clone(),
         )
         .await?;
         let conn = Arc::new(conn);
@@ -329,7 +336,7 @@ where
 
         // Send LISTEN_REQUEST and verify it succeeds.
         let listen_pkg = message::listen();
-        let listen_resp = conn.io(listen_pkg, config.control_timeout).await?;
+        let listen_resp = conn.io(listen_pkg, config.control_timeout()).await?;
         let listen_status = message::response_from_pkg(&listen_resp);
         if !listen_status.is_success() {
             return Err(EventMeshError::Server {
@@ -381,7 +388,7 @@ where
     pub async fn subscribe(&self, items: &[Subscription]) -> Result<()> {
         for item in items {
             let sub_pkg = message::subscribe(&item.topic, std::slice::from_ref(item));
-            let resp = self.conn.io(sub_pkg, self.config.control_timeout).await?;
+            let resp = self.conn.io(sub_pkg, self.config.control_timeout()).await?;
             let response = message::response_from_pkg(&resp);
             if !response.is_success() {
                 return Err(EventMeshError::Server {
@@ -409,7 +416,10 @@ where
             ));
         }
         let unsub_pkg = message::unsubscribe(&items);
-        let resp = self.conn.io(unsub_pkg, self.config.control_timeout).await?;
+        let resp = self
+            .conn
+            .io(unsub_pkg, self.config.control_timeout())
+            .await?;
         let response = message::response_from_pkg(&resp);
 
         if !response.is_success() {
@@ -449,7 +459,7 @@ where
     }
 
     /// Current config.
-    pub fn config(&self) -> &TcpClientConfig {
+    pub fn config(&self) -> &TcpConfig {
         &self.config
     }
 
@@ -547,7 +557,7 @@ fn spawn_driver<L>(
     mut inbound_rx: tokio::sync::mpsc::Receiver<Package>,
     mut reconnect_rx: Option<tokio::sync::mpsc::Receiver<()>>,
     listener: Arc<L>,
-    config: TcpClientConfig,
+    config: TcpConfig,
     subscriptions: Arc<Mutex<Vec<Subscription>>>,
     shutdown: CancellationToken,
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
@@ -585,7 +595,7 @@ where
                     for item in &subs_snapshot {
                         let sub_pkg =
                             message::subscribe(&item.topic, std::slice::from_ref(item));
-                        match conn.io(sub_pkg, config.control_timeout).await {
+                        match conn.io(sub_pkg, config.control_timeout()).await {
                             Ok(resp) => {
                                 let r = message::response_from_pkg(&resp);
                                 if !r.is_success() {
@@ -622,7 +632,7 @@ where
                         break;
                     }
 
-                    match conn.io(message::listen(), config.control_timeout).await {
+                    match conn.io(message::listen(), config.control_timeout()).await {
                         Ok(resp) => {
                             let r = message::response_from_pkg(&resp);
                             if !r.is_success() {
@@ -801,7 +811,7 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::config::{ReconnectConfig, TcpClientConfig};
+    use crate::config::{ConsumerOptions, Endpoint, ReconnectPolicy, TcpConfig};
     use crate::subscription::{DeliveryMode, DeliveryType, Subscription};
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody, RedirectInfo};
@@ -928,17 +938,17 @@ mod tests {
             .expect("listener failure should close the TCP connection promptly");
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .consumer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .build();
-        let consumer =
-            TcpConsumer::connect(config, FailingListener, None::<std::future::Ready<()>>)
-                .await
-                .expect("connect");
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60));
+        let consumer = TcpConsumer::connect(
+            config,
+            &ConsumerOptions::new("g"),
+            FailingListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .expect("connect");
 
         server.await.unwrap();
         assert!(
@@ -1051,17 +1061,18 @@ mod tests {
             let _ = framed.close().await;
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .consumer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .build();
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60));
 
-        let consumer = TcpConsumer::connect(config, NoopListener, None::<std::future::Ready<()>>)
-            .await
-            .expect("connect");
+        let consumer = TcpConsumer::connect(
+            config,
+            &ConsumerOptions::new("g"),
+            NoopListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .expect("connect");
 
         // Subscribe to two topics. Each call records into `self.subscriptions`.
         let item_a = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
@@ -1154,17 +1165,18 @@ mod tests {
             let _ = framed.close().await;
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .consumer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .build();
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60));
 
-        let consumer = TcpConsumer::connect(config, NoopListener, None::<std::future::Ready<()>>)
-            .await
-            .expect("connect");
+        let consumer = TcpConsumer::connect(
+            config,
+            &ConsumerOptions::new("g"),
+            NoopListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .expect("connect");
 
         let item = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
         consumer.subscribe(&[item]).await.expect("subscribe");
@@ -1253,23 +1265,23 @@ mod tests {
             let _ = tokio::time::timeout(Duration::from_secs(3), second.next()).await;
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .consumer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .reconnect(
-                ReconnectConfig::builder()
-                    .enabled(true)
-                    .initial_backoff(Duration::from_millis(20))
-                    .max_backoff(Duration::from_millis(50))
-                    .build(),
-            )
-            .build();
-        let consumer = TcpConsumer::connect(config, NoopListener, None::<std::future::Ready<()>>)
-            .await
-            .expect("connect");
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60))
+            .with_reconnect(
+                ReconnectPolicy::default()
+                    .with_enabled(true)
+                    .with_initial_backoff(Duration::from_millis(20))
+                    .with_max_backoff(Duration::from_millis(50)),
+            );
+        let consumer = TcpConsumer::connect(
+            config,
+            &ConsumerOptions::new("g"),
+            NoopListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .expect("connect");
         consumer
             .subscribe(&[Subscription::new("orders")])
             .await
@@ -1330,17 +1342,18 @@ mod tests {
             let _ = framed.close().await;
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .consumer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .build();
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60));
 
-        let consumer = TcpConsumer::connect(config, NoopListener, None::<std::future::Ready<()>>)
-            .await
-            .expect("connect");
+        let consumer = TcpConsumer::connect(
+            config,
+            &ConsumerOptions::new("g"),
+            NoopListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .expect("connect");
 
         // The redirect frame should make the driver exit on its own.
         // wait_for_shutdown must return promptly with the redirect reason.

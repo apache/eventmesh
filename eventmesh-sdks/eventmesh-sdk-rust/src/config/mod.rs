@@ -17,18 +17,11 @@
 
 //! Public client configuration.
 //!
-//! All transport configurations require an explicit endpoint. HTTP and TCP
-//! still use crate-private transport adapters while their implementations are
-//! migrated to the shared API.
+//! Every transport consumes these types directly: pass the matching config to
+//! a transport handle (`HttpClient`, `TcpClient`, `GrpcChannel`) together
+//! with role options when creating producers and consumers.
 
 mod client;
-#[cfg(feature = "http")]
-#[allow(dead_code)]
-mod http;
-#[allow(dead_code)]
-mod identity;
-#[allow(dead_code)]
-mod tcp;
 
 pub use client::{
     ClientOptions, ConsumerOptions, Credentials, Endpoint, EndpointSet, GrpcConfig,
@@ -36,12 +29,3 @@ pub use client::{
     TcpConfig, DEFAULT_GRPC_REQUEST_TIMEOUT, DEFAULT_HTTP_REQUEST_TIMEOUT,
     DEFAULT_TCP_CONNECT_TIMEOUT, DEFAULT_TCP_CONTROL_TIMEOUT, DEFAULT_TCP_REQUEST_TIMEOUT,
 };
-
-// Legacy adapters used by the private protocol implementations. Do not make
-// these public again.
-#[cfg(feature = "http")]
-pub(crate) use http::HttpClientConfig;
-pub(crate) use identity::ClientIdentity;
-pub(crate) use tcp::ReconnectConfig;
-#[cfg(feature = "tcp")]
-pub(crate) use tcp::TcpClientConfig;

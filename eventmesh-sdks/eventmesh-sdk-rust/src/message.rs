@@ -72,7 +72,7 @@ pub struct PublishReceipt {
 
 impl PublishReceipt {
     #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-    pub(crate) fn from_legacy(response: crate::model::PublishResponse) -> Self {
+    pub(crate) fn from_response(response: crate::model::PublishResponse) -> Self {
         Self {
             code: response.code.unwrap_or(0),
             message: response.message,

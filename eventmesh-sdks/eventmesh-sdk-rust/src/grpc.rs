@@ -216,13 +216,13 @@ impl GrpcProducer {
                 .inner
                 .publish(message)
                 .await
-                .map(PublishReceipt::from_legacy),
+                .map(PublishReceipt::from_response),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
                 .publish_cloud_event(event)
                 .await
-                .map(PublishReceipt::from_legacy),
+                .map(PublishReceipt::from_response),
         }
     }
 
@@ -250,7 +250,7 @@ impl GrpcProducer {
                 .inner
                 .publish_cloud_event_batch(events)
                 .await
-                .map(PublishReceipt::from_legacy);
+                .map(PublishReceipt::from_response);
         }
 
         #[cfg(feature = "cloud_events")]
@@ -265,7 +265,7 @@ impl GrpcProducer {
         self.inner
             .publish_message_batch(messages)
             .await
-            .map(PublishReceipt::from_legacy)
+            .map(PublishReceipt::from_response)
     }
 
     /// Send an event and await its reply.

@@ -27,15 +27,19 @@ TCP CloudEvents use `protocoltype=cloudevents` and raw `application/cloudevents+
 
 ## Configuration
 
-- gRPC transport code consumes `GrpcConfig` and the matching producer or
-  consumer role options directly; it has no transport-private configuration
-  adapter.
+- Every transport consumes the public configuration types directly:
+  `GrpcConfig`, `HttpConfig`, and `TcpConfig`, together with the role
+  options (`ProducerOptions`, `ConsumerOptions`) passed to each role
+  factory. There are no transport-private configuration adapters.
 - `GrpcChannel::connect` creates the tonic channel on the current Tokio
   runtime. Roles receive the channel explicitly and clones share its
   multiplexed HTTP/2 connection. Applications using multiple Tokio runtimes
   create a separate channel in each runtime.
-- `src/config/http.rs` defines `HttpClientConfig` and its builder. Server lists accept comma- or semicolon-separated `host:port[:weight]` entries and use the shared load balancer.
-- `src/config/tcp.rs` defines `TcpClientConfig`, `ReconnectConfig`, and their builders. TCP keeps connect, protocol-control, business request, heartbeat, and reconnect timeouts separate for Java compatibility. Heartbeats and GOODBYE are fire-and-forget.
+- `HttpConfig` carries an `EndpointSet`; endpoint weights feed the shared
+  load balancer and identity/credentials ride as HTTP headers.
+- `TcpConfig` keeps connect, protocol-control, business request, heartbeat,
+  and reconnect timeouts separate for Java compatibility. Heartbeats and
+  GOODBYE are fire-and-forget.
 
 ## HTTP lifecycle and routing
 

@@ -25,7 +25,8 @@
 //!
 //! ```ignore
 //! # use eventmesh::{
-//! #     config::HttpClientConfig, http::{HttpConsumer, WebhookServer},
+//! #     config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
+//! #     http::{HttpConsumer, WebhookServer},
 //! #     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
 //! #     MessageListener,
 //! # };
@@ -42,10 +43,12 @@
 //! let addr: std::net::SocketAddr = "0.0.0.0:8080".parse().unwrap();
 //! let server = WebhookServer::bind(addr, listener.clone()).await?;
 //!
-//! let config = HttpClientConfig::builder()
-//!     .servers("127.0.0.1:10105")
-//!     .build()?;
-//! let consumer = HttpConsumer::new(config, None::<std::future::Ready<()>>)?;
+//! let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?]).unwrap();
+//! let consumer = HttpConsumer::new(
+//!     HttpConfig::new(endpoints),
+//!     &ConsumerOptions::new("group"),
+//!     None::<std::future::Ready<()>>,
+//! )?;
 //! consumer.subscribe_webhook(
 //!     vec![Subscription::new("test-topic")],
 //!     server.url(),

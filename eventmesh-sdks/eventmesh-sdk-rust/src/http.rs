@@ -30,10 +30,10 @@ use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::{DeliveryType, Subscription};
 use crate::transport::http::{
-    HttpConsumer as LegacyConsumer, HttpProducer as LegacyProducer,
-    WebhookServer as ManagedWebhookServer,
+    EventMeshHttpClient as TransportClient, HttpConsumer as TransportConsumer,
+    HttpProducer as TransportProducer, WebhookServer,
 };
-use crate::transport::Publisher as LegacyPublisher;
+use crate::transport::Publisher;
 use crate::webhook::WebhookOptions;
 use crate::MessageHandler;
 use std::sync::Arc;
@@ -53,7 +53,7 @@ impl HttpClient {
         config.validate()?;
         // Constructing the private HTTP client validates the endpoint set and
         // request client without issuing network I/O.
-        LegacyProducer::new(config.legacy(None, None))?;
+        TransportClient::validate(&config)?;
         Ok(Self { config })
     }
 
@@ -61,7 +61,7 @@ impl HttpClient {
     pub fn producer(&self, options: ProducerOptions) -> Result<HttpProducer> {
         options.validate()?;
         Ok(HttpProducer {
-            inner: LegacyProducer::new(self.config.legacy(Some(&options), None))?,
+            inner: TransportProducer::new(self.config.clone(), &options)?,
         })
     }
 
@@ -86,13 +86,13 @@ impl HttpClient {
         validate_subscriptions(&subscriptions)?;
 
         let lifecycle = CancellationToken::new();
-        let inner = LegacyConsumer::new(
-            self.config.legacy(None, Some(&options)),
+        let inner = TransportConsumer::new(
+            self.config.clone(),
+            &options,
             Some(lifecycle.clone().cancelled_owned()),
         )?;
         let mut server =
-            ManagedWebhookServer::bind(webhook.bind_addr(), Arc::new(PublicHandler::new(handler)))
-                .await?;
+            WebhookServer::bind(webhook.bind_addr(), Arc::new(PublicHandler::new(handler))).await?;
         if let Some(url) = webhook.advertise_url() {
             server = server.with_advertise_url(url);
         }
@@ -141,8 +141,9 @@ impl HttpClient {
     pub fn webhook_registration(&self, options: ConsumerOptions) -> Result<WebhookRegistration> {
         options.validate()?;
         Ok(WebhookRegistration {
-            inner: LegacyConsumer::new(
-                self.config.legacy(None, Some(&options)),
+            inner: TransportConsumer::new(
+                self.config.clone(),
+                &options,
                 None::<std::future::Ready<()>>,
             )?,
         })
@@ -151,7 +152,7 @@ impl HttpClient {
 
 /// HTTP publishing capability.
 pub struct HttpProducer {
-    inner: LegacyProducer,
+    inner: TransportProducer,
 }
 
 impl HttpProducer {
@@ -162,20 +163,20 @@ impl HttpProducer {
                 .inner
                 .publish(message)
                 .await
-                .map(PublishReceipt::from_legacy),
+                .map(PublishReceipt::from_response),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
                 .publish_cloud_event(event)
                 .await
-                .map(PublishReceipt::from_legacy),
+                .map(PublishReceipt::from_response),
         }
     }
 }
 
 /// An SDK-managed HTTP consumer with an embedded axum callback server.
 pub struct HttpConsumer {
-    inner: LegacyConsumer,
+    inner: TransportConsumer,
     webhook_url: String,
     lifecycle: CancellationToken,
     server_handle: Mutex<Option<JoinHandle<Result<()>>>>,
@@ -251,7 +252,7 @@ impl Drop for HttpConsumer {
 
 /// Registration and heartbeat manager for an application-owned webhook URL.
 pub struct WebhookRegistration {
-    inner: LegacyConsumer,
+    inner: TransportConsumer,
 }
 
 impl WebhookRegistration {

@@ -21,10 +21,6 @@ use std::time::Duration;
 
 use crate::error::{EventMeshError, Result};
 
-#[cfg(any(feature = "http", feature = "tcp"))]
-use super::ClientIdentity;
-use super::ReconnectConfig;
-
 /// Default timeout for short gRPC operations.
 pub const DEFAULT_GRPC_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 /// Default timeout for HTTP requests.
@@ -127,7 +123,7 @@ impl Endpoint {
 
     /// Render the host component for an authority, including brackets around
     /// bare IPv6 literals.
-    fn authority_host(&self) -> String {
+    pub(crate) fn authority_host(&self) -> String {
         if self.host.contains(':') && !self.host.starts_with('[') {
             format!("[{}]", self.host)
         } else {
@@ -201,17 +197,17 @@ impl Credentials {
         self
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn username(&self) -> &str {
         self.username.as_deref().unwrap_or_default()
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn password(&self) -> &str {
         self.password.as_deref().unwrap_or_default()
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn token(&self) -> Option<&str> {
         self.token.as_deref()
     }
@@ -286,32 +282,32 @@ impl Identity {
         self
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn env(&self) -> &str {
         &self.env
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn idc(&self) -> &str {
         &self.idc
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn system(&self) -> &str {
         &self.system
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn process_id(&self) -> &str {
         &self.process_id
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn ip(&self) -> &str {
         &self.ip
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http"))]
     pub(crate) fn language(&self) -> &str {
         &self.language
     }
@@ -359,7 +355,7 @@ impl ProducerOptions {
         }
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn group(&self) -> &str {
         &self.group
     }
@@ -388,7 +384,7 @@ impl ConsumerOptions {
         }
     }
 
-    #[cfg(feature = "grpc")]
+    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn group(&self) -> &str {
         &self.group
     }
@@ -457,6 +453,18 @@ pub enum LoadBalance {
     WeightedRandom,
     /// Smooth weighted round-robin selection.
     WeightedRoundRobin,
+}
+
+#[cfg(feature = "http")]
+impl LoadBalance {
+    /// Map this policy onto the shared load-balancer strategy.
+    pub(crate) const fn to_wire(self) -> crate::common::loadbalance::LoadBalance {
+        match self {
+            Self::Random => crate::common::loadbalance::LoadBalance::Random,
+            Self::WeightedRandom => crate::common::loadbalance::LoadBalance::WeightRandom,
+            Self::WeightedRoundRobin => crate::common::loadbalance::LoadBalance::WeightRoundRobin,
+        }
+    }
 }
 
 /// gRPC client configuration.
@@ -644,49 +652,6 @@ impl HttpConfig {
             None => DEFAULT_HTTP_REQUEST_TIMEOUT,
         }
     }
-
-    #[cfg(feature = "http")]
-    pub(crate) fn legacy(
-        &self,
-        producer: Option<&ProducerOptions>,
-        consumer: Option<&ConsumerOptions>,
-    ) -> super::HttpClientConfig {
-        let mut identity = legacy_identity(&self.identity, &self.credentials);
-        if let Some(producer) = producer {
-            identity.producer_group = producer.group.clone();
-        }
-        if let Some(consumer) = consumer {
-            identity.consumer_group = consumer.group.clone();
-        }
-        let nodes = self
-            .endpoints
-            .0
-            .iter()
-            .map(|endpoint| crate::common::loadbalance::ServerNode {
-                host: endpoint.authority_host(),
-                port: endpoint.port,
-                weight: endpoint.weight as i32,
-            })
-            .collect();
-        super::HttpClientConfig {
-            nodes,
-            load_balance: match self.load_balance {
-                LoadBalance::Random => crate::common::loadbalance::LoadBalance::Random,
-                LoadBalance::WeightedRandom => {
-                    crate::common::loadbalance::LoadBalance::WeightRandom
-                }
-                LoadBalance::WeightedRoundRobin => {
-                    crate::common::loadbalance::LoadBalance::WeightRoundRobin
-                }
-            },
-            use_tls: self.use_tls,
-            proxy_from_env: self.proxy_from_env,
-            pool_size: super::http::DEFAULT_POOL_SIZE,
-            pool_idle_timeout: Duration::from_secs(super::http::DEFAULT_IDLE_TIMEOUT_SECS),
-            timeout: self.request_timeout(),
-            identity,
-        }
-    }
 }
 
 /// TCP reconnect settings.
@@ -700,12 +665,11 @@ pub struct ReconnectPolicy {
 
 impl Default for ReconnectPolicy {
     fn default() -> Self {
-        let legacy = ReconnectConfig::default();
         Self {
-            enabled: legacy.enabled,
-            max_retries: legacy.max_retries,
-            initial_backoff: legacy.initial_backoff,
-            max_backoff: legacy.max_backoff,
+            enabled: true,
+            max_retries: usize::MAX,
+            initial_backoff: Duration::from_secs(1),
+            max_backoff: Duration::from_secs(30),
         }
     }
 }
@@ -895,36 +859,6 @@ impl TcpConfig {
             None => DEFAULT_TCP_REQUEST_TIMEOUT,
         }
     }
-
-    #[cfg(feature = "tcp")]
-    pub(crate) fn legacy(
-        &self,
-        producer: Option<&ProducerOptions>,
-        consumer: Option<&ConsumerOptions>,
-    ) -> super::TcpClientConfig {
-        let mut identity = legacy_identity(&self.identity, &self.credentials);
-        if let Some(producer) = producer {
-            identity.producer_group = producer.group.clone();
-        }
-        if let Some(consumer) = consumer {
-            identity.consumer_group = consumer.group.clone();
-        }
-        super::TcpClientConfig {
-            server_addr: self.endpoint.authority_host(),
-            server_port: self.endpoint.port,
-            connect_timeout: self.connect_timeout,
-            control_timeout: self.control_timeout,
-            request_timeout: self.request_timeout(),
-            heartbeat_interval: self.heartbeat_interval,
-            reconnect: ReconnectConfig {
-                enabled: self.reconnect.enabled,
-                max_retries: self.reconnect.max_retries,
-                initial_backoff: self.reconnect.initial_backoff,
-                max_backoff: self.reconnect.max_backoff,
-            },
-            identity,
-        }
-    }
 }
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
@@ -945,23 +879,6 @@ fn validate_group(role: &str, group: &str) -> Result<()> {
         )));
     }
     Ok(())
-}
-
-#[cfg(any(feature = "http", feature = "tcp"))]
-fn legacy_identity(identity: &Identity, credentials: &Credentials) -> ClientIdentity {
-    ClientIdentity {
-        env: identity.env.clone(),
-        idc: identity.idc.clone(),
-        sys: identity.system.clone(),
-        pid: identity.process_id.clone(),
-        ip: identity.ip.clone(),
-        language: identity.language.clone(),
-        username: credentials.username.clone().unwrap_or_default(),
-        password: credentials.password.clone().unwrap_or_default(),
-        token: credentials.token.clone(),
-        producer_group: "DefaultProducerGroup".into(),
-        consumer_group: "DefaultConsumerGroup".into(),
-    }
 }
 
 #[cfg(test)]
@@ -990,42 +907,20 @@ mod tests {
 
     #[cfg(feature = "http")]
     #[test]
-    fn http_legacy_config_brackets_ipv6_host() {
-        let endpoints = EndpointSet::new([Endpoint::new("::1", 10_105).unwrap()]).unwrap();
-        let legacy = HttpConfig::new(endpoints).legacy(None, None);
-        assert_eq!(legacy.nodes[0].addr(), "[::1]:10105");
-    }
-
-    #[cfg(feature = "http")]
-    #[test]
     fn http_proxy_from_env_is_explicit() {
         let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105).unwrap()]).unwrap();
-        let direct = HttpConfig::new(endpoints.clone()).legacy(None, None);
-        let proxied = HttpConfig::new(endpoints)
+        assert!(!HttpConfig::new(endpoints.clone()).proxy_from_env());
+        assert!(HttpConfig::new(endpoints)
             .with_proxy_from_env(true)
-            .legacy(None, None);
-        assert!(!direct.proxy_from_env);
-        assert!(proxied.proxy_from_env);
+            .proxy_from_env());
     }
 
-    #[cfg(feature = "tcp")]
     #[test]
-    fn tcp_legacy_config_brackets_ipv6_host() {
-        let legacy = TcpConfig::new(Endpoint::new("::1", 10_000).unwrap()).legacy(None, None);
-        assert_eq!(legacy.authority(), "[::1]:10000");
-    }
-
-    #[cfg(feature = "tcp")]
-    #[test]
-    fn tcp_legacy_config_preserves_each_timeout_class() {
-        let legacy = TcpConfig::new(Endpoint::new("127.0.0.1", 10_000).unwrap())
-            .with_options(ClientOptions::default().with_request_timeout(Duration::from_secs(3)))
-            .with_connect_timeout(Duration::from_secs(1))
-            .with_control_timeout(Duration::from_secs(2))
-            .legacy(None, None);
-        assert_eq!(legacy.connect_timeout, Duration::from_secs(1));
-        assert_eq!(legacy.control_timeout, Duration::from_secs(2));
-        assert_eq!(legacy.request_timeout, Duration::from_secs(3));
+    fn endpoint_authority_brackets_ipv6_host() {
+        assert_eq!(
+            Endpoint::new("::1", 10_000).unwrap().authority(),
+            "[::1]:10000"
+        );
     }
 
     #[test]

@@ -23,7 +23,7 @@
 //!
 //! ## Reconnect
 //!
-//! When [`ReconnectConfig::enabled`] is `true` (the default), the background
+//! When automatic reconnect is enabled (the default), the background
 //! task automatically re-establishes the TCP connection + HELLO handshake after
 //! an I/O error or server-side close. An optional reconnect-event channel
 //! ([`TcpConnection::take_reconnect_rx`]) lets consumers replay their
@@ -43,7 +43,7 @@ use tokio_util::codec::Framed;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
-use crate::config::ReconnectConfig;
+use crate::config::ReconnectPolicy;
 use crate::error::{EventMeshError, Result};
 
 use super::codec::TcpCodec;
@@ -97,7 +97,7 @@ struct ConnectionState {
 ///
 /// Created by [`TcpConnection::connect`], which performs the TCP connect +
 /// HELLO handshake. A background task handles all I/O (read, write, heartbeat)
-/// and, when [`ReconnectConfig`] is enabled, automatically re-establishes the
+/// and, when reconnecting is enabled, automatically re-establishes the
 /// connection after failures.
 ///
 /// Call [`TcpConnection::io`] for request-response (blocks until the matching
@@ -148,7 +148,7 @@ impl TcpConnection {
         heartbeat_interval: Duration,
         connect_timeout: Duration,
         control_timeout: Duration,
-        reconnect: ReconnectConfig,
+        reconnect: ReconnectPolicy,
     ) -> Result<Self> {
         // Initial connect is inline so the caller gets immediate feedback.
         // Subsequent reconnects happen in the background task.
@@ -399,7 +399,7 @@ impl TcpConnection {
         heartbeat_interval: Duration,
         connect_timeout: Duration,
         control_timeout: Duration,
-        reconnect: ReconnectConfig,
+        reconnect: ReconnectPolicy,
         mut framed: Framed<TcpStream, TcpCodec>,
         mut outbound_rx: mpsc::Receiver<Package>,
         inbound_tx: mpsc::Sender<Package>,
@@ -454,21 +454,22 @@ impl TcpConnection {
             }
 
             // Decide whether to attempt reconnect.
-            if !reconnect.enabled || cancel.is_cancelled() {
+            if !reconnect.enabled() || cancel.is_cancelled() {
                 debug!("reconnect disabled or cancelled, exiting");
                 return;
             }
 
             // Reconnect with exponential backoff.
-            let mut backoff = reconnect.initial_backoff;
+            let mut backoff = reconnect.initial_backoff();
             let mut attempt: usize = 0;
 
             loop {
                 attempt += 1;
-                if attempt > reconnect.max_retries {
+                if attempt > reconnect.max_retries() {
                     warn!(
                         attempts = attempt - 1,
-                        "max reconnect attempts ({}) exceeded, giving up", reconnect.max_retries
+                        "max reconnect attempts ({}) exceeded, giving up",
+                        reconnect.max_retries()
                     );
                     return;
                 }
@@ -482,7 +483,7 @@ impl TcpConnection {
                     }
                     _ = tokio::time::sleep(backoff) => {}
                 }
-                backoff = backoff.saturating_mul(2).min(reconnect.max_backoff);
+                backoff = backoff.saturating_mul(2).min(reconnect.max_backoff());
 
                 match Self::establish(&addr, port, &user_agent, connect_timeout, control_timeout)
                     .await
@@ -697,7 +698,7 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::config::{ReconnectConfig, TcpClientConfig};
+    use crate::config::{Endpoint, ProducerOptions, ReconnectPolicy, TcpConfig};
     use crate::model::EventMeshMessage;
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody};
@@ -808,29 +809,27 @@ mod tests {
             let (_stream, _) = listener.accept().await.unwrap();
             std::future::pending::<()>().await;
         });
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .producer_group("g")
-            .connect_timeout(Duration::from_secs(1))
-            .control_timeout(Duration::from_millis(20))
-            .heartbeat_interval(Duration::from_secs(60))
-            .reconnect(ReconnectConfig::builder().enabled(false).build())
-            .build();
-        let user_agent = super::super::frame::UserAgent::from_identity(
-            &config.identity,
-            config.server_port,
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_connect_timeout(Duration::from_secs(1))
+            .with_control_timeout(Duration::from_millis(20))
+            .with_heartbeat_interval(Duration::from_secs(60))
+            .with_reconnect(ReconnectPolicy::default().with_enabled(false));
+        let user_agent = super::super::frame::UserAgent::from_role(
+            config.identity(),
+            config.credentials(),
+            "g",
+            config.endpoint().port(),
             "pub",
         );
 
         let result = TcpConnection::connect(
-            &config.server_addr,
-            config.server_port,
+            &config.endpoint().authority_host(),
+            config.endpoint().port(),
             &user_agent,
-            config.heartbeat_interval,
-            config.connect_timeout,
-            config.control_timeout,
-            config.reconnect,
+            config.heartbeat_interval(),
+            config.connect_timeout(),
+            config.control_timeout(),
+            config.reconnect().clone(),
         )
         .await;
         assert!(matches!(
@@ -902,18 +901,15 @@ mod tests {
             let _ = framed.close().await;
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .producer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .reconnect(ReconnectConfig::builder().enabled(false).build())
-            .build();
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60))
+            .with_reconnect(ReconnectPolicy::default().with_enabled(false));
 
-        let producer = crate::transport::tcp::TcpProducer::connect(config)
-            .await
-            .expect("connect");
+        let producer =
+            crate::transport::tcp::TcpProducer::connect(config, &ProducerOptions::new("g"))
+                .await
+                .expect("connect");
 
         let msg = EventMeshMessage::builder()
             .topic("t")
@@ -979,34 +975,31 @@ mod tests {
             tokio::time::sleep(Duration::from_secs(1)).await;
         });
 
-        let config = TcpClientConfig::builder()
-            .server_addr("127.0.0.1")
-            .server_port(port)
-            .producer_group("g")
-            .control_timeout(Duration::from_secs(3))
-            .heartbeat_interval(Duration::from_secs(60))
-            .reconnect(
-                ReconnectConfig::builder()
-                    .enabled(true)
-                    .initial_backoff(Duration::from_millis(100))
-                    .max_backoff(Duration::from_millis(500))
-                    .build(),
-            )
-            .build();
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60))
+            .with_reconnect(
+                ReconnectPolicy::default()
+                    .with_enabled(true)
+                    .with_initial_backoff(Duration::from_millis(100))
+                    .with_max_backoff(Duration::from_millis(500)),
+            );
 
-        let user_agent = super::super::frame::UserAgent::from_identity(
-            &config.identity,
-            config.server_port,
+        let user_agent = super::super::frame::UserAgent::from_role(
+            config.identity(),
+            config.credentials(),
+            "g",
+            config.endpoint().port(),
             "pub",
         );
         let conn = TcpConnection::connect(
-            &config.server_addr,
-            config.server_port,
+            &config.endpoint().authority_host(),
+            config.endpoint().port(),
             &user_agent,
-            config.heartbeat_interval,
-            config.connect_timeout,
-            config.control_timeout,
-            config.reconnect.clone(),
+            config.heartbeat_interval(),
+            config.connect_timeout(),
+            config.control_timeout(),
+            config.reconnect().clone(),
         )
         .await
         .expect("initial connect");

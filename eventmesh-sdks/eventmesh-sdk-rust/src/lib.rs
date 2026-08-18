@@ -50,9 +50,8 @@
 
 #![deny(missing_docs, unsafe_code)]
 
-// These modules are wire adapters retained behind the v2 public façade. Some
-// protocol-specific compatibility paths are intentionally feature-dependent,
-// so not every helper is referenced in every feature combination.
+// Common helpers are shared across feature-gated transports, so not every
+// item is referenced in every feature combination.
 #[allow(dead_code, unused_imports)]
 mod common;
 pub mod config;

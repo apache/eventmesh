@@ -395,35 +395,33 @@ pub struct UserAgent {
 }
 
 impl UserAgent {
-    /// Build a `UserAgent` from a [`TcpClientConfig`](crate::config::TcpClientConfig)'s
-    /// identity, tagged with `purpose` ("pub" or "sub").
+    /// Build a `UserAgent` from the public identity configuration and the
+    /// role's group, tagged with `purpose` ("pub" or "sub").
     ///
-    /// `host` is the **client's** local IP (from `identity.ip`), NOT the server
+    /// `host` is the **client's** local IP (from the identity), NOT the server
     /// address. The Java runtime uses `session.getClient().getHost()` to stamp
     /// the `RSP_IP` CloudEvent extension on every pushed message, so a wrong
     /// value here corrupts tracing/metadata.
-    pub fn from_identity(
-        identity: &crate::config::ClientIdentity,
+    pub fn from_role(
+        identity: &crate::config::Identity,
+        credentials: &crate::config::Credentials,
+        group: &str,
         port: u16,
         purpose: &str,
     ) -> Self {
         Self {
-            env: identity.env.clone(),
-            subsystem: identity.sys.clone(),
+            env: identity.env().to_string(),
+            subsystem: identity.system().to_string(),
             path: String::new(),
-            pid: identity.pid.parse().unwrap_or(0),
-            host: identity.ip.clone(),
+            pid: identity.process_id().parse().unwrap_or(0),
+            host: identity.ip().to_string(),
             port: port as i32,
             version: "1.0".to_string(),
-            username: identity.username.clone(),
-            password: identity.password.clone(),
-            token: identity.token.clone().unwrap_or_default(),
-            idc: identity.idc.clone(),
-            group: if purpose == "pub" {
-                identity.producer_group.clone()
-            } else {
-                identity.consumer_group.clone()
-            },
+            username: credentials.username().to_string(),
+            password: credentials.password().to_string(),
+            token: credentials.token().unwrap_or_default().to_string(),
+            idc: identity.idc().to_string(),
+            group: group.to_string(),
             purpose: purpose.to_string(),
             unack: 0,
         }

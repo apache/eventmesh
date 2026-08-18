@@ -23,9 +23,9 @@ use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::tcp::{
-    TcpConsumer as LegacyConsumer, TcpMessage, TcpProducer as LegacyProducer,
+    TcpConsumer as TransportConsumer, TcpMessage, TcpProducer as TransportProducer,
 };
-use crate::transport::{Publisher as LegacyPublisher, RequestReply as LegacyRequestReply};
+use crate::transport::{Publisher, RequestReply};
 use crate::MessageHandler;
 use tracing::warn;
 
@@ -47,7 +47,7 @@ impl TcpClient {
     pub async fn producer(&self, options: ProducerOptions) -> Result<TcpProducer> {
         options.validate()?;
         Ok(TcpProducer {
-            inner: LegacyProducer::connect(self.config.legacy(Some(&options), None)).await?,
+            inner: TransportProducer::connect(self.config.clone(), &options).await?,
             timeout: self.config.request_timeout(),
             response_driver: tokio::sync::Mutex::new(None),
         })
@@ -78,8 +78,9 @@ impl TcpClient {
     {
         options.validate()?;
         Ok(TcpConsumer {
-            inner: LegacyConsumer::connect(
-                self.config.legacy(None, Some(&options)),
+            inner: TransportConsumer::connect(
+                self.config.clone(),
+                &options,
                 PublicHandler::new(handler),
                 None::<std::future::Ready<()>>,
             )
@@ -90,14 +91,14 @@ impl TcpClient {
 
 /// TCP publishing capability.
 pub struct TcpProducer {
-    inner: LegacyProducer,
+    inner: TransportProducer,
     timeout: std::time::Duration,
     response_driver: tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 /// A long-lived TCP consumer.
 pub struct TcpConsumer<H: MessageHandler> {
-    inner: LegacyConsumer<PublicHandler<H>>,
+    inner: TransportConsumer<PublicHandler<H>>,
 }
 
 impl<H: MessageHandler> TcpConsumer<H> {
@@ -163,13 +164,13 @@ impl TcpProducer {
                 .inner
                 .publish(message)
                 .await
-                .map(PublishReceipt::from_legacy),
+                .map(PublishReceipt::from_response),
             #[cfg(feature = "cloud_events")]
             Message::CloudEvent(event) => self
                 .inner
                 .publish_cloud_event(event)
                 .await
-                .map(PublishReceipt::from_legacy),
+                .map(PublishReceipt::from_response),
         }
     }
 

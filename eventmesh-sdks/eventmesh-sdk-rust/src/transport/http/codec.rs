@@ -76,7 +76,7 @@ use serde::{Deserialize, Serialize};
 use crate::common::status_code::RequestCode;
 use crate::common::util::RandomStringUtils;
 use crate::common::{ProtocolKey, DEFAULT_MESSAGE_TTL};
-use crate::config::ClientIdentity;
+use crate::config::{Credentials, Identity};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::subscription::Subscription;
@@ -264,25 +264,26 @@ impl PushMessageRequestBody {
 pub fn build_headers(
     code: i32,
     protocol_type: EventMeshProtocolType,
-    identity: &ClientIdentity,
+    identity: &Identity,
+    credentials: &Credentials,
 ) -> Vec<(&'static str, String)> {
     let mut headers = vec![
         ("code", code.to_string()),
-        ("env", identity.env.clone()),
-        ("idc", identity.idc.clone()),
-        ("sys", identity.sys.clone()),
-        ("pid", identity.pid.clone()),
-        ("ip", identity.ip.clone()),
-        ("username", identity.username.clone()),
-        ("passwd", identity.password.clone()),
-        ("language", identity.language.clone()),
+        ("env", identity.env().to_string()),
+        ("idc", identity.idc().to_string()),
+        ("sys", identity.system().to_string()),
+        ("pid", identity.process_id().to_string()),
+        ("ip", identity.ip().to_string()),
+        ("username", credentials.username().to_string()),
+        ("passwd", credentials.password().to_string()),
+        ("language", identity.language().to_string()),
         ("version", PROTOCOL_VERSION.to_string()),
         ("protocoltype", protocol_type.as_str().to_string()),
         ("protocolversion", PROTOCOL_VERSION.to_string()),
         ("protocoldesc", "http".to_string()),
     ];
-    if let Some(token) = &identity.token {
-        headers.push(("token", token.clone()));
+    if let Some(token) = credentials.token() {
+        headers.push(("token", token.to_string()));
     }
     headers
 }
@@ -294,9 +295,9 @@ pub fn build_headers(
 /// [`build_headers`]. Only the message-specific fields (`producergroup`,
 /// `topic`, `content`, `ttl`, `bizseqno`, `uniqueid`) go in the body, matching
 /// `SendMessageRequestBody` on the Java side.
-pub fn encode_publish(msg: &EventMeshMessage, identity: &ClientIdentity) -> Vec<(String, String)> {
+pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(String, String)> {
     let mut fields: Vec<(String, String)> = Vec::new();
-    fields.push(("producergroup".into(), identity.producer_group.clone()));
+    fields.push(("producergroup".into(), producer_group.to_string()));
     fields.push(("topic".into(), msg.topic.clone()));
     fields.push(("content".into(), msg.content.clone()));
     // Always emit a `ttl` form field, falling back to `DEFAULT_MESSAGE_TTL`
@@ -373,10 +374,10 @@ pub fn encode_publish(msg: &EventMeshMessage, identity: &ClientIdentity) -> Vec<
 pub fn encode_subscribe(
     items: &[Subscription],
     url: &str,
-    identity: &ClientIdentity,
+    consumer_group: &str,
 ) -> Vec<(String, String)> {
     vec![
-        ("consumerGroup".into(), identity.consumer_group.clone()),
+        ("consumerGroup".into(), consumer_group.to_string()),
         (
             "topic".into(),
             serde_json::to_string(items).unwrap_or_default(),
@@ -389,10 +390,10 @@ pub fn encode_subscribe(
 pub fn encode_unsubscribe(
     topics: &[String],
     url: &str,
-    identity: &ClientIdentity,
+    consumer_group: &str,
 ) -> Vec<(String, String)> {
     vec![
-        ("consumerGroup".into(), identity.consumer_group.clone()),
+        ("consumerGroup".into(), consumer_group.to_string()),
         (
             "topic".into(),
             serde_json::to_string(topics).unwrap_or_default(),
@@ -402,10 +403,7 @@ pub fn encode_unsubscribe(
 }
 
 /// Encode heartbeat body fields.
-pub fn encode_heartbeat(
-    items: &[(String, String)],
-    identity: &ClientIdentity,
-) -> Vec<(String, String)> {
+pub fn encode_heartbeat(items: &[(String, String)], consumer_group: &str) -> Vec<(String, String)> {
     use crate::model::HeartbeatItem;
 
     let entities: Vec<HeartbeatItem> = items
@@ -413,7 +411,7 @@ pub fn encode_heartbeat(
         .map(|(topic, url)| HeartbeatItem::new(topic.clone(), url.clone()))
         .collect();
     vec![
-        ("consumerGroup".into(), identity.consumer_group.clone()),
+        ("consumerGroup".into(), consumer_group.to_string()),
         ("clientType".into(), "2".into()), // SUB
         (
             "heartbeatEntities".into(),
@@ -462,17 +460,25 @@ pub fn parse_push_body(body: &str) -> Result<PushMessageRequestBody> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::{Credentials, Identity};
+
+    fn identity() -> Identity {
+        Identity::default()
+    }
+
+    fn credentials() -> Credentials {
+        Credentials::new()
+    }
 
     #[test]
     fn encode_publish_round_trip() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("test-topic")
             .content("hello")
             .biz_seq_no("seq-1")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let encoded = form_encode(&fields);
         assert!(encoded.contains("topic=test-topic"));
         assert!(encoded.contains("bizseqno=seq-1"));
@@ -484,13 +490,12 @@ mod tests {
 
     #[test]
     fn encode_publish_auto_generates_ids_when_missing() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         let biz = map
             .get("bizseqno")
@@ -506,7 +511,6 @@ mod tests {
 
     #[test]
     fn encode_publish_keeps_caller_supplied_ids() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
@@ -514,7 +518,7 @@ mod tests {
             .unique_id("my-uid")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("bizseqno"), Some(&"my-seq".to_string()));
         assert_eq!(map.get("uniqueid"), Some(&"my-uid".to_string()));
@@ -522,13 +526,12 @@ mod tests {
 
     #[test]
     fn encode_publish_keeps_identity_out_of_body() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let encoded = form_encode(&fields);
         // Identity must be in headers, not body.
         assert!(!encoded.contains("env="));
@@ -539,7 +542,6 @@ mod tests {
 
     #[test]
     fn encode_publish_includes_ext_fields() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
@@ -547,7 +549,7 @@ mod tests {
             .prop("key2", "val2")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ext = map.get("extFields").expect("extFields should be present");
         let props: HashMap<String, String> = serde_json::from_str(ext).unwrap();
@@ -557,7 +559,6 @@ mod tests {
 
     #[test]
     fn encode_publish_filters_reserved_keys_from_ext_fields() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
@@ -573,7 +574,7 @@ mod tests {
             .prop("producergroup", "stale-group")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ext = map.get("extFields").expect("extFields should be present");
         let props: HashMap<String, String> = serde_json::from_str(ext).unwrap();
@@ -591,7 +592,6 @@ mod tests {
 
     #[test]
     fn encode_publish_omits_ext_fields_when_all_props_filtered() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
@@ -599,20 +599,19 @@ mod tests {
             .prop("bizseqno", "stale")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         // All props were reserved keys → no extFields field should be emitted.
         assert!(!fields.iter().any(|(k, _)| k == "extFields"));
     }
 
     #[test]
     fn encode_publish_omits_ext_fields_when_empty() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         assert!(!fields.iter().any(|(k, _)| k == "extFields"));
     }
 
@@ -620,13 +619,12 @@ mod tests {
     fn encode_publish_defaults_ttl_when_unset() {
         // The runtime's SendSyncMessageProcessor rejects a blank TTL with
         // EVENTMESH_PROTOCOL_BODY_ERR, so encode_publish must always emit one.
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ttl = map.get("ttl").expect("ttl should always be present");
         assert_eq!(ttl, &DEFAULT_MESSAGE_TTL.to_string());
@@ -634,14 +632,13 @@ mod tests {
 
     #[test]
     fn encode_publish_keeps_caller_supplied_ttl() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .ttl_millis(30_000)
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"30000".to_string()));
     }
@@ -650,21 +647,19 @@ mod tests {
     fn encode_publish_keeps_ttl_from_prop_when_field_unset() {
         // A `ttl` prop should be honored when the typed `ttl` field is None,
         // matching the gRPC codec's fallback chain.
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .prop(ProtocolKey::TTL, "99000")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"99000".to_string()));
     }
 
     #[test]
     fn encode_publish_typed_ttl_takes_precedence_over_prop() {
-        let identity = ClientIdentity::detect();
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
@@ -672,19 +667,18 @@ mod tests {
             .prop(ProtocolKey::TTL, "99000")
             .build()
             .unwrap();
-        let fields = encode_publish(&msg, &identity);
+        let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"7000".to_string()));
     }
 
     #[test]
     fn build_headers_carries_identity_and_token() {
-        let mut identity = ClientIdentity::detect();
-        identity.token = Some("my-jwt".into());
         let headers = build_headers(
             RequestCode::MSG_SEND_ASYNC,
             EventMeshProtocolType::EventMeshMessage,
-            &identity,
+            &identity(),
+            &Credentials::new().with_token("my-jwt"),
         );
         let header_str: String = headers
             .iter()
@@ -700,12 +694,11 @@ mod tests {
 
     #[test]
     fn build_headers_omits_token_when_unset() {
-        let identity = ClientIdentity::detect();
-        assert!(identity.token.is_none());
         let headers = build_headers(
             RequestCode::MSG_SEND_ASYNC,
             EventMeshProtocolType::EventMeshMessage,
-            &identity,
+            &identity(),
+            &credentials(),
         );
         assert!(!headers.iter().any(|(k, _)| *k == "token"));
     }

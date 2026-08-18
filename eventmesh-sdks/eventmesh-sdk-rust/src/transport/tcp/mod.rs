@@ -31,17 +31,14 @@
 //!
 //! ```ignore
 //! use eventmesh::{
-//!     config::TcpClientConfig, tcp::TcpProducer,
+//!     config::{Endpoint, ProducerOptions, TcpConfig}, tcp::TcpProducer,
 //!     model::EventMeshMessage, transport::Publisher,
 //! };
 //!
 //! #[tokio::main]
 //! async fn main() -> eventmesh::Result<()> {
-//!     let config = TcpClientConfig::builder()
-//!         .server_addr("127.0.0.1").server_port(10000)
-//!         .producer_group("g")
-//!         .build();
-//!     let producer = TcpProducer::connect(config).await?;
+//!     let config = TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?);
+//!     let producer = TcpProducer::connect(config, &ProducerOptions::new("g")).await?;
 //!     let msg = EventMeshMessage::builder().topic("t").content("hi").build()?;
 //!     producer.publish(msg).await?;
 //!     Ok(())
@@ -52,7 +49,7 @@
 //!
 //! ```ignore
 //! use eventmesh::{
-//!     config::TcpClientConfig, tcp::TcpConsumer,
+//!     config::{ConsumerOptions, Endpoint, TcpConfig}, tcp::TcpConsumer,
 //!     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
 //!     MessageListener,
 //! };
@@ -68,12 +65,9 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> eventmesh::Result<()> {
-//!     let config = TcpClientConfig::builder()
-//!         .server_addr("127.0.0.1").server_port(10000)
-//!         .consumer_group("g")
-//!         .build();
+//!     let config = TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?);
 //!     let consumer = TcpConsumer::connect(
-//!         config, MyListener,
+//!         config, &ConsumerOptions::new("g"), MyListener,
 //!         async { tokio::signal::ctrl_c().await.ok(); },
 //!     ).await?;
 //!     consumer.wait_for_shutdown().await;

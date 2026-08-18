@@ -67,6 +67,6 @@ Public rustdoc should state feature requirements, ownership/lifecycle rules, and
 
 - Add the Apache license header to every new `.rs` file.
 - Mirror the established consuming builder style for configuration additions.
-- Keep transport wire formats behind the public v2 API. Do not expose private legacy adapters merely to reuse an implementation detail.
+- Keep transport wire formats behind the public v2 API. Transports consume the public configuration types (`GrpcConfig`, `HttpConfig`, `TcpConfig`, role options) directly — do not reintroduce transport-private configuration adapters.
 
 Follow the additional protocol boundaries and internal constraints in [ARCHITECTURE.md](ARCHITECTURE.md).

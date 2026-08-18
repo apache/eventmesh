@@ -27,11 +27,11 @@ use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, warn};
 
-use crate::config::HttpClientConfig;
+use crate::config::{ConsumerOptions, HttpConfig};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshProtocolType, PublishResponse};
 use crate::subscription::{DeliveryType, Subscription};
-use crate::transport::http::client::EventMeshHttpClient;
+use crate::transport::http::client::{EventMeshHttpClient, HttpRole};
 use crate::transport::http::codec::{self, uri};
 
 /// Heartbeat interval (mirrors the Java SDK: 30s).
@@ -70,7 +70,8 @@ impl HttpConsumer {
     /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
     /// initiated by [`shutdown`](Self::shutdown) or drop.
     pub fn new(
-        config: HttpClientConfig,
+        config: HttpConfig,
+        options: &ConsumerOptions,
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
         let runtime = tokio::runtime::Handle::try_current().map_err(|_| {
@@ -78,7 +79,7 @@ impl HttpConsumer {
                 "HTTP consumer construction requires an active Tokio runtime".into(),
             )
         })?;
-        let client = EventMeshHttpClient::new(config)?;
+        let client = EventMeshHttpClient::new(HttpRole::consumer(config, options)?)?;
         let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
 
@@ -134,15 +135,17 @@ impl HttpConsumer {
                     .into(),
             ));
         }
-        let config = self.client.config();
-        let body = codec::encode_subscribe(&items, &url, &config.identity);
+        let role = self.client.role();
+        let config = role.config();
+        let body = codec::encode_subscribe(&items, &url, role.consumer_group());
         let code = codec::subscribe_code();
         let headers = codec::build_headers(
             code,
             EventMeshProtocolType::EventMeshMessage,
-            &config.identity,
+            config.identity(),
+            config.credentials(),
         );
-        let timeout = config.timeout;
+        let timeout = role.timeout();
         let text = self
             .client
             .post_form(uri::ROOT, &body, &headers, timeout)
@@ -172,7 +175,7 @@ impl HttpConsumer {
 
     /// Current consumer group.
     pub fn consumer_group(&self) -> &str {
-        &self.client.config().identity.consumer_group
+        self.client.role().consumer_group()
     }
 
     /// Signal the heartbeat task to stop.
@@ -242,15 +245,17 @@ impl HttpConsumer {
                 )));
             }
         }
-        let config = self.client.config();
+        let role = self.client.role();
+        let config = role.config();
         let code = codec::unsubscribe_code();
         let headers = codec::build_headers(
             code,
             EventMeshProtocolType::EventMeshMessage,
-            &config.identity,
+            config.identity(),
+            config.credentials(),
         );
-        let timeout = config.timeout;
-        let body = codec::encode_unsubscribe(&topics, &url, &config.identity);
+        let timeout = role.timeout();
+        let body = codec::encode_unsubscribe(&topics, &url, role.consumer_group());
         let text = self
             .client
             .post_form(uri::ROOT, &body, &headers, timeout)
@@ -333,15 +338,17 @@ fn spawn_heartbeat(
                 .map(|((topic, url), _entry)| (topic.clone(), url.clone()))
                 .collect();
             if !items.is_empty() {
-                let config = client.config();
-                let body = codec::encode_heartbeat(&items, &config.identity);
+                let role = client.role();
+                let config = role.config();
+                let body = codec::encode_heartbeat(&items, role.consumer_group());
                 let code = codec::heartbeat_code();
                 let headers = codec::build_headers(
                     code,
                     EventMeshProtocolType::EventMeshMessage,
-                    &config.identity,
+                    config.identity(),
+                    config.credentials(),
                 );
-                let timeout = config.timeout;
+                let timeout = role.timeout();
                 match client
                     .post_form(uri::HEARTBEAT, &body, &headers, timeout)
                     .await
@@ -373,7 +380,17 @@ mod tests {
     use crate::subscription::DeliveryMode;
 
     fn make_consumer() -> HttpConsumer {
-        HttpConsumer::new(HttpClientConfig::default(), None::<std::future::Ready<()>>).unwrap()
+        let endpoints =
+            crate::config::EndpointSet::new([
+                crate::config::Endpoint::new("127.0.0.1", 10_105).unwrap()
+            ])
+            .unwrap();
+        HttpConsumer::new(
+            HttpConfig::new(endpoints),
+            &ConsumerOptions::new("test-group"),
+            None::<std::future::Ready<()>>,
+        )
+        .unwrap()
     }
 
     #[tokio::test]

@@ -19,10 +19,10 @@
 
 use tracing::debug;
 
-use crate::config::HttpClientConfig;
+use crate::config::{Credentials, HttpConfig, Identity, ProducerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
-use crate::transport::http::client::EventMeshHttpClient;
+use crate::transport::http::client::{EventMeshHttpClient, HttpRole};
 use crate::transport::http::codec::{self, uri};
 use crate::transport::Publisher;
 
@@ -34,9 +34,9 @@ pub struct HttpProducer {
 }
 
 impl HttpProducer {
-    /// Create a producer from a config.
-    pub fn new(config: HttpClientConfig) -> Result<Self> {
-        let client = EventMeshHttpClient::new(config)?;
+    /// Create a producer from the public config and producer options.
+    pub fn new(config: HttpConfig, options: &ProducerOptions) -> Result<Self> {
+        let client = EventMeshHttpClient::new(HttpRole::producer(config, options)?)?;
         Ok(Self { client })
     }
 
@@ -79,11 +79,13 @@ impl HttpProducer {
         protocol_type: EventMeshProtocolType,
     ) -> Result<PublishResponse> {
         message.validate_for_publish()?;
-        let config = self.client.config();
-        let body = codec::encode_publish(&message, &config.identity);
+        let role = self.client.role();
+        let config = role.config();
+        let body = codec::encode_publish(&message, role.producer_group());
         let code = codec::publish_code();
-        let headers = codec::build_headers(code, protocol_type, &config.identity);
-        let timeout = config.timeout;
+        let headers =
+            codec::build_headers(code, protocol_type, config.identity(), config.credentials());
+        let timeout = role.timeout();
         let text = self
             .client
             .post_form(uri::ROOT, &body, &headers, timeout)

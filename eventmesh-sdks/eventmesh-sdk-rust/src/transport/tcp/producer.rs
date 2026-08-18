@@ -22,7 +22,7 @@ use std::time::Duration;
 
 use tracing::debug;
 
-use crate::config::TcpClientConfig;
+use crate::config::{ProducerOptions, TcpConfig};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::tcp::connection::TcpConnection;
@@ -37,7 +37,8 @@ use crate::transport::{Publisher, RequestReply};
 /// Implements the [`Publisher`] trait.
 pub struct TcpProducer {
     conn: Arc<TcpConnection>,
-    config: TcpClientConfig,
+    config: TcpConfig,
+    request_timeout: std::time::Duration,
 }
 
 impl TcpProducer {
@@ -45,22 +46,33 @@ impl TcpProducer {
     ///
     /// The reconnect policy from the config controls automatic reconnection
     /// after I/O failures (enabled by default).
-    pub async fn connect(config: TcpClientConfig) -> Result<Self> {
-        let user_agent = UserAgent::from_identity(&config.identity, config.server_port, "pub");
+    pub async fn connect(config: TcpConfig, options: &ProducerOptions) -> Result<Self> {
+        let user_agent = UserAgent::from_role(
+            config.identity(),
+            config.credentials(),
+            options.group(),
+            config.endpoint().port(),
+            "pub",
+        );
         let conn = Arc::new(
             TcpConnection::connect(
-                &config.server_addr,
-                config.server_port,
+                &config.endpoint().authority_host(),
+                config.endpoint().port(),
                 &user_agent,
-                config.heartbeat_interval,
-                config.connect_timeout,
-                config.control_timeout,
-                config.reconnect.clone(),
+                config.heartbeat_interval(),
+                config.connect_timeout(),
+                config.control_timeout(),
+                config.reconnect().clone(),
             )
             .await?,
         );
+        let request_timeout = config.request_timeout();
 
-        Ok(Self { conn, config })
+        Ok(Self {
+            conn,
+            config,
+            request_timeout,
+        })
     }
 
     /// Broadcast a message (fire-and-forget). Corresponds to Java
@@ -100,7 +112,7 @@ impl TcpProducer {
         let pkg = message::build_cloud_event_package(&event, Command::AsyncMessageToServer)?;
         debug!(topic = ?event.subject(), "publishing CloudEvent via TCP");
 
-        let resp = self.conn.io(pkg, self.config.request_timeout).await?;
+        let resp = self.conn.io(pkg, self.request_timeout).await?;
         let response = message::response_from_pkg(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
@@ -185,7 +197,7 @@ impl TcpProducer {
     }
 
     /// Current config.
-    pub fn config(&self) -> &TcpClientConfig {
+    pub fn config(&self) -> &TcpConfig {
         &self.config
     }
 }
@@ -209,7 +221,7 @@ impl Publisher for TcpProducer {
         let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
         debug!(topic = ?message.topic, "publishing via TCP");
 
-        let resp = self.conn.io(pkg, self.config.request_timeout).await?;
+        let resp = self.conn.io(pkg, self.request_timeout).await?;
         let response = message::response_from_pkg(&resp);
         if !response.is_success() {
             return Err(EventMeshError::Server {
