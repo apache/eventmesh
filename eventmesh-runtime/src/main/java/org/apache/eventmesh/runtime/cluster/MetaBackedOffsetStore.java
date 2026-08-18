@@ -71,9 +71,12 @@ public class MetaBackedOffsetStore implements OffsetStore {
     }
 
     @Override
-    public void writeOffset(String topic, String clientId, int partition, long offset) {
-        local.writeOffset(topic, clientId, partition, offset);
-        dirty.put(metaKey(topic, clientId, partition), offset);
+    public boolean writeOffset(String topic, String clientId, int partition, long offset) {
+        boolean persisted = local.writeOffset(topic, clientId, partition, offset);
+        if (persisted) {
+            dirty.put(metaKey(topic, clientId, partition), offset);
+        }
+        return persisted;
     }
 
     @Override

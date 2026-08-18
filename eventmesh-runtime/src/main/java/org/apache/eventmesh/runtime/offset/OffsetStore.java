@@ -39,8 +39,17 @@ public interface OffsetStore {
 
     /**
      * Persist (or buffer) the offset for this subscriber/partition.
+     *
+     * <p>The write is <em>monotonically non-decreasing</em>: an offset at or below the stored value
+     * is a no-op returning {@code true} (stored progress already covers it); the cursor must never
+     * move backwards (issue #5289). Implementations that cannot make the write durable return
+     * {@code false} so the caller keeps the delivery in flight instead of retiring it
+     * (issue #5290).</p>
+     *
+     * @return {@code true} if the stored offset is now at or beyond {@code offset};
+     *         {@code false} if the durable write failed — the caller must NOT retire the delivery
      */
-    void writeOffset(String topic, String clientId, int partition, long offset);
+    boolean writeOffset(String topic, String clientId, int partition, long offset);
 
     /**
      * All offsets for a topic, keyed by {@code clientId#partition}. Used by the admin view

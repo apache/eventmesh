@@ -54,7 +54,7 @@ class DeliveryVolatileAndResurrectTest {
         OffsetStore offsets = new InMemoryOffsetStore();
         RecordingChannel channel = new RecordingChannel();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS,
-            new AtomicLong(0)::get, offsets, (t, e, r, a) -> {}, new UniMetrics());
+            new AtomicLong(0)::get, offsets, (t, e, r, a) -> java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE), new UniMetrics());
 
         dispatcher.deliver("topic", 0, 1L, frame("e-1"), "c1", channel);
 
@@ -74,7 +74,7 @@ class DeliveryVolatileAndResurrectTest {
         OffsetStore offsets = new InMemoryOffsetStore();
         RecordingChannel channel = new RecordingChannel();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS,
-            clock::get, offsets, (t, e, r, a) -> {}, new UniMetrics());
+            clock::get, offsets, (t, e, r, a) -> java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE), new UniMetrics());
 
         dispatcher.deliver("topic", 0, 1L, frame("e-1"), "c1", channel);
         String deliveryId = channel.lastDeliveryId;

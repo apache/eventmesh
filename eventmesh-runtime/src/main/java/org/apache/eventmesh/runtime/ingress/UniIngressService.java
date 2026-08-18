@@ -871,6 +871,9 @@ public class UniIngressService {
     private DeadLetterSink deadLetterSink() {
         return (originalTopic, event, reason, attempts) -> {
             String dlqTopic = originalTopic + "_DLQ";
+            // Issue #5292: the dispatcher retires the delivery only once this future reports the
+            // DLQ write as durably recorded by the storage plugin.
+            java.util.concurrent.CompletableFuture<Boolean> future = new java.util.concurrent.CompletableFuture<>();
             try {
                 // event is already an EventMeshFrame (internal); store it directly to the DLQ topic.
                 storage.send(dlqTopic, event, new SendCallback() {
@@ -878,16 +881,20 @@ public class UniIngressService {
                     public void onSuccess(SendResult sendResult) {
                         log.info("event {} dead-lettered to {} after {} attempts: {}",
                             event.attributes().get("id"), dlqTopic, attempts, reason);
+                        future.complete(Boolean.TRUE);
                     }
 
                     @Override
                     public void onException(org.apache.eventmesh.api.exception.OnExceptionContext context) {
                         log.error("failed to write DLQ event {} to {}", event.attributes().get("id"), dlqTopic, context.getException());
+                        future.complete(Boolean.FALSE);
                     }
                 });
             } catch (Exception e) {
                 log.error("failed to send DLQ event {} to {}", event.attributes().get("id"), dlqTopic, e);
+                future.complete(Boolean.FALSE);
             }
+            return future;
         };
     }
 }

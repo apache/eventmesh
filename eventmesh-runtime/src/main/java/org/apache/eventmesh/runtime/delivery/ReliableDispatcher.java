@@ -75,6 +75,10 @@ public class ReliableDispatcher {
 
     private final ConcurrentHashMap<String, Delivery> pending = new ConcurrentHashMap<>();
     private final AtomicLong deliverySeq = new AtomicLong();
+    /** Process boot epoch + per-process random salt: delivery ids stay unique across restarts and
+     *  instances, so a stale ACK can never alias a fresh delivery (issue #5291). */
+    private final long bootEpoch = System.currentTimeMillis();
+    private final String instanceSalt = Long.toHexString(ThreadLocalRandom.current().nextLong());
 
     public ReliableDispatcher(OffsetStore offsetStore, DeadLetterSink dlqSink) {
         this(DEFAULT_ACK_TIMEOUT_MS, DEFAULT_MAX_ATTEMPTS, System::currentTimeMillis, offsetStore, dlqSink,
@@ -146,7 +150,16 @@ public class ReliableDispatcher {
             org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
             return false;
         }
-        offsetStore.writeOffset(d.getTopic(), d.getClientId(), d.getPartition(), d.getOffset());
+        boolean persisted = offsetStore.writeOffset(d.getTopic(), d.getClientId(), d.getPartition(), d.getOffset());
+        if (!persisted) {
+            // Issue #5290: the offset is NOT durable — do not retire the delivery. Put it back
+            // with backoff so tick() redelivers; the message stays in flight until its progress
+            // can actually be persisted (at-least-once).
+            d.scheduleRetryAt(clock.getAsLong() + backoffWithJitter(d.getAttempt()));
+            pending.put(deliveryId, d);
+            org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
+            return false;
+        }
         // Record the MQ PHYSICAL offset (stamped on the frame by the storage plugin at poll time)
         // so UniRuntime.alignPullOffsetsToAck can rewind the plugin's pull cursor on restart
         // (at-least-once for broker-unmanaged backends: Kafka / RocketMQ 4.x). Keyed under a
@@ -210,8 +223,21 @@ public class ReliableDispatcher {
                 metrics.incDlq();
                 io.opentelemetry.api.trace.Span dlqSpan =
                     org.apache.eventmesh.runtime.metrics.UniTrace.startDlq(d.getTopic(), "retry budget exhausted");
-                dlqSink.deadLetter(d.getTopic(), d.getEvent(), "retry budget exhausted", d.getAttempt());
-                org.apache.eventmesh.runtime.metrics.UniTrace.end(dlqSpan);
+                // Issue #5292: retire only on durable DLQ confirmation; on failure the delivery
+                // goes back to pending and the dead-letter transition is retried with backoff.
+                java.util.concurrent.CompletableFuture<Boolean> dlqPersisted =
+                    dlqSink.deadLetter(d.getTopic(), d.getEvent(), "retry budget exhausted", d.getAttempt());
+                dlqPersisted.whenComplete((ok, err) -> {
+                    org.apache.eventmesh.runtime.metrics.UniTrace.end(dlqSpan);
+                    if (Boolean.TRUE.equals(ok)) {
+                        // retired — already removed from pending during this tick's collection
+                    } else {
+                        d.scheduleRetryAt(clock.getAsLong() + backoffMs(Math.max(1, d.getAttempt())));
+                        pending.put(d.getDeliveryId(), d);
+                        log.warn("DLQ persist failed for delivery {} ({}); retained for dead-letter retry",
+                            d.getDeliveryId(), err == null ? "sink returned false" : err.toString());
+                    }
+                });
             } else {
                 // Bump attempt, open a fresh ACK window, and redeliver immediately.
                 metrics.incRedelivery();
@@ -259,8 +285,13 @@ public class ReliableDispatcher {
         }
     }
 
+    /**
+     * Delivery ids embed the process boot epoch, a per-process random salt and a sequence number:
+     * unique across restarts and instances, so an ACK from a previous process (or a sibling
+     * instance) can never alias a fresh delivery (issue #5291).
+     */
     private String nextDeliveryId() {
-        return "d-" + deliverySeq.incrementAndGet();
+        return "d-" + Long.toHexString(bootEpoch) + "-" + instanceSalt + "-" + deliverySeq.incrementAndGet();
     }
 
     /**
