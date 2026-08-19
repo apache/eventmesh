@@ -37,7 +37,7 @@ class ClusterMembershipLoadTest {
     void heartbeatWritesLoadAndAddress() {
         AtomicClock clock = new AtomicClock();
         InMemoryMetaStore meta = new InMemoryMetaStore();
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
         m.withLoadSupplier(() -> "3|2000|1500|0.25");
         m.heartbeat();
 
@@ -50,7 +50,7 @@ class ClusterMembershipLoadTest {
     void heartbeatWithoutLoadSupplierOmitsLoadFields() {
         AtomicClock clock = new AtomicClock();
         InMemoryMetaStore meta = new InMemoryMetaStore();
-        ClusterMembership m = new ClusterMembership(meta, "self", "1.2.3.4:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "1.2.3.4:8080", 15_000L, clock::get, new FencingToken());
         m.heartbeat();
         assertEquals("0|1.2.3.4:8080", meta.get(ClusterMembership.INSTANCE_PREFIX + "self"));
     }
@@ -63,7 +63,7 @@ class ClusterMembershipLoadTest {
         meta.put("/em/instances/a", "19000|h1:8080|5|5000|4000|0.10"); // age 1000 < ttl
         meta.put("/em/instances/b", "19500|h2:8080|20|5000000|4000000|0.90"); // heavy, age 500 < ttl
         meta.put("/em/instances/c", "1000|h3:8080|1|100|50|0.01"); // age 19000 > ttl 15000 → pruned
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
 
         Map<String, ClusterMembership.InstanceInfo> live = m.liveInstancesWithLoad();
         assertEquals(2, live.size(), "stale peer c must be pruned");
@@ -77,7 +77,7 @@ class ClusterMembershipLoadTest {
 
     @Test
     void setSelfAddressOverridesPlaceholder() {
-        ClusterMembership m = new ClusterMembership(new InMemoryMetaStore(), "self", "self", 15_000L, () -> 0);
+        ClusterMembership m = new ClusterMembership(new InMemoryMetaStore(), "self", "self", 15_000L, () -> 0, new FencingToken());
         m.setSelfAddress("10.0.0.5:8080");
         // addressOf(self) returns the overridden address.
         assertEquals("10.0.0.5:8080", m.addressOf("self"));
@@ -88,7 +88,7 @@ class ClusterMembershipLoadTest {
         AtomicClock clock = new AtomicClock(10_000L);
         InMemoryMetaStore meta = new InMemoryMetaStore();
         meta.put("/em/instances/old", "9500|h:8080"); // old-format peer, no load fields
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
         Map<String, ClusterMembership.InstanceInfo> live = m.liveInstancesWithLoad();
         assertEquals("h:8080", live.get("old").address);
         assertNull(live.get("old").load, "peer without load fields must parse to null snapshot");
@@ -100,7 +100,7 @@ class ClusterMembershipLoadTest {
         AtomicClock clock = new AtomicClock(10_000L);
         InMemoryMetaStore meta = new InMemoryMetaStore();
         meta.put("/em/instances/p", "9500|h:8080|7|300");
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
         LoadMeter.Snapshot load = m.liveInstancesWithLoad().get("p").load;
         assertEquals(7, load.activeSessions);
         assertEquals(300L, load.inflowBytesPerSec);

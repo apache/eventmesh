@@ -2872,6 +2872,79 @@ T4  对齐完成，标记 Meta=HEALTHY，退出降级
 
 > **降级哲学**：Meta 挂时"尽力而为 + 不丢数据"，牺牲部分一致性（新订阅、故障接管）换取可用性；恢复后渐进对齐，幂等兜底收敛。这是 §15 "可降级部署"原则在多实例协调上的落实。
 
+#### 13.2.10 统一投递拓扑：sticky 模型 + Meta CAS fencing（#5293 实装）
+
+> **🔎 实现状态（v1.12 / 2026-08-19）**：✅ 已实现。删除跨实例转发路径与 `LOAD_BALANCE_STICKY` 模式；分区所有权改为 Meta CAS + `FencingToken`（替代 gen 数字）；心跳调度补齐（#5288）。含故障注入测试 `ClusterDeliveryFaultTest`（in-process 3-4 实例：稳态分配 / 宕机接管 / 扩容防搁浅 / Meta 分区脑裂防护 / 分区愈合）。
+
+**① 投递拓扑统一为 sticky（删除转发路径）**
+
+此前架构同时存在两条下发路径：分区 owner 实例拉取后**本地下发**，或**跨实例转发**给订阅者所在实例（`HttpForwarder` + `/internal/forward` 端点）。双路径导致：订阅漂移时序复杂、转发故障域大、`LOAD_BALANCE_STICKY` 语义与转发耦合。
+
+**决定**：只保留 sticky 单路径——
+
+```
+删除：
+  · HttpForwarder（整个类）+ UniHttpServer 的 /internal/forward、/internal/reply-forward 端点
+  · EventMeshApplication 中转发相关 wiring
+  · DistributionMode.LOAD_BALANCE_STICKY 枚举值（破坏性变更，模式合并）
+
+模型：
+  · 每实例只拉取自己 OWN 的分区（PartitionOwnership），本地下发给本实例订阅者
+  · 订阅者通过 /events/subscribe 返回的 instanceUrl 固定（pin）到一个实例
+    → SDK 的 poll/ack 永远落在同一实例，无跨实例转发需求
+  · LOAD_BALANCE 吸收原 LOAD_BALANCE_STICKY 行为：事件带 partitionkey 属性时
+    hash(partitionkey) 稳定路由到一个订阅者（保序），否则 round-robin
+```
+
+**② Meta CAS fencing：`tryAcquire` + `FencingToken`（替代 gen）**
+
+§13.2.8 ④ 原设计用自增 gen 数字做 fencing，但旧实现的读写是 read-then-write（非原子）：两实例同时读到 `null` 会双双 `put`，后写者静默获胜——fencing 失效。
+
+**实装**：
+
+```
+MetaStore 新增原子 CAS 接口：
+  boolean tryAcquire(String key, String expectedOldValue, String newValue)
+  · expectedOldValue == null → 键必须不存在（首claim）
+  · 实现：Nacos 2.x publishConfigCas(dataId, group, content, casMd5)
+          casMd5 = MD5(expectedOldValue == null ? "" : expectedOldValue)
+          InMemoryMetaStore → ConcurrentHashMap.replace(key, old, new) / putIfAbsent
+
+FencingToken（每 JVM 一个，单调递增）：
+  · 格式 "<bootEpoch>:<counter>"，bootEpoch = 启动毫秒时间戳，counter 原子自增
+  · 排序：先比 bootEpoch（旧 JVM 永远输），同 epoch 比 counter
+  · 存活于 Meta：/em/assignments/<topic#partition> = "<token>|<ownerInstanceId>"
+
+acquireOrFence 协议（PartitionOwnership）：
+  Case 1 键不存在（或为释放墓碑 ""）→ tryAcquire(currentValue → myToken|self)；CAS 失败 = 输了竞争，下轮再读
+  Case 2 owner 是自己 → 同步本地 token，继续持有
+  Case 3 owner 是别人 → 接管条件（满足其一即 tryAcquire(currentValue → myToken|self)）：
+        · owner 已被 TTL 驱逐（不在 live set）→ 强制接管
+          （仍轮询的僵尸实例必然已心跳失败、leaseValid=false 停止轮询，强制接管安全）
+        · myToken > metaToken（CAS fencing）
+        否则自己被 fence，停止 poll 该分区
+
+释放路径 releaseStale（成员变更防搁浅）：
+  · 分区离开本实例的 assigner 份额（扩缩容改变取模映射）而 Meta 记录仍指向自己
+    → CAS 到释放墓碑 ""（仅当记录仍指向自己，不会破坏并发接管）
+  · 新 rightful owner 下轮以 Case 1 认领；否则旧 owner 的较高 token 会把新 owner
+    永久 fence（分区搁浅，无人拉取）
+  · 墓碑 "" 与键不存在在 CAS 语义上等价（Nacos casMd5 = MD5("") 双向兼容）
+```
+
+**③ 心跳调度补齐（#5288 修复）**
+
+`ClusterMembership.heartbeat()` 此前从未被调度执行（`EventMeshApplication` 没有任何调用点），导致 `/session/recommend` 永远看不到本实例、TTL 永远过期。实装：`enableCluster` 中以 5s 周期调度心跳，shutdown 时随分区租约一并释放（§13.6.4 step 5 / G12）。
+
+**④ 与 §13.2.8 原设计的差异**
+
+| 原设计 | 实装 | 原因 |
+|--------|------|------|
+| gen 数字（metaGen+1 覆盖） | FencingToken（bootEpoch:counter）+ CAS | gen 覆盖是 read-then-write 非原子；token 排序天然单调且跨重启有效 |
+| 心跳 value 含 ownedPartitions+gen | 心跳 value = `<ts>\|<addr>\|<load>` | 分配表已在 /em/assignments/*，心跳只承担租约+负载上报 |
+| 实例间转发保订阅可达 | sticky：instanceUrl 固定订阅者 | 转发路径故障域大、时序复杂，删除（见 ①） |
+| LOAD_BALANCE_STICKY 独立模式 | 合并入 LOAD_BALANCE（partitionkey 路由） | sticky 成为唯一拓扑后无需独立模式 |
+
 ### 13.3 下发可靠性与消息语义
 
 > **🔎 实现状态（v1.11 / 2026-07-06 盘点）**：⚠️ §13.3.1 ACK（offset 仅 ACK 推进）、§13.3.2 重试+DLQ（指数退避+`<topic>.DLQ`）、§13.3.5 去重声明、§13.3.6 不支持事务——均已实现（`ReliableDispatcher`）。**缺口**：§13.3.2 退避无 jitter（G13）；§13.3.3 STICKY 单实例✅但多实例退化为 RoundRobin（G8）；§13.3.4 TTL 过期丢弃未实现（附录 F.5）。

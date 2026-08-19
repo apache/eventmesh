@@ -110,8 +110,7 @@ final List<String> BROKER_IT_5X_CLASSES = [
     'org.apache.eventmesh.runtime.it.StreamingSdkE2ETest',
     'org.apache.eventmesh.runtime.it.RocketMQ5BrokerIntegrationTest',
     'org.apache.eventmesh.runtime.it.RocketMQ5LiteHttpIntegrationTest',
-    'org.apache.eventmesh.runtime.it.KafkaClientE2EIntegrationTest',
-    'org.apache.eventmesh.runtime.it.NacosClusterForwardIntegrationTest'
+    'org.apache.eventmesh.runtime.it.KafkaClientE2EIntegrationTest'
 ]
 final List<String> BROKER_IT_4_CLASSES = [
     'org.apache.eventmesh.runtime.it.RealBrokerIntegrationTest',

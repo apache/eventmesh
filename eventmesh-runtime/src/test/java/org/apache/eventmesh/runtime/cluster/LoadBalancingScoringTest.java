@@ -63,7 +63,7 @@ class LoadBalancingScoringTest {
         // Instance C: stale (should be pruned)
         meta.put("/em/instances/c", "1000|h3:8080|1|100|50|0.01");
 
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
         Map<String, ClusterMembership.InstanceInfo> live = m.liveInstancesWithLoad();
 
         assertEquals(2, live.size(), "stale instance c must be pruned");
@@ -88,7 +88,7 @@ class LoadBalancingScoringTest {
         // Overloaded instance (cpu > 0.8)
         meta.put("/em/instances/overloaded", "9500|h2:8080|5|2000|1500|0.90");
 
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get);
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
         Map<String, ClusterMembership.InstanceInfo> live = m.liveInstancesWithLoad();
 
         LoadMeter.Snapshot normal = live.get("normal").load;

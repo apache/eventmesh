@@ -47,11 +47,14 @@ import lombok.extern.slf4j.Slf4j;
  * reads {@link #ownedPartitions(String)} to decide which partitions to poll. When ownership is
  * unknown (partitionCount -1, e.g. RocketMQ) it returns {@code null} → poll-all fallback.</p>
  *
- * <p><b>Not yet here</b>: generation fencing (§13.2.8④, G3) and remote offset (§13.2.4, G5). Today
- * this is the "self-allocated" plan — every instance computes the same deterministic map, so no
- * instance overlaps, but a network-partitionned stale owner isn't fenced until its lease expires.
- * Nacos's lack of prefix-scan can also make {@code liveInstances} incomplete — etcd backend (G6)
- * fixes that.</p>
+ * <p><b>Fencing</b>: ownership is recorded in Meta via atomic CAS ({@link MetaStore#tryAcquire})
+ * with a monotonically increasing {@link FencingToken} (§13.2.8④). A stale owner whose token is
+ * lower than the current Meta value is fenced on its next refresh and stops polling that partition.
+ * Liveness is preserved across membership churn: partitions that leave our assigner share are
+ * released (CAS to a {@code ""} tombstone), and partitions held by a TTL-evicted owner are taken
+ * over regardless of token order (a partitioned zombie has already lost its own lease gate).
+ * Remote offset (§13.2.4, G5) is not yet here — the local offset store remains the source of truth
+ * for delivery progress.</p>
  */
 @Slf4j
 public class PartitionOwnership {
@@ -62,9 +65,11 @@ public class PartitionOwnership {
     private final String selfInstanceId;
     private final long intervalMs;
     private final LongSupplier clock;
+    /** Per-JVM fencing token (§13.2.8④). next() produces strictly-increasing tokens for CAS. */
+    private final FencingToken fencingToken;
 
     private final ConcurrentHashMap<String, List<Integer>> owned = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Long> myGen = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, FencingToken> myGen = new ConcurrentHashMap<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
     /**
      * Lease flag: true while the last heartbeat reached Meta. When false (Meta unreachable),
@@ -74,15 +79,18 @@ public class PartitionOwnership {
     private volatile boolean leaseValid = true;
     private ScheduledExecutorService scheduler;
     private Supplier<Set<String>> topicSource;
+    /** Tombstone value for released assignment records (§13.2.10; empty string). */
+    private static final String RELEASED = "";
 
     public PartitionOwnership(ClusterMembership membership, MetaStore metaStore, MeshStoragePlugin storage,
-        String selfInstanceId, long intervalMs, LongSupplier clock) {
+        String selfInstanceId, long intervalMs, LongSupplier clock, FencingToken fencingToken) {
         this.membership = membership;
         this.metaStore = metaStore;
         this.storage = storage;
         this.selfInstanceId = selfInstanceId;
         this.intervalMs = intervalMs;
         this.clock = clock;
+        this.fencingToken = fencingToken;
     }
 
     /**
@@ -103,6 +111,16 @@ public class PartitionOwnership {
     }
 
     private void refresh() {
+        Set<String> topics = topicSource == null ? Collections.emptySet() : topicSource.get();
+        refreshOnce(topics);
+    }
+
+    /**
+     * One ownership cycle, split out of {@link #refresh()} for deterministic tests: the scheduler
+     * drives {@code refresh()} (which pulls the topic set from {@code topicSource}); tests call
+     * this directly with an explicit topic set. Package-private.
+     */
+    void refreshOnce(Set<String> topics) {
         try {
             // §13.2.8② lease = heartbeat. If Meta is unreachable the heartbeat returns false: lose
             // the lease and skip this cycle. ownedPartitions() then returns empty (poll nothing),
@@ -113,8 +131,7 @@ public class PartitionOwnership {
                 return;
             }
             leaseValid = true;
-            Set<String> topics = topicSource == null ? Collections.emptySet() : topicSource.get();
-            if (topics.isEmpty()) {
+            if (topics == null || topics.isEmpty()) {
                 return;
             }
             List<String> live = membership.liveInstances();
@@ -129,12 +146,15 @@ public class PartitionOwnership {
                 }
                 Map<Integer, String> assignment = PartitionAssigner.assign(count, live);
                 List<Integer> mine = PartitionAssigner.ownedBy(assignment, selfInstanceId);
-                // §13.2.8④ gen fencing: keep only partitions whose Meta assignment still says we're
-                // the owner (or that we newly acquire). A stale owner whose lease expired sees a
-                // newer gen in Meta and backs off (soft fencing — see class javadoc).
+                // §13.2.8④ fencing: keep only partitions whose Meta assignment still says we're
+                // the owner (or that we newly acquire via CAS). A stale owner whose lease expired
+                // sees a newer token in Meta and backs off (atomic CAS fencing — see class javadoc).
+                // Release partitions that left our assigner share (membership churn) so the new
+                // rightful owner is not fenced by our — possibly higher — token forever.
+                releaseStale(topic, mine);
                 List<Integer> fenced = new java.util.ArrayList<>(mine.size());
                 for (int p : mine) {
-                    if (acquireOrFence(topic, p)) {
+                    if (acquireOrFence(topic, p, live)) {
                         fenced.add(p);
                     }
                 }
@@ -151,54 +171,130 @@ public class PartitionOwnership {
     }
 
     /**
-     * Acquire (or confirm) ownership of one partition via the Meta assignment table, with a
-     * monotonically increasing generation (§13.2.8④). Returns false when another instance has a
-     * newer generation in Meta — we've been fenced and must stop polling this partition.
+     * Acquire (or confirm) ownership of one partition via the Meta assignment table, using an
+     * atomic CAS ({@link MetaStore#tryAcquire}) with a monotonically increasing {@link FencingToken}
+     * (§13.2.8④). Returns false when another instance holds a fencing token that is ≥ ours — we've
+     * been fenced and must stop polling this partition.
      *
-     * <p>Meta record: {@code /em/assignments/<topic#partition> = "<gen>|<ownerInstanceId>"}.</p>
+     * <p>Meta record: {@code /em/assignments/<topic#partition> = "<token>|<ownerInstanceId>"}.
+     *
+     * <p>The CAS replaces the old read-then-write race: two instances that both read {@code null}
+     * would both {@code put} and the last writer would silently win. With {@code tryAcquire},
+     * exactly one CAS succeeds and the loser re-reads on the next refresh cycle.</p>
      */
-    private boolean acquireOrFence(String topic, int partition) {
+    private boolean acquireOrFence(String topic, int partition, List<String> live) {
         String key = "/em/assignments/" + topic + "#" + partition;
         String pkey = topic + "#" + partition;
-        long metaGen = -1L;
-        String metaOwner = null;
+
+        String currentRec = null;
+        FencingToken currentToken = null;
+        String currentOwner = null;
         try {
-            String rec = metaStore.get(key);
-            if (rec != null) {
-                int sep = rec.indexOf('|');
+            currentRec = metaStore.get(key);
+            if (currentRec != null) {
+                int sep = currentRec.indexOf('|');
                 if (sep > 0) {
-                    metaGen = Long.parseLong(rec.substring(0, sep));
-                    metaOwner = rec.substring(sep + 1);
+                    currentToken = FencingToken.parse(currentRec.substring(0, sep));
+                    currentOwner = currentRec.substring(sep + 1);
                 }
             }
         } catch (Exception e) {
             log.debug("assignment read failed for {}: {}", key, e.toString());
         }
 
-        if (metaOwner == null) {
-            // First claim.
-            metaStore.put(key, "0|" + selfInstanceId);
-            myGen.put(pkey, 0L);
-            return true;
-        }
-        if (metaOwner.equals(selfInstanceId)) {
-            // Still ours — keep our gen in sync with Meta (may have been refreshed by a restart).
-            myGen.put(pkey, metaGen);
-            return true;
-        }
-        // Another instance holds the Meta assignment.
-        long mine = myGen.getOrDefault(pkey, -1L);
-        if (metaGen > mine) {
-            // They have a newer generation — we're fenced. Drop ownership.
-            log.info("fenced: partition {}#{} taken over by {} (gen {} > our {})", topic, partition, metaOwner, metaGen, mine);
-            myGen.remove(pkey);
+        FencingToken myToken = fencingToken.next();
+
+        // Case 1: unclaimed (absent, or the "" tombstone left by releaseStale) — CAS → our token
+        if (currentOwner == null) {
+            boolean ok = metaStore.tryAcquire(key, currentRec, myToken + "|" + selfInstanceId);
+            if (ok) {
+                myGen.put(pkey, myToken);
+                return true;
+            }
+            // Lost the race — another instance claimed it. Re-read next cycle.
             return false;
         }
-        // We're (re)claiming it — bump the generation so any stale owner fences on its next refresh.
-        long newGen = metaGen + 1;
-        metaStore.put(key, newGen + "|" + selfInstanceId);
-        myGen.put(pkey, newGen);
-        return true;
+
+        // Case 2: still ours — sync local token with Meta
+        if (currentOwner.equals(selfInstanceId)) {
+            if (currentToken != null) {
+                myGen.put(pkey, currentToken);
+            }
+            return true;
+        }
+
+        // Case 3: another instance holds it — take over when their lease is gone (TTL eviction)
+        // or our token is strictly higher; otherwise we're fenced and stop polling.
+        boolean ownerEvicted = !live.contains(currentOwner);
+        FencingToken mine = myGen.get(pkey);
+        if (mine == null) {
+            mine = myToken;
+        }
+        if (ownerEvicted || currentToken == null || mine.compareTo(currentToken) > 0) {
+            // Fence them: CAS currentValue → our value. An evicted owner that is still polling has
+            // already failed its own heartbeat gate (leaseValid=false → polls nothing), so forcing
+            // the takeover is safe; a live higher-token owner keeps the partition.
+            boolean ok = metaStore.tryAcquire(key, currentRec, myToken + "|" + selfInstanceId);
+            if (ok) {
+                myGen.put(pkey, myToken);
+                return true;
+            }
+            // CAS failed — someone else changed it; re-read next cycle
+            return false;
+        }
+        // Their token is ≥ ours — we're fenced
+        log.info("fenced: partition {}#{} held by {} (token {} >= our {})",
+            topic, partition, currentOwner, currentToken, mine);
+        myGen.remove(pkey);
+        return false;
+    }
+
+    /**
+     * Release Meta assignment records for partitions of {@code topic} that are no longer in
+     * {@code mine} — the deterministic assigner moved them to a peer after membership churn. The
+     * record is CAS'd to the released tombstone {@code ""} (only if it still names us, so a
+     * concurrent takeover is never clobbered), letting the new rightful owner claim it on its next
+     * cycle instead of being fenced by our — possibly higher — token forever.
+     */
+    private void releaseStale(String topic, List<Integer> mine) {
+        String prefix = topic + "#";
+        for (String pkey : myGen.keySet()) {
+            if (!pkey.startsWith(prefix)) {
+                continue;
+            }
+            int p;
+            try {
+                p = Integer.parseInt(pkey.substring(prefix.length()));
+            } catch (NumberFormatException e) {
+                continue;
+            }
+            if (mine.contains(p)) {
+                continue;
+            }
+            String key = "/em/assignments/" + pkey;
+            String rec = null;
+            try {
+                rec = metaStore.get(key);
+            } catch (Exception e) {
+                log.debug("assignment read failed for {}: {}", key, e.toString());
+            }
+            if (selfInstanceId.equals(ownerOf(rec))) {
+                try {
+                    metaStore.tryAcquire(key, rec, RELEASED);
+                } catch (Exception e) {
+                    log.debug("assignment release failed for {}: {}", key, e.toString());
+                }
+            }
+            myGen.remove(pkey);
+        }
+    }
+
+    private static String ownerOf(String record) {
+        if (record == null || record.isEmpty()) {
+            return null;
+        }
+        int sep = record.indexOf('|');
+        return sep > 0 ? record.substring(sep + 1) : null;
     }
 
     /**

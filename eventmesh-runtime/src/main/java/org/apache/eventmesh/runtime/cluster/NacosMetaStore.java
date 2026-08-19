@@ -49,10 +49,10 @@ import lombok.extern.slf4j.Slf4j;
  * carries instanceId/timestamp/address); {@code getWithPrefix("/em/instances/")} lists all registered
  * instances and reassembles the {@code timestamp|address} value; {@code delete} deregisters.</p>
  *
- * <p><b>Limitations</b>: ConfigService still has no prefix-scan for non-instance prefixes, and
- * {@code putIfAbsent} is read-then-write (non-atomic) — neither affects multi-instance correctness
- * (instance discovery is the only prefix-scan consumer, and it now goes through NamingService).
- * This impl is compile-verified; runtime verification needs a live Nacos server.</p>
+ * <p><b>Limitations</b>: ConfigService has no prefix-scan for non-instance prefixes; {@code putIfAbsent}
+ * is read-then-write (non-atomic). Partition ownership fencing uses {@link #tryAcquire} (Nacos 2.x
+ * {@code publishConfigCas}), which is a true atomic CAS. This impl is compile-verified; runtime
+ * verification needs a live Nacos server.</p>
  */
 @Slf4j
 public class NacosMetaStore implements MetaStore {
@@ -146,8 +146,9 @@ public class NacosMetaStore implements MetaStore {
 
     @Override
     public boolean putIfAbsent(String key, String value) {
-        // ConfigService has no CAS — read-then-write (non-atomic; document the race).
-        // For instance keys, registerInstance is idempotent-overwrite (last writer wins), acceptable.
+        // ConfigService has no CAS — read-then-write (non-atomic). For atomic acquire use
+        // {@link #tryAcquire} (publishConfigCas). putIfAbsent is acceptable for instance/sub keys
+        // (NamingService registerInstance is idempotent last-writer-wins).
         if (get(key) != null) {
             return false;
         }
@@ -218,6 +219,47 @@ public class NacosMetaStore implements MetaStore {
         } catch (NacosException e) {
             log.warn("nacos delete failed for {}: {}", key, e.toString());
             return false;
+        }
+    }
+
+    @Override
+    public boolean tryAcquire(String key, String expectedOldValue, String newValue) {
+        if (isInstanceKey(key) || isSubKey(key)) {
+            // NamingService doesn't support CAS; fall back to plain put (last-writer-wins).
+            // Instance/sub keys are heartbeats and registrations — not fencing-critical.
+            put(key, newValue);
+            return true;
+        }
+        try {
+            // Nacos 2.x publishConfigCas(dataId, group, content, casMd5): the server rejects the
+            // publish unless its current content MD5 matches casMd5. casMd5 = MD5 of the expected
+            // current content (MD5("") for "key absent"), giving us a true atomic CAS.
+            String expectedContent = expectedOldValue == null ? "" : expectedOldValue;
+            String casMd5 = md5Hex(expectedContent);
+            boolean ok = config.publishConfigCas(dataId(key), GROUP, newValue, casMd5);
+            if (ok) {
+                knownKeys.add(key);
+            }
+            return ok;
+        } catch (NacosException e) {
+            log.warn("nacos tryAcquire (publishConfigCas) failed for {}: {}", key, e.toString());
+            return false;
+        }
+    }
+
+    /** MD5 hex digest (lowercase, 32 chars). Nacos casMd5 is the MD5 of the expected content. */
+    private static String md5Hex(String input) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(32);
+            for (byte b : digest) {
+                sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+                sb.append(Character.forDigit(b & 0xF, 16));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5 not available", e);
         }
     }
 

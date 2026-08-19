@@ -79,6 +79,24 @@ public class InMemoryMetaStore implements MetaStore {
         return false;
     }
 
+    @Override
+    public boolean tryAcquire(String key, String expectedOldValue, String newValue) {
+        if (expectedOldValue == null) {
+            // key must be absent → use putIfAbsent
+            if (kv.putIfAbsent(key, newValue) == null) {
+                notify(key, newValue, false);
+                return true;
+            }
+            return false;
+        }
+        // CAS on existing value — ConcurrentHashMap.replace(key, oldVal, newVal) is atomic
+        boolean ok = kv.replace(key, expectedOldValue, newValue);
+        if (ok) {
+            notify(key, newValue, false);
+        }
+        return ok;
+    }
+
     private void notify(String key, String value, boolean deleted) {
         for (Watch w : watches) {
             if (key.startsWith(w.prefix)) {
