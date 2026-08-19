@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.delivery;
 
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Sink for messages that exhausted their retry budget (§5.5). The runtime wires this to publish to
  * the {@code <topic>_DLQ} topic; tests capture dead-letters in a list.
@@ -27,10 +29,17 @@ import org.apache.eventmesh.common.wire.EventMeshFrame;
 public interface DeadLetterSink {
 
     /**
+     * Dead-letter an event. The delivery may only be retired once the event is <em>durably</em>
+     * recorded in the DLQ destination — a fire-and-forget write that fails asynchronously loses
+     * the message silently (issue #5292).
+     *
      * @param originalTopic the topic the event was on before being dead-lettered
      * @param event         the original event (EventMeshFrame, internal wire unit)
      * @param reason        why it was dead-lettered (last failure / timeout)
      * @param attempts      total delivery attempts made
+     * @return a future completing {@code true} once the event is durably recorded in the DLQ
+     *         destination, {@code false} (or exceptionally) when the DLQ write failed — the caller
+     *         must keep the delivery in flight and retry the dead-letter transition
      */
-    void deadLetter(String originalTopic, EventMeshFrame event, String reason, int attempts);
+    CompletableFuture<Boolean> deadLetter(String originalTopic, EventMeshFrame event, String reason, int attempts);
 }

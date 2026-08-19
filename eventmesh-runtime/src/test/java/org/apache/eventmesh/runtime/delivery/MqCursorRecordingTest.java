@@ -57,7 +57,7 @@ class MqCursorRecordingTest {
         OffsetStore offsets = new InMemoryOffsetStore();
         RecordingChannel channel = new RecordingChannel();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS,
-            () -> 0L, offsets, (t, e, r, a) -> {}, new UniMetrics());
+            () -> 0L, offsets, (t, e, r, a) -> java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE), new UniMetrics());
 
         // MQ physical offset 4242 on partition 2 (as stamped by Kafka / RocketMQ-4.x at poll).
         dispatcher.deliver("orders", 2, 1L, frame("e-1", 4242L, 2), "client-1", channel);
@@ -78,7 +78,7 @@ class MqCursorRecordingTest {
         OffsetStore offsets = new InMemoryOffsetStore();
         RecordingChannel channel = new RecordingChannel();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS,
-            () -> 0L, offsets, (t, e, r, a) -> {}, new UniMetrics());
+            () -> 0L, offsets, (t, e, r, a) -> java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE), new UniMetrics());
 
         dispatcher.deliver("orders", 0, 1L, frame("e-1", -1, -1), "client-1", channel);
         channel.lastCallback.ack();
@@ -91,7 +91,7 @@ class MqCursorRecordingTest {
     void cursorMonotonicAcrossMultipleAcks() {
         OffsetStore offsets = new InMemoryOffsetStore();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS,
-            () -> 0L, offsets, (t, e, r, a) -> {}, new UniMetrics());
+            () -> 0L, offsets, (t, e, r, a) -> java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE), new UniMetrics());
 
         RecordingChannel ch1 = new RecordingChannel();
         dispatcher.deliver("t", 0, 1L, frame("e-1", 100L, 0), "c1", ch1);

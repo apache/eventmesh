@@ -74,7 +74,7 @@ class DeferredAckDispatcherTest {
         OffsetStore offsets = new InMemoryOffsetStore();
         RecordingChannel channel = new RecordingChannel();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, clock::get,
-            offsets, (t, e, r, a) -> {}, new UniMetrics());
+            offsets, (t, e, r, a) -> java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE), new UniMetrics());
 
         Runnable mqAck = mqAcks::incrementAndGet;
         dispatcher.deliver("orders", 0, 10L, EventMeshFrame.fromCloudEvent(
@@ -101,7 +101,10 @@ class DeferredAckDispatcherTest {
         OffsetStore offsets = new InMemoryOffsetStore();
         RecordingChannel channel = new RecordingChannel();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, clock::get,
-            offsets, (topic, event, reason, attempts) -> deadLetters.add(event.attributes().get("id")),
+            offsets, (topic, event, reason, attempts) -> {
+                deadLetters.add(event.attributes().get("id"));
+                return java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE);
+            },
             new UniMetrics());
 
         Runnable mqAck = mqAcks::incrementAndGet;
@@ -139,7 +142,10 @@ class DeferredAckDispatcherTest {
     private ReliableDispatcher newDispatcher(OffsetStore offsets, Runnable noopMqAck,
                                              List<String> deadLetters) {
         return new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, new AtomicLong(0L)::get, offsets,
-            (topic, event, reason, attempts) -> deadLetters.add(event.attributes().get("id")),
+            (topic, event, reason, attempts) -> {
+                deadLetters.add(event.attributes().get("id"));
+                return java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE);
+            },
             new UniMetrics());
     }
 

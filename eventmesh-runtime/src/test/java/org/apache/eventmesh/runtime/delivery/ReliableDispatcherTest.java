@@ -102,7 +102,10 @@ class ReliableDispatcherTest {
         FakeChannel channel = new FakeChannel();
         List<String> deadLetters = new ArrayList<>();
         ReliableDispatcher dispatcher = new ReliableDispatcher(ACK_TIMEOUT, MAX_ATTEMPTS, clock::get, offsets,
-            (topic, event, reason, attempts) -> deadLetters.add(event.attributes().get("id")),
+            (topic, event, reason, attempts) -> {
+                deadLetters.add(event.attributes().get("id"));
+                return java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE);
+            },
             new org.apache.eventmesh.runtime.metrics.UniMetrics());
 
         dispatcher.deliver("orders", 0, 99L, EventMeshFrame.fromCloudEvent(event("doomed")), "client-1", channel);
@@ -149,8 +152,8 @@ class ReliableDispatcherTest {
     }
 
     private static DeadLetterSink deadLetters() {
-        return (topic, event, reason, attempts) -> {
-        };
+        return (topic, event, reason, attempts) ->
+            java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE);
     }
 
     private static CloudEvent event(String id) {
