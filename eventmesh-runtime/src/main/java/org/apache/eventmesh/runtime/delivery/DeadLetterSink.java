@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.runtime.delivery;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.apache.eventmesh.common.wire.EventMeshFrame;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Sink for messages that exhausted their retry budget (§5.5). The runtime wires this to publish to
