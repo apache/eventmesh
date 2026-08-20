@@ -184,6 +184,14 @@ public class UniRuntime {
     }
 
     /**
+     * The storage plugin this runtime boots - exposed for cluster wiring (PartitionOwnership's
+     * partitionCount / assignPartitions calls, 13.2.3).
+     */
+    public MeshStoragePlugin storage() {
+        return storage;
+    }
+
+    /**
      * Pull-loop: poll each active topic from storage + dispatch to subscribers. Synchronized to
      * prevent concurrent {@code storage.poll} calls on the same consumer (the 3-thread scheduler
      * can otherwise overlap ticks when poll blocks, racing the consumer's internal state and losing

@@ -77,7 +77,6 @@ public class UniHttpServer {
     private org.apache.eventmesh.runtime.security.FilterChain filterChain;
     private org.apache.eventmesh.runtime.transport.http.LegacyHttpBridge legacyBridge;
     private String selfInstanceId;
-    private org.apache.eventmesh.runtime.cluster.HttpForwarder forwarder;
     private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
     private org.apache.eventmesh.runtime.session.Matchmaker matchmaker;
     private org.apache.eventmesh.runtime.session.SessionRouter sessionRouter;
@@ -128,16 +127,8 @@ public class UniHttpServer {
     }
 
     /**
-     * Wire cross-instance forwarding (§13.2.5 / §17.6). {@code selfInstanceId} identifies this
-     * instance (for self-addressed reply routing); {@code forwarder} does the HTTP POST to peers.
+     * Wire cluster membership so {@code /session/recommend} can read live instances + load (§3.2).
      */
-    public UniHttpServer withCluster(String selfInstanceId, org.apache.eventmesh.runtime.cluster.HttpForwarder forwarder) {
-        this.selfInstanceId = selfInstanceId;
-        this.forwarder = forwarder;
-        return this;
-    }
-
-    /** Wire cluster membership so {@code /session/recommend} can read live instances + load (§3.2). */
     public UniHttpServer withClusterMembership(org.apache.eventmesh.runtime.cluster.ClusterMembership membership) {
         this.clusterMembership = membership;
         return this;
@@ -226,8 +217,6 @@ public class UniHttpServer {
         server.createContext("/session/stream", this::sessionStream);
         server.createContext("/session/publish", this::sessionPublish);
         server.createContext("/session/subscribe", this::sessionSubscribe);
-        server.createContext("/internal/forward", this::forwardInternal);
-        server.createContext("/internal/reply-forward", this::replyForwardInternal);
         if (legacyBridge != null) {
             server.createContext("/eventmesh/publish", this::legacyPublish);
             server.createContext("/eventmesh/subscribe", this::legacySubscribe);
@@ -522,55 +511,14 @@ public class UniHttpServer {
             String corrId = text(body, "correlationId");
             CloudEvent replyEvent = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
                 .deserialize(mapper.writeValueAsBytes(body.get("event")));
-            // §17.6 self-addressed routing: if the requestor lives on another instance, forward there.
-            Object replyInst = replyEvent.getExtension("emreplyinstance");
-            if (replyInst != null && !replyInst.toString().equals(selfInstanceId) && forwarder != null) {
-                boolean ok = forwarder.forwardReply(replyInst.toString(), corrId, replyEvent);
-                writeJson(exchange, ok ? 200 : 502, ack(ok ? "forwarded" : "forward failed"));
-                return;
-            }
+            // §17.6 reply routing (sticky model - no cross-instance forwarding).
+            // Cross-instance reply forwarding is REMOVED with the forward path: the client posts
+            // the reply to the instance it sent the request to (pinned via instanceUrl); a reply
+            // landing on the wrong instance 404s (unknown correlationId) and the caller retries
+            // on the correct instance.
             writeJson(exchange, ingress.reply(corrId, replyEvent) ? 200 : 404, ack("ok"));
         } catch (Exception e) {
             writeJson(exchange, 500, error("reply error: " + e.getMessage()));
-        }
-    }
-
-    /** Cross-instance message forward (§13.2.5): peer pulled a message whose subscriber is here. */
-    private void forwardInternal(HttpExchange exchange) throws IOException {
-        if (!"POST".equals(exchange.getRequestMethod())) {
-            writeJson(exchange, 405, error("method not allowed"));
-            return;
-        }
-        try {
-            JsonNode body = readJson(exchange);
-            String clientId = text(body, "clientId");
-            String topic = text(body, "topic");
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(mapper.writeValueAsBytes(body.get("event")));
-            // Ingress boundary: the forward arrived as CloudEvents-JSON (HTTP wire); convert to the
-            // internal EventMeshFrame before delivering locally.
-            boolean ok = ingress.deliverLocal(topic, clientId,
-                org.apache.eventmesh.common.wire.EventMeshFrame.fromCloudEvent(event));
-            writeJson(exchange, ok ? 200 : 404, ack(ok ? "delivered" : "no local subscriber"));
-        } catch (Exception e) {
-            writeJson(exchange, 500, error("forward error: " + e.getMessage()));
-        }
-    }
-
-    /** Cross-instance reply forward (§17.6): peer received a reply whose requestor is here. */
-    private void replyForwardInternal(HttpExchange exchange) throws IOException {
-        if (!"POST".equals(exchange.getRequestMethod())) {
-            writeJson(exchange, 405, error("method not allowed"));
-            return;
-        }
-        try {
-            JsonNode body = readJson(exchange);
-            String corrId = text(body, "correlationId");
-            CloudEvent replyEvent = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(mapper.writeValueAsBytes(body.get("event")));
-            writeJson(exchange, ingress.reply(corrId, replyEvent) ? 200 : 404, ack("ok"));
-        } catch (Exception e) {
-            writeJson(exchange, 500, error("reply-forward error: " + e.getMessage()));
         }
     }
 

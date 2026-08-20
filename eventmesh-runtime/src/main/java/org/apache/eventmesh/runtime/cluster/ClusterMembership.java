@@ -48,18 +48,22 @@ public class ClusterMembership {
     private volatile String selfAddress;
     private final long ttlMs;
     private final LongSupplier clock;
+    /** Per-JVM fencing token (§13.2.8④). Shared with PartitionOwnership for CAS assignment. */
+    private final FencingToken selfToken;
     /** Optional load snapshot supplier (LoadMeter.sample()+snapshot()); null = no load in heartbeat. */
     private volatile java.util.function.Supplier<String> loadSupplier;
 
     /** Cached live set, refreshed on demand. */
     private final ConcurrentHashMap<String, Boolean> liveCache = new ConcurrentHashMap<>();
 
-    public ClusterMembership(MetaStore meta, String selfInstanceId, String selfAddress, long ttlMs, LongSupplier clock) {
+    public ClusterMembership(MetaStore meta, String selfInstanceId, String selfAddress, long ttlMs,
+                             LongSupplier clock, FencingToken selfToken) {
         this.meta = meta;
         this.selfInstanceId = selfInstanceId;
         this.selfAddress = selfAddress;
         this.ttlMs = ttlMs;
         this.clock = clock;
+        this.selfToken = selfToken;
     }
 
     /**

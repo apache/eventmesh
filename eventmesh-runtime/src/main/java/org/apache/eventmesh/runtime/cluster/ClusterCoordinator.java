@@ -100,10 +100,11 @@ public class ClusterCoordinator {
     private List<ClusterSub> selectByMode(List<ClusterSub> targets, org.apache.eventmesh.common.wire.EventMeshFrame event) {
         DistributionMode mode = targets.get(0).getMode();
         switch (mode) {
-            case LOAD_BALANCE_STICKY: {
+            case LOAD_BALANCE: {
                 // §13.3.3: stable hash(partitionkey) → one subscriber, so the same key always lands
                 // on the same worker across the whole cluster (order preserved). Sort by clientId
                 // first so every instance computes the same index for the same key/subscriber-set.
+                // When no partitionkey is present, fall back to round-robin.
                 java.util.List<ClusterSub> ordered = new java.util.ArrayList<>(targets);
                 ordered.sort(java.util.Comparator.comparing(ClusterSub::getClientId));
                 String key = event.attributes().get("partitionkey");
@@ -111,10 +112,6 @@ public class ClusterCoordinator {
                     ? (roundRobin.getAndIncrement() & 0x7fffffff) % ordered.size()
                     : Math.floorMod(key.hashCode(), ordered.size());
                 return java.util.Collections.singletonList(ordered.get(idx));
-            }
-            case LOAD_BALANCE: {
-                int idx = (roundRobin.getAndIncrement() & 0x7fffffff) % targets.size();
-                return java.util.Collections.singletonList(targets.get(idx));
             }
             case BROADCAST:
             case MULTICAST:

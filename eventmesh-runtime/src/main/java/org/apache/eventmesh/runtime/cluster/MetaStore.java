@@ -53,4 +53,21 @@ public interface MetaStore {
      * @return true if the key existed and was removed
      */
     boolean delete(String key);
+
+    /**
+     * Atomic compare-and-set on a single key (§13.2.8④ fencing). Succeeds only when the current
+     * value equals {@code expectedOldValue} (or {@code expectedOldValue} is null and the key is
+     * absent); on success the key is set to {@code newValue} and {@code true} is returned.
+     *
+     * <p>On a false return the caller must re-read with {@link #get(String)} and decide whether
+     * to retry, fence itself, or give up. The Nacos ConfigService implementation uses
+     * {@code publishConfigCas(..., casMd5)}; the in-memory implementation uses
+     * {@code AtomicReference.compareAndSet}.</p>
+     *
+     * @param key              target key
+     * @param expectedOldValue the value we expect to find (null = key absent)
+     * @param newValue         the value to install if the expectation holds
+     * @return true on success, false on expectation mismatch or backend failure
+     */
+    boolean tryAcquire(String key, String expectedOldValue, String newValue);
 }

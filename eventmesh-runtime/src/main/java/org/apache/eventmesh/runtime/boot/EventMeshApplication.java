@@ -51,7 +51,7 @@ public class EventMeshApplication {
     private org.apache.eventmesh.runtime.cluster.ClusterCoordinator clusterCoordinator;
     private org.apache.eventmesh.runtime.cluster.ClusterMembership clusterMembership;
     private org.apache.eventmesh.runtime.cluster.PartitionOwnership partitionOwnership;
-    private org.apache.eventmesh.runtime.cluster.HttpForwarder httpForwarder;
+    private java.util.concurrent.ScheduledExecutorService heartbeatScheduler;
     private String selfInstanceId;
     private String advertisedAddr;
     private javax.net.ssl.SSLContext sslContext;
@@ -147,14 +147,21 @@ public class EventMeshApplication {
     /** Enable multi-instance coordination via a Meta-backed ClusterCoordinator (§13.2). */
     public void enableCluster(org.apache.eventmesh.runtime.cluster.MetaStore metaStore, String selfInstanceId) {
         this.selfInstanceId = selfInstanceId;
-        // Full-sticky model (§3.1 / §5 stage 3): each instance pulls ALL partitions for the topics its
-        // local subscribers need and delivers locally — NO cross-instance forwarding, NO partition
-        // ownership assignment. Subscribers are pinned to one instance via the instanceUrl returned by
-        // /events/subscribe (SDK poll+ack land on that instance). The cluster layer keeps only the
-        // membership heartbeat (so /session/recommend can score instances globally by load).
+
+        // §13.2 cluster model: sticky delivery + partition fencing.
+        // - Each instance pulls partitions it OWNS (Meta CAS + fencing token, see PartitionOwnership)
+        //   and delivers locally; no cross-instance forwarding.
+        // - Cross-instance forwarding (HttpForwarder / ClusterCoordinator forward path) is REMOVED in
+        //   this release; subscribers are pinned to one instance via the instanceUrl from
+        //   /events/subscribe so SDK poll+ack always land on the same instance.
+        // - Membership heartbeat keeps /session/recommend able to score instances globally by load.
+
+        org.apache.eventmesh.runtime.cluster.FencingToken selfToken =
+            new org.apache.eventmesh.runtime.cluster.FencingToken();
+
+        // 1. ClusterMembership — heartbeat value carries the fencing token + load snapshot.
         this.clusterMembership = new org.apache.eventmesh.runtime.cluster.ClusterMembership(
-            metaStore, selfInstanceId, selfInstanceId, 15_000L, System::currentTimeMillis);
-        // Append the self-collected load snapshot to each heartbeat so /session/recommend can score.
+            metaStore, selfInstanceId, selfInstanceId, 15_000L, System::currentTimeMillis, selfToken);
         org.apache.eventmesh.runtime.ingress.LoadMeter lm = runtime.ingress().loadMeter();
         if (lm != null) {
             this.clusterMembership.withLoadSupplier(() -> {
@@ -162,15 +169,29 @@ public class EventMeshApplication {
                 return lm.snapshot().toString();
             });
         }
-        // PartitionOwnership + ClusterCoordinator/HttpForwarder are intentionally NOT wired: they
-        // implemented the old "partition%n assign + cross-instance forward" broadcast model, which the
-        // sticky model replaces. pullAndDispatch now pulls all partitions (ownedPartitions unset) and
-        // delivers to local subscribers only. The classes are retained for an opt-in broadcast mode.
 
-        // §13.6.3 dynamic config hot-reload: watch Meta for rate-limit rule changes.
+        // 2. Periodic heartbeat scheduler (fixes #5288: heartbeat was never scheduled, so
+        //    /session/recommend never saw this instance).
+        this.heartbeatScheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "em-heartbeat");
+            t.setDaemon(true);
+            return t;
+        });
+        heartbeatScheduler.scheduleAtFixedRate(
+            clusterMembership::heartbeat, 0, 5_000L, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+        // 3. PartitionOwnership — wires CAS + fencing, drives ownedPartitions(topic) for the pull loop.
+        this.partitionOwnership = new org.apache.eventmesh.runtime.cluster.PartitionOwnership(
+            clusterMembership, metaStore, runtime.storage(), selfInstanceId,
+            5_000L, System::currentTimeMillis, selfToken);
+        partitionOwnership.start(runtime.ingress()::activeTopicsClustered);
+        runtime.ingress().withPartitionOwnership(partitionOwnership);
+
+        // 4. Dynamic config hot-reload.
         new org.apache.eventmesh.runtime.cluster.DynamicConfigWatcher(metaStore, runtime.ingress()).start();
 
-        log.info("cluster enabled (sticky model): instance={} (membership + load heartbeat; no forwarding)", selfInstanceId);
+        log.info("cluster enabled (sticky + partition fencing): instance={} token={}",
+            selfInstanceId, selfToken);
     }
 
     /** Start runtime + traffic HTTP + admin HTTP. */
@@ -200,9 +221,6 @@ public class EventMeshApplication {
         if (clusterMembership != null) {
             clusterMembership.setSelfAddress(forwardAddr);
             httpServer.withClusterMembership(clusterMembership);
-        }
-        if (selfInstanceId != null && httpForwarder != null) {
-            httpServer.withCluster(selfInstanceId, httpForwarder);
         }
         if (agentRegistrar != null) {
             httpServer.withAgentRegistrar(agentRegistrar);
@@ -249,6 +267,9 @@ public class EventMeshApplication {
         }
         // §13.6.4 step 5 / G12: release the partition lease so peers re-assume ownership without
         // waiting for the TTL (15s) to expire — minimises the handover gap on graceful shutdown.
+        if (heartbeatScheduler != null) {
+            heartbeatScheduler.shutdownNow();
+        }
         if (partitionOwnership != null) {
             partitionOwnership.stop();
         }

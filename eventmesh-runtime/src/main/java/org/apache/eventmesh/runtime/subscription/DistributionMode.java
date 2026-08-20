@@ -38,12 +38,5 @@ public enum DistributionMode {
     /**
      * Each message is delivered to the subscribers whose {@link CloudEventFilter} matches it.
      */
-    MULTICAST,
-
-    /**
-     * Like {@link #LOAD_BALANCE}, but a subscriber is chosen by hashing a partition key so that
-     * messages with the same key always go to the same subscriber (ordering). Reserved for
-     * Phase 5.5 (§13.3.3); behaves like {@link #LOAD_BALANCE} until the partition-key wiring lands.
-     */
-    LOAD_BALANCE_STICKY
+    MULTICAST
 }

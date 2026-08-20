@@ -50,8 +50,8 @@ class ClusterCoordinationBaseTest {
     void membershipHeartbeatAndTtlExpiry() {
         AtomicLong clock = new AtomicLong(1_000L);
         InMemoryMetaStore meta = new InMemoryMetaStore();
-        ClusterMembership a = new ClusterMembership(meta, "A", "A", 5_000L, clock::get);
-        ClusterMembership b = new ClusterMembership(meta, "B", "B", 5_000L, clock::get);
+        ClusterMembership a = new ClusterMembership(meta, "A", "A", 5_000L, clock::get, new FencingToken());
+        ClusterMembership b = new ClusterMembership(meta, "B", "B", 5_000L, clock::get, new FencingToken());
 
         a.heartbeat();
         b.heartbeat();

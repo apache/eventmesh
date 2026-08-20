@@ -39,10 +39,10 @@ import lombok.extern.slf4j.Slf4j;
  * <p>Unlike the legacy model (which delegates distribution to a MQ consumer group), this component
  * pulls CloudEvents from {@link MeshStoragePlugin#poll} and decides — per event, per the
  * subscription rules — which subscribers receive it (§4). Distribution modes:
- * {@link DistributionMode#LOAD_BALANCE} (round-robin one subscriber),
+ * {@link DistributionMode#LOAD_BALANCE} (one subscriber — hash-of-partitionkey when present,
+ * round-robin otherwise, §13.3.3),
  * {@link DistributionMode#BROADCAST} (all subscribers),
- * {@link DistributionMode#MULTICAST} (filter-matched subscribers),
- * {@link DistributionMode#LOAD_BALANCE_STICKY} (hash-of-partition-key one subscriber, §13.3.3).</p>
+ * {@link DistributionMode#MULTICAST} (filter-matched subscribers).</p>
  *
  * <p>Phase 2 scope: single-instance dispatch logic, push→pull wiring against the storage plugin,
  * and heartbeat-based subscriber liveness. Multi-instance coordination (partition assignment,
@@ -289,6 +289,8 @@ public class SubscriptionManager {
         // Route by the mode of the active set. When a topic is shared by subscribers in different
         // modes, the mode of the first live subscriber wins (documented limitation for Phase 2;
         // mixed-mode topics are not a target use case).
+        // §13.3.3: LOAD_BALANCE absorbs the former LOAD_BALANCE_STICKY behaviour — if the event
+        // carries a partitionkey attribute we hash into the same subscriber, otherwise round-robin.
         switch (active.get(0).getMode()) {
             case BROADCAST:
                 return active;
@@ -300,11 +302,9 @@ public class SubscriptionManager {
                     }
                 }
                 return matched;
-            case LOAD_BALANCE_STICKY:
-                return Collections.singletonList(active.get(stickyIndex(event, active.size())));
             case LOAD_BALANCE:
             default:
-                return Collections.singletonList(active.get(nextIndex(active.size())));
+                return Collections.singletonList(active.get(stickyOrRoundRobin(event, active.size())));
         }
     }
 
@@ -317,15 +317,15 @@ public class SubscriptionManager {
         }
     }
 
-    private int nextIndex(int size) {
-        // Math.abs(Integer.MIN_VALUE) is negative; mask instead.
-        return (roundRobinCounter.getAndIncrement() & 0x7fffffff) % size;
-    }
-
-    private int stickyIndex(org.apache.eventmesh.common.wire.EventMeshFrame event, int size) {
+    private int stickyOrRoundRobin(org.apache.eventmesh.common.wire.EventMeshFrame event, int size) {
+        // §13.3.3: hash(partitionkey) when present → stable routing (same key → same subscriber);
+        // otherwise round-robin so LOAD_BALANCE absorbs the former LOAD_BALANCE_STICKY behaviour.
         String key = event.attributes().get("partitionkey");
-        int hash = key == null ? nextIndex(size) : key.hashCode();
-        return Math.floorMod(hash, size);
+        if (key == null) {
+            // Math.abs(Integer.MIN_VALUE) is negative; mask instead.
+            return (roundRobinCounter.getAndIncrement() & 0x7fffffff) % size;
+        }
+        return Math.floorMod(key.hashCode(), size);
     }
 
     private void removeInternal(Subscription sub) {
