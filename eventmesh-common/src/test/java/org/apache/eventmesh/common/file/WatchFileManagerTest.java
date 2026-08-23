@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
@@ -54,10 +55,13 @@ public class WatchFileManagerTest {
             properties.load(bufferedReader);
         }
 
+        final long lastModified = Files.getLastModifiedTime(tempConfigFile.toPath()).toMillis();
         try (FileWriter fw = new FileWriter(tempConfigFile)) {
             properties.setProperty("eventMesh.server.newAdd", "newAdd");
             properties.store(fw, "newAdd");
         }
+        Files.setLastModifiedTime(tempConfigFile.toPath(),
+            FileTime.fromMillis(Math.max(System.currentTimeMillis(), lastModified) + 2_000));
 
         Mockito.verify(mockFileChangeListener, Mockito.timeout(15_000).atLeastOnce())
                 .onChanged(Mockito.argThat(isFileUnderTest(tempConfigFile.getParent(), tempConfigFile.getName())));
