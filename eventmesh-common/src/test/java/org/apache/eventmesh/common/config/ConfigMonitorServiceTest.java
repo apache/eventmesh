@@ -17,14 +17,13 @@
 
 package org.apache.eventmesh.common.config;
 
-import java.io.File;
+import org.apache.eventmesh.common.file.FileChangeContext;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import org.apache.eventmesh.common.file.FileChangeContext;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -114,7 +113,7 @@ public class ConfigMonitorServiceTest {
      * </ul>
      */
     @Test
-    @DisplayName("monitor() - 正常注册已存在的配置文件")
+    @DisplayName("monitor() - registers an existing config file")
     void testMonitorNormal() throws Exception {
         Path tempFile = Files.createTempFile("test-monitor", ".properties");
         tempFile.toFile().createNewFile();
@@ -137,7 +136,7 @@ public class ConfigMonitorServiceTest {
      * <p>Verification: No exception, early termination.</p>
      */
     @Test
-    @DisplayName("monitor() - filePath 为 null 时跳过监控")
+    @DisplayName("monitor() - skips monitoring when filePath is null")
     void testMonitorNullFilePath() {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setFilePath(null);
@@ -153,7 +152,7 @@ public class ConfigMonitorServiceTest {
      * <p>Verification: No exception, early termination.</p>
      */
     @Test
-    @DisplayName("monitor() - 文件不存在时跳过监控")
+    @DisplayName("monitor() - skips monitoring when the file does not exist")
     void testMonitorFileNotExist() {
         ConfigInfo configInfo = new ConfigInfo();
         // Use definitely non-existent path in system
@@ -169,7 +168,7 @@ public class ConfigMonitorServiceTest {
      * <p>Verification: After clear(), support() returns false for all paths.</p>
      */
     @Test
-    @DisplayName("clear() - 清除所有已注册的监控项")
+    @DisplayName("clear() - removes all registered monitoring entries")
     void testClear() throws Exception {
         Path tempFile1 = Files.createTempFile("test-clear-1", ".properties");
         Path tempFile2 = Files.createTempFile("test-clear-2", ".properties");
@@ -205,11 +204,11 @@ public class ConfigMonitorServiceTest {
      * </ul>
      */
     @Test
-    @DisplayName("support() - 正确判断文件是否已注册监控")
+    @DisplayName("support() - identifies whether a file is registered for monitoring")
     void testSupport() throws Exception {
         Path tempFile = Files.createTempFile("test-support", ".properties");
         tempFile.toFile().createNewFile();
-        String normalizedPath = tempFile.toAbsolutePath().normalize().toString();
+        final String normalizedPath = tempFile.toAbsolutePath().normalize().toString();
 
         FileChangeContext registeredCtx = new FileChangeContext();
         registeredCtx.setDirectoryPath(tempFile.getParent().toString());
@@ -244,12 +243,12 @@ public class ConfigMonitorServiceTest {
      * </ul>
      */
     @Test
-    @DisplayName("ConfigMonitorFileChangeListener.onChanged() - 文件变更触发热重载")
+    @DisplayName("ConfigMonitorFileChangeListener.onChanged() - reloads config after a file change")
     void testOnChangedTriggersReload() throws Exception {
         // Create temp properties file with initial content
         Path tempFile = Files.createTempFile("test-reload", ".properties");
         String originalValue = "test-value-original";
-        String updatedValue = "test-value-updated";
+        final String updatedValue = "test-value-updated";
         writeProperty(tempFile, "test.key", originalValue);
 
         TestMonitorHolder holder = new TestMonitorHolder();
@@ -269,7 +268,7 @@ public class ConfigMonitorServiceTest {
     }
 
     @Test
-    @DisplayName("buildConfigInstance() - monitor=true 时文件变更更新原配置对象")
+    @DisplayName("buildConfigInstance() - updates the original config object when monitor is enabled")
     void testBuildConfigInstanceMonitor() throws Exception {
         Path tempDir = Files.createTempDirectory("test-build-monitor");
         Path tempFile = tempDir.resolve("monitor-test.properties");
@@ -306,7 +305,7 @@ public class ConfigMonitorServiceTest {
      * <p>Verification: load() completes without throwing exception, only logs error.</p>
      */
     @Test
-    @DisplayName("load() - 文件不存在时捕获异常不外抛")
+    @DisplayName("load() - catches exceptions when the file does not exist")
     void testLoadWithException() {
         ConfigInfo configInfo = new ConfigInfo();
         configInfo.setPath("/non/exist/path.properties");
@@ -327,7 +326,7 @@ public class ConfigMonitorServiceTest {
      * <p>Verification: Method returns normally, no "config reload success" log.</p>
      */
     @Test
-    @DisplayName("load() - 配置未变化时跳过重载")
+    @DisplayName("load() - skips reload when config is unchanged")
     void testLoadSkipWhenSame() throws Exception {
         Path tempFile = Files.createTempFile("test-skip-reload", ".properties");
         writeProperty(tempFile, "test.key", "unchanged");
