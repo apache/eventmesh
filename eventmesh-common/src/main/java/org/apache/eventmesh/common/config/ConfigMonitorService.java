@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.file.FileChangeContext;
 import org.apache.eventmesh.common.file.FileChangeListener;
 import org.apache.eventmesh.common.file.WatchFileManager;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
@@ -36,6 +37,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConfigMonitorService {
+
+    private static final int MAX_RELOAD_ATTEMPTS = 3;
+
+    private static final long RELOAD_RETRY_INTERVAL_MILLIS = 100L;
 
     private static final Map<String, List<ConfigInfo>> CONFIG_INFO_MAP = new ConcurrentHashMap<>();
 
@@ -68,7 +73,7 @@ public class ConfigMonitorService {
 
         String normalizedPath = path.toString();
         List<ConfigInfo> configInfoList = CONFIG_INFO_MAP.computeIfAbsent(normalizedPath, k -> new CopyOnWriteArrayList<>());
-        if (!configInfoList.contains(configInfo)) {
+        if (configInfoList.stream().noneMatch(registeredConfigInfo -> registeredConfigInfo == configInfo)) {
             configInfoList.add(configInfo);
         }
         log.info("[ConfigMonitorService] monitoring config file: {}, total {} listener(s)", normalizedPath,
@@ -92,18 +97,31 @@ public class ConfigMonitorService {
     }
 
     public static void load(ConfigInfo configInfo) {
+        loadOnce(configInfo);
+    }
+
+    private static boolean loadOnce(ConfigInfo configInfo) {
         try {
+            String filePath = configInfo.getFilePath();
+            File file = filePath == null ? null : Paths.get(filePath).toFile();
+            long size = file == null ? 0 : file.length();
+            long lastModified = file == null ? 0 : file.lastModified();
             Object object = ConfigService.getInstance().getConfig(configInfo);
+            if (file != null && (!file.exists() || size != file.length() || lastModified != file.lastModified())) {
+                return false;
+            }
             if (java.util.Objects.equals(configInfo.getObject(), object)) {
-                return;
+                return true;
             }
 
             if (reloadConfig(configInfo, object)) {
                 configInfo.setObject(object);
             }
             log.info("config reload success: {}", object);
+            return true;
         } catch (Exception e) {
             log.error("config reload failed", e);
+            return false;
         }
     }
 
@@ -154,9 +172,39 @@ public class ConfigMonitorService {
 
     public static boolean support(FileChangeContext changeContext) {
         String changedFileName = changeContext.getFileName();
+        if (changedFileName == null) {
+            return true;
+        }
         String changedFilePath = Paths.get(
             changeContext.getDirectoryPath(), changedFileName).toAbsolutePath().normalize().toString();
         return CONFIG_INFO_MAP.containsKey(changedFilePath);
+    }
+
+    private static void reloadAfterChange(String changedFilePath, List<ConfigInfo> configInfoList) {
+        if (configInfoList == null || configInfoList.isEmpty()) {
+            return;
+        }
+
+        for (ConfigInfo configInfo : configInfoList) {
+            for (int attempt = 0; attempt < MAX_RELOAD_ATTEMPTS; attempt++) {
+                if (isFileStable(changedFilePath) && loadOnce(configInfo)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static boolean isFileStable(String filePath) {
+        File file = Paths.get(filePath).toFile();
+        long size = file.length();
+        long lastModified = file.lastModified();
+        try {
+            Thread.sleep(RELOAD_RETRY_INTERVAL_MILLIS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+        return file.exists() && size == file.length() && lastModified == file.lastModified();
     }
 
     private static class ConfigMonitorFileChangeListener implements FileChangeListener {
@@ -164,18 +212,21 @@ public class ConfigMonitorService {
         @Override
         public void onChanged(FileChangeContext changeContext) {
             String changedFileName = changeContext.getFileName();
+            if (changedFileName == null) {
+                Path changedDirectoryPath = Paths.get(changeContext.getDirectoryPath()).toAbsolutePath().normalize();
+                for (Map.Entry<String, List<ConfigInfo>> entry : CONFIG_INFO_MAP.entrySet()) {
+                    if (changedDirectoryPath.equals(Paths.get(entry.getKey()).getParent())) {
+                        reloadAfterChange(entry.getKey(), entry.getValue());
+                    }
+                }
+                return;
+            }
+
             String changedFilePath = Paths.get(
                 changeContext.getDirectoryPath(), changedFileName).toAbsolutePath().normalize().toString();
 
             List<ConfigInfo> configInfoList = CONFIG_INFO_MAP.get(changedFilePath);
-            if (configInfoList == null || configInfoList.isEmpty()) {
-                return;
-            }
-
-            for (ConfigInfo configInfo : configInfoList) {
-                configInfo.getObject(); // ensure non-null
-                load(configInfo);
-            }
+            reloadAfterChange(changedFilePath, configInfoList);
         }
 
         @Override

@@ -88,6 +88,10 @@ public class WatchFileTask extends Thread {
         return !fileChangeListeners.isEmpty();
     }
 
+    boolean isWatching() {
+        return watch;
+    }
+
     public void shutdown() {
         watch = false;
         try {
@@ -103,19 +107,29 @@ public class WatchFileTask extends Thread {
             try {
                 WatchKey watchKey = watchService.take();
                 List<WatchEvent<?>> events = watchKey.pollEvents();
-                watchKey.reset();
-
-                if (events.isEmpty()) {
-                    continue;
-                }
 
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
                         log.warn("[WatchFileTask] file overflow: {}", event.context());
-                        continue;
                     }
                     precessWatchEvent(event);
+                }
+
+                final boolean valid;
+                synchronized (this) {
+                    valid = watchKey.reset();
+                    if (!valid) {
+                        watch = false;
+                    }
+                }
+                if (!valid) {
+                    log.warn("[WatchFileTask] watch key is no longer valid: {}", directoryPath);
+                    try {
+                        shutdown();
+                    } finally {
+                        WatchFileManager.removeWatchFileTask(directoryPath, this);
+                    }
                 }
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
@@ -131,18 +145,19 @@ public class WatchFileTask extends Thread {
     }
 
     private void precessWatchEvent(WatchEvent<?> event) {
-        try {
-            for (FileChangeListener fileChangeListener : fileChangeListeners) {
+        final boolean overflow = event.kind().equals(StandardWatchEventKinds.OVERFLOW);
+        for (FileChangeListener fileChangeListener : fileChangeListeners) {
+            try {
                 FileChangeContext context = new FileChangeContext();
                 context.setDirectoryPath(directoryPath);
-                context.setFileName(event.context().toString());
+                context.setFileName(overflow || event.context() == null ? null : event.context().toString());
                 context.setWatchEvent(event);
                 if (fileChangeListener.support(context)) {
                     fileChangeListener.onChanged(context);
                 }
+            } catch (Exception ex) {
+                log.error("[WatchFileTask] file change event callback error : ", ex);
             }
-        } catch (Exception ex) {
-            log.error("[WatchFileTask] file change event callback error : ", ex);
         }
     }
 }

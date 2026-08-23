@@ -24,12 +24,16 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import lombok.EqualsAndHashCode;
 
 /**
  * {@link ConfigMonitorService} test class.
@@ -52,6 +56,7 @@ public class ConfigMonitorServiceTest {
      * Simple config object for testing hot-reload scenarios.
      */
     @Config(prefix = "test")
+    @EqualsAndHashCode
     public static class TestMonitorConfig {
         @ConfigField(field = "key")
         private String name = "init";
@@ -126,6 +131,28 @@ public class ConfigMonitorServiceTest {
         // Second registration with same path - verify append mechanism (no exception)
         configMonitorService.monitor(configInfo);
 
+        Files.deleteIfExists(tempFile);
+    }
+
+    @Test
+    @DisplayName("monitor() - reloads independent equal config instances")
+    void testMonitorEqualConfigInstances() throws Exception {
+        Path tempFile = Files.createTempFile("test-monitor-equal", ".properties");
+        writeProperty(tempFile, "test.key", "before");
+
+        TestMonitorConfig firstConfig = new TestMonitorConfig();
+        TestMonitorConfig secondConfig = new TestMonitorConfig();
+        ConfigInfo firstConfigInfo = buildConfigInfo(tempFile.toString(), firstConfig);
+        ConfigInfo secondConfigInfo = buildConfigInfo(tempFile.toString(), secondConfig);
+        firstConfigInfo.setObject(firstConfig);
+        secondConfigInfo.setObject(secondConfig);
+        Assertions.assertEquals(firstConfigInfo, secondConfigInfo);
+
+        configMonitorService.monitor(firstConfigInfo);
+        configMonitorService.monitor(secondConfigInfo);
+        writeProperty(tempFile, "test.key", "after");
+
+        waitUntil(() -> "after".equals(firstConfig.getName()) && "after".equals(secondConfig.getName()));
         Files.deleteIfExists(tempFile);
     }
 
@@ -389,16 +416,18 @@ public class ConfigMonitorServiceTest {
      * Writes single key-value pair to temp properties file.
      */
     private void writeProperty(Path file, String key, String value) throws Exception {
+        final long lastModified = Files.exists(file) ? Files.getLastModifiedTime(file).toMillis() : 0;
         try (OutputStream os = new FileOutputStream(file.toFile())) {
             java.util.Properties props = new java.util.Properties();
             props.setProperty(key, value);
             props.store(os, "test properties");
         }
+        Files.setLastModifiedTime(file, FileTime.fromMillis(Math.max(System.currentTimeMillis(), lastModified) + 2_000));
     }
 
     private void waitUntil(Check check) throws Exception {
-        long deadline = System.currentTimeMillis() + 15_000;
-        while (System.currentTimeMillis() < deadline) {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+        while (System.nanoTime() < deadline) {
             if (check.success()) {
                 return;
             }

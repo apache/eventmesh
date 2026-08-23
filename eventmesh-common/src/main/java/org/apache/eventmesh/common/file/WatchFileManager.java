@@ -38,32 +38,43 @@ public class WatchFileManager {
     }
 
     public static void registerFileChangeListener(String directoryPath, FileChangeListener listener) {
-        WatchFileTask task = WATCH_FILE_TASK_MAP.computeIfAbsent(directoryPath, path -> {
+        WATCH_FILE_TASK_MAP.compute(directoryPath, (path, task) -> {
+            if (task != null) {
+                synchronized (task) {
+                    if (task.isWatching()) {
+                        task.addFileChangeListener(listener);
+                        return task;
+                    }
+                }
+            }
+
             WatchFileTask watchFileTask = new WatchFileTask(path);
+            watchFileTask.addFileChangeListener(listener);
             watchFileTask.start();
             return watchFileTask;
         });
-        task.addFileChangeListener(listener);
     }
 
     public static void deregisterFileChangeListener(String directoryPath, FileChangeListener listener) {
-        WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
-        if (task != null) {
+        WATCH_FILE_TASK_MAP.computeIfPresent(directoryPath, (path, task) -> {
             task.removeFileChangeListener(listener);
             if (task.hasFileChangeListener()) {
-                return;
+                return task;
             }
-            WATCH_FILE_TASK_MAP.remove(directoryPath, task);
             task.shutdown();
-        }
+            return null;
+        });
     }
 
     public static void deregisterFileChangeListener(String directoryPath) {
-        WatchFileTask task = WATCH_FILE_TASK_MAP.get(directoryPath);
-        if (task != null) {
+        WATCH_FILE_TASK_MAP.computeIfPresent(directoryPath, (path, task) -> {
             task.shutdown();
-            WATCH_FILE_TASK_MAP.remove(directoryPath);
-        }
+            return null;
+        });
+    }
+
+    static void removeWatchFileTask(String directoryPath, WatchFileTask task) {
+        WATCH_FILE_TASK_MAP.remove(directoryPath, task);
     }
 
     private static void shutdown() {
