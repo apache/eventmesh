@@ -26,8 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
 import org.apache.eventmesh.runtime.session.AgentRecord;
 import org.apache.eventmesh.runtime.session.SessionRegistry;
+
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 /**
