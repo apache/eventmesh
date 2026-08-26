@@ -17,18 +17,16 @@
 
 package org.apache.eventmesh.runtime.state;
 
-import org.apache.eventmesh.runtime.state.TaskStore.Status;
-import org.apache.eventmesh.runtime.state.TaskStore.TaskRecord;
-
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.eventmesh.runtime.state.TaskStore.Status;
+import org.apache.eventmesh.runtime.state.TaskStore.TaskRecord;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR A baseline: the {@link TaskStore} interface is the contract for A2A task state. This
@@ -95,10 +93,14 @@ class TaskStoreTest {
         }
 
         @Override
-        public void flush() { /* no buffered writes */ }
+        public void flush() {
+            /* no buffered writes */
+        }
 
         @Override
-        public void close() { table.clear(); }
+        public void close() {
+            table.clear();
+        }
     }
 
     @Test
@@ -136,15 +138,15 @@ class TaskStoreTest {
         store.createTask("b-1", "agent-B", "c", "{}");
         store.updateStatus("a-1", t1.taskEpoch, Status.RUNNING, null);
 
-        List<TaskRecord> aAll = store.listByAgent("agent-A", null);
-        assertEquals(2, aAll.size());
+        List<TaskRecord> allTasks = store.listByAgent("agent-A", null);
+        assertEquals(2, allTasks.size());
 
-        List<TaskRecord> aRunning = store.listByAgent("agent-A", Status.RUNNING);
-        assertEquals(1, aRunning.size());
-        assertEquals("a-1", aRunning.get(0).taskId);
+        List<TaskRecord> runningTasks = store.listByAgent("agent-A", Status.RUNNING);
+        assertEquals(1, runningTasks.size());
+        assertEquals("a-1", runningTasks.get(0).taskId);
 
-        List<TaskRecord> aPending = store.listByAgent("agent-A", Status.PENDING);
-        assertEquals(1, aPending.size());
-        assertEquals("a-2", aPending.get(0).taskId);
+        List<TaskRecord> pendingTasks = store.listByAgent("agent-A", Status.PENDING);
+        assertEquals(1, pendingTasks.size());
+        assertEquals("a-2", pendingTasks.get(0).taskId);
     }
 }

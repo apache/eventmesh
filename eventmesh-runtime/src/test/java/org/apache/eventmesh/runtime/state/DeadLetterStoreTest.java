@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.runtime.state;
 
-import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
-import org.apache.eventmesh.runtime.cluster.MetaStore;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
+import org.apache.eventmesh.runtime.cluster.MetaStore;
+import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR A baseline: the {@link DeadLetterStore} interface is the durable ledger of confirmed
@@ -69,10 +68,14 @@ class DeadLetterStoreTest {
         }
 
         @Override
-        public void flush() { /* no buffered writes */ }
+        public void flush() {
+            /* no buffered writes */
+        }
 
         @Override
-        public void close() { /* nothing to release */ }
+        public void close() {
+            /* nothing to release */
+        }
     }
 
     @Test

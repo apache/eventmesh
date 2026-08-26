@@ -17,22 +17,20 @@
 
 package org.apache.eventmesh.runtime.state;
 
-import org.apache.eventmesh.common.wire.EventMeshFrame;
-import org.apache.eventmesh.runtime.cluster.ClusterSub;
-import org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore;
-import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
-import org.apache.eventmesh.runtime.subscription.DistributionMode;
-
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+import org.apache.eventmesh.runtime.cluster.ClusterSub;
+import org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore;
+import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
+import org.apache.eventmesh.runtime.subscription.DistributionMode;
+import java.util.Collections;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR A baseline: the {@link SubscriptionStore} interface is the seam that lets callers depend

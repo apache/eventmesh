@@ -57,7 +57,10 @@ import lombok.extern.slf4j.Slf4j;
  * for delivery progress.</p>
  */
 /**
- * Partition ownership state machine for the <em>deferred</em> {@code PARTITION_OWNED_PULL} delivery topology. Reserved for the deferred `PARTITION_OWNED_PULL` delivery topology (issue #5309); not wired in the current `LOCAL_STICKY_PULL` default. Will be removed once the topology lands.
+ * Partition ownership state machine for the <em>deferred</em> {@code PARTITION_OWNED_PULL}
+ * delivery topology. Reserved for the deferred {@code PARTITION_OWNED_PULL} delivery topology
+ * (issue #5309); not wired in the current {@code LOCAL_STICKY_PULL} default.
+ * Will be removed once the topology lands.
  */
 @Deprecated(forRemoval = true)
 @Slf4j

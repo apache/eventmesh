@@ -17,20 +17,18 @@
 
 package org.apache.eventmesh.runtime.state;
 
-import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
-import org.apache.eventmesh.runtime.session.AgentRecord;
-import org.apache.eventmesh.runtime.session.SessionRegistry;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
+import org.apache.eventmesh.runtime.session.AgentRecord;
+import org.apache.eventmesh.runtime.session.SessionRegistry;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR A baseline: the {@link SessionStore} interface is the contract for the agent / binding /
