@@ -126,8 +126,10 @@ class TaskStoreTest {
         TaskRecord after = store.getTask("task-1");
         assertEquals(Status.RUNNING, after.status);
 
-        // Stale epoch must be rejected.
-        assertFalse(store.updateStatus("task-1", t1.taskEpoch, Status.COMPLETED, "{\"ok\":true}"),
+        // Wrong epoch must be rejected (taskEpoch is set at creation and never reset,
+        // so any value other than t1.taskEpoch simulates a stale writer).
+        long wrongEpoch = t1.taskEpoch + 1L;
+        assertFalse(store.updateStatus("task-1", wrongEpoch, Status.COMPLETED, "{\"ok\":true}"),
             "stale epoch must not overwrite");
         assertEquals(Status.RUNNING, store.getTask("task-1").status);
     }
