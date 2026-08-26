@@ -40,13 +40,13 @@ class SessionRegistryTest {
         AtomicLong now = new AtomicLong(1_000_000L);
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L, now::get);
 
-        reg.register("a1", "agent-parent-0", CAPS, 10);
+        reg.registerAgent("a1", "agent-parent-0", CAPS, 10);
         assertThat(reg.agent("a1").getStatus()).isEqualTo(AgentStatus.PENDING.name());
         assertThat(reg.readyAgents()).isEmpty(); // PENDING, not yet routable
 
-        assertThat(reg.markReady("a1")).isTrue();
+        assertThat(reg.markAgentReady("a1")).isTrue();
         assertThat(reg.agent("a1").getStatus()).isEqualTo(AgentStatus.READY.name());
-        assertThat(reg.markReady("nope")).isFalse();
+        assertThat(reg.markAgentReady("nope")).isFalse();
 
         assertThat(reg.readyAgents()).extracting(AgentRecord::getAgentId).containsExactly("a1");
     }
@@ -55,8 +55,8 @@ class SessionRegistryTest {
     void heartbeatRefreshesHbAndLoad() {
         AtomicLong now = new AtomicLong(1_000_000L);
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L, now::get);
-        reg.register("a1", "agent-parent-0", CAPS, 10);
-        reg.markReady("a1");
+        reg.registerAgent("a1", "agent-parent-0", CAPS, 10);
+        reg.markAgentReady("a1");
 
         now.addAndGet(5_000L);
         assertThat(reg.heartbeat("a1", 3)).isTrue();
@@ -72,10 +72,10 @@ class SessionRegistryTest {
     void staleHeartbeatExcludedFromReady() {
         AtomicLong now = new AtomicLong(1_000_000L);
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L, now::get);
-        reg.register("a1", "agent-parent-0", CAPS, 10);
-        reg.markReady("a1");
-        reg.register("a2", "agent-parent-0", CAPS, 10);
-        reg.markReady("a2");
+        reg.registerAgent("a1", "agent-parent-0", CAPS, 10);
+        reg.markAgentReady("a1");
+        reg.registerAgent("a2", "agent-parent-0", CAPS, 10);
+        reg.markAgentReady("a2");
 
         now.addAndGet(31_000L); // age a1's heartbeat past the TTL
         reg.heartbeat("a2", 0); // a2 fresh again
@@ -87,8 +87,8 @@ class SessionRegistryTest {
     void atCapacityExcludedFromReady() {
         AtomicLong now = new AtomicLong(1_000_000L);
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L, now::get);
-        reg.register("a1", "agent-parent-0", CAPS, 2);
-        reg.markReady("a1");
+        reg.registerAgent("a1", "agent-parent-0", CAPS, 2);
+        reg.markAgentReady("a1");
         reg.heartbeat("a1", 2); // load == capacity
 
         assertThat(reg.readyAgents()).isEmpty();
@@ -97,11 +97,11 @@ class SessionRegistryTest {
     @Test
     void unregisterRemoves() {
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L);
-        reg.register("a1", "agent-parent-0", CAPS, 10);
-        reg.markReady("a1");
+        reg.registerAgent("a1", "agent-parent-0", CAPS, 10);
+        reg.markAgentReady("a1");
         assertThat(reg.agent("a1")).isNotNull();
 
-        reg.unregister("a1");
+        reg.unregisterAgent("a1");
         assertThat(reg.agent("a1")).isNull();
         assertThat(reg.readyAgents()).isEmpty();
     }

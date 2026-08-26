@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.session;
 
 import org.apache.eventmesh.runtime.cluster.MetaStore;
+import org.apache.eventmesh.runtime.state.SessionStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ import lombok.extern.slf4j.Slf4j;
  * {@code heartbeatTtlMs} window: {@link #readyAgents()} drops agents whose {@code hb} is stale.</p>
  */
 @Slf4j
-public class SessionRegistry {
+public class SessionRegistry implements SessionStore {
 
     public static final String AGENT_PREFIX = "/em/agents/";
     public static final String BINDING_PREFIX = "/em/bindings/";
@@ -83,7 +84,7 @@ public class SessionRegistry {
     // -------------------- agents --------------------
 
     /** Register a new agent in {@link AgentStatus#PENDING} (flipped to READY after subscribe, §5.2). */
-    public void register(String agentId, String parent, List<String> capabilities, int capacity) {
+    public void registerAgent(String agentId, String parent, List<String> capabilities, int capacity) {
         AgentRecord r = AgentRecord.builder()
             .agentId(agentId).parent(parent).capabilities(capabilities).capacity(capacity)
             .load(0).status(AgentStatus.PENDING.name()).hb(clock.getAsLong()).build();
@@ -92,7 +93,7 @@ public class SessionRegistry {
     }
 
     /** Flip a PENDING agent to READY (after it has subscribed to its channel). {@code false} if unknown. */
-    public boolean markReady(String agentId) {
+    public boolean markAgentReady(String agentId) {
         AgentRecord r = agent(agentId);
         if (r == null) {
             return false;
@@ -123,7 +124,7 @@ public class SessionRegistry {
         return true;
     }
 
-    public void unregister(String agentId) {
+    public void unregisterAgent(String agentId) {
         agentCache.remove(agentId);
         meta.delete(AGENT_PREFIX + agentId);
         removeBindingsForAgent(agentId);

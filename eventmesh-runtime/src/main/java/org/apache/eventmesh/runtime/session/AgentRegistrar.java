@@ -68,7 +68,7 @@ public class AgentRegistrar {
         String parent = pickShard();
         ensure(parent);
         ensure(clientParent);
-        registry.register(agentId, parent, capabilities, capacity);
+        registry.registerAgent(agentId, parent, capabilities, capacity);
         log.info("agent registered: agentId={} parent={} capabilities={} capacity={}", agentId, parent, capabilities, capacity);
         return new RegisterResult(parent, clientParent);
     }
@@ -90,7 +90,7 @@ public class AgentRegistrar {
 
     /** Flip to READY (after subscribe). {@code false} if the agent isn't registered. */
     public boolean ready(String agentId) {
-        boolean ok = registry.markReady(agentId);
+        boolean ok = registry.markAgentReady(agentId);
         log.info("agent ready: agentId={} ok={}", agentId, ok);
         return ok;
     }
@@ -101,7 +101,7 @@ public class AgentRegistrar {
     }
 
     public void unregister(String agentId) {
-        registry.unregister(agentId);
+        registry.unregisterAgent(agentId);
         log.info("agent unregistered: agentId={}", agentId);
     }
 
