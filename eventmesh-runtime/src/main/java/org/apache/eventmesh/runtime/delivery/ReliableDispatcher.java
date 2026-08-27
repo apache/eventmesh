@@ -168,7 +168,7 @@ public class ReliableDispatcher {
 
     public ReliableDispatcher(OffsetStore offsetStore, DeadLetterSink dlqSink) {
         this(DEFAULT_ACK_TIMEOUT_MS, DEFAULT_MAX_ATTEMPTS, System::currentTimeMillis, offsetStore, dlqSink,
-            new UniMetrics(), new InMemoryDeliveryStateStore());
+            new UniMetrics(), DEFAULT_JITTER_RATIO, new InMemoryDeliveryStateStore());
     }
 
     /**
@@ -178,7 +178,7 @@ public class ReliableDispatcher {
     public ReliableDispatcher(OffsetStore offsetStore, DeadLetterSink dlqSink,
         DeliveryStateStore stateStore) {
         this(DEFAULT_ACK_TIMEOUT_MS, DEFAULT_MAX_ATTEMPTS, System::currentTimeMillis, offsetStore, dlqSink,
-            new UniMetrics(), stateStore);
+            new UniMetrics(), DEFAULT_JITTER_RATIO, stateStore);
     }
 
     /**
