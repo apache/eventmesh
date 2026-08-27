@@ -130,7 +130,9 @@ class DeliveryRecoveryTest {
     }
 
     private static class TestChannel implements PushChannel {
+
         final List<String> delivered = new ArrayList<>();
+
         @Override
         public void deliver(String deliveryId, EventMeshFrame event, AckCallback cb) {
             delivered.add(deliveryId);

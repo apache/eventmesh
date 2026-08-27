@@ -100,8 +100,8 @@ class DeliveryStateStoreTest {
         assertEquals(1000L, got.nextAttemptAtMs);
 
         // overwrite (last-writer-wins)
-        Record aUpdated = newRecord("d-1", "topic-A", 0, 200L, "client-1", 2, 2000L);
-        store.put(aUpdated);
+        Record aupdated = newRecord("d-1", "topic-A", 0, 200L, "client-1", 2, 2000L);
+        store.put(aupdated);
         Record gotUpdated = store.get("d-1");
         assertEquals(2, gotUpdated.attempt, "put overwrites; dispatcher uses putIfAbsent to guard races");
 
