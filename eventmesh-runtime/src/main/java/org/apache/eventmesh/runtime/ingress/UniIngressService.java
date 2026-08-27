@@ -119,6 +119,9 @@ public class UniIngressService {
         this.metrics = new UniMetrics();
         this.dispatcher = new ReliableDispatcher(ackTimeoutMs, maxAttempts, clock, offsetStore, deadLetterSink(),
             metrics, ReliableDispatcher.DEFAULT_JITTER_RATIO);
+        // Sub-PR B: re-ACK any in-flight deliveries from a previous JVM so they do not become
+        // orphans after a crash. Safe on first start (store is empty) and idempotent.
+        this.dispatcher.recover();
     }
 
     // ---- connector offset (remote side, §8.9) ----

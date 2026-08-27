@@ -20,10 +20,13 @@ package org.apache.eventmesh.runtime.delivery;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
+import org.apache.eventmesh.runtime.state.DeliveryStateStore;
+import org.apache.eventmesh.runtime.state.DeliveryStateStore.Record;
+import org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
@@ -73,16 +76,115 @@ public class ReliableDispatcher {
     private final UniMetrics metrics;
     private final double jitterRatio;
 
-    private final ConcurrentHashMap<String, Delivery> pending = new ConcurrentHashMap<>();
+    // Sub-PR B: in-flight deliveries live in a pluggable DeliveryStateStore (default
+    // in-memory; production wires RocksDB). The store is the source of truth for crash-recovery.
+    // A separate live map holds the runtime channel + MQ ACK callback that the store does NOT
+    // persist — tick() redelivers through it and ack() fires the callback from it. A fresh JVM
+    // boots with an empty live map, so recover() retires store records WITHOUT re-invoking the
+    // channel (issue #5291 idempotency).
+    private final DeliveryStateStore stateStore;
+    private final Map<String, Delivery> liveDeliveries = new ConcurrentHashMap<>();
     private final AtomicLong deliverySeq = new AtomicLong();
     /** Process boot epoch + per-process random salt: delivery ids stay unique across restarts and
      *  instances, so a stale ACK can never alias a fresh delivery (issue #5291). */
     private final long bootEpoch = System.currentTimeMillis();
     private final String instanceSalt = Long.toHexString(ThreadLocalRandom.current().nextLong());
 
+    /**
+     * Look up the current record for a delivery id and rebuild the live {@link Delivery} object
+     * for in-memory use (e.g. redelivery on retry, ACK bookkeeping). The channel and
+     * mqAckCallback fields are intentionally null — they are runtime references that the
+     * store does not persist; production callers that need the live channel must source it
+     * from their own bookkeeping (the dispatcher's deliver() is the only producer).
+     */
+    private Delivery currentRecord(String deliveryId) {
+        return liveDeliveries.get(deliveryId);
+    }
+
+    /**
+     * Convert a live {@link Delivery} (with channel + mqAckCallback) into a persistable
+     * {@link Record}. The channel/callback are dropped — see {@link #currentRecord(String)}.
+     */
+    private static Record toRecord(Delivery d) {
+        byte[] encoded = d.getEvent() == null ? new byte[0] : d.getEvent().encode();
+        return new Record(d.getDeliveryId(), d.getTopic(), d.getPartition(), d.getOffset(),
+            d.getClientId(), d.getAttempt(), d.getNextAttemptAtMs(), encoded);
+    }
+
+    /**
+     * Crash-recovery hook (issue #5301 Sub-PR B, fixes #5294 #5295). Walks the state store and
+     * retires every persisted in-flight delivery by writing its stored offset to the
+     * {@link OffsetStore} (simulating a client ACK on behalf of the absent subscriber) and
+     * removing the record. The MQ physical cursor is also advanced.
+     *
+     * <p><b>Critical</b>: the channel is NOT re-invoked. On a hard restart the broker has
+     * already either redelivered the message (broker-managed backends: Kafka, RocketMQ 4.x PULL)
+     * or considered it gone (RocketMQ 5.x POP — invisibleTime has expired). EventMesh is not
+     * the source of truth for the message anymore; re-delivering through the channel would
+     * produce a double-delivery (issue #5291 idempotency).</p>
+     *
+     * <p>Call this once on {@code UniRuntime.start()} before the dispatcher begins servicing
+     * new traffic. Idempotent: a second call on an empty store is a no-op.</p>
+     *
+     * @return the number of deliveries retired by this recovery pass
+     */
+    public int recover() {
+        int[] retired = {0};
+        stateStore.iterate(rec -> {
+            // Write the stored offset as if the client had ACKed.
+            boolean persisted = offsetStore.writeOffset(rec.topic, rec.clientId, rec.partition, rec.offset);
+            if (!persisted) {
+                // #5290: offset write failed — do not retire, leave for a later pass.
+                log.warn("recovery: offset write failed for delivery={} ({}#{}/{}); retained",
+                    rec.deliveryId, rec.topic, rec.partition, rec.offset);
+                return;
+            }
+            // Advance the MQ physical cursor if the event carried one.
+            EventMeshFrame event = rec.encodedEvent.length == 0
+                ? null : EventMeshFrame.decode(rec.encodedEvent);
+            if (event != null) {
+                String mqOff = event.attributes().get("emmqoffset");
+                String mqPart = event.attributes().get("emmqpartition");
+                if (mqOff != null && mqPart != null) {
+                    try {
+                        offsetStore.writeOffset(rec.topic, MQ_CURSOR_CLIENT,
+                            Integer.parseInt(mqPart), Long.parseLong(mqOff));
+                    } catch (NumberFormatException ignored) {
+                        // malformed stamps on the frame — skip the cursor write
+                    }
+                }
+            }
+            stateStore.remove(rec.deliveryId);
+            liveDeliveries.remove(rec.deliveryId);
+            retired[0]++;
+        });
+        if (retired[0] > 0) {
+            log.info("ReliableDispatcher recovered {} in-flight deliveries on startup", retired[0]);
+        }
+        return retired[0];
+    }
+
+    /**
+     * @return the underlying state store (Sub-PR B). Production code rarely needs this; it is
+     * exposed for tests and for the {@code UniRuntime} boot sequence.
+     */
+    public DeliveryStateStore stateStore() {
+        return stateStore;
+    }
+
     public ReliableDispatcher(OffsetStore offsetStore, DeadLetterSink dlqSink) {
         this(DEFAULT_ACK_TIMEOUT_MS, DEFAULT_MAX_ATTEMPTS, System::currentTimeMillis, offsetStore, dlqSink,
-            new UniMetrics());
+            new UniMetrics(), DEFAULT_JITTER_RATIO, new InMemoryDeliveryStateStore());
+    }
+
+    /**
+     * Sub-PR B constructor: explicit {@link DeliveryStateStore} (RocksDB-backed in production).
+     * In-memory is the default; tests can pass a different in-memory or RocksDB instance.
+     */
+    public ReliableDispatcher(OffsetStore offsetStore, DeadLetterSink dlqSink,
+        DeliveryStateStore stateStore) {
+        this(DEFAULT_ACK_TIMEOUT_MS, DEFAULT_MAX_ATTEMPTS, System::currentTimeMillis, offsetStore, dlqSink,
+            new UniMetrics(), DEFAULT_JITTER_RATIO, stateStore);
     }
 
     /**
@@ -91,7 +193,8 @@ public class ReliableDispatcher {
      */
     public ReliableDispatcher(long ackTimeoutMs, int maxAttempts, LongSupplier clock,
         OffsetStore offsetStore, DeadLetterSink dlqSink, UniMetrics metrics) {
-        this(ackTimeoutMs, maxAttempts, clock, offsetStore, dlqSink, metrics, 0.0d);
+        this(ackTimeoutMs, maxAttempts, clock, offsetStore, dlqSink, metrics, 0.0d,
+            new InMemoryDeliveryStateStore());
     }
 
     /**
@@ -99,6 +202,18 @@ public class ReliableDispatcher {
      */
     public ReliableDispatcher(long ackTimeoutMs, int maxAttempts, LongSupplier clock,
         OffsetStore offsetStore, DeadLetterSink dlqSink, UniMetrics metrics, double jitterRatio) {
+        this(ackTimeoutMs, maxAttempts, clock, offsetStore, dlqSink, metrics, jitterRatio,
+            new InMemoryDeliveryStateStore());
+    }
+
+    /**
+     * Full constructor with explicit {@link DeliveryStateStore}. Used by production wiring
+     * (RocksDB) and by tests that need a shared in-memory store across dispatcher instances
+     * (crash-recovery fault-injection).
+     */
+    public ReliableDispatcher(long ackTimeoutMs, int maxAttempts, LongSupplier clock,
+        OffsetStore offsetStore, DeadLetterSink dlqSink, UniMetrics metrics, double jitterRatio,
+        DeliveryStateStore stateStore) {
         this.ackTimeoutMs = ackTimeoutMs;
         this.maxAttempts = maxAttempts;
         this.clock = clock;
@@ -106,6 +221,7 @@ public class ReliableDispatcher {
         this.dlqSink = dlqSink;
         this.metrics = metrics;
         this.jitterRatio = Math.max(0.0d, jitterRatio);
+        this.stateStore = stateStore;
     }
 
     public UniMetrics metrics() {
@@ -133,7 +249,11 @@ public class ReliableDispatcher {
         // First attempt waits the full ACK window; tick() redelivers if it expires unacked.
         Delivery delivery = new Delivery(deliveryId, topic, partition, offset, event, clientId, channel,
             1, now + ackTimeoutMs, mqAckCallback);
-        pending.put(deliveryId, delivery);
+        // Keep the live delivery (channel + MQ ACK callback) for the life of the in-flight
+        // delivery; the durable store mirrors only its persistable fields. tick() redelivers
+        // through the live channel; ack() fires the live MQ callback.
+        liveDeliveries.put(deliveryId, delivery);
+        stateStore.put(toRecord(delivery));
         doDeliver(delivery);
         return deliveryId;
     }
@@ -145,8 +265,12 @@ public class ReliableDispatcher {
      */
     public boolean ack(String deliveryId) {
         io.opentelemetry.api.trace.Span ackSpan = org.apache.eventmesh.runtime.metrics.UniTrace.startAck(deliveryId);
-        Delivery d = pending.remove(deliveryId);
+        // The store is the source of truth (Sub-PR B). Removing before checking lets a racing
+        // tick skip this delivery (putIfAbsent guard below).
+        Delivery d = currentRecord(deliveryId);
         if (d == null) {
+            stateStore.remove(deliveryId);
+            liveDeliveries.remove(deliveryId);
             org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
             return false;
         }
@@ -156,10 +280,13 @@ public class ReliableDispatcher {
             // with backoff so tick() redelivers; the message stays in flight until its progress
             // can actually be persisted (at-least-once).
             d.scheduleRetryAt(clock.getAsLong() + backoffWithJitter(d.getAttempt()));
-            pending.put(deliveryId, d);
+            stateStore.put(toRecord(d));
             org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
             return false;
         }
+        // Offset is durably persisted — retire the delivery from the state store.
+        stateStore.remove(deliveryId);
+        liveDeliveries.remove(deliveryId);
         // Record the MQ PHYSICAL offset (stamped on the frame by the storage plugin at poll time)
         // so UniRuntime.alignPullOffsetsToAck can rewind the plugin's pull cursor on restart
         // (at-least-once for broker-unmanaged backends: Kafka / RocketMQ 4.x). Keyed under a
@@ -190,11 +317,12 @@ public class ReliableDispatcher {
      * next {@link #tick()}).
      */
     public boolean nack(String deliveryId, Throwable reason) {
-        Delivery d = pending.get(deliveryId);
+        Delivery d = currentRecord(deliveryId);
         if (d == null) {
             return false;
         }
         d.scheduleRetryAt(clock.getAsLong() + backoffWithJitter(d.getAttempt()));
+        stateStore.put(toRecord(d));
         log.debug("nack delivery={} attempt={} reason={}", deliveryId, d.getAttempt(),
             reason == null ? "nack" : reason.toString());
         return true;
@@ -207,50 +335,63 @@ public class ReliableDispatcher {
      */
     public int tick() {
         long now = clock.getAsLong();
-        List<Delivery> expired = new ArrayList<>();
-        Iterator<Delivery> it = pending.values().iterator();
-        while (it.hasNext()) {
-            Delivery d = it.next();
-            if (now >= d.getNextAttemptAtMs()) {
-                it.remove();
-                expired.add(d);
+        // Snapshot expired deliveries from the state store (Sub-PR B): the store is the source
+        // of truth and supports iterator-without-remove semantics via get/put/remove.
+        List<Record> expired = new ArrayList<>();
+        stateStore.iterate(r -> {
+            if (now >= r.nextAttemptAtMs) {
+                expired.add(r);
             }
-        }
+        });
         int acted = 0;
-        for (Delivery d : expired) {
+        for (Record rec : expired) {
+            // Defensive: re-read in case the record was removed by ack() during the iterate
+            // pass (snapshot semantics: iterate took a snapshot, but writes may interleave).
+            if (stateStore.get(rec.deliveryId) == null) {
+                continue;
+            }
             acted++;
-            if (d.getAttempt() >= maxAttempts) {
+            if (rec.attempt >= maxAttempts) {
                 metrics.incDlq();
                 io.opentelemetry.api.trace.Span dlqSpan =
-                    org.apache.eventmesh.runtime.metrics.UniTrace.startDlq(d.getTopic(), "retry budget exhausted");
+                    org.apache.eventmesh.runtime.metrics.UniTrace.startDlq(rec.topic, "retry budget exhausted");
                 // Issue #5292: retire only on durable DLQ confirmation; on failure the delivery
-                // goes back to pending and the dead-letter transition is retried with backoff.
+                // goes back to the state store and the dead-letter transition is retried with backoff.
+                Delivery liveSnapshot = rec.toDelivery();
                 java.util.concurrent.CompletableFuture<Boolean> dlqPersisted =
-                    dlqSink.deadLetter(d.getTopic(), d.getEvent(), "retry budget exhausted", d.getAttempt());
+                    dlqSink.deadLetter(rec.topic, liveSnapshot.getEvent(), "retry budget exhausted", rec.attempt);
                 dlqPersisted.whenComplete((ok, err) -> {
                     org.apache.eventmesh.runtime.metrics.UniTrace.end(dlqSpan);
                     if (Boolean.TRUE.equals(ok)) {
-                        // retired — already removed from pending during this tick's collection
+                        // DLQ confirmed: remove from the state store so a subsequent recover()
+                        // does not retire a delivery that is already dead-lettered.
+                        stateStore.remove(rec.deliveryId);
+                        liveDeliveries.remove(rec.deliveryId);
                     } else {
-                        d.scheduleRetryAt(clock.getAsLong() + backoffMs(Math.max(1, d.getAttempt())));
-                        pending.put(d.getDeliveryId(), d);
+                        rec.nextAttemptAtMs = clock.getAsLong() + backoffMs(Math.max(1, rec.attempt));
+                        stateStore.put(rec);
                         log.warn("DLQ persist failed for delivery {} ({}); retained for dead-letter retry",
-                            d.getDeliveryId(), err == null ? "sink returned false" : err.toString());
+                            rec.deliveryId, err == null ? "sink returned false" : err.toString());
                     }
                 });
             } else {
-                // Bump attempt, open a fresh ACK window, and redeliver immediately.
+                // Bump attempt, open a fresh ACK window, and redeliver immediately through the
+                // live channel (the durable store drops the channel — issue #5291).
                 metrics.incRedelivery();
                 final io.opentelemetry.api.trace.Span retrySpan =
-                    org.apache.eventmesh.runtime.metrics.UniTrace.startRetry(d.getDeliveryId(), d.getAttempt());
-                d.reschedule(now + ackTimeoutMs);
-                // P1-6 fix: use putIfAbsent — if ack() raced and removed this delivery during the
-                // iterator's remove→re-insert window, don't resurrect it (would double-deliver).
-                if (pending.putIfAbsent(d.getDeliveryId(), d) != null) {
-                    log.debug("skip redeliver for {} — already acked during tick window", d.getDeliveryId());
+                    org.apache.eventmesh.runtime.metrics.UniTrace.startRetry(rec.deliveryId, rec.attempt);
+                Delivery live = liveDeliveries.get(rec.deliveryId);
+                if (live == null) {
+                    // Recovered record without a live channel (recover() should have retired it on
+                    // a fresh JVM). We cannot re-deliver without a channel; let the broker own
+                    // redelivery and leave the record for a later recovery pass.
+                    log.debug("skip redeliver for {} — no live channel (recovered orphan)", rec.deliveryId);
+                    org.apache.eventmesh.runtime.metrics.UniTrace.end(retrySpan);
                     continue;
                 }
-                doDeliver(d);
+                live.reschedule(now + ackTimeoutMs);
+                stateStore.put(toRecord(live));
+                doDeliver(live);
                 org.apache.eventmesh.runtime.metrics.UniTrace.end(retrySpan);
             }
         }
@@ -261,7 +402,7 @@ public class ReliableDispatcher {
      * Currently in-flight (delivered, not yet ACKed) delivery count.
      */
     public int pendingCount() {
-        return pending.size();
+        return stateStore.count();
     }
 
     private void doDeliver(Delivery d) {
