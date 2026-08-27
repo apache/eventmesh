@@ -28,7 +28,7 @@ package org.apache.eventmesh.runtime.state;
  *   <li>{@link org.apache.eventmesh.runtime.state.SessionStore} — cluster-shared agent/session/binding registry (Meta prefix-watch)</li>
  *   <li>{@link org.apache.eventmesh.runtime.state.DeadLetterStore} — durable ledger of dead-lettered deliveries (Meta CAS)</li>
  *   <li>{@link org.apache.eventmesh.runtime.state.TaskStore} — A2A task state, persisted via Meta (issue #5301 Sub-PR C)</li>
- *   <li>{@code DeliveryStateStore} — in-flight delivery state, persistent via RocksDB (issue #5301 Sub-PR B)</li>
+ *   <li>{@link org.apache.eventmesh.runtime.state.DeliveryStateStore} — in-flight delivery state, persistent via RocksDB (issue #5301 Sub-PR B ✓)</li>
  * </ul>
  *
  * <p>Sub-PR A (this package's initial commit) introduces the 4 interfaces that did not exist as
