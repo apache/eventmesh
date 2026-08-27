@@ -89,7 +89,10 @@ public class ReliableDispatcher {
      *  recorded via {@link DeadLetterStore#recordDeadLetter} before the delivery is
      *  retired. Null = legacy behaviour (Sub-PR A/B), the sink is the only durable
      *  confirmation. */
-    private final DeadLetterStore deadLetterStore;
+    /** Effectively final after construction. Non-final only because the 9-arg ctor chains
+     *  to the 8-arg ctor (which assigns null) and then overwrites with the supplied ledger;
+     *  after the ctor returns this field is never reassigned by the runtime. */
+    private DeadLetterStore deadLetterStore;
     private final Map<String, Delivery> liveDeliveries = new ConcurrentHashMap<>();
     private final AtomicLong deliverySeq = new AtomicLong();
     /** Process boot epoch + per-process random salt: delivery ids stay unique across restarts and
