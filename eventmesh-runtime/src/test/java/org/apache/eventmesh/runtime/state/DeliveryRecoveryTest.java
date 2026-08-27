@@ -69,19 +69,22 @@ class DeliveryRecoveryTest {
         AtomicLong clock = new AtomicLong(10_000L);
         ReliableDispatcher b = new ReliableDispatcher(1000L, 3, clock::get, offsets, dlq,
             new UniMetrics(), 0.0d, store);
-        int recovered = b.recover();
-
-        // Each persisted delivery must be retired: offset advanced, store emptied
+        // Capture deliveries made during the simulated JVM so we can assert recovery did NOT
+        // re-deliver through the channel (the broker owns redelivery, issue #5291).
+        final int deliveredBeforeRecovery = channel.delivered.size();
+        final int recovered = b.recover();
         assertEquals(3, recovered, "all 3 in-flight deliveries must be recovered");
-        assertEquals(0, store.count(), "recovered entries are removed from the ledger");
-        assertEquals(0, b.pendingCount(), "the fresh dispatcher must not re-track the recovered entries");
-        assertEquals(100L, offsets.readOffset("topic-A", "client-X", 0));
-        assertEquals(200L, offsets.readOffset("topic-B", "client-Y", 1));
 
         // No channel redelivery happened during recovery (issue #5291 idempotency)
-        assertEquals(0, channel.delivered.size(),
+        assertEquals(deliveredBeforeRecovery, channel.delivered.size(),
             "recovery must NOT re-deliver through the channel (broker already redelivered or not, but "
                 + "EventMesh is not the source of truth for the message anymore)");
+
+        // Each persisted delivery must be retired: offset advanced, store emptied
+        assertEquals(0, store.count(), "recovered entries are removed from the ledger");
+        assertEquals(0, b.pendingCount(), "the fresh dispatcher must not re-track the recovered entries");
+        assertEquals(101L, offsets.readOffset("topic-A", "client-X", 0));
+        assertEquals(200L, offsets.readOffset("topic-B", "client-Y", 1));
     }
 
     @Test
@@ -130,7 +133,6 @@ class DeliveryRecoveryTest {
     }
 
     private static class TestChannel implements PushChannel {
-
         final List<String> delivered = new ArrayList<>();
 
         @Override

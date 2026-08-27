@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  * metadata needed to replay an ACK on restart:</p>
  *
  * <pre>
- *   "{topic}|{partition}|{offset}|{clientId}|{attempt}|{nextAttemptAtMs}|{base64-event-bytes}"
+ *   "{deliveryId}|{topic}|{partition}|{offset}|{clientId}|{attempt}|{nextAttemptAtMs}|{base64-event-bytes}"
  * </pre>
  *
  * <p>The event is base64-wrapped so the line stays ASCII-only \u2014 RocksDB key/value are
@@ -147,14 +147,14 @@ public class RocksDBDeliveryStateStore implements DeliveryStateStore {
 
     private static byte[] encode(Record r) {
         String b64 = java.util.Base64.getEncoder().encodeToString(r.encodedEvent);
-        return (r.topic + "|" + r.partition + "|" + r.offset + "|" + r.clientId
+        return (r.deliveryId + "|" + r.topic + "|" + r.partition + "|" + r.offset + "|" + r.clientId
             + "|" + r.attempt + "|" + r.nextAttemptAtMs + "|" + b64)
             .getBytes(StandardCharsets.US_ASCII);
     }
 
     private static Record decode(byte[] value) {
         String s = new String(value, StandardCharsets.US_ASCII);
-        // topic|partition|offset|clientId|attempt|nextAttemptAtMs|b64
+        // deliveryId|topic|partition|offset|clientId|attempt|nextAttemptAtMs|b64
         // The base64 payload never contains '|', so the last '|' is the b64 boundary.
         int p1 = s.indexOf('|');
         int p2 = s.indexOf('|', p1 + 1);
@@ -162,13 +162,15 @@ public class RocksDBDeliveryStateStore implements DeliveryStateStore {
         int p4 = s.indexOf('|', p3 + 1);
         int p5 = s.indexOf('|', p4 + 1);
         int p6 = s.indexOf('|', p5 + 1);
-        String topic = s.substring(0, p1);
-        int partition = Integer.parseInt(s.substring(p1 + 1, p2));
-        long offset = Long.parseLong(s.substring(p2 + 1, p3));
-        String clientId = s.substring(p3 + 1, p4);
-        int attempt = Integer.parseInt(s.substring(p4 + 1, p5));
-        long nextAttemptAtMs = Long.parseLong(s.substring(p5 + 1, p6));
-        byte[] encodedEvent = java.util.Base64.getDecoder().decode(s.substring(p6 + 1));
-        return new Record(null, topic, partition, offset, clientId, attempt, nextAttemptAtMs, encodedEvent);
+        int p7 = s.indexOf('|', p6 + 1);
+        String deliveryId = s.substring(0, p1);
+        String topic = s.substring(p1 + 1, p2);
+        int partition = Integer.parseInt(s.substring(p2 + 1, p3));
+        long offset = Long.parseLong(s.substring(p3 + 1, p4));
+        String clientId = s.substring(p4 + 1, p5);
+        int attempt = Integer.parseInt(s.substring(p5 + 1, p6));
+        long nextAttemptAtMs = Long.parseLong(s.substring(p6 + 1, p7));
+        byte[] encodedEvent = java.util.Base64.getDecoder().decode(s.substring(p7 + 1));
+        return new Record(deliveryId, topic, partition, offset, clientId, attempt, nextAttemptAtMs, encodedEvent);
     }
 }

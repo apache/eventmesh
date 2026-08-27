@@ -169,7 +169,7 @@ class DeliveryStateStoreTest {
 
     private static Record newRecord(String deliveryId, String topic, int partition, long offset,
         String clientId, int attempt, long nextAttemptAtMs) {
-        EventMeshFrame event = EventMeshFrame.event(java.util.Map.of(), null);
+        EventMeshFrame event = EventMeshFrame.event(java.util.Map.of(), "payload".getBytes());
         return new Record(deliveryId, topic, partition, offset, clientId, attempt, nextAttemptAtMs,
             event.encode());
     }

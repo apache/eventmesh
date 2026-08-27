@@ -40,14 +40,13 @@ import java.util.function.Consumer;
  * (the MQ has already considered the message gone, issue #5291 idempotency).</p>
  *
  * <p><b>Atomicity contract</b>: {@link #put(Delivery)} is last-writer-wins (a retry-vs-ack race is
- * resolved by the dispatcher's own {@code putIfAbsent} guard, not by store-level CAS).
- * {@link #remove(String)} wins against {@code put} \u2014 the dispatcher's ack path uses
- * {@code remove} to retire a delivery, and any subsequent tick that re-inserts it must use
- * {@code putIfAbsent} to avoid resurrecting an already-ACKed record.</p>
+ * resolved by the dispatcher's own {@code putIfAbsent} guard, not by store-level CAS). {@link
+ * #remove(String)} wins against {@code put} \u2014 the dispatcher's ack path uses {@code remove}
+ * to retire a delivery, and any subsequent tick that re-inserts it must use {@code putIfAbsent}
+ * to avoid resurrecting an already-ACKed record.</p>
  *
- * <p><b>Recovery</b>: {@link #iterate(Consumer)} is the seam for
- * {@code ReliableDispatcher.recover()} \u2014 on a fresh JVM, the dispatcher walks the store,
- * writes the stored offset to
+ * <p><b>Recovery</b>: {@link #iterate(Consumer)} is the seam for {@code ReliableDispatcher.recover()}
+ * \u2014 on a fresh JVM, the dispatcher walks the store, writes the stored offset to
  * {@code OffsetStore} (simulating a client ACK), and removes each entry. The {@code tick()} clock
  * then resumes from the persisted {@code nextAttemptAt} for any delivery that exceeded
  * {@code maxAttempts} (dead-lettered on next tick).</p>
