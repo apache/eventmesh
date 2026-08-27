@@ -34,6 +34,13 @@ import lombok.extern.slf4j.Slf4j;
  * makes "subscribe on A, pull-and-dispatch on B (the partition owner)" still reach the subscriber
  * on A.</p>
  */
+/**
+ * Routes a CloudEvent to the right instance per the cluster subscription view.
+ * Reserved for the deferred {@code PARTITION_OWNED_PULL} delivery topology
+ * (issue #5309); not wired in the current {@code LOCAL_STICKY_PULL} default.
+ * Will be removed once the topology lands.
+ */
+@Deprecated(forRemoval = true)
 @Slf4j
 public class ClusterCoordinator {
 

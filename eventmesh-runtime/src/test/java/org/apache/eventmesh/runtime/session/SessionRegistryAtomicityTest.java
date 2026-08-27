@@ -39,9 +39,9 @@ class SessionRegistryAtomicityTest {
         AtomicLong clock = new AtomicLong(1000L);
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L, clock::get);
 
-        reg.register("a1", "parent-0", List.of("model-x"), 100);
+        reg.registerAgent("a1", "parent-0", List.of("model-x"), 100);
         clock.set(2000L);
-        assertTrue(reg.markReady("a1"));
+        assertTrue(reg.markAgentReady("a1"));
 
         AgentRecord r = reg.agent("a1");
         assertNotNull(r);
@@ -54,7 +54,7 @@ class SessionRegistryAtomicityTest {
         AtomicLong clock = new AtomicLong(1000L);
         SessionRegistry reg = new SessionRegistry(new InMemoryMetaStore(), 30_000L, clock::get);
 
-        reg.register("a1", "parent-0", List.of("model-x"), 100);
+        reg.registerAgent("a1", "parent-0", List.of("model-x"), 100);
         clock.set(2000L);
         assertTrue(reg.heartbeat("a1", 5));
 

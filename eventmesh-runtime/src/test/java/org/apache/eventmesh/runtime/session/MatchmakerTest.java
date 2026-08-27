@@ -43,8 +43,8 @@ class MatchmakerTest {
     }
 
     private void reg(String agentId, List<String> caps, int capacity) {
-        registry.register(agentId, "agent-parent-0", caps, capacity);
-        registry.markReady(agentId);
+        registry.registerAgent(agentId, "agent-parent-0", caps, capacity);
+        registry.markAgentReady(agentId);
     }
 
     @Test
@@ -132,7 +132,7 @@ class MatchmakerTest {
         matchmaker.open("c1", null); // binds c1→a1
         reg("a2", List.of("m1"), 10);
 
-        registry.unregister("a1"); // a1 dies → c1's binding now orphaned
+        registry.unregisterAgent("a1"); // a1 dies → c1's binding now orphaned
 
         // open() must drop the dead binding and matchmake a live agent (a2), not leak the binding
         assertThat(matchmaker.open("c1", null).agentId()).isEqualTo("a2");

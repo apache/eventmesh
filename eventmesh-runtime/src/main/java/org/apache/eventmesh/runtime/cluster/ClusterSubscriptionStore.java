@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.cluster;
 
+import org.apache.eventmesh.runtime.state.SubscriptionStore;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * "subscribe on A, pull on B" still deliver.</p>
  */
 @Slf4j
-public class ClusterSubscriptionStore {
+public class ClusterSubscriptionStore implements SubscriptionStore {
 
     public static final String SUB_PREFIX = "/em/subs/";
 
@@ -69,10 +70,11 @@ public class ClusterSubscriptionStore {
         applyChange(k, sub.encode(), false);
     }
 
-    public void remove(String topic, String clientId) {
+    public boolean remove(String topic, String clientId) {
         String k = key(topic, clientId);
-        meta.delete(k);
+        boolean removed = meta.delete(k);
         applyChange(k, null, true);
+        return removed;
     }
 
     /**
