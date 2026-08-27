@@ -21,6 +21,8 @@ import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 import org.apache.eventmesh.runtime.state.DeliveryStateStore;
+import org.apache.eventmesh.runtime.state.DeadLetterStore;
+import org.apache.eventmesh.runtime.state.DeliveryStateStore;
 import org.apache.eventmesh.runtime.state.DeliveryStateStore.Record;
 import org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore;
 
@@ -83,6 +85,11 @@ public class ReliableDispatcher {
     // boots with an empty live map, so recover() retires store records WITHOUT re-invoking the
     // channel (issue #5291 idempotency).
     private final DeliveryStateStore stateStore;
+    /** Sub-PR C: durable DLQ ledger. When non-null, every confirmed DLQ transition is
+     *  recorded via {@link DeadLetterStore#recordDeadLetter} before the delivery is
+     *  retired. Null = legacy behaviour (Sub-PR A/B), the sink is the only durable
+     *  confirmation. */
+    private final DeadLetterStore deadLetterStore;
     private final Map<String, Delivery> liveDeliveries = new ConcurrentHashMap<>();
     private final AtomicLong deliverySeq = new AtomicLong();
     /** Process boot epoch + per-process random salt: delivery ids stay unique across restarts and
@@ -222,6 +229,20 @@ public class ReliableDispatcher {
         this.metrics = metrics;
         this.jitterRatio = Math.max(0.0d, jitterRatio);
         this.stateStore = stateStore;
+        this.deadLetterStore = null;
+    }
+
+    /**
+     * Sub-PR C constructor: same as the 8-arg ctor plus a {@link DeadLetterStore}
+     * that is invoked on every confirmed DLQ transition (issue #5301, fixes #5292
+     * fully). When {@code deadLetterStore} is null, the legacy Sub-PR A/B behaviour
+     * is preserved: the downstream DLQ sink is the only durable confirmation.
+     */
+    public ReliableDispatcher(long ackTimeoutMs, int maxAttempts, LongSupplier clock,
+        OffsetStore offsetStore, DeadLetterSink dlqSink, UniMetrics metrics, double jitterRatio,
+        DeliveryStateStore stateStore, DeadLetterStore deadLetterStore) {
+        this(ackTimeoutMs, maxAttempts, clock, offsetStore, dlqSink, metrics, jitterRatio, stateStore);
+        this.deadLetterStore = deadLetterStore;
     }
 
     public UniMetrics metrics() {
@@ -363,6 +384,19 @@ public class ReliableDispatcher {
                 dlqPersisted.whenComplete((ok, err) -> {
                     org.apache.eventmesh.runtime.metrics.UniTrace.end(dlqSpan);
                     if (Boolean.TRUE.equals(ok)) {
+                        // Sub-PR C: record the durable ledger entry (idempotent --
+                        // putIfAbsent CAS, so a peer that already recorded wins). We
+                        // do NOT block retirement on the ledger result: the downstream
+                        // DLQ topic write has already succeeded, so the message body is
+                        // safe; the ledger is the cluster-visible record for restart.
+                        if (deadLetterStore != null) {
+                            boolean ledgerOk = deadLetterStore.recordDeadLetter(
+                                rec.deliveryId, rec.topic + "_DLQ", -1L);
+                            if (!ledgerOk) {
+                                log.warn("DLQ ledger write failed for delivery {}; sink-side DLQ is confirmed but the cluster-wide record is not. Delivery will still be retired; a subsequent recover() will see no ledger record and retire via the offset advance (Sub-PR B).",
+                                    rec.deliveryId);
+                            }
+                        }
                         // DLQ confirmed: remove from the state store so a subsequent recover()
                         // does not retire a delivery that is already dead-lettered.
                         stateStore.remove(rec.deliveryId);
