@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.delivery;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
-import org.apache.eventmesh.runtime.state.DeliveryStateStore;
 import org.apache.eventmesh.runtime.state.DeadLetterStore;
 import org.apache.eventmesh.runtime.state.DeliveryStateStore;
 import org.apache.eventmesh.runtime.state.DeliveryStateStore.Record;
@@ -396,7 +395,10 @@ public class ReliableDispatcher {
                             boolean ledgerOk = deadLetterStore.recordDeadLetter(
                                 rec.deliveryId, rec.topic + "_DLQ", -1L);
                             if (!ledgerOk) {
-                                log.warn("DLQ ledger write failed for delivery {}; sink-side DLQ is confirmed but the cluster-wide record is not. Delivery will still be retired; a subsequent recover() will see no ledger record and retire via the offset advance (Sub-PR B).",
+                                log.warn(
+                                    "DLQ ledger write failed for delivery {}; sink-side DLQ is confirmed"
+                                        + " but the cluster-wide record is not. Delivery will still be retired; a subsequent"
+                                        + " recover() will see no ledger record and retire via the offset advance (Sub-PR B).",
                                     rec.deliveryId);
                             }
                         }
