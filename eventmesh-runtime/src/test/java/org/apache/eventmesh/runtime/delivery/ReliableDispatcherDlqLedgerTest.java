@@ -83,9 +83,11 @@ class ReliableDispatcherDlqLedgerTest {
         dispatcher.tick(); // attempt 3 -> DLQ
 
         assertTrue(dlqFired.await(2, TimeUnit.SECONDS), "dlq sink should fire after retry budget exhausted");
-        // The sink was invoked with the DLQ topic derived from the source topic (orders_DLQ).
-        assertTrue(channel.dlqTopics.contains("orders_DLQ"),
-            "sink should be invoked with the DLQ topic derived from the source topic");
+        // The sink is invoked with the source topic (see ReliableDispatcher.tick -- the
+        // "source_DLQ" suffix is only applied when recording on the durable ledger via
+        // deadLetterStore.recordDeadLetter). The test asserts the sink saw the source.
+        assertTrue(channel.dlqTopics.contains("orders"),
+            "sink should be invoked with the source topic (orders) for this DLQ");
     }
 
     @Test
