@@ -19,8 +19,6 @@ package org.apache.eventmesh.runtime.delivery;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Test;
-
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
@@ -29,6 +27,8 @@ import org.apache.eventmesh.runtime.offset.OffsetStore;
 import org.apache.eventmesh.runtime.state.DeadLetterStore;
 import org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore;
 import org.apache.eventmesh.runtime.state.MetaBackedDeadLetterStore;
+
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
