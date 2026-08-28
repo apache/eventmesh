@@ -55,11 +55,11 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 class ReliableDispatcherDlqLedgerTest {
 
     private static final long ACK_TIMEOUT = 10_000L;
-    private static final int MAX_ATTEMPTS = 2;
+    private static final int MAX_ATTEMPTS = 3;
 
     @Test
     void dlqTransitionIsRecordedOnTheLedger() throws Exception {
-        AtomicLong clock = new AtomicLong(1_000L);
+        AtomicLong clock = new AtomicLong(0L);
         OffsetStore offsets = new InMemoryOffsetStore();
         DeadLetterStore ledger = new MetaBackedDeadLetterStore(new InMemoryMetaStore());
         FakeChannel channel = new FakeChannel();
@@ -74,11 +74,14 @@ class ReliableDispatcherDlqLedgerTest {
 
         dispatcher.deliver("orders", 0, 1L, EventMeshFrame.fromCloudEvent(event("e-1")), "client-1", channel);
 
-        for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            channel.last().nack(new RuntimeException("busy"));
-            clock.addAndGet(1_000L);
-            dispatcher.tick();
-        }
+        // MAX_ATTEMPTS = 3: attempt 1 -> 2 (timeout) -> 3 (timeout) -> DLQ (timeout).
+        clock.addAndGet(ACK_TIMEOUT);
+        dispatcher.tick(); // attempt 1 -> 2
+        clock.addAndGet(ACK_TIMEOUT);
+        dispatcher.tick(); // attempt 2 -> 3
+        clock.addAndGet(ACK_TIMEOUT);
+        dispatcher.tick(); // attempt 3 -> DLQ
+
         assertTrue(dlqFired.await(2, TimeUnit.SECONDS), "dlq sink should fire after retry budget exhausted");
         // The sink was invoked with the DLQ topic derived from the source topic (orders_DLQ).
         assertTrue(channel.dlqTopics.contains("orders_DLQ"),
@@ -87,7 +90,7 @@ class ReliableDispatcherDlqLedgerTest {
 
     @Test
     void legacyEightArgCtorStillWorksWithoutLedger() throws Exception {
-        AtomicLong clock = new AtomicLong(1_000L);
+        AtomicLong clock = new AtomicLong(0L);
         OffsetStore offsets = new InMemoryOffsetStore();
         FakeChannel channel = new FakeChannel();
         CountDownLatch dlqFired = new CountDownLatch(1);
@@ -100,11 +103,12 @@ class ReliableDispatcherDlqLedgerTest {
             sink, new UniMetrics(), 0.0d, new InMemoryDeliveryStateStore());
 
         dispatcher.deliver("orders", 0, 1L, EventMeshFrame.fromCloudEvent(event("e-1")), "client-1", channel);
-        for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            channel.last().nack(new RuntimeException("busy"));
-            clock.addAndGet(1_000L);
-            dispatcher.tick();
-        }
+        clock.addAndGet(ACK_TIMEOUT);
+        dispatcher.tick();
+        clock.addAndGet(ACK_TIMEOUT);
+        dispatcher.tick();
+        clock.addAndGet(ACK_TIMEOUT);
+        dispatcher.tick();
         assertTrue(dlqFired.await(2, TimeUnit.SECONDS));
     }
 
