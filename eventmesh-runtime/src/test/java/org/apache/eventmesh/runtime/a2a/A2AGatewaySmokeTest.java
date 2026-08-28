@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.a2a;
 
+import org.apache.eventmesh.runtime.state.TaskStore;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import org.apache.eventmesh.runtime.state.TaskStore;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -41,26 +41,6 @@ import io.cloudevents.CloudEvent;
  */
 class A2AGatewaySmokeTest {
 
-    static final class StubTaskStore implements TaskStore {
-        @Override public org.apache.eventmesh.runtime.state.TaskStore.TaskRecord createTask(
-            String taskId, String agentId, String clientId, String input) { return null; }
-        @Override public org.apache.eventmesh.runtime.state.TaskStore.TaskRecord getTask(String taskId) { return null; }
-        @Override public boolean updateStatus(String taskId, long expectedTaskEpoch,
-            org.apache.eventmesh.runtime.state.TaskStore.Status newStatus, String output) { return false; }
-        @Override public java.util.List<org.apache.eventmesh.runtime.state.TaskStore.TaskRecord> listByAgent(
-            String agentId, org.apache.eventmesh.runtime.state.TaskStore.Status statusFilter) { return Collections.emptyList(); }
-        @Override public java.util.List<String> expireStale(long olderThanMs) { return Collections.emptyList(); }
-        @Override public void flush() { }
-        @Override public void close() { }
-    }
-
-    static final class NoopTransport implements org.apache.eventmesh.protocol.a2a.A2AMessageTransport {
-        @Override public void publish(String topic, CloudEvent event) { }
-        @Override public String subscribe(String topicPattern,
-            org.apache.eventmesh.protocol.a2a.A2AMessageTransport.MessageCallback callback) { return "noop"; }
-        @Override public void unsubscribe(String subscriptionId) { }
-    }
-
     private A2AGatewayServer server;
     private int port;
 
@@ -75,7 +55,9 @@ class A2AGatewaySmokeTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        if (server != null) server.shutdown();
+        if (server != null) {
+            server.shutdown();
+        }
     }
 
     @Test
@@ -91,5 +73,71 @@ class A2AGatewaySmokeTest {
         String s = new String(body, StandardCharsets.UTF_8);
         assertNotNull(s);
         assertEquals(true, s.contains("\"status\":\"ok\""));
+    }
+
+    /**
+     * Stub {@link TaskStore} returning null / empty for every call. Used only to satisfy the
+     * gateway's constructor; the smoke test never submits a task, so the stub's behavior is
+     * never exercised.
+     */
+    static final class StubTaskStore implements TaskStore {
+
+        @Override
+        public TaskRecord createTask(String taskId, String agentId, String clientId, String input) {
+            return null;
+        }
+
+        @Override
+        public TaskRecord getTask(String taskId) {
+            return null;
+        }
+
+        @Override
+        public boolean updateStatus(String taskId, long expectedTaskEpoch,
+                                    TaskStore.Status newStatus, String output) {
+            return false;
+        }
+
+        @Override
+        public java.util.List<TaskRecord> listByAgent(String agentId, TaskStore.Status statusFilter) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public java.util.List<String> expireStale(long olderThanMs) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void flush() {
+            // no buffered writes
+        }
+
+        @Override
+        public void close() {
+            // nothing to release
+        }
+    }
+
+    /**
+     * No-op A2AMessageTransport: every publish is dropped, every subscribe returns a constant id.
+     */
+    static final class NoopTransport implements org.apache.eventmesh.protocol.a2a.A2AMessageTransport {
+
+        @Override
+        public void publish(String topic, CloudEvent event) {
+            // drop
+        }
+
+        @Override
+        public String subscribe(String topicPattern,
+                                org.apache.eventmesh.protocol.a2a.A2AMessageTransport.MessageCallback callback) {
+            return "noop";
+        }
+
+        @Override
+        public void unsubscribe(String subscriptionId) {
+            // no-op
+        }
     }
 }

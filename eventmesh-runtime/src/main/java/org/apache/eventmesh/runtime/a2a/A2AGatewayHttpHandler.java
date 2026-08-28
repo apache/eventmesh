@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.runtime.a2a;
 
-import org.apache.eventmesh.protocol.a2a.A2AProtocolConstants;
-import org.apache.eventmesh.protocol.a2a.A2ATopicFactory;
-import org.apache.eventmesh.runtime.a2a.A2AGatewayService.TaskState;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -181,9 +177,17 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
             if ("state".equalsIgnoreCase(e.getKey()) && !e.getValue().isEmpty()) {
                 stateFilter = e.getValue().get(0);
             } else if ("limit".equalsIgnoreCase(e.getKey()) && !e.getValue().isEmpty()) {
-                try { limit = Integer.parseInt(e.getValue().get(0)); } catch (NumberFormatException ignored) { }
+                try {
+                    limit = Integer.parseInt(e.getValue().get(0));
+                } catch (NumberFormatException ignored) {
+                    // keep default limit on invalid input
+                }
             } else if ("offset".equalsIgnoreCase(e.getKey()) && !e.getValue().isEmpty()) {
-                try { offset = Integer.parseInt(e.getValue().get(0)); } catch (NumberFormatException ignored) { }
+                try {
+                    offset = Integer.parseInt(e.getValue().get(0));
+                } catch (NumberFormatException ignored) {
+                    // keep default offset on invalid input
+                }
             }
         }
 
@@ -200,9 +204,16 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
                     A2AGatewayService.toLegacyState(entry.status).name())) {
                 continue;
             }
-            if (skipped < offset) { skipped++; continue; }
-            if (count >= limit) { break; }
-            if (count > 0) sb.append(',');
+            if (skipped < offset) {
+                skipped++;
+                continue;
+            }
+            if (count >= limit) {
+                break;
+            }
+            if (count > 0) {
+                sb.append(',');
+            }
             sb.append("{\"taskId\":\"").append(entry.taskId).append("\",")
               .append("\"state\":\"").append(A2AGatewayService.toLegacyState(entry.status)).append("\",")
               .append("\"createdAt\":").append(entry.createdAtMs).append('}');

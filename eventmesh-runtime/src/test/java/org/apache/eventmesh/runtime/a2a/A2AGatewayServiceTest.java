@@ -91,8 +91,12 @@ class A2AGatewayServiceTest {
         public List<TaskRecord> listByAgent(String agentId, Status statusFilter) {
             List<TaskRecord> out = new ArrayList<>();
             for (TaskRecord r : table.values()) {
-                if (!r.agentId.equals(agentId)) continue;
-                if (statusFilter != null && r.status != statusFilter) continue;
+                if (!r.agentId.equals(agentId)) {
+                    continue;
+                }
+                if (statusFilter != null && r.status != statusFilter) {
+                    continue;
+                }
                 out.add(r);
             }
             return out;
@@ -149,7 +153,9 @@ class A2AGatewayServiceTest {
         }
 
         private boolean matches(String topic, String pattern) {
-            if (pattern.equals(topic)) return true;
+            if (pattern.equals(topic)) {
+                return true;
+            }
             // A2A topics use Pulsar/MQTT-style wildcards: + matches one path segment, *
             // matches one or more. Convert to a regex for in-process delivery.
             String regex = pattern
@@ -180,8 +186,12 @@ class A2AGatewayServiceTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        if (gateway != null) gateway.shutdown();
-        if (store != null) store.close();
+        if (gateway != null) {
+            gateway.shutdown();
+        }
+        if (store != null) {
+            store.close();
+        }
     }
 
     private void registerEchoAgent(String name) throws Exception {
@@ -262,8 +272,8 @@ class A2AGatewayServiceTest {
         registry.registerCard(
             AgentIdentity.builder().orgId("default").unitId("default").agentId(silentAgent).build(), card);
 
-        // submit with a custom taskId so we can cancel before the timeout fires
         String taskId = "task-cancel-" + System.nanoTime();
+        // submit and then cancel before the timeout fires
         CompletableFuture<TaskResult> f = gateway.submitTask(taskId, silentAgent, "{}", null);
         // Cancel before the response
         boolean ok = gateway.cancelTask(taskId);
