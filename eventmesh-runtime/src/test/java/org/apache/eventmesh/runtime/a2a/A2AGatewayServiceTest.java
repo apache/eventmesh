@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.protocol.a2a.AgentIdentity;
-import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 import org.apache.eventmesh.protocol.a2a.model.AgentCapabilities;
+import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 import org.apache.eventmesh.protocol.a2a.model.AgentInterface;
 import org.apache.eventmesh.protocol.a2a.model.AgentSkill;
 import org.apache.eventmesh.runtime.a2a.A2AGatewayService.TaskResult;
@@ -272,9 +272,11 @@ class A2AGatewayServiceTest {
         registry.registerCard(
             AgentIdentity.builder().orgId("default").unitId("default").agentId(silentAgent).build(), card);
 
-        String taskId = "task-cancel-" + System.nanoTime();
         // submit and then cancel before the timeout fires
-        CompletableFuture<TaskResult> f = gateway.submitTask(taskId, silentAgent, "{}", null);
+        CompletableFuture<TaskResult> f = gateway.submitTask(
+            "task-cancel-" + System.nanoTime(), silentAgent, "{}", null);
+        // extract taskId from the result for cancellation
+        String taskId = f.get(0, TimeUnit.SECONDS).getTaskId();
         // Cancel before the response
         boolean ok = gateway.cancelTask(taskId);
         assertTrue(ok, "cancel should succeed on a PENDING task");

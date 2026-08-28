@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.a2a;
 
-import org.apache.eventmesh.runtime.state.TaskStore;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.apache.eventmesh.runtime.state.TaskStore;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
