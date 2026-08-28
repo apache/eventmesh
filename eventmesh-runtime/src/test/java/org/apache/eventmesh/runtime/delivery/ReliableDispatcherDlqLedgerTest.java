@@ -36,10 +36,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.Test;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR C: verifies the {@link DeadLetterStore} hook in {@link ReliableDispatcher}.tick().
