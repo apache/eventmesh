@@ -109,7 +109,7 @@ class MetaBackedTaskStoreTest {
     }
 
     @Test
-    void expireStaleRemovesOldRecords() {
+    void expireStaleRemovesOldRecords() throws Exception {
         TaskStore store = new MetaBackedTaskStore(new InMemoryMetaStore());
         store.createTask("old", "a", "c", "{}");
         store.createTask("new", "a", "c", "{}");
