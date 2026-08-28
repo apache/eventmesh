@@ -118,11 +118,12 @@ class MetaBackedTaskStoreTest {
         // Deterministic: bump "new" with updateStatus so its updatedAtMs > "old" by tens of ms,
         // then expireStale(1L) removes the older "old" record only.
         store.updateStatus("new", store.getTask("new").taskEpoch, Status.RUNNING, null);
-        // Without a small gap, both records end up older than 1ms by the time
-        // expireStale(1L) is called, so both are removed. The 3ms sleep ensures
-        // the just-updated "new" record's updatedAtMs is within 1ms of "now"
-        // (so it survives) while "old" (created several ms earlier) is removed.
-        Thread.sleep(3L);
+        // expireStale(1L) is called AFTER the 50ms sleep; by then the just-updated
+        // "new" record's updatedAtMs is < 1ms old (well under 1ms), so it survives.
+        // The "old" record's updatedAtMs is ~50ms old, so it is removed.
+        // 50ms gives comfortable headroom over CI scheduler noise (a 1ms gap can
+        // collapse on a busy host).
+        Thread.sleep(50L);
         List<String> expired = store.expireStale(1L);
         assertEquals(1, expired.size());
         assertEquals("old", expired.get(0));
