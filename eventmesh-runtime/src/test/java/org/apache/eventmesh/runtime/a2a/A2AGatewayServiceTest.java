@@ -273,22 +273,17 @@ class A2AGatewayServiceTest {
             AgentIdentity.builder().orgId("default").unitId("default").agentId(silentAgent).build(), card);
 
         // submit and then cancel before the timeout fires
-        CompletableFuture<TaskResult> f = gateway.submitTask(
-            "task-cancel-" + System.nanoTime(), silentAgent, "{}", null);
-        // extract taskId from the result for cancellation
-        String taskId = f.get(0, TimeUnit.SECONDS).getTaskId();
-        // Cancel before the response
-        boolean ok = gateway.cancelTask(taskId);
-        assertTrue(ok, "cancel should succeed on a PENDING task");
+        String taskId = "task-cancel-" + System.nanoTime();
+        CompletableFuture<TaskResult> f = gateway.submitTask(taskId, silentAgent, "{}", null);
+        assertTrue(gateway.cancelTask(taskId), "cancel should succeed on a PENDING task");
+        // The future should be completed with a CANCELLED result
+        TaskResult r = f.get(1, TimeUnit.SECONDS);
+        assertEquals(TaskState.CANCELLED, r.getState());
 
         // The store should now reflect CANCELED
         TaskRecord rec = store.getTask(taskId);
         assertNotNull(rec);
         assertEquals(Status.CANCELED, rec.status);
-
-        // The future should be completed with a CANCELLED result
-        TaskResult r = f.get(1, TimeUnit.SECONDS);
-        assertEquals(TaskState.CANCELLED, r.getState());
     }
 
     @Test
