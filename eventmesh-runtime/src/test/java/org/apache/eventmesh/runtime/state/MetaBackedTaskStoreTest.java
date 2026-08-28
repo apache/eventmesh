@@ -90,9 +90,9 @@ class MetaBackedTaskStoreTest {
         TaskStore b = new MetaBackedTaskStore(meta);
         TaskRecord t = a.createTask("task-1", "a", "c", "{}");
         // Instance B reads the record through its own getTask
-        TaskRecord bView = b.getTask("task-1");
-        assertNotNull(bView);
-        assertEquals(t.taskEpoch, bView.taskEpoch);
+        TaskRecord bViewTwo = b.getTask("task-1");
+        assertNotNull(bViewTwo);
+        assertEquals(t.taskEpoch, bViewTwo.taskEpoch);
     }
 
     @Test

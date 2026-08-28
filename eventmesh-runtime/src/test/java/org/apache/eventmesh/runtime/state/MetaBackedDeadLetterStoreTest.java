@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
-import org.apache.eventmesh.runtime.cluster.MetaStore;
 
 import org.junit.jupiter.api.Test;
 

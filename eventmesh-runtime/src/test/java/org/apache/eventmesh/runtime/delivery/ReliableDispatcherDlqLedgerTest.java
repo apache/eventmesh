@@ -19,11 +19,10 @@ package org.apache.eventmesh.runtime.delivery;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
-import org.apache.eventmesh.runtime.delivery.AckCallback;
-import org.apache.eventmesh.runtime.delivery.DeadLetterSink;
-import org.apache.eventmesh.runtime.delivery.PushChannel;
 import org.apache.eventmesh.runtime.metrics.UniMetrics;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
@@ -41,8 +40,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR C: verifies the {@link DeadLetterStore} hook in {@link ReliableDispatcher}.tick().
