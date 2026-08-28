@@ -28,8 +28,6 @@ import org.apache.eventmesh.runtime.state.DeadLetterStore;
 import org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore;
 import org.apache.eventmesh.runtime.state.MetaBackedDeadLetterStore;
 
-import org.junit.jupiter.api.Test;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +38,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Sub-PR C: verifies the {@link DeadLetterStore} hook in {@link ReliableDispatcher}.tick().
