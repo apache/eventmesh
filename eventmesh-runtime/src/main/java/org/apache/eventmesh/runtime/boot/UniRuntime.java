@@ -18,6 +18,12 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.runtime.cluster.ClusterMembership;
+import org.apache.eventmesh.runtime.cluster.DeliveryTopology;
+import org.apache.eventmesh.runtime.cluster.FencingToken;
+import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
+import org.apache.eventmesh.runtime.cluster.MetaStore;
+import org.apache.eventmesh.runtime.cluster.PartitionOwnership;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 
@@ -51,6 +57,21 @@ public class UniRuntime {
     private final int maxBatchPerTopic;
     private final long pollTimeoutMs;
 
+    /** Delivery topology (§13.2). LOCAL_STICKY_PULL = poll-all (default); PARTITION_OWNED_PULL = CAS+fencing scale-out. */
+    private final DeliveryTopology topology;
+
+    /** Instance identity for cluster membership (null in LOCAL_STICKY_PULL mode). */
+    private final String instanceId;
+
+    /** Advertised HTTP address for cross-instance forwarding (null in LOCAL_STICKY_PULL mode). */
+    private final String instanceAddress;
+
+    /** Shared Meta store for cluster mode (null in LOCAL_STICKY_PULL mode). Package-visible for tests. */
+    MetaStore clusterMeta;
+
+    /** Partition ownership manager (null in LOCAL_STICKY_PULL mode). */
+    private PartitionOwnership partitionOwnership;
+
     private final AtomicBoolean running = new AtomicBoolean(false);
     private ScheduledExecutorService scheduler;
 
@@ -67,8 +88,33 @@ public class UniRuntime {
         return this;
     }
 
+    /**
+     * Backward-compatible 6-arg constructor: defaults to {@link DeliveryTopology#LOCAL_STICKY_PULL}
+     * (single-instance mode, no Meta dependency).
+     */
     public UniRuntime(MeshStoragePlugin storage, OffsetStore offsetStore,
         long pollIntervalMs, long tickIntervalMs, int maxBatchPerTopic, long pollTimeoutMs) {
+        this(storage, offsetStore, pollIntervalMs, tickIntervalMs, maxBatchPerTopic, pollTimeoutMs,
+            DeliveryTopology.LOCAL_STICKY_PULL, "standalone", null);
+    }
+
+    /**
+     * Full constructor with explicit delivery topology (§13.2). When {@code topology} is
+     * {@link DeliveryTopology#PARTITION_OWNED_PULL}, {@link #start()} boots the
+     * {@link PartitionOwnership} state machine: each instance acquires a strict subset of
+     * topic partitions via Meta CAS + fencing, and the pull loop polls only owned partitions
+     * (horizontal scale-out, no duplicate consumption).
+     *
+     * @param topology delivery topology; must not be null
+     * @param instanceId unique instance identity for cluster membership (ignored in LOCAL_STICKY_PULL)
+     * @param instanceAddress advertised HTTP address for cross-instance forwarding (may be null)
+     */
+    public UniRuntime(MeshStoragePlugin storage, OffsetStore offsetStore,
+        long pollIntervalMs, long tickIntervalMs, int maxBatchPerTopic, long pollTimeoutMs,
+        DeliveryTopology topology, String instanceId, String instanceAddress) {
+        if (topology == null) {
+            throw new IllegalArgumentException("topology must not be null");
+        }
         this.storage = storage;
         this.offsetStore = offsetStore;
         this.ingress = new UniIngressService(storage, offsetStore,
@@ -81,6 +127,9 @@ public class UniRuntime {
         this.tickIntervalMs = tickIntervalMs;
         this.maxBatchPerTopic = maxBatchPerTopic;
         this.pollTimeoutMs = pollTimeoutMs;
+        this.topology = topology;
+        this.instanceId = instanceId;
+        this.instanceAddress = instanceAddress;
     }
 
     /**
@@ -109,7 +158,41 @@ public class UniRuntime {
         scheduler.scheduleAtFixedRate(ingress::dispatcherTick, tickIntervalMs, tickIntervalMs, TimeUnit.MILLISECONDS);
         // §13.6.5: periodically evict subscribers that stopped polling (zombie-poll cleanup).
         scheduler.scheduleAtFixedRate(() -> ingress.cleanupStaleClients(60_000L), 60_000L, 60_000L, TimeUnit.MILLISECONDS);
-        log.info("uni runtime started (poll={}ms, tick={}ms)", pollIntervalMs, tickIntervalMs);
+        // §13.2: boot partition ownership for PARTITION_OWNED_PULL topology (scale-out mode).
+        if (topology == DeliveryTopology.PARTITION_OWNED_PULL) {
+            startPartitionOwnership();
+        }
+        log.info("uni runtime started (topology={}, poll={}ms, tick={}ms)", topology, pollIntervalMs, tickIntervalMs);
+    }
+
+    /**
+     * Boot the {@link PartitionOwnership} state machine for {@link DeliveryTopology#PARTITION_OWNED_PULL}
+     * topology (§13.2.3 / §13.2.8). Constructs a {@link ClusterMembership} + {@link PartitionOwnership}
+     * backed by an {@link InMemoryMetaStore} (production deployments inject a Nacos/etcd/ZK
+     * {@link MetaStore} via {@link #clusterMeta} before {@link #start()}). The ownership loop
+     * acquires a strict subset of topic partitions via Meta CAS + fencing, and the pull loop polls
+     * only owned partitions (no duplicate consumption across instances).
+     */
+    private void startPartitionOwnership() {
+        if (clusterMeta == null) {
+            clusterMeta = new InMemoryMetaStore();
+        }
+        FencingToken token = new FencingToken();
+        ClusterMembership membership = new ClusterMembership(
+            clusterMeta, instanceId, instanceAddress, 30_000L, System::currentTimeMillis, token);
+        partitionOwnership = new PartitionOwnership(
+            membership, clusterMeta, storage, instanceId, 5_000L, System::currentTimeMillis, token);
+        partitionOwnership.start(() -> ingress.activeTopicsClustered());
+        ingress.withPartitionOwnership(partitionOwnership);
+        log.info("partition ownership started (topology={}, instance={})", topology, instanceId);
+    }
+
+    /** Stop the partition ownership loop and release Meta assignment records. */
+    private void stopPartitionOwnership() {
+        if (partitionOwnership != null) {
+            partitionOwnership.stop();
+            log.info("partition ownership stopped (instance={})", instanceId);
+        }
     }
 
     /**
@@ -217,6 +300,8 @@ public class UniRuntime {
         if (!running.compareAndSet(true, false)) {
             return;
         }
+        // §13.2: stop partition ownership before pull-loop (release Meta assignments).
+        stopPartitionOwnership();
         log.info("graceful shutdown starting (graceful={}ms)", gracefulMs);
 
         // 1. Stop the pull-loop scheduler (no new events pulled)
