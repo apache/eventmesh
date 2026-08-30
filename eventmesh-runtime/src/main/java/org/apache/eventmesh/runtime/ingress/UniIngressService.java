@@ -357,11 +357,28 @@ public class UniIngressService {
                 long offset = nextOffset(topic);
                 // P2 fix: if the frame carries a POP check key (RocketMQ 5.x deferred ACK), build a
                 // callback that ACKs the broker on client ACK (restoring at-least-once).
+                // Issue #5295: use a broker-ACK barrier keyed by POP check key so the broker ACK
+                // fires only when ALL required deliveries have ACKed (BROADCAST / MULTICAST
+                // targets are not prematurely ACKed by the first delivery that finishes).
                 String popCk = f.attributes().get("empopck");
-                Runnable mqAck = (popCk != null) ? () -> storage.ackPulledMessage(topic, popCk) : null;
-                for (Subscription target : subscriptionManager.targetsFor(topic, f)) {
-                    dispatcher.deliver(topic, partition, offset, f, target.getClientId(),
-                        channelFor(target.getClientId()), mqAck);
+                List<Subscription> targets = subscriptionManager.targetsFor(topic, f);
+                if (popCk != null && !targets.isEmpty()) {
+                    java.util.concurrent.atomic.AtomicInteger pending =
+                        new java.util.concurrent.atomic.AtomicInteger(targets.size());
+                    Runnable mqAck = () -> {
+                        if (pending.decrementAndGet() == 0) {
+                            storage.ackPulledMessage(topic, popCk);
+                        }
+                    };
+                    for (Subscription target : targets) {
+                        dispatcher.deliver(topic, partition, offset, f, target.getClientId(),
+                            channelFor(target.getClientId()), mqAck);
+                    }
+                } else {
+                    for (Subscription target : targets) {
+                        dispatcher.deliver(topic, partition, offset, f, target.getClientId(),
+                            channelFor(target.getClientId()), null);
+                    }
                 }
             }
             UniTrace.end(dispatchSpan);
