@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.security;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import io.cloudevents.CloudEvent;
 
 /**
  * Ordered ingress security pipeline (§4.5): AuthFilter → AclFilter → SignatureVerifier, etc.
@@ -46,10 +46,22 @@ public class FilterChain {
     /**
      * Run every filter; return the first denying verdict, or {@link FilterVerdict#allow()} if all
      * pass.
+     *
+     * @deprecated since #5299 — call {@link #check(EventMeshFrame, FilterContext)} instead. Kept
+     *     as a bridge for the TCP path until sub-PR C migrates.
      */
-    public FilterVerdict check(CloudEvent event, FilterContext ctx) {
+    @Deprecated
+    public FilterVerdict check(io.cloudevents.CloudEvent event, FilterContext ctx) {
+        return check(EventMeshFrame.fromCloudEvent(event), ctx);
+    }
+
+    /**
+     * Run every filter on the runtime's internal frame; return the first denying verdict, or
+     * {@link FilterVerdict#allow()} if all pass. This is the primary ingress path since #5299.
+     */
+    public FilterVerdict check(EventMeshFrame frame, FilterContext ctx) {
         for (IngressFilter filter : filters) {
-            FilterVerdict verdict = filter.check(event, ctx);
+            FilterVerdict verdict = filter.check(frame, ctx);
             if (!verdict.isAllowed()) {
                 return verdict;
             }

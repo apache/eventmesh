@@ -19,11 +19,12 @@ package org.apache.eventmesh.runtime.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * Verifies an HMAC-SHA256 signature over a canonical projection of the CloudEvent (§13.4.4), so the
@@ -43,13 +44,16 @@ public class SignatureVerifierFilter implements IngressFilter {
     }
 
     @Override
-    public FilterVerdict check(CloudEvent event, FilterContext ctx) {
-        Object provided = event.getExtension(EXT_SIGNATURE);
-        if (!(provided instanceof String)) {
+    public FilterVerdict check(EventMeshFrame frame, FilterContext ctx) {
+        // The signature travels in the frame attributes under the same key the legacy CloudEvent
+        // extension used, so a signed CE-JSON payload becomes a signed frame automatically after
+        // the cloudevents FrameAdaptor round-trip.
+        String provided = frame.attributes().get(EXT_SIGNATURE);
+        if (provided == null) {
             return FilterVerdict.deny(FilterVerdict.STATUS_UNAUTHENTICATED, "missing signature");
         }
-        String expected = sign(canonical(event));
-        if (constantTimeEquals(expected, (String) provided)) {
+        String expected = sign(canonical(frame));
+        if (constantTimeEquals(expected, provided)) {
             return FilterVerdict.allow();
         }
         return FilterVerdict.deny(FilterVerdict.STATUS_UNAUTHENTICATED, "signature mismatch");
@@ -57,7 +61,7 @@ public class SignatureVerifierFilter implements IngressFilter {
 
     /**
      * Compute the signature over {@code message} — also used by clients/tests to produce the value
-     * placed in the {@code emsignature} extension.
+     * placed in the {@code emsignature} extension/attribute.
      */
     public String sign(String message) {
         try {
@@ -70,11 +74,12 @@ public class SignatureVerifierFilter implements IngressFilter {
         }
     }
 
-    static String canonical(CloudEvent event) {
-        Object id = event.getId();
-        Object source = event.getSource();
-        Object type = event.getType();
-        return String.valueOf(id) + "|" + String.valueOf(source) + "|" + String.valueOf(type);
+    static String canonical(EventMeshFrame frame) {
+        // Same projection as before (#5299 sub-PR B): id|source|type, all read from frame
+        // attributes. For non-EVENT frames the canonical string still computes (we may want to
+        // tighten to isEvent() in a follow-up if streaming chunks ever need sigs).
+        Map<String, String> a = frame.attributes();
+        return a.getOrDefault("id", "") + "|" + a.getOrDefault("source", "") + "|" + a.getOrDefault("type", "");
     }
 
     private static String toHex(byte[] bytes) {

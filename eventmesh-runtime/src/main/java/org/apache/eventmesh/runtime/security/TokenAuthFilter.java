@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.security;
 import java.util.Collections;
 import java.util.Set;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * Authenticates the caller by a bearer token (§13.4.1). In production this delegates to the
@@ -36,7 +36,7 @@ public class TokenAuthFilter implements IngressFilter {
     }
 
     @Override
-    public FilterVerdict check(CloudEvent event, FilterContext ctx) {
+    public FilterVerdict check(EventMeshFrame frame, FilterContext ctx) {
         String credential = ctx.getCredential();
         if (credential != null && validTokens.contains(credential)) {
             return FilterVerdict.allow();

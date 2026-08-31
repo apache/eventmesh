@@ -248,10 +248,13 @@ public class UniHttpServer {
         org.apache.eventmesh.runtime.security.FilterContext ctx =
             new org.apache.eventmesh.runtime.security.FilterContext(topic, clientId, tenant, credential,
                 exchange.getRemoteAddress().getAddress().getHostAddress());
-        // For non-publish endpoints there's no CloudEvent body to check; use a minimal stub.
-        io.cloudevents.CloudEvent stubEvent = io.cloudevents.core.builder.CloudEventBuilder.v1()
-            .withId("security-check").withSource(java.net.URI.create("eventmesh")).withType("security").build();
-        org.apache.eventmesh.runtime.security.FilterVerdict verdict = filterChain.check(stubEvent, ctx);
+        // For non-publish endpoints there's no EventMeshFrame to check; build a minimal
+        // security-check frame so the filter chain has *something* to evaluate. The filters
+        // themselves read tenant / credential from the FilterContext, so a frame with empty
+        // attributes is sufficient for the auth/acl decision (#5299 sub-PR B).
+        org.apache.eventmesh.common.wire.EventMeshFrame stubFrame =
+            org.apache.eventmesh.common.wire.EventMeshFrame.event(java.util.Collections.emptyMap(), new byte[0]);
+        org.apache.eventmesh.runtime.security.FilterVerdict verdict = filterChain.check(stubFrame, ctx);
         if (!verdict.isAllowed()) {
             writeJson(exchange, verdict.getRejectStatus(), error(verdict.getReason()));
             return false;
@@ -295,18 +298,16 @@ public class UniHttpServer {
             return;
         }
         // Security filter chain (§4.5): auth/acl/signature run before the event enters the pipeline.
-        // TODO(#5299 sub-PR B): convert filterChain.check() to take an EventMeshFrame and look up
-        // emtenantid from frame attributes; the CloudEvent here is a temporary bridge until the
-        // filter chain migrates.
-        io.cloudevents.CloudEvent eventForAcl = frame.toCloudEvent();
+        // #5299 sub-PR B: filters now read directly from EventMeshFrame.attributes() — no more
+        // CE bridge. Tenant still comes from the CloudEvent extension ("emtenantid") which the
+        // cloudevents FrameAdaptor round-trips into frame attributes under the same key.
         if (filterChain != null) {
             String credential = exchange.getRequestHeaders().getFirst("Authorization");
-            String tenant = eventForAcl.getExtension("emtenantid") != null
-                ? eventForAcl.getExtension("emtenantid").toString() : null;
+            String tenant = frame.attributes().get("emtenantid");
             org.apache.eventmesh.runtime.security.FilterContext ctx =
                 new org.apache.eventmesh.runtime.security.FilterContext(topic, null, tenant, credential,
                     exchange.getRemoteAddress().getAddress().getHostAddress());
-            org.apache.eventmesh.runtime.security.FilterVerdict verdict = filterChain.check(eventForAcl, ctx);
+            org.apache.eventmesh.runtime.security.FilterVerdict verdict = filterChain.check(frame, ctx);
             if (!verdict.isAllowed()) {
                 writeJson(exchange, verdict.getRejectStatus(), error(verdict.getReason()));
                 return;
