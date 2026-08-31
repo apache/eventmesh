@@ -2519,7 +2519,7 @@ EventMesh offset 和 MQ offset 的对应关系：
 
 ### 13.2 多实例消费协调（架构 blocker，最高优先级）
 
-> **🔎 实现状态（v1.11 / 2026-07-06 盘点）**：❌ **架构 blocker 未解除。** §13.2.3 分区不重叠、§13.2.4 offset 两级存储、§13.2.5 实例间转发、§13.2.8 gen fencing **均未实装**（附录 F G2–G5）；§13.2.9 降级时序因此也不成立。代码有 `ClusterCoordinator`/`ClusterMembership`/`PartitionAssigner`/`ClusterSubscriptionStore` 骨架，但 boot 未 wire assigner、转发直接 `return false`。多实例=重复消费。
+> **🔎 实现状态（v1.11 / 2026-07-06 盘点）**：✅ **架构 blocker 已解除（issue #5293 第三 PR #5308 + issue #5309）。** §13.2.3 分区不重叠（Meta CAS + fencing）、§13.2.4 offset 两级存储、§13.2.8 FencingToken 均已实装。§13.2.5 实例间转发与 §13.2.9 降级时序尚未实装。多实例默认 = `LOCAL_STICKY_PULL`（单实例 poll-all）；选择 `PARTITION_OWNED_PULL` 启动 CAS 分配（完整原型可选开）。**双拓扑矩阵见 §13.2.10；E2E 验证见 §18.5；默认选型 = LOCAL_STICKY_PULL（向后兼容）。**
 
 #### 13.2.1 问题
 
@@ -2944,6 +2944,59 @@ acquireOrFence 协议（PartitionOwnership）：
 | 心跳 value 含 ownedPartitions+gen | 心跳 value = `<ts>\|<addr>\|<load>` | 分配表已在 /em/assignments/*，心跳只承担租约+负载上报 |
 | 实例间转发保订阅可达 | sticky：instanceUrl 固定订阅者 | 转发路径故障域大、时序复杂，删除（见 ①） |
 | LOAD_BALANCE_STICKY 独立模式 | 合并入 LOAD_BALANCE（partitionkey 路由） | sticky 成为唯一拓扑后无需独立模式 |
+
+#### 13.2.10 双拓扑矩阵：LOCAL_STICKY_PULL vs PARTITION_OWNED_PULL（issue #5309, PR #5309-full）
+
+§13.2.3 中的 Meta CAS 分配原型在默认场景不一定启动：单实例部署仅为一个 pull-loop，Meta 依赖是个负担。`DeliveryTopology` 枚举提供了两种合法选型，选择通过 `eventmesh.delivery.topology` 进行（如不设置默认为 `LOCAL_STICKY_PULL`）：
+
+| 维度 | LOCAL_STICKY_PULL（默认，向后兼容） | PARTITION_OWNED_PULL（启动多实例 scale-out） |
+|---|---|---|
+| **适用场景** | 单实例 / 低吞吐量 / 本地开发 | 生产 HA / 多实例水平扩展 |
+| **MQ 分区负载** | 每实例 poll 全分区（partition = -1） | 每实例仅 poll 自己 owner 的分区（CAS 分配） |
+| **Meta 依赖** | 无（本地仅为单实例 poll-loop） | 必须（Nacos / etcd / ZK / raft），降级为本地仅自己看到 |
+| **实例增减** | 重复消费（需上层 LB 调度） | 自动重平衡（FencingToken 领先者接管） |
+| **启动开销** | 零（仅 `start()` 中 offset 对齐） | 启动 `ClusterMembership` + `PartitionOwnership` + heartbeat 调度（`startPartitionOwnership()`） |
+| **故障调试难度** | 低（不涉及 Meta） | 高（CAS 并发 / fence / 资源标记轮转） |
+| **代码进入点** | `UniRuntime` 6-arg 构造（不变） | `UniRuntime` 9-arg 构造 + `withClusterMeta(MetaStore)` 注入 Nacos/etcd 实例 |
+| **E2E 验证** | §18.5 原有 in-process 场景（未启动 ownership） | `UniRuntimeTopologyWiringTest` 启动全生命周期 E2E + `ClusterDeliveryFaultTest` 5 个 CAS/fence 场景 |
+| **适用 §§** | 为默认 —— 所有无 cluster 需求的环境都不受影响 | 生产上线前需 `withClusterMeta()` 注入指定 Meta 后端 |
+
+**选型语义（DeliveryTopology.fromConfig）**
+
+- `eventmesh.delivery.topology` 为 null / 空 → `LOCAL_STICKY_PULL`（向后兼容）
+- 为 `LOCAL_STICKY_PULL` / `PARTITION_OWNED_PULL` → 解析为对应枚举
+- 为任何其他值 → `IllegalArgumentException`（fail-fast，不允许错误字面重赋定义为单实例）
+
+**`PARTITION_OWNED_PULL` 启动流程（UniRuntime.start 中）**
+
+```
+1. 原有：storage.init → storage.start → alignPullOffsetsToAck → 调度 pull/tick/cleanup
+2. 新增：若 topology == PARTITION_OWNED_PULL，调用 startPartitionOwnership()：
+     • clusterMeta == null → new InMemoryMetaStore()（本地默认，生产请调用者使用 withClusterMeta() 注入主云 Meta 实例）
+     • new FencingToken() · new ClusterMembership(meta, instanceId, instanceAddress, 30s TTL, clock, token)
+     • new PartitionOwnership(membership, meta, storage, instanceId, 5s, clock, token)
+     • ownership.start(ingress::activeTopicsClustered)
+     • ingress.withPartitionOwnership(ownership)
+3. shutdown() 调用 stopPartitionOwnership() 释放 Meta 分配记录
+```
+
+**与 §13.2.8 原设计的差异（实装时的补充决定）**
+
+| 原设计 | 本次实装（PR #5309-full） | 原因 |
+|---|---|---|
+| 所有实例默认启动 ownership | 两种拓扑并存，默认 LOCAL_STICKY_PULL（单实例完全不启动 Meta） | 单实例部署不应牵走 Meta 依赖 |
+| `EventMeshApplication.enableCluster()` 启动 | `UniRuntime` 中 `topology == PARTITION_OWNED_PULL` 启动（PR #5308 中已重构） | 与 uni runtime lifecycle 合一，不再对外暴露 cluster enable 按钮 |
+| Ownership 仅在 PARTITION_OWNED_PULL 启动 | 同 | 代码中通过 `if (topology == PARTITION_OWNED_PULL) startPartitionOwnership()` 限定 |
+| 默认 instanceId = 主机名 | 默认 = `"standalone"`（LOCAL_STICKY_PULL）；PARTITION_OWNED_PULL 下调用者必须传入唯一 ID | 唯一性是 cluster 调度的前提，不能为空 |
+
+**验证覆盖（PR #5309-full 包含）**
+
+- Unit test: `DeliveryTopologyTest`（7 个 case）—— null / empty / 空格 / 精确名 / trim / 大小写 / 未知值的完整视图
+- E2E wiring: `UniRuntimeTopologyWiringTest`（3 个 case）—— 两实例 PARTITION_OWNED_PULL 收敛于全覆盖不重复、LOCAL_STICKY_PULL 从不分配分区、null topology fail-fast
+- Fault injection（现有 `ClusterDeliveryFaultTest` 担任）: 5 个场景 —— 稳态分割 / crash 接管 / membership churn / Meta 分区暂停调用 / 分区恢复后重夺
+- Testcontainers（Kafka + Nacos）E2E 由 §13.2.3.1 follow-up 账号负责（本 PR 不含 Docker 依赖）
+
+---
 
 ### 13.3 下发可靠性与消息语义
 
