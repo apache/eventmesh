@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.runtime.security;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import io.cloudevents.CloudEvent;
 
 /**
  * Topic-level authorization (§13.4.2). Holds an {@link AclRule} set sorted by priority (descending,
@@ -58,12 +58,22 @@ public class AclFilter implements IngressFilter {
         this.rules = sorted;
     }
 
+    /**
+     * Tenant / clientId come from {@code ctx} (set by the HTTP handler before the filter chain).
+     * We no longer read them from the event because that path was CloudEvent-specific; sub-PR
+     * B keeps the contract simple by reading the principal from the context and only using the
+     * frame to confirm an event-shaped payload arrived.
+     */
     @Override
-    public FilterVerdict check(CloudEvent event, FilterContext ctx) {
+    public FilterVerdict check(EventMeshFrame frame, FilterContext ctx) {
         String principal = ctx.getTenant() != null ? ctx.getTenant() : ctx.getClientId();
         String resource = ctx.getTopic();
         if (principal == null || resource == null) {
             return FilterVerdict.deny(FilterVerdict.STATUS_FORBIDDEN, "no principal/resource for ACL");
+        }
+        if (frame != null && !frame.isEvent()) {
+            return FilterVerdict.deny(FilterVerdict.STATUS_FORBIDDEN,
+                "ACL applies to EVENT frames only (got msgType=" + frame.msgType() + ")");
         }
         // action not yet carried in FilterContext — pass null so rule action doesn't restrict (any matches).
         for (AclRule rule : rules) {

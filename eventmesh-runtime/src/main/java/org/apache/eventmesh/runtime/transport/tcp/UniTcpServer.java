@@ -60,19 +60,16 @@ public class UniTcpServer {
     private final UniIngressService ingress;
     private final TcpAckRegistry ackRegistry;
     private final PackageRouter router;
-    private final CloudEventToPackageBody bodyMapper;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private Channel serverChannel;
     private final ConcurrentHashMap<String, Channel> clientChannels = new ConcurrentHashMap<>();
 
-    public UniTcpServer(UniIngressService ingress, TcpAckRegistry ackRegistry, PackageRouter router,
-        CloudEventToPackageBody bodyMapper) {
+    public UniTcpServer(UniIngressService ingress, TcpAckRegistry ackRegistry, PackageRouter router) {
         this.ingress = ingress;
         this.ackRegistry = ackRegistry;
         this.router = router;
-        this.bodyMapper = bodyMapper;
     }
 
     /**
@@ -93,7 +90,7 @@ public class UniTcpServer {
                     ch.pipeline()
                         .addLast(new Codec.Encoder())
                         .addLast(new Codec.Decoder())
-                        .addLast(new FrameHandler(ingress, ackRegistry, router, clientChannels, bodyMapper));
+                        .addLast(new FrameHandler(ingress, ackRegistry, router, clientChannels));
                 }
             });
         serverChannel = bootstrap.bind(port).sync().channel();
@@ -119,7 +116,9 @@ public class UniTcpServer {
      * UNSUBSCRIBE/GOODBYE) are handled here directly because they need channel context (the
      * subscriber's clientId comes from the HELLO {@link UserAgent#getGroup()}, not the SUBSCRIBE
      * body). Message commands (ASYNC_MESSAGE_TO_SERVER / ASYNC_MESSAGE_TO_CLIENT_ACK) go through the
-     * {@link PackageRouter} for CloudEvents translation. Static + package-private so it can be
+     * {@link PackageRouter}, which decodes the MeshMessage straight into the internal
+     * {@link org.apache.eventmesh.common.wire.EventMeshFrame} wire unit — no CloudEvent hop since
+     * #5299. Static + package-private so it can be
      * exercised directly via netty {@code EmbeddedChannel} in tests.
      */
     static final class FrameHandler extends SimpleChannelInboundHandler<Package> {
@@ -131,15 +130,13 @@ public class UniTcpServer {
         private final TcpAckRegistry ackRegistry;
         private final PackageRouter router;
         private final ConcurrentHashMap<String, Channel> clientChannels;
-        private final CloudEventToPackageBody bodyMapper;
 
         FrameHandler(UniIngressService ingress, TcpAckRegistry ackRegistry, PackageRouter router,
-            ConcurrentHashMap<String, Channel> clientChannels, CloudEventToPackageBody bodyMapper) {
+            ConcurrentHashMap<String, Channel> clientChannels) {
             this.ingress = ingress;
             this.ackRegistry = ackRegistry;
             this.router = router;
             this.clientChannels = clientChannels;
-            this.bodyMapper = bodyMapper;
         }
 
         @Override

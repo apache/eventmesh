@@ -111,8 +111,8 @@ class TcpCompatibilityBridgeTest {
     private static final class StubCodec implements TcpFrameCodec {
 
         @Override
-        public byte[] encodePush(String deliveryId, CloudEvent event) {
-            return ("PUSH:" + deliveryId + ":" + event.getId()).getBytes(StandardCharsets.UTF_8);
+        public byte[] encodePush(String deliveryId, EventMeshFrame frame) {
+            return ("PUSH:" + deliveryId + ":" + frame.attributes().get("id")).getBytes(StandardCharsets.UTF_8);
         }
 
         @Override

@@ -17,22 +17,23 @@
 
 package org.apache.eventmesh.runtime.transport.tcp;
 
-import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
- * Encodes a delivered CloudEvent (plus its delivery id) into the TCP {@code Package} wire bytes the
- * legacy client expects, and decodes a client ACK frame back into the delivery id it acknowledges.
+ * Encodes a delivered {@link EventMeshFrame} (plus its delivery id) into the TCP {@code Package}
+ * wire bytes the legacy client expects, and decodes a client ACK frame back into the delivery id it
+ * acknowledges.
  *
- * <p>Production implementation reuses the existing {@code Codec} + {@code MeshMessageProtocolAdaptor}
- * (reverse direction) and carries the delivery id in a Package header/extension so the client's ACK
- * frame echoes it. Tests inject a deterministic stub.</p>
+ * <p>Production implementation reuses the existing {@code Codec} + the {@code meshmessage}
+ * {@code FrameAdaptor} (reverse direction) and carries the delivery id in a Package header/extension
+ * so the client's ACK frame echoes it. Tests inject a deterministic stub.</p>
  */
 public interface TcpFrameCodec {
 
     /**
-     * Encode a push frame for {@code event}, tagged with {@code deliveryId} so the client can ACK it.
+     * Encode a push frame for {@code frame}, tagged with {@code deliveryId} so the client can ACK it.
      */
-    byte[] encodePush(String deliveryId, CloudEvent event);
+    byte[] encodePush(String deliveryId, EventMeshFrame frame);
 
     /**
      * Extract the delivery id from a client ACK frame, or {@code null} if the frame isn't an ACK.

@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.net.URI;
 import java.util.Collections;
 
@@ -94,7 +96,7 @@ class SecurityFilterTest {
         SignatureVerifierFilter verifier = new SignatureVerifierFilter("shared-secret");
         CloudEvent event = event();
 
-        String goodSig = verifier.sign(SignatureVerifierFilter.canonical(event));
+        String goodSig = verifier.sign(SignatureVerifierFilter.canonical(EventMeshFrame.fromCloudEvent(event)));
         CloudEvent signed = CloudEventBuilder.from(event).withExtension(SignatureVerifierFilter.EXT_SIGNATURE, goodSig).build();
         assertTrue(verifier.check(signed, ctx("tok", "tenantA", "orders")).isAllowed());
 

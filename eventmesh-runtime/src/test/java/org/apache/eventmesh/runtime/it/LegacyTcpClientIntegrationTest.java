@@ -33,7 +33,6 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
-import org.apache.eventmesh.runtime.transport.tcp.MeshEventToPackageBody;
 import org.apache.eventmesh.runtime.transport.tcp.MeshMessagePackageRouter;
 import org.apache.eventmesh.runtime.transport.tcp.TcpAckRegistry;
 import org.apache.eventmesh.runtime.transport.tcp.UniTcpServer;
@@ -159,8 +158,7 @@ class LegacyTcpClientIntegrationTest {
             }
         }, 0, 100, java.util.concurrent.TimeUnit.MILLISECONDS);
 
-        server = new UniTcpServer(ingress, new TcpAckRegistry(), new MeshMessagePackageRouter(),
-            new MeshEventToPackageBody());
+        server = new UniTcpServer(ingress, new TcpAckRegistry(), new MeshMessagePackageRouter());
         port = server.start(0);
     }
 

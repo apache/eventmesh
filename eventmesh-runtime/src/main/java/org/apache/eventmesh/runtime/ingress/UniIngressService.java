@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.ingress;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.DeadLetterSink;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
 import org.apache.eventmesh.runtime.delivery.ReliableDispatcher;
@@ -224,6 +225,22 @@ public class UniIngressService {
         }
         CompletableFuture<?>[] futures = events.stream()
             .map(e -> publish(topic, e))
+            .toArray(CompletableFuture[]::new);
+        return CompletableFuture.allOf(futures);
+    }
+
+    /**
+     * Primary ingress entry for a batch of internal EventMeshFrames (#5299). The HTTP path uses
+     * {@code FrameAdaptors.get("cloudevents").toFrame(body)} per event then calls this method; the
+     * CloudEvent-typed {@link #publishBatch(String, java.util.List)} is preserved for binary
+     * compatibility with the TCP bridge and any out-of-tree caller.
+     */
+    public CompletableFuture<Void> publishBatchFrames(String topic, java.util.List<EventMeshFrame> frames) {
+        if (frames == null || frames.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        CompletableFuture<?>[] futures = frames.stream()
+            .map(f -> publish(topic, f))
             .toArray(CompletableFuture[]::new);
         return CompletableFuture.allOf(futures);
     }
@@ -465,6 +482,39 @@ public class UniIngressService {
     }
 
     /**
+     * Primary lite ingress: publish a single internal EventMeshFrame to a lite topic (LMQ) (#5299).
+     * The HTTP path uses {@code FrameAdaptors.get("cloudevents").toFrame(body)} then calls this
+     * method; no further CloudEvent touches runtime state.
+     */
+    public CompletableFuture<Void> publishLiteFrame(String parentTopic, String liteTopic, EventMeshFrame frame) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        if (!(storage instanceof org.apache.eventmesh.api.storage.LiteTopicCapable)) {
+            future.completeExceptionally(new UnsupportedOperationException("storage does not support lite topic"));
+            return future;
+        }
+        if (loadMeter != null && frame.data() != null) {
+            loadMeter.recordInflow(frame.data().length);
+        }
+        try {
+            ((org.apache.eventmesh.api.storage.LiteTopicCapable) storage).sendLite(parentTopic, liteTopic, frame,
+                new SendCallback() {
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        future.complete(null);
+                    }
+
+                    @Override
+                    public void onException(org.apache.eventmesh.api.exception.OnExceptionContext context) {
+                        future.completeExceptionally(context.getException());
+                    }
+                });
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+        }
+        return future;
+    }
+
+    /**
      * Pull a batch of CloudEvents from a lite topic (direct pull from the LMQ; no deliveryId / no
      * EventMesh reliability layer — the lite consumer self-manages offset in the storage plugin).
      * Frames pulled from the LMQ are decoded back to CloudEvents at this boundary. Empty list if lite
@@ -480,6 +530,19 @@ public class UniIngressService {
             out.add(f.toCloudEvent());
         }
         return out;
+    }
+
+    /**
+     * Primary lite poll: drain a batch of internal EventMeshFrames from the LMQ (#5299). The
+     * egress boundary (CloudEventsFrameAdaptor) converts back to CloudEvents JSON for the HTTP
+     * response body. Returns an empty list if the storage does not support lite topics.
+     */
+    public List<EventMeshFrame> pollLiteFrames(String parentTopic, String liteTopic, int maxEvents, long timeoutMs) {
+        if (!(storage instanceof org.apache.eventmesh.api.storage.LiteTopicCapable)) {
+            return java.util.Collections.emptyList();
+        }
+        return ((org.apache.eventmesh.api.storage.LiteTopicCapable) storage)
+            .pullLite(parentTopic, liteTopic, maxEvents, timeoutMs);
     }
 
     /**
@@ -855,6 +918,28 @@ public class UniIngressService {
             return false;
         }
         return future.complete(replyEvent);
+    }
+
+    /**
+     * Primary request-reply path (#5299, §17): publish a Frame, wait for the matching reply Frame.
+     * Implementation note: this method round-trips through CloudEvent (via {@code
+     * EventMeshFrame.fromCloudEvent / toCloudEvent}) so the existing {@code pendingRequests} map
+     * (typed as {@code CompletableFuture<CloudEvent>}) stays untouched. A future sub-PR will
+     * re-type {@code pendingRequests} to {@code CompletableFuture<EventMeshFrame>} and remove
+     * the round-trip. The HTTP path now uses this method (the previous {@code request(CloudEvent)}
+     * is preserved for binary compat with the TCP bridge).
+     */
+    public EventMeshFrame requestFrame(String topic, EventMeshFrame frame, long timeoutMs) throws Exception {
+        CloudEvent reply = request(topic, frame.toCloudEvent(), timeoutMs);
+        return EventMeshFrame.fromCloudEvent(reply);
+    }
+
+    /**
+     * Primary reply path: complete the pending request future with a Frame (#5299). Round-trips
+     * through CloudEvent for the same reason as {@link #requestFrame(String, EventMeshFrame, long)}.
+     */
+    public boolean replyFrame(String correlationId, EventMeshFrame replyFrame) {
+        return reply(correlationId, replyFrame.toCloudEvent());
     }
 
     private static String readCorrelationId(CloudEvent event) {
