@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.security;
 
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 
+import io.cloudevents.CloudEvent;
+
 /**
  * One stage of the ingress security pipeline (§4.5). Implementations: authentication (who are
  * you — {@code TokenAuthFilter}), authorization (what may you do — {@code AclFilter}), signature

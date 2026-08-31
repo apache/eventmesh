@@ -31,7 +31,6 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshApplication;
 import org.apache.eventmesh.runtime.cluster.NacosMetaStore;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
-import org.apache.eventmesh.runtime.transport.tcp.MeshEventToPackageBody;
 import org.apache.eventmesh.runtime.transport.tcp.MeshMessagePackageRouter;
 import org.apache.eventmesh.runtime.transport.tcp.TcpAckRegistry;
 import org.apache.eventmesh.runtime.transport.tcp.UniTcpServer;
@@ -119,7 +118,7 @@ class LegacyTcpClusterBrokerIntegrationTest {
 
         // 3. TCP server (not auto-booted by EventMeshApplication) on the cluster-enabled ingress.
         tcpServer = new UniTcpServer(app.runtime().ingress(), new TcpAckRegistry(),
-            new MeshMessagePackageRouter(), new MeshEventToPackageBody());
+            new MeshMessagePackageRouter());
         tcpPort = tcpServer.start(0);
 
         // 4. Subscriber: real old SDK. clientId = HELLO UserAgent.group.

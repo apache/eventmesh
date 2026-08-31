@@ -98,15 +98,8 @@ class UniTcpServerTest {
             }
             return null;
         };
-        // Body mapper: event → a Map the "client" (test) can read back.
-        CloudEventToPackageBody bodyMapper = event -> {
-            Map<String, Object> b = new HashMap<>();
-            b.put("id", event.getId());
-            return b;
-        };
-
         EmbeddedChannel client = new EmbeddedChannel(new UniTcpServer.FrameHandler(
-            ingress, new TcpAckRegistry(), router, new ConcurrentHashMap<>(), bodyMapper));
+            ingress, new TcpAckRegistry(), router, new ConcurrentHashMap<>()));
 
         // 1a. client HELLO (carries clientId in UserAgent.group) → server stashes it on the channel.
         UserAgent ua = UserAgent.builder().group("c1").host("test").port(1).build();
@@ -149,7 +142,7 @@ class UniTcpServerTest {
 
     private static UniTcpServer.FrameHandler newHandler(UniIngressService ingress, PackageRouter router) {
         return new UniTcpServer.FrameHandler(ingress, new TcpAckRegistry(), router,
-            new ConcurrentHashMap<>(), event -> null);
+            new ConcurrentHashMap<>());
     }
 
     private static final class InMemoryStorage implements MeshStoragePlugin {

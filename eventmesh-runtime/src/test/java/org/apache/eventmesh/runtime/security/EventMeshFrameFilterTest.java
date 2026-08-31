@@ -22,10 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.common.wire.EventMeshFrame;
-import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * #5299 sub-PR B: the filter chain now operates on {@link EventMeshFrame} instead of

@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.security;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.util.Collections;
 import java.util.Set;
-
-import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * Authenticates the caller by a bearer token (§13.4.1). In production this delegates to the

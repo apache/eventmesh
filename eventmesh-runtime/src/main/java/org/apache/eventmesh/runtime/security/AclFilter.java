@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.runtime.security;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * Topic-level authorization (§13.4.2). Holds an {@link AclRule} set sorted by priority (descending,

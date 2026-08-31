@@ -25,6 +25,8 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+import org.apache.eventmesh.protocol.meshmessage.MeshMessageFrameAdaptor;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -42,14 +44,16 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 class MeshMessagePackageRouterTest {
 
     @Test
-    void egressEncodesCloudEventIntoEventMeshMessageBody() {
+    void egressEncodesFrameIntoEventMeshMessageBody() throws Exception {
         CloudEvent event = CloudEventBuilder.v1()
             .withId("e-1").withSource(URI.create("svc")).withType("order.created")
             .withSubject("orders")
             .withData("hello".getBytes(StandardCharsets.UTF_8))
             .build();
+        EventMeshFrame frame = EventMeshFrame.fromCloudEvent(event);
 
-        Object body = new MeshEventToPackageBody().toBody(event);
+        // Egress is frame-native since #5299: Frame -> Package(EventMeshMessage), no CloudEvent hop.
+        Object body = ((Package) new MeshMessageFrameAdaptor().fromFrame(frame)).getBody();
 
         assertNotNull(body, "egress body must be produced");
         assertTrue(body instanceof EventMeshMessage, "body is the legacy EventMeshMessage");
@@ -70,9 +74,9 @@ class MeshMessagePackageRouterTest {
         assertEquals("d-99", req.getDeliveryId());
     }
 
-    // NOTE: publish ingress (ASYNC_MESSAGE_TO_SERVER → CloudEvent) routes through
-    // MeshMessageProtocolAdaptor.toCloudEvent, which is itself covered by eventmesh-protocol-
-    // meshmessage's own test suite with real wire packages (body=JSON string + protocol header
-    // properties produced by the Codec). The in-JVM object/string asymmetry makes a direct
-    // round-trip unit test unrepresentative, so it is intentionally not asserted here.
+    // NOTE: publish ingress (ASYNC_MESSAGE_TO_SERVER → EventMeshFrame) routes through
+    // MeshMessageFrameAdaptor, which is itself covered by eventmesh-protocol-meshmessage's own
+    // test suite with real wire packages (body=JSON string + protocol header properties produced
+    // by the Codec). The in-JVM object/string asymmetry makes a direct round-trip unit test
+    // unrepresentative, so it is intentionally not asserted here.
 }

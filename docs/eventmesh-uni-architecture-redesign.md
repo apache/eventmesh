@@ -4882,7 +4882,106 @@ EventMesh 实例本地自采负载指标(`LoadMeter`):
 
 1. **单测**:`EventMeshFrame` 全 msgType 互转(12 例);`OffsetStore` 两 key 空间共存;`LoadMeter` 指标 + 每 client 画像;`ClusterMembership` 心跳负载;dispatch 管线 Frame 化(ReliableDispatcher/SubscriptionManager/ClusterCoordinator)。
 2. **E2E**(真 broker):streaming 多轮 + Mode 2 pub/sub + **普通 pub/sub(RocketMQ5BrokerIntegrationTest 2/2)**全绿,内部全程 EventMeshFrame 往返正确;**LegacyTcpClientIntegrationTest(旧 TCP SDK)全绿**(MeshMessage↔Frame 直接转换)。
-3. **构建**:系统 gradle 8.5 + WEOA Nexus(offline)。
+3. **构建**:系统 gradle 8.5 + WEOA Nexus(offline)。
+
+
+### 19.6 #5299 验收矩阵：单协议路径 + ingress/egress 适配
+
+
+
+
+
+#### 协议状态标签
+
+
+
+
+
+| 标签 | 含义 | 当前协议 |
+
+
+|------|------|----------|
+
+
+| **primary** | ingress/egress 全程经 `FrameAdaptor` SPI，内部全程 `EventMeshFrame` | CloudEvents（HTTP/SSE/WS）、MeshMessage（legacy TCP） |
+
+
+| **beta** | 已有 `FrameAdaptor`，但端到端链路未完全收口 | A2A（JSON-RPC 2.0） |
+
+
+| **legacy** | 仅保留兼容桥，不再作为内部表示 | CloudEvent 作为内部中间表示（已废弃，见 §19.1） |
+
+
+
+
+
+#### 路径验收矩阵
+
+
+
+
+
+| 路径 | ingress | egress | 状态 |
+
+
+|------|---------|--------|------|
+
+
+| HTTP publish / publishBatch / lite publish / lite poll / request / reply | `FrameAdaptors.get("cloudevents").toFrame(...)` | `FrameAdaptor.toCloudEventsJson(...)` | ✅ primary |
+
+
+| ingress 安全链（TokenAuth / Acl / SignatureVerifier） | 直接读 `frame.attributes()` | — | ✅ primary |
+
+
+| legacy TCP ingress | `MeshMessagePackageRouter` → `FrameAdaptors.get("meshmessage").toFrameSilent(pkg)` | — | ✅ primary |
+
+
+| legacy TCP egress | `NettyTcpPushChannel` → `FrameAdaptors.get("meshmessage").fromFrameSilent(frame)` | MeshMessage `Package` | ✅ primary |
+
+
+| A2A gateway | `A2AFrameAdaptor` | A2A JSON-RPC bytes | 🟡 beta |
+
+
+
+
+
+#### 子 PR 落地情况
+
+
+
+
+
+| 子 PR | 内容 | 状态 |
+
+
+|-------|------|------|
+
+
+| A | `UniHttpServer` 8 个 ingress 端点改经 `FrameAdaptor` SPI；`UniIngressService` 新增 `publishBatchFrames` / `publishLiteFrame` / `pollLiteFrames` / `requestFrame` / `replyFrame` 五个 `EventMeshFrame` typed 方法 | ✅ |
+
+
+| B | 安全链（`IngressFilter` / `FilterChain` / `AclFilter` / `TokenAuthFilter` / `SignatureVerifierFilter`）改吃 `EventMeshFrame`；租户 / 签名 / token 直接读 `frame.attributes()`。CloudEvent 重载保留为 `@Deprecated` 桥 | ✅ |
+
+
+| C | TCP egress：`TcpFrameCodec.encodePush` / `TcpPushChannel.deliver` 改吃 `EventMeshFrame`（去掉 `frame.toCloudEvent()` 往返）；删除死代码 `CloudEventToPackageBody` / `MeshEventToPackageBody`；`UniTcpServer` 去掉未使用的 `bodyMapper` 构造参数 | ✅ |
+
+
+| D | 本节验收矩阵 + 协议状态标签 | ✅ |
+
+
+
+
+
+#### 随 #5299 删除 / 废弃
+
+
+
+
+
+- `CloudEventToPackageBody`、`MeshEventToPackageBody`：CloudEvent 时代的 TCP egress 编码接口。`NettyTcpPushChannel` 接管 egress 后成为死代码，随 Sub-PR C 删除。
+
+
+- `IngressFilter.check(CloudEvent, FilterContext)`：`@Deprecated` 桥接，仅供尚未迁移的自定义 filter 编译通过；等 A2A（beta）收口后移除。
 
 ---
 

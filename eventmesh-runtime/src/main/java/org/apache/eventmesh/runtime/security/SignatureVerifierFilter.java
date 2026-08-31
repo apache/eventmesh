@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.runtime.security;
 
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**
  * Verifies an HMAC-SHA256 signature over a canonical projection of the CloudEvent (§13.4.4), so the

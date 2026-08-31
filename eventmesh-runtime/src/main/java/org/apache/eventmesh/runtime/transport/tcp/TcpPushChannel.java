@@ -21,19 +21,18 @@ import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
 
-import io.cloudevents.CloudEvent;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * A legacy TCP client session as a {@link PushChannel} (egress side of the compatibility bridge).
  *
  * <p>When the new {@code ReliableDispatcher} picks a TCP subscriber as a target, it hands the
- * CloudEvent here; this channel encodes it into the legacy {@code Package} wire format (via
- * {@link TcpFrameCodec}), writes it to the socket ({@code TcpSessionSink}), and parks the ACK
- * callback in {@link TcpAckRegistry} until the client's ACK frame arrives. Reliability (redelivery,
- * DLQ) is therefore shared with every other transport — the TCP client just looks like another
- * push target to the core.</p>
+ * {@link EventMeshFrame} here (the internal wire unit — no CloudEvent intermediary since #5299);
+ * this channel encodes it into the legacy {@code Package} wire format (via {@link TcpFrameCodec}),
+ * writes it to the socket ({@code TcpSessionSink}), and parks the ACK callback in
+ * {@link TcpAckRegistry} until the client's ACK frame arrives. Reliability (redelivery, DLQ) is
+ * therefore shared with every other transport — the TCP client just looks like another push target
+ * to the core.</p>
  */
 @Slf4j
 public class TcpPushChannel implements PushChannel {
@@ -57,20 +56,12 @@ public class TcpPushChannel implements PushChannel {
 
     @Override
     public void deliver(String deliveryId, EventMeshFrame event, AckCallback callback) {
-        // Egress boundary: convert the internal Frame to a CloudEvent for the legacy TCP wire format.
-        CloudEvent ce;
-        try {
-            ce = event.toCloudEvent();
-        } catch (RuntimeException e) {
-            log.warn("tcp push frame->CloudEvent conversion failed for delivery={}", deliveryId, e);
-            callback.nack(e);
-            return;
-        }
+        // Egress boundary: encode the internal Frame straight onto the legacy TCP wire format.
         byte[] frame;
         try {
-            frame = codec.encodePush(deliveryId, ce);
+            frame = codec.encodePush(deliveryId, event);
         } catch (RuntimeException e) {
-            log.warn("tcp push encode failed for delivery={}", deliveryId, e);
+            log.warn("tcp push frame->wire encode failed for delivery={}", deliveryId, e);
             callback.nack(e);
             return;
         }
