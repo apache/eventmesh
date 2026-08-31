@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.http;
 
+import org.apache.eventmesh.common.protocol.ByteTransport;
+import org.apache.eventmesh.common.wire.EventMeshFrame;
+import org.apache.eventmesh.protocol.api.FrameAdaptors;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
@@ -34,10 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -285,28 +284,36 @@ public class UniHttpServer {
             return;
         }
         byte[] body = readAll(exchange);
-        CloudEvent event;
+        EventMeshFrame frame;
         try {
-            event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(body);
-        } catch (RuntimeException e) {
+            // Ingress: structured CloudEvents JSON bytes → internal EventMeshFrame.
+            // (#5299: runtime no longer touches io.cloudevents.CloudEvent directly on the ingress
+            // path; the protocol adaptor owns the conversion.)
+            frame = FrameAdaptors.get("cloudevents").toFrame(new ByteTransport(body));
+        } catch (RuntimeException | org.apache.eventmesh.protocol.api.exception.ProtocolHandleException e) {
             writeJson(exchange, 400, error("invalid CloudEvent: " + e.getMessage()));
             return;
         }
         // Security filter chain (§4.5): auth/acl/signature run before the event enters the pipeline.
+        // TODO(#5299 sub-PR B): convert filterChain.check() to take an EventMeshFrame and look up
+        // emtenantid from frame attributes; the CloudEvent here is a temporary bridge until the
+        // filter chain migrates.
+        io.cloudevents.CloudEvent eventForAcl = frame.toCloudEvent();
         if (filterChain != null) {
             String credential = exchange.getRequestHeaders().getFirst("Authorization");
-            String tenant = event.getExtension("emtenantid") != null ? event.getExtension("emtenantid").toString() : null;
+            String tenant = eventForAcl.getExtension("emtenantid") != null
+                ? eventForAcl.getExtension("emtenantid").toString() : null;
             org.apache.eventmesh.runtime.security.FilterContext ctx =
                 new org.apache.eventmesh.runtime.security.FilterContext(topic, null, tenant, credential,
                     exchange.getRemoteAddress().getAddress().getHostAddress());
-            org.apache.eventmesh.runtime.security.FilterVerdict verdict = filterChain.check(event, ctx);
+            org.apache.eventmesh.runtime.security.FilterVerdict verdict = filterChain.check(eventForAcl, ctx);
             if (!verdict.isAllowed()) {
                 writeJson(exchange, verdict.getRejectStatus(), error(verdict.getReason()));
                 return;
             }
         }
         try {
-            ingress.publish(topic, event).get(10, TimeUnit.SECONDS);
+            ingress.publish(topic, frame).get(10, TimeUnit.SECONDS);
             writeJson(exchange, 202, ack("accepted"));
         } catch (Exception e) {
             // §6.6: a RateLimitedException (per-topic token bucket exhausted) is a 429, not a 500 —
@@ -337,12 +344,14 @@ public class UniHttpServer {
                 writeJson(exchange, 400, error("expected a CloudEvent JSON array"));
                 return;
             }
-            java.util.List<CloudEvent> events = new java.util.ArrayList<>(node.size());
+            // Batch ingress: each element is a CloudEvents-JSON object → internal EventMeshFrame.
+            // (#5299)
+            java.util.List<EventMeshFrame> frames = new java.util.ArrayList<>(node.size());
             for (com.fasterxml.jackson.databind.JsonNode el : node) {
-                events.add(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .deserialize(mapper.writeValueAsBytes(el)));
+                frames.add(FrameAdaptors.get("cloudevents")
+                    .toFrame(new ByteTransport(mapper.writeValueAsBytes(el))));
             }
-            ingress.publishBatch(topic, events).get(30, TimeUnit.SECONDS);
+            ingress.publishBatchFrames(topic, frames).get(30, TimeUnit.SECONDS);
             writeJson(exchange, 202, ack("accepted"));
         } catch (Exception e) {
             if (isRateLimited(e)) {
@@ -484,13 +493,16 @@ public class UniHttpServer {
         String topic = param(exchange.getRequestURI(), "topic");
         long timeout = longParam(exchange.getRequestURI(), "timeoutMs", 30_000L);
         try {
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(readAll(exchange));
+            // Ingress: structured CloudEvents JSON body → internal EventMeshFrame. (#5299)
+            EventMeshFrame event = FrameAdaptors.get("cloudevents")
+                .toFrame(new ByteTransport(readAll(exchange)));
             if (!checkSecurity(exchange, topic, null)) {
                 return;
             }
-            CloudEvent reply = ingress.request(topic, event, timeout);
-            byte[] replyBytes = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(reply);
+            // request-reply: send Frame in, get Frame back, then serialize to CloudEvents JSON
+            // for the response body via the egress adapter.
+            EventMeshFrame reply = ingress.requestFrame(topic, event, timeout);
+            byte[] replyBytes = FrameAdaptors.toCloudEventsJson(reply);
             exchange.getResponseHeaders().add("Content-Type", "application/cloudevents+json");
             exchange.sendResponseHeaders(200, replyBytes.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -509,14 +521,15 @@ public class UniHttpServer {
         try {
             JsonNode body = readJson(exchange);
             String corrId = text(body, "correlationId");
-            CloudEvent replyEvent = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(mapper.writeValueAsBytes(body.get("event")));
+            // Ingress: CloudEvents JSON → internal EventMeshFrame. (#5299)
+            EventMeshFrame replyEvent = FrameAdaptors.get("cloudevents")
+                .toFrame(new ByteTransport(mapper.writeValueAsBytes(body.get("event"))));
             // §17.6 reply routing (sticky model - no cross-instance forwarding).
             // Cross-instance reply forwarding is REMOVED with the forward path: the client posts
             // the reply to the instance it sent the request to (pinned via instanceUrl); a reply
             // landing on the wrong instance 404s (unknown correlationId) and the caller retries
             // on the correct instance.
-            writeJson(exchange, ingress.reply(corrId, replyEvent) ? 200 : 404, ack("ok"));
+            writeJson(exchange, ingress.replyFrame(corrId, replyEvent) ? 200 : 404, ack("ok"));
         } catch (Exception e) {
             writeJson(exchange, 500, error("reply error: " + e.getMessage()));
         }
@@ -615,9 +628,10 @@ public class UniHttpServer {
             return;
         }
         try {
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(readAll(exchange));
-            ingress.publishLite(parent, lite, event).get(10, TimeUnit.SECONDS);
+            // Ingress: structured CloudEvents JSON body → internal EventMeshFrame. (#5299)
+            EventMeshFrame event = FrameAdaptors.get("cloudevents")
+                .toFrame(new ByteTransport(readAll(exchange)));
+            ingress.publishLiteFrame(parent, lite, event).get(10, TimeUnit.SECONDS);
             writeJson(exchange, 202, ack("accepted"));
         } catch (Exception e) {
             writeJson(exchange, 500, error("lite publish failed: " + e.getMessage()));
@@ -646,11 +660,12 @@ public class UniHttpServer {
         try {
             int max = intParam(exchange.getRequestURI(), "max", 100);
             long timeoutMs = longParam(exchange.getRequestURI(), "timeoutMs", 1000L);
-            List<CloudEvent> events = ingress.pollLite(parent, lite, max, timeoutMs);
+            // Egress: drain EventMeshFrames from the LMQ, serialize each as CloudEvents JSON
+            // via the egress adapter. (#5299)
+            List<EventMeshFrame> events = ingress.pollLiteFrames(parent, lite, max, timeoutMs);
             com.fasterxml.jackson.databind.node.ArrayNode arr = mapper.createArrayNode();
-            for (CloudEvent e : events) {
-                arr.add(mapper.readTree(EventFormatProvider.getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE).serialize(e)));
+            for (EventMeshFrame e : events) {
+                arr.add(mapper.readTree(FrameAdaptors.toCloudEventsJson(e)));
             }
             writeJson(exchange, 200, arr);
         } catch (NumberFormatException e) {
