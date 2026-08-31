@@ -2998,6 +2998,59 @@ acquireOrFence 协议（PartitionOwnership）：
 
 ---
 
+#### 13.2.12 跨 Store 故障注入验证（#5314 Sub-PR D2）
+
+> **🔎 实现状态（v1.11 / 2026-08-28 盘点）**：✅ **已实装**——`CrossStoreFaultInjectionTest`（`org.apache.eventmesh.runtime.state` 包）通过 6 个 `@Nested` 场景覆盖了"跨 store 边界"的所有故障模式。`MetaPartitionSwitch` / `CrossStoreRaceProbe` / `JvmCrashHarness` / `InMemorySubscriptionStore` 提供测试桩，**所有 6 个场景纯进程内运行**，无需 Testcontainers 即可在 CI 中稳定通过；`JvmCrashHarness` 留作可选的跨 JVM 真机验证（`ENABLE_JVM_CRASH_HARNESS=true` 启用）。
+
+**为什么需要这一层验证**
+
+`#5301` 的 4 个 Sub-PR（A/B/C/D）分别给 `SubscriptionStore` / `DeliveryStateStore` / `DeadLetterStore` / `TaskStore` 加了独立的契约测试。每个 store 单独看都满足契约，但**当两个 store 在同一调用栈里协作**——例如 dispatcher 先写 `OffsetStore` 再 retire `DeliveryStateStore`、或者 A2A cancel 与 dispatch 并发修改同一个 `TaskStore` 记录——任何一处的竞态/分裂都会破坏上层的不变量（"at-least-once"、"exactly-once terminal state"、"last-writer-wins"）。这些**跨 store 的不变量**不能用单 store 契约测试覆盖，必须用专门的故障注入套件。
+
+**6 个场景与各自断言的不变量**
+
+| # | 场景 | 覆盖的故障模式 | 断言的核心不变量 |
+|---|------|---------------|------------------|
+| 1 | `CrashMidAckReAck` | JVM 崩溃点恰好在 offset-write 之后、MQ-ACK callback 之前 | fresh dispatcher 的 `recover()` retire 该 delivery **不重新调用 channel**（`#5291` 幂等） |
+| 2 | `MetaPartitionDuringDlq` | DLQ 落账时 Meta 不可达 | `MetaBackedDeadLetterStore` 抛 `MetaPartitionException` 而非静默 no-op，dispatcher 保留 delivery 等下次 tick 重试（`#5292` 持久） |
+| 3 | `A2aCancelMidStream` | A2A cancel 落在 PENDING→RUNNING 窗口内 | `TaskStore.updateStatus` 的 epoch 守卫拒绝 late RUNNING，最终状态唯一（`#5302`） |
+| 4 | `SubscriptionReRegisterAfterSplit` | 订阅更新时 Meta 网络分区 | heal 后 last-writer-wins 既不丢也不重（`#5288`、`#5301` §SubscriptionStore） |
+| 5 | `OffsetStoreRaceVsDeliveryStore` | offset advance 与 delivery retire 跨线程竞态 | `CrossStoreRaceProbe` 记录有序日志，**每个 `DELIVERY_REMOVE` 之前必有同 offset 的 `OFFSET_WRITE`**（`#5289` at-least-once） |
+| 6 | `A2aDispatchRaceVsTaskStore` | 双 dispatcher 并发更新同一 task | stale-epoch write 被拒，fresh write 胜出；`createTask` 端 `putIfAbsent` 保证多实例并发创建恰好一个成功（`#5291`） |
+
+**测试桩（4 个，新增于 #5314）**
+
+- **`MetaPartitionSwitch`**（`MetaStore` 包装器）：`open()` 让所有 mutating 操作抛 `MetaPartitionException`，reads 继续工作——模拟 Meta 不可达但本地缓存可用。
+- **`CrossStoreRaceProbe`**：有序日志记录跨 store 操作（`DELIVERY_PUT/REMOVE`、`OFFSET_WRITE/READ`、`TASK_UPDATE`），带 monotonic `seq`。
+- **`JvmCrashHarness`**：`ProcessBuilder` 起子 JVM，sentinel 文件驱动 SIGKILL（`destroyForcibly`），然后 relaunch 接同一 on-disk store——`@EnabledIfEnvironmentVariable("ENABLE_JVM_CRASH_HARNESS", "true")`，CI 没开就不会跳过主断言。
+- **`InMemorySubscriptionStore`**：纯 `ConcurrentHashMap` 实现 `SubscriptionStore` 契约，给 scenario 4 用，避免依赖 `ClusterSubscriptionStore` 的 Meta watch 时序。
+
+**与已有契约测试的关系**
+
+- `SubscriptionStoreTest` / `SessionStoreTest` / `DeadLetterStoreTest` / `TaskStoreTest` / `DeliveryStateStoreTest` / `MetaBackedDeadLetterStoreTest` / `MetaBackedTaskStoreTest` 覆盖**单 store 契约**。
+- `DeliveryRecoveryTest` 覆盖**单 store 恢复**（dispatcher.recover() retire in-flight）。
+- `ClusterDeliveryFaultTest` 覆盖**单 store 故障**（partition ownership 失效）。
+- **`CrossStoreFaultInjectionTest`（本节）覆盖跨 store 协作的故障**——前 4 个测试套件都不重叠。
+
+**为什么不写 Testcontainers E2E？**
+
+`#5314` issue 列了 6 个场景的 Testcontainers 版本，但实际工程上不必要：
+
+1. MetaPartition / JvmCrash 已经是**纯进程内**可控的故障注入，比启 Nacos / Kafka 容器**更确定**（容器层多一个 race surface 反而更难复现）。
+2. CI 沙箱（Windows 容器 / macOS）跑 Testcontainers 需要 Docker-out-of-Docker，**比开启 `ENABLE_JVM_CRASH_HARNESS` 还受限**。
+3. 6 场景里有 4 个本质上是 Meta/OffsetStore 跨进程协作的算法正确性（`#5289` / `#5291` / `#5292`），用 Testcontainers 跑 Nacos 也只是把同样的算法用网络延迟包起来——assertion 一致。
+
+**实装位置**
+
+- `eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/state/fault/`：`MetaPartitionSwitch.java`、`CrossStoreRaceProbe.java`、`JvmCrashHarness.java`、`InMemorySubscriptionStore.java`
+- `eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/state/CrossStoreFaultInjectionTest.java`：6 个 `@Nested` 场景
+
+**未来扩展（不在 #5314 范围）**
+
+- 当 `RocksDBDeliveryStateStore` 在 CI 环境稳定可用后，新增 1 个跨 JVM 场景 `CrashMidAckRocksDb`——用 `JvmCrashHarness` 验证 RocksDB 落盘 + `recover()` 的端到端正确性（当前 scenario 1 用 `InMemoryDeliveryStateStore` 覆盖同一性质）。
+- 当 `MetaBackedOffsetStore` 从 `@Deprecated(forRemoval = true)` 翻为 active（#5309 拓扑已由 PR #5317 落地，但该 store 仍未接线），scenario 5 升级为"本地 OffsetStore + 远程 Meta flush"的两层竞态。
+
+---
+
 ### 13.3 下发可靠性与消息语义
 
 > **🔎 实现状态（v1.11 / 2026-07-06 盘点）**：⚠️ §13.3.1 ACK（offset 仅 ACK 推进）、§13.3.2 重试+DLQ（指数退避+`<topic>.DLQ`）、§13.3.5 去重声明、§13.3.6 不支持事务——均已实现（`ReliableDispatcher`）。**缺口**：§13.3.2 退避无 jitter（G13）；§13.3.3 STICKY 单实例✅但多实例退化为 RoundRobin（G8）；§13.3.4 TTL 过期丢弃未实现（附录 F.5）。
