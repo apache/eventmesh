@@ -19,7 +19,7 @@
 //!
 //! Corresponds to the Java SDK's `TcpClient` abstract base: manages the TCP
 //! socket, the read/write loop, heartbeat, and request-response correlation
-//! via a `seq`-keyed pending map of `oneshot` channels.
+//! via a driver-owned, `seq`-keyed pending map of `oneshot` channels.
 //!
 //! ## Reconnect
 //!
@@ -30,28 +30,27 @@
 //! subscriptions after a successful reconnect. This mirrors the Java SDK's
 //! heartbeat-driven reconnect but with exponential backoff.
 
-use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::net::TcpStream;
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio::task::JoinHandle;
-use tokio_stream::StreamExt;
-use tokio_util::codec::Framed;
 use tokio_util::sync::CancellationToken;
-use tracing::{debug, info, warn};
+use tracing::info;
 
 use crate::config::ReconnectPolicy;
 use crate::error::{EventMeshError, Result};
 
-use super::codec::TcpCodec;
-use super::frame::{Command, Package};
+use super::frame::Package;
 use super::message;
 
-// `SinkExt` is needed for `Framed::send()`.
-use futures::SinkExt;
+mod dispatcher;
+mod driver;
+mod supervisor;
+
+use dispatcher::{OutboundCommand, PendingCancellation, PendingKey};
+use supervisor::{ConnectionState, ConnectionSupervisor};
 
 /// Default channel capacity for outbound and inbound message queues.
 const CHANNEL_CAPACITY: usize = 256;
@@ -61,37 +60,6 @@ const CHANNEL_CAPACITY: usize = 256;
 /// the previous one yet — the consumer re-subscribes to *all* topics each time,
 /// so missing an intermediate notification is harmless.
 const RECONNECT_CHANNEL_CAPACITY: usize = 1;
-
-/// Why the inner I/O loop exited. Used by the outer reconnect loop to decide
-/// whether to attempt a reconnect.
-#[derive(Debug)]
-enum IoExitReason {
-    /// `CancellationToken` was fired (explicit shutdown).
-    Cancelled,
-    /// All `mpsc::Sender` clones were dropped (user dropped the connection
-    /// handle).
-    AllSendersDropped,
-    /// A read or write I/O error occurred.
-    IoError,
-    /// The server closed the connection (EOF on read).
-    ServerClosed,
-    /// The inbound (consumer-facing) channel is full — the consumer is not
-    /// draining pushes fast enough. Rather than silently dropping server pushes
-    /// (which would lose unacked messages), we tear down the connection so the
-    /// server redelivers them after reconnect.
-    SlowConsumer,
-}
-
-type PendingKey = (u64, String);
-type PendingMap = HashMap<PendingKey, oneshot::Sender<Package>>;
-
-/// Lifecycle state protected by the same lock that serializes the final
-/// enqueue decision with teardown. Each generation identifies one socket.
-#[derive(Debug)]
-struct ConnectionState {
-    generation: u64,
-    active: bool,
-}
 
 /// A connected TCP transport.
 ///
@@ -105,15 +73,15 @@ struct ConnectionState {
 /// fire-and-forget writes.
 pub struct TcpConnection {
     /// Outbound: write packages into the background task's send loop.
-    outbound_tx: mpsc::Sender<Package>,
+    outbound_tx: mpsc::Sender<OutboundCommand>,
     /// Inbound server-pushed messages (taken by the consumer via
     /// [`take_inbound_rx`]).
     inbound_rx: Mutex<Option<mpsc::Receiver<Package>>>,
     /// Reconnect-event receiver (taken by the consumer via
     /// [`take_reconnect_rx`]).
     reconnect_rx: Mutex<Option<mpsc::Receiver<()>>>,
-    /// Pending request-response contexts: `(generation, seq) → sender`.
-    pending: Arc<Mutex<PendingMap>>,
+    /// Non-blocking cancellation path to the driver-owned pending map.
+    pending_cancel_tx: mpsc::UnboundedSender<PendingKey>,
     /// Serializes enqueue commitment with connection teardown.
     state: Arc<Mutex<ConnectionState>>,
     /// Whether unmatched `RESPONSE_TO_CLIENT` frames should be made available
@@ -155,13 +123,19 @@ impl TcpConnection {
     ) -> Result<Self> {
         // Initial connect is inline so the caller gets immediate feedback.
         // Subsequent reconnects happen in the background task.
-        let framed =
-            Self::establish(addr, port, user_agent, connect_timeout, control_timeout).await?;
+        let framed = ConnectionSupervisor::establish(
+            addr,
+            port,
+            user_agent,
+            connect_timeout,
+            control_timeout,
+        )
+        .await?;
 
         let (outbound_tx, outbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
+        let (pending_cancel_tx, pending_cancel_rx) = mpsc::unbounded_channel();
         let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
         let (reconnect_tx, reconnect_rx) = mpsc::channel(RECONNECT_CHANNEL_CAPACITY);
-        let pending = Arc::new(Mutex::new(HashMap::new()));
         let state = Arc::new(Mutex::new(ConnectionState {
             generation: 0,
             active: true,
@@ -170,7 +144,7 @@ impl TcpConnection {
         let cancel = CancellationToken::new();
         let alive = Arc::new(AtomicBool::new(true));
 
-        let join = tokio::spawn(Self::run(
+        let join = tokio::spawn(ConnectionSupervisor::run(
             addr.to_string(),
             port,
             user_agent.clone(),
@@ -182,7 +156,7 @@ impl TcpConnection {
             outbound_rx,
             inbound_tx,
             reconnect_tx,
-            Arc::clone(&pending),
+            pending_cancel_rx,
             Arc::clone(&state),
             Arc::clone(&deliver_orphan_responses),
             cancel.clone(),
@@ -195,7 +169,7 @@ impl TcpConnection {
             outbound_tx,
             inbound_rx: Mutex::new(Some(inbound_rx)),
             reconnect_rx: Mutex::new(Some(reconnect_rx)),
-            pending,
+            pending_cancel_tx,
             state,
             deliver_orphan_responses,
             cancel,
@@ -203,67 +177,6 @@ impl TcpConnection {
             alive,
             join: Mutex::new(Some(join)),
         })
-    }
-
-    /// Establish a new TCP connection and perform the HELLO handshake.
-    ///
-    /// Used both by [`connect`] (initial) and the reconnect loop (subsequent).
-    /// The socket connect and HELLO response have separate timeout bounds.
-    async fn establish(
-        addr: &str,
-        port: u16,
-        user_agent: &super::frame::UserAgent,
-        connect_timeout: Duration,
-        control_timeout: Duration,
-    ) -> Result<Framed<TcpStream, TcpCodec>> {
-        // Defer name resolution to Tokio: `TcpStream::connect` accepts a
-        // "host:port" string via `ToSocketAddrs`, so DNS names like
-        // "localhost" (the default `server_addr`) resolve correctly.
-        let peer = format!("{addr}:{port}");
-        debug!(%peer, "connecting TCP");
-        let stream = tokio::time::timeout(connect_timeout, TcpStream::connect(&peer))
-            .await
-            .map_err(|_| EventMeshError::Timeout(connect_timeout))??;
-        stream.set_nodelay(true).ok();
-
-        let mut framed = Framed::new(stream, TcpCodec::new());
-
-        // --- HELLO handshake (inline, before starting the I/O loop) ---
-        // Java's `TcpClient.hello()` routes through `io(msg, timeout)`, so the
-        // handshake is bounded. We do the same: if the server accepts the TCP
-        // connection but never writes a HELLO_RESPONSE (half-open proxy,
-        // network partition, slow server), we fail with `Timeout` instead of
-        // hanging forever.
-        debug!("sending HELLO");
-        let hello_pkg = message::hello(user_agent);
-        let control_deadline = Self::deadline_after(control_timeout)?;
-        tokio::time::timeout_at(control_deadline, framed.send(hello_pkg))
-            .await
-            .map_err(|_| EventMeshError::Timeout(control_timeout))??;
-        match tokio::time::timeout_at(control_deadline, framed.next()).await {
-            Err(_) => Err(EventMeshError::Timeout(control_timeout)),
-            Ok(None) => Err(EventMeshError::Tcp("connection closed during HELLO".into())),
-            Ok(Some(Err(e))) => Err(e),
-            Ok(Some(Ok(resp))) if resp.header.cmd == Command::HelloResponse => {
-                // The Java runtime's `HelloProcessor` rejects the handshake
-                // (OPStatus.FAIL / ACL_FAIL) when the group isn't registered,
-                // the token is rejected, the server isn't RUNNING yet, or the
-                // `UserAgent` is invalid — and then closes the session. Treat
-                // a non-zero code as a failure and surface `desc`.
-                if resp.header.code != 0 {
-                    return Err(EventMeshError::Server {
-                        code: resp.header.code,
-                        message: resp.header.desc.unwrap_or_else(|| "HELLO rejected".into()),
-                    });
-                }
-                debug!(code = resp.header.code, "HELLO ok");
-                Ok(framed)
-            }
-            Ok(Some(Ok(resp))) => Err(EventMeshError::Tcp(format!(
-                "unexpected response to HELLO: {:?}",
-                resp.header.cmd
-            ))),
-        }
     }
 
     fn deadline_after(timeout: Duration) -> Result<tokio::time::Instant> {
@@ -301,9 +214,15 @@ impl TcpConnection {
             if tokio::time::Instant::now() >= deadline {
                 return Err(EventMeshError::Timeout(timeout));
             }
-            self.pending.lock().await.insert(pending_key.clone(), tx);
-            permit.send(pkg);
+            permit.send(OutboundCommand::Request {
+                package: pkg,
+                key: pending_key.clone(),
+                response_tx: tx,
+            });
         }
+
+        let mut pending_cancellation =
+            PendingCancellation::new(pending_key, self.pending_cancel_tx.clone());
 
         // Wait for the response using the same deadline that bounded queue
         // reservation, so backpressure consumes the caller's timeout budget
@@ -319,8 +238,9 @@ impl TcpConnection {
                 )),
             },
         };
-        if result.is_err() {
-            self.pending.lock().await.remove(&pending_key);
+        if result.is_ok() {
+            // The driver removes the entry before delivering the response.
+            pending_cancellation.disarm();
         }
         result
     }
@@ -329,7 +249,7 @@ impl TcpConnection {
         &self,
         deadline: tokio::time::Instant,
         timeout: Duration,
-    ) -> Result<mpsc::Permit<'_, Package>> {
+    ) -> Result<mpsc::Permit<'_, OutboundCommand>> {
         tokio::select! {
             biased;
             _ = self.cancel.cancelled() => Err(Self::inactive_error()),
@@ -355,7 +275,7 @@ impl TcpConnection {
         if tokio::time::Instant::now() >= deadline {
             return Err(EventMeshError::Timeout(timeout));
         }
-        permit.send(pkg);
+        permit.send(OutboundCommand::Send(pkg));
         Ok(())
     }
 
@@ -411,357 +331,12 @@ impl TcpConnection {
         // Best-effort goodbye. Never wait for outbound capacity here: a full
         // queue is precisely when cancellation is needed to unblock callers
         // and an in-progress socket write.
-        let _ = self.outbound_tx.try_send(message::goodbye());
+        let _ = self
+            .outbound_tx
+            .try_send(OutboundCommand::Send(message::goodbye()));
         self.cancel.cancel();
         if let Some(join) = self.join.lock().await.take() {
             let _ = join.await;
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Background task: outer reconnect loop + inner I/O loop
-    // -----------------------------------------------------------------------
-
-    /// Outer run loop. Owns the channels across reconnects. On I/O error /
-    /// server close, attempts reconnection with exponential backoff (when
-    /// enabled). On cancellation / all-senders-dropped, exits immediately.
-    #[allow(clippy::too_many_arguments)]
-    async fn run(
-        addr: String,
-        port: u16,
-        user_agent: super::frame::UserAgent,
-        heartbeat_interval: Duration,
-        connect_timeout: Duration,
-        control_timeout: Duration,
-        reconnect: ReconnectPolicy,
-        mut framed: Framed<TcpStream, TcpCodec>,
-        mut outbound_rx: mpsc::Receiver<Package>,
-        inbound_tx: mpsc::Sender<Package>,
-        reconnect_tx: mpsc::Sender<()>,
-        pending: Arc<Mutex<PendingMap>>,
-        state: Arc<Mutex<ConnectionState>>,
-        deliver_orphan_responses: Arc<AtomicBool>,
-        cancel: CancellationToken,
-        alive: Arc<AtomicBool>,
-    ) {
-        loop {
-            let generation = state.lock().await.generation;
-            // Run the I/O loop with the current framed stream.
-            let reason = Self::io_loop(
-                &mut framed,
-                &mut outbound_rx,
-                &inbound_tx,
-                Arc::clone(&pending),
-                Arc::clone(&deliver_orphan_responses),
-                generation,
-                heartbeat_interval,
-                control_timeout,
-                &cancel,
-                alive.as_ref(),
-            )
-            .await;
-
-            // Clean up pending requests from the (now dead) connection so
-            // waiting `io()` callers get a ChannelClosed error instead of
-            // hanging until timeout. Mirrors Java's behavior where orphaned
-            // RequestContext entries simply time out, but is more prompt.
-            {
-                let mut state = state.lock().await;
-                state.active = false;
-                state.generation = state.generation.wrapping_add(1);
-                alive.store(false, Ordering::Release);
-                pending.lock().await.clear();
-
-                // Drain while enqueue commitment is excluded by `state`.
-                // Everything still queued belongs to the dead socket.
-                while outbound_rx.try_recv().is_ok() {
-                    // Discard; these packages were never written to the wire.
-                }
-            }
-
-            match reason {
-                IoExitReason::Cancelled | IoExitReason::AllSendersDropped => {
-                    debug!("connection task exiting ({:?})", reason);
-                    return;
-                }
-                IoExitReason::IoError | IoExitReason::ServerClosed | IoExitReason::SlowConsumer => {
-                }
-            }
-
-            // Decide whether to attempt reconnect.
-            if !reconnect.enabled() || cancel.is_cancelled() {
-                debug!("reconnect disabled or cancelled, exiting");
-                return;
-            }
-
-            // Reconnect with exponential backoff.
-            let mut backoff = reconnect.initial_backoff();
-            let mut attempt: usize = 0;
-
-            loop {
-                attempt += 1;
-                if attempt > reconnect.max_retries() {
-                    warn!(
-                        attempts = attempt - 1,
-                        "max reconnect attempts ({}) exceeded, giving up",
-                        reconnect.max_retries()
-                    );
-                    return;
-                }
-
-                debug!(attempt, backoff = ?backoff, "reconnect backoff");
-                tokio::select! {
-                    biased;
-                    _ = cancel.cancelled() => {
-                        debug!("cancelled during reconnect backoff");
-                        return;
-                    }
-                    _ = tokio::time::sleep(backoff) => {}
-                }
-                backoff = backoff.saturating_mul(2).min(reconnect.max_backoff());
-
-                let establish_result = tokio::select! {
-                    biased;
-                    _ = cancel.cancelled() => {
-                        debug!("cancelled during reconnect attempt");
-                        return;
-                    }
-                    result = Self::establish(
-                        &addr,
-                        port,
-                        &user_agent,
-                        connect_timeout,
-                        control_timeout,
-                    ) => result,
-                };
-                match establish_result {
-                    Ok(new_framed) => {
-                        info!(
-                            attempt,
-                            peer = %format!("{addr}:{port}"),
-                            "TCP reconnected"
-                        );
-                        state.lock().await.active = true;
-                        alive.store(true, Ordering::Release);
-
-                        // Notify the consumer that it should replay
-                        // subscriptions. `try_send` drops the notification if
-                        // the channel is full (the consumer hasn't drained the
-                        // previous one) — which is fine because the consumer
-                        // re-subscribes *all* topics each time.
-                        let _ = reconnect_tx.try_send(());
-
-                        framed = new_framed;
-                        break; // Back to outer loop → new io_loop with new framed.
-                    }
-                    Err(e) => {
-                        warn!(attempt, error = %e, "reconnect attempt failed");
-                        // Continue inner loop to retry with increased backoff.
-                    }
-                }
-            }
-        }
-    }
-
-    /// Inner I/O loop — read, write, and heartbeat on a single connection.
-    /// Returns when the connection is lost or the task is cancelled.
-    #[allow(clippy::too_many_arguments)]
-    async fn io_loop(
-        framed: &mut Framed<TcpStream, TcpCodec>,
-        outbound_rx: &mut mpsc::Receiver<Package>,
-        inbound_tx: &mpsc::Sender<Package>,
-        pending: Arc<Mutex<PendingMap>>,
-        deliver_orphan_responses: Arc<AtomicBool>,
-        generation: u64,
-        heartbeat_interval: Duration,
-        write_timeout: Duration,
-        cancel: &CancellationToken,
-        alive: &AtomicBool,
-    ) -> IoExitReason {
-        use tokio::time::MissedTickBehavior;
-        let _ = alive; // already set to true by caller; no need to touch here
-        let mut heartbeat = tokio::time::interval(heartbeat_interval);
-        heartbeat.set_missed_tick_behavior(MissedTickBehavior::Delay);
-        // Skip the immediate first tick.
-        heartbeat.tick().await;
-
-        loop {
-            tokio::select! {
-                biased;
-
-                _ = cancel.cancelled() => {
-                    debug!("connection task cancelled");
-                    return IoExitReason::Cancelled;
-                }
-
-                // Write outbound packages from user code.
-                pkg = outbound_rx.recv() => {
-                    match pkg {
-                        Some(pkg) => {
-                            if let Err(reason) = Self::write_frame(
-                                framed,
-                                pkg,
-                                write_timeout,
-                                cancel,
-                            ).await {
-                                return reason;
-                            }
-                        }
-                        None => {
-                            debug!("all senders dropped, stopping connection task");
-                            return IoExitReason::AllSendersDropped;
-                        }
-                    }
-                }
-
-                // Read inbound frames from the server.
-                result = framed.next() => {
-                    match result {
-                        Some(Ok(pkg)) => {
-                            // Heartbeats are sent fire-and-forget below, so
-                            // their responses are never registered in `pending`.
-                            // Drop them here: otherwise they'd be forwarded to
-                            // the inbound channel. Only the consumer drains that
-                            // channel — a producer-only connection would let
-                            // heartbeats pile up until `inbound_tx.send` blocks
-                            // (channel cap 256, ~30s interval), stalling this
-                            // whole select! arm and freezing I/O after ~2 hours.
-                            if pkg.header.cmd == Command::HeartbeatResponse {
-                                debug!("heartbeat response received");
-                                continue;
-                            }
-                            let seq = pkg.header.seq.clone().unwrap_or_default();
-                            // Try to match a pending request-response context.
-                            // Server-initiated frames (GOODBYE/REDIRECT) arrive
-                            // with no seq, so `seq` is "" here and never
-                            // matches a client's random 10-char correlation key
-                            // — they fall through to the inbound channel below
-                            // so `handle_inbound` can ACK them.
-                            let entry = {
-                                let mut guard = pending.lock().await;
-                                guard.remove(&(generation, seq))
-                            };
-                            if let Some(tx) = entry {
-                                // A `RESPONSE_TO_CLIENT` (the server's RR reply)
-                                // carries the seq of the originating
-                                // `REQUEST_TO_SERVER`, so it lands here as a
-                                // matched `io()` response rather than as a server
-                                // push. The consumer ACKs pushes via
-                                // `handle_inbound`; mirror the Java client
-                                // (`PubClientImpl` / `AbstractEventMeshTCPPubHandler`)
-                                // by ACKing the RR reply with
-                                // `RESPONSE_TO_CLIENT_ACK` (copied seq + body)
-                                // before handing it to the waiter. Server-side
-                                // this is bookkeeping only (`MessageAckProcessor`
-                                // is a no-op for RR replies).
-                                if pkg.header.cmd == Command::ResponseToClient {
-                                    let ack_pkg = message::response_to_client_ack(&pkg);
-                                    if let Err(reason) = Self::write_frame(
-                                        framed,
-                                        ack_pkg,
-                                        write_timeout,
-                                        cancel,
-                                    ).await {
-                                        let _ = tx.send(pkg);
-                                        return reason;
-                                    }
-                                }
-                                let _ = tx.send(pkg);
-                            } else {
-                                // An orphan RESPONSE_TO_CLIENT is a late reply
-                                // to an `io()` call that already timed out and
-                                // removed its pending entry. Drop it unless a
-                                // publisher-side handler explicitly requested
-                                // delivery; a default producer has no inbound
-                                // receiver and would otherwise fill the queue.
-                                if pkg.header.cmd == Command::ResponseToClient
-                                    && !deliver_orphan_responses.load(Ordering::Acquire)
-                                {
-                                    debug!("dropping orphan RESPONSE_TO_CLIENT");
-                                    continue;
-                                }
-
-                                // Server push → inbound channel for the consumer.
-                                // Use `try_send` instead of a blocking `send().await`
-                                // so a full inbound channel can never stall the I/O
-                                // loop indefinitely.
-                                //
-                                // When the channel is **full**, the consumer is not
-                                // draining fast enough. Rather than silently dropping
-                                // the push (which would lose an unacked message), we
-                                // tear down the connection. The server has not
-                                // received an ACK for this message (ACKs are sent by
-                                // the consumer-side driver *after* it reads from this
-                                // channel), so the server will redeliver after
-                                // reconnect. This mirrors the Java SDK's behavior
-                                // where a slow user callback blocks the Netty event
-                                // loop, creating natural TCP backpressure — but
-                                // avoids stalling heartbeats and writes in our async
-                                // model.
-                                match inbound_tx.try_send(pkg) {
-                                    Ok(()) => {}
-                                    Err(mpsc::error::TrySendError::Full(_)) => {
-                                        warn!(
-                                            "inbound channel full — disconnecting to \
-                                             trigger server redelivery of unacked messages"
-                                        );
-                                        return IoExitReason::SlowConsumer;
-                                    }
-                                    Err(mpsc::error::TrySendError::Closed(_)) => {
-                                        debug!("inbound channel closed (consumer dropped)");
-                                    }
-                                }
-                            }
-                        }
-                        Some(Err(e)) => {
-                            warn!("read error, connection lost: {e}");
-                            return IoExitReason::IoError;
-                        }
-                        None => {
-                            info!("connection closed by server");
-                            return IoExitReason::ServerClosed;
-                        }
-                    }
-                }
-
-                // Heartbeat: fire-and-forget. If the write fails the connection
-                // is dead and the loop breaks.
-                _ = heartbeat.tick() => {
-                    let hb = message::heartbeat();
-                    if let Err(reason) = Self::write_frame(
-                        framed,
-                        hb,
-                        write_timeout,
-                        cancel,
-                    ).await {
-                        return reason;
-                    }
-                    debug!("heartbeat sent");
-                }
-            }
-        }
-    }
-
-    async fn write_frame(
-        framed: &mut Framed<TcpStream, TcpCodec>,
-        pkg: Package,
-        timeout: Duration,
-        cancel: &CancellationToken,
-    ) -> std::result::Result<(), IoExitReason> {
-        tokio::select! {
-            biased;
-            _ = cancel.cancelled() => Err(IoExitReason::Cancelled),
-            result = tokio::time::timeout(timeout, framed.send(pkg)) => match result {
-                Ok(Ok(())) => Ok(()),
-                Ok(Err(error)) => {
-                    warn!(%error, "TCP write failed; connection lost");
-                    Err(IoExitReason::IoError)
-                }
-                Err(_) => {
-                    warn!(?timeout, "TCP write timed out; connection lost");
-                    Err(IoExitReason::IoError)
-                }
-            },
         }
     }
 }
@@ -796,22 +371,23 @@ mod tests {
 
     fn blocked_test_connection_with_timeout(
         outbound_timeout: Duration,
-    ) -> (Arc<TcpConnection>, mpsc::Receiver<Package>) {
+    ) -> (Arc<TcpConnection>, mpsc::Receiver<OutboundCommand>) {
         let (outbound_tx, outbound_rx) = mpsc::channel(1);
         outbound_tx
-            .try_send(Package::new(Header::new(
+            .try_send(OutboundCommand::Send(Package::new(Header::new(
                 Command::AsyncMessageToServer,
                 "occupied",
-            )))
+            ))))
             .unwrap();
         let (_inbound_tx, inbound_rx) = mpsc::channel(1);
         let (_reconnect_tx, reconnect_rx) = mpsc::channel(1);
+        let (pending_cancel_tx, _pending_cancel_rx) = mpsc::unbounded_channel();
 
         let connection = TcpConnection {
             outbound_tx,
             inbound_rx: Mutex::new(Some(inbound_rx)),
             reconnect_rx: Mutex::new(Some(reconnect_rx)),
-            pending: Arc::new(Mutex::new(HashMap::new())),
+            pending_cancel_tx,
             state: Arc::new(Mutex::new(ConnectionState {
                 generation: 0,
                 active: true,
@@ -825,16 +401,18 @@ mod tests {
         (Arc::new(connection), outbound_rx)
     }
 
-    fn blocked_test_connection() -> (Arc<TcpConnection>, mpsc::Receiver<Package>) {
+    fn blocked_test_connection() -> (Arc<TcpConnection>, mpsc::Receiver<OutboundCommand>) {
         blocked_test_connection_with_timeout(Duration::from_secs(5))
     }
 
-    async fn simulate_teardown(conn: &TcpConnection, outbound_rx: &mut mpsc::Receiver<Package>) {
+    async fn simulate_teardown(
+        conn: &TcpConnection,
+        outbound_rx: &mut mpsc::Receiver<OutboundCommand>,
+    ) {
         let mut state = conn.state.lock().await;
         state.active = false;
         state.generation = state.generation.wrapping_add(1);
         conn.alive.store(false, Ordering::Release);
-        conn.pending.lock().await.clear();
         while outbound_rx.try_recv().is_ok() {}
     }
 
@@ -886,7 +464,6 @@ mod tests {
             sender.await.unwrap(),
             Err(EventMeshError::ChannelClosed(_))
         ));
-        assert!(conn.pending.lock().await.is_empty());
         assert!(matches!(
             outbound_rx.try_recv(),
             Err(mpsc::error::TryRecvError::Empty)
@@ -912,7 +489,6 @@ mod tests {
             result,
             Err(EventMeshError::Timeout(value)) if value == timeout
         ));
-        assert!(conn.pending.lock().await.is_empty());
     }
 
     #[tokio::test]
@@ -932,7 +508,10 @@ mod tests {
 
         tokio::time::sleep(Duration::from_millis(120)).await;
         let occupied = outbound_rx.recv().await.expect("occupied queue entry");
-        assert_eq!(occupied.header.seq.as_deref(), Some("occupied"));
+        assert!(matches!(
+            occupied,
+            OutboundCommand::Send(pkg) if pkg.header.seq.as_deref() == Some("occupied")
+        ));
 
         let result = tokio::time::timeout(Duration::from_millis(150), request)
             .await
@@ -942,7 +521,6 @@ mod tests {
             result,
             Err(EventMeshError::Timeout(value)) if value == request_timeout
         ));
-        assert!(conn.pending.lock().await.is_empty());
     }
 
     #[tokio::test]
@@ -1037,6 +615,95 @@ mod tests {
             Err(EventMeshError::Timeout(timeout)) if timeout == Duration::from_millis(20)
         ));
         server.abort();
+    }
+
+    /// Dropping the entire `io()` future must notify the driver to remove its
+    /// pending entry. A late RESPONSE_TO_CLIENT is therefore orphaned and must
+    /// not be ACKed as though a caller were still waiting for it.
+    #[tokio::test]
+    async fn externally_cancelled_io_removes_driver_pending_entry() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let (request_seen_tx, request_seen_rx) = oneshot::channel();
+        let (send_late_response_tx, send_late_response_rx) = oneshot::channel();
+
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(Command::HelloResponse, "hello")))
+                .await
+                .unwrap();
+
+            let request = framed.next().await.unwrap().unwrap();
+            assert_eq!(request.header.cmd, Command::RequestToServer);
+            let seq = request.header.seq.unwrap_or_default();
+            let _ = request_seen_tx.send(());
+            let _ = send_late_response_rx.await;
+
+            // Give the driver a chance to receive the cancellation command
+            // emitted synchronously when the request future was dropped.
+            tokio::task::yield_now().await;
+            tokio::time::sleep(Duration::from_millis(20)).await;
+            framed
+                .send(Package::new(Header::new(Command::ResponseToClient, seq)))
+                .await
+                .unwrap();
+
+            // A leaked pending entry would make the client ACK this response.
+            // An orphan response is dropped by a default producer connection.
+            tokio::time::timeout(Duration::from_millis(100), framed.next())
+                .await
+                .is_err()
+        });
+
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(1))
+            .with_heartbeat_interval(Duration::from_secs(60))
+            .with_reconnect(ReconnectPolicy::default().with_enabled(false));
+        let user_agent = super::super::frame::UserAgent::from_role(
+            config.identity(),
+            config.credentials(),
+            "g",
+            config.endpoint().port(),
+            "pub",
+        );
+        let conn = Arc::new(
+            TcpConnection::connect(
+                &config.endpoint().authority_host(),
+                config.endpoint().port(),
+                &user_agent,
+                config.heartbeat_interval(),
+                config.connect_timeout(),
+                config.control_timeout(),
+                config.reconnect().clone(),
+            )
+            .await
+            .expect("connect"),
+        );
+
+        let request = {
+            let conn = Arc::clone(&conn);
+            tokio::spawn(async move {
+                conn.io(
+                    Package::new(Header::new(Command::RequestToServer, "cancel-me")),
+                    Duration::from_secs(30),
+                )
+                .await
+            })
+        };
+        request_seen_rx
+            .await
+            .expect("server did not receive request");
+        request.abort();
+        let _ = request.await;
+        let _ = send_late_response_tx.send(());
+
+        assert!(server.await.expect("server task failed"));
+        conn.shutdown().await;
     }
 
     /// Loopback test: a request/reply round-trip must produce a
