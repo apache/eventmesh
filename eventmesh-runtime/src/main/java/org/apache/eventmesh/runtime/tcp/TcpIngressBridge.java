@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
+package org.apache.eventmesh.runtime.tcp;
 
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
+import org.apache.eventmesh.runtime.tcp.internal.TcpFrameDecoder;
+import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 
 import java.util.concurrent.CompletableFuture;
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
+package org.apache.eventmesh.runtime.tcp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,6 +31,9 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
+import org.apache.eventmesh.runtime.tcp.internal.NettyTcpPushChannel;
+import org.apache.eventmesh.runtime.tcp.internal.PackageRouter;
+import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

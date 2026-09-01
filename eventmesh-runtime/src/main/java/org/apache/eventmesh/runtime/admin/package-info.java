@@ -16,20 +16,14 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * HTTP admin endpoints (control plane).
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.protocol.http, runtime.boot.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Other runtime sub-packages may consume admin DTOs but not its handlers.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
-
- * <p><b>Policy (issue #5297 acceptance):</b></p>
- * <ul>
- *   <li>Depends on: common.internal, common.wire, runtime.session.</li>
- *   <li>Public interface consumed by delivery. Store backends live in
- *   {@code state.internal} (planned when a third backend is needed).</li>
- * </ul>
  */
-package org.apache.eventmesh.runtime.state;
+@org.apache.eventmesh.common.Internal
+package org.apache.eventmesh.runtime.admin;

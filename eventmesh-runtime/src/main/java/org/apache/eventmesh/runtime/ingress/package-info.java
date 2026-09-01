@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
-
 /**
- * Decodes a raw TCP {@code Package} frame from a legacy client into a {@link TcpRequest}.
+ * UniIngressService: routes CloudEvents to the right delivery/push path.
  *
- * <p>Production implementation uses the existing {@code Codec} + the appropriate
- * {@code ProtocolAdaptor} (meshmessage/cloudevents) + the TCP {@code Command} header to tell
- * HELLO/LISTEN/PUBLISH/RESPONSE apart, mapping them to the four {@link TcpRequest.Kind}s. Tests
- * inject a stub.</p>
+ * <p>Depends on: Depends on common.protocol, common.wire, runtime.delivery, runtime.push, runtime.subscription.
+ *
+ * <p>Policy: Public facade -- boot wires ingress into UniRuntime, but no engine sub-package may bypass it.
+ *
+ * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
+ * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
-@FunctionalInterface
-public interface TcpFrameDecoder {
-
-    TcpRequest decode(String clientId, byte[] frame);
-}
+@org.apache.eventmesh.common.Internal
+package org.apache.eventmesh.runtime.ingress;

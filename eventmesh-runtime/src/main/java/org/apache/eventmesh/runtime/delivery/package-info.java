@@ -16,20 +16,16 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Delivery state machine: dispatch, ack, retry, dead-letter (issue #5301).
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.protocol, common.internal, common.wire, runtime.push,
+ runtime.session, runtime.state, runtime.subscription.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Public API consumed by ingress. Internal transitions (D-3, D-4) live in delivery.internal -- to be introduced when the state machine is
+    split.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
-
- * <p><b>Policy (issue #5297 acceptance):</b></p>
- * <ul>
- *   <li>Depends on: common.internal, common.wire, runtime.session.</li>
- *   <li>Public interface consumed by delivery. Store backends live in
- *   {@code state.internal} (planned when a third backend is needed).</li>
- * </ul>
  */
-package org.apache.eventmesh.runtime.state;
+@org.apache.eventmesh.common.Internal
+package org.apache.eventmesh.runtime.delivery;
