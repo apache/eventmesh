@@ -28,6 +28,13 @@ dependencies {
     // "outside of common" package so that-clauses never match empty.
     testImplementation project(':eventmesh-common')
     testImplementation project(':eventmesh-spi')
+    // :eventmesh-runtime added for issue #5297 so the runtime.* ArchUnit
+    // rules (ruleRuntimeTcpInternalHidden, ruleRuntimeEngineIsolatedFromInfra,
+    // ruleRuntimePushDoesNotImportCodec, ruleRuntimeSubscriptionStateIsolated)
+    // have classes in scope for the that()-clause. Without this, ArchUnit's
+    // default failOnEmptyShould=true throws AssertionError because the
+    // rule's that()-predicate matches no classes.
+    testImplementation project(':eventmesh-runtime')
 }
 
 tasks.named('test') {
