@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.eventmesh.common.util.EventMeshThreadFactory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

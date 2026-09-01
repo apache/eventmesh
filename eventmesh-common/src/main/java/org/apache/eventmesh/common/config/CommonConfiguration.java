@@ -20,7 +20,7 @@ package org.apache.eventmesh.common.config;
 import static org.apache.eventmesh.common.Constants.HTTP;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.util.IPUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 

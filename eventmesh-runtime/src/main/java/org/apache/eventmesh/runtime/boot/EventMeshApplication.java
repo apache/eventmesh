@@ -216,7 +216,7 @@ public class EventMeshApplication {
         this.advertisedAddr = advertised;
         httpServer.withAdvertisedAddr(advertised);
         String forwardAddr = advertised.isEmpty()
-            ? org.apache.eventmesh.common.utils.IPUtils.getLocalAddress() + ":" + httpPort
+            ? org.apache.eventmesh.common.util.IPUtils.getLocalAddress() + ":" + httpPort
             : advertised;
         if (clusterMembership != null) {
             clusterMembership.setSelfAddress(forwardAddr);

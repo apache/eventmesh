@@ -28,7 +28,7 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent.CloudEve
 import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
-import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.util.JsonUtils;
 
 import java.net.URI;
 import java.util.ArrayList;

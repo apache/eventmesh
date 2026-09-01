@@ -18,7 +18,7 @@
 package org.apache.eventmesh.util;
 
 import org.apache.eventmesh.common.ExampleConstants;
-import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.util.IPUtils;
 
 import org.apache.commons.lang3.SystemUtils;
 

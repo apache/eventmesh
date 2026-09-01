@@ -19,8 +19,8 @@ package org.apache.eventmesh.common.protocol.http.header.message;
 
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
-import org.apache.eventmesh.common.utils.HttpConvertsUtils;
-import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.util.HttpConvertsUtils;
+import org.apache.eventmesh.common.util.IPUtils;
 
 import java.util.Map;
 

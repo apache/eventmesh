@@ -18,11 +18,11 @@
 package org.apache.eventmesh.client.tcp.common;
 
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.common.EventMeshThreadFactory;
-import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
+import org.apache.eventmesh.common.util.EventMeshThreadFactory;
+import org.apache.eventmesh.common.util.ThreadPoolFactory;
 
 import java.io.Closeable;
 import java.net.InetSocketAddress;

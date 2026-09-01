@@ -18,7 +18,7 @@
 package org.apache.eventmesh.common.protocol.http.body.message;
 
 import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.util.JsonUtils;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;

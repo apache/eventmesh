@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.eventmesh.common.internal.ResetCountDownLatch;
+
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;

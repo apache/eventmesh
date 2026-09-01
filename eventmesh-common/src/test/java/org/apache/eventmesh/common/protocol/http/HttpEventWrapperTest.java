@@ -18,7 +18,7 @@
 package org.apache.eventmesh.common.protocol.http;
 
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.util.JsonUtils;
 
 import java.util.HashMap;
 import java.util.Map;

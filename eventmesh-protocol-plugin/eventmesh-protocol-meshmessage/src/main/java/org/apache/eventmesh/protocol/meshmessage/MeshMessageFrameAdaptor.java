@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.util.JsonUtils;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.protocol.api.FrameAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
