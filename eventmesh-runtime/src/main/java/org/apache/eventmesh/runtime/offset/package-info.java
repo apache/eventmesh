@@ -21,7 +21,8 @@
  * <p>Depends on: Depends on common.internal, common.util, common.wire,
  runtime.session.
  *
- * <p>Policy: Public interface consumed by delivery. Storage backends live as InMemoryOffsetStore / MetaBackedOffsetStore; the SPI extension is in offset.internal -- to be introduced when a third backend is needed.
+ * <p>Policy: Public interface consumed by delivery. Storage backends live as InMemoryOffsetStore / MetaBackedOffsetStore; the SPI extension is in
+    offset.internal -- to be introduced when a third backend is needed.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.

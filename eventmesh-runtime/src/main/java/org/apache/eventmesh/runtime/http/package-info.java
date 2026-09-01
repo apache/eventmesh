@@ -21,7 +21,8 @@
  * <p>Depends on: Depends on common.protocol.http, common.wire, runtime.boot,
  runtime.ingress.
  *
- * <p>Policy: Public server -- may be depended on by boot/connectors. Internal handlers (request mapping, error translation) will live in http.internal in a follow-up.
+ * <p>Policy: Public server -- may be depended on by boot/connectors. Internal handlers (request mapping, error translation) will live in
+    http.internal in a follow-up.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.

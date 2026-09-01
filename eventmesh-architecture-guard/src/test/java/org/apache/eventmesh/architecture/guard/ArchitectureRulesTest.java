@@ -68,6 +68,7 @@ class ArchitectureRulesTest {
         EvaluationResult r = ArchitectureRules.ruleOldUtilsRenamed.evaluate(classes);
         LOG.warn("ArchitectureRules.ruleOldUtilsRenamed violations:\n{}", r.getFailureReport());
     }
+
     @Test
     void ruleRuntimeTcpInternalHidden_warn() {
         EvaluationResult r = ArchitectureRules.ruleRuntimeTcpInternalHidden.evaluate(classes);

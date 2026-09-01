@@ -20,7 +20,8 @@
  *
  * <p>Depends on: Depends on common.protocol, runtime.boot, runtime.metrics.
  *
- * <p>Policy: Public API consumed by runtime.push/ratelimit; internal coordination lives in cluster.internal subpackages (none yet -- to be added when cluster grows).
+ * <p>Policy: Public API consumed by runtime.push/ratelimit; internal coordination lives in cluster.internal subpackages (none yet -- to be added
+    when cluster grows).
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.

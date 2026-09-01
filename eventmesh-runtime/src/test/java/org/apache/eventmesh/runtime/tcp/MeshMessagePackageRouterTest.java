@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.protocol.meshmessage.MeshMessageFrameAdaptor;
-import org.apache.eventmesh.runtime.tcp.MeshMessagePackageRouter;
 import org.apache.eventmesh.runtime.tcp.internal.NettyTcpPushChannel;
 import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 
