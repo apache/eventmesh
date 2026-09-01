@@ -17,49 +17,56 @@
 
 package org.apache.eventmesh.architecture.guard;
 
+import org.apache.eventmesh.architecture.guard.ArchitectureRules;
+
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.lang.EvaluationResult;
-import org.junit.jupiter.api.Test;
 
 /**
  * Test class for {@link ArchitectureRules}.
  *
- * <p>Each rule is asserted in WARN mode: violations are logged via
- * {@code System.out.println} but the test passes. From 1.14.0 the
+ * <p>Each rule is asserted in WARN mode: violations are logged at
+ * {@code WARN} level but the test passes. From 1.14.0 the
  * {@code *_warn} test methods will be replaced with hard
  * {@code rule.check(classes)} assertions that fail on violation.
  */
 class ArchitectureRulesTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ArchitectureRulesTest.class);
 
     private final JavaClasses classes = ArchitectureRules.loadProductionClasses();
 
     @Test
     void ruleInternalHidden_warn() {
         EvaluationResult r = ArchitectureRules.ruleInternalHidden.evaluate(classes);
-        System.out.println("ArchitectureRules.ruleInternalHidden violations:\n" + r.getFailureReport());
+        LOG.warn("ArchitectureRules.ruleInternalHidden violations:\n{}", r.getFailureReport());
     }
 
     @Test
     void ruleHttpProtocolHidden_warn() {
         EvaluationResult r = ArchitectureRules.ruleHttpProtocolHidden.evaluate(classes);
-        System.out.println("ArchitectureRules.ruleHttpProtocolHidden violations:\n" + r.getFailureReport());
+        LOG.warn("ArchitectureRules.ruleHttpProtocolHidden violations:\n{}", r.getFailureReport());
     }
 
     @Test
     void ruleGrpcProtocolHidden_warn() {
         EvaluationResult r = ArchitectureRules.ruleGrpcProtocolHidden.evaluate(classes);
-        System.out.println("ArchitectureRules.ruleGrpcProtocolHidden violations:\n" + r.getFailureReport());
+        LOG.warn("ArchitectureRules.ruleGrpcProtocolHidden violations:\n{}", r.getFailureReport());
     }
 
     @Test
     void ruleTcpProtocolHidden_warn() {
         EvaluationResult r = ArchitectureRules.ruleTcpProtocolHidden.evaluate(classes);
-        System.out.println("ArchitectureRules.ruleTcpProtocolHidden violations:\n" + r.getFailureReport());
+        LOG.warn("ArchitectureRules.ruleTcpProtocolHidden violations:\n{}", r.getFailureReport());
     }
 
     @Test
     void ruleOldUtilsRenamed_warn() {
         EvaluationResult r = ArchitectureRules.ruleOldUtilsRenamed.evaluate(classes);
-        System.out.println("ArchitectureRules.ruleOldUtilsRenamed violations:\n" + r.getFailureReport());
+        LOG.warn("ArchitectureRules.ruleOldUtilsRenamed violations:\n{}", r.getFailureReport());
     }
 }
