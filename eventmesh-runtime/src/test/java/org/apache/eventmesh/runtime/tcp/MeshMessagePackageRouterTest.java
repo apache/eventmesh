@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.runtime.tcp;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -30,9 +34,6 @@ import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
