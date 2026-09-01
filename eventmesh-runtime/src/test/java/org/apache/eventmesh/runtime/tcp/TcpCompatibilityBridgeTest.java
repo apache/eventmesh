@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.runtime.tcp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
@@ -28,6 +25,11 @@ import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
+import org.apache.eventmesh.runtime.tcp.TcpAckRegistry;
+import org.apache.eventmesh.runtime.tcp.TcpIngressBridge;
+import org.apache.eventmesh.runtime.tcp.internal.TcpFrameCodec;
+import org.apache.eventmesh.runtime.tcp.internal.TcpPushChannel;
+import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +41,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import io.cloudevents.CloudEvent;
