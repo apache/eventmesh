@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.tcp.internal;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
+import org.apache.eventmesh.runtime.tcp.TcpAckRegistry;
 
 import lombok.extern.slf4j.Slf4j;
 

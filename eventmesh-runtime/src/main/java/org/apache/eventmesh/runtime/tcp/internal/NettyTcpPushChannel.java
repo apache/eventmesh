@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.protocol.api.FrameAdaptors;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 import org.apache.eventmesh.runtime.delivery.PushChannel;
+import org.apache.eventmesh.runtime.tcp.TcpAckRegistry;
 
 import io.netty.channel.Channel;
 
