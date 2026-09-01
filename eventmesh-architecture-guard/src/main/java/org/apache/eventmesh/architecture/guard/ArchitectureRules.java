@@ -40,27 +40,13 @@ public final class ArchitectureRules {
     }
 
     public static JavaClasses loadProductionClasses() {
-        // ClassFileImporter.importPaths(String...) imports all listed class
-        // directories in a single pass. Note: importPath(String) returns
-        // JavaClasses (not ClassFileImporter), so calls cannot be chained.
+        // importPackages() imports every class on the test classpath that
+        // matches the package prefix -- robust across build systems and
+        // working directories. (importPaths() used relative file paths that
+        // break under Gradle, whose task working dir is the module dir.)
         return new ClassFileImporter()
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPaths(
-                        "eventmesh-common/build/classes/java/main",
-                        "eventmesh-runtime/build/classes/java/main",
-                        "eventmesh-spi/build/classes/java/main",
-                        "eventmesh-sdks/eventmesh-sdk-java/build/classes/java/main",
-                        "eventmesh-protocol-plugin/eventmesh-protocol-api/build/classes/java/main",
-                        "eventmesh-protocol-plugin/eventmesh-protocol-cloudevents/build/classes/java/main",
-                        "eventmesh-protocol-plugin/eventmesh-protocol-meshmessage/build/classes/java/main",
-                        "eventmesh-protocol-plugin/eventmesh-protocol-a2a/build/classes/java/main",
-                        "eventmesh-storage-plugin/eventmesh-storage-api/build/classes/java/main",
-                        "eventmesh-storage-plugin/eventmesh-storage-kafka/build/classes/java/main",
-                        "eventmesh-storage-plugin/eventmesh-storage-rocketmq/build/classes/java/main",
-                        "eventmesh-storage-plugin/eventmesh-storage-rocketmq5/build/classes/java/main",
-                        "eventmesh-connector-runtime/build/classes/java/main",
-                        "eventmesh-agent/build/classes/java/main",
-                        "eventmesh-examples/build/classes/java/main");
+                .importPackages("org.apache.eventmesh");
     }
 
     public static ArchRule ruleInternalHidden = noClasses()

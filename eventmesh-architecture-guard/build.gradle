@@ -23,6 +23,11 @@
 dependencies {
     implementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
     testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
+    // Classes under analysis: eventmesh-common carries the protocol/internal
+    // packages the rules target; eventmesh-spi provides a guaranteed
+    // "outside of common" package so that-clauses never match empty.
+    testImplementation project(':eventmesh-common')
+    testImplementation project(':eventmesh-spi')
 }
 
 tasks.named('test') {
