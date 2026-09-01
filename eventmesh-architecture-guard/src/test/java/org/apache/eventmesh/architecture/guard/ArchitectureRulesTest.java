@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.architecture.guard;
 
-import org.apache.eventmesh.architecture.guard.ArchitectureRules;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
