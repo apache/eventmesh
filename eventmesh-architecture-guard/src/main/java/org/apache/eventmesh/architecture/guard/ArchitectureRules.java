@@ -40,23 +40,27 @@ public final class ArchitectureRules {
     }
 
     public static JavaClasses loadProductionClasses() {
+        // ClassFileImporter.importPaths(String...) imports all listed class
+        // directories in a single pass. Note: importPath(String) returns
+        // JavaClasses (not ClassFileImporter), so calls cannot be chained.
         return new ClassFileImporter()
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPath("eventmesh-common/build/classes/java/main")
-                .importPath("eventmesh-runtime/build/classes/java/main")
-                .importPath("eventmesh-spi/build/classes/java/main")
-                .importPath("eventmesh-sdks/eventmesh-sdk-java/build/classes/java/main")
-                .importPath("eventmesh-protocol-plugin/eventmesh-protocol-api/build/classes/java/main")
-                .importPath("eventmesh-protocol-plugin/eventmesh-protocol-cloudevents/build/classes/java/main")
-                .importPath("eventmesh-protocol-plugin/eventmesh-protocol-meshmessage/build/classes/java/main")
-                .importPath("eventmesh-protocol-plugin/eventmesh-protocol-a2a/build/classes/java/main")
-                .importPath("eventmesh-storage-plugin/eventmesh-storage-api/build/classes/java/main")
-                .importPath("eventmesh-storage-plugin/eventmesh-storage-kafka/build/classes/java/main")
-                .importPath("eventmesh-storage-plugin/eventmesh-storage-rocketmq/build/classes/java/main")
-                .importPath("eventmesh-storage-plugin/eventmesh-storage-rocketmq5/build/classes/java/main")
-                .importPath("eventmesh-connector-runtime/build/classes/java/main")
-                .importPath("eventmesh-agent/build/classes/java/main")
-                .importPath("eventmesh-examples/build/classes/java/main");
+                .importPaths(
+                        "eventmesh-common/build/classes/java/main",
+                        "eventmesh-runtime/build/classes/java/main",
+                        "eventmesh-spi/build/classes/java/main",
+                        "eventmesh-sdks/eventmesh-sdk-java/build/classes/java/main",
+                        "eventmesh-protocol-plugin/eventmesh-protocol-api/build/classes/java/main",
+                        "eventmesh-protocol-plugin/eventmesh-protocol-cloudevents/build/classes/java/main",
+                        "eventmesh-protocol-plugin/eventmesh-protocol-meshmessage/build/classes/java/main",
+                        "eventmesh-protocol-plugin/eventmesh-protocol-a2a/build/classes/java/main",
+                        "eventmesh-storage-plugin/eventmesh-storage-api/build/classes/java/main",
+                        "eventmesh-storage-plugin/eventmesh-storage-kafka/build/classes/java/main",
+                        "eventmesh-storage-plugin/eventmesh-storage-rocketmq/build/classes/java/main",
+                        "eventmesh-storage-plugin/eventmesh-storage-rocketmq5/build/classes/java/main",
+                        "eventmesh-connector-runtime/build/classes/java/main",
+                        "eventmesh-agent/build/classes/java/main",
+                        "eventmesh-examples/build/classes/java/main");
     }
 
     public static ArchRule ruleInternalHidden = noClasses()
