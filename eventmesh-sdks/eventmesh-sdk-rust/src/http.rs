@@ -228,7 +228,7 @@ impl HttpConsumer {
         let unregister_result = self.inner.unsubscribe_all().await;
         self.shutdown();
         let join_result = self.join().await;
-        unregister_result.and(join_result)
+        combine_cleanup_results(unregister_result, join_result)
     }
 
     async fn wait_for_server(&self) -> Result<()> {
@@ -301,7 +301,18 @@ impl WebhookRegistration {
         let unregister_result = self.inner.unsubscribe_all().await;
         self.shutdown();
         let join_result = self.join().await;
-        unregister_result.and(join_result)
+        combine_cleanup_results(unregister_result, join_result)
+    }
+}
+
+fn combine_cleanup_results(operation: Result<()>, shutdown: Result<()>) -> Result<()> {
+    match (operation, shutdown) {
+        (Ok(()), Ok(())) => Ok(()),
+        (Err(error), Ok(())) | (Ok(()), Err(error)) => Err(error),
+        (Err(operation), Err(shutdown)) => Err(EventMeshError::Cleanup {
+            operation: Box::new(operation),
+            shutdown: Box::new(shutdown),
+        }),
     }
 }
 
@@ -420,6 +431,48 @@ mod tests {
             result,
             Err(EventMeshError::Config(message)) if message.contains("active Tokio runtime")
         ));
+    }
+
+    #[test]
+    fn cleanup_result_preserves_one_or_both_failures() {
+        assert!(combine_cleanup_results(Ok(()), Ok(())).is_ok());
+
+        let operation_only = combine_cleanup_results(
+            Err(EventMeshError::InvalidArgument("unregister".into())),
+            Ok(()),
+        );
+        assert!(matches!(
+            operation_only,
+            Err(EventMeshError::InvalidArgument(message)) if message == "unregister"
+        ));
+
+        let shutdown_only =
+            combine_cleanup_results(Ok(()), Err(EventMeshError::ChannelClosed("join".into())));
+        assert!(matches!(
+            shutdown_only,
+            Err(EventMeshError::ChannelClosed(message)) if message == "join"
+        ));
+
+        let both = combine_cleanup_results(
+            Err(EventMeshError::InvalidArgument("unregister".into())),
+            Err(EventMeshError::ChannelClosed("join".into())),
+        );
+        match both {
+            Err(EventMeshError::Cleanup {
+                operation,
+                shutdown,
+            }) => {
+                assert!(matches!(
+                    *operation,
+                    EventMeshError::InvalidArgument(ref message) if message == "unregister"
+                ));
+                assert!(matches!(
+                    *shutdown,
+                    EventMeshError::ChannelClosed(ref message) if message == "join"
+                ));
+            }
+            other => panic!("expected combined cleanup error, got {other:?}"),
+        }
     }
 
     #[tokio::test]

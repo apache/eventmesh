@@ -97,7 +97,14 @@ e2e = ["grpc", "http", "tcp", "cloud_events"]
 interop_e2e = ["e2e"]
 
 [dependencies]
-tokio = { version = "1", optional = true, features = ["full"] }
+tokio = { version = "1", optional = true, features = [
+    "macros",
+    "net",
+    "rt-multi-thread",
+    "signal",
+    "sync",
+    "time",
+] }
 tokio-stream = { version = "0.1", optional = true, features = ["net"] }
 tokio-util = { version = "0.7", optional = true }
 futures = { version = "0.3", optional = true }

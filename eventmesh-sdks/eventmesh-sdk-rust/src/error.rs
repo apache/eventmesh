@@ -104,6 +104,18 @@ pub enum Error {
     /// The operation is not supported by the active transport.
     #[error("unsupported operation: {0}")]
     Unsupported(String),
+
+    /// Both a lifecycle operation and the subsequent shutdown failed.
+    ///
+    /// For example, an HTTP consumer may fail to unregister its remote
+    /// subscriptions and then also fail while joining a background task.
+    #[error("cleanup failed: operation error: {operation}; shutdown error: {shutdown}")]
+    Cleanup {
+        /// Failure from the cleanup operation attempted before shutdown.
+        operation: Box<Error>,
+        /// Failure encountered while stopping or joining background work.
+        shutdown: Box<Error>,
+    },
 }
 
 /// Convenience `Result` alias used throughout the SDK.
