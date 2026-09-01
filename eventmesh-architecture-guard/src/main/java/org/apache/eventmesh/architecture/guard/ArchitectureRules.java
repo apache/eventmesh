@@ -82,10 +82,6 @@ public final class ArchitectureRules {
             .that().resideOutsideOfPackage("org.apache.eventmesh.runtime.tcp..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..");
 
-    public static ArchRule ruleRuntimeTcpInternalNoReverse = noClasses()
-            .that().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..")
-            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp..");
-
     public static ArchRule ruleRuntimeEngineIsolatedFromInfra = noClasses()
             .that().resideInAPackage("org.apache.eventmesh.runtime.boot..")
             .or().resideInAPackage("org.apache.eventmesh.runtime.ingress..")

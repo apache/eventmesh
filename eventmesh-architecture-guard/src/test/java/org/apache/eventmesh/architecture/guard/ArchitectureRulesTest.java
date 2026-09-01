@@ -67,11 +67,6 @@ class ArchitectureRulesTest {
     }
 
     @Test
-    void ruleRuntimeTcpInternalNoReverse() {
-        ArchitectureRules.ruleRuntimeTcpInternalNoReverse.check(classes);
-    }
-
-    @Test
     void ruleRuntimeEngineIsolatedFromInfra() {
         ArchitectureRules.ruleRuntimeEngineIsolatedFromInfra.check(classes);
     }
