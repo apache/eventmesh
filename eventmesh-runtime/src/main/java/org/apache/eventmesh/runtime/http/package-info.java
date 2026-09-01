@@ -18,7 +18,8 @@
 /**
  * UniHttpServer: HTTP ingress (Netty + EventMeshFrame).
  *
- * <p>Depends on: Depends on common.protocol.http, common.wire, runtime.boot, runtime.ingress.
+ * <p>Depends on: Depends on common.protocol.http, common.wire, runtime.boot,
+ runtime.ingress.
  *
  * <p>Policy: Public server -- may be depended on by boot/connectors. Internal handlers (request mapping, error translation) will live in http.internal in a follow-up.
  *

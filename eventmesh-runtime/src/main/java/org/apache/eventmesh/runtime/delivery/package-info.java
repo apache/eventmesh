@@ -18,7 +18,8 @@
 /**
  * Delivery state machine: dispatch, ack, retry, dead-letter (issue #5301).
  *
- * <p>Depends on: Depends on common.protocol, common.internal, common.wire, runtime.push, runtime.session, runtime.state, runtime.subscription.
+ * <p>Depends on: Depends on common.protocol, common.internal, common.wire, runtime.push,
+ runtime.session, runtime.state, runtime.subscription.
  *
  * <p>Policy: Public API consumed by ingress. Internal transitions (D-3, D-4) live in delivery.internal -- to be introduced when the state machine is split.
  *

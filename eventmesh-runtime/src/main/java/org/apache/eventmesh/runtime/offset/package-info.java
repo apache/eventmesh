@@ -18,7 +18,8 @@
 /**
  * OffsetStore abstraction + in-memory and Meta-backed implementations.
  *
- * <p>Depends on: Depends on common.internal, common.util, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.internal, common.util, common.wire,
+ runtime.session.
  *
  * <p>Policy: Public interface consumed by delivery. Storage backends live as InMemoryOffsetStore / MetaBackedOffsetStore; the SPI extension is in offset.internal -- to be introduced when a third backend is needed.
  *
