@@ -1,15 +1,5 @@
 /*
-
-package org.apache.eventmesh.runtime.tcp;
-
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.wire.EventMeshFrame;
-import org.apache.eventmesh.protocol.api.FrameAdaptors;
-import org.apache.eventmesh.runtime.tcp.internal.NettyTcpPushChannel;
-import org.apache.eventmesh.runtime.tcp.internal.PackageRouter;
-import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
-
+ * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -25,12 +15,15 @@ import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
+package org.apache.eventmesh.runtime.tcp;
 
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.protocol.api.FrameAdaptors;
+import org.apache.eventmesh.runtime.tcp.internal.NettyTcpPushChannel;
+import org.apache.eventmesh.runtime.tcp.internal.PackageRouter;
+import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 
 /**
  * Production {@link PackageRouter} for the legacy MeshMessage TCP protocol. Converts a MeshMessage
