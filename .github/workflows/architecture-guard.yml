@@ -1,0 +1,70 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: 'Architecture Guard'
+
+# Runs the ArchUnit rules as their own check so a violation shows up as
+# "Architecture Guard" on the PR instead of hiding inside the 30-minute
+# Build job. Only the modules that feed the analysis trigger it.
+on:
+  push:
+    branches: [ '**' ]
+    paths:
+      - 'eventmesh-architecture-guard/**'
+      - 'eventmesh-common/**'
+      - 'eventmesh-runtime/**'
+      - 'eventmesh-spi/**'
+      - 'eventmesh-protocol-plugin/**'
+      - 'eventmesh-storage-plugin/**'
+      - '.github/workflows/architecture-guard.yml'
+  pull_request:
+    branches: [ '**' ]
+    paths:
+      - 'eventmesh-architecture-guard/**'
+      - 'eventmesh-common/**'
+      - 'eventmesh-runtime/**'
+      - 'eventmesh-spi/**'
+      - 'eventmesh-protocol-plugin/**'
+      - 'eventmesh-storage-plugin/**'
+      - '.github/workflows/architecture-guard.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  arch-guard:
+    name: Architecture Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e #v6.1.0
+
+      - name: Run architecture rules
+        run: ./gradlew :eventmesh-architecture-guard:architectureCheck --no-daemon
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
