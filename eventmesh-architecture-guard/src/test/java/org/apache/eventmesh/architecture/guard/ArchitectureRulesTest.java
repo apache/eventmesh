@@ -17,85 +17,72 @@
 
 package org.apache.eventmesh.architecture.guard;
 
-
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.lang.EvaluationResult;
 
 /**
  * Test class for {@link ArchitectureRules}.
  *
- * <p>Each rule is asserted in WARN mode: violations are logged at
- * {@code WARN} level but the test passes. From 1.14.0 the
- * {@code *_warn} test methods will be replaced with hard
- * {@code rule.check(classes)} assertions that fail on violation.
+ * <p>Each rule is asserted in FAIL mode: {@code rule.check(classes)}
+ * throws {@code AssertionError} listing every violating location, so
+ * any architecture violation breaks the build.
+ *
+ * <p>This module intentionally carries no SLF4J binding, so the
+ * earlier WARN mode discarded every violation report (SLF4J falls back
+ * to the NOP logger). FAIL mode does not depend on logging at all.
  */
 class ArchitectureRulesTest {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ArchitectureRulesTest.class);
 
     private final JavaClasses classes = ArchitectureRules.loadProductionClasses();
 
     @Test
-    void ruleInternalHidden_warn() {
-        EvaluationResult r = ArchitectureRules.ruleInternalHidden.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleInternalHidden violations:\n{}", r.getFailureReport());
+    void ruleInternalHidden() {
+        ArchitectureRules.ruleInternalHidden.check(classes);
     }
 
     @Test
-    void ruleHttpProtocolHidden_warn() {
-        EvaluationResult r = ArchitectureRules.ruleHttpProtocolHidden.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleHttpProtocolHidden violations:\n{}", r.getFailureReport());
+    void ruleHttpProtocolHidden() {
+        ArchitectureRules.ruleHttpProtocolHidden.check(classes);
     }
 
     @Test
-    void ruleGrpcProtocolHidden_warn() {
-        EvaluationResult r = ArchitectureRules.ruleGrpcProtocolHidden.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleGrpcProtocolHidden violations:\n{}", r.getFailureReport());
+    void ruleGrpcProtocolHidden() {
+        ArchitectureRules.ruleGrpcProtocolHidden.check(classes);
     }
 
     @Test
-    void ruleTcpProtocolHidden_warn() {
-        EvaluationResult r = ArchitectureRules.ruleTcpProtocolHidden.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleTcpProtocolHidden violations:\n{}", r.getFailureReport());
+    void ruleTcpProtocolHidden() {
+        ArchitectureRules.ruleTcpProtocolHidden.check(classes);
     }
 
     @Test
-    void ruleOldUtilsRenamed_warn() {
-        EvaluationResult r = ArchitectureRules.ruleOldUtilsRenamed.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleOldUtilsRenamed violations:\n{}", r.getFailureReport());
+    void ruleOldUtilsRenamed() {
+        ArchitectureRules.ruleOldUtilsRenamed.check(classes);
     }
 
     @Test
-    void ruleRuntimeTcpInternalHidden_warn() {
-        EvaluationResult r = ArchitectureRules.ruleRuntimeTcpInternalHidden.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleRuntimeTcpInternalHidden violations:\n{}", r.getFailureReport());
+    void ruleRuntimeTcpInternalHidden() {
+        ArchitectureRules.ruleRuntimeTcpInternalHidden.check(classes);
     }
 
     @Test
-    void ruleRuntimeTcpInternalNoReverse_warn() {
-        EvaluationResult r = ArchitectureRules.ruleRuntimeTcpInternalNoReverse.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleRuntimeTcpInternalNoReverse violations:\n{}", r.getFailureReport());
+    void ruleRuntimeTcpInternalNoReverse() {
+        ArchitectureRules.ruleRuntimeTcpInternalNoReverse.check(classes);
     }
 
     @Test
-    void ruleRuntimeEngineIsolatedFromInfra_warn() {
-        EvaluationResult r = ArchitectureRules.ruleRuntimeEngineIsolatedFromInfra.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleRuntimeEngineIsolatedFromInfra violations:\n{}", r.getFailureReport());
+    void ruleRuntimeEngineIsolatedFromInfra() {
+        ArchitectureRules.ruleRuntimeEngineIsolatedFromInfra.check(classes);
     }
 
     @Test
-    void ruleRuntimePushDoesNotImportCodec_warn() {
-        EvaluationResult r = ArchitectureRules.ruleRuntimePushDoesNotImportCodec.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleRuntimePushDoesNotImportCodec violations:\n{}", r.getFailureReport());
+    void ruleRuntimePushDoesNotImportCodec() {
+        ArchitectureRules.ruleRuntimePushDoesNotImportCodec.check(classes);
     }
 
     @Test
-    void ruleRuntimeSubscriptionStateIsolated_warn() {
-        EvaluationResult r = ArchitectureRules.ruleRuntimeSubscriptionStateIsolated.evaluate(classes);
-        LOG.warn("ArchitectureRules.ruleRuntimeSubscriptionStateIsolated violations:\n{}", r.getFailureReport());
+    void ruleRuntimeSubscriptionStateIsolated() {
+        ArchitectureRules.ruleRuntimeSubscriptionStateIsolated.check(classes);
     }
 }
