@@ -18,7 +18,6 @@
 package org.apache.eventmesh.architecture.guard;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.EvaluationResult;
 import org.junit.jupiter.api.Test;
 
