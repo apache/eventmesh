@@ -15,15 +15,22 @@
  * limitations under the License.
  */
 
+package org.apache.eventmesh.runtime.tcp.internal;
+
+import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Maps a decoded legacy TCP {@link Package} (after the netty {@code Codec} stage) into a
+ * {@link TcpRequest} the new core understands.
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
- *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
- *
- * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
- * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
+ * <p>Production wires {@code MeshMessageProtocolAdaptor.toCloudEvent(...)} to turn an
+ * {@code EventMeshMessage} body into a CloudEvent, and reads the {@code Command} header
+ * (ASYNC_MESSAGE_TO_SERVER → publish, SUBSCRIBE_REQUEST → subscribe,
+ * ASYNC_MESSAGE_TO_CLIENT_ACK → ack). Tests inject a stub that maps a simple body shape.</p>
  */
-@org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+@FunctionalInterface
+public interface PackageRouter {
+
+    TcpRequest route(Package pkg);
+}

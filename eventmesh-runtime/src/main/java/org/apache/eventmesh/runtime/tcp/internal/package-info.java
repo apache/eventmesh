@@ -16,14 +16,14 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Private TCP implementation: Netty codec, frame decoder, push channel, package router, request type.
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.protocol.tcp, common.wire, runtime.tcp, runtime.push.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Hidden from all non-runtime.tcp callers (ArchUnit: ruleRuntimeTcpInternalHidden).
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
 @org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+package org.apache.eventmesh.runtime;

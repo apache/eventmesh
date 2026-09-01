@@ -16,14 +16,14 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Authentication (ACL, Token, SSL) and authorization (AuthZ hooks).
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.config, common.protocol, runtime.boot.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Public SPI -- AuthZ providers plug in here; not depended on from inside the runtime.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
 @org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+package org.apache.eventmesh.runtime.security;

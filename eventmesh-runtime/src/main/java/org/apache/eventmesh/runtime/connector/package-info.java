@@ -16,14 +16,14 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Connectors to external systems (RocketMQ, Kafka, etc.).
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.protocol, common.config, runtime.ingress.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Plugin SPI boundary -- outside the runtime may not depend on a concrete connector.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
 @org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+package org.apache.eventmesh.runtime.connector;

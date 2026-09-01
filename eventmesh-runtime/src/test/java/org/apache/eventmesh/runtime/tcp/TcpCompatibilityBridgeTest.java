@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
-
+package org.apache.eventmesh.runtime.tcp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

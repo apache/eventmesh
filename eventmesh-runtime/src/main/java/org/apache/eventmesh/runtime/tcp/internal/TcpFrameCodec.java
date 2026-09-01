@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
-
+package org.apache.eventmesh.runtime.tcp.internal;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 /**

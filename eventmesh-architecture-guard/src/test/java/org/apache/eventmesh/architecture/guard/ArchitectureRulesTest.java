@@ -68,4 +68,33 @@ class ArchitectureRulesTest {
         EvaluationResult r = ArchitectureRules.ruleOldUtilsRenamed.evaluate(classes);
         LOG.warn("ArchitectureRules.ruleOldUtilsRenamed violations:\n{}", r.getFailureReport());
     }
+    @Test
+    void ruleRuntimeTcpInternalHidden_warn() {
+        EvaluationResult r = ArchitectureRules.ruleRuntimeTcpInternalHidden.evaluate(classes);
+        LOG.warn("ArchitectureRules.ruleRuntimeTcpInternalHidden violations:\n{}", r.getFailureReport());
+    }
+
+    @Test
+    void ruleRuntimeTcpInternalNoReverse_warn() {
+        EvaluationResult r = ArchitectureRules.ruleRuntimeTcpInternalNoReverse.evaluate(classes);
+        LOG.warn("ArchitectureRules.ruleRuntimeTcpInternalNoReverse violations:\n{}", r.getFailureReport());
+    }
+
+    @Test
+    void ruleRuntimeEngineIsolatedFromInfra_warn() {
+        EvaluationResult r = ArchitectureRules.ruleRuntimeEngineIsolatedFromInfra.evaluate(classes);
+        LOG.warn("ArchitectureRules.ruleRuntimeEngineIsolatedFromInfra violations:\n{}", r.getFailureReport());
+    }
+
+    @Test
+    void ruleRuntimePushDoesNotImportCodec_warn() {
+        EvaluationResult r = ArchitectureRules.ruleRuntimePushDoesNotImportCodec.evaluate(classes);
+        LOG.warn("ArchitectureRules.ruleRuntimePushDoesNotImportCodec violations:\n{}", r.getFailureReport());
+    }
+
+    @Test
+    void ruleRuntimeSubscriptionStateIsolated_warn() {
+        EvaluationResult r = ArchitectureRules.ruleRuntimeSubscriptionStateIsolated.evaluate(classes);
+        LOG.warn("ArchitectureRules.ruleRuntimeSubscriptionStateIsolated violations:\n{}", r.getFailureReport());
+    }
 }

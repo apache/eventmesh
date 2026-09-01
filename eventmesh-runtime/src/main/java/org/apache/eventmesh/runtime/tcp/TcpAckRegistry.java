@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
-
+package org.apache.eventmesh.runtime.tcp;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 
 import java.util.concurrent.ConcurrentHashMap;

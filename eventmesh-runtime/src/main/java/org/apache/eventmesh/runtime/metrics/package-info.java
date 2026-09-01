@@ -16,14 +16,14 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Runtime metrics (Micrometer + Prometheus).
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.metrics, runtime.boot.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Pure observability -- no other runtime sub-package should depend on it other than via MetricsConstants.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
 @org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+package org.apache.eventmesh.runtime.metrics;

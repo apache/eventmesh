@@ -77,4 +77,26 @@ public final class ArchitectureRules {
 
     public static ArchRule ruleOldUtilsRenamed = noClasses()
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.common.utils..");
+
+    public static ArchRule ruleRuntimeTcpInternalHidden = noClasses()
+            .that().resideOutsideOfPackage("org.apache.eventmesh.runtime.tcp..")
+            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..");
+
+    public static ArchRule ruleRuntimeTcpInternalNoReverse = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..")
+            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp..");
+
+    public static ArchRule ruleRuntimeEngineIsolatedFromInfra = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.runtime.boot..")
+            .or().resideInAPackage("org.apache.eventmesh.runtime.ingress..")
+            .or().resideInAPackage("org.apache.eventmesh.runtime.delivery..")
+            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..");
+
+    public static ArchRule ruleRuntimePushDoesNotImportCodec = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.runtime.push..")
+            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..");
+
+    public static ArchRule ruleRuntimeSubscriptionStateIsolated = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.runtime.ingress..")
+            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.state.internal..");
 }

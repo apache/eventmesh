@@ -15,21 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.transport.tcp;
-
-import org.apache.eventmesh.common.protocol.tcp.Package;
-
 /**
- * Maps a decoded legacy TCP {@link Package} (after the netty {@code Codec} stage) into a
- * {@link TcpRequest} the new core understands.
+ * Process bootstrap: wires UniRuntime, EventMeshApplication, lifecycle hooks.
  *
- * <p>Production wires {@code MeshMessageProtocolAdaptor.toCloudEvent(...)} to turn an
- * {@code EventMeshMessage} body into a CloudEvent, and reads the {@code Command} header
- * (ASYNC_MESSAGE_TO_SERVER → publish, SUBSCRIBE_REQUEST → subscribe,
- * ASYNC_MESSAGE_TO_CLIENT_ACK → ack). Tests inject a stub that maps a simple body shape.</p>
+ * <p>Depends on: Depends on every runtime sub-package (it IS the wiring layer).
+ *
+ * <p>Policy: May not be depended on by ingress/delivery/tcp.internal -- those must use EventMeshApplication via interfaces, not direct refs.
+ *
+ * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
+ * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
-@FunctionalInterface
-public interface PackageRouter {
-
-    TcpRequest route(Package pkg);
-}
+@org.apache.eventmesh.common.Internal
+package org.apache.eventmesh.runtime.boot;

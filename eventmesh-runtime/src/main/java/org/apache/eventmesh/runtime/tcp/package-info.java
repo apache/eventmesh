@@ -16,14 +16,14 @@
  */
 
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Public TCP server API (UniTcpServer, TcpIngressBridge, MeshMessagePackageRouter, TcpAckRegistry).
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
+ * <p>Depends on: Depends on common.protocol.tcp, common.wire, runtime.boot, runtime.ingress, runtime.tcp.internal.
  *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
+ * <p>Policy: Module entry point -- consumed by EventMeshApplication, IT tests. Implementation lives in runtime.tcp.internal.
  *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
 @org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+package org.apache.eventmesh.runtime.tcp;

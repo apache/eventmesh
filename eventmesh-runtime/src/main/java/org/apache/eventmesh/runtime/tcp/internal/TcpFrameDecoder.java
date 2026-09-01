@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
+package org.apache.eventmesh.runtime.tcp.internal;
+
+import org.apache.eventmesh.runtime.tcp.internal.TcpRequest;
 /**
- * DeliveryStateStore, SubscriptionStore, DeadLetterStore, TaskStore (issue #5301).
+ * Decodes a raw TCP {@code Package} frame from a legacy client into a {@link TcpRequest}.
  *
- * <p>Depends on: Depends on common.internal, common.wire, runtime.session.
- *
- * <p>Policy: Public interface consumed by delivery. Store backends live in state.internal (planned).
- *
- * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
- * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
+ * <p>Production implementation uses the existing {@code Codec} + the appropriate
+ * {@code ProtocolAdaptor} (meshmessage/cloudevents) + the TCP {@code Command} header to tell
+ * HELLO/LISTEN/PUBLISH/RESPONSE apart, mapping them to the four {@link TcpRequest.Kind}s. Tests
+ * inject a stub.</p>
  */
-@org.apache.eventmesh.common.Internal
-package org.apache.eventmesh.runtime.state;
+@FunctionalInterface
+public interface TcpFrameDecoder {
+
+    TcpRequest decode(String clientId, byte[] frame);
+}
