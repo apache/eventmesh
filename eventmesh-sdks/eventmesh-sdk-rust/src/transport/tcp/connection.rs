@@ -121,6 +121,9 @@ pub struct TcpConnection {
     deliver_orphan_responses: Arc<AtomicBool>,
     /// Shutdown signal shared with the background task.
     cancel: CancellationToken,
+    /// Maximum time fire-and-forget sends may wait for outbound queue
+    /// capacity. Request-response operations use their own per-call deadline.
+    outbound_timeout: Duration,
     /// Set to `false` by the background task when it exits for any reason
     /// (cancellation, I/O error, server close, all-senders-dropped). Mirrors
     /// Java's `channel.isActive()` more faithfully than the cancellation token
@@ -196,6 +199,7 @@ impl TcpConnection {
             state,
             deliver_orphan_responses,
             cancel,
+            outbound_timeout: control_timeout,
             alive,
             join: Mutex::new(Some(join)),
         })
@@ -232,8 +236,11 @@ impl TcpConnection {
         // hanging forever.
         debug!("sending HELLO");
         let hello_pkg = message::hello(user_agent);
-        framed.send(hello_pkg).await?;
-        match tokio::time::timeout(control_timeout, framed.next()).await {
+        let control_deadline = Self::deadline_after(control_timeout)?;
+        tokio::time::timeout_at(control_deadline, framed.send(hello_pkg))
+            .await
+            .map_err(|_| EventMeshError::Timeout(control_timeout))??;
+        match tokio::time::timeout_at(control_deadline, framed.next()).await {
             Err(_) => Err(EventMeshError::Timeout(control_timeout)),
             Ok(None) => Err(EventMeshError::Tcp("connection closed during HELLO".into())),
             Ok(Some(Err(e))) => Err(e),
@@ -259,11 +266,18 @@ impl TcpConnection {
         }
     }
 
+    fn deadline_after(timeout: Duration) -> Result<tokio::time::Instant> {
+        tokio::time::Instant::now()
+            .checked_add(timeout)
+            .ok_or_else(|| EventMeshError::InvalidArgument("TCP timeout is too large".into()))
+    }
+
     /// Request-response: register a pending context keyed by `seq`, send the
     /// package, and wait for the matching reply within `timeout`.
     ///
     /// Corresponds to Java `TcpClient.io()`.
     pub async fn io(&self, pkg: Package, timeout: Duration) -> Result<Package> {
+        let deadline = Self::deadline_after(timeout)?;
         // Client-originated frames always carry a seq (see `message::package`),
         // so this is `Some` in practice. A `None` would mean a programming
         // error; we coalesce it to an empty string so the `pending` lookup
@@ -277,34 +291,52 @@ impl TcpConnection {
         // sender that slept on a full channel cannot enqueue onto the next
         // socket after teardown has completed.
         let generation = self.active_generation().await?;
-        let permit = self
-            .outbound_tx
-            .reserve()
-            .await
-            .map_err(|_| EventMeshError::ChannelClosed("connection send loop exited".into()))?;
+        let permit = self.reserve_outbound(deadline, timeout).await?;
         let pending_key = (generation, seq);
         {
             let state = self.state.lock().await;
-            if !state.active || state.generation != generation {
+            if self.cancel.is_cancelled() || !state.active || state.generation != generation {
                 return Err(Self::inactive_error());
+            }
+            if tokio::time::Instant::now() >= deadline {
+                return Err(EventMeshError::Timeout(timeout));
             }
             self.pending.lock().await.insert(pending_key.clone(), tx);
             permit.send(pkg);
         }
 
-        // Wait for the response.
-        match tokio::time::timeout(timeout, rx).await {
-            Ok(Ok(resp)) => Ok(resp),
-            Ok(Err(_)) => {
-                self.pending.lock().await.remove(&pending_key);
-                Err(EventMeshError::ChannelClosed(
+        // Wait for the response using the same deadline that bounded queue
+        // reservation, so backpressure consumes the caller's timeout budget
+        // instead of starting a fresh timer after enqueue.
+        let result = tokio::select! {
+            biased;
+            _ = self.cancel.cancelled() => Err(Self::inactive_error()),
+            _ = tokio::time::sleep_until(deadline) => Err(EventMeshError::Timeout(timeout)),
+            response = rx => match response {
+                Ok(response) => Ok(response),
+                Err(_) => Err(EventMeshError::ChannelClosed(
                     "connection task exited while waiting for response".into(),
-                ))
-            }
-            Err(_) => {
-                self.pending.lock().await.remove(&pending_key);
-                Err(EventMeshError::Timeout(timeout))
-            }
+                )),
+            },
+        };
+        if result.is_err() {
+            self.pending.lock().await.remove(&pending_key);
+        }
+        result
+    }
+
+    async fn reserve_outbound(
+        &self,
+        deadline: tokio::time::Instant,
+        timeout: Duration,
+    ) -> Result<mpsc::Permit<'_, Package>> {
+        tokio::select! {
+            biased;
+            _ = self.cancel.cancelled() => Err(Self::inactive_error()),
+            _ = tokio::time::sleep_until(deadline) => Err(EventMeshError::Timeout(timeout)),
+            permit = self.outbound_tx.reserve() => permit.map_err(|_| {
+                EventMeshError::ChannelClosed("connection send loop exited".into())
+            }),
         }
     }
 
@@ -312,15 +344,16 @@ impl TcpConnection {
     ///
     /// Corresponds to Java `TcpClient.send()`.
     pub async fn send(&self, pkg: Package) -> Result<()> {
+        let timeout = self.outbound_timeout;
+        let deadline = Self::deadline_after(timeout)?;
         let generation = self.active_generation().await?;
-        let permit = self
-            .outbound_tx
-            .reserve()
-            .await
-            .map_err(|_| EventMeshError::ChannelClosed("connection send loop exited".into()))?;
+        let permit = self.reserve_outbound(deadline, timeout).await?;
         let state = self.state.lock().await;
-        if !state.active || state.generation != generation {
+        if self.cancel.is_cancelled() || !state.active || state.generation != generation {
             return Err(Self::inactive_error());
+        }
+        if tokio::time::Instant::now() >= deadline {
+            return Err(EventMeshError::Timeout(timeout));
         }
         permit.send(pkg);
         Ok(())
@@ -375,9 +408,10 @@ impl TcpConnection {
 
     /// Graceful shutdown: send CLIENT_GOODBYE, cancel the task, and join.
     pub async fn shutdown(&self) {
-        // Best-effort goodbye.
-        let _ = self.send(message::goodbye()).await;
-
+        // Best-effort goodbye. Never wait for outbound capacity here: a full
+        // queue is precisely when cancellation is needed to unblock callers
+        // and an in-progress socket write.
+        let _ = self.outbound_tx.try_send(message::goodbye());
         self.cancel.cancel();
         if let Some(join) = self.join.lock().await.take() {
             let _ = join.await;
@@ -421,6 +455,7 @@ impl TcpConnection {
                 Arc::clone(&deliver_orphan_responses),
                 generation,
                 heartbeat_interval,
+                control_timeout,
                 &cancel,
                 alive.as_ref(),
             )
@@ -485,9 +520,21 @@ impl TcpConnection {
                 }
                 backoff = backoff.saturating_mul(2).min(reconnect.max_backoff());
 
-                match Self::establish(&addr, port, &user_agent, connect_timeout, control_timeout)
-                    .await
-                {
+                let establish_result = tokio::select! {
+                    biased;
+                    _ = cancel.cancelled() => {
+                        debug!("cancelled during reconnect attempt");
+                        return;
+                    }
+                    result = Self::establish(
+                        &addr,
+                        port,
+                        &user_agent,
+                        connect_timeout,
+                        control_timeout,
+                    ) => result,
+                };
+                match establish_result {
                     Ok(new_framed) => {
                         info!(
                             attempt,
@@ -527,6 +574,7 @@ impl TcpConnection {
         deliver_orphan_responses: Arc<AtomicBool>,
         generation: u64,
         heartbeat_interval: Duration,
+        write_timeout: Duration,
         cancel: &CancellationToken,
         alive: &AtomicBool,
     ) -> IoExitReason {
@@ -550,9 +598,13 @@ impl TcpConnection {
                 pkg = outbound_rx.recv() => {
                     match pkg {
                         Some(pkg) => {
-                            if let Err(e) = framed.send(pkg).await {
-                                warn!("write error, connection lost: {e}");
-                                return IoExitReason::IoError;
+                            if let Err(reason) = Self::write_frame(
+                                framed,
+                                pkg,
+                                write_timeout,
+                                cancel,
+                            ).await {
+                                return reason;
                             }
                         }
                         None => {
@@ -604,8 +656,14 @@ impl TcpConnection {
                                 // is a no-op for RR replies).
                                 if pkg.header.cmd == Command::ResponseToClient {
                                     let ack_pkg = message::response_to_client_ack(&pkg);
-                                    if let Err(e) = framed.send(ack_pkg).await {
-                                        warn!(error = %e, "failed to send RESPONSE_TO_CLIENT_ACK");
+                                    if let Err(reason) = Self::write_frame(
+                                        framed,
+                                        ack_pkg,
+                                        write_timeout,
+                                        cancel,
+                                    ).await {
+                                        let _ = tx.send(pkg);
+                                        return reason;
                                     }
                                 }
                                 let _ = tx.send(pkg);
@@ -670,13 +728,40 @@ impl TcpConnection {
                 // is dead and the loop breaks.
                 _ = heartbeat.tick() => {
                     let hb = message::heartbeat();
-                    if let Err(e) = framed.send(hb).await {
-                        warn!("heartbeat send failed: {e}");
-                        return IoExitReason::IoError;
+                    if let Err(reason) = Self::write_frame(
+                        framed,
+                        hb,
+                        write_timeout,
+                        cancel,
+                    ).await {
+                        return reason;
                     }
                     debug!("heartbeat sent");
                 }
             }
+        }
+    }
+
+    async fn write_frame(
+        framed: &mut Framed<TcpStream, TcpCodec>,
+        pkg: Package,
+        timeout: Duration,
+        cancel: &CancellationToken,
+    ) -> std::result::Result<(), IoExitReason> {
+        tokio::select! {
+            biased;
+            _ = cancel.cancelled() => Err(IoExitReason::Cancelled),
+            result = tokio::time::timeout(timeout, framed.send(pkg)) => match result {
+                Ok(Ok(())) => Ok(()),
+                Ok(Err(error)) => {
+                    warn!(%error, "TCP write failed; connection lost");
+                    Err(IoExitReason::IoError)
+                }
+                Err(_) => {
+                    warn!(?timeout, "TCP write timed out; connection lost");
+                    Err(IoExitReason::IoError)
+                }
+            },
         }
     }
 }
@@ -709,7 +794,9 @@ mod tests {
     use tokio_stream::StreamExt;
     use tokio_util::codec::Framed;
 
-    fn blocked_test_connection() -> (Arc<TcpConnection>, mpsc::Receiver<Package>) {
+    fn blocked_test_connection_with_timeout(
+        outbound_timeout: Duration,
+    ) -> (Arc<TcpConnection>, mpsc::Receiver<Package>) {
         let (outbound_tx, outbound_rx) = mpsc::channel(1);
         outbound_tx
             .try_send(Package::new(Header::new(
@@ -731,10 +818,15 @@ mod tests {
             })),
             deliver_orphan_responses: Arc::new(AtomicBool::new(false)),
             cancel: CancellationToken::new(),
+            outbound_timeout,
             alive: Arc::new(AtomicBool::new(true)),
             join: Mutex::new(None),
         };
         (Arc::new(connection), outbound_rx)
+    }
+
+    fn blocked_test_connection() -> (Arc<TcpConnection>, mpsc::Receiver<Package>) {
+        blocked_test_connection_with_timeout(Duration::from_secs(5))
     }
 
     async fn simulate_teardown(conn: &TcpConnection, outbound_rx: &mut mpsc::Receiver<Package>) {
@@ -799,6 +891,114 @@ mod tests {
             outbound_rx.try_recv(),
             Err(mpsc::error::TryRecvError::Empty)
         ));
+    }
+
+    #[tokio::test]
+    async fn blocked_io_uses_one_timeout_for_queue_capacity_and_response() {
+        let (conn, _outbound_rx) = blocked_test_connection();
+        let timeout = Duration::from_millis(20);
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(1),
+            conn.io(
+                Package::new(Header::new(Command::RequestToServer, "blocked")),
+                timeout,
+            ),
+        )
+        .await
+        .expect("queue wait must respect the request timeout");
+
+        assert!(matches!(
+            result,
+            Err(EventMeshError::Timeout(value)) if value == timeout
+        ));
+        assert!(conn.pending.lock().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn queue_wait_consumes_the_response_timeout_budget() {
+        let (conn, mut outbound_rx) = blocked_test_connection();
+        let request_timeout = Duration::from_millis(200);
+        let request = {
+            let conn = Arc::clone(&conn);
+            tokio::spawn(async move {
+                conn.io(
+                    Package::new(Header::new(Command::RequestToServer, "delayed")),
+                    request_timeout,
+                )
+                .await
+            })
+        };
+
+        tokio::time::sleep(Duration::from_millis(120)).await;
+        let occupied = outbound_rx.recv().await.expect("occupied queue entry");
+        assert_eq!(occupied.header.seq.as_deref(), Some("occupied"));
+
+        let result = tokio::time::timeout(Duration::from_millis(150), request)
+            .await
+            .expect("response wait must use only the original deadline's remaining time")
+            .expect("request task must not panic");
+        assert!(matches!(
+            result,
+            Err(EventMeshError::Timeout(value)) if value == request_timeout
+        ));
+        assert!(conn.pending.lock().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn blocked_fire_and_forget_send_uses_the_outbound_timeout() {
+        let timeout = Duration::from_millis(20);
+        let (conn, _outbound_rx) = blocked_test_connection_with_timeout(timeout);
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(1),
+            conn.send(Package::new(Header::new(
+                Command::AsyncMessageToServer,
+                "blocked",
+            ))),
+        )
+        .await
+        .expect("queue wait must respect the outbound timeout");
+
+        assert!(matches!(
+            result,
+            Err(EventMeshError::Timeout(value)) if value == timeout
+        ));
+    }
+
+    #[tokio::test]
+    async fn cancellation_wakes_a_sender_waiting_for_queue_capacity() {
+        let (conn, _outbound_rx) = blocked_test_connection();
+        let sender = {
+            let conn = Arc::clone(&conn);
+            tokio::spawn(async move {
+                conn.send(Package::new(Header::new(
+                    Command::AsyncMessageToServer,
+                    "blocked",
+                )))
+                .await
+            })
+        };
+        tokio::task::yield_now().await;
+
+        conn.cancel.cancel();
+        let result = tokio::time::timeout(Duration::from_secs(1), sender)
+            .await
+            .expect("cancellation must wake the blocked sender")
+            .expect("sender task must not panic");
+
+        assert!(matches!(result, Err(EventMeshError::ChannelClosed(_))));
+    }
+
+    #[tokio::test]
+    async fn shutdown_does_not_wait_for_a_full_outbound_queue() {
+        let (conn, _outbound_rx) = blocked_test_connection();
+
+        tokio::time::timeout(Duration::from_secs(1), conn.shutdown())
+            .await
+            .expect("shutdown must not wait for outbound queue capacity");
+
+        assert!(conn.cancel.is_cancelled());
     }
 
     #[tokio::test]

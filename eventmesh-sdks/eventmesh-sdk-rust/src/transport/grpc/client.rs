@@ -31,6 +31,9 @@ use crate::proto_gen::{
     PublisherServiceClient,
 };
 
+/// Message produced by tonic 0.12 when its local `GrpcTimeout` layer expires.
+const TONIC_TIMEOUT_EXPIRED_MESSAGE: &str = "Timeout expired";
+
 /// A connection to the EventMesh gRPC server.
 ///
 /// Cheaply cloneable (wraps a multiplexed tonic channel).
@@ -124,24 +127,26 @@ impl ChannelClient {
     ///
     /// tonic's local `GrpcTimeout` layer reports an expired `grpc-timeout`
     /// as a `cancelled` status ("Timeout expired"), while a server that
-    /// observes the deadline replies `deadline-exceeded`. Both mean the
-    /// per-request deadline passed; anything else is a real RPC failure.
+    /// observes the deadline replies `deadline-exceeded`. Only that specific
+    /// local cancellation means the per-request deadline passed; other
+    /// `cancelled` statuses are real RPC failures.
     async fn finish_unary<T, F>(call: F, timeout: Duration) -> Result<T>
     where
         F: std::future::Future<Output = std::result::Result<tonic::Response<T>, tonic::Status>>,
     {
         match call.await {
             Ok(response) => Ok(response.into_inner()),
-            Err(status)
-                if matches!(
-                    status.code(),
-                    tonic::Code::DeadlineExceeded | tonic::Code::Cancelled
-                ) =>
-            {
+            Err(status) if Self::is_deadline_expiration(&status) => {
                 Err(EventMeshError::Timeout(timeout))
             }
             Err(status) => Err(EventMeshError::from(status)),
         }
+    }
+
+    fn is_deadline_expiration(status: &tonic::Status) -> bool {
+        status.code() == tonic::Code::DeadlineExceeded
+            || (status.code() == tonic::Code::Cancelled
+                && status.message() == TONIC_TIMEOUT_EXPIRED_MESSAGE)
     }
 
     /// Subscribe via webhook (server POSTs events to the URL). Returns the
@@ -219,6 +224,7 @@ impl ChannelClient {
 mod tests {
     use super::*;
     use crate::config::{Endpoint as EventMeshEndpoint, GrpcConfig};
+    use crate::Error;
 
     #[test]
     fn plain_http_endpoint_builds_without_a_tokio_runtime() {
@@ -230,5 +236,48 @@ mod tests {
     fn ipv6_endpoint_builds_from_the_new_config() {
         let config = GrpcConfig::new(EventMeshEndpoint::new("::1", 10_205).unwrap());
         let _ = ChannelClient::endpoint(&config).unwrap();
+    }
+
+    #[tokio::test]
+    async fn unary_deadline_exceeded_is_reported_as_timeout() {
+        let timeout = Duration::from_millis(25);
+        let result = ChannelClient::finish_unary(
+            async { Err::<tonic::Response<()>, _>(tonic::Status::deadline_exceeded("late")) },
+            timeout,
+        )
+        .await;
+
+        assert!(matches!(result, Err(Error::Timeout(value)) if value == timeout));
+    }
+
+    #[tokio::test]
+    async fn tonic_local_timeout_cancellation_is_reported_as_timeout() {
+        let timeout = Duration::from_millis(25);
+        let result = ChannelClient::finish_unary(
+            async {
+                Err::<tonic::Response<()>, _>(tonic::Status::from_error(Box::new(
+                    tonic::TimeoutExpired(()),
+                )))
+            },
+            timeout,
+        )
+        .await;
+
+        assert!(matches!(result, Err(Error::Timeout(value)) if value == timeout));
+    }
+
+    #[tokio::test]
+    async fn server_cancellation_remains_a_grpc_error() {
+        let result = ChannelClient::finish_unary(
+            async { Err::<tonic::Response<()>, _>(tonic::Status::cancelled("server shutdown")) },
+            Duration::from_secs(1),
+        )
+        .await;
+
+        assert!(matches!(
+            result,
+            Err(Error::Grpc { code, message })
+                if code == "The operation was cancelled" && message == "server shutdown"
+        ));
     }
 }

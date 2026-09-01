@@ -714,8 +714,10 @@ where
 /// If the message cannot be parsed, **no ACK is sent** and the function
 /// returns [`InboundResult::Stop`] so the connection is torn down — mirroring
 /// the Java SDK, where a parse exception propagates to `exceptionCaught` and
-/// closes the channel.  A listener panic likewise propagates and kills the
-/// receive task; it is not silently swallowed.
+/// closes the channel. A listener failure or a reply encoding / enqueue
+/// failure follows the same no-ACK path so the server can redeliver the
+/// request. A listener panic likewise propagates and kills the receive task;
+/// it is not silently swallowed.
 async fn handle_inbound<L>(pkg: &Package, conn: &TcpConnection, listener: &L) -> InboundResult
 where
     L: MessageListener,
@@ -786,13 +788,16 @@ where
         if let Some(request) = request.as_ref() {
             reply.inherit_request_metadata(request);
         }
-        match reply.encode_tcp_reply() {
-            Ok(reply_pkg) => {
-                if let Err(e) = conn.send(reply_pkg).await {
-                    warn!(error = %e, "failed to send reply");
-                }
+        let reply_pkg = match reply.encode_tcp_reply() {
+            Ok(reply_pkg) => reply_pkg,
+            Err(error) => {
+                warn!(%error, "failed to serialize reply; disconnecting without ACK");
+                return InboundResult::Stop;
             }
-            Err(e) => warn!(error = %e, "failed to serialize reply"),
+        };
+        if let Err(error) = conn.send(reply_pkg).await {
+            warn!(%error, "failed to send reply; disconnecting without ACK");
+            return InboundResult::Stop;
         }
     }
 
@@ -837,6 +842,36 @@ mod tests {
         type Message = EventMeshMessage;
         async fn handle(&self, _: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
             Err(EventMeshError::Tcp("listener failure".into()))
+        }
+    }
+
+    /// A message type whose inbound representation is valid but whose reply
+    /// encoder fails, allowing the no-ACK failure path to be tested directly.
+    #[derive(Clone)]
+    struct ReplyEncodingFailure(EventMeshMessage);
+
+    impl TcpMessage for ReplyEncodingFailure {
+        fn decode_tcp(pkg: &Package) -> Option<Self> {
+            <EventMeshMessage as TcpMessage>::decode_tcp(pkg).map(Self)
+        }
+
+        fn encode_tcp_reply(&self) -> Result<Package> {
+            Err(EventMeshError::InvalidMessage(
+                "intentional reply encoding failure".into(),
+            ))
+        }
+
+        fn inherit_request_metadata(&mut self, request: &Self) {
+            <EventMeshMessage as TcpMessage>::inherit_request_metadata(&mut self.0, &request.0);
+        }
+    }
+
+    struct ReplyEncodingFailingListener;
+    impl MessageListener for ReplyEncodingFailingListener {
+        type Message = ReplyEncodingFailure;
+
+        async fn handle(&self, message: Self::Message) -> Result<Option<Self::Message>> {
+            Ok(Some(message))
         }
     }
 
@@ -954,6 +989,83 @@ mod tests {
         assert!(
             !consumer.conn.is_active(),
             "listener failure must stop the connection I/O task without requiring join"
+        );
+    }
+
+    #[tokio::test]
+    async fn reply_encoding_error_closes_tcp_connection_without_ack() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::HelloResponse,
+                    "hello-seq",
+                )))
+                .await
+                .unwrap();
+
+            let listen = framed.next().await.unwrap().unwrap();
+            assert_eq!(listen.header.cmd, Command::ListenRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::ListenResponse,
+                    listen.header.seq.clone().unwrap_or_default(),
+                )))
+                .await
+                .unwrap();
+
+            let delivery = message::build_message_package(
+                &EventMeshMessage::builder()
+                    .topic("topic")
+                    .content("payload")
+                    .build()
+                    .unwrap(),
+                Command::RequestToClient,
+            )
+            .unwrap();
+            framed.send(delivery).await.unwrap();
+
+            tokio::time::timeout(Duration::from_secs(3), async {
+                loop {
+                    match framed.next().await {
+                        Some(Ok(pkg)) if pkg.header.cmd == Command::ClientGoodbyeRequest => {}
+                        Some(Ok(pkg)) => {
+                            panic!(
+                                "reply encoding failure must not send a reply or ACK; got {:?}",
+                                pkg.header.cmd
+                            )
+                        }
+                        Some(Err(_)) | None => break,
+                    }
+                }
+            })
+            .await
+            .expect("reply encoding failure should close the TCP connection promptly");
+        });
+
+        let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_control_timeout(Duration::from_secs(3))
+            .with_heartbeat_interval(Duration::from_secs(60));
+        let consumer = TcpConsumer::connect(
+            config,
+            &ConsumerOptions::new("g"),
+            ReplyEncodingFailingListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .expect("connect");
+
+        server.await.unwrap();
+        assert!(
+            !consumer.conn.is_active(),
+            "reply encoding failure must stop the connection I/O task without requiring join"
         );
     }
 
