@@ -31,7 +31,8 @@
 
  * <p><b>Forbidden (this package must NOT be imported by):</b>
  * <ul>
- * <li>{@code ANY module other than eventmesh-sdks:eventmesh-sdk-java and eventmesh-protocol-plugin:eventmesh-protocol-meshmessage (ruleGrpcProtocolHidden)}</li>
+ * <li>{@code ANY module other than eventmesh-sdks:eventmesh-sdk-java and}
+ * {@code eventmesh-protocol-plugin:eventmesh-protocol-meshmessage (ruleGrpcProtocolHidden)}</li>
  * </ul>
  */
 package org.apache.eventmesh.common.protocol.grpc;

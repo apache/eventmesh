@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.eventmesh.common.internal.ThreadWrapper;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 

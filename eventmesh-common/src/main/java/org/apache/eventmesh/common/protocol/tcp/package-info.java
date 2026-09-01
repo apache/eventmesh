@@ -30,7 +30,8 @@
 
  * <p><b>Forbidden (this package must NOT be imported by):</b>
  * <ul>
- * <li>{@code ANY module other than eventmesh-sdks:eventmesh-sdk-java, eventmesh-protocol-plugin:eventmesh-protocol-meshmessage, eventmesh-runtime (ruleTcpProtocolHidden)}</li>
+ * <li>{@code ANY module other than eventmesh-sdks:eventmesh-sdk-java,}
+ * {@code eventmesh-protocol-plugin:eventmesh-protocol-meshmessage, eventmesh-runtime (ruleTcpProtocolHidden)}</li>
  * </ul>
  */
 package org.apache.eventmesh.common.protocol.tcp;
