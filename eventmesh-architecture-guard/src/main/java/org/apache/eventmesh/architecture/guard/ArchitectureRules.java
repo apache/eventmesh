@@ -56,21 +56,21 @@ public final class ArchitectureRules {
     public static ArchRule ruleHttpProtocolHidden = noClasses()
             .that().resideOutsideOfPackage("org.apache.eventmesh.common.protocol.http..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.common..")
-            .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.plugin.meshmessage..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.meshmessage..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.client..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.common.protocol.http..");
 
     public static ArchRule ruleGrpcProtocolHidden = noClasses()
             .that().resideOutsideOfPackage("org.apache.eventmesh.common.protocol.grpc..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.common..")
-            .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.plugin.meshmessage..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.meshmessage..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.client..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.common.protocol.grpc..");
 
     public static ArchRule ruleTcpProtocolHidden = noClasses()
             .that().resideOutsideOfPackage("org.apache.eventmesh.common.protocol.tcp..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.common..")
-            .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.plugin.meshmessage..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.meshmessage..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.client..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.runtime..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.common.protocol.tcp..");
@@ -81,10 +81,6 @@ public final class ArchitectureRules {
     public static ArchRule ruleRuntimeTcpInternalHidden = noClasses()
             .that().resideOutsideOfPackage("org.apache.eventmesh.runtime.tcp..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..");
-
-    public static ArchRule ruleRuntimeTcpInternalNoReverse = noClasses()
-            .that().resideInAPackage("org.apache.eventmesh.runtime.tcp.internal..")
-            .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.tcp..");
 
     public static ArchRule ruleRuntimeEngineIsolatedFromInfra = noClasses()
             .that().resideInAPackage("org.apache.eventmesh.runtime.boot..")

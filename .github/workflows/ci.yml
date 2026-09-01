@@ -67,10 +67,15 @@ jobs:
           java-version: ${{ matrix.java }}
 
       # https://docs.gradle.org/current/userguide/performance.html
+      # :eventmesh-architecture-guard:test is excluded here because the
+      # dedicated Architecture Guard workflow already runs those rules
+      # (via architectureCheck) on every relevant change; running them
+      # twice just lengthens the matrix build.
       - name: Build
         run: >
           ./gradlew clean build dist jacocoTestReport --parallel --daemon --scan
           -x spotlessJava -x generateGrammarSource -x generateDistLicense -x checkDeniedLicense
+          -x :eventmesh-architecture-guard:test
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
