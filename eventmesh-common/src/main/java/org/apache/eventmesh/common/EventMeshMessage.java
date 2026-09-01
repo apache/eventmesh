@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common;
 
-import org.apache.eventmesh.common.Internal;
-
 import java.util.HashMap;
 import java.util.Map;
 
