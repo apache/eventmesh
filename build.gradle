@@ -494,7 +494,7 @@ tasks.register('checkDeniedLicense') {
                 "The GNU General Public License, v2 with Universal FOSS Exception, v1.0"
         ]
         // Update exemptions according to https://github.com/apache/eventmesh/issues/4842
-        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib", "jsqlparser"]
+        def allowedArtifacts = ["amqp-client", "stax-api", "javassist", "ST4", "xsdlib", "jsqlparser", "archunit"]
 
         def licenseFile = file('tools/dist-license/LICENSE')
         def lines = licenseFile.readLines()
