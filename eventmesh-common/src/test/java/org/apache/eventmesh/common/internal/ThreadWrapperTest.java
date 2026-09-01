@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
-
-import org.apache.eventmesh.common.internal.ThreadWrapper;
+package org.apache.eventmesh.common.internal;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
