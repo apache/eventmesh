@@ -74,6 +74,7 @@ public class UniHttpServer {
     private HttpServer server;
     private javax.net.ssl.SSLContext sslContext;
     private org.apache.eventmesh.runtime.security.FilterChain filterChain;
+    private org.apache.eventmesh.runtime.security.gate.SecurityGate securityGate;
     private org.apache.eventmesh.runtime.transport.http.LegacyHttpBridge legacyBridge;
     private String selfInstanceId;
     private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
@@ -122,6 +123,19 @@ public class UniHttpServer {
     /** Wire the ingress security filter chain (auth/acl/signature) into publish (§4.5). */
     public UniHttpServer withFilterChain(org.apache.eventmesh.runtime.security.FilterChain filterChain) {
         this.filterChain = filterChain;
+        return this;
+    }
+
+    /**
+     * #5304: install the unified security/quota/audit gate. When set, the gate wraps the
+     * filter chain (or an allow-all chain when none is configured) so every ingress path
+     * funnels through one RequestContext-based check.
+     */
+    public UniHttpServer withSecurityGate(org.apache.eventmesh.runtime.security.gate.SecurityGate gate) {
+        this.securityGate = gate;
+        if (gate != null && this.filterChain == null) {
+            this.filterChain = new org.apache.eventmesh.runtime.security.FilterChain();
+        }
         return this;
     }
 
@@ -236,10 +250,48 @@ public class UniHttpServer {
     }
 
     /**
+     * Infer the #5304 operation from the request path so the gate / ACL match per action.
+     */
+    private org.apache.eventmesh.runtime.security.gate.RequestContext.Operation inferOperation(HttpExchange exchange) {
+        String path = exchange.getRequestURI().getPath();
+        if (path.startsWith("/events/publish") || path.startsWith("/events/lite/publish")) {
+            return org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.PUBLISH;
+        }
+        if (path.startsWith("/events/poll") || path.startsWith("/events/subscribe")
+                || path.startsWith("/events/lite/poll") || path.startsWith("/session/subscribe")) {
+            return org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.SUBSCRIBE;
+        }
+        if (path.startsWith("/events/ack")) {
+            return org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.ACK;
+        }
+        if (path.startsWith("/agent/") || path.startsWith("/session/open") || path.startsWith("/session/close")) {
+            return org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.ADMIN;
+        }
+        return org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.PUBLISH;
+    }
+
+    /**
      * Run the security filter chain (if configured) for any request. Returns true if allowed,
      * false if already rejected (response written).
      */
     private boolean checkSecurity(HttpExchange exchange, String topic, String clientId) throws IOException {
+        if (securityGate != null) {
+            org.apache.eventmesh.runtime.security.gate.RequestContext rc =
+                org.apache.eventmesh.runtime.security.gate.RequestContext.builder(inferOperation(exchange))
+                    .topic(topic)
+                    .clientId(clientId)
+                    .credential(exchange.getRequestHeaders().getFirst("Authorization"))
+                    .remoteAddress(exchange.getRemoteAddress().getAddress().getHostAddress())
+                    .source("http")
+                    .traceContext(java.util.Collections.emptyMap())
+                    .build();
+            org.apache.eventmesh.runtime.security.gate.GateDecision decision = securityGate.check(rc, null);
+            if (!decision.isAllowed()) {
+                writeJson(exchange, decision.getRejectStatus(), error(decision.getReason()));
+                return false;
+            }
+            return true;
+        }
         if (filterChain == null) {
             return true;
         }
@@ -301,7 +353,26 @@ public class UniHttpServer {
         // #5299 sub-PR B: filters now read directly from EventMeshFrame.attributes() — no more
         // CE bridge. Tenant still comes from the CloudEvent extension ("emtenantid") which the
         // cloudevents FrameAdaptor round-trips into frame attributes under the same key.
-        if (filterChain != null) {
+        // #5304: unified gate (auth + ACL + quota + audit) when installed; legacy
+        // filterChain path retained for deployments that only configured the chain.
+        if (securityGate != null) {
+            String credential = exchange.getRequestHeaders().getFirst("Authorization");
+            String tenant = frame.attributes().get("emtenantid");
+            org.apache.eventmesh.runtime.security.gate.RequestContext rc =
+                org.apache.eventmesh.runtime.security.gate.RequestContext.builder(
+                        org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.PUBLISH)
+                    .topic(topic)
+                    .tenantId(tenant)
+                    .credential(credential)
+                    .remoteAddress(exchange.getRemoteAddress().getAddress().getHostAddress())
+                    .source("http")
+                    .build();
+            org.apache.eventmesh.runtime.security.gate.GateDecision decision = securityGate.check(rc, frame);
+            if (!decision.isAllowed()) {
+                writeJson(exchange, decision.getRejectStatus(), error(decision.getReason()));
+                return;
+            }
+        } else if (filterChain != null) {
             String credential = exchange.getRequestHeaders().getFirst("Authorization");
             String tenant = frame.attributes().get("emtenantid");
             org.apache.eventmesh.runtime.security.FilterContext ctx =

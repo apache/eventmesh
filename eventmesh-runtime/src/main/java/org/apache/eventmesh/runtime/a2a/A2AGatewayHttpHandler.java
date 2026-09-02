@@ -66,13 +66,27 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
 
     private final A2AGatewayService gatewayService;
 
+    /** #5304: optional unified security/quota/audit gate; null = allow all (current behavior). */
+    private volatile org.apache.eventmesh.runtime.security.gate.SecurityGate securityGate;
+
     public A2AGatewayHttpHandler(A2AGatewayService gatewayService) {
         this.gatewayService = gatewayService;
+    }
+
+    /** #5304: install the unified gate so A2A task ops flow through RequestContext. */
+    public A2AGatewayHttpHandler withSecurityGate(
+            org.apache.eventmesh.runtime.security.gate.SecurityGate gate) {
+        this.securityGate = gate;
+        return this;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         String uri = req.uri();
+        // #5304: every A2A task operation goes through the unified gate first.
+        if (!gateCheck(ctx, req, uri)) {
+            return;
+        }
         try {
             if (uri.startsWith("/a2a/tasks/") && uri.endsWith("/stream")) {
                 handleSse(ctx, req);
@@ -101,6 +115,39 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
             writeJson(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR,
                 "{\"error\":\"internal\",\"message\":\"" + e.getMessage() + "\"}");
         }
+    }
+
+    /**
+     * #5304: run the unified gate for one A2A request. Principal = Authorization header;
+     * quota key = principal or "anonymous". Writes the rejection response and returns
+     * false when denied.
+     */
+    private boolean gateCheck(ChannelHandlerContext ctx, FullHttpRequest req, String uri) {
+        org.apache.eventmesh.runtime.security.gate.SecurityGate gate = securityGate;
+        if (gate == null) {
+            return true;
+        }
+        String authorization = req.headers().get("Authorization");
+        org.apache.eventmesh.runtime.security.gate.RequestContext rc =
+            org.apache.eventmesh.runtime.security.gate.RequestContext.builder(
+                    org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.A2A)
+                .topic(uri)
+                .principal(authorization)
+                .credential(authorization)
+                .remoteAddress(ctx.channel().remoteAddress() != null
+                        ? ctx.channel().remoteAddress().toString() : null)
+                .source("a2a")
+                .build();
+        org.apache.eventmesh.runtime.security.gate.GateDecision decision = gate.check(rc, null);
+        if (decision.isAllowed()) {
+            return true;
+        }
+        HttpResponseStatus status = decision.isQuotaExceeded()
+                ? HttpResponseStatus.TOO_MANY_REQUESTS
+                : HttpResponseStatus.valueOf(decision.getRejectStatus());
+        writeJson(ctx, status,
+            "{\"error\":\"forbidden\",\"message\":\"" + decision.getReason() + "\"}");
+        return false;
     }
 
     // =========================================================================
