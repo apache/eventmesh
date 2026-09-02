@@ -46,7 +46,7 @@ Apache EventMesh is packed with features that help users build event-driven appl
 
 **Extensibility & ecosystem**
 
-- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/a2a-protocol/README.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
+- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/a2a-protocol.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
 - **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), and more.
 - **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
 - **Pluggable meta service** — [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io), and [Zookeeper](https://zookeeper.apache.org/).
@@ -66,7 +66,7 @@ status. See [docs](docs/) for the per-capability guides.
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
 | SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
 | [Connector Runtime](docs/production-readiness.md) | **Beta** | Usable — 24 connector plugins on the standalone runtime | New connector SPI migration |
-| [A2A / Agent Gateway](docs/a2a-protocol/README.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
+| [A2A / Agent Gateway](docs/a2a-protocol.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
 | TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) |
 
 Status meanings:

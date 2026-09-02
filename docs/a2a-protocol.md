@@ -19,7 +19,7 @@
 > Until all three land, treat the gateway as Experimental — wire it up against the
 > `MetaBackedTaskStore` only on dev clusters.
 >
-> Canonical maturity level: **Experimental** — see the [capability status table](../../README.md#capability-status).
+> Canonical maturity level: **Experimental** — see the [capability status table](../README.md#capability-status).
 
 ---
 

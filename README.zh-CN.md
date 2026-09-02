@@ -47,7 +47,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 **扩展性与生态**
 
-- **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/a2a-protocol/README.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
+- **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/a2a-protocol.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
 - **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)、[Apache Kafka](https://kafka.apache.org)、[Apache Pulsar](https://pulsar.apache.org)、[RabbitMQ](https://rabbitmq.com)、[Redis](https://redis.io) 等。
 - **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
 - **可插拔元数据服务** —— [Consul](https://consulproject.org/en/)、[Nacos](https://nacos.io)、[ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
@@ -66,7 +66,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 | [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
 | SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；统一 ACK/重投递语义仍在收敛 | 统一推送传输 |
 | [Connector Runtime](docs/production-readiness.md) | **Beta** | 可用——独立运行时上的 24 个连接器插件 | 新连接器 SPI 迁移 |
-| [A2A / Agent 网关](docs/a2a-protocol/README.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
+| [A2A / Agent 网关](docs/a2a-protocol.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
 | TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) |
 
 状态含义：
