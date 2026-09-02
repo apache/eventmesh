@@ -64,9 +64,7 @@ Apache EventMesh is packed with features that help users build event-driven appl
 
 ## Quick start
 
-This section of the guide will show you the steps to deploy EventMesh from [Local](#run-eventmesh-runtime-locally), [Docker](#run-eventmesh-runtime-in-docker), [K8s](#run-eventmesh-runtime-in-kubernetes).  
-
-This section guides the launch of EventMesh according to the default configuration, if you need more detailed EventMesh deployment steps, please visit the [EventMesh official document](https://eventmesh.apache.org/docs/introduction).
+This quick start deploys EventMesh Runtime with Docker using the default configuration. For other deployment options and detailed instructions, see the [EventMesh documentation](https://eventmesh.apache.org/docs/introduction).
 
 #### 1. Pull EventMesh Image
 
