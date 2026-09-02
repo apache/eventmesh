@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-connector-runtime")
+    implementation project(":eventmesh-connector-api")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'org.slf4j:slf4j-api'
     implementation 'software.amazon.awssdk:s3:2.25.16'

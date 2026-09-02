@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KafkaSinkConnector implements SinkConnector {
 
-    private KafkaProducer<String, byte[]> producer;
+    private org.apache.kafka.clients.producer.Producer<String, byte[]> producer;
     private String targetTopic;
 
     public void init(Properties props) {

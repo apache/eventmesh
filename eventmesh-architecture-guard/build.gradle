@@ -35,6 +35,13 @@ dependencies {
     // default failOnEmptyShould=true throws AssertionError because the
     // rule's that()-predicate matches no classes.
     testImplementation project(':eventmesh-runtime')
+    // :eventmesh-connector-api + :eventmesh-connector-runtime + one plugin under
+    // test so the connector SPI boundary rule (plugins must not reach into runtime
+    // internals) has classes in scope. Full plugin matrix enforced in CI via the
+    // module graph; the guard samples one plugin (file) as the canary.
+    testImplementation project(':eventmesh-connector-api')
+    testImplementation project(':eventmesh-connector-runtime')
+    testImplementation project(':eventmesh-connector-plugin:eventmesh-connector-file')
 }
 
 tasks.named('test') {

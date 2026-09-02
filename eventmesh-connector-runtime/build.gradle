@@ -18,6 +18,7 @@
 // Connector Runtime — 独立进程, 仅经 HTTP+CloudEvents 与 EventMesh Runtime 通信.
 // 不依赖 eventmesh-runtime, 只需 cloudevents + lombok.
 dependencies {
+    api project(':eventmesh-connector-api')
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'io.cloudevents:cloudevents-json-jackson'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

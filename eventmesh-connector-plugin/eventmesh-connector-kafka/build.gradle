@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-connector-runtime")
+    implementation project(":eventmesh-connector-api")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'org.slf4j:slf4j-api'
     implementation 'org.apache.kafka:kafka-clients:3.9.0'

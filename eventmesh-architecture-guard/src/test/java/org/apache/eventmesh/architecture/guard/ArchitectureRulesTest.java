@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.architecture.guard;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -79,5 +82,23 @@ class ArchitectureRulesTest {
     @Test
     void ruleRuntimeSubscriptionStateIsolated() {
         ArchitectureRules.ruleRuntimeSubscriptionStateIsolated.check(classes);
+    }
+
+    @Test
+    void ruleConnectorPluginsDependOnlyOnSpi() {
+        ArchitectureRules.ruleConnectorPluginsDependOnlyOnSpi.check(classes);
+    }
+
+    @Test
+    void ruleConnectorPluginsDependOnlyOnSpiCatchesViolations() {
+        // Canary check: a plugin class that references a runtime-only class must be
+        // flagged. We import test classes explicitly (the production loadProductionClasses
+        // excludes them) and assert the rule fails with the canary named in the report.
+        JavaClasses withTests = new com.tngtech.archunit.core.importer.ClassFileImporter()
+                .importPackages("org.apache.eventmesh.connector");
+        AssertionError expected = assertThrows(AssertionError.class,
+            () -> ArchitectureRules.ruleConnectorPluginsDependOnlyOnSpi.check(withTests));
+        assertTrue(expected.getMessage().contains("FakePluginCanary"),
+            "rule report should name the violating canary class");
     }
 }

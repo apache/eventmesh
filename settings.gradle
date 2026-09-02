@@ -66,6 +66,7 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-a2a'
 
 // Connector Runtime — 独立模块 (与 EventMesh Runtime 经 HTTP 通信, 不互相依赖)
+include 'eventmesh-connector-api'
 include 'eventmesh-connector-runtime'
 
 // Agent — 独立进程, 经 lite topic + CloudEvents 与 Runtime 通信, 调用真实 LLM (OpenAI 兼容)
