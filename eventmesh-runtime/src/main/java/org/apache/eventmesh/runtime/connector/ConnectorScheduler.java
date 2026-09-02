@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.connector;
 
 import org.apache.eventmesh.runtime.cluster.MetaStore;
+import org.apache.eventmesh.runtime.security.gate.ConnectorAccessDeniedException;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -68,6 +69,16 @@ public class ConnectorScheduler {
     /** connectorId → last-pushed (ownerWorkerId, defJson). Drives reconcile diffs. */
     private final ConcurrentHashMap<String, Cached> assignmentCache = new ConcurrentHashMap<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
+
+    /** #5304: optional unified security/quota/audit gate; null = allow all. */
+    private volatile org.apache.eventmesh.runtime.security.gate.SecurityGate securityGate;
+
+    public ConnectorScheduler withSecurityGate(
+            org.apache.eventmesh.runtime.security.gate.SecurityGate gate) {
+        this.securityGate = gate;
+        return this;
+    }
+
     private ScheduledExecutorService scheduler;
 
     public ConnectorScheduler(MetaStore meta, long ttlMs, long intervalMs, LongSupplier clock) {
@@ -102,6 +113,21 @@ public class ConnectorScheduler {
     // ---- connector CRUD ----
 
     public void createConnector(ConnectorDef def) {
+        // #5304: connector CRUD goes through the unified gate when installed.
+        org.apache.eventmesh.runtime.security.gate.SecurityGate gate = securityGate;
+        if (gate != null) {
+            org.apache.eventmesh.runtime.security.gate.RequestContext rc
+                = org.apache.eventmesh.runtime.security.gate.RequestContext.builder(
+                    org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.CONNECTOR)
+                .topic(def.getTopic())
+                .clientId(def.getClientId())
+                .source("connector")
+                .build();
+            org.apache.eventmesh.runtime.security.gate.GateDecision decision = gate.check(rc, null);
+            if (!decision.isAllowed()) {
+                throw new ConnectorAccessDeniedException(decision.getReason());
+            }
+        }
         meta.put(DEF_PREFIX + def.getId(), writeJson(def));
         reconcile();
     }
