@@ -13,6 +13,8 @@ RocketMQ 4.x、RocketMQ 5.x 还是 Kafka，对客户端代码**完全透明**—
 > 旧的 `EventMeshHttpClient` / `EventMeshTCPClient`（legacy）仍保留作老协议兼容；新接入请用 `CloudEventsClient`。
 >
 > 状态定级以主 README 的[能力状态表](../README.md#能力状态capability-status)为准：HTTP + CloudEvents 为 **GA 目标**（主路径），TCP / gRPC 为 **Legacy 兼容**（仅存量用户）。
+>
+> 新用户从[快速上手](eventmesh-getting-started.md)开始；全部运行时配置见[配置参考](eventmesh-configuration.md)。本文是 SDK 完整指引。
 
 ---
 

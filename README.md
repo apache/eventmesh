@@ -46,7 +46,7 @@ Apache EventMesh is packed with features that help users build event-driven appl
 
 **Extensibility & ecosystem**
 
-- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/a2a-protocol/README_EN.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
+- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/a2a-protocol/README.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
 - **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), and more.
 - **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
 - **Pluggable meta service** — [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io), and [Zookeeper](https://zookeeper.apache.org/).
@@ -79,6 +79,13 @@ Status meanings:
 > Migrating off TCP / gRPC SDKs? The legacy clients keep working against the current
 > runtime; see the [client guide](docs/eventmesh-cloudevents-client-guide.md) for the
 > HTTP + CloudEvents replacement (`CloudEventsClient`).
+
+### Documentation
+
+- [Getting started](docs/eventmesh-getting-started.md) — zero to running runtime in minutes
+- [Configuration reference](docs/eventmesh-configuration.md) — every runtime key, per-backend settings, security &amp; quota
+- [Client guide](docs/eventmesh-cloudevents-client-guide.md) — complete `CloudEventsClient` walkthrough (pub/sub, request-reply, streaming, lite topics)
+- [Production readiness](docs/production-readiness.md) — verified capabilities, SLOs, runbooks
 
 ## Subprojects
 

@@ -79,6 +79,12 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 > 正在从 TCP / gRPC SDK 迁移？Legacy 客户端在当前 Runtime 上继续可用；替代方案（HTTP +
 > CloudEvents 的 `CloudEventsClient`）见[客户端指引](docs/eventmesh-cloudevents-client-guide.md)。
 
+### 文档导航
+
+- [快速上手（英文）](docs/eventmesh-getting-started.md) / [配置参考（英文）](docs/eventmesh-configuration.md)
+- [客户端指引（中文）](docs/eventmesh-cloudevents-client-guide.md) —— `CloudEventsClient` 完整用法
+- [生产准入](docs/production-readiness.md) —— 已验证能力、SLO、运维手册
+
 ## 子项目
 
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache EventMesh 的官方网站资源。
