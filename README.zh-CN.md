@@ -65,7 +65,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) | **GA 目标** | 推荐——主用户路径（`CloudEventsClient` + `/events/*`） | 主路径 |
 | [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
 | SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；统一 ACK/重投递语义仍在收敛 | 统一推送传输 |
-| [Connector Runtime](docs/production-readiness.md) | **Beta** | 可用——独立运行时上的 24 个连接器插件 | 新连接器 SPI 迁移 |
+| Connector Runtime | **Beta** | 可用——独立运行时上的 24 个连接器插件 | 新连接器 SPI 迁移 |
 | [A2A / Agent 网关](docs/eventmesh-a2a-protocol.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
 | TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) |
 
@@ -81,11 +81,11 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 ### 文档导航
 
-- [快速上手（英文）](docs/eventmesh-getting-started.md) / [配置参考（英文）](docs/eventmesh-configuration.md)
+- [快速上手（英文）](docs/eventmesh-getting-started.md) —— 零到运行
+- [配置参考（英文）](docs/eventmesh-configuration.md) —— 每个运行时键、后端设置、安全 &amp; 配额
 - [客户端指引（中文）](docs/eventmesh-client-guide.md) —— `CloudEventsClient` 完整用法
 - [架构（英文）](docs/eventmesh-architecture.md) —— 控制面 / 数据面 / 智能体面；存储 SPI；安全闸门；A2A 协议栈
 - [特性（英文）](docs/eventmesh-features.md) —— 逐特性说明（发布订阅、A2A、连接器、安全、可靠性）
-- [生产准入](docs/production-readiness.md) —— 已验证能力、SLO、运维手册
 
 ## 子项目
 
