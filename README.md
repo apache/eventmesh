@@ -85,6 +85,8 @@ Status meanings:
 - [Getting started](docs/eventmesh-getting-started.md) — zero to running runtime in minutes
 - [Configuration reference](docs/eventmesh-configuration.md) — every runtime key, per-backend settings, security &amp; quota
 - [Client guide](docs/eventmesh-cloudevents-client-guide.md) — complete `CloudEventsClient` walkthrough (pub/sub, request-reply, streaming, lite topics)
+- [Architecture](docs/eventmesh-architecture.md) — control / data / agent planes; storage SPI; security gate; A2A stack
+- [Features](docs/eventmesh-features.md) — feature-by-feature guide (pub/sub, A2A, connectors, security, reliability)
 - [Production readiness](docs/production-readiness.md) — verified capabilities, SLOs, runbooks
 
 ## Subprojects

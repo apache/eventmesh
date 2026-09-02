@@ -83,6 +83,8 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 - [快速上手（英文）](docs/eventmesh-getting-started.md) / [配置参考（英文）](docs/eventmesh-configuration.md)
 - [客户端指引（中文）](docs/eventmesh-cloudevents-client-guide.md) —— `CloudEventsClient` 完整用法
+- [架构（英文）](docs/eventmesh-architecture.md) —— 控制面 / 数据面 / 智能体面；存储 SPI；安全闸门；A2A 协议栈
+- [特性（英文）](docs/eventmesh-features.md) —— 逐特性说明（发布订阅、A2A、连接器、安全、可靠性）
 - [生产准入](docs/production-readiness.md) —— 已验证能力、SLO、运维手册
 
 ## 子项目
