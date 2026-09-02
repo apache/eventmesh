@@ -20,6 +20,7 @@ package org.apache.eventmesh.storage.kafka.storage;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.StorageCapabilities;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 import java.util.ArrayList;
@@ -42,7 +43,13 @@ import lombok.extern.slf4j.Slf4j;
  * distribution offset via {@code OffsetStore}.</p>
  */
 @Slf4j
-public class KafkaMeshStoragePlugin implements MeshStoragePlugin {
+public class KafkaMeshStoragePlugin
+    implements MeshStoragePlugin,
+               StorageCapabilities.TopicManagement,
+               StorageCapabilities.PartitionAssignment,
+               StorageCapabilities.ExplicitOffsetCommit,
+               StorageCapabilities.EndOffsetQuery,
+               StorageCapabilities.AlignPullOffset {
 
     private org.apache.kafka.clients.producer.KafkaProducer<byte[], byte[]> producer;
     private org.apache.kafka.clients.consumer.KafkaConsumer<byte[], byte[]> consumer;

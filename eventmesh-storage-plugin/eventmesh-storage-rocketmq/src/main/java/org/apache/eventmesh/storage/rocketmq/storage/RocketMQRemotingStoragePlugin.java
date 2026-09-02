@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.StorageCapabilities;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 
 import java.util.ArrayList;
@@ -43,7 +44,12 @@ import lombok.extern.slf4j.Slf4j;
  * Uses NettyRemotingClient to send RemotingCommand directly to broker/NameServer.
  */
 @Slf4j
-public class RocketMQRemotingStoragePlugin implements MeshStoragePlugin {
+public class RocketMQRemotingStoragePlugin
+    implements MeshStoragePlugin,
+               StorageCapabilities.TopicManagement,
+               StorageCapabilities.PartitionAssignment,
+               StorageCapabilities.ExplicitOffsetCommit,
+               StorageCapabilities.AlignPullOffset {
 
     private static final String CONSUMER_GROUP = "eventmesh-remoting-internal";
     private static final String PRODUCER_GROUP = "eventmesh-remoting-producer";

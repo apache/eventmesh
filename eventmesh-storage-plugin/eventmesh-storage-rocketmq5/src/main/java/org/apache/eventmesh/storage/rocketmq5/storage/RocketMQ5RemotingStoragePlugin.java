@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.exception.StorageRuntimeException;
 import org.apache.eventmesh.api.storage.LiteTopicCapable;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
+import org.apache.eventmesh.api.storage.StorageCapabilities;
 
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageDecoder;
@@ -71,7 +72,14 @@ import lombok.extern.slf4j.Slf4j;
  * {@code LITE_SUBSCRIPTION_CTL} then pops via {@code POP_LITE_MESSAGE} + {@code ACK_LITE_MESSAGE}.</p>
  */
 @Slf4j
-public class RocketMQ5RemotingStoragePlugin implements MeshStoragePlugin, LiteTopicCapable {
+public class RocketMQ5RemotingStoragePlugin
+    implements MeshStoragePlugin,
+               LiteTopicCapable,
+               StorageCapabilities.TopicManagement,
+               StorageCapabilities.PartitionAssignment,
+               StorageCapabilities.ExplicitOffsetCommit,
+               StorageCapabilities.DeferredPopAck,
+               StorageCapabilities.LiteTopic {
 
     private static final String CONSUMER_GROUP = "eventmesh-rocketmq5-pop";
     /** Separate group for lite (POP_LITE) consumption — a group bound by normal POP_MESSAGE and by

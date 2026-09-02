@@ -24,10 +24,20 @@ dependencies {
     api "io.dropwizard.metrics:metrics-annotation"
     api "io.dropwizard.metrics:metrics-json"
 
+    // TCK is in src/main so plugins that extend it (in their own src/test) need
+    // JUnit on their compile classpath. We use `api` to make it transitive.
+    api 'org.junit.jupiter:junit-jupiter'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
+    // Self-test infrastructure (the in-memory fixture + TCK self-test live in src/test)
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    test {
+        useJUnitPlatform()
+    }
 }
