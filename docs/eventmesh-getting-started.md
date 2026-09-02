@@ -116,8 +116,24 @@ Distribution modes:
 | `BROADCAST` | every subscriber receives every event |
 | `MULTICAST` | subscriber-side predicate filters events per client |
 
-SSE and WebSocket push are also available (`GET /events/stream`, `subscribeWs` in the SDK) —
-see the client guide for the trade-offs.
+SSE and WebSocket push are also available; the raw HTTP forms are:
+
+```shell
+# SSE — server push over a long-lived HTTP connection
+curl -N "http://localhost:8080/events/stream?clientId=order-svc&topics=orders" \r
+  -H "Accept: text/event-stream"
+
+# WebSocket — full-duplex server push over the dedicated WS port
+# (raw curl works for a one-shot smoke test; real use goes through the SDK)
+curl --include --no-buffer \r
+  -H "Connection: Upgrade" -H "Upgrade: websocket" \r
+  -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGVzdA==" \r
+  "http://localhost:8082/events/stream?clientId=order-svc&topics=orders"
+```
+
+The `CloudEventsClient` Java SDK wraps all three transports —
+`subscribe` (long-poll) / `subscribeSse` / `subscribeWs` — see the
+[client guide](eventmesh-client-guide.md) for the trade-offs.
 
 ## 6. Use the SDK instead of raw HTTP (recommended)
 
