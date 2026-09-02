@@ -17,7 +17,7 @@ The new architecture ships with **one client SDK** that exposes two surface APIs
   This is the **primary user path** and the recommended way to integrate with
   EventMesh.
 * `A2AClient` — Agent-to-Agent task dispatch on top of the same Runtime
-  ([docs/a2a-protocol.md](a2a-protocol.md)). Used by multi-agent systems that
+  ([docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md)). Used by multi-agent systems that
   need a durable task lifecycle.
 
 Both clients talk **only to the EventMesh Runtime** (HTTP). The underlying
@@ -432,7 +432,7 @@ Configuration knobs: see
 
 ## 11. `A2AClient` for agent workloads
 
-For multi-agent systems, the [A2A protocol](a2a-protocol.md) gives you a
+For multi-agent systems, the [A2A protocol](eventmesh-a2a-protocol.md) gives you a
 durable task lifecycle (`submitted → working → completed | failed |
 canceled`) on top of the same storage substrate. The client side is
 `org.apache.eventmesh.protocol.a2a.A2AClient` (in the
@@ -493,7 +493,7 @@ surface is:
 * `GET /a2a/agents` — list agents
 * `POST /a2a/agents` — register an agent card
 
-See [docs/a2a-protocol.md](a2a-protocol.md) for the wire contract and
+See [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) for the wire contract and
 [docs/eventmesh-architecture.md §5](eventmesh-architecture.md#5-agent-plane--a2a-on-the-same-substrate)
 for the runtime architecture.
 
@@ -681,5 +681,5 @@ See also:
   runtime key
 * [docs/eventmesh-getting-started.md](eventmesh-getting-started.md) —
   zero-to-running guide
-* [docs/a2a-protocol.md](a2a-protocol.md) — A2A wire contract
+* [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) — A2A wire contract
 * [docs/production-readiness.md](production-readiness.md) — SLOs, runbooks

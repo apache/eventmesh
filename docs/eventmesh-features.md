@@ -199,7 +199,7 @@ For the wiring contract and the full list of `RequestContext` fields, see
 
 ## 6. Agent-to-Agent (A2A) protocol
 
-**What it is.** A2A is the [Agent-to-Agent](a2a-protocol.md) contract — a
+**What it is.** A2A is the [Agent-to-Agent](eventmesh-a2a-protocol.md) contract — a
 task lifecycle (`submitted → working → completed | failed | canceled`) on
 top of CloudEvents, with **durable** task records in the meta store. EventMesh
 acts as the gateway: it accepts `tasks/send`, dispatches to the target agent
@@ -212,7 +212,7 @@ A2A `taskEpoch` field is the cross-agent idempotency key.
 
 **Where the code lives.**
 
-* Wire spec: [docs/a2a-protocol.md](a2a-protocol.md)
+* Wire spec: [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md)
 * Service: `eventmesh-runtime/.../a2a/A2AGatewayService.java`
 * Topic convention: `eventmesh-protocol-plugin/eventmesh-protocol-a2a/.../A2ATopicFactory.java`
   (`agentInbox(agentId)`, `gatewayResponseTopic(ns, gw, taskId)`)

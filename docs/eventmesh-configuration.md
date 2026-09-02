@@ -127,7 +127,7 @@ Summary:
 | Agent control | `/agent/register`, `/agent/ready`, `/agent/heartbeat`, `/agent/unregister` |
 | Sessions | `/session/open`, `/session/recommend`, `/session/close`, `/session/stream`, `/session/publish`, `/session/subscribe` |
 | Legacy bridge | `/eventmesh/publish`, `/eventmesh/subscribe`, `/eventmesh/unsubscribe` (old SDK compat) |
-| A2A gateway | `/a2a/tasks` family — separate port, [A2A docs](a2a-protocol.md) (Experimental) |
+| A2A gateway | `/a2a/tasks` family — separate port, [A2A docs](eventmesh-a2a-protocol.md) (Experimental) |
 
 ## 8. Deployment checklist
 

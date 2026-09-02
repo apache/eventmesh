@@ -277,7 +277,7 @@ Key classes:
 
 The protocol is **Experimental** (see capability status table). The wire
 contract is the JSON envelope from
-[docs/a2a-protocol.md](a2a-protocol.md); the runtime
+[docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md); the runtime
 implementation is documented in
 [docs/eventmesh-uni-architecture-redesign.md](eventmesh-uni-architecture-redesign.md).
 
@@ -410,7 +410,7 @@ PR workflow are both in place to make this discipline cheap.
 | [docs/eventmesh-getting-started.md](eventmesh-getting-started.md) | Zero-to-running runtime; per-backend quickstarts |
 | [docs/eventmesh-configuration.md](eventmesh-configuration.md) | Every runtime key, security & quota, per-backend overrides |
 | [docs/eventmesh-client-guide.md](eventmesh-client-guide.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
-| [docs/a2a-protocol.md](a2a-protocol.md) | A2A wire contract and task lifecycle |
+| [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) | A2A wire contract and task lifecycle |
 | [docs/production-readiness.md](production-readiness.md) | Verified capabilities, SLOs, runbooks |
 | [docs/eventmesh-uni-architecture-redesign.md](eventmesh-uni-architecture-redesign.md) | End-to-end flow diagrams and the redesign rationale |
 | [docs/eventmesh-offset-lb-frame-design.md](eventmesh-offset-lb-frame-design.md) | `EventMeshFrame` design (single protocol path, `#5299`) |

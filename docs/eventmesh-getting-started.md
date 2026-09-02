@@ -149,7 +149,7 @@ Full API (request/reply, streaming sessions, lite topics, SSE/WS): see the
 - [Configuration reference](eventmesh-configuration.md) — every runtime key, per-backend settings
 - [Client guide](eventmesh-client-guide.md) — complete SDK walkthrough
 - [Production readiness](production-readiness.md) — verified capabilities, SLOs, runbooks
-- [A2A gateway](a2a-protocol.md) — agent-to-agent messaging (Experimental)
+- [A2A gateway](eventmesh-a2a-protocol.md) — agent-to-agent messaging (Experimental)
 - Admin API (`/admin/*`) quick reference: `metrics`, `subscriptions`, `offsets`, `clients`,
   `client/reject`, `dlq/replay`, `dlq/browse`, `ratelimit`, `health`, `connectors`,
   `connector-workers` on port 8081
