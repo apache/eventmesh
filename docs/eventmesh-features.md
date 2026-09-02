@@ -33,7 +33,7 @@ through self-managed offsets + explicit ACK.
 **Where the code lives.**
 
 * Client: `eventmesh-sdks/.../cloudevents/CloudEventsClient.java`
-* Walkthrough: [docs/eventmesh-cloudevents-client-guide.md](eventmesh-cloudevents-client-guide.md)
+* Walkthrough: [docs/eventmesh-client-guide.md](eventmesh-client-guide.md)
 * Runtime HTTP entry: `eventmesh-runtime/.../http/UniHttpServer.java`
 * Ingress: `eventmesh-runtime/.../ingress/UniIngressService.java`
 * Producer (MQ-as-WAL writer):
@@ -412,7 +412,7 @@ OpenMessaging) still work against the new runtime. The new
 are not broken; new users should use the HTTP + CloudEvents path.
 
 **Migration.** See
-[docs/eventmesh-cloudevents-client-guide.md §1.2](eventmesh-cloudevents-client-guide.md)
+[docs/eventmesh-client-guide.md §1.2](eventmesh-client-guide.md)
 for the drop-in replacement of the legacy `EventMeshClient` with
 `CloudEventsClient`.
 

@@ -115,7 +115,7 @@ Cluster-wide limits can be inspected and adjusted at `POST /admin/ratelimit`.
 
 ## 7. Traffic endpoints (port 8080)
 
-Full request/response shapes: see the [client guide](eventmesh-cloudevents-client-guide.md).
+Full request/response shapes: see the [client guide](eventmesh-client-guide.md).
 Summary:
 
 | Group | Endpoints |

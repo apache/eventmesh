@@ -409,7 +409,7 @@ PR workflow are both in place to make this discipline cheap.
 | --- | --- |
 | [docs/eventmesh-getting-started.md](eventmesh-getting-started.md) | Zero-to-running runtime; per-backend quickstarts |
 | [docs/eventmesh-configuration.md](eventmesh-configuration.md) | Every runtime key, security & quota, per-backend overrides |
-| [docs/eventmesh-cloudevents-client-guide.md](eventmesh-cloudevents-client-guide.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
+| [docs/eventmesh-client-guide.md](eventmesh-client-guide.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
 | [docs/a2a-protocol.md](a2a-protocol.md) | A2A wire contract and task lifecycle |
 | [docs/production-readiness.md](production-readiness.md) | Verified capabilities, SLOs, runbooks |
 | [docs/eventmesh-uni-architecture-redesign.md](eventmesh-uni-architecture-redesign.md) | End-to-end flow diagrams and the redesign rationale |

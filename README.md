@@ -62,12 +62,12 @@ status. See [docs](docs/) for the per-capability guides.
 
 | Capability | Status | Recommendation | Migration target |
 | --- | :---: | --- | --- |
-| [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
+| [HTTP + CloudEvents](docs/eventmesh-client-guide.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
 | SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
 | [Connector Runtime](docs/production-readiness.md) | **Beta** | Usable — 24 connector plugins on the standalone runtime | New connector SPI migration |
 | [A2A / Agent Gateway](docs/a2a-protocol.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
-| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) |
+| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) |
 
 Status meanings:
 
@@ -77,14 +77,14 @@ Status meanings:
 - **Legacy-compatible** — maintained for zero-change compatibility with existing clients; receives fixes but no new features. New integrations should not start here.
 
 > Migrating off TCP / gRPC SDKs? The legacy clients keep working against the current
-> runtime; see the [client guide](docs/eventmesh-cloudevents-client-guide.md) for the
+> runtime; see the [client guide](docs/eventmesh-client-guide.md) for the
 > HTTP + CloudEvents replacement (`CloudEventsClient`).
 
 ### Documentation
 
 - [Getting started](docs/eventmesh-getting-started.md) — zero to running runtime in minutes
 - [Configuration reference](docs/eventmesh-configuration.md) — every runtime key, per-backend settings, security &amp; quota
-- [Client guide](docs/eventmesh-cloudevents-client-guide.md) — complete `CloudEventsClient` walkthrough (pub/sub, request-reply, streaming, lite topics)
+- [Client guide](docs/eventmesh-client-guide.md) — complete `CloudEventsClient` walkthrough (pub/sub, request-reply, streaming, lite topics)
 - [Architecture](docs/eventmesh-architecture.md) — control / data / agent planes; storage SPI; security gate; A2A stack
 - [Features](docs/eventmesh-features.md) — feature-by-feature guide (pub/sub, A2A, connectors, security, reliability)
 - [Production readiness](docs/production-readiness.md) — verified capabilities, SLOs, runbooks
@@ -202,7 +202,7 @@ Upgrade: websocket
 Connection: Upgrade
 ```
 
-> Long-polling, SSE, and WebSocket are interchangeable delivery transports — a subscriber chooses one. SSE and WebSocket are pushed by the server (no polling loop), while long-polling is client-driven. Request-reply (`POST /events/request` + `POST /events/reply`) is also supported. The `CloudEventsClient` Java SDK wraps all of these (`subscribe` / `subscribeSse` / `subscribeWs`); see the [CloudEvents client guide](docs/eventmesh-cloudevents-client-guide.md).
+> Long-polling, SSE, and WebSocket are interchangeable delivery transports — a subscriber chooses one. SSE and WebSocket are pushed by the server (no polling loop), while long-polling is client-driven. Request-reply (`POST /events/request` + `POST /events/reply`) is also supported. The `CloudEventsClient` Java SDK wraps all of these (`subscribe` / `subscribeSse` / `subscribeWs`); see the [CloudEvents client guide](docs/eventmesh-client-guide.md).
 
 #### 6. Unsubscribing
 

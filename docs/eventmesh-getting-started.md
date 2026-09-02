@@ -3,7 +3,7 @@
 This guide takes you from zero to a running EventMesh Runtime with a working publisher and
 subscriber, using the recommended **HTTP + CloudEvents** path. Configuration reference:
 [`eventmesh-configuration.md`](eventmesh-configuration.md). SDK details:
-[`eventmesh-cloudevents-client-guide.md`](eventmesh-cloudevents-client-guide.md).
+[`eventmesh-client-guide.md`](eventmesh-client-guide.md).
 
 > Capability maturity levels (GA / Beta / Experimental / Legacy) are defined in the
 > [capability status table](../README.md#capability-status) in the main README.
@@ -142,12 +142,12 @@ client.subscribe("orders", "LOAD_BALANCE", event -> {
 ```
 
 Full API (request/reply, streaming sessions, lite topics, SSE/WS): see the
-[client guide](eventmesh-cloudevents-client-guide.md).
+[client guide](eventmesh-client-guide.md).
 
 ## 7. Where to go next
 
 - [Configuration reference](eventmesh-configuration.md) — every runtime key, per-backend settings
-- [Client guide](eventmesh-cloudevents-client-guide.md) — complete SDK walkthrough
+- [Client guide](eventmesh-client-guide.md) — complete SDK walkthrough
 - [Production readiness](production-readiness.md) — verified capabilities, SLOs, runbooks
 - [A2A gateway](a2a-protocol.md) — agent-to-agent messaging (Experimental)
 - Admin API (`/admin/*`) quick reference: `metrics`, `subscriptions`, `offsets`, `clients`,

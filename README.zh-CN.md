@@ -62,12 +62,12 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 | 能力 | 状态 | 建议 | 迁移目标 |
 | --- | :---: | --- | --- |
-| [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) | **GA 目标** | 推荐——主用户路径（`CloudEventsClient` + `/events/*`） | 主路径 |
+| [HTTP + CloudEvents](docs/eventmesh-client-guide.md) | **GA 目标** | 推荐——主用户路径（`CloudEventsClient` + `/events/*`） | 主路径 |
 | [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
 | SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；统一 ACK/重投递语义仍在收敛 | 统一推送传输 |
 | [Connector Runtime](docs/production-readiness.md) | **Beta** | 可用——独立运行时上的 24 个连接器插件 | 新连接器 SPI 迁移 |
 | [A2A / Agent 网关](docs/a2a-protocol.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
-| TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) |
+| TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) |
 
 状态含义：
 
@@ -77,12 +77,12 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 - **Legacy 兼容** —— 仅为存量客户端零改动兼容而维护；只修缺陷、不加功能。新接入不要选这里。
 
 > 正在从 TCP / gRPC SDK 迁移？Legacy 客户端在当前 Runtime 上继续可用；替代方案（HTTP +
-> CloudEvents 的 `CloudEventsClient`）见[客户端指引](docs/eventmesh-cloudevents-client-guide.md)。
+> CloudEvents 的 `CloudEventsClient`）见[客户端指引](docs/eventmesh-client-guide.md)。
 
 ### 文档导航
 
 - [快速上手（英文）](docs/eventmesh-getting-started.md) / [配置参考（英文）](docs/eventmesh-configuration.md)
-- [客户端指引（中文）](docs/eventmesh-cloudevents-client-guide.md) —— `CloudEventsClient` 完整用法
+- [客户端指引（中文）](docs/eventmesh-client-guide.md) —— `CloudEventsClient` 完整用法
 - [架构（英文）](docs/eventmesh-architecture.md) —— 控制面 / 数据面 / 智能体面；存储 SPI；安全闸门；A2A 协议栈
 - [特性（英文）](docs/eventmesh-features.md) —— 逐特性说明（发布订阅、A2A、连接器、安全、可靠性）
 - [生产准入](docs/production-readiness.md) —— 已验证能力、SLO、运维手册
@@ -299,7 +299,7 @@ Upgrade: websocket
 Connection: Upgrade
 ```
 
-> 长轮询、SSE、WebSocket 是可互换的下发传输——订阅者任选其一。SSE 与 WebSocket 由服务端推送（无需轮询循环），长轮询则由客户端驱动。此外还支持请求-应答（`POST /events/request` + `POST /events/reply`）。`CloudEventsClient` Java SDK 封装了以上全部方式（`subscribe` / `subscribeSse` / `subscribeWs`），用法见[CloudEvents 客户端使用指引](docs/eventmesh-cloudevents-client-guide.md)。
+> 长轮询、SSE、WebSocket 是可互换的下发传输——订阅者任选其一。SSE 与 WebSocket 由服务端推送（无需轮询循环），长轮询则由客户端驱动。此外还支持请求-应答（`POST /events/request` + `POST /events/reply`）。`CloudEventsClient` Java SDK 封装了以上全部方式（`subscribe` / `subscribeSse` / `subscribeWs`），用法见[CloudEvents 客户端使用指引](docs/eventmesh-client-guide.md)。
 
 #### 4. 取消订阅
 
