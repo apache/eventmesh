@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.api.storage.tck;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.api.storage.StorageCapabilities;
 import org.apache.eventmesh.api.storage.StorageCapabilities.AlignPullOffset;
@@ -28,17 +33,12 @@ import org.apache.eventmesh.api.storage.StorageCapabilities.PartitionAssignment;
 import org.apache.eventmesh.api.storage.StorageCapabilities.TopicManagement;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Properties;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Abstract JUnit 5 Test Compatibility Kit for {@link MeshStoragePlugin}.
