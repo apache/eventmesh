@@ -47,13 +47,45 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 **扩展性与生态**
 
-- **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/a2a-protocol/README.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
+- **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/eventmesh-a2a-protocol.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
 - **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)、[Apache Kafka](https://kafka.apache.org)、[Apache Pulsar](https://pulsar.apache.org)、[RabbitMQ](https://rabbitmq.com)、[Redis](https://redis.io) 等。
 - **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
 - **可插拔元数据服务** —— [Consul](https://consulproject.org/en/)、[Nacos](https://nacos.io)、[ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
 - **事件模式管理** —— 通过目录（catalog）服务实现。
 - **强大的事件编排** —— 基于 [Serverless workflow](https://serverlessworkflow.io/) 引擎。
 - **强大的事件过滤与转换能力。**
+
+## 能力状态（Capability Status）
+
+每个 EventMesh 对外能力都有明确的状态定级。下表是**唯一的状态事实来源**——各模块文档链接到这里，
+不再各自重复描述。各能力的详细指南见 [docs](docs/)。
+
+| 能力 | 状态 | 建议 | 迁移目标 |
+| --- | :---: | --- | --- |
+| [HTTP + CloudEvents](docs/eventmesh-client-guide.md) | **GA 目标** | 推荐——主用户路径（`CloudEventsClient` + `/events/*`） | 主路径 |
+| [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
+| SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；统一 ACK/重投递语义仍在收敛 | 统一推送传输 |
+| Connector Runtime | **Beta** | 可用——独立运行时上的 24 个连接器插件 | 新连接器 SPI 迁移 |
+| [A2A / Agent 网关](docs/eventmesh-a2a-protocol.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
+| TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) |
+
+状态含义：
+
+- **GA 目标** —— 当前架构下功能完整，已对真实 broker 做集成测试；可安全用于生产。
+- **Beta** —— 功能可用且有测试，但语义或部署形态在次版本仍可能调整。
+- **实验性** —— 迭代开发中；API 与存储布局可能破坏性变更；请先在开发集群试用。
+- **Legacy 兼容** —— 仅为存量客户端零改动兼容而维护；只修缺陷、不加功能。新接入不要选这里。
+
+> 正在从 TCP / gRPC SDK 迁移？Legacy 客户端在当前 Runtime 上继续可用；替代方案（HTTP +
+> CloudEvents 的 `CloudEventsClient`）见[客户端指引](docs/eventmesh-client-guide.md)。
+
+### 文档导航
+
+- [快速上手（英文）](docs/eventmesh-getting-started.md) —— 零到运行
+- [配置参考（英文）](docs/eventmesh-configuration.md) —— 每个运行时键、后端设置、安全 &amp; 配额
+- [客户端指引（中文）](docs/eventmesh-client-guide.md) —— `CloudEventsClient` 完整用法
+- [架构（英文）](docs/eventmesh-architecture.md) —— 控制面 / 数据面 / 智能体面；存储 SPI；安全闸门；A2A 协议栈
+- [特性（英文）](docs/eventmesh-features.md) —— 逐特性说明（发布订阅、A2A、连接器、安全、可靠性）
 
 ## 子项目
 
@@ -65,224 +97,9 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 ## 快速入门
 
-本节指南将指导您分别从[本地](#在本地运行-eventmesh-runtime)、[Docker](#在-docker-中运行-eventmesh-runtime)、[K8s](#在-kubernetes-中运行-eventmesh-runtime)部署EventMesh的步骤:
-
-本节指南按照默认配置启动 EventMesh，如果您需要更加详细的 EventMesh 部署步骤，请访问[EventMesh官方文档](https://eventmesh.apache.org/docs/introduction)。
-
-### 部署 Event Store
-
-> EventMesh 支持[多种事件存储](https://eventmesh.apache.org/docs/roadmap#event-store-implementation-status)，默认存储模式为 `standalone`，不依赖其他事件存储作为层。
-
-### 在本地运行 EventMesh Runtime
-
-#### 1. 下载 EventMesh
-
-从 [EventMesh Download](https://eventmesh.apache.org/download/) 页面下载最新版本的 Binary Distribution 发行版并解压：
-
-```shell
-wget https://dlcdn.apache.org/eventmesh/1.10.0/apache-eventmesh-1.10.0-bin.tar.gz
-tar -xvzf apache-eventmesh-1.10.0-bin.tar.gz
-cd apache-eventmesh-1.10.0
-```
-
-#### 2. 运行 EventMesh
-
-执行 `start.sh` 脚本启动 EventMesh Runtime 服务器。
-
-```shell
-bash bin/start.sh
-```
-
-查看输出日志:
-
-```shell
-tail -n 50 -f logs/eventmesh.out
-```
-
-当日志输出 `server state:RUNNING`，则代表 EventMesh Runtime 启动成功了。
-
-停止:
-
-```shell
-bash bin/stop.sh
-```
-
-脚本打印 `shutdown server ok!` 时，代表 EventMesh Runtime 已停止。
-
-### 在 Docker 中运行 EventMesh Runtime
-
-#### 1. 获取 EventMesh 镜像
-
-使用下面的命令行下载最新版本的 [EventMesh](https://hub.docker.com/r/apache/eventmesh)：
-
-```shell
-sudo docker pull apache/eventmesh:latest
-```
-
-#### 2. 运行 EventMesh
-
-使用以下命令启动 EventMesh 容器：
-
-```shell
-sudo docker run -d --name eventmesh -p 8080:8080 -p 8081:8081 -p 8082:8082 -t apache/eventmesh:latest
-```
-
-> 端口说明：`8080` = 流量 HTTP（`/events/*` CloudEvents API），`8081` = 管理 HTTP（`/admin/*`），`8082` = WebSocket 推送（按需开启）。Connector 运行时镜像另暴露 `8083` 作为其可选的管理端口。
-
-进入容器：
-
-```shell
-sudo docker exec -it eventmesh /bin/bash
-```
-
-查看日志：
-
-```shell
-cd logs
-tail -n 50 -f eventmesh.out
-```
-
-### 在 Kubernetes 中运行 EventMesh Runtime
-
-#### 1. 部署 Operator
-
-运行以下命令部署(删除部署, 只需将 `deploy` 替换为 `undeploy` 即可):
-
-```shell
-$ cd eventmesh-operator && make deploy
-```
-
-运行 `kubectl get pods` 、`kubectl get crd | grep eventmesh-operator.eventmesh` 查看部署的 EventMesh-Operator 状态以及 CRD 信息.
-
-```shell
-$ kubectl get pods
-NAME                                  READY   STATUS    RESTARTS   AGE
-eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          20s
-
-$ kubectl get crd | grep eventmesh-operator.eventmesh
-connectors.eventmesh-operator.eventmesh   2024-01-10T02:40:27Z
-runtimes.eventmesh-operator.eventmesh     2024-01-10T02:40:27Z
-```
-
-#### 2. 部署 EventMesh Runtime
-
-运行以下命令部署 runtime、connector-rocketmq (删除部署, 只需将 `create` 替换为 `delete` 即可)：
-
-```shell
-$ make create
-```
-
-运行 `kubectl get pods` 查看部署是否成功.
-
-```shell
-NAME                                  READY   STATUS    RESTARTS   AGE
-connector-rocketmq-0                  1/1     Running   0          9s
-eventmesh-operator-59c59f4f7b-nmmlm   1/1     Running   0          3m12s
-eventmesh-runtime-0-a-0               1/1     Running   0          15s
-```
-
-### 使用 EventMesh API
-
-应用通过 `/events/*` HTTP 端点以标准 [CloudEvents](https://cloudevents.io) 1.0 与 EventMesh 交互，仅需 `publish` / `subscribe` / `unsubscribe` 等操作。订阅与分发由 EventMesh 自主管理，无需消费者组或 Tag。
-
-#### 1. 发布 CloudEvent
-
-以 CloudEvents 1.0 格式通过 HTTP POST 发布事件（返回 `202 Accepted` 表示事件已写入 WAL）：
-
-```shell
-POST /events/publish HTTP/1.1
-Host: localhost:8080
-Content-Type: application/cloudevents+json
-
-{
-  "specversion": "1.0",
-  "id": "89010a5a-3c6f-4a1e-9b2d-0f7c1f2e3a4b",
-  "source": "/example/producer",
-  "type": "com.example.order.created",
-  "subject": "orders",
-  "datacontenttype": "application/json",
-  "data": {
-    "content": "Hello, EventMesh!"
-  }
-}
-```
-
-#### 2. 订阅 Topic
-
-向 EventMesh 注册订阅（无消费者组、无 Tag）。提供 `clientId`、`topic` 以及分发模式 `mode`（`LOAD_BALANCE`、`BROADCAST`、`MULTICAST` 或 `LOAD_BALANCE_STICKY`），响应返回 `subscriptionId`：
-
-```shell
-POST /events/subscribe HTTP/1.1
-Host: localhost:8080
-Content-Type: application/json
-
-{
-  "clientId": "order-svc",
-  "topic": "orders",
-  "mode": "LOAD_BALANCE"
-}
-```
-
-#### 3. 接收事件
-
-订阅者可通过三种传输方式接收下发的事件，按业务场景任选其一——它们下发相同的 CloudEvents，并遵循 EventMesh 的 ACK / 至少一次语义。
-
-**a) HTTP 长轮询** —— 主动拉取，请求会阻塞直到有事件或超时：
-
-```shell
-GET /events/poll?clientId=order-svc&topics=orders&timeout=30000 HTTP/1.1
-Host: localhost:8080
-```
-
-处理完事件后，进行 ACK 以推进 offset（至少一次投递）：
-
-```shell
-POST /events/ack HTTP/1.1
-Host: localhost:8080
-Content-Type: application/json
-
-{
-  "subId": "sub-123",
-  "clientId": "order-svc",
-  "topic": "orders",
-  "partition": 0,
-  "offset": 42
-}
-```
-
-**b) Server-Sent Events（SSE）** —— 服务端经长连接主动推送，客户端无需轮询：
-
-```shell
-GET /events/stream?clientId=order-svc&topics=orders HTTP/1.1
-Host: localhost:8080
-Accept: text/event-stream
-```
-
-**c) WebSocket** —— 经独立 WebSocket 端口的全双工服务端推送：
-
-```shell
-GET /events/stream HTTP/1.1
-Host: localhost:8082
-Upgrade: websocket
-Connection: Upgrade
-```
-
-> 长轮询、SSE、WebSocket 是可互换的下发传输——订阅者任选其一。SSE 与 WebSocket 由服务端推送（无需轮询循环），长轮询则由客户端驱动。此外还支持请求-应答（`POST /events/request` + `POST /events/reply`）。`CloudEventsClient` Java SDK 封装了以上全部方式（`subscribe` / `subscribeSse` / `subscribeWs`），用法见[CloudEvents 客户端使用指引](docs/eventmesh-cloudevents-client-guide.md)。
-
-#### 4. 取消订阅
-
-当不再需要接收某 Topic 的事件时，按 `clientId` 取消订阅（可选带 `subscriptionId`）：
-
-```shell
-POST /events/unsubscribe HTTP/1.1
-Host: localhost:8080
-Content-Type: application/json
-
-{
-  "clientId": "order-svc",
-  "topic": "orders"
-}
-```
+完整的步骤引导——前置依赖、后端选择、通过 Docker 或源码启动、首个事件、三种接收传输、取消订阅以及 SDK 路径——均在
+[快速上手](docs/eventmesh-getting-started.md)。该文档中的首事件示例可针对标准端口
+（`8080` HTTP、`8081` 管理、`8082` WebSocket、`8083` 连接器管理）运行。
 
 ## 贡献
 
