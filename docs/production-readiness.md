@@ -9,6 +9,10 @@
 
 **MQ-as-stateless-WAL + HTTP SDK（CloudEvents/MeshMessage/A2A 多协议）+ EventMesh 自管订阅/offset + 内部 EventMeshFrame** 的重写（详见 `docs/eventmesh-uni-architecture-redesign.md`）。采用叠加式策略：新核心并行存在，旧 TCP/HTTP 保留为兼容适配层（老客户端零改动）。
 
+> **能力状态定级**：各能力（HTTP+CloudEvents / 存储 / SSE·WS / Connector / A2A / Legacy SDK）
+> 的状态、建议与迁移目标以主 README 的[能力状态表](../README.md#能力状态capability-status)为准；
+> 本文档记录生产准入的验证与运维细节。
+
 ## 2. 模块（活跃 gradle）
 
 | 类别 | 模块 |

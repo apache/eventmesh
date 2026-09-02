@@ -1,4 +1,7 @@
 # EventMesh 架构简化重构方案
+
+> **状态说明**：本文是架构重写的设计文档（历史记录）。各能力的当前实现状态与成熟度
+> 以主 README 的[能力状态表](../README.md#能力状态capability-status)为准。
 
 > 分支：`refactor/unified-runtime-pipeline` → 基于 本次讨论的全新方向
 >

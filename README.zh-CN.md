@@ -55,6 +55,30 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 - **强大的事件编排** —— 基于 [Serverless workflow](https://serverlessworkflow.io/) 引擎。
 - **强大的事件过滤与转换能力。**
 
+## 能力状态（Capability Status）
+
+每个 EventMesh 对外能力都有明确的状态定级。下表是**唯一的状态事实来源**——各模块文档链接到这里，
+不再各自重复描述。各能力的详细指南见 [docs](docs/)。
+
+| 能力 | 状态 | 建议 | 迁移目标 |
+| --- | :---: | --- | --- |
+| [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) | **GA 目标** | 推荐——主用户路径（`CloudEventsClient` + `/events/*`） | 主路径 |
+| [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
+| SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；统一 ACK/重投递语义仍在收敛 | 统一推送传输 |
+| [Connector Runtime](docs/production-readiness.md) | **Beta** | 可用——独立运行时上的 24 个连接器插件 | 新连接器 SPI 迁移 |
+| [A2A / Agent 网关](docs/a2a-protocol/README.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
+| TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) |
+
+状态含义：
+
+- **GA 目标** —— 当前架构下功能完整，已对真实 broker 做集成测试；可安全用于生产。
+- **Beta** —— 功能可用且有测试，但语义或部署形态在次版本仍可能调整。
+- **实验性** —— 迭代开发中；API 与存储布局可能破坏性变更；请先在开发集群试用。
+- **Legacy 兼容** —— 仅为存量客户端零改动兼容而维护；只修缺陷、不加功能。新接入不要选这里。
+
+> 正在从 TCP / gRPC SDK 迁移？Legacy 客户端在当前 Runtime 上继续可用；替代方案（HTTP +
+> CloudEvents 的 `CloudEventsClient`）见[客户端指引](docs/eventmesh-cloudevents-client-guide.md)。
+
 ## 子项目
 
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache EventMesh 的官方网站资源。

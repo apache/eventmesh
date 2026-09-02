@@ -11,6 +11,8 @@ RocketMQ 4.x、RocketMQ 5.x 还是 Kafka，对客户端代码**完全透明**—
 后端上。三种后端的区别只在 **Runtime（服务端）的部署配置**，不在客户端。
 
 > 旧的 `EventMeshHttpClient` / `EventMeshTCPClient`（legacy）仍保留作老协议兼容；新接入请用 `CloudEventsClient`。
+>
+> 状态定级以主 README 的[能力状态表](../README.md#能力状态capability-status)为准：HTTP + CloudEvents 为 **GA 目标**（主路径），TCP / gRPC 为 **Legacy 兼容**（仅存量用户）。
 
 ---
 

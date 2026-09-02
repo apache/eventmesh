@@ -54,6 +54,32 @@ Apache EventMesh is packed with features that help users build event-driven appl
 - **Powerful event orchestration** through the [Serverless workflow](https://serverlessworkflow.io/) engine.
 - **Powerful event filtering and transformation.**
 
+## Capability status
+
+Each EventMesh surface carries an explicit maturity status. The table below is the
+**single source of truth** — module-level docs link here instead of restating their
+status. See [docs](docs/) for the per-capability guides.
+
+| Capability | Status | Recommendation | Migration target |
+| --- | :---: | --- | --- |
+| [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
+| [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
+| SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
+| [Connector Runtime](docs/production-readiness.md) | **Beta** | Usable — 24 connector plugins on the standalone runtime | New connector SPI migration |
+| [A2A / Agent Gateway](docs/a2a-protocol/README.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
+| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/eventmesh-cloudevents-client-guide.md) |
+
+Status meanings:
+
+- **GA target** — feature-complete for the current architecture, integration-tested against real brokers; safe for production.
+- **Beta** — functional and tested, but semantics or deployment shape may still shift in a minor release.
+- **Experimental** — under active development; APIs and storage layouts may break; wire it up on dev clusters first.
+- **Legacy-compatible** — maintained for zero-change compatibility with existing clients; receives fixes but no new features. New integrations should not start here.
+
+> Migrating off TCP / gRPC SDKs? The legacy clients keep working against the current
+> runtime; see the [client guide](docs/eventmesh-cloudevents-client-guide.md) for the
+> HTTP + CloudEvents replacement (`CloudEventsClient`).
+
 ## Subprojects
 
 - [EventMesh-site](https://github.com/apache/eventmesh-site): Apache official website resources for EventMesh.
