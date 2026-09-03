@@ -244,6 +244,15 @@ tasks.register('dist-connector') {
             from core.jar.archivePath
             into rootProject.file('dist-connector/apps')
         }
+        // The SPI jar (eventmesh-connector-api) is excluded from lib/ by the
+        // exclude 'eventmesh-*' below, but ConnectorApplication itself imports the
+        // SPI interfaces — ship it next to the runtime jar in apps/ so a bare
+        // runtime (no plugins installed) still boots.
+        def connectorApi = findProject('eventmesh-connector-api')
+        copy {
+            from connectorApi.jar.archivePath
+            into rootProject.file('dist-connector/apps')
+        }
         copy {
             from core.configurations.runtimeClasspath
             into rootProject.file('dist-connector/lib')

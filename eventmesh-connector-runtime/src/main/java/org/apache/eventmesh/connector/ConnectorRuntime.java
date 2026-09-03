@@ -79,7 +79,14 @@ public class ConnectorRuntime {
      * Source step: pull a batch from the external system, publish each to EventMesh, and checkpoint
      * the source offset only after EventMesh accepts (at-least-once on the source side).
      *
-     * @return number of events published
+     * <p><b>Per-event isolation (fix #5231 / #5232 / #5233 follow-up):</b> one bad event — whose
+     * publish throws (e.g. CloudEvent serialization error, HTTP NPE on a broken URL) — must not
+     * kill the source loop and silently strand every subsequent event in the batch. We catch
+     * per-event exceptions, log+skip, and continue with the next event so the rest of the batch
+     * still gets a chance to publish. Failures are also counted via
+     * {@link #getSourcePublishFailures()} so the admin endpoint can surface the loss.</p>
+     *
+     * @return number of events successfully published
      */
     public int runSourceOnce() {
         if (source == null) {
@@ -92,7 +99,24 @@ public class ConnectorRuntime {
         CloudEvent last = null;
         int published = 0;
         for (CloudEvent event : batch) {
-            if (endpoint.publish(sourceTopic, event)) {
+            if (event == null) {
+                log.warn("source.poll() returned a null event — skipping (data-loss guard)");
+                sourcePublishFailures.incrementAndGet();
+                continue;
+            }
+            boolean ok;
+            try {
+                ok = endpoint.publish(sourceTopic, event);
+            } catch (RuntimeException e) {
+                // #5231-style: a publish failure (e.g. CloudEvent serialization, HTTP NPE) on one
+                // event must not strand the rest of the batch or kill the source loop. Log and
+                // continue so the next event still gets a chance to publish.
+                log.warn("source publish threw on event id={} type={}: {} — skipping",
+                    event.getId(), event.getType(), e.toString());
+                sourcePublishFailures.incrementAndGet();
+                continue;
+            }
+            if (ok) {
                 last = event;
                 published++;
             } else {
@@ -103,7 +127,11 @@ public class ConnectorRuntime {
         if (last != null) {
             source.commit(last);
             if (offsetStore != null) {
-                offsetStore.put(sourceTopic != null ? sourceTopic : "source", last.getId());
+                try {
+                    offsetStore.put(sourceTopic != null ? sourceTopic : "source", last.getId());
+                } catch (RuntimeException e) {
+                    log.warn("offsetStore.put failed for source: {} — checkpoint lost", e.toString());
+                }
             }
             sourcePublishedCount.addAndGet(published);
         }
@@ -113,6 +141,11 @@ public class ConnectorRuntime {
     /**
      * Sink step: long-poll EventMesh, write the batch to the external system, then ACK + checkpoint.
      * On a write failure nothing is acked, so EventMesh redelivers (at-least-once; dedup externally).
+     *
+     * <p><b>Per-delivery ACK isolation (data-loss hardening):</b> if one delivery's ACK call throws
+     * (network blip, EventMesh restart) we log it but still record the offset for the batch and
+     * continue with the rest of the ACKs. EventMesh will re-deliver any un-ACKed delivery (the
+     * sink must dedup by event id — same contract as before this fix).</p>
      *
      * @return number of events written
      */
@@ -130,11 +163,29 @@ public class ConnectorRuntime {
         }
         sink.put(events); // throws on failure → no ack → redelivery
         sink.commit(events);
+        int acked = 0;
         for (PollEntry be : batch) {
-            endpoint.ack(be.getDeliveryId());
+            try {
+                if (endpoint.ack(be.getDeliveryId())) {
+                    acked++;
+                } else {
+                    log.warn("sink ACK returned false for deliveryId={} — will be redelivered",
+                        be.getDeliveryId());
+                }
+            } catch (RuntimeException e) {
+                // Per-delivery ACK failure: don't break the loop, log and let EventMesh time it out
+                // and re-deliver. Sink must dedup by event id.
+                log.warn("sink ACK threw for deliveryId={}: {} — will be redelivered",
+                    be.getDeliveryId(), e.toString());
+            }
         }
         if (offsetStore != null && !batch.isEmpty()) {
-            offsetStore.put(sinkClientId != null ? sinkClientId : "sink", batch.get(batch.size() - 1).getDeliveryId());
+            try {
+                offsetStore.put(sinkClientId != null ? sinkClientId : "sink",
+                    batch.get(batch.size() - 1).getDeliveryId());
+            } catch (RuntimeException e) {
+                log.warn("offsetStore.put failed for sink: {} — checkpoint lost", e.toString());
+            }
         }
         sinkProcessedCount.addAndGet(events.size());
         return events.size();
@@ -153,6 +204,7 @@ public class ConnectorRuntime {
     // Runtime-managed offset (optional; connectors with native offset may ignore)
     private ConnectorOffsetStore offsetStore;
     private final java.util.concurrent.atomic.AtomicLong sourcePublishedCount = new java.util.concurrent.atomic.AtomicLong();
+    private final java.util.concurrent.atomic.AtomicLong sourcePublishFailures = new java.util.concurrent.atomic.AtomicLong();
     private final java.util.concurrent.atomic.AtomicLong sinkProcessedCount = new java.util.concurrent.atomic.AtomicLong();
 
     public long getPollIntervalMs() {
@@ -173,6 +225,10 @@ public class ConnectorRuntime {
 
     public long getSourcePublishedCount() {
         return sourcePublishedCount.get();
+    }
+
+    public long getSourcePublishFailures() {
+        return sourcePublishFailures.get();
     }
 
     public long getSinkProcessedCount() {

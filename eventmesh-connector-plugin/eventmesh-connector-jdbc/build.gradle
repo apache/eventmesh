@@ -22,7 +22,7 @@ plugins {
 dependencies {
     antlr "org.antlr:antlr4:4.13.1"
     implementation 'org.antlr:antlr4-runtime:4.13.1'
-    implementation project(":eventmesh-connector-runtime")
+    implementation project(":eventmesh-connector-api")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'org.slf4j:slf4j-api'
     compileOnly 'org.projectlombok:lombok'

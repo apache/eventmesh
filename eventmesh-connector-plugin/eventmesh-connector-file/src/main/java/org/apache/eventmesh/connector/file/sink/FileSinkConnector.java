@@ -34,6 +34,8 @@ public class FileSinkConnector implements SinkConnector {
 
     @Override
     public void init(Properties props) {
+        // Close any previous stream so re-init doesn't leak a locked file handle.
+        closeOutQuietly();
         try {
             out = new java.io.PrintStream(new java.io.FileOutputStream(props.getProperty("connector.filePath", "/tmp/sink.txt"), true));
         } catch (Exception e) {
@@ -53,5 +55,20 @@ public class FileSinkConnector implements SinkConnector {
     @Override
     public void commit(List<CloudEvent> written) {
 
+    }
+
+    /**
+     * Close the underlying file handle. Tests call this in finally blocks to release the
+     * Windows file lock that would otherwise block JUnit TempDir cleanup.
+     */
+    public void closeOutQuietly() {
+        if (out != null) {
+            try {
+                out.close();
+            } catch (Exception ignored) {
+                // best-effort
+            }
+            out = null;
+        }
     }
 }

@@ -95,4 +95,20 @@ public final class ArchitectureRules {
     public static ArchRule ruleRuntimeSubscriptionStateIsolated = noClasses()
             .that().resideInAPackage("org.apache.eventmesh.runtime.ingress..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.runtime.state.internal..");
+
+    // ---- Connector SPI boundary (connector-api module split) ----
+    // Plugins live in sub-packages org.apache.eventmesh.connector.<plugin>.. and must only
+    // touch the SPI classes in the flat org.apache.eventmesh.connector package (the
+    // eventmesh-connector-api module). The runtime module intentionally shares the same
+    // base package, so package rules cannot separate the two modules; instead we forbid
+    // any plugin sub-package class from depending on the runtime-only classes by name.
+    public static ArchRule ruleConnectorPluginsDependOnlyOnSpi = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.connector..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.connector")
+            .should().dependOnClassesThat()
+            .haveNameMatching("org\\.apache\\.eventmesh\\.connector\\."
+                    + "(ConnectorRuntime|ConnectorManager|ConnectorAdminServer|ConnectorApplication"
+                    + "|ConnectorDef|EventMeshHttpEndpoint|InMemoryOffsetStore|RemoteOffsetStore"
+                    + "|RocksDBConnectorOffsetStore)")
+            .because("plugins must depend only on the connector-api SPI, not on runtime internals");
 }

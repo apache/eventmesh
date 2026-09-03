@@ -24,8 +24,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -142,10 +144,15 @@ class ConnectorRuntimeTest {
         final List<CloudEvent> published = new ArrayList<>();
         final Set<String> acked = new HashSet<>();
         String failOn;
+        String throwOnPublish;
+        String throwOnAck;
         List<PollEntry> sinkBatch;
 
         @Override
         public boolean publish(String topic, CloudEvent event) {
+            if (throwOnPublish != null && throwOnPublish.equals(event.getId())) {
+                throw new RuntimeException("simulated publish NPE for " + event.getId());
+            }
             if (failOn != null && failOn.equals(event.getId())) {
                 return false;
             }
@@ -160,7 +167,107 @@ class ConnectorRuntimeTest {
 
         @Override
         public boolean ack(String deliveryId) {
+            if (throwOnAck != null && throwOnAck.equals(deliveryId)) {
+                throw new RuntimeException("simulated ack NPE for " + deliveryId);
+            }
             return acked.add(deliveryId);
         }
+    }
+
+    // ---- P0 hardening tests (issues #5231 / #5232 / #5233 follow-up) ----
+
+    @Test
+    void sourcePublishThrowsOnOneEventDoesNotKillBatch() {
+        // #5231-style scenario: publish throws a RuntimeException for one event in the middle of
+        // the batch. Before the fix this would propagate up to runSourceLoop's outer catch and the
+        // rest of the batch would never be attempted. After the fix each event is isolated: the
+        // bad event is logged+skipped, the next events still get a chance to publish, and the
+        // commit advances only to the last accepted event.
+        FakeSource source = new FakeSource(Arrays.asList(event("e1"), event("e2-bad"), event("e3")));
+        FakeEndpoint endpoint = new FakeEndpoint();
+        endpoint.throwOnPublish = "e2-bad";
+        ConnectorRuntime runtime = new ConnectorRuntime(source, endpoint, "orders");
+
+        assertEquals(2, runtime.runSourceOnce(), "e1 + e3 still publish, e2-bad is skipped");
+        assertEquals(2, endpoint.published.size());
+        assertTrue(endpoint.published.stream().anyMatch(e -> "e1".equals(e.getId())));
+        assertTrue(endpoint.published.stream().anyMatch(e -> "e3".equals(e.getId())));
+        assertEquals("e3", source.lastCommitted.getId(), "checkpoint advances past the skipped event");
+        assertEquals(1, runtime.getSourcePublishFailures(), "the failure counter recorded the skip");
+    }
+
+    @Test
+    void sourceNullEventInBatchIsSkippedNotCrash() {
+        // Defensive: if source.poll() returns a list containing null entries (a buggy source impl),
+        // the runtime must skip them rather than NPE.
+        List<CloudEvent> batch = new ArrayList<>();
+        batch.add(event("e1"));
+        batch.add(null);
+        batch.add(event("e3"));
+        FakeSource source = new FakeSource(batch);
+        FakeEndpoint endpoint = new FakeEndpoint();
+        ConnectorRuntime runtime = new ConnectorRuntime(source, endpoint, "orders");
+
+        assertEquals(2, runtime.runSourceOnce());
+        assertEquals("e3", source.lastCommitted.getId());
+        assertEquals(1, runtime.getSourcePublishFailures(), "null event counted as a failure");
+    }
+
+    @Test
+    void sourceOffsetPutFailureDoesNotFailBatch() {
+        // offsetStore.put throws (e.g. RocksDB IO error, Meta CAS lost). The published count and
+        // the source commit must still succeed — we lose the runtime-managed offset but the
+        // event is already on EventMesh (at-least-once).
+        FakeSource source = new FakeSource(Arrays.asList(event("e1"), event("e2")));
+        FakeEndpoint endpoint = new FakeEndpoint();
+        ConnectorRuntime runtime = new ConnectorRuntime(source, endpoint, "orders");
+        runtime.setOffsetStore(new ConnectorOffsetStore() {
+
+            @Override
+            public void put(String key, String value) {
+                throw new RuntimeException("offset store down");
+            }
+
+            @Override
+            public String get(String key) {
+                return null;
+            }
+
+            @Override
+            public Map<String, String> all() {
+                return new HashMap<>();
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        });
+
+        assertEquals(2, runtime.runSourceOnce(), "publish+commit succeed despite offset store failure");
+        assertEquals("e2", source.lastCommitted.getId());
+    }
+
+    @Test
+    void sinkAckThrowsOnOneDeliveryDoesNotLoseOthers() {
+        // Per-delivery ACK isolation: if one ACK throws, the other deliveries in the same batch
+        // still get acked. EventMesh will time out the un-ACKed delivery and redeliver; the sink
+        // must dedup by event id.
+        FakeSink sink = new FakeSink();
+        FakeEndpoint endpoint = new FakeEndpoint();
+        endpoint.throwOnAck = "d-2";
+        endpoint.sinkBatch = Arrays.asList(
+            new PollEntry("d-1", event("e1")),
+            new PollEntry("d-2", event("e2")),
+            new PollEntry("d-3", event("e3")));
+        ConnectorRuntime runtime = new ConnectorRuntime(sink, endpoint, "sink-1", 10, 0L);
+
+        assertEquals(3, runtime.runSinkOnce(), "all 3 events written");
+        assertEquals(2, endpoint.acked.size(), "d-1 + d-3 acked; d-2 lost to be redelivered");
+        assertTrue(endpoint.acked.contains("d-1"));
+        assertTrue(endpoint.acked.contains("d-3"));
     }
 }

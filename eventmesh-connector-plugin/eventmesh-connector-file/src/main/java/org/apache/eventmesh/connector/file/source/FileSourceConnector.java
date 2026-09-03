@@ -38,10 +38,24 @@ public class FileSourceConnector implements SourceConnector {
 
     @Override
     public void init(Properties props) {
+        // Close any previous reader so re-init doesn't leak a locked file handle (Windows
+        // TempDir cleanup used to fail because this handle stayed open).
+        closeReaderQuietly();
         try {
             reader = new java.io.BufferedReader(new java.io.FileReader(props.getProperty("connector.filePath", "/tmp/source.txt")));
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void closeReaderQuietly() {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (Exception ignored) {
+                // best-effort
+            }
+            reader = null;
         }
     }
 
