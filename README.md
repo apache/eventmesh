@@ -65,7 +65,7 @@ status. See [docs](docs/) for the per-capability guides.
 | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
 | SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
-| Connector Runtime | **Beta** | Usable — 24 connector plugins on the standalone runtime | New connector SPI migration |
+| Connector Runtime | **Experimental** | Working end-to-end, but only 4 of 23 plugins (file/kafka/pulsar/rocketmq) have unit tests — the rest are templates; data-loss hardening landed in [#5328](https://github.com/apache/eventmesh/pull/5328) | SPI split into `eventmesh-connector-api` (#5328); remaining plugin tests + GA criteria tracked under the #5296 architecture review |
 | [A2A / Agent Gateway](docs/eventmesh-a2a-protocol.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
 | TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) |
 
