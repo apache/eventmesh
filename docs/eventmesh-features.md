@@ -285,7 +285,7 @@ Plugins shipping today cover the common categories:
 
 **Where the code lives.**
 
-* SPI: `eventmesh-connector-plugin/eventmesh-connector-api/`
+* SPI: `eventmesh-connector-api/` (top-level module since #5328)
 * Host: `eventmesh-connector-runtime/.../ConnectorManager.java`,
   `eventmesh-connector-runtime/.../ConnectorAdminServer.java`
 * Per-connector source: `eventmesh-connector-plugin/eventmesh-connector-<name>/`
@@ -300,9 +300,12 @@ eventmesh.connector.<id>.mode = source-sink
 eventmesh.connector.<id>.topic = persistent://public/default/file-events
 ```
 
-**Status.** **Beta** (capability status table). The 24 plugins are
-production-usable; the new connector SPI migration (#5288) is still being
-rolled out across the plugins.
+**Status.** **Experimental** (capability status table). The runtime
+itself is end-to-end working and hardened against the data-loss failure
+class of #5231/#5232/#5233 (#5328), and the SPI now lives in its own
+`eventmesh-connector-api` module. But of the 23 plugins only four
+(file/kafka/pulsar/rocketmq) carry unit tests — the rest are template
+implementations. GA requires tests across the plugin matrix.
 
 ---
 
