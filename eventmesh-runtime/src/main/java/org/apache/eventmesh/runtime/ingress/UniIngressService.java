@@ -372,9 +372,7 @@ public class UniIngressService {
                 // Frame architecture: the POP check key rides in frame attributes (empopck) and the
                 // deferred broker ACK fires on client ACK — same at-least-once goal, Frame-native.
                 long offset = nextOffset(topic);
-                // P2 fix (PR #5316 by zhang-arvin, fixes #5295): if the frame carries a POP check
-                // key (RocketMQ 5.x deferred ACK), build a callback that ACKs the broker on
-                // client ACK (restoring at-least-once).
+                // P2 fix: if the frame carries a POP check key (RocketMQ 5.x deferred ACK), build a
                 // callback that ACKs the broker on client ACK (restoring at-least-once).
                 String popCk = f.attributes().get("empopck");
                 List<Subscription> targets = subscriptionManager.targetsFor(topic, f);
