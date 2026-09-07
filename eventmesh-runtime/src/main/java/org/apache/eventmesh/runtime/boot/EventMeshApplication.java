@@ -139,7 +139,12 @@ public class EventMeshApplication {
     }
 
     public EventMeshApplication(MeshStoragePlugin storage, OffsetStore offsetStore, int httpPort, int adminPort) {
-        this.runtime = new UniRuntime(storage, offsetStore, 200L, 500L, 100, 500L);
+        // #5338: read delivery topology from system property (with documented default).
+        // Missing / blank -> LOCAL_STICKY_PULL (backward compatible). Unknown value -> fail-fast
+        // IllegalArgumentException (DeliveryTopology.fromConfig) so a typo never silently degrades.
+        DeliveryTopology topology = DeliveryTopology.fromConfig(
+            System.getProperty("eventmesh.delivery.topology", ""));
+        this.runtime = new UniRuntime(storage, offsetStore, 200L, 500L, 100, 500L, topology, "standalone", null);
         this.httpPort = httpPort;
         this.adminPort = adminPort;
     }
