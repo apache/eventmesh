@@ -22,16 +22,6 @@
  *
  * <p>Policy: Public facade -- boot wires ingress into UniRuntime, but no engine sub-package may bypass it.
  *
- * <p>Broker-ACK barrier (RocketMQ 5.x POP, see PR #5316 by zhang-arvin,
- * fixes #5295): when the ingress frame carries a POP check key (the
- * {@code empopck} attribute), deliveries to all matched subscriptions
- * share an {@link java.util.concurrent.atomic.AtomicInteger} counter
- * initialized to the target count; the broker is ACKed (via
- * {@code storage.ackPulledMessage}) only when the last required delivery
- * ACKs. This restores at-least-once semantics across LOAD_BALANCE,
- * BROADCAST, and MULTICAST distribution modes. Frames without
- * {@code empopck} bypass the barrier (no broker ACK to defer).
- *
  * <p>Marked {@link org.apache.eventmesh.common.Internal @Internal} as a
  * whole package; public types must carry {@link org.apache.eventmesh.common.Public @Public}.
  */
