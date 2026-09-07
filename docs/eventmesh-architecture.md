@@ -403,6 +403,34 @@ PR workflow are both in place to make this discipline cheap.
 
 ---
 
+## 9. Protocols and SDKs
+
+EventMesh supports several wire protocols and ships client SDKs in
+multiple languages. The canonical inventory - including GA / Beta /
+Experimental / Legacy status for each protocol, the server-side
+protocol plugin that handles it, and the corresponding client SDK
+surface - lives in [docs/protocols.md](protocols.md). The policy
+summarized there:
+
+* The modern **HTTP + CloudEvents + EventMeshFrame** path is the
+  only path that downstream code should depend on. It is GA.
+* Legacy **TCP** (MeshMessage, OpenMessaging) and the legacy
+  HTTP codec are still supported for backward compatibility but
+  are explicitly marked Legacy and receive only critical bug
+  fixes. See `docs/protocols.md` for the migration path.
+* gRPC framing is **Beta**: stable, but the API surface may shift.
+* A2A is **Experimental** until the readiness checks in #5340
+  pass.
+
+The Java SDK (`eventmesh-sdk-java`) demotes the OpenMessaging API
+dependency from `api` to `implementation`, so a modern user who
+depends only on `org.apache.eventmesh.client.cloudevents.*` does
+not see OMA types on their classpath. The `eventmesh-architecture-guard`
+ArchUnit rules + CI workflow verify that the runtime's modern
+ingress path does not import legacy wire types.
+
+---
+
 ## Documentation
 
 | Page | What it covers |
@@ -411,6 +439,7 @@ PR workflow are both in place to make this discipline cheap.
 | [docs/eventmesh-configuration.md](eventmesh-configuration.md) | Every runtime key, security & quota, per-backend overrides |
 | [docs/eventmesh-client-guide.md](eventmesh-client-guide.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
 | [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) | A2A wire contract and task lifecycle |
+| [docs/protocols.md](protocols.md) | Canonical inventory of wire protocols, server-side plugins, and client SDKs (GA / Beta / Experimental / Legacy) |
 | [docs/production-readiness.md](production-readiness.md) | Verified capabilities, SLOs, runbooks |
 | [docs/eventmesh-uni-architecture-redesign.md](eventmesh-uni-architecture-redesign.md) | End-to-end flow diagrams and the redesign rationale |
 | [docs/eventmesh-offset-lb-frame-design.md](eventmesh-offset-lb-frame-design.md) | `EventMeshFrame` design (single protocol path, `#5299`) |
