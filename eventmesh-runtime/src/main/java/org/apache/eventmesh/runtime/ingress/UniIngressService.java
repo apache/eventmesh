@@ -372,13 +372,32 @@ public class UniIngressService {
                 // Frame architecture: the POP check key rides in frame attributes (empopck) and the
                 // deferred broker ACK fires on client ACK — same at-least-once goal, Frame-native.
                 long offset = nextOffset(topic);
-                // P2 fix: if the frame carries a POP check key (RocketMQ 5.x deferred ACK), build a
-                // callback that ACKs the broker on client ACK (restoring at-least-once).
+                // P2 fix (#5295, PR #5316 by zhang-arvin): if the frame carries a POP check key
+                // (RocketMQ 5.x deferred ACK), build a per-frame AtomicInteger counter
+                // initialized to the target count; the broker is ACKed only when the last
+                // required delivery ACKs (counter reaches 0). This restores at-least-once
+                // semantics across LOAD_BALANCE (1 target), BROADCAST (N targets), and
+                // MULTICAST (matched targets) without firing the broker ACK prematurely on
+                // the first client ACK of a multi-target delivery.
                 String popCk = f.attributes().get("empopck");
-                Runnable mqAck = (popCk != null) ? () -> storage.ackPulledMessage(topic, popCk) : null;
-                for (Subscription target : subscriptionManager.targetsFor(topic, f)) {
-                    dispatcher.deliver(topic, partition, offset, f, target.getClientId(),
-                        channelFor(target.getClientId()), mqAck);
+                List<Subscription> targets = subscriptionManager.targetsFor(topic, f);
+                if (popCk != null && !targets.isEmpty()) {
+                    java.util.concurrent.atomic.AtomicInteger pending =
+                        new java.util.concurrent.atomic.AtomicInteger(targets.size());
+                    Runnable mqAck = () -> {
+                        if (pending.decrementAndGet() == 0) {
+                            storage.ackPulledMessage(topic, popCk);
+                        }
+                    };
+                    for (Subscription target : targets) {
+                        dispatcher.deliver(topic, partition, offset, f, target.getClientId(),
+                            channelFor(target.getClientId()), mqAck);
+                    }
+                } else {
+                    for (Subscription target : targets) {
+                        dispatcher.deliver(topic, partition, offset, f, target.getClientId(),
+                            channelFor(target.getClientId()), null);
+                    }
                 }
             }
             UniTrace.end(dispatchSpan);
