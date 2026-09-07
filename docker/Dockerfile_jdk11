@@ -15,13 +15,13 @@
 # limitations under the License.
 #
 
-FROM openjdk:11-jdk as builder
+FROM eclipse-temurin:11-jdk AS builder
 WORKDIR /build
 COPY . .
 RUN ./gradlew clean build dist --parallel --daemon
 RUN ./gradlew installPlugin
 
-FROM openjdk:11-jdk
+FROM eclipse-temurin:11-jdk
 RUN apt-get update && apt-get install -y locales procps
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
 WORKDIR /data/app/eventmesh
@@ -29,9 +29,9 @@ COPY --from=builder /build/dist ./
 
 EXPOSE 10000 10105 10106 10205
 
-ENV DOCKER true
-ENV EVENTMESH_HOME /data/app/eventmesh
-ENV EVENTMESH_LOG_HOME /data/app/eventmesh/logs
-ENV CONFPATH /data/app/eventmesh/conf
+ENV DOCKER=true
+ENV EVENTMESH_HOME=/data/app/eventmesh
+ENV EVENTMESH_LOG_HOME=/data/app/eventmesh/logs
+ENV CONFPATH=/data/app/eventmesh/conf
 
 CMD ["bash", "bin/start.sh"]
