@@ -40,14 +40,14 @@ public class SyncRequest {
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         final UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        final EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
-        try {
-            final EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, EventMeshMessage.class);
+        try (final EventMeshTCPClient<EventMeshMessage> client =
+                 EventMeshTCPClientFactory.createEventMeshTCPClient(
+                     EventMeshTCPClientConfig.builder()
+                         .host(eventMeshIp)
+                         .port(eventMeshTcpPort)
+                         .userAgent(userAgent)
+                         .build(),
+                     EventMeshMessage.class)) {
             client.init();
 
             final EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();

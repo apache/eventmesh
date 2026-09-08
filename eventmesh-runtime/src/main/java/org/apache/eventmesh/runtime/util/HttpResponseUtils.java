@@ -31,50 +31,53 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AsciiString;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class HttpResponseUtils {
 
     /**
      * @return Empty response with 200 status code.
      */
-    public static HttpResponse createSuccess() {
+    public HttpResponse createSuccess() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
     }
 
     /**
      * @return Empty response with 404 status code.
      */
-    public static HttpResponse createNotFound() {
+    public HttpResponse createNotFound() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
     }
 
     /**
      * @return Empty response with 500 status code.
      */
-    public static HttpResponse createInternalServerError() {
+    public HttpResponse createInternalServerError() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
      * Only one header is set: {@link HttpHeaderNames#CONTENT_TYPE} with the provided {@code headerValue}.
      */
-    public static HttpResponse buildHttpResponse(String body, ChannelHandlerContext ctx, AsciiString headerValue, HttpResponseStatus status) {
+    public HttpResponse buildHttpResponse(String body, ChannelHandlerContext ctx, AsciiString headerValue, HttpResponseStatus status) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, headerValue);
         return buildHttpResponse(body, ctx, responseHeaders, status);
     }
 
-    public static HttpResponse buildHttpResponse(String body, ChannelHandlerContext ctx, HttpHeaders responseHeaders, HttpResponseStatus status) {
+    public HttpResponse buildHttpResponse(String body, ChannelHandlerContext ctx, HttpHeaders responseHeaders, HttpResponseStatus status) {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, createByteBuf(ctx, body), responseHeaders, responseHeaders);
     }
 
-    public static HttpHeaders buildDefaultHttpHeaders(AsciiString contentType) {
+    public HttpHeaders buildDefaultHttpHeaders(AsciiString contentType) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, contentType);
         responseHeaders.add(EventMeshConstants.HANDLER_ORIGIN, "*");
         return responseHeaders;
     }
 
-    private static ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
+    private ByteBuf createByteBuf(ChannelHandlerContext ctx, String body) {
         byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
         byteBuf.writeBytes(bytes);

@@ -30,12 +30,14 @@ import java.util.Optional;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@UtilityClass
 public class CloudEventUtil {
 
-    public static CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
+    public CloudEvent convertRecordToEvent(ConnectRecord connectRecord) {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withData((byte[]) connectRecord.getData());
         Optional.ofNullable(connectRecord.getExtensions()).ifPresent((extensions) -> extensions.keySet().forEach(key -> {
             switch (key) {
@@ -64,7 +66,7 @@ public class CloudEventUtil {
         return cloudEventBuilder.build();
     }
 
-    public static ConnectRecord convertEventToRecord(CloudEvent event) {
+    public ConnectRecord convertEventToRecord(CloudEvent event) {
         byte[] body = Objects.requireNonNull(event.getData()).toBytes();
         LogUtil.info(log, "handle receive events {}", () -> new String(event.getData().toBytes(), Constants.DEFAULT_CHARSET));
 
@@ -80,7 +82,7 @@ public class CloudEventUtil {
         return connectRecord;
     }
 
-    public static boolean validateExtensionType(Object obj) {
+    public boolean validateExtensionType(Object obj) {
         return obj instanceof String || obj instanceof Number || obj instanceof Boolean
             || obj instanceof URI || obj instanceof OffsetDateTime || obj instanceof byte[];
     }

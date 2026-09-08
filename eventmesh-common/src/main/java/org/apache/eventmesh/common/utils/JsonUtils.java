@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import lombok.experimental.UtilityClass;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -38,12 +40,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+
 /**
  * Json serialize or deserialize utils.
  */
+@UtilityClass
 public class JsonUtils {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
         OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -54,15 +58,15 @@ public class JsonUtils {
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
-    public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
+    public <T> T convertValue(Object fromValue, Class<T> toValueType) {
         return OBJECT_MAPPER.convertValue(fromValue, toValueType);
     }
 
-    public static <T> T convertValue(Object fromValue, TypeReference<T> toValueTypeRef) {
+    public <T> T convertValue(Object fromValue, TypeReference<T> toValueTypeRef) {
         return OBJECT_MAPPER.convertValue(fromValue, toValueTypeRef);
     }
 
-    public static <T> T mapToObject(Map<String, Object> map, Class<T> beanClass) {
+    public <T> T mapToObject(Map<String, Object> map, Class<T> beanClass) {
         if (map == null) {
             return null;
         }
@@ -70,7 +74,7 @@ public class JsonUtils {
         return beanClass.cast(obj);
     }
 
-    public static Map<String, Object> objectToMap(Object obj) {
+    public Map<String, Object> objectToMap(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -84,7 +88,7 @@ public class JsonUtils {
      * @param obj obj
      * @return json string
      */
-    public static String toJSONString(Object obj) {
+    public String toJSONString(Object obj) {
         if (Objects.isNull(obj)) {
             return null;
         }
@@ -95,7 +99,7 @@ public class JsonUtils {
         }
     }
 
-    public static byte[] toJSONBytes(Object obj) {
+    public byte[] toJSONBytes(Object obj) {
         if (Objects.isNull(obj)) {
             return null;
         }
@@ -114,7 +118,7 @@ public class JsonUtils {
      * @param <T>   object type
      * @return object
      */
-    public static <T> T parseObject(String text, Class<T> clazz) {
+    public <T> T parseObject(String text, Class<T> clazz) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -125,7 +129,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T parseObject(InputStream inputStream, Class<T> clazz) {
+    public <T> T parseObject(InputStream inputStream, Class<T> clazz) {
         try {
             return OBJECT_MAPPER.readValue(inputStream, clazz);
         } catch (IOException e) {
@@ -133,7 +137,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T parseObject(String text, Type type) {
+    public <T> T parseObject(String text, Type type) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -151,7 +155,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T parseObject(byte[] bytes, Class<T> clazz) {
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
         if (bytes == null || bytes.length == 0) {
             return null;
         }
@@ -162,7 +166,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T parseObject(String text, TypeReference<T> typeReference) {
+    public <T> T parseObject(String text, TypeReference<T> typeReference) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -181,7 +185,7 @@ public class JsonUtils {
      * @param <T>           object type
      * @return object
      */
-    public static <T> T parseTypeReferenceObject(String text, TypeReference<T> typeReference) {
+    public <T> T parseTypeReferenceObject(String text, TypeReference<T> typeReference) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }
@@ -192,14 +196,14 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T parseTypeReferenceObject(Object object, TypeReference<T> typeReference) {
+    public <T> T parseTypeReferenceObject(Object object, TypeReference<T> typeReference) {
         if (object == null) {
             return null;
         }
         return convertValue(object, typeReference);
     }
 
-    public static <T> T parseTypeReferenceObject(byte[] text, TypeReference<T> typeReference) {
+    public <T> T parseTypeReferenceObject(byte[] text, TypeReference<T> typeReference) {
         try {
             return OBJECT_MAPPER.readValue(text, typeReference);
         } catch (IOException e) {
@@ -207,7 +211,7 @@ public class JsonUtils {
         }
     }
 
-    public static JsonNode getJsonNode(String text) {
+    public JsonNode getJsonNode(String text) {
         if (StringUtils.isEmpty(text)) {
             return null;
         }

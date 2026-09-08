@@ -23,9 +23,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ConfigUtils {
 
-    public static void validateSinkConfiguration(SinkConnectorConfig sinkConnectorConfig) {
+    public void validateSinkConfiguration(SinkConnectorConfig sinkConnectorConfig) {
         // validate blank
         if (StringUtils.isAnyBlank(sinkConnectorConfig.getAppId(), sinkConnectorConfig.getAppSecret(), sinkConnectorConfig.getReceiveId())) {
             throw new IllegalArgumentException("appId or appSecret or receiveId is blank,please check it.");

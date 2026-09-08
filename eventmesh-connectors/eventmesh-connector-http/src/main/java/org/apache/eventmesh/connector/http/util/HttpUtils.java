@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.connector.http.util;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class HttpUtils {
 
     /**
@@ -25,7 +28,7 @@ public class HttpUtils {
      * @param statusCode the HTTP status code to check
      * @return true if the status code is 2xx, false otherwise
      */
-    public static boolean is2xxSuccessful(int statusCode) {
+    public boolean is2xxSuccessful(int statusCode) {
         int seriesCode = statusCode / 100;
         return seriesCode == 2;
     }

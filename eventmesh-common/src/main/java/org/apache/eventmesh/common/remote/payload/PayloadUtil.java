@@ -27,15 +27,18 @@ import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import com.google.protobuf.Any;
 import com.google.protobuf.UnsafeByteOperations;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class PayloadUtil {
 
-    public static Payload from(IPayload payload) {
+    public Payload from(IPayload payload) {
         byte[] payloadBytes = JsonUtils.toJSONBytes(payload);
         Metadata.Builder metadata = Metadata.newBuilder().setType(payload.getClass().getSimpleName());
         return Payload.newBuilder().setMetadata(metadata).setBody(Any.newBuilder().setValue(UnsafeByteOperations.unsafeWrap(payloadBytes))).build();
     }
 
-    public static IPayload parse(Payload payload) {
+    public IPayload parse(Payload payload) {
         Class<?> targetClass = PayloadFactory.getInstance().getClassByType(payload.getMetadata().getType());
         if (targetClass == null) {
             throw new PayloadFormatException(ErrorCode.BAD_REQUEST,

@@ -57,12 +57,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@UtilityClass
 public class EventMeshUtil {
 
-    public static String buildPushMsgSeqNo() {
+    public String buildPushMsgSeqNo() {
         return new StringBuilder()
             .append(StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6))
             .append(RandomStringUtils.generateNum(4))
@@ -70,7 +72,7 @@ public class EventMeshUtil {
 
     }
 
-    public static String buildMeshClientID(final String clientGroup, final String meshCluster) {
+    public String buildMeshClientID(final String clientGroup, final String meshCluster) {
         return new StringBuilder()
             .append(StringUtils.trim(clientGroup))
             .append('(')
@@ -83,13 +85,13 @@ public class EventMeshUtil {
             .toString();
     }
 
-    public static String buildMeshTcpClientID(final String clientSysId, final String purpose,
+    public String buildMeshTcpClientID(final String clientSysId, final String purpose,
         final String meshCluster) {
         return StringUtils.joinWith("-", StringUtils.trim(clientSysId), StringUtils.trim(purpose),
             StringUtils.trim(meshCluster), EventMeshVersion.getCurrentVersionDesc(), ThreadUtils.getPID());
     }
 
-    public static String buildClientGroup(final String systemId) {
+    public String buildClientGroup(final String systemId) {
         return systemId;
     }
 
@@ -99,11 +101,11 @@ public class EventMeshUtil {
      * @param e
      * @return stacktrace
      */
-    public static String stackTrace(final Throwable e) {
+    public String stackTrace(final Throwable e) {
         return stackTrace(e, 0);
     }
 
-    public static String stackTrace(final Throwable e, final int level) {
+    public String stackTrace(final Throwable e, final int level) {
         if (e == null) {
             return null;
         }
@@ -124,7 +126,7 @@ public class EventMeshUtil {
         return sb.toString();
     }
 
-    public static ObjectMapper createJsoner() {
+    public ObjectMapper createJsoner() {
         return new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -138,7 +140,7 @@ public class EventMeshUtil {
      * @param eventMeshMessage
      * @return message string
      */
-    public static String printMqMessage(final EventMeshMessage eventMeshMessage) {
+    public String printMqMessage(final EventMeshMessage eventMeshMessage) {
         final Map<String, String> properties = eventMeshMessage.getProperties();
 
         String keys = properties.get(EventMeshConstants.KEYS_UPPERCASE);
@@ -150,7 +152,7 @@ public class EventMeshUtil {
             properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
     }
 
-    public static String getMessageBizSeq(final CloudEvent event) {
+    public String getMessageBizSeq(final CloudEvent event) {
         String keys = (String) event.getExtension(EventMeshConstants.KEYS_UPPERCASE);
         if (StringUtils.isBlank(keys)) {
             keys = (String) event.getExtension(EventMeshConstants.KEYS_LOWERCASE);
@@ -159,7 +161,7 @@ public class EventMeshUtil {
         return keys;
     }
 
-    public static Map<String, String> getEventProp(final CloudEvent event) {
+    public Map<String, String> getEventProp(final CloudEvent event) {
         final Map<String, String> propMap = new HashMap<>();
         event.getExtensionNames().forEach((extensionKey) -> {
             propMap.put(extensionKey, event.getExtension(extensionKey) == null ? ""
@@ -168,7 +170,7 @@ public class EventMeshUtil {
         return propMap;
     }
 
-    public static String getLocalAddr() {
+    public String getLocalAddr() {
         // priority of networkInterface when generating client ip
         final String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
         log.debug("networkInterface.priority: {}", priority);
@@ -229,7 +231,7 @@ public class EventMeshUtil {
         return null;
     }
 
-    public static String normalizeHostAddress(final InetAddress localHost) {
+    public String normalizeHostAddress(final InetAddress localHost) {
         if (localHost instanceof Inet6Address) {
             return "[" + localHost.getHostAddress() + "]";
         } else {
@@ -237,7 +239,7 @@ public class EventMeshUtil {
         }
     }
 
-    private static void getIpResult(final Collection<String> ipv4Result, final Collection<String> ipv6Result,
+    private void getIpResult(final Collection<String> ipv4Result, final Collection<String> ipv6Result,
         final Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
@@ -254,7 +256,7 @@ public class EventMeshUtil {
         }
     }
 
-    public static String buildUserAgentClientId(final UserAgent client) {
+    public String buildUserAgentClientId(final UserAgent client) {
         if (client == null) {
             return null;
         }
@@ -271,7 +273,7 @@ public class EventMeshUtil {
             .toString();
     }
 
-    public static void printState(final ThreadPoolExecutor scheduledExecutorService) {
+    public void printState(final ThreadPoolExecutor scheduledExecutorService) {
         log.info("{} [{} {} {} {}]", ((EventMeshThreadFactory) scheduledExecutorService.getThreadFactory()).getThreadNamePrefix(),
             scheduledExecutorService.getQueue().size(), scheduledExecutorService.getPoolSize(),
             scheduledExecutorService.getActiveCount(), scheduledExecutorService.getCompletedTaskCount());
@@ -286,7 +288,7 @@ public class EventMeshUtil {
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("unchecked")
-    public static <T> T cloneObject(final T object) throws IOException, ClassNotFoundException {
+    public <T> T cloneObject(final T object) throws IOException, ClassNotFoundException {
         try (ByteArrayOutputStream byOut = new ByteArrayOutputStream();
             ObjectOutputStream outputStream = new ObjectOutputStream(byOut)) {
 
@@ -300,7 +302,7 @@ public class EventMeshUtil {
 
     }
 
-    public static Map<String, Object> getCloudEventExtensionMap(final String protocolVersion, final CloudEvent cloudEvent) {
+    public Map<String, Object> getCloudEventExtensionMap(final String protocolVersion, final CloudEvent cloudEvent) {
         final EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)
             && cloudEvent instanceof CloudEventV1) {

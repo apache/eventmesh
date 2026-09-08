@@ -30,14 +30,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Lists;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * ConfigurationContextUtil.
  */
+@UtilityClass
 public class ConfigurationContextUtil {
 
-    private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
 
-    public static final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC, ADMIN);
+    public final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC, ADMIN);
 
     /**
      * Save http, tcp, grpc configuration at startup for global use.
@@ -45,7 +48,7 @@ public class ConfigurationContextUtil {
      * @param key
      * @param configuration
      */
-    public static void putIfAbsent(String key, CommonConfiguration configuration) {
+    public void putIfAbsent(String key, CommonConfiguration configuration) {
         if (Objects.isNull(configuration)) {
             return;
         }
@@ -58,14 +61,14 @@ public class ConfigurationContextUtil {
      * @param key
      * @return configuration of the specified key mapping
      */
-    public static CommonConfiguration get(String key) {
+    public CommonConfiguration get(String key) {
         return CONFIGURATION_MAP.get(key);
     }
 
     /**
      * Removes all of the mappings from this map.
      */
-    public static void clear() {
+    public void clear() {
         CONFIGURATION_MAP.clear();
     }
 }
