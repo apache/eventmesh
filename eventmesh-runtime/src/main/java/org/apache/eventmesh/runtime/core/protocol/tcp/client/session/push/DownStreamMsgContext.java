@@ -185,13 +185,35 @@ public class DownStreamMsgContext extends RetryContext {
      *
      * @param downStreamMsgContext Down Stream Message Context
      */
-    private void eventMeshAckMsg(DownStreamMsgContext downStreamMsgContext) {
-        List<CloudEvent> msgExts = new ArrayList<>();
-        msgExts.add(downStreamMsgContext.event);
-        log.warn("eventMeshAckMsg topic:{}, seq:{}, bizSeq:{}", downStreamMsgContext.event.getSubject(),
-            downStreamMsgContext.seq, downStreamMsgContext.event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
-        downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
+   private void eventMeshAckMsg(DownStreamMsgContext downStreamMsgContext) {
+    if (downStreamMsgContext.consumer == null
+        || downStreamMsgContext.consumeConcurrentlyContext == null
+        || downStreamMsgContext.event == null) {
+
+        log.warn(
+            "eventMeshAckMsg skipped, consumer:{}, context:{}, event:{}",
+            downStreamMsgContext.consumer == null,
+            downStreamMsgContext.consumeConcurrentlyContext == null,
+            downStreamMsgContext.event == null
+        );
+        return;
     }
+
+    List<CloudEvent> msgExts = new ArrayList<>();
+    msgExts.add(downStreamMsgContext.event);
+
+    log.warn(
+        "eventMeshAckMsg topic:{}, seq:{}, bizSeq:{}",
+        downStreamMsgContext.event.getSubject(),
+        downStreamMsgContext.seq,
+        downStreamMsgContext.event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS)
+    );
+
+    downStreamMsgContext.consumer.updateOffset(
+        msgExts,
+        downStreamMsgContext.consumeConcurrentlyContext
+    );
+}
 
     @Override
     public void doRun() {
