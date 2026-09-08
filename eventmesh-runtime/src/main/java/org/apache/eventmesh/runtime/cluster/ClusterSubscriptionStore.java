@@ -126,6 +126,12 @@ public class ClusterSubscriptionStore implements SubscriptionStore {
             ConcurrentHashMap<String, ClusterSub> subs = cache.get(topic);
             if (subs != null) {
                 subs.remove(clientId);
+                // Drop the topic bucket once the last subscriber leaves, so topics()
+                // reflects live topics only (StateStoreDurabilityTest Scenario 2; the
+                // poll loop iterates topics() every tick and must not retain ghosts).
+                if (subs.isEmpty()) {
+                    cache.remove(topic, subs);
+                }
             }
             return;
         }

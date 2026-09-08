@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.storage.fakeplugin;
+package org.apache.eventmesh.storage.kafka;
 
 /**
  * Test canary for {@code ruleStoragePluginsIsolated}: a fake storage plugin

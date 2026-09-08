@@ -59,11 +59,11 @@ class TaskExpirerTest {
     void evictsIdleTasksPastTtl() throws Exception {
         InMemoryMetaStore meta = new InMemoryMetaStore();
         TaskStore store = new MetaBackedTaskStore(meta);
-        // Use a 200ms TTL so the test does not need to sleep for 24h.
-        TaskExpirer reaper = new TaskExpirer(store, 200L, 60_000L, null);
         store.createTask("stale-1", "agent-A", "client-X", "{}");
         store.createTask("stale-2", "agent-A", "client-X", "{}");
         store.createTask("fresh-1", "agent-B", "client-Y", "{}");
+        // Use a 200ms TTL so the test does not need to sleep for 24h.
+        TaskExpirer reaper = new TaskExpirer(store, 200L, 60_000L, null);
         // No task is past the TTL yet.
         assertEquals(0, reaper.scan().size(),
             "no task is past the 200ms TTL immediately after creation");
@@ -104,12 +104,12 @@ class TaskExpirerTest {
         TaskStore store = new MetaBackedTaskStore(meta);
         AtomicReference<List<String>> lastEvicted = new AtomicReference<>();
         AtomicInteger calls = new AtomicInteger();
+        store.createTask("a", "agent-A", "client-X", "{}");
+        store.createTask("b", "agent-A", "client-X", "{}");
         TaskExpirer reaper = new TaskExpirer(store, 100L, 60_000L, ids -> {
             lastEvicted.set(new ArrayList<>(ids));
             calls.incrementAndGet();
         });
-        store.createTask("a", "agent-A", "client-X", "{}");
-        store.createTask("b", "agent-A", "client-X", "{}");
         advanceClock(150);
         reaper.scan();
         assertEquals(1, calls.get(), "listener was called exactly once");
