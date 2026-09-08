@@ -24,6 +24,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -101,8 +102,12 @@ public final class EventMeshFrame {
         this.msgType = msgType;
         this.flags = flags;
         this.seq = seq;
-        this.attrs = attrs;
-        this.data = data;
+        // #5357: deep copy on construction — a caller-held map (e.g. a codec's
+        // accumulator) must not alias the frame's attribute state.
+        this.attrs = attrs == null
+            ? new LinkedHashMap<>()
+            : new LinkedHashMap<>(attrs);
+        this.data = data == null ? new byte[0] : data;
     }
 
     // -------------------- factories: streaming --------------------
@@ -334,8 +339,28 @@ public final class EventMeshFrame {
         return (flags & FLAG_DONE) != 0;
     }
 
+    /**
+     * Read-only view of the frame attributes (#5357: frames are immutable once
+     * constructed; use {@link #withAttribute(String, String)} to derive a frame
+     * with one attribute changed).
+     */
     public Map<String, String> attributes() {
-        return attrs;
+        return Collections.unmodifiableMap(attrs);
+    }
+
+    /**
+     * Derive a new frame with one attribute set/overridden (#5357 replacement for
+     * mutating the map returned by {@link #attributes()}). Returns a new instance;
+     * this frame is unchanged.
+     */
+    public EventMeshFrame withAttribute(String name, String value) {
+        Map<String, String> copy = new LinkedHashMap<>(attrs);
+        if (value == null) {
+            copy.remove(name);
+        } else {
+            copy.put(name, value);
+        }
+        return new EventMeshFrame(msgType, flags, seq, copy, data);
     }
 
     public byte[] data() {

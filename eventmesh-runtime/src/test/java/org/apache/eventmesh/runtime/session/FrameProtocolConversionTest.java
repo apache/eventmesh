@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.session;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.common.wire.EventMeshFrame;
@@ -130,15 +132,21 @@ class FrameProtocolConversionTest {
 
     @Test
     void framePopCkStampedForDeferredAck() {
-        // P2 fix: poll() stamps empopck onto frame.attributes() so dispatcher can find the deferred
-        // ACK callback. Test that attributes() is mutable (not unmodifiable).
+        // P2 fix: poll() stamps empopck onto the frame so dispatcher can find the deferred
+        // ACK callback. #5357: frames are immutable — stamping goes through withAttribute
+        // (derives a new frame) and attributes() returns an unmodifiable view.
         CloudEvent ce = sampleEvent("e-6", "t", "topic");
         EventMeshFrame frame = EventMeshFrame.fromCloudEvent(ce);
 
-        // Simulate what RocketMQ5 poll does.
-        frame.attributes().put("empopck", "pop-check-key-123");
-        assertEquals("pop-check-key-123", frame.attributes().get("empopck"),
-            "frame attributes must be mutable for stamping popCk");
+        // Simulate what RocketMQ5 poll must do post-#5357.
+        EventMeshFrame stamped = frame.withAttribute("empopck", "pop-check-key-123");
+        assertEquals("pop-check-key-123", stamped.attributes().get("empopck"),
+            "withAttribute derives a frame carrying the popCk");
+        assertNull(frame.attributes().get("empopck"),
+            "the source frame is unchanged (immutable)");
+        assertThrows(UnsupportedOperationException.class,
+            () -> frame.attributes().put("empopck", "pop-check-key-123"),
+            "attributes() view must be unmodifiable");
     }
 
     @Test

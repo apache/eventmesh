@@ -46,8 +46,8 @@ class MqCursorRecordingTest {
         EventMeshFrame f = EventMeshFrame.fromCloudEvent(
             CloudEventBuilder.v1().withId(id).withSource(URI.create("test")).withType("t").build());
         if (mqOffset >= 0) {
-            f.attributes().put("emmqoffset", Long.toString(mqOffset));
-            f.attributes().put("emmqpartition", Integer.toString(mqPartition));
+            f = f.withAttribute("emmqoffset", Long.toString(mqOffset))
+                .withAttribute("emmqpartition", Integer.toString(mqPartition));
         }
         return f;
     }
