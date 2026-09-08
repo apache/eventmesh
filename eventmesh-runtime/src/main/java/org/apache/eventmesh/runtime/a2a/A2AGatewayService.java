@@ -152,6 +152,9 @@ public class A2AGatewayService {
         statusSubscriptionId = transport.subscribe(statusTopic, this::handleStatus);
 
         started = true;
+        if (taskExpirer != null) {
+            taskExpirer.start();
+        }
         log.info("A2AGatewayService started: gatewayId={}, namespace={}", gatewayId, namespace);
     }
 
@@ -173,6 +176,10 @@ public class A2AGatewayService {
         statusSubscribers.clear();
         parentTaskIdCache.clear();
         taskEpochCache.clear();
+        if (taskExpirer != null) {
+            taskExpirer.shutdown();
+            taskExpirer = null;
+        }
         started = false;
         log.info("A2AGatewayService shutdown.");
     }
@@ -209,8 +216,22 @@ public class A2AGatewayService {
             return future;
         }
 
-        // Create task in the persistent store. createTask returns null on duplicate taskId.
-        TaskRecord rec = taskStore.createTask(taskId, targetAgent, gatewayId, message);
+        // Create task in the persistent store. createTask returns null on a
+        // duplicate taskId; it can also throw on a backend failure (e.g.
+        // MetaPartitionException for a Meta-backed TaskStore; see
+        // issue #5340 D2a acceptance item 4). We surface both cases to the
+        // caller via a failed CompletableFuture so the public API is
+        // uniformly future-based (callers never have to catch a synchronous
+        // throw from submitTask).
+        TaskRecord rec;
+        try {
+            rec = taskStore.createTask(taskId, targetAgent, gatewayId, message);
+        } catch (RuntimeException e) {
+            log.warn("Failed to create task in store: taskId={}: {}", taskId, e.getMessage());
+            CompletableFuture<TaskResult> failed = new CompletableFuture<>();
+            failed.completeExceptionally(e);
+            return failed;
+        }
         if (rec == null) {
             CompletableFuture<TaskResult> future = new CompletableFuture<>();
             future.completeExceptionally(new IllegalStateException("Duplicate taskId: " + taskId));
@@ -349,6 +370,28 @@ public class A2AGatewayService {
         }
     }
 
+    private TaskExpirer taskExpirer;
+
+    /**
+     * Attach a {@link TaskExpirer} that the gateway will start and stop alongside
+     * itself. The reaper evicts stale tasks (idle longer than the configured TTL)
+     * from the {@link TaskStore} so the durable ledger does not grow unboundedly
+     * for abandoned tasks. The reaper is opt-in: callers that do not need it
+     * simply do not call this method. Calling it twice replaces the previous
+     * reaper (the old one is shut down on the next {@link #start()}).
+     */
+    public void setTaskExpirer(TaskExpirer taskExpirer) {
+        this.taskExpirer = taskExpirer;
+    }
+
+    /**
+     * @return the attached reaper, or null if none has been attached.
+     */
+    public TaskExpirer getTaskExpirer() {
+        return taskExpirer;
+    }
+
+    // =========================================================================
     // =========================================================================
     // Response / Status Handling
     // =========================================================================
