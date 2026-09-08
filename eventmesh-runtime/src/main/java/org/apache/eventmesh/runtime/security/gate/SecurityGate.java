@@ -107,6 +107,35 @@ public final class SecurityGate {
         quotaManager.release(context.getQuotaKey(), resourceFor(context.getOperation()), units);
     }
 
+    /**
+     * Acquire one unit of this operation's resource and return a paired release
+     * handle (#5358). Auth/ACL runs first exactly like {@link #check}; the caller
+     * wraps the unit of work in try-with-resources so the slot is returned on
+     * success, failure and cancellation alike:
+     *
+     * <pre>{@code
+     * try (QuotaHandle h = gate.acquire(ctx, frame)) {
+     *     // gauge-style work (connection / subscription / backlog)
+     * }
+     * }</pre>
+     *
+     * <p>THROUGHPUT (window-style) handles are non-releasable — the counter
+     * self-expires per window; closing is a documented no-op.</p>
+     *
+     * @throws QuotaExceededException when the quota is exhausted (no slot consumed)
+     */
+    public QuotaHandle acquire(RequestContext context, EventMeshFrame frame) {
+        GateDecision decision = check(context, frame);
+        if (!decision.isAllowed()) {
+            throw new QuotaExceededException(decision.getReason());
+        }
+        QuotaManager.Resource resource = resourceFor(context.getOperation());
+        boolean releasable = resource == QuotaManager.Resource.CONNECTIONS
+            || resource == QuotaManager.Resource.SUBSCRIPTIONS
+            || resource == QuotaManager.Resource.BACKLOG;
+        return new QuotaHandle(quotaManager, context.getQuotaKey(), resource, 1, releasable);
+    }
+
     private void audit(RequestContext context, AuditSink.Outcome outcome, String detail) {
         try {
             auditSink.emit(context, outcome, detail);

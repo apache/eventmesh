@@ -131,6 +131,11 @@ class ArchitectureRulesTest {
     }
 
     @Test
+    void ruleQuotaManagerOnlyFromGate_check() {
+        ArchitectureRules.ruleQuotaManagerOnlyFromGate.check(classes);
+    }
+
+    @Test
     void ruleStoragePluginsIsolated_catches() {
         // Canary: FakeStorageCanary lives in
         // org.apache.eventmesh.storage.fakeplugin.. and reaches into the
