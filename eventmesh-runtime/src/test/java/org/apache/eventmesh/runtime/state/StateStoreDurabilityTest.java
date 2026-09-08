@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore;
 import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
-import org.apache.eventmesh.runtime.offset.OffsetStore;
 import org.apache.eventmesh.runtime.offset.RocksDBOffsetStore;
 import org.apache.eventmesh.runtime.session.SessionRegistry;
 import org.apache.eventmesh.runtime.state.fault.MetaPartitionSwitch;
@@ -202,9 +201,9 @@ class StateStoreDurabilityTest {
 
             // Final state on A: the entry is either present (last write was a put)
             // or absent (last write was a remove). Both instances must agree.
-            String aView = a.instanceOf("storm-client");
-            String bView = b.instanceOf("storm-client");
-            assertEquals(aView, bView,
+            String viewA = a.instanceOf("storm-client");
+            String viewB = b.instanceOf("storm-client");
+            assertEquals(viewA, viewB,
                 "both instances must agree on the final binding (convergence)");
             // The first-scenario write (topic-1 / client-1) must still be
             // visible to both - watch prefix is durable across put/remove storms.
@@ -245,7 +244,6 @@ class StateStoreDurabilityTest {
             // A and B share the same Meta. Each has its own SessionRegistry (a
             // real deployment would have one per JVM).
             SessionRegistry a = new SessionRegistry(meta, 60_000L);
-            SessionRegistry b = new SessionRegistry(meta, 60_000L);
 
             // A registers agent X.
             List<String> caps = new ArrayList<>();
@@ -264,6 +262,7 @@ class StateStoreDurabilityTest {
             // B sees the unregister via the underlying Meta (no watch on
             // /em/agents/ in the production SessionRegistry; the matcher
             // re-reads on demand). The agent is gone.
+            SessionRegistry b = new SessionRegistry(meta, 60_000L);
             assertNull(b.agent("agent-X"));
 
             // B takes over: registers a fresh agent-X with a new capability set.

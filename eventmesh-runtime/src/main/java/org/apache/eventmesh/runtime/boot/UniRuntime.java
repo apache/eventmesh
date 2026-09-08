@@ -21,7 +21,6 @@ import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.runtime.cluster.ClusterMembership;
 import org.apache.eventmesh.runtime.cluster.DeliveryTopology;
 import org.apache.eventmesh.runtime.cluster.FencingToken;
-import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
 import org.apache.eventmesh.runtime.cluster.MetaStore;
 import org.apache.eventmesh.runtime.cluster.PartitionOwnership;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
@@ -168,14 +167,22 @@ public class UniRuntime {
     /**
      * Boot the {@link PartitionOwnership} state machine for {@link DeliveryTopology#PARTITION_OWNED_PULL}
      * topology (§13.2.3 / §13.2.8). Constructs a {@link ClusterMembership} + {@link PartitionOwnership}
-     * backed by an {@link InMemoryMetaStore} (production deployments inject a Nacos/etcd/ZK
-     * {@link MetaStore} via {@link #clusterMeta} before {@link #start()}). The ownership loop
+     * backed by the shared {@link MetaStore} injected via {@link #clusterMeta} (Nacos/etcd/ZK;
+     * {@link EventMeshApplication} wires it from eventmesh.meta.type/addr). Missing MetaStore
+     * fails fast (issue #5356) — never a silent in-process fallback. The ownership loop
      * acquires a strict subset of topic partitions via Meta CAS + fencing, and the pull loop polls
      * only owned partitions (no duplicate consumption across instances).
      */
     private void startPartitionOwnership() {
         if (clusterMeta == null) {
-            clusterMeta = new InMemoryMetaStore();
+            // #5356: PARTITION_OWNED_PULL must fail fast without a shared MetaStore. Silently
+            // degrading to an isolated in-process store would make a misconfigured cluster
+            // look healthy while every instance polls every partition (duplicate consumption,
+            // CAS/fencing ineffective). Production deployments inject the MetaStore via
+            // EventMeshApplication (eventmesh.meta.type/addr) or withClusterMeta before start().
+            throw new IllegalStateException(
+                "PARTITION_OWNED_PULL requires a shared MetaStore: set eventmesh.meta.type/addr"
+                    + " (e.g. nacos + address) or use LOCAL_STICKY_PULL for single-instance");
         }
         FencingToken token = new FencingToken();
         ClusterMembership membership = new ClusterMembership(

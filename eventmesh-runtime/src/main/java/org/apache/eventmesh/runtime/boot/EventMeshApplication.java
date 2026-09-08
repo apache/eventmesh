@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.boot;
 import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.runtime.admin.UniAdminServer;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
+import org.apache.eventmesh.runtime.cluster.DeliveryTopology;
 import org.apache.eventmesh.runtime.http.UniHttpServer;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
@@ -345,11 +346,17 @@ public class EventMeshApplication {
         boolean clustered = !metaType.isEmpty() && !metaAddr.isEmpty();
         org.apache.eventmesh.runtime.cluster.MetaStore metaStore;
         if (clustered) {
-            metaStore = "nacos".equalsIgnoreCase(metaType)
-                ? new org.apache.eventmesh.runtime.cluster.NacosMetaStore(metaAddr)
-                : new org.apache.eventmesh.runtime.cluster.InMemoryMetaStore();
+            // #5356: in cluster mode an unknown meta type must fail fast — an in-memory store
+            // here would silently isolate this instance (no shared assignments, no fencing).
+            if (!"nacos".equalsIgnoreCase(metaType)) {
+                throw new IllegalStateException("unsupported eventmesh.meta.type='" + metaType
+                    + "': cluster mode requires a shared MetaStore (supported: nacos)");
+            }
+            metaStore = new org.apache.eventmesh.runtime.cluster.NacosMetaStore(metaAddr);
             log.info("meta store: type={} addr={}", metaType, metaAddr);
         } else {
+            // Single-instance (LOCAL_STICKY_PULL default): in-process store is the documented,
+            // intended mode — ConnectorScheduler keeps defs + worker registry local.
             metaStore = new org.apache.eventmesh.runtime.cluster.InMemoryMetaStore();
             log.info("meta store: in-memory (single-instance; cluster coordination disabled)");
         }

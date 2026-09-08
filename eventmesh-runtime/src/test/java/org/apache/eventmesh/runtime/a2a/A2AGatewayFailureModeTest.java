@@ -23,12 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.eventmesh.protocol.a2a.AgentIdentity;
 import org.apache.eventmesh.protocol.a2a.A2AMessageTransport;
+import org.apache.eventmesh.protocol.a2a.AgentIdentity;
 import org.apache.eventmesh.protocol.a2a.model.AgentCard;
 import org.apache.eventmesh.runtime.cluster.InMemoryMetaStore;
 import org.apache.eventmesh.runtime.state.MetaBackedTaskStore;
-import org.apache.eventmesh.runtime.state.TaskStore;
 import org.apache.eventmesh.runtime.state.fault.MetaPartitionSwitch;
 import org.apache.eventmesh.runtime.state.fault.MetaPartitionSwitch.MetaPartitionException;
 
@@ -38,11 +37,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.cloudevents.CloudEvent;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import io.cloudevents.CloudEvent;
 
 /**
  * Issue #5340 D2a acceptance item 4: failure-mode test. The Meta backing the

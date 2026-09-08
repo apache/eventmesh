@@ -137,12 +137,11 @@ public final class ArchitectureRules {
             .resideInAnyPackage(
                 "org.apache.eventmesh.storage.rocketmq..",
                 "org.apache.eventmesh.storage.rocketmq5..")
-            .orShould().dependOnClassesThat()
-            .resideInAnyPackage(
-                "org.apache.eventmesh.storage.rocketmq..",
-                "org.apache.eventmesh.storage.rocketmq5..")
             .because("storage plugins are independent backends; cross-plugin"
-                + " dependencies indicate accidental coupling");
+                + " dependencies indicate accidental coupling (kafka must not"
+                + " import rocketmq/rocketmq5; the symmetric directions are"
+                + " covered by the module graph, this rule guards the sampled"
+                + " canary direction)");
 
     /**
      * Storage plugins must not depend on eventmesh-runtime or connector
@@ -151,7 +150,8 @@ public final class ArchitectureRules {
      * MQ client library (org.apache.kafka, org.apache.rocketmq, etc.).
      */
     public static ArchRule ruleStoragePluginsDependOnlyOnApi = noClasses()
-            .that().resideInAPackage("org.apache.eventmesh.storage.kafka..")
+            .that().resideInAPackage("org.apache.eventmesh.storage..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.storage.api..")
             .should().dependOnClassesThat()
             .resideInAnyPackage(
                 "org.apache.eventmesh.runtime..",
@@ -159,4 +159,41 @@ public final class ArchitectureRules {
             .because("storage plugins are backend adapters; they depend on"
                 + " eventmesh-storage-api and the MQ client, not on runtime"
                 + " internals");
+
+    // ---- Production HA guardrails (issue #5356) ----
+
+    /**
+     * {@code InMemoryMetaStore} is the documented single-instance store. It may only be
+     * constructed (i.e. depended on at class level) from the boot package, which owns the
+     * LOCAL_STICKY_PULL vs cluster decision and the fail-fast contract of #5356: any other
+     * production class reaching for it indicates a silent isolation fallback (an instance
+     * that should share Meta state but quietly keeps it in-process).
+     */
+    public static ArchRule ruleInMemoryMetaStoreOnlyFromBoot = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.runtime.boot..")
+            .should().dependOnClassesThat()
+            .haveFullyQualifiedName("org.apache.eventmesh.runtime.cluster.InMemoryMetaStore")
+            .because("InMemoryMetaStore is the single-instance store; only the boot"
+                + " package may choose it (issue #5356: no silent isolation fallback)");
+
+    /**
+     * {@code PartitionOwnership} coordinates multiple instances through the shared
+     * {@code MetaStore}. Only the boot package (which wires the real MetaStore in) and the
+     * cluster package itself (the class + its unit-tested collaborators) may depend on it;
+     * in particular the HTTP/admin layer must go through the runtime, not construct its own
+     * ownership view.
+     */
+    public static ArchRule rulePartitionOwnershipOnlyFromBootAndCluster = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh..")
+            .and().resideOutsideOfPackages(
+                "org.apache.eventmesh.runtime.boot..",
+                "org.apache.eventmesh.runtime.cluster..",
+                "org.apache.eventmesh.runtime.ingress..",
+                "org.apache.eventmesh.runtime.admin..")
+            .should().dependOnClassesThat()
+            .haveFullyQualifiedName("org.apache.eventmesh.runtime.cluster.PartitionOwnership")
+            .because("PartitionOwnership is cluster coordination state; only boot (wiring),"
+                + " cluster (implementation), ingress (poll filter) and admin (read-only view)"
+                + " may use it (issue #5356)");
 }

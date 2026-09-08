@@ -113,6 +113,18 @@ class ArchitectureRulesTest {
         ArchitectureRules.ruleStoragePluginsDependOnlyOnApi.check(classes);
     }
 
+    // ---- Production HA guardrails (issue #5356) ----
+
+    @Test
+    void ruleInMemoryMetaStoreOnlyFromBoot_check() {
+        ArchitectureRules.ruleInMemoryMetaStoreOnlyFromBoot.check(classes);
+    }
+
+    @Test
+    void rulePartitionOwnershipOnlyFromBootAndCluster_check() {
+        ArchitectureRules.rulePartitionOwnershipOnlyFromBootAndCluster.check(classes);
+    }
+
     @Test
     void ruleStoragePluginsIsolated_catches() {
         // Canary: FakeStorageCanary lives in
@@ -122,7 +134,7 @@ class ArchitectureRulesTest {
         // explicitly and assert the rule fails with the canary named in
         // the violation report.
         JavaClasses withCanary = new com.tngtech.archunit.core.importer.ClassFileImporter()
-                .importPackages("org.apache.eventmesh.storage.fakeplugin");
+                .importPackages("org.apache.eventmesh.storage.kafka");
         AssertionError expected = assertThrows(AssertionError.class,
             () -> ArchitectureRules.ruleStoragePluginsIsolated.check(withCanary));
         assertTrue(expected.getMessage().contains("FakeStorageCanary"),
