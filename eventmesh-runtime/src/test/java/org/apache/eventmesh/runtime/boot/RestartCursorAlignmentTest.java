@@ -71,9 +71,9 @@ class RestartCursorAlignmentTest {
             for (Long o : msgs) {
                 if (o >= cursor && o < cursor + maxEvents) {
                     EventMeshFrame f = EventMeshFrame.fromCloudEvent(
-                        CloudEventBuilder.v1().withId("m-" + o).withSource(URI.create("t")).withType("t").build());
-                    f.attributes().put("emmqoffset", Long.toString(o));
-                    f.attributes().put("emmqpartition", "0");
+                        CloudEventBuilder.v1().withId("m-" + o).withSource(URI.create("t")).withType("t").build())
+                        .withAttribute("emmqoffset", Long.toString(o))
+                        .withAttribute("emmqpartition", "0");
                     out.add(f);
                     offs.put(0, o + 1);
                     pulledOffsets.add(o);

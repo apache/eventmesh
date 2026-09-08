@@ -196,4 +196,22 @@ public final class ArchitectureRules {
             .because("PartitionOwnership is cluster coordination state; only boot (wiring),"
                 + " cluster (implementation), ingress (poll filter) and admin (read-only view)"
                 + " may use it (issue #5356)");
+
+    // ---- Frame immutability (issue #5357) ----
+
+    /**
+     * {@code EventMeshFrame} is immutable (issue #5357): nothing outside the wire
+     * package may call a mutating method on it. The class has no setters, but this
+     * rule guards the pattern: any production method named {@code setXxx} on the
+     * frame, or any code mutating the map returned by {@code attributes()} via a
+     * method call chain, is a regression. We enforce the simpler, sound invariant:
+     * only classes in the wire package may be named {@code EventMeshFrame*} — the
+     * codec and the frame itself — so no other class can grow frame-mutating APIs.
+     */
+    public static ArchRule ruleEventMeshFrameImmutable = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.common.wire..")
+            .should().haveSimpleNameStartingWith("EventMeshFrame")
+            .because("EventMeshFrame is immutable (issue #5357); only the wire"
+                + " package (the frame + its codecs) may implement frame types");
 }
