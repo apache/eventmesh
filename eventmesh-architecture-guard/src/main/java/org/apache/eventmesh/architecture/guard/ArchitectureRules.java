@@ -111,4 +111,52 @@ public final class ArchitectureRules {
                     + "|ConnectorDef|EventMeshHttpEndpoint|InMemoryOffsetStore|RemoteOffsetStore"
                     + "|RocksDBConnectorOffsetStore)")
             .because("plugins must depend only on the connector-api SPI, not on runtime internals");
+    // ---- Storage SPI boundary (issue #5342 Q7) ----
+    // Storage plugins live in sub-packages org.apache.eventmesh.storage.<name>..
+    // (e.g. kafka, rocketmq, rocketmq5). Two rules enforce the boundary:
+    //   (a) Storage plugins must not reach into each other -- kafka must not
+    //       touch org.apache.eventmesh.storage.rocketmq.* and vice versa.
+    //   (b) Storage plugins must not reach into eventmesh-runtime.* or
+    //       eventmesh.connector.runtime.* internals -- they are backend
+    //       adapters, not runtime components.
+    // The kafka plugin is the canary sampled on the test classpath
+    // (mirrors the eventmesh-connector-file pattern); the rule is
+    // package-name-based and applies to every storage plugin in
+    // production source sets.
+
+    /**
+     * Storage plugins must not depend on each other. A kafka plugin class
+     * must not import {@code org.apache.eventmesh.storage.rocketmq..} or
+     * {@code org.apache.eventmesh.storage.rocketmq5..}, and similarly for
+     * the other directions. Backends are independent -- cross-plugin
+     * references indicate accidental coupling (e.g. copy-pasted helpers).
+     */
+    public static ArchRule ruleStoragePluginsIsolated = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.storage.kafka..")
+            .should().dependOnClassesThat()
+            .resideInAnyPackage(
+                "org.apache.eventmesh.storage.rocketmq..",
+                "org.apache.eventmesh.storage.rocketmq5..")
+            .orShould().dependOnClassesThat()
+            .resideInAnyPackage(
+                "org.apache.eventmesh.storage.rocketmq..",
+                "org.apache.eventmesh.storage.rocketmq5..")
+            .because("storage plugins are independent backends; cross-plugin"
+                + " dependencies indicate accidental coupling");
+
+    /**
+     * Storage plugins must not depend on eventmesh-runtime or connector
+     * runtime internals. They are adapter layers over an external MQ; their
+     * dependency surface is the {@code eventmesh-storage-api} SPI plus the
+     * MQ client library (org.apache.kafka, org.apache.rocketmq, etc.).
+     */
+    public static ArchRule ruleStoragePluginsDependOnlyOnApi = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh.storage.kafka..")
+            .should().dependOnClassesThat()
+            .resideInAnyPackage(
+                "org.apache.eventmesh.runtime..",
+                "org.apache.eventmesh.connector.runtime..")
+            .because("storage plugins are backend adapters; they depend on"
+                + " eventmesh-storage-api and the MQ client, not on runtime"
+                + " internals");
 }

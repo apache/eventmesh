@@ -42,6 +42,15 @@ dependencies {
     testImplementation project(':eventmesh-connector-api')
     testImplementation project(':eventmesh-connector-runtime')
     testImplementation project(':eventmesh-connector-plugin:eventmesh-connector-file')
+    // :eventmesh-storage-plugin:eventmesh-storage-kafka added for issue #5342 Q7
+    // (storage plugin canary for ruleStoragePluginsIsolated /
+    // ruleStoragePluginsDependOnlyOnApi). The other storage plugins
+    // (rocketmq, rocketmq5) are pulled in transitively via
+    // testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-kafka')?
+    // -- NO, they are NOT. Add them explicitly if a future canary
+    // needs the other plugins in scope. For now, kafka is the
+    // only plugin we sample, matching the connector-file pattern.
+    testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-kafka')
 }
 
 tasks.named('test') {

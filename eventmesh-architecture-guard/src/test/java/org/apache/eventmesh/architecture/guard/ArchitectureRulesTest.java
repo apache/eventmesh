@@ -101,4 +101,31 @@ class ArchitectureRulesTest {
         assertTrue(expected.getMessage().contains("FakePluginCanary"),
             "rule report should name the violating canary class");
     }
+    // ---- Storage plugin boundary (issue #5342 Q7) ----
+
+    @Test
+    void ruleStoragePluginsIsolated_check() {
+        ArchitectureRules.ruleStoragePluginsIsolated.check(classes);
+    }
+
+    @Test
+    void ruleStoragePluginsDependOnlyOnApi_check() {
+        ArchitectureRules.ruleStoragePluginsDependOnlyOnApi.check(classes);
+    }
+
+    @Test
+    void ruleStoragePluginsIsolated_catches() {
+        // Canary: FakeStorageCanary lives in
+        // org.apache.eventmesh.storage.fakeplugin.. and reaches into the
+        // rocketmq5 plugin's package. The production loadProductionClasses
+        // excludes it (DO_NOT_INCLUDE_TESTS); we import the canary package
+        // explicitly and assert the rule fails with the canary named in
+        // the violation report.
+        JavaClasses withCanary = new com.tngtech.archunit.core.importer.ClassFileImporter()
+                .importPackages("org.apache.eventmesh.storage.fakeplugin");
+        AssertionError expected = assertThrows(AssertionError.class,
+            () -> ArchitectureRules.ruleStoragePluginsIsolated.check(withCanary));
+        assertTrue(expected.getMessage().contains("FakeStorageCanary"),
+            "rule report should name the violating canary class");
+    }
 }
