@@ -19,6 +19,7 @@
 # EventMesh runtime and runs source/sink connectors. Built from `dist-connector`
 # (connector-runtime jar + deps + every connector plugin under plugin/connector/).
 # Same builder constraints as docker/Dockerfile (system gradle 8.5 + JDK 21).
+# Build-stage runs as root; the runtime stage below drops to a non-root user.
 FROM gradle:8.5.0-jdk21 AS builder
 USER root
 WORKDIR /build
@@ -28,16 +29,30 @@ RUN gradle clean dist-connector --no-daemon
 # Runtime: ConnectorApplication loads connectors via Class.forName, so bin/start-connector.sh
 # flattens plugin/connector/**/*.jar onto the classpath (find is required by that script).
 FROM eclipse-temurin:21-jre
-RUN apt-get update && apt-get install -y --no-install-recommends locales procps findutils \
+# findutils: `find` is required by bin/start-connector.sh; procps ships pgrep
+# (used by the HEALTHCHECK below). C.UTF-8 comes with the base image
+# (issue #5350: no locales package / localedef needed).
+RUN apt-get update && apt-get install -y --no-install-recommends procps findutils \
  && rm -rf /var/lib/apt/lists/*
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+# Run the JVM as a dedicated non-root user (issue #5350).
+RUN groupadd --gid 10002 connector \
+ && useradd --uid 10002 --gid connector --home-dir /data/app/connector --shell /usr/sbin/nologin connector
 WORKDIR /data/app/connector
-COPY --from=builder /build/dist-connector ./
+COPY --from=builder --chown=connector:connector /build/dist-connector ./
 RUN chmod +x bin/*.sh
 
 # Connector admin port is opt-in (CONNECTOR_ADMIN_PORT=0 = off by default). Expose 8083 as the
 # conventional port for operators who enable it; the connector otherwise makes only outbound calls.
 EXPOSE 8083
+
+# Liveness probe (issue #5350). The admin port is off by default, so an HTTP
+# probe would false-negative for the default config; check the JVM process
+# instead. Swap in an HTTP check once the admin API grows a documented health
+# route and the port is enabled.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD pgrep -f ConnectorApplication >/dev/null || exit 1
 
 ENV DOCKER=true
 ENV EVENTMESH_HOME=/data/app/connector
@@ -50,6 +65,12 @@ ENV CONNECTOR_OFFSET_PATH=/data/app/connector/data/connector-offset
 # Connector -D flags, e.g. -Dconnector.1.class=... -Dconnector.1.mode=source -Dconnector.1.topic=t
 ENV CONNECTOR_OPTS=""
 # Extra -D flags (TLS, …)
+# For container memory limits consider -XX:MaxRAMPercentage=70.
 ENV JAVA_OPTS=""
 
+# Persistent state: connector offsets (CONNECTOR_OFFSET_PATH) when running in
+# standalone offset mode (issue #5350).
+VOLUME ["/data/app/connector/data"]
+
+USER connector
 CMD ["bash", "bin/start-connector.sh"]

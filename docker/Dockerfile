@@ -19,6 +19,8 @@
 # gradle wrapper (8.7) is intentionally not used: its distribution is fetched
 # from services.gradle.org, which is unreachable on this fork's network.
 # Dependencies resolve against the Maven repositories configured in settings.gradle / build.gradle.
+# Build-stage runs as root (default for the gradle base image); no shipped
+# artifact is affected -- the runtime stage below drops to a non-root user.
 FROM gradle:8.5.0-jdk21 AS builder
 USER root
 WORKDIR /build
@@ -35,17 +37,36 @@ RUN gradle clean dist --no-daemon \
 # by the SPI JarExtensionClassLoader, so only conf/apps/lib need the classpath.
 # bin/start.sh assembles the classpath and maps ENV vars to -D flags.
 FROM eclipse-temurin:21-jre
-RUN apt-get update && apt-get install -y --no-install-recommends locales procps \
+# procps ships pgrep (container introspection / debug). The base image already
+# provides the C.UTF-8 locale, so no locales package / localedef is needed
+# (issue #5350: the previous en_US.UTF-8 generation was never selected by any
+# ENV, leaving the JVM on POSIX anyway).
+RUN apt-get update && apt-get install -y --no-install-recommends procps \
  && rm -rf /var/lib/apt/lists/*
-RUN localedef -i en_US -f UTF-8 en_US.UTF-8 --quiet
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+# Run the JVM as a dedicated non-root user (issue #5350). uid 10001, nologin;
+# home points at the app dir only so `~` resolves sensibly in shells.
+RUN groupadd --gid 10001 eventmesh \
+ && useradd --uid 10001 --gid eventmesh --home-dir /data/app/eventmesh --shell /usr/sbin/nologin eventmesh
 WORKDIR /data/app/eventmesh
-COPY --from=builder /build/dist ./
+COPY --from=builder --chown=eventmesh:eventmesh /build/dist ./
 RUN chmod +x bin/*.sh
 
 # 8080 = traffic HTTP (/events/* CloudEvents + legacy /eventmesh/*).
-# 8081 = independent admin port (UniAdminServer /admin/*).
+# 8081 = independent admin port (UniAdminServer /admin/*, incl. GET /admin/health).
 # 8082 = WebSocket push transport (opt-in via -Deventmesh.ws.port in JAVA_OPTS).
+# Note: the A2A Gateway (A2AGatewayServer, EXPERIMENTAL) is NOT started by
+# bin/start.sh today; when it ships enabled it will need its own port here.
 EXPOSE 8080 8081 8082
+
+# Liveness probe against the admin health endpoint (issue #5350). Uses bash's
+# /dev/tcp redirection so no curl/wget layer is added; any non-200 first line
+# (connection refused, 5xx) fails the check.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/${EVENTMESH_ADMIN_PORT:-8081} \
+    && printf "GET /admin/health HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3 \
+    && head -n1 <&3 | grep -q " 200 "' || exit 1
 
 ENV DOCKER=true
 ENV EVENTMESH_HOME=/data/app/eventmesh
@@ -59,6 +80,14 @@ ENV EVENTMESH_HTTP_PORT=8080
 ENV EVENTMESH_ADMIN_PORT=8081
 ENV EVENTMESH_OFFSET_PATH=/data/app/eventmesh/data/offset
 # Extra -D flags: TLS keystore, ws.port, meta.type/meta.addr for clustering, …
+# For container memory limits consider -XX:MaxRAMPercentage=70.
 ENV JAVA_OPTS=""
 
+# Persistent state: the RocksDB offset store under data/ holds the delivery
+# progress that makes at-least-once survive restarts (issue #5350). Declaring
+# VOLUME makes the persistence requirement visible and keeps forgotten mounts
+# on an anonymous volume instead of the container's writable layer.
+VOLUME ["/data/app/eventmesh/data"]
+
+USER eventmesh
 CMD ["bash", "bin/start.sh"]
