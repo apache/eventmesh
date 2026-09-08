@@ -196,12 +196,42 @@ public class EventMeshApplication {
         // 4. Dynamic config hot-reload.
         new org.apache.eventmesh.runtime.cluster.DynamicConfigWatcher(metaStore, runtime.ingress()).start();
 
+        // 5. #5359: flip the runtime's pull topology to PARTITION_OWNED_PULL and inject the shared
+        // MetaStore BEFORE runtime.start() runs, so the pull loop consults this PartitionOwnership
+        // (ownedPartitions) instead of polling every partition on every instance (duplicate
+        // consumption). UniRuntime.startPartitionOwnership then reuses the injected meta instead of
+        // building a second, divergent ownership state machine.
+        runtime.withClusterMeta(metaStore);
+        runtime.withTopology(org.apache.eventmesh.runtime.cluster.DeliveryTopology.PARTITION_OWNED_PULL);
+
         log.info("cluster enabled (sticky + partition fencing): instance={} token={}",
             selfInstanceId, selfToken);
     }
 
-    /** Start runtime + traffic HTTP + admin HTTP. */
+    /** Start runtime + traffic HTTP + admin HTTP. Rolls back partial startup on failure (#5359). */
     public void start() throws Exception {
+        try {
+            startupInternal();
+        } catch (Exception | Error failure) {
+            // #5359: a half-started process (runtime scheduler up, HTTP down) is worse than a
+            // clean exit - release ports, stop schedulers and rethrow so bin/start.sh surfaces it.
+            log.error("startup failed, rolling back: {}", failure.toString(), failure);
+            try {
+                shutdown();
+            } catch (RuntimeException cleanupFailure) {
+                failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
+        }
+    }
+
+    private void startupInternal() throws Exception {
+        // #5359: single-line effective configuration so an operator can audit a running
+        // deployment from the log (which topology / meta / storage actually took effect).
+        log.info("startup effective config: topology={} metaWired={} wsPort={} tls={}",
+            runtime.topology(), runtime.clusterMeta() != null
+                ? runtime.clusterMeta().getClass().getSimpleName() : "none",
+            wsPort, sslContext != null);
         runtime.start();
         runtime.ingress().registerRuntimeGauges();
         UniAdminService adminService = new UniAdminService(runtime.ingress());
