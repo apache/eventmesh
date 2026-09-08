@@ -57,7 +57,8 @@ public class UniRuntime {
     private final long pollTimeoutMs;
 
     /** Delivery topology (§13.2). LOCAL_STICKY_PULL = poll-all (default); PARTITION_OWNED_PULL = CAS+fencing scale-out. */
-    private final DeliveryTopology topology;
+    /** Set once at construction; may be flipped pre-start by EventMeshApplication.enableCluster (#5359). */
+    private volatile DeliveryTopology topology;
 
     /** Instance identity for cluster membership (null in LOCAL_STICKY_PULL mode). */
     private final String instanceId;
@@ -82,6 +83,41 @@ public class UniRuntime {
     private Properties storageConfig = new Properties();
 
     /** Inject storage config before {@link #start()}; additive, chainable. */
+    /** The delivery topology in effect (readable for startup logging, #5359). */
+    public DeliveryTopology topology() {
+        return topology;
+    }
+
+    /** The shared MetaStore wired by EventMeshApplication (null in single-instance mode, #5359). */
+    public MetaStore clusterMeta() {
+        return clusterMeta;
+    }
+
+    /** Wire the shared MetaStore before {@link #start()} (idempotent; used by enableCluster). */
+    public UniRuntime withClusterMeta(MetaStore metaStore) {
+        if (running.get()) {
+            throw new IllegalStateException("clusterMeta cannot change after start()");
+        }
+        this.clusterMeta = metaStore;
+        return this;
+    }
+
+    /**
+     * Flip the delivery topology pre-start (#5359). Only {@link EventMeshApplication#enableCluster}
+     * uses this: cluster mode upgrades a LOCAL_STICKY_PULL runtime to PARTITION_OWNED_PULL after the
+     * shared MetaStore is wired in. Must not be called after {@link #start()}.
+     */
+    public UniRuntime withTopology(DeliveryTopology newTopology) {
+        if (running.get()) {
+            throw new IllegalStateException("topology cannot change after start()");
+        }
+        if (newTopology == null) {
+            throw new IllegalArgumentException("topology must not be null");
+        }
+        this.topology = newTopology;
+        return this;
+    }
+
     public UniRuntime withStorageConfig(Properties storageConfig) {
         this.storageConfig = storageConfig;
         return this;
