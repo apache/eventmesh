@@ -214,4 +214,21 @@ public final class ArchitectureRules {
             .should().haveSimpleNameStartingWith("EventMeshFrame")
             .because("EventMeshFrame is immutable (issue #5357); only the wire"
                 + " package (the frame + its codecs) may implement frame types");
+
+    // ---- Quota lifecycle (issue #5358) ----
+
+    /**
+     * {@code QuotaManager.tryAcquire/release} may only be called from the
+     * {@code security.gate} package (the gate + its handle own the pairing;
+     * issue #5358). Any other production class calling the manager directly
+     * bypasses the release-handle contract and reintroduces the leak class
+     * where acquire has no guaranteed release.
+     */
+    public static ArchRule ruleQuotaManagerOnlyFromGate = noClasses()
+            .that().resideInAPackage("org.apache.eventmesh..")
+            .and().resideOutsideOfPackage("org.apache.eventmesh.runtime.security.gate..")
+            .should().dependOnClassesThat()
+            .haveFullyQualifiedName("org.apache.eventmesh.runtime.security.gate.QuotaManager")
+            .because("quota acquire/release must be paired through SecurityGate +"
+                + " QuotaHandle (issue #5358); direct QuotaManager calls leak slots");
 }
