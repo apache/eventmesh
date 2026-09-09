@@ -53,16 +53,54 @@ public class ConnectorManager {
 
     // ---- dynamic (runtime-driven) ----
 
+    /** #5382: the generation each connector currently runs at (fencing). */
+    private final ConcurrentHashMap<String, Long> runningGenerations = new ConcurrentHashMap<>();
+
+    /**
+     * #5382: the fencing decision, isolated for testability. Accepts a start iff its
+     * generation is >= the currently running one (equal = idempotent re-push, greater =
+     * superseding assignment). A stale delayed start (< running) is rejected.
+     */
+    boolean shouldAcceptStart(String id, long incomingGen) {
+        Long runningGen = runningGenerations.get(id);
+        return runningGen == null || incomingGen >= runningGen;
+    }
+
+    /** Records the generation a connector now runs at (fencing bookkeeping, #5382). */
+    void recordRunningGeneration(String id, long generation) {
+        runningGenerations.put(id, generation);
+    }
+
+    /** Test accessor: the running generation of a connector (fencing, #5382). */
+    public long runningGenerationForTest(String id) {
+        Long g = runningGenerations.get(id);
+        return g == null ? -1L : g;
+    }
+
     /**
      * Build + start a connector by id. Idempotent: a no-op if {@code id} is already running (the
      * runtime re-pushes start on its own restart; the worker must not restart a healthy connector).
      * Throws if the connector class cannot be loaded/initialised.
      */
     public synchronized void startConnector(String id, ConnectorDef def) {
+        // #5382: generation fencing — a delayed /control/start from a superseded assignment
+        // (worker restart, membership change, def update) must NOT take over a connector that
+        // already runs at a newer generation. The stale worker keeps its copy only until its
+        // stop arrives; exactly one generation is authoritative.
+        long incomingGen = def.getGeneration();
+        if (!shouldAcceptStart(id, incomingGen)) {
+            log.warn("rejecting stale start for connector {}: gen {} < running gen {}"
+                + " (superseded assignment)", id, incomingGen, runningGenerations.get(id));
+            return;
+        }
         ConnectorRuntime existing = runtimes.get(id);
         if (existing != null && existing.isRunning()) {
-            log.debug("connector {} already running — start no-op", id);
-            return;
+            Long runningGen = runningGenerations.get(id);
+            if (runningGen != null && incomingGen == runningGen) {
+                log.debug("connector {} already running at gen {} — start no-op", id, incomingGen);
+                return;
+            }
+            // newer generation: fall through and stop the old runtime before rebuild
         }
         if (existing != null) {
             try {
@@ -71,6 +109,7 @@ public class ConnectorManager {
                 // best-effort cleanup before rebuild
             }
         }
+        runningGenerations.put(id, incomingGen);
         try {
             ConnectorRuntime rt = buildRuntime(def);
             rt.setOffsetStore(offsetStore);
@@ -84,6 +123,7 @@ public class ConnectorManager {
     }
 
     public synchronized void stopConnector(String id) {
+        runningGenerations.remove(id);
         ConnectorRuntime rt = runtimes.remove(id);
         if (rt != null) {
             try {

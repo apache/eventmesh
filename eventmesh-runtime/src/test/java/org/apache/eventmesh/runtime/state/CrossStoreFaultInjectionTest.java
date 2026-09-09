@@ -141,7 +141,7 @@ class CrossStoreFaultInjectionTest {
             ReliableDispatcher a = new ReliableDispatcher(1000L, 5, clockA::get, offsets, dlq,
                 new UniMetrics(), 0.0d, store);
             String acked = a.deliver("topic", 0, 100L, event("e1"), "client", channel);
-            String crashed = a.deliver("topic", 0, 101L, event("e2"), "client", channel);
+            final String crashed = a.deliver("topic", 0, 101L, event("e2"), "client", channel);
             assertTrue(a.ack(acked), "first delivery ACKs cleanly");
             // The second delivery is still in-flight at the time of the simulated crash.
             assertEquals(1, a.pendingCount());
@@ -153,16 +153,18 @@ class CrossStoreFaultInjectionTest {
             ReliableDispatcher b = new ReliableDispatcher(1000L, 5, clockB::get, offsets, dlq,
                 new UniMetrics(), 0.0d, store);
             final int deliveredBeforeRecovery = channel.delivered.size();
-            int retired = b.recover();
-            assertEquals(1, retired, "exactly the still-in-flight delivery is retired");
+            int recovered = b.recover();
+            // #5379 semantics: recovery RE-DISPATCHES the unacknowledged delivery instead of
+            // advancing its offset (which converted unACKed into ACKed progress — a skip).
+            assertEquals(1, recovered, "exactly the still-in-flight delivery is re-dispatched");
+            assertEquals(1, store.count(), "the record stays in flight until the client ACKs");
+            assertEquals(1, b.pendingCount());
+            // The offset for the crashed delivery must NOT have advanced.
+            assertEquals(100L, offsets.readOffset("topic", "client", 0),
+                "recovery must not advance the unACKed offset (no skip across the crash)");
+            // Retire through the ACK path — the offset advances exactly once, on the real ACK.
+            assertTrue(b.ack(crashed));
             assertEquals(0, store.count());
-            assertEquals(0, b.pendingCount());
-            // The channel was NOT re-invoked: recovery only writes the stored offset, it does
-            // not re-deliver (issue #5291 idempotency).
-            assertEquals(deliveredBeforeRecovery, channel.delivered.size(),
-                "recovery must NOT re-invoke the channel (broker owns redelivery, not EventMesh)");
-            // Both offsets are now durably written (the first from the pre-crash ACK, the
-            // second from recovery).
             assertEquals(101L, offsets.readOffset("topic", "client", 0));
         }
 
@@ -178,15 +180,24 @@ class CrossStoreFaultInjectionTest {
             InMemoryDeliveryStateStore store = new InMemoryDeliveryStateStore();
             InMemoryOffsetStore offsets = new InMemoryOffsetStore();
             RecordingChannel channel = new RecordingChannel();
-            AtomicLong clock = new AtomicLong(1000L);
-            ReliableDispatcher dispatcher = new ReliableDispatcher(1000L, 5, clock::get, offsets,
+            // The crashed instance delivered one event and never saw the ACK.
+            ReliableDispatcher crashed = new ReliableDispatcher(1000L, 5, () -> 1000L, offsets,
                 sinkThatRecords(new ArrayList<>()), new UniMetrics(), 0.0d, store);
-            String id = dispatcher.deliver("topic", 0, 50L, event("only"), "client", channel);
-            assertEquals(1, dispatcher.pendingCount());
-            int retired = dispatcher.recover();
-            assertEquals(1, retired);
-            assertTrue(dispatcher.ack(id) == false,
-                "ack for a recovered id is a no-op (the delivery is already retired)");
+            final String id = crashed.deliver("topic", 0, 50L, event("only"), "client", channel);
+            assertEquals(1, crashed.pendingCount());
+            crashed = null;
+
+            // #5379: the restarted dispatcher re-dispatches the still-in-flight delivery
+            // (it stays pending); the client's later ACK retires it through the normal path.
+            ReliableDispatcher restarted = new ReliableDispatcher(1000L, 5, () -> 5000L, offsets,
+                sinkThatRecords(new ArrayList<>()), new UniMetrics(), 0.0d, store);
+            int recovered = restarted.recover();
+            assertEquals(1, recovered);
+            assertEquals(1, restarted.pendingCount(),
+                "the recovered delivery remains in flight");
+            assertTrue(restarted.ack(id),
+                "the client's ACK after recovery retires the re-dispatched delivery");
+            assertEquals(0, restarted.pendingCount());
         }
     }
 

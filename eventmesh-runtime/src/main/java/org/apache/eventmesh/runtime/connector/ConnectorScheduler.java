@@ -68,6 +68,9 @@ public class ConnectorScheduler {
 
     /** connectorId → last-pushed (ownerWorkerId, defJson). Drives reconcile diffs. */
     private final ConcurrentHashMap<String, Cached> assignmentCache = new ConcurrentHashMap<>();
+    /** #5382: per-connector monotonic generation; bumped on every (re)assignment so a stale
+     *  worker's delayed /control/start is rejected by the generation check. */
+    private final ConcurrentHashMap<String, Long> generations = new ConcurrentHashMap<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     /** #5304: optional unified security/quota/audit gate; null = allow all. */
@@ -237,10 +240,20 @@ public class ConnectorScheduler {
                     pushStop(addr, id);
                 }
             }
-            if (owner != null && (!owner.id.equals(oldOwnerId) || defChanged)) {
-                pushStart(owner.address, defJson);
+            long oldGen = cached == null ? 0L : cached.generation;
+            boolean ownerChanged = owner != null && !owner.id.equals(oldOwnerId);
+            long gen = oldGen;
+            if (ownerChanged || defChanged) {
+                // #5382: any (re)assignment or def change bumps the fencing generation; only
+                // the push carrying THIS gen may start the connector, and the worker rejects
+                // any start with gen < its running gen (stale delayed control request).
+                gen = generations.merge(id, 1L, Long::sum);
+                if (owner != null) {
+                    String withGen = injectGeneration(defJson, gen);
+                    pushStart(owner.address, withGen);
+                }
             }
-            assignmentCache.put(id, new Cached(newOwnerId, defJson));
+            assignmentCache.put(id, new Cached(newOwnerId, defJson, gen));
         }
 
         // 2. Defs removed from Meta: stop on their last owner (if still alive).
@@ -304,6 +317,16 @@ public class ConnectorScheduler {
         }
     }
 
+    /** #5382: merge the fencing generation into the def JSON envelope for /control/start. */
+    private static String injectGeneration(String defJson, long generation) {
+        int brace = defJson.indexOf('{');
+        if (brace < 0) {
+            return defJson;
+        }
+        return defJson.substring(0, brace + 1) + "\"generation\":" + generation + ","
+            + defJson.substring(brace + 1);
+    }
+
     private String writeJson(ConnectorDef def) {
         try {
             return mapper.writeValueAsString(def);
@@ -343,10 +366,14 @@ public class ConnectorScheduler {
 
         final String owner;
         final String defJson;
+        /** #5382: fencing generation of this assignment; only the holder of the CURRENT
+         *  generation may run the connector. */
+        final long generation;
 
-        Cached(String owner, String defJson) {
+        Cached(String owner, String defJson, long generation) {
             this.owner = owner;
             this.defJson = defJson;
+            this.generation = generation;
         }
     }
 }

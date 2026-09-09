@@ -38,15 +38,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 
 /**
- * Sub-PR B fault-injection tests: verify that {@link ReliableDispatcher#recover()} picks up
- * in-flight deliveries from a persisted {@link DeliveryStateStore} on a fresh JVM, retires each
- * one with its stored offset, and never re-runs the channel (the MQ has already considered the
- * message gone \u2014 issue #5291 idempotency).
+ * Restart-recovery tests for {@link ReliableDispatcher#recover()} (issue #5379): a fresh JVM
+ * RE-DISPATCHES the persisted in-flight deliveries (at-least-once) instead of advancing the
+ * subscriber offset as if the absent client had ACKed. The offset advances exactly once
+ * when the client actually ACKs the re-dispatched delivery.
  */
 class DeliveryRecoveryTest {
 
     @Test
-    void recoverRetiresInFlightDeliveriesAndAdvancesOffset() {
+    void recoverRedispatchesInFlightWithoutAdvancingOffset() {
         InMemoryDeliveryStateStore store = new InMemoryDeliveryStateStore();
         InMemoryOffsetStore offsets = new InMemoryOffsetStore();
         TestChannel channel = new TestChannel();
@@ -56,9 +56,9 @@ class DeliveryRecoveryTest {
         AtomicLong clockA = new AtomicLong(1000L);
         ReliableDispatcher a = new ReliableDispatcher(1000L, 3, clockA::get, offsets, dlq,
             new UniMetrics(), 0.0d, store);
-        String id1 = a.deliver("topic-A", 0, 100L, event("a-1"), "client-X", channel);
-        String id2 = a.deliver("topic-A", 0, 101L, event("a-2"), "client-X", channel);
-        String id3 = a.deliver("topic-B", 1, 200L, event("b-1"), "client-Y", channel);
+        final String id1 = a.deliver("topic-A", 0, 100L, event("a-1"), "client-X", channel);
+        final String id2 = a.deliver("topic-A", 0, 101L, event("a-2"), "client-X", channel);
+        final String id3 = a.deliver("topic-B", 1, 200L, event("b-1"), "client-Y", channel);
         assertEquals(3, a.pendingCount(), "all three deliveries are in-flight");
         assertEquals(3, store.count(), "in-flight state must be persisted");
 
@@ -69,20 +69,28 @@ class DeliveryRecoveryTest {
         AtomicLong clock = new AtomicLong(10_000L);
         ReliableDispatcher b = new ReliableDispatcher(1000L, 3, clock::get, offsets, dlq,
             new UniMetrics(), 0.0d, store);
-        // Capture deliveries made during the simulated JVM so we can assert recovery did NOT
-        // re-deliver through the channel (the broker owns redelivery, issue #5291).
         final int deliveredBeforeRecovery = channel.delivered.size();
         final int recovered = b.recover();
-        assertEquals(3, recovered, "all 3 in-flight deliveries must be recovered");
+        assertEquals(3, recovered, "all 3 in-flight deliveries must be re-dispatched");
 
-        // No channel redelivery happened during recovery (issue #5291 idempotency)
+        // The crashed instance's channel is never re-invoked: the re-dispatch goes through
+        // the buffered poll channel, the original push channel stays quiet (#5379).
         assertEquals(deliveredBeforeRecovery, channel.delivered.size(),
-            "recovery must NOT re-deliver through the channel (broker already redelivered or not, but "
-                + "EventMesh is not the source of truth for the message anymore)");
+            "re-dispatch must not re-deliver through the crashed instance's channel");
 
-        // Each persisted delivery must be retired: offset advanced, store emptied
-        assertEquals(0, store.count(), "recovered entries are removed from the ledger");
-        assertEquals(0, b.pendingCount(), "the fresh dispatcher must not re-track the recovered entries");
+        // #5379: unACKed is not ACKed; the subscriber offset must NOT advance during recovery...
+        assertEquals(-1L, offsets.readOffset("topic-A", "client-X", 0));
+        assertEquals(-1L, offsets.readOffset("topic-B", "client-Y", 1));
+        // ...and the deliveries stay in flight (the retry state machine owns the bound).
+        assertEquals(3, store.count(), "recovered records stay persisted until a real ACK");
+        assertEquals(3, b.pendingCount(), "the fresh dispatcher tracks the recovered deliveries");
+
+        // The offset advances exactly when the client ACKs the re-dispatched delivery.
+        assertTrue(b.ack(id1));
+        assertTrue(b.ack(id2));
+        assertTrue(b.ack(id3));
+        assertEquals(0, store.count(), "the ACK retires the persisted record");
+        assertEquals(0, b.pendingCount());
         assertEquals(101L, offsets.readOffset("topic-A", "client-X", 0));
         assertEquals(200L, offsets.readOffset("topic-B", "client-Y", 1));
     }
@@ -91,14 +99,23 @@ class DeliveryRecoveryTest {
     void recoverIsIdempotent() {
         InMemoryDeliveryStateStore store = new InMemoryDeliveryStateStore();
         InMemoryOffsetStore offsets = new InMemoryOffsetStore();
-        AtomicLong clock = new AtomicLong(1000L);
-        ReliableDispatcher a = new ReliableDispatcher(1000L, 3, clock::get, offsets,
+        // The crashed instance delivered one event and never saw the ACK.
+        ReliableDispatcher crashed = new ReliableDispatcher(1000L, 3, () -> 1000L, offsets,
             (t, e, r, att) -> CompletableFuture.completedFuture(true), new UniMetrics(), 0.0d, store);
-        a.deliver("topic", 0, 50L, event("only"), "client", new TestChannel());
-        a.recover();
-        a.recover();   // second call is a no-op
-        assertEquals(0, store.count());
+        final String id = crashed.deliver("topic", 0, 50L, event("only"), "client", new TestChannel());
+        crashed = null;
+
+        // The restarted instance recovers the persisted record exactly once: the second
+        // pass skips records that are already live on this dispatcher.
+        ReliableDispatcher restarted = new ReliableDispatcher(1000L, 3, () -> 2000L, offsets,
+            (t, e, r, att) -> CompletableFuture.completedFuture(true), new UniMetrics(), 0.0d, store);
+        assertEquals(1, restarted.recover(), "the first pass re-dispatches the persisted record");
+        assertEquals(0, restarted.recover(), "a second pass is a no-op (the record is already live)");
+        // Still no offset movement without a client ACK.
+        assertEquals(-1L, offsets.readOffset("topic", "client", 0));
+        assertTrue(restarted.ack(id), "the client's ACK retires the re-dispatched delivery");
         assertEquals(50L, offsets.readOffset("topic", "client", 0));
+        assertEquals(0, store.count());
     }
 
     @Test

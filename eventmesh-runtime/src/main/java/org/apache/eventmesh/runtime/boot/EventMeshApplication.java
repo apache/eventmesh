@@ -53,6 +53,9 @@ public class EventMeshApplication {
     private org.apache.eventmesh.runtime.cluster.ClusterMembership clusterMembership;
     private org.apache.eventmesh.runtime.cluster.PartitionOwnership partitionOwnership;
 
+    /** #5381: the traffic-plane security gate (null = no gate installed). */
+    private org.apache.eventmesh.runtime.security.gate.SecurityGate securityGate;
+
     /** #5378: the durable delivery-state store, closed on shutdown. */
     private org.apache.eventmesh.runtime.state.RocksDBDeliveryStateStore durableDeliveryState;
     private java.util.concurrent.ScheduledExecutorService heartbeatScheduler;
@@ -66,6 +69,12 @@ public class EventMeshApplication {
     private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
     private org.apache.eventmesh.runtime.session.Matchmaker matchmaker;
     private org.apache.eventmesh.runtime.session.SessionRouter sessionRouter;
+
+    /** #5381: install the SecurityGate on the traffic HTTP path (fail-closed profiles in main()). */
+    public EventMeshApplication withSecurityGate(org.apache.eventmesh.runtime.security.gate.SecurityGate gate) {
+        this.securityGate = gate;
+        return this;
+    }
 
     /** Enable HTTPS on the traffic port (§13.4.1). Chain before {@link #start()}. */
     public EventMeshApplication withTls(javax.net.ssl.SSLContext sslContext) {
@@ -255,6 +264,9 @@ public class EventMeshApplication {
         runtime.ingress().registerRuntimeGauges();
         UniAdminService adminService = new UniAdminService(runtime.ingress());
         httpServer = new UniHttpServer(runtime.ingress(), adminService);
+        if (securityGate != null) {
+            httpServer.withSecurityGate(securityGate);
+        }
         if (sslContext != null) {
             httpServer.withTls(sslContext);
             if (needClientAuth) {
