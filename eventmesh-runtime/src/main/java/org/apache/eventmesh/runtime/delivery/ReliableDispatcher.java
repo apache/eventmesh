@@ -247,6 +247,24 @@ public class ReliableDispatcher {
         this.deadLetterStore = deadLetterStore;
     }
 
+    /**
+     * Ownership view consulted before durable side effects (#5360). When non-null, {@link #ack}
+     * verifies this instance still owns the delivery's partition; a fenced owner drops the
+     * delivery (no offset write, no broker ACK) and raises {@link StaleOwnerException} to the
+     * trace, preserving at-least-once via broker POP redelivery to the new owner.
+     */
+    private volatile java.util.function.BiPredicate<String, Integer> ownershipGuard;
+
+    /**
+     * Install the ownership guard (topic, partition) -> stillOwner? (#5360). Wired from
+     * PartitionOwnership by UniRuntime/EventMeshApplication after the cluster meta is in;
+     * null (single-instance) keeps the unguarded behaviour.
+     */
+    public ReliableDispatcher withOwnershipGuard(java.util.function.BiPredicate<String, Integer> guard) {
+        this.ownershipGuard = guard;
+        return this;
+    }
+
     public UniMetrics metrics() {
         return metrics;
     }
@@ -296,6 +314,18 @@ public class ReliableDispatcher {
             liveDeliveries.remove(deliveryId);
             org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
             return false;
+        }
+        // #5360: a fenced owner must not write offsets or ACK the broker — the partition has a
+        // newer owner in Meta. Drop the delivery (remove from the live/state stores) and let the
+        // broker's POP invisibleTime redeliver to the new owner; at-least-once is preserved and
+        // the new owner's offset state stays authoritative.
+        java.util.function.BiPredicate<String, Integer> guard = ownershipGuard;
+        if (guard != null && !guard.test(d.getTopic(), d.getPartition())) {
+            stateStore.remove(deliveryId);
+            liveDeliveries.remove(deliveryId);
+            metrics.incDlq();
+            org.apache.eventmesh.runtime.metrics.UniTrace.end(ackSpan);
+            throw new StaleOwnerException(d.getTopic(), d.getPartition());
         }
         boolean persisted = offsetStore.writeOffset(d.getTopic(), d.getClientId(), d.getPartition(), d.getOffset());
         if (!persisted) {
