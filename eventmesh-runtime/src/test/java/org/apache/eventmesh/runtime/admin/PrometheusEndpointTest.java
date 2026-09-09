@@ -91,7 +91,7 @@ class PrometheusEndpointTest {
     @BeforeEach
     void boot() throws Exception {
         UniIngressService ingress = new UniIngressService(new NullStorage(), new InMemoryOffsetStore());
-        adminServer = new UniAdminServer(new UniAdminService(ingress));
+        adminServer = new UniAdminServer(new UniAdminService(ingress)).withAdminToken("test-admin-token");
         port = adminServer.start(0);
     }
 
@@ -105,6 +105,7 @@ class PrometheusEndpointTest {
     @Test
     void prometheusScrapeContainsCounters() throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL("http://localhost:" + port + "/metrics").openConnection();
+        conn.setRequestProperty("Authorization", "Bearer test-admin-token");
         try {
             int status = conn.getResponseCode();
             assertTrue(status == 200, "GET /metrics should return 200, got " + status);
