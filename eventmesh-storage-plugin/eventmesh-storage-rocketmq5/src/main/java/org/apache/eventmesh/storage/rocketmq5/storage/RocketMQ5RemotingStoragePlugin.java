@@ -271,8 +271,11 @@ public class RocketMQ5RemotingStoragePlugin
                         try {
                             org.apache.eventmesh.common.wire.EventMeshFrame frame =
                                 org.apache.eventmesh.common.wire.EventMeshFrame.decode(msg.getBody());
+                            // Frames are immutable and attributes() is an unmodifiable view, so
+                            // stamping in place threw UnsupportedOperationException — which the
+                            // catch-all below misread as a decode failure and dropped the event.
                             if (popCk != null) {
-                                frame.attributes().put(POP_CK_KEY, popCk);
+                                frame = frame.withAttribute(POP_CK_KEY, popCk);
                             }
                             frames.add(frame);
                             if (frames.size() >= maxEvents) {

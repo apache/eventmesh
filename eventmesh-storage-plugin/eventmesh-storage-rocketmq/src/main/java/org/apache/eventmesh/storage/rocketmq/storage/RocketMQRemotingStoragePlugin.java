@@ -92,7 +92,10 @@ public class RocketMQRemotingStoragePlugin
 
         org.apache.rocketmq.remoting.netty.NettyClientConfig config = new org.apache.rocketmq.remoting.netty.NettyClientConfig();
         config.setClientWorkerThreads(4);
-        config.setConnectTimeoutMillis(2000);
+        // 8000ms matches the rocketmq5 plugin: 2000ms is too tight for the first remoting connect
+        // on anything but a loopback broker (container/overlay networking, cold broker start), and
+        // the failure surfaced as an opaque "send failed" during init rather than a timeout.
+        config.setConnectTimeoutMillis(8000);
         remotingClient = new org.apache.rocketmq.remoting.netty.NettyRemotingClient(config);
         remotingClient.start();
 
@@ -241,17 +244,13 @@ public class RocketMQRemotingStoragePlugin
                             EventMeshFrame frame = EventMeshFrame.decode(msg.getBody());
                             // Stamp MQ physical offset/partition for restart-cursor alignment
                             // (Frame-native replacement of develop's OffsetExtensions).
-                            frame.attributes().put("emmqoffset", Long.toString(msg.getQueueOffset()));
-                            frame.attributes().put("emmqpartition", Integer.toString(msg.getQueueId()));
-                            frames.add(frame);
+                            frames.add(stampMqOffset(frame, msg.getQueueId(), msg.getQueueOffset()));
                         } catch (Exception decodeEx) {
                             // fall back: legacy CloudEvents-JSON → CE → frame
                             CloudEvent legacy = deserialize(msg.getBody());
                             if (legacy != null) {
                                 EventMeshFrame frame = EventMeshFrame.fromCloudEvent(legacy);
-                                frame.attributes().put("emmqoffset", Long.toString(msg.getQueueOffset()));
-                                frame.attributes().put("emmqpartition", Integer.toString(msg.getQueueId()));
-                                frames.add(frame);
+                                frames.add(stampMqOffset(frame, msg.getQueueId(), msg.getQueueOffset()));
                             }
                         }
                     }
@@ -580,5 +579,17 @@ public class RocketMQRemotingStoragePlugin
             log.warn("failed to deserialize CloudEvent from RocketMQ: {}", e.toString());
             return null;
         }
+    }
+
+    /**
+     * Stamp the MQ physical offset/partition onto the frame attributes so the dispatcher can record
+     * them in the OffsetStore on client ACK. Frames are immutable and {@code attributes()} is an
+     * unmodifiable view, so the stamps must be applied by deriving a new frame — mutating in place
+     * threw UnsupportedOperationException, which the caller's catch-all then misread as a decode
+     * failure and silently dropped the event.
+     */
+    private static EventMeshFrame stampMqOffset(EventMeshFrame frame, int queueId, long queueOffset) {
+        return frame.withAttribute("emmqoffset", Long.toString(queueOffset))
+            .withAttribute("emmqpartition", Integer.toString(queueId));
     }
 }

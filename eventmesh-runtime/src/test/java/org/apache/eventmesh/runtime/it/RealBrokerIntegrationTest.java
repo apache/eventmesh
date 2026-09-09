@@ -27,6 +27,7 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -121,13 +122,31 @@ class RealBrokerIntegrationTest {
             }
 
             // 4. The offset advanced only on ACK — the core at-least-once contract, now over real MQ.
-            long offset = runtime.ingress().getOffsetStore().readOffset(topic, clientId, 0);
+            //    Scan every partition of this client: the broker picks the queue the event lands on
+            //    (a RocketMQ default topic has 4), so reading partition 0 alone fails ~3 runs in 4.
+            long offset = maxAckedOffset(runtime, topic, clientId);
             if (offset < 1) {
                 throw new AssertionError("offset did not advance after ACK: " + offset);
             }
         } finally {
             runtime.shutdown();
         }
+    }
+
+    /**
+     * Highest offset recorded for {@code clientId} across all partitions of {@code topic}, or -1 if
+     * none. The broker picks the queue the published event lands on, so the offset cannot be read
+     * from a hard-coded partition.
+     */
+    private static long maxAckedOffset(UniRuntime runtime, String topic, String clientId) {
+        long max = -1L;
+        String prefix = clientId + "#";
+        for (Map.Entry<String, Long> e : runtime.ingress().getOffsetStore().readAllOffsets(topic).entrySet()) {
+            if (e.getKey().startsWith(prefix)) {
+                max = Math.max(max, e.getValue());
+            }
+        }
+        return max;
     }
 
     @SuppressWarnings("unused")
