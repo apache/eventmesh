@@ -32,6 +32,12 @@ import lombok.Data;
 public class ConnectorDef {
 
     private String id;
+    /**
+     * #5382: fencing generation of the assignment that produced this start request. A worker
+     * rejects a start whose generation is lower than the one it already runs (stale delayed
+     * control request after reassignment). 0 = legacy scheduler without fencing.
+     */
+    private long generation;
     private String className;
     private String mode;
     private String topic;

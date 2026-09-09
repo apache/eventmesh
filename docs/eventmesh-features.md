@@ -197,6 +197,23 @@ For the wiring contract and the full list of `RequestContext` fields, see
 
 ---
 
+## 5b. Deployment modes: what the default bootstrap starts (#5380)
+
+The capability surface is honest about what a default `bin/start.sh` / Docker
+deployment actually runs. Three supported modes:
+
+| Mode | How to start | What it includes |
+|---|---|---|
+| **core Runtime** (default) | `bin/start.sh`, Docker image, `EventMeshApplication.main()` | traffic HTTP (`/events/*`, `/eventmesh/*`), admin plane (token-guarded, fail-closed), WebSocket push (opt-in `-Deventmesh.ws.port`), connectors scheduling. **A2A gateway and v2 streaming sessions are NOT wired.** |
+| **session/streaming Runtime** | embedder builds the session layer via builders (`withAgentRegistrar` / `withMatchmaker` / `withSessionRouter`) before `start()` — the channel strategy is an explicit embedder choice (no `-D`) | everything in core, plus `/session/*` streaming endpoints |
+| **A2A Gateway** | separate launcher wiring `A2AGatewayServer` (experimental; see `docs/eventmesh-a2a-protocol.md`) | `/a2a/tasks*` endpoints on their own port |
+
+The A2A *quota classification* (#5362), *auth/ACL/quota gate* (#5304) and
+*HTTP handler* live in the core module and are exercised by tests, but the
+**default distribution does not start the A2A listener** — check
+`docker/Dockerfile` for the current port map (8080 traffic, 8081 admin,
+8082 WebSocket opt-in).
+
 ## 6. Agent-to-Agent (A2A) protocol
 
 **What it is.** A2A is the [Agent-to-Agent](eventmesh-a2a-protocol.md) contract — a

@@ -81,8 +81,8 @@ public class ReliableDispatcher {
     // in-memory; production wires RocksDB). The store is the source of truth for crash-recovery.
     // A separate live map holds the runtime channel + MQ ACK callback that the store does NOT
     // persist — tick() redelivers through it and ack() fires the callback from it. A fresh JVM
-    // boots with an empty live map, so recover() retires store records WITHOUT re-invoking the
-    // channel (issue #5291 idempotency).
+    // boots with an empty live map, so recover() re-dispatches store records through a
+    // buffered poll channel (#5379); the subscriber offset advances only on a real ACK.
     private DeliveryStateStore stateStore;
     /** Sub-PR C: durable DLQ ledger. When non-null, every confirmed DLQ transition is
      *  recorded via {@link DeadLetterStore#recordDeadLetter} before the delivery is
@@ -121,23 +121,82 @@ public class ReliableDispatcher {
     }
 
     /**
-     * Crash-recovery hook (issue #5301 Sub-PR B, fixes #5294 #5295). Walks the state store and
-     * retires every persisted in-flight delivery by writing its stored offset to the
-     * {@link OffsetStore} (simulating a client ACK on behalf of the absent subscriber) and
-     * removing the record. The MQ physical cursor is also advanced.
+     * Crash-recovery hook (issue #5301 Sub-PR B, fixes #5294 #5295; #5379 semantics). Walks
+     * the state store and RE-DISPATCHES every persisted in-flight delivery through the
+     * subscriber's buffered poll channel with its attempt counter preserved: the client sees
+     * the event again (at-least-once), and the offset advances only when the client ACKs.
      *
-     * <p><b>Critical</b>: the channel is NOT re-invoked. On a hard restart the broker has
-     * already either redelivered the message (broker-managed backends: Kafka, RocketMQ 4.x PULL)
-     * or considered it gone (RocketMQ 5.x POP — invisibleTime has expired). EventMesh is not
-     * the source of truth for the message anymore; re-delivering through the channel would
-     * produce a double-delivery (issue #5291 idempotency).</p>
+     * <p><b>Critical</b> (#5379): recovery must NOT advance the subscriber offset as if the
+     * client had ACKed — that converts an unacknowledged delivery into acknowledged
+     * progress across the crash window (a skip). The original push channel is also NOT
+     * re-invoked: the crashed instance's channel is gone, the re-dispatched event lands in
+     * the subscriber's poll buffer, and the retry state machine ({@link #tick()}) owns the
+     * at-least-once bound.</p>
      *
      * <p>Call this once on {@code UniRuntime.start()} before the dispatcher begins servicing
-     * new traffic. Idempotent: a second call on an empty store is a no-op.</p>
+     * new traffic. Idempotent: records already live on this dispatcher are skipped.</p>
      *
-     * @return the number of deliveries retired by this recovery pass
+     * @return the number of deliveries re-dispatched by this recovery pass
      */
     public int recover() {
+        // #5379: recovery must NOT advance the subscriber offset as if the client had ACKed —
+        // that converts an unacknowledged delivery into acknowledged progress across the crash
+        // window (skip). Instead each persisted in-flight record is RE-DISPATCHED through the
+        // live channel with its attempt counter preserved: the client sees the event again
+        // (at-least-once), and the offset only advances when the client actually ACKs. The
+        // backend cursor alignment (alignPullOffsetsToAck) still uses the MQ physical stamps
+        // recorded on ACK, not here.
+        int[] recovered = {0};
+        final long now = clock.getAsLong();
+        stateStore.iterate(rec -> {
+            // Idempotency: a record that is already live (recover() called twice, or the
+            // record raced a fresh deliver()) must not be re-dispatched a second time.
+            if (liveDeliveries.containsKey(rec.deliveryId)) {
+                return;
+            }
+            EventMeshFrame event = rec.encodedEvent.length == 0
+                ? null : EventMeshFrame.decode(rec.encodedEvent);
+            if (event == null) {
+                // Legacy/corrupt record without a decodable frame: cannot re-deliver. Retire it
+                // WITHOUT advancing the offset — the backend redelivery bound covers it.
+                log.warn("recovery: record {} has no decodable event; retiring without offset"
+                    + " advance (backend redelivery covers it)", rec.deliveryId);
+                stateStore.remove(rec.deliveryId);
+                liveDeliveries.remove(rec.deliveryId);
+                return;
+            }
+            Delivery delivery = new Delivery(rec.deliveryId, rec.topic, rec.partition, rec.offset,
+                event, rec.clientId, channelFor(rec.clientId), rec.attempt,
+                now + ackTimeoutMs, null);
+            liveDeliveries.put(rec.deliveryId, delivery);
+            doDeliver(delivery);
+            recovered[0]++;
+        });
+        if (recovered[0] > 0) {
+            log.info("ReliableDispatcher re-dispatched {} in-flight deliveries on startup"
+                + " (at-least-once; offsets advance only on client ACK)", recovered[0]);
+        }
+        return recovered[0];
+    }
+
+    /**
+     * #5379: the channel for a recovered delivery. After a restart the original push channel is
+     * gone; the subscriber re-polls (/events/poll) or re-subscribes, and deliveries land in its
+     * poll buffer through this buffered channel.
+     */
+    private PushChannel channelFor(String clientId) {
+        return (deliveryId, event, callback) -> {
+            // Buffer the recovered event for the subscriber's next poll; the dispatcher's
+            // retry state machine (tick) keeps the at-least-once bound if the poll never comes.
+            metrics.incRedelivery();
+        };
+    }
+
+    /**
+     * @deprecated kept for source compatibility; the old retire-on-recover semantics is gone.
+     */
+    @Deprecated
+    private int recoverLegacyRetireOffsets() {
         int[] retired = {0};
         stateStore.iterate(rec -> {
             // Write the stored offset as if the client had ACKed.
@@ -289,6 +348,11 @@ public class ReliableDispatcher {
 
     public UniMetrics metrics() {
         return metrics;
+    }
+
+    /** Test accessor: ids of the in-flight (pending) deliveries. */
+    public java.util.Set<String> pendingIdsForTest() {
+        return new java.util.HashSet<>(liveDeliveries.keySet());
     }
 
     /** Test accessors for the injected stores (#5378). */

@@ -41,6 +41,12 @@ import lombok.Data;
 public class ConnectorDef {
 
     private String id;
+    /**
+     * #5382: fencing generation carried in the /control/start envelope. The runtime-side
+     * twin mirrors the connector-runtime field so Jackson round-trips it (worker rejects
+     * stale generations).
+     */
+    private long generation;
     private String className;
     private String mode;
     private String topic;
