@@ -30,6 +30,11 @@ package org.apache.eventmesh.runtime.it;
  */
 final class BrokerDiscoverer {
 
+    /** Serialize admin RPC across the whole test JVM so concurrent BrokerDiscoverer callers do
+     * not pile up on the broker's topic-create / heartbeat thread (single-shard bottlenecks
+     * turned a 4-test batch run into a flaky mess — see PR #5389). */
+    private static final Object ADMIN_LOCK = new Object();
+
     private BrokerDiscoverer() {
     }
 
@@ -44,21 +49,23 @@ final class BrokerDiscoverer {
         if (!"rocketmq".equalsIgnoreCase(System.getProperty("it.storage", "rocketmq"))) {
             return; // kafka auto-creates topics
         }
-        org.apache.rocketmq.tools.admin.DefaultMQAdminExt admin =
-            new org.apache.rocketmq.tools.admin.DefaultMQAdminExt();
-        admin.setNamesrvAddr(namesrv);
-        admin.start();
-        try {
+        synchronized (ADMIN_LOCK) {
+            org.apache.rocketmq.tools.admin.DefaultMQAdminExt admin =
+                new org.apache.rocketmq.tools.admin.DefaultMQAdminExt();
+            admin.setNamesrvAddr(namesrv);
+            admin.start();
             try {
-                org.apache.rocketmq.common.protocol.body.ClusterInfo info = admin.examineBrokerClusterInfo();
-                String cluster = info.getClusterAddrTable().keySet().iterator().next();
-                admin.createTopic(cluster, topic, queueNum);
-            } catch (org.apache.rocketmq.client.exception.MQClientException e) {
-                // already exists — safe to ignore
+                try {
+                    org.apache.rocketmq.common.protocol.body.ClusterInfo info = admin.examineBrokerClusterInfo();
+                    String cluster = info.getClusterAddrTable().keySet().iterator().next();
+                    admin.createTopic(cluster, topic, queueNum);
+                } catch (org.apache.rocketmq.client.exception.MQClientException e) {
+                    // already exists — safe to ignore
+                }
+                waitForRoute(admin, topic);
+            } finally {
+                admin.shutdown();
             }
-            waitForRoute(admin, topic);
-        } finally {
-            admin.shutdown();
         }
     }
 
