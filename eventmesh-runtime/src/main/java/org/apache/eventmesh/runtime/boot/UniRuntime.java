@@ -220,6 +220,17 @@ public class UniRuntime {
                 "PARTITION_OWNED_PULL requires a shared MetaStore: set eventmesh.meta.type/addr"
                     + " (e.g. nacos + address) or use LOCAL_STICKY_PULL for single-instance");
         }
+        // #5377: single ownership lifecycle. EventMeshApplication.enableCluster() may have
+        // already built and started the ClusterMembership + PartitionOwnership (one fencing
+        // token, one heartbeat/assignment loop) and installed it into the ingress; creating a
+        // second pair here would give one Runtime two divergent state machines. Reuse the
+        // installed instance; only self-construct when nobody wired one (embedder path).
+        if (ingress.partitionOwnership() != null) {
+            partitionOwnership = ingress.partitionOwnership();
+            log.info("partition ownership REUSED from ingress wiring (topology={}, instance={})",
+                topology, instanceId);
+            return;
+        }
         FencingToken token = new FencingToken();
         ClusterMembership membership = new ClusterMembership(
             clusterMeta, instanceId, instanceAddress, 30_000L, System::currentTimeMillis, token);
@@ -228,6 +239,11 @@ public class UniRuntime {
         partitionOwnership.start(() -> ingress.activeTopicsClustered());
         ingress.withPartitionOwnership(partitionOwnership);
         log.info("partition ownership started (topology={}, instance={})", topology, instanceId);
+    }
+
+    /** Test accessor: the ownership instance this runtime stops on shutdown (#5377). */
+    PartitionOwnership partitionOwnershipRefForTest() {
+        return partitionOwnership;
     }
 
     /** Stop the partition ownership loop and release Meta assignment records. */

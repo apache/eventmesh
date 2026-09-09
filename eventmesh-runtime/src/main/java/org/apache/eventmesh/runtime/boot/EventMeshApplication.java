@@ -52,6 +52,9 @@ public class EventMeshApplication {
     private org.apache.eventmesh.runtime.cluster.ClusterCoordinator clusterCoordinator;
     private org.apache.eventmesh.runtime.cluster.ClusterMembership clusterMembership;
     private org.apache.eventmesh.runtime.cluster.PartitionOwnership partitionOwnership;
+
+    /** #5378: the durable delivery-state store, closed on shutdown. */
+    private org.apache.eventmesh.runtime.state.RocksDBDeliveryStateStore durableDeliveryState;
     private java.util.concurrent.ScheduledExecutorService heartbeatScheduler;
     private String selfInstanceId;
     private String advertisedAddr;
@@ -196,6 +199,22 @@ public class EventMeshApplication {
         // 4. Dynamic config hot-reload.
         new org.apache.eventmesh.runtime.cluster.DynamicConfigWatcher(metaStore, runtime.ingress()).start();
 
+        // 6. #5376: cluster-wide subscription routing. The partition owner's poll loop must see
+        // subscribers that connected to OTHER instances: the ClusterSubscriptionStore mirrors
+        // /em/subs/* from the shared Meta (prefix watch), and the ClusterCoordinator routes each
+        // polled event to local targets (deliverLocal) or remote ones (HttpForwarder ->
+        // POST /internal/forward on the subscriber's instance). Without this wiring the owner
+        // dispatched through its LOCAL SubscriptionManager only and remote subscribers starved.
+        org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore clusterSubs =
+            new org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore(metaStore);
+        org.apache.eventmesh.runtime.cluster.ClusterCoordinator coordinator =
+            new org.apache.eventmesh.runtime.cluster.ClusterCoordinator(
+                selfInstanceId, clusterSubs,
+                runtime.ingress()::deliverLocal,
+                new org.apache.eventmesh.runtime.cluster.HttpForwarder(
+                    clusterMembership, System.getProperty("eventmesh.admin.token")));
+        runtime.ingress().withCluster(coordinator);
+
         // 5. #5359: flip the runtime's pull topology to PARTITION_OWNED_PULL and inject the shared
         // MetaStore BEFORE runtime.start() runs, so the pull loop consults this PartitionOwnership
         // (ownedPartitions) instead of polling every partition on every instance (duplicate
@@ -316,6 +335,11 @@ public class EventMeshApplication {
             connectorScheduler.stop();
         }
         runtime.shutdown();
+        // #5378: flush + close the durable delivery-state store so in-flight records survive the
+        // shutdown for restart recovery (crash-recovery contract of ReliableDispatcher.recover()).
+        if (durableDeliveryState != null) {
+            durableDeliveryState.close();
+        }
         log.info("EventMeshApplication stopped");
     }
 
@@ -410,6 +434,24 @@ public class EventMeshApplication {
 
         EventMeshApplication app = new EventMeshApplication(storage, offsets, httpPort, adminPort);
         app.runtime().withStorageConfig(props);
+
+        // #5378: durable delivery-state + DLQ ledger for the DEFAULT bootstrap. Without this the
+        // dispatcher runs on InMemoryDeliveryStateStore: a crash loses every in-flight
+        // (pulled-but-unACKed) delivery and the DLQ has no cluster-visible ledger.
+        // RocksDB under the same data path as the offsets; the Meta-backed DLQ ledger only in
+        // clustered mode (single-instance keeps the legacy sink-only path).
+        org.apache.eventmesh.runtime.state.RocksDBDeliveryStateStore deliveryState =
+            new org.apache.eventmesh.runtime.state.RocksDBDeliveryStateStore(
+                new java.io.File(offsetPath).getParentFile().getAbsolutePath() + java.io.File.separator + "delivery-state");
+        app.runtime().ingress().dispatcher().withStateStore(deliveryState);
+        org.apache.eventmesh.runtime.state.MetaBackedDeadLetterStore dlqLedger = null;
+        if (clustered) {
+            dlqLedger = new org.apache.eventmesh.runtime.state.MetaBackedDeadLetterStore(metaStore);
+            app.runtime().ingress().dispatcher().withDeadLetterStore(dlqLedger);
+        }
+        log.info("delivery-state store: RocksDB({}); dlq-ledger: {}",
+            deliveryState.getClass().getSimpleName(),
+            dlqLedger != null ? "MetaBackedDeadLetterStore" : "none (single-instance; DLQ sink only)");
         // Dynamic connector scheduling (§8) — always on. InMemory defs/workers single-instance;
         // Nacos-shared across the cluster.
         app.withConnectorScheduler(

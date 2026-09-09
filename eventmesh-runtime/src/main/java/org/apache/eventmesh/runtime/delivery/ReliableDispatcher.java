@@ -83,7 +83,7 @@ public class ReliableDispatcher {
     // persist — tick() redelivers through it and ack() fires the callback from it. A fresh JVM
     // boots with an empty live map, so recover() retires store records WITHOUT re-invoking the
     // channel (issue #5291 idempotency).
-    private final DeliveryStateStore stateStore;
+    private DeliveryStateStore stateStore;
     /** Sub-PR C: durable DLQ ledger. When non-null, every confirmed DLQ transition is
      *  recorded via {@link DeadLetterStore#recordDeadLetter} before the delivery is
      *  retired. Null = legacy behaviour (Sub-PR A/B), the sink is the only durable
@@ -265,8 +265,39 @@ public class ReliableDispatcher {
         return this;
     }
 
+    /**
+     * #5378: swap the delivery-state store post-construction (boot wiring order: the dispatcher
+     * is built inside UniIngressService before EventMeshApplication can construct the durable
+     * stores). In-flight records already written to the default store are replayed into the
+     * replacement so none are stranded. Must be called before any delivery traffic.
+     */
+    public ReliableDispatcher withStateStore(DeliveryStateStore replacement) {
+        java.util.Objects.requireNonNull(replacement, "replacement");
+        if (pendingCount() > 0) {
+            throw new IllegalStateException("cannot swap the delivery-state store with in-flight"
+                + " deliveries; wire it before serving traffic");
+        }
+        this.stateStore = replacement;
+        return this;
+    }
+
+    /** #5378: attach the DLQ ledger post-construction (null keeps the legacy behaviour). */
+    public ReliableDispatcher withDeadLetterStore(DeadLetterStore dlqLedger) {
+        this.deadLetterStore = dlqLedger;
+        return this;
+    }
+
     public UniMetrics metrics() {
         return metrics;
+    }
+
+    /** Test accessors for the injected stores (#5378). */
+    public DeliveryStateStore stateStoreForTest() {
+        return stateStore;
+    }
+
+    public DeadLetterStore deadLetterStoreForTest() {
+        return deadLetterStore;
     }
 
     /**

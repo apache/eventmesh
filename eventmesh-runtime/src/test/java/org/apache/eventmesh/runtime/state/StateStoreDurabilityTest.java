@@ -200,11 +200,27 @@ class StateStoreDurabilityTest {
             assertEquals(iters, removes.get());
 
             // Final state on A: the entry is either present (last write was a put)
-            // or absent (last write was a remove). Both instances must agree.
-            String viewA = a.instanceOf("storm-client");
-            String viewB = b.instanceOf("storm-client");
-            assertEquals(viewA, viewB,
-                "both instances must agree on the final binding (convergence)");
+            // or absent (last write was a remove). Both instances must agree. The two reads
+            // are not one atomic snapshot (a late remove can land between them), so poll
+            // until the views hold STILL equal for two consecutive reads (bounded wait).
+            String prevA = null;
+            String prevB = null;
+            boolean converged = false;
+            for (int probe = 0; probe < 200; probe++) {
+                String viewA = a.instanceOf("storm-client");
+                String viewB = b.instanceOf("storm-client");
+                if (java.util.Objects.equals(viewA, viewB)
+                    && java.util.Objects.equals(viewA, prevA) && java.util.Objects.equals(viewB, prevB)
+                    && (probe > 0)) {
+                    converged = true;
+                    break;
+                }
+                prevA = viewA;
+                prevB = viewB;
+                Thread.sleep(5);
+            }
+            assertTrue(converged,
+                "both instances must agree on a stable final binding (got A=" + prevA + " B=" + prevB + ")");
             // The first-scenario write (topic-1 / client-1) must still be
             // visible to both - watch prefix is durable across put/remove storms.
             assertEquals("instance-A", a.instanceOf("client-1"));
