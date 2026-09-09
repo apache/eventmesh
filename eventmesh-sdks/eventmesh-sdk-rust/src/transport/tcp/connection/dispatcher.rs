@@ -21,12 +21,18 @@ use std::collections::HashMap;
 
 use tokio::sync::{mpsc, oneshot};
 
+use crate::error::Result;
+
 use super::super::frame::Package;
 
 pub(super) type PendingKey = (u64, String);
 
 pub(super) enum OutboundCommand {
     Send(Package),
+    SendAndFlush {
+        package: Package,
+        completion_tx: oneshot::Sender<Result<()>>,
+    },
     Request {
         package: Package,
         key: PendingKey,

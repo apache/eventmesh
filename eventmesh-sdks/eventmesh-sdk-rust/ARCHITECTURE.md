@@ -45,8 +45,12 @@ TCP CloudEvents use `protocoltype=cloudevents` and raw `application/cloudevents+
 
 The managed `HttpConsumer` binds its axum callback server before registration, then owns registration, heartbeat, and shutdown. Applications that host their own endpoint use `WebhookRegistration` and the public codec helpers `parse_push_body`, `PushMessageRequestBody::to_event_mesh_message`, and `WebhookReply`. `WebhookHandler` and `WebhookState` in `src/transport/http/webhook.rs` are internal implementation details.
 
+The consumer owns the spawned server and heartbeat before awaiting registration, so dropping the startup future runs the same local cleanup as dropping an active consumer.
+
 All SDK HTTP operations use code-header routing at `/`. The bodies are `application/x-www-form-urlencoded`, so sending them to a Runtime path-based handler can select an incompatible JSON model. The heartbeat runs every 30 seconds in a background Tokio task tied to a `CancellationToken`.
 
 ## TCP connection lifecycle
 
 In `src/transport/tcp/connection.rs`, `establish()` performs the socket and HELLO handshake. `run()` wraps `io_loop()` in the reconnect loop. With reconnect enabled, I/O failures trigger exponential backoff and re-establishment. `take_reconnect_rx()` notifies consumers after successful reconnects so they can replay subscriptions.
+
+Broadcasts use a driver completion channel to await `Framed::send`, including its socket flush, without waiting for a server ACK. Queue reservation and completion share one control-timeout deadline. A cancelled broadcast still waiting in the outbound queue is skipped; a write already in progress may have reached the server.

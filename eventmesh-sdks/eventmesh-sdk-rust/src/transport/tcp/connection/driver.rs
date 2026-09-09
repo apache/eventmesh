@@ -29,6 +29,8 @@ use tokio_util::codec::Framed;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
+use crate::error::EventMeshError;
+
 use super::super::codec::TcpCodec;
 use super::super::frame::{Command, Package};
 use super::super::message;
@@ -84,7 +86,7 @@ impl SocketDriver {
                 command = outbound_rx.recv() => {
                     match command {
                         Some(OutboundCommand::Send(package)) => {
-                            if let Err(reason) = Self::write_frame(
+                            if let Err((reason, _)) = Self::write_frame(
                                 framed,
                                 package,
                                 write_timeout,
@@ -93,11 +95,27 @@ impl SocketDriver {
                                 return reason;
                             }
                         }
+                        Some(OutboundCommand::SendAndFlush { package, completion_tx }) => {
+                            // Do not write a queued broadcast whose caller was
+                            // cancelled or timed out before the driver reached it.
+                            if completion_tx.is_closed() {
+                                continue;
+                            }
+                            match Self::write_frame(framed, package, write_timeout, cancel).await {
+                                Ok(()) => {
+                                    let _ = completion_tx.send(Ok(()));
+                                }
+                                Err((reason, error)) => {
+                                    let _ = completion_tx.send(Err(error));
+                                    return reason;
+                                }
+                            }
+                        }
                         Some(OutboundCommand::Request { package, key, response_tx }) => {
                             if !dispatcher.register(key.clone(), response_tx) {
                                 continue;
                             }
-                            if let Err(reason) = Self::write_frame(
+                            if let Err((reason, _)) = Self::write_frame(
                                 framed,
                                 package,
                                 write_timeout,
@@ -142,7 +160,7 @@ impl SocketDriver {
                 }
 
                 _ = heartbeat.tick() => {
-                    if let Err(reason) = Self::write_frame(
+                    if let Err((reason, _)) = Self::write_frame(
                         framed,
                         message::heartbeat(),
                         write_timeout,
@@ -176,7 +194,9 @@ impl SocketDriver {
         if let Some(response_tx) = dispatcher.take_response(generation, seq) {
             if package.header.cmd == Command::ResponseToClient {
                 let ack = message::response_to_client_ack(&package);
-                if let Err(reason) = Self::write_frame(framed, ack, write_timeout, cancel).await {
+                if let Err((reason, _)) =
+                    Self::write_frame(framed, ack, write_timeout, cancel).await
+                {
                     let _ = response_tx.send(package);
                     return Some(reason);
                 }
@@ -213,19 +233,22 @@ impl SocketDriver {
         package: Package,
         timeout: Duration,
         cancel: &CancellationToken,
-    ) -> std::result::Result<(), IoExitReason> {
+    ) -> std::result::Result<(), (IoExitReason, EventMeshError)> {
         tokio::select! {
             biased;
-            _ = cancel.cancelled() => Err(IoExitReason::Cancelled),
+            _ = cancel.cancelled() => Err((
+                IoExitReason::Cancelled,
+                EventMeshError::ChannelClosed("TCP write cancelled by shutdown".into()),
+            )),
             result = tokio::time::timeout(timeout, framed.send(package)) => match result {
                 Ok(Ok(())) => Ok(()),
                 Ok(Err(error)) => {
                     warn!(%error, "TCP write failed; connection lost");
-                    Err(IoExitReason::IoError)
+                    Err((IoExitReason::IoError, error))
                 }
                 Err(_) => {
                     warn!(?timeout, "TCP write timed out; connection lost");
-                    Err(IoExitReason::IoError)
+                    Err((IoExitReason::IoError, EventMeshError::Timeout(timeout)))
                 }
             },
         }

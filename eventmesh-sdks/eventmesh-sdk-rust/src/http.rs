@@ -70,6 +70,10 @@ impl HttpClient {
     /// The callback socket is bound before subscriptions are registered. The
     /// returned consumer owns the axum server, runtime registrations, and
     /// heartbeat task as one lifecycle.
+    ///
+    /// Cancelling startup stops the local callback server and heartbeat task.
+    /// A registration already accepted by the runtime is not rolled back by
+    /// cancellation.
     pub async fn consumer<H>(
         &self,
         options: ConsumerOptions,
@@ -105,36 +109,43 @@ impl HttpClient {
             task_lifecycle.cancel();
             result
         });
-
-        if let Err(error) = inner
-            .subscribe_webhook(subscriptions.clone(), webhook_url.clone())
-            .await
-        {
-            lifecycle.cancel();
-            let _ = inner.shutdown().await;
-            let _ = server_handle.await;
-            return Err(error);
-        }
-
-        if server_handle.is_finished() {
-            lifecycle.cancel();
-            let _ = inner.unsubscribe_all().await;
-            let _ = inner.shutdown().await;
-            return match server_handle.await {
-                Ok(Err(error)) => Err(error),
-                Ok(Ok(())) => Err(EventMeshError::ChannelClosed(
-                    "HTTP webhook server stopped during consumer startup".into(),
-                )),
-                Err(error) => Err(server_join_error(error)),
-            };
-        }
-
-        Ok(HttpConsumer {
+        // Own the tasks before the next await so cancellation during startup
+        // runs the same Drop cleanup as a fully constructed consumer.
+        let consumer = HttpConsumer {
             inner,
             webhook_url,
             lifecycle,
             server_handle: Mutex::new(Some(server_handle)),
-        })
+        };
+
+        if let Err(error) = consumer
+            .inner
+            .subscribe_webhook(subscriptions, consumer.webhook_url.clone())
+            .await
+        {
+            consumer.shutdown();
+            let _ = consumer.join().await;
+            return Err(error);
+        }
+
+        let server_finished = consumer
+            .server_handle
+            .lock()
+            .await
+            .as_ref()
+            .is_some_and(JoinHandle::is_finished);
+        if server_finished {
+            consumer.shutdown();
+            let _ = consumer.inner.unsubscribe_all().await;
+            return match consumer.join().await {
+                Err(error) => Err(error),
+                Ok(()) => Err(EventMeshError::ChannelClosed(
+                    "HTTP webhook server stopped during consumer startup".into(),
+                )),
+            };
+        }
+
+        Ok(consumer)
     }
 
     /// Create a registration manager for an application-owned HTTP endpoint.
@@ -578,6 +589,59 @@ mod tests {
             .await;
         assert!(matches!(result, Err(EventMeshError::Server { .. })));
         assert!(tokio::net::TcpStream::connect(address).await.is_err());
+        runtime.abort();
+    }
+
+    #[tokio::test]
+    async fn cancelled_startup_releases_callback_server() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let runtime_address = listener.local_addr().unwrap();
+        let (registration_tx, mut registration_rx) = mpsc::unbounded_channel();
+        let runtime = tokio::spawn(async move {
+            let app = Router::new().route(
+                "/",
+                post(move || {
+                    registration_tx.send(()).unwrap();
+                    std::future::pending::<&'static str>()
+                }),
+            );
+            axum::serve(listener, app).await.unwrap();
+        });
+        let endpoint = crate::config::Endpoint::new("127.0.0.1", runtime_address.port()).unwrap();
+        let endpoints = crate::config::EndpointSet::new([endpoint]).unwrap();
+        let client = HttpClient::new(HttpConfig::new(endpoints)).unwrap();
+        let address = available_address();
+        let (handler_tx, mut handler_rx) = mpsc::unbounded_channel::<()>();
+        let startup = tokio::spawn(async move {
+            client
+                .consumer(
+                    ConsumerOptions::new("group"),
+                    WebhookOptions::new(address),
+                    [Subscription::new("orders")],
+                    move |_message| {
+                        let _ = &handler_tx;
+                        std::future::ready(Ok(None))
+                    },
+                )
+                .await
+        });
+        let timeout = std::time::Duration::from_secs(2);
+        tokio::time::timeout(timeout, registration_rx.recv())
+            .await
+            .unwrap()
+            .expect("registration must start before cancellation");
+        assert!(std::net::TcpListener::bind(address).is_err());
+
+        startup.abort();
+        assert!(matches!(startup.await, Err(error) if error.is_cancelled()));
+
+        assert!(tokio::time::timeout(timeout, handler_rx.recv())
+            .await
+            .expect("cancelled startup must drop its callback handler")
+            .is_none());
+        let _rebound = tokio::net::TcpListener::bind(address)
+            .await
+            .expect("cancelled startup must release its callback port");
         runtime.abort();
     }
 

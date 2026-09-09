@@ -260,12 +260,49 @@ impl TcpConnection {
         }
     }
 
-    /// Fire-and-forget send: write the package without waiting for a reply.
+    /// Enqueue a package without waiting for its socket write or a reply.
     ///
     /// Corresponds to Java `TcpClient.send()`.
     pub async fn send(&self, pkg: Package) -> Result<()> {
         let timeout = self.outbound_timeout;
         let deadline = Self::deadline_after(timeout)?;
+        self.enqueue_send(OutboundCommand::Send(pkg), deadline, timeout)
+            .await
+    }
+
+    /// Wait for the package to be flushed to the local socket, without
+    /// waiting for a server ACK. Queueing and write completion share one
+    /// timeout budget. A timeout during a write leaves delivery uncertain.
+    pub async fn send_and_flush(&self, pkg: Package) -> Result<()> {
+        let timeout = self.outbound_timeout;
+        let deadline = Self::deadline_after(timeout)?;
+        let (completion_tx, completion_rx) = oneshot::channel();
+        self.enqueue_send(
+            OutboundCommand::SendAndFlush {
+                package: pkg,
+                completion_tx,
+            },
+            deadline,
+            timeout,
+        )
+        .await?;
+
+        tokio::select! {
+            biased;
+            _ = self.cancel.cancelled() => Err(Self::inactive_error()),
+            _ = tokio::time::sleep_until(deadline) => Err(EventMeshError::Timeout(timeout)),
+            result = completion_rx => result.map_err(|_| EventMeshError::ChannelClosed(
+                "connection task exited before completing the socket write".into(),
+            ))?,
+        }
+    }
+
+    async fn enqueue_send(
+        &self,
+        command: OutboundCommand,
+        deadline: tokio::time::Instant,
+        timeout: Duration,
+    ) -> Result<()> {
         let generation = self.active_generation().await?;
         let permit = self.reserve_outbound(deadline, timeout).await?;
         let state = self.state.lock().await;
@@ -275,7 +312,7 @@ impl TcpConnection {
         if tokio::time::Instant::now() >= deadline {
             return Err(EventMeshError::Timeout(timeout));
         }
-        permit.send(OutboundCommand::Send(pkg));
+        permit.send(command);
         Ok(())
     }
 
@@ -542,6 +579,55 @@ mod tests {
             result,
             Err(EventMeshError::Timeout(value)) if value == timeout
         ));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn send_and_flush_shares_one_timeout_for_queueing_and_completion() {
+        let timeout = Duration::from_millis(100);
+        let (conn, mut outbound_rx) = blocked_test_connection_with_timeout(timeout);
+        let sender = tokio::spawn(async move {
+            conn.send_and_flush(message::package(Command::BroadcastMessageToServer))
+                .await
+        });
+        tokio::task::yield_now().await;
+        tokio::time::advance(Duration::from_millis(60)).await;
+        let _occupied = outbound_rx.recv().await.unwrap();
+        // Retain the command without completing its write, so both queueing
+        // and completion consume the same caller-side timeout budget.
+        let _broadcast = outbound_rx.recv().await.unwrap();
+        assert!(
+            !sender.is_finished(),
+            "enqueueing alone must not complete the send"
+        );
+        tokio::time::advance(Duration::from_millis(40)).await;
+        let result = tokio::time::timeout(Duration::from_millis(1), sender)
+            .await
+            .expect("completion must use the original deadline")
+            .unwrap();
+        assert!(matches!(result, Err(EventMeshError::Timeout(value)) if value == timeout));
+    }
+
+    #[tokio::test]
+    async fn shutdown_wakes_a_sender_waiting_for_write_completion() {
+        let (conn, mut outbound_rx) = blocked_test_connection();
+        let _occupied = outbound_rx.recv().await.unwrap();
+        let sender = {
+            let conn = Arc::clone(&conn);
+            tokio::spawn(async move {
+                conn.send_and_flush(message::package(Command::BroadcastMessageToServer))
+                    .await
+            })
+        };
+        let _broadcast = outbound_rx.recv().await.unwrap();
+
+        tokio::time::timeout(Duration::from_secs(1), conn.shutdown())
+            .await
+            .expect("waiting for write completion must not hold the lifecycle lock");
+        let result = tokio::time::timeout(Duration::from_secs(1), sender)
+            .await
+            .expect("shutdown must interrupt the completion wait")
+            .unwrap();
+        assert!(matches!(result, Err(EventMeshError::ChannelClosed(_))));
     }
 
     #[tokio::test]

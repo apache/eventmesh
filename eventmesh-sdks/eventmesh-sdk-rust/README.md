@@ -78,6 +78,10 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 `HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
+Cancelling `HttpClient::consumer` during startup stops its local callback server and heartbeat task. A subscription already accepted by the Runtime is not rolled back by cancellation.
+
+TCP `broadcast().await` waits for the local socket write before returning, so a subsequent `shutdown().await` does not discard the broadcast from the SDK queue. It does not wait for a Runtime acknowledgement or guarantee delivery. Queueing and writing share the TCP control timeout.
+
 All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. HTTP consumers and webhook registrations additionally provide `close().await`, which unregisters remote subscriptions before signalling shutdown and joining.
 
 Create each `GrpcChannel` inside the Tokio runtime that will drive it. Clone that

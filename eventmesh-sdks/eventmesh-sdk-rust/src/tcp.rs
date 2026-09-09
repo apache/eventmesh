@@ -176,6 +176,11 @@ impl TcpProducer {
 
     /// Broadcast an event without waiting for a broker acknowledgement.
     ///
+    /// Returns after the frame is written to the local socket, so a subsequent
+    /// [`shutdown`](Self::shutdown) does not discard it from the outbound queue.
+    /// Queueing and writing share the TCP control timeout. A timeout or write
+    /// failure does not establish whether the server received the event.
+    ///
     /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
     /// requirement documented on [`publish`](Self::publish).
     pub async fn broadcast(&self, message: Message) -> Result<()> {
@@ -341,6 +346,120 @@ mod tests {
     #[test]
     fn cancelled_consumer_shutdown_is_clean() {
         assert!(shutdown_result(ShutdownReason::Cancelled).is_ok());
+    }
+
+    async fn broadcast_before_shutdown(message: Message) -> Package {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(Command::HelloResponse, "hello")))
+                .await
+                .unwrap();
+            // No broadcast ACK: the caller must only wait for its local write.
+            framed.next().await
+        });
+        let client = TcpClient::new(
+            TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+                .with_reconnect(crate::config::ReconnectPolicy::default().with_enabled(false)),
+        )
+        .unwrap();
+        let producer = client
+            .producer(ProducerOptions::new("broadcast-test"))
+            .await
+            .unwrap();
+
+        tokio::time::timeout(Duration::from_secs(2), producer.broadcast(message))
+            .await
+            .expect("broadcast must not wait for a server ACK")
+            .unwrap();
+        producer.shutdown().await;
+
+        let package = tokio::time::timeout(Duration::from_secs(2), server)
+            .await
+            .unwrap()
+            .unwrap()
+            .expect("broadcast must reach the socket before shutdown")
+            .unwrap();
+        assert_eq!(package.header.cmd, Command::BroadcastMessageToServer);
+        package
+    }
+
+    #[tokio::test]
+    async fn broadcast_is_written_before_shutdown() {
+        let message = crate::EventMeshMessage::new("orders", "created").unwrap();
+        let package = broadcast_before_shutdown(Message::EventMesh(message.clone())).await;
+        let received = Message::decode_tcp(&package)
+            .unwrap()
+            .into_event_mesh()
+            .unwrap();
+        assert_eq!(received.topic(), message.topic());
+        assert_eq!(received.content(), message.content());
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[tokio::test]
+    async fn cloud_event_broadcast_is_written_before_shutdown() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("broadcast")
+            .source("urn:test")
+            .ty("created")
+            .subject("orders")
+            .data(
+                "application/cloudevents+json",
+                serde_json::json!({"id": 42}),
+            )
+            .build()
+            .unwrap();
+        let package = broadcast_before_shutdown(Message::CloudEvent(event.clone())).await;
+        let received = Message::decode_tcp(&package).unwrap();
+        assert!(matches!(received, Message::CloudEvent(received) if received == event));
+    }
+
+    #[tokio::test]
+    async fn broadcast_reports_frame_encoding_failure() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            let _hello = framed.next().await.unwrap().unwrap();
+            framed
+                .send(Package::new(Header::new(Command::HelloResponse, "hello")))
+                .await
+                .unwrap();
+            framed.next().await
+        });
+        let client = TcpClient::new(
+            TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+                .with_reconnect(crate::config::ReconnectPolicy::default().with_enabled(false)),
+        )
+        .unwrap();
+        let producer = client
+            .producer(ProducerOptions::new("broadcast-test"))
+            .await
+            .unwrap();
+        // Construction accepts this content, but the TCP codec rejects frames
+        // larger than 4 MiB. That driver-side error must reach the caller.
+        let message = crate::EventMeshMessage::new("orders", "x".repeat(4 * 1024 * 1024)).unwrap();
+        let result = producer.broadcast(Message::EventMesh(message)).await;
+        producer.shutdown().await;
+
+        assert!(
+            matches!(result, Err(EventMeshError::InvalidArgument(message))
+            if message.contains("exceeds limit"))
+        );
+        assert!(tokio::time::timeout(Duration::from_secs(2), server)
+            .await
+            .unwrap()
+            .unwrap()
+            .is_none());
     }
 
     #[tokio::test]

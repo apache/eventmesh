@@ -75,12 +75,12 @@ impl TcpProducer {
         })
     }
 
-    /// Broadcast a message (fire-and-forget). Corresponds to Java
-    /// `broadcast` which uses `send()` with `BROADCAST_MESSAGE_TO_SERVER`.
+    /// Broadcast a message, waiting for its local socket write but no server
+    /// ACK. Uses `BROADCAST_MESSAGE_TO_SERVER`, matching Java `broadcast`.
     pub async fn broadcast(&self, msg: EventMeshMessage) -> Result<()> {
         msg.validate_for_tcp_publish()?;
         let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
-        self.conn.send(pkg).await
+        self.conn.send_and_flush(pkg).await
     }
 
     /// Publish a native CloudEvent over TCP (requires the `cloud_events`
@@ -123,15 +123,15 @@ impl TcpProducer {
         Ok(response)
     }
 
-    /// Broadcast a native CloudEvent (fire-and-forget, requires the
-    /// `cloud_events` feature).
+    /// Broadcast a native CloudEvent, waiting for its local socket write but
+    /// no server ACK (requires the `cloud_events` feature).
     ///
     /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
     /// `datacontenttype` requirement.
     #[cfg(feature = "cloud_events")]
     pub async fn broadcast_cloud_event(&self, event: cloudevents::Event) -> Result<()> {
         let pkg = message::build_cloud_event_package(&event, Command::BroadcastMessageToServer)?;
-        self.conn.send(pkg).await
+        self.conn.send_and_flush(pkg).await
     }
 
     /// Synchronous request/reply with a native CloudEvent (requires the
