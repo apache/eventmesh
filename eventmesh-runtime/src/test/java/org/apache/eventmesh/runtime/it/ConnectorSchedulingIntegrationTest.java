@@ -178,7 +178,7 @@ class ConnectorSchedulingIntegrationTest {
         scheduler = new ConnectorScheduler(new InMemoryMetaStore(), 15_000L, 5_000L, System::currentTimeMillis);
         scheduler.start();
         UniAdminService adminService = new UniAdminService(runtime.ingress());
-        adminServer = new UniAdminServer(adminService).withConnectorScheduler(scheduler);
+        adminServer = new UniAdminServer(adminService).withConnectorScheduler(scheduler).withAdminToken("test-admin-token");
         adminPort = adminServer.start(0);
         httpServer = new UniHttpServer(runtime.ingress(), adminService);
         httpPort = httpServer.start(0);
@@ -204,13 +204,15 @@ class ConnectorSchedulingIntegrationTest {
     private static int post(String url, String json) throws Exception {
         HttpResponse<String> r = HTTP.send(HttpRequest.newBuilder(URI.create(url))
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer test-admin-token")
             .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
             .build(), HttpResponse.BodyHandlers.ofString());
         return r.statusCode();
     }
 
     private static String get(String url) throws Exception {
-        return HTTP.send(HttpRequest.newBuilder(URI.create(url)).GET().build(),
+        return HTTP.send(HttpRequest.newBuilder(URI.create(url))
+            .header("Authorization", "Bearer test-admin-token").GET().build(),
             HttpResponse.BodyHandlers.ofString()).body();
     }
 

@@ -124,6 +124,7 @@ class DlqIntegrationTest {
         // 4. admin replay: POST /admin/dlq/replay re-publishes DLQ events to the original topic.
         int status = HTTP.send(HttpRequest.newBuilder(
             URI.create("http://localhost:" + adminPort + "/admin/dlq/replay?topic=" + TOPIC + "&max=10"))
+            .header("Authorization", "Bearer test-admin-token")
             .POST(HttpRequest.BodyPublishers.noBody()).build(),
             HttpResponse.BodyHandlers.ofString()).statusCode();
         assertEquals(200, status);
@@ -149,7 +150,7 @@ class DlqIntegrationTest {
         UniAdminService admin = new UniAdminService(ingress);
         httpServer = new UniHttpServer(ingress, admin);
         httpServer.start(0);
-        adminServer = new UniAdminServer(admin);
+        adminServer = new UniAdminServer(admin).withAdminToken("test-admin-token");
         adminPort = adminServer.start(0);
     }
 

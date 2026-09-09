@@ -91,6 +91,7 @@ class RateLimitIntegrationTest {
         int put = HTTP.send(HttpRequest.newBuilder(URI.create(
             "http://localhost:" + adminPort + "/admin/ratelimit"))
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer test-admin-token")
             .PUT(HttpRequest.BodyPublishers.ofString(
                 "{\"topic\":\"" + TOPIC + "\",\"capacity\":2,\"rate\":0.1}"))
             .build(), HttpResponse.BodyHandlers.ofString()).statusCode();
@@ -124,12 +125,13 @@ class RateLimitIntegrationTest {
         UniAdminService admin = new UniAdminService(ingress);
         httpServer = new UniHttpServer(ingress, admin);
         trafficPort = httpServer.start(0);
-        adminServer = new UniAdminServer(admin);
+        adminServer = new UniAdminServer(admin).withAdminToken("test-admin-token");
         adminPort = adminServer.start(0);
     }
 
     private static String get(int port, String path) throws Exception {
         return HTTP.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+            .header("Authorization", "Bearer test-admin-token")
             .GET().build(), HttpResponse.BodyHandlers.ofString()).body();
     }
 

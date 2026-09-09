@@ -88,12 +88,13 @@ class UniAdminServerTest {
 
     private void boot() throws Exception {
         ingress = new UniIngressService(new InMemStorage(), new InMemoryOffsetStore());
-        server = new UniAdminServer(new UniAdminService(ingress));
+        server = new UniAdminServer(new UniAdminService(ingress)).withAdminToken("test-admin-token");
         port = server.start(0);
     }
 
     private byte[] get(String path) throws Exception {
         java.net.HttpURLConnection conn = (java.net.HttpURLConnection) URI.create("http://localhost:" + port + path).toURL().openConnection();
+        conn.setRequestProperty("Authorization", "Bearer test-admin-token");
         conn.setReadTimeout(5000);
         try (java.io.InputStream is = conn.getInputStream()) {
             return is.readAllBytes();
@@ -102,6 +103,7 @@ class UniAdminServerTest {
 
     private byte[] post(String path, String body) throws Exception {
         java.net.HttpURLConnection conn = (java.net.HttpURLConnection) URI.create("http://localhost:" + port + path).toURL().openConnection();
+        conn.setRequestProperty("Authorization", "Bearer test-admin-token");
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         conn.getOutputStream().write(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));

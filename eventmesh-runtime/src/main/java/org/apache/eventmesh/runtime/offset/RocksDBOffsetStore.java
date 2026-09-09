@@ -59,7 +59,12 @@ public class RocksDBOffsetStore implements OffsetStore {
         try {
             this.db = RocksDB.open(options, path);
         } catch (RocksDBException e) {
-            throw new IllegalStateException("failed to open RocksDB offset store at " + path, e);
+            // #5364: the documented corruption posture - refuse to start rather than serve
+            // from a possibly-wiped store (an empty re-created DB would silently reset every
+            // offset and re-deliver from the beginning).
+            throw new IllegalStateException("failed to open RocksDB offset store at " + path
+                + "; if the data dir is corrupt, restore from backup or wipe it deliberately"
+                + " (offsets will replay from the broker's earliest)", e);
         }
         // Options must be retained for the DB's lifetime; it is closed implicitly when db closes.
         options.close();

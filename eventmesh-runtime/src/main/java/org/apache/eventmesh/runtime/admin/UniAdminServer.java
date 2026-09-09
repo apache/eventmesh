@@ -59,6 +59,8 @@ public class UniAdminServer {
     private final UniAdminService admin;
     private final ObjectMapper mapper = new ObjectMapper();
     private HttpServer server;
+    /** Admin bearer token (#5364): from -Deventmesh.admin.token; null = fail-closed. */
+    private volatile String adminToken = System.getProperty("eventmesh.admin.token");
     private ConnectorScheduler connectorScheduler;
 
     public UniAdminServer(UniAdminService admin) {
@@ -74,26 +76,76 @@ public class UniAdminServer {
     /** Bind to {@code port} (0 = auto-select) and start serving. @return the bound port. */
     public int start(int port) throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/admin/metrics", this::metrics);
+        server.createContext("/admin/metrics", guarded(this::metrics));
         // Prometheus scrape endpoint: text/plain exposition of the UniMetrics counters/gauges.
         // No OTel SDK dependency needed — reads the internal mirrors directly.
-        server.createContext("/metrics", this::prometheusMetrics);
-        server.createContext("/admin/subscriptions", this::subscriptions);
-        server.createContext("/admin/offsets", this::offsets);
-        server.createContext("/admin/clients", this::clients);
-        server.createContext("/admin/client/reject", this::rejectClient);
-        server.createContext("/admin/dlq/replay", this::dlqReplay);
-        server.createContext("/admin/dlq/browse", this::dlqBrowse);
-        server.createContext("/admin/ratelimit", this::ratelimit);
+        server.createContext("/metrics", guarded(this::prometheusMetrics));
+        server.createContext("/admin/subscriptions", guarded(this::subscriptions));
+        server.createContext("/admin/offsets", guarded(this::offsets));
+        server.createContext("/admin/clients", guarded(this::clients));
+        server.createContext("/admin/client/reject", guarded(this::rejectClient));
+        server.createContext("/admin/dlq/replay", guarded(this::dlqReplay));
+        server.createContext("/admin/dlq/browse", guarded(this::dlqBrowse));
+        server.createContext("/admin/ratelimit", guarded(this::ratelimit));
         server.createContext("/admin/health", this::health);
-        server.createContext("/connector/offset", this::connectorOffset);
-        server.createContext("/admin/connectors", this::connectors);
-        server.createContext("/admin/connector-workers", this::connectorWorkers);
+        server.createContext("/connector/offset", guarded(this::connectorOffset));
+        server.createContext("/admin/connectors", guarded(this::connectors));
+        server.createContext("/admin/connector-workers", guarded(this::connectorWorkers));
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        // #5364: the token guard wraps every context at creation time (see guarded()); only
+        // /admin/health is exempt (liveness probe). With no token configured the guard is
+        // FAIL-CLOSED: an operator who never set eventmesh.admin.token gets 503 + a pointed
+        // log line, not a silently open admin plane.
+        if (adminToken != null) {
+            log.info("admin token guard ENABLED (/admin/health exempt)");
+        } else {
+            log.warn("admin token NOT configured - admin API is FAIL-CLOSED (health only)."
+                + " Set -Deventmesh.admin.token=<secret> to enable admin endpoints.");
+        }
         server.start();
         int bound = server.getAddress().getPort();
         log.info("uni admin HTTP server started on port {}", bound);
         return bound;
+    }
+
+    /**
+     * Wrap one admin handler with the token guard (#5364): missing/wrong bearer -> 401;
+     * no token configured at all -> 503 fail-closed. {@code exempt} handlers (health)
+     * pass through untouched.
+     */
+    private com.sun.net.httpserver.HttpHandler guarded(com.sun.net.httpserver.HttpHandler delegate) {
+        return exchange -> {
+            String token = adminToken;
+            if (token == null) {
+                writeJson(exchange, 503, java.util.Map.of("error", "admin_locked",
+                    "message", "admin API is fail-closed: set -Deventmesh.admin.token=<secret> to enable"));
+                return;
+            }
+            if (!authorized(exchange)) {
+                writeJson(exchange, 401, java.util.Map.of("error", "unauthorized",
+                    "message", "admin API requires Authorization: Bearer <eventmesh.admin.token>"));
+                return;
+            }
+            delegate.handle(exchange);
+        };
+    }
+
+    /** Constant-time bearer check against {@code -Deventmesh.admin.token} (#5364). */
+    private boolean authorized(com.sun.net.httpserver.HttpExchange exchange) {
+        String header = exchange.getRequestHeaders().getFirst("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return false;
+        }
+        String presented = header.substring("Bearer ".length());
+        return java.security.MessageDigest.isEqual(
+            presented.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+            adminToken.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    /** Override the admin token (used by tests; production reads -Deventmesh.admin.token). */
+    public UniAdminServer withAdminToken(String token) {
+        this.adminToken = token;
+        return this;
     }
 
     public void stop() {
