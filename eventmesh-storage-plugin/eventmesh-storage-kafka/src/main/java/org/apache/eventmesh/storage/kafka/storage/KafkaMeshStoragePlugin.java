@@ -183,15 +183,13 @@ public class KafkaMeshStoragePlugin
             // before the frame migration) are converted to a frame via the codec.
             try {
                 EventMeshFrame frame = EventMeshFrame.decode(record.value());
-                stampMqOffset(frame, record.partition(), record.offset());
-                frames.add(frame);
+                frames.add(stampMqOffset(frame, record.partition(), record.offset()));
             } catch (Exception decodeEx) {
                 // fall back: legacy CloudEvents-JSON → CE → frame
                 CloudEvent legacy = deserialize(record.value());
                 if (legacy != null) {
                     EventMeshFrame frame = EventMeshFrame.fromCloudEvent(legacy);
-                    stampMqOffset(frame, record.partition(), record.offset());
-                    frames.add(frame);
+                    frames.add(stampMqOffset(frame, record.partition(), record.offset()));
                 }
             }
         }
@@ -205,9 +203,14 @@ public class KafkaMeshStoragePlugin
      * cursor on restart for at-least-once (Kafka is broker-unmanaged: no invisibleTime, so a
      * crash between poll and client ACK would otherwise lose the gap messages).
      */
-    private static void stampMqOffset(EventMeshFrame frame, int partition, long offset) {
-        frame.attributes().put("emmqoffset", Long.toString(offset));
-        frame.attributes().put("emmqpartition", Integer.toString(partition));
+    private static EventMeshFrame stampMqOffset(EventMeshFrame frame, int partition, long offset) {
+        // Frames are immutable and attributes() is an unmodifiable view, so mutating it in place
+        // throws UnsupportedOperationException. The caller's catch (Exception decodeEx) swallowed
+        // that and retried the legacy CloudEvents-JSON fallback against a binary frame body, so
+        // every polled event was silently dropped and subscribers never received anything.
+        // Derive a new frame with the stamps instead.
+        return frame.withAttribute("emmqoffset", Long.toString(offset))
+            .withAttribute("emmqpartition", Integer.toString(partition));
     }
 
     /**
