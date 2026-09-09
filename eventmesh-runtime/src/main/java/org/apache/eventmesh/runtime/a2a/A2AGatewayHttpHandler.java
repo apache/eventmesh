@@ -83,8 +83,12 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         String uri = req.uri();
+        // #5362: classify the sub-operation from the route shape so the gate charges the
+        // right resource (SUBMIT -> BACKLOG; GET / CANCEL / STREAM / list -> THROUGHPUT).
+        org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation a2aOp =
+            classify(req.method().name(), uri);
         // #5304: every A2A task operation goes through the unified gate first.
-        if (!gateCheck(ctx, req, uri)) {
+        if (!gateCheck(ctx, req, uri, a2aOp)) {
             return;
         }
         try {
@@ -122,7 +126,43 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
      * quota key = principal or "anonymous". Writes the rejection response and returns
      * false when denied.
      */
+    /**
+     * Route-shape to A2A sub-operation (#5362). The router below performs the same shape
+     * matching; this helper exists so the gate can classify before dispatching.
+     */
+    private static org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation classify(
+            String method, String uri) {
+        if (uri.startsWith("/a2a/tasks/") && uri.endsWith("/stream")) {
+            return org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation.STREAM;
+        }
+        if (uri.startsWith("/a2a/tasks/") && uri.endsWith("/wait")) {
+            return org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation.GET;
+        }
+        if (uri.startsWith("/a2a/tasks/") && !uri.contains("?")) {
+            return "DELETE".equalsIgnoreCase(method)
+                ? org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation.CANCEL
+                : org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation.GET;
+        }
+        if (uri.equals("/a2a/tasks") || uri.startsWith("/a2a/tasks?")) {
+            return "POST".equalsIgnoreCase(method)
+                ? org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation.SUBMIT
+                : org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation.GET;
+        }
+        return null;
+    }
+
     private boolean gateCheck(ChannelHandlerContext ctx, FullHttpRequest req, String uri) {
+        return gateCheck(ctx, req, uri, null);
+    }
+
+    /**
+     * #5362: the gate check classifies the A2A sub-operation. GET / CANCEL / STREAM are
+     * throughput requests (one-shot check); SUBMIT charges BACKLOG — the handler wraps the
+     * task lifetime in a {@link org.apache.eventmesh.runtime.security.gate.QuotaHandle} from
+     * {@code gate.acquire()} so the slot is returned when the task completes or cancels.
+     */
+    private boolean gateCheck(ChannelHandlerContext ctx, FullHttpRequest req, String uri,
+                              org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation a2aOp) {
         org.apache.eventmesh.runtime.security.gate.SecurityGate gate = securityGate;
         if (gate == null) {
             return true;
@@ -131,6 +171,7 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
         org.apache.eventmesh.runtime.security.gate.RequestContext rc =
             org.apache.eventmesh.runtime.security.gate.RequestContext.builder(
                     org.apache.eventmesh.runtime.security.gate.RequestContext.Operation.A2A)
+                .a2aOperation(a2aOp)
                 .topic(uri)
                 .principal(authorization)
                 .credential(authorization)

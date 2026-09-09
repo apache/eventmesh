@@ -46,16 +46,23 @@ public final class SecurityGate {
     private final AuditSink auditSink;
 
     /** Quota resource charged per operation type. */
-    private static QuotaManager.Resource resourceFor(RequestContext.Operation op) {
-        switch (op) {
+    private static QuotaManager.Resource resourceFor(RequestContext ctx) {
+        switch (ctx.getOperation()) {
             case PUBLISH:
                 return QuotaManager.Resource.THROUGHPUT;
             case SUBSCRIBE:
                 return QuotaManager.Resource.SUBSCRIPTIONS;
             case ACK:
                 return QuotaManager.Resource.BACKLOG;
+            case A2A:
+                // #5362: A2A is not one flat rate. A submitted task occupies agent capacity
+                // until it completes/cancels (BACKLOG, released via the QuotaHandle from
+                // acquire()); the read-side operations are per-request throughput.
+                return ctx.getA2aOperation() == RequestContext.A2aOperation.SUBMIT
+                    ? QuotaManager.Resource.BACKLOG
+                    : QuotaManager.Resource.THROUGHPUT;
             default:
-                // CONNECTOR / A2A / ADMIN: charged as throughput units of their own work.
+                // CONNECTOR / ADMIN: charged as throughput units of their own work.
                 return QuotaManager.Resource.THROUGHPUT;
         }
     }
@@ -91,7 +98,7 @@ public final class SecurityGate {
         }
 
         // 2) Quota. Charge one unit of the resource this operation consumes.
-        QuotaManager.Resource resource = resourceFor(context.getOperation());
+        QuotaManager.Resource resource = resourceFor(context);
         if (!quotaManager.tryAcquire(context.getQuotaKey(), resource, 1)) {
             audit(context, AuditSink.Outcome.QUOTA_EXCEEDED, resource.name());
             return GateDecision.quotaExceeded(resource);
@@ -104,7 +111,7 @@ public final class SecurityGate {
 
     /** Release a previously-charged unit (connection closed, subscription removed, backlog drained). */
     public void release(RequestContext context, long units) {
-        quotaManager.release(context.getQuotaKey(), resourceFor(context.getOperation()), units);
+        quotaManager.release(context.getQuotaKey(), resourceFor(context), units);
     }
 
     /**
@@ -129,7 +136,7 @@ public final class SecurityGate {
         if (!decision.isAllowed()) {
             throw new QuotaExceededException(decision.getReason());
         }
-        QuotaManager.Resource resource = resourceFor(context.getOperation());
+        QuotaManager.Resource resource = resourceFor(context);
         boolean releasable = resource == QuotaManager.Resource.CONNECTIONS
             || resource == QuotaManager.Resource.SUBSCRIPTIONS
             || resource == QuotaManager.Resource.BACKLOG;

@@ -69,6 +69,19 @@ public final class RequestContext {
     }
 
     private final Operation operation;
+
+    /** A2A sub-operation classification (issue #5362). */
+    public enum A2aOperation {
+        /** Create/submit a task (charges BACKLOG; released when the task completes/cancels). */
+        SUBMIT,
+        /** Query task state (THROUGHPUT). */
+        GET,
+        /** Cancel a task (THROUGHPUT). */
+        CANCEL,
+        /** Open/read a task stream (THROUGHPUT). */
+        STREAM
+    }
+
     private final String topic;
     private final String clientId;
     private final String tenantId;
@@ -79,6 +92,13 @@ public final class RequestContext {
     private final String remoteAddress;
     /** Where the request entered: "http", "tcp", "a2a", "connector", "admin". */
     private final String source;
+    /**
+     * Fine-grained A2A sub-operation (#5362): submit / get / cancel / stream. Null for
+     * non-A2A operations. Selects the quota resource when {@code operation == A2A}:
+     * SUBMIT charges BACKLOG (a live task occupying agent capacity, released on
+     * completion/cancel via the QuotaHandle); GET / CANCEL / STREAM charge THROUGHPUT.
+     */
+    private final A2aOperation a2aOperation;
     private final String quotaKey;
     /** Opaque trace propagation headers (traceparent, baggage, ...). */
     private final Map<String, String> traceContext;
@@ -95,6 +115,7 @@ public final class RequestContext {
         this.credential = b.credential;
         this.remoteAddress = b.remoteAddress;
         this.source = b.source == null ? "unknown" : b.source;
+        this.a2aOperation = b.a2aOperation;
         this.quotaKey = b.quotaKey != null ? b.quotaKey
             : (b.tenantId != null ? b.tenantId : (b.clientId != null ? b.clientId : "anonymous"));
         this.traceContext = b.traceContext == null
@@ -108,6 +129,11 @@ public final class RequestContext {
 
     public Operation getOperation() {
         return operation;
+    }
+
+    /** The A2A sub-operation, or null when {@link #getOperation()} is not A2A (#5362). */
+    public A2aOperation getA2aOperation() {
+        return a2aOperation;
     }
 
     public String getTopic() {
@@ -197,11 +223,18 @@ public final class RequestContext {
         private String credential;
         private String remoteAddress;
         private String source;
+        private A2aOperation a2aOperation;
         private String quotaKey;
         private Map<String, String> traceContext;
 
         private Builder(Operation operation) {
             this.operation = operation;
+        }
+
+        /** Classify the A2A sub-operation (#5362); ignored for non-A2A operations. */
+        public Builder a2aOperation(A2aOperation a2aOperation) {
+            this.a2aOperation = a2aOperation;
+            return this;
         }
 
         public Builder topic(String topic) {
