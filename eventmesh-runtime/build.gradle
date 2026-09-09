@@ -122,6 +122,18 @@ final List<String> BROKER_IT_4_CLASSES = [
     'org.apache.eventmesh.runtime.it.MultiInstanceRocketMqIntegrationTest'
 ]
 
+// Feature-level e2e tests over a real broker. Each one pairs an in-process
+// `*IntegrationTest` (gate-tested by the `test` task) with a counterpart that drives the same
+// feature path through UniRuntime + a real storage plugin, so a regression in the broker boundary
+// (serialization, topic routing, subscription lifecycle, rate-limit token bucket, RR routing)
+// surfaces here. Skipped cleanly when no broker is configured.
+final List<String> BROKER_FEATURE_IT_CLASSES = [
+    'org.apache.eventmesh.runtime.it.BatchPublishOverBrokerTest',
+    'org.apache.eventmesh.runtime.it.UnsubscribeOverBrokerTest',
+    'org.apache.eventmesh.runtime.it.RateLimitOverBrokerTest',
+    'org.apache.eventmesh.runtime.it.RequestReplyOverBrokerTest'
+]
+
 test {
     jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
     ['it.storage', 'it.topic', 'it.namesrv', 'it.nacos', 'it.storage5', 'it.namesrv5',
@@ -131,8 +143,8 @@ test {
             systemProperty k, v
         }
     }
-    // Exclude all broker ITs - they run on-demand via `e2e-test`.
-    (BROKER_IT_5X_CLASSES + BROKER_IT_4_CLASSES).each { cls -> filter { excludeTestsMatching cls } }
+    // Exclude all broker ITs - they run on-demand via `e2e-test` / `e2eFeature`.
+    (BROKER_IT_5X_CLASSES + BROKER_IT_4_CLASSES + BROKER_FEATURE_IT_CLASSES).each { cls -> filter { excludeTestsMatching cls } }
 }
 
 // --- isolated classpath for the 4.9 broker ITs (excludes storage-rocketmq5 so 4.9.5 wins) ---
@@ -181,6 +193,32 @@ task('e2e-test') {
     group = 'verification'
     description = 'Runs all broker integration tests (auto-detect real brokers via E2EConfig).'
     dependsOn 'e2eTest5x', 'e2eTest4'
+}
+
+// On-demand: run feature-level e2e tests that pair an in-process integration test with the
+// matching real-broker exercise. Select a single class with -Pfeature.test=FQN (otherwise all
+// four run). The harness skips cleanly when no broker is configured.
+//   gradle :eventmesh-runtime:e2eFeature \
+//       -Dit.feature.storage=rocketmq4 -Dit.namesrv=host:9876
+//   gradle :eventmesh-runtime:e2eFeature -Pfeature.test=RateLimitOverBrokerTest \
+//       -Dit.feature.storage=rocketmq5 -Dit.namesrv5=host:9876
+task e2eFeature(type: Test) {
+    group = 'verification'
+    description = 'Runs real-broker feature e2e tests (BatchPublish/Unsubscribe/RateLimit/RequestReply).'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = configurations.rocketmq4TestRuntimeClasspath + sourceSets.main.output + sourceSets.test.output
+    useJUnitPlatform()
+    if (project.hasProperty('feature.test')) {
+        filter { includeTestsMatching project.property('feature.test') }
+    } else {
+        BROKER_FEATURE_IT_CLASSES.each { cls -> filter { includeTestsMatching cls } }
+    }
+    jvmArgs('-XX:MaxDirectMemorySize=512m', '-Xmx1024m', '-Dio.netty.noPreferDirect=true')
+    // Forward both it.namesrv + it.namesrv5 — the harness reads whichever the active backend uses.
+    ['it.storage', 'it.topic', 'it.namesrv', 'it.storage5', 'it.namesrv5', 'it.feature.storage'].each { k ->
+        def v = System.getProperty(k)
+        if (v != null) { systemProperty k, v }
+    }
 }
 
 // One-command demo runner: boots an in-process EventMeshApplication + StreamingAgent (mock LLM)
