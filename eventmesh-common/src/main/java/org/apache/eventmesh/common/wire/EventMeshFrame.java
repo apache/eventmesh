@@ -256,6 +256,16 @@ public final class EventMeshFrame {
     // -------------------- encode / decode --------------------
 
     public byte[] encode() {
+        // #5361: enforce wire bounds at the producer side — fail fast instead of building a
+        // frame the decode side would have to reject (or worse, allocate for).
+        if (attrs.size() > FrameLimits.MAX_ATTRIBUTES) {
+            throw new IllegalArgumentException("frame attribute count " + attrs.size()
+                + " exceeds limit " + FrameLimits.MAX_ATTRIBUTES);
+        }
+        if (data.length > FrameLimits.MAX_DATA_BYTES) {
+            throw new IllegalArgumentException("frame data length " + data.length
+                + " exceeds limit " + FrameLimits.MAX_DATA_BYTES);
+        }
         byte[][] nameBytes = new byte[attrs.size()][];
         byte[][] valBytes = new byte[attrs.size()][];
         int kvLen = 0;
@@ -263,8 +273,20 @@ public final class EventMeshFrame {
         for (Map.Entry<String, String> e : attrs.entrySet()) {
             nameBytes[i] = utf8(e.getKey());
             valBytes[i] = utf8(e.getValue());
+            if (nameBytes[i].length > FrameLimits.MAX_ATTR_NAME_BYTES) {
+                throw new IllegalArgumentException("attribute name length " + nameBytes[i].length
+                    + " exceeds limit " + FrameLimits.MAX_ATTR_NAME_BYTES);
+            }
+            if (valBytes[i].length > FrameLimits.MAX_ATTR_VALUE_BYTES) {
+                throw new IllegalArgumentException("attribute value length " + valBytes[i].length
+                    + " exceeds limit " + FrameLimits.MAX_ATTR_VALUE_BYTES);
+            }
             kvLen += 2 + nameBytes[i].length + 4 + valBytes[i].length;
             i++;
+        }
+        if (HEADER_LEN + kvLen + data.length > FrameLimits.MAX_FRAME_BYTES) {
+            throw new IllegalArgumentException("encoded frame size " + (HEADER_LEN + kvLen + data.length)
+                + " exceeds limit " + FrameLimits.MAX_FRAME_BYTES);
         }
         ByteBuffer buf = ByteBuffer.allocate(HEADER_LEN + kvLen + data.length);
         buf.put((byte) MAGIC);
@@ -301,16 +323,47 @@ public final class EventMeshFrame {
         if (ver != VERSION) {
             throw new IllegalArgumentException("unsupported frame version: " + ver);
         }
-        int msgType = buf.get() & 0xFF;
-        int flags = buf.get() & 0xFF;
-        int seq = buf.getInt();
+        final int msgType = buf.get() & 0xFF;
+        final int flags = buf.get() & 0xFF;
+        final int seq = buf.getInt();
         int keyCount = buf.getShort() & 0xFFFF;
         int dataLen = buf.getInt();
+        // #5361: reject malformed/hostile headers BEFORE allocating — a frame that advertises
+        // sizes beyond the wire limits fails with IllegalArgumentException (clean reject), not
+        // an OutOfMemoryError from the allocation below.
+        if (keyCount > FrameLimits.MAX_ATTRIBUTES) {
+            throw new IllegalArgumentException("frame attribute count " + keyCount
+                + " exceeds limit " + FrameLimits.MAX_ATTRIBUTES);
+        }
+        if (dataLen < 0 || dataLen > FrameLimits.MAX_DATA_BYTES) {
+            throw new IllegalArgumentException("frame data length " + dataLen
+                + " exceeds limit " + FrameLimits.MAX_DATA_BYTES);
+        }
+        if (dataLen > length - HEADER_LEN) {
+            throw new IllegalArgumentException("frame data length " + dataLen
+                + " exceeds the provided buffer (" + length + " bytes)");
+        }
         Map<String, String> attrs = new LinkedHashMap<>(keyCount);
         for (int i = 0; i < keyCount; i++) {
+            // #5361: length prefixes themselves can run past a truncated buffer — guard each
+            // read so the whole decode fails as IllegalArgumentException, never underflow.
+            if (buf.remaining() < 2) {
+                throw new IllegalArgumentException("truncated frame: attribute name length prefix"
+                    + " beyond buffer (" + buf.remaining() + " bytes left)");
+            }
             String name = getString(buf, buf.getShort() & 0xFFFF);
+            if (buf.remaining() < 4) {
+                throw new IllegalArgumentException("truncated frame: attribute value length prefix"
+                    + " beyond buffer (" + buf.remaining() + " bytes left)");
+            }
             String value = getString(buf, buf.getInt());
             attrs.put(name, value);
+        }
+        // #5361: attributes consumed part of the buffer; re-check the data region before the
+        // bulk get (a frame truncated mid-attributes or mid-data fails cleanly).
+        if (dataLen > buf.remaining()) {
+            throw new IllegalArgumentException("frame data length " + dataLen
+                + " exceeds the remaining buffer (" + buf.remaining() + " bytes)");
         }
         byte[] data = new byte[dataLen];
         buf.get(data);
@@ -378,6 +431,12 @@ public final class EventMeshFrame {
     }
 
     private static String getString(ByteBuffer buf, int len) {
+        // #5361: a truncated buffer must fail as IllegalArgumentException (clean reject),
+        // never BufferUnderflowException or an over-allocation from a hostile length.
+        if (len < 0 || len > buf.remaining()) {
+            throw new IllegalArgumentException("string length " + len
+                + " exceeds the remaining buffer (" + buf.remaining() + " bytes)");
+        }
         byte[] b = new byte[len];
         buf.get(b);
         return new String(b, StandardCharsets.UTF_8);
