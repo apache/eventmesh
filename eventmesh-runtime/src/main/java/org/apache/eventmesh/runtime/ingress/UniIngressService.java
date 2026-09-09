@@ -649,6 +649,16 @@ public class UniIngressService {
      * Enable multi-instance partition ownership (§13.2.3): when set, {@link #pullAndDispatch} polls
      * only this instance's owned partitions instead of the whole topic.
      */
+    /** The reliability dispatcher (boot wiring injects durable stores into it, #5378). */
+    public org.apache.eventmesh.runtime.delivery.ReliableDispatcher dispatcher() {
+        return dispatcher;
+    }
+
+    /** The installed ownership view, or null before {@link #withPartitionOwnership} (#5377). */
+    public org.apache.eventmesh.runtime.cluster.PartitionOwnership partitionOwnership() {
+        return partitionOwnership;
+    }
+
     public void withPartitionOwnership(org.apache.eventmesh.runtime.cluster.PartitionOwnership ownership) {
         this.partitionOwnership = ownership;
         // #5360: propagate the ownership view to the dispatcher so a fenced owner cannot write

@@ -63,18 +63,22 @@ public class ClusterSubscriptionStore implements SubscriptionStore {
     public void put(String topic, String clientId, String instanceId, DistributionMode mode, String filterSpec) {
         ClusterSub sub = new ClusterSub(clientId, instanceId, mode, filterSpec);
         String k = key(topic, clientId);
-        meta.put(k, sub.encode());
-        // Update the local cache immediately — the MetaStore watch is for cross-instance propagation
-        // and may not fire (Nacos ConfigService is per-dataId, not prefix-scan), so don't rely on it
-        // to reflect this instance's own subscription back.
+        // Apply locally BEFORE the Meta write (#5376): with a synchronously-notifying store
+        // (InMemoryMetaStore), meta.put() fans the event out to every watcher INCLUDING this one,
+        // in the authoritative Meta order. A trailing own-apply after the write would escape that
+        // order and could resurrect a concurrently-deleted value in the local cache (divergent
+        // views across instances). Applying first keeps immediate local visibility for stores
+        // whose watch may not reflect own writes (Nacos per-dataId listeners) while letting the
+        // Meta-ordered notification re-assert the final value.
         applyChange(k, sub.encode(), false);
+        meta.put(k, sub.encode());
     }
 
     public boolean remove(String topic, String clientId) {
         String k = key(topic, clientId);
-        boolean removed = meta.delete(k);
+        // Apply locally BEFORE the Meta delete — see put() for the ordering argument (#5376).
         applyChange(k, null, true);
-        return removed;
+        return meta.delete(k);
     }
 
     /**

@@ -209,6 +209,8 @@ public class UniHttpServer {
         server.createContext("/events/subscribe", this::subscribe);
         server.createContext("/events/unsubscribe", this::unsubscribe);
         server.createContext("/events/ack", this::ack);
+        // #5376: the receiving side of cross-instance forwarding (HttpForwarder POSTs here).
+        server.createContext("/internal/forward", this::internalForward);
         server.createContext("/events/poll", this::poll);
         server.createContext("/events/request", this::request);
         server.createContext("/events/reply", this::reply);
@@ -487,6 +489,49 @@ public class UniHttpServer {
             out.put("removed", ingress.unsubscribeByClient(clientId) > 0);
         }
         writeJson(exchange, 200, out);
+    }
+
+    /**
+     * #5376: receiving side of cross-instance forwarding. A partition-owning peer POSTs
+     * {@code {"clientId":..,"topic":..,"frameB64":..}}; we decode the frame and deliver through
+     * the local reliable path (same as a local poll dispatch), so ACK/redelivery semantics are
+     * identical for forwarded and local deliveries. 401 without the internal token when one is
+     * configured (the forwarder sends it from eventmesh.admin.token).
+     */
+    private void internalForward(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            writeJson(exchange, 405, error("method not allowed"));
+            return;
+        }
+        String token = System.getProperty("eventmesh.admin.token");
+        if (token != null && !token.isEmpty()) {
+            String header = exchange.getRequestHeaders().getFirst("Authorization");
+            if (header == null || !header.equals("Bearer " + token)) {
+                writeJson(exchange, 401, error("unauthorized"));
+                return;
+            }
+        }
+        JsonNode body = readJson(exchange);
+        String clientId = text(body, "clientId");
+        String topic = text(body, "topic");
+        String frameB64 = text(body, "frameB64");
+        if (clientId == null || topic == null || frameB64 == null) {
+            writeJson(exchange, 400, error("missing clientId/topic/frameB64"));
+            return;
+        }
+        try {
+            byte[] frameBytes = java.util.Base64.getDecoder().decode(frameB64);
+            org.apache.eventmesh.common.wire.EventMeshFrame frame =
+                org.apache.eventmesh.common.wire.EventMeshFrame.decode(frameBytes);
+            boolean delivered = ingress.deliverLocal(topic, clientId, frame);
+            if (delivered) {
+                writeJson(exchange, 200, ack("forwarded"));
+            } else {
+                writeJson(exchange, 404, error("no such client"));
+            }
+        } catch (IllegalArgumentException e) {
+            writeJson(exchange, 400, error("bad frame encoding: " + e.getMessage()));
+        }
     }
 
     private void ack(HttpExchange exchange) throws IOException {
