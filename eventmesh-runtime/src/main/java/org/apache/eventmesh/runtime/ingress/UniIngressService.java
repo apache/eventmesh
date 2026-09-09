@@ -333,6 +333,9 @@ public class UniIngressService {
         java.util.List<Integer> owned = partitionOwnership == null ? null : partitionOwnership.ownedPartitions(topic);
         int total;
         if (owned == null) {
+            // #5360: no ownership view (single-instance / LOCAL_STICKY_PULL) -> poll all.
+            // In PARTITION_OWNED_PULL the runtime always installs the ownership view at boot
+            // (#5359), so a null here means single-instance — poll-all is the documented mode.
             total = pullAndDispatchPartition(topic, -1, maxEvents, timeoutMs);
         } else if (owned.isEmpty()) {
             total = 0; // owns none -> do not poll (avoids duplicate with the real owners)
@@ -648,6 +651,13 @@ public class UniIngressService {
      */
     public void withPartitionOwnership(org.apache.eventmesh.runtime.cluster.PartitionOwnership ownership) {
         this.partitionOwnership = ownership;
+        // #5360: propagate the ownership view to the dispatcher so a fenced owner cannot write
+        // offsets / ACK the broker after takeover. Guard semantics: still owning (topic, partition)
+        // per the CURRENT ownership snapshot — a partition that left our owned set fails the test.
+        dispatcher.withOwnershipGuard((topic, partition) -> {
+            java.util.List<Integer> owned = ownership.ownedPartitions(topic);
+            return owned != null && owned.contains(partition);
+        });
     }
 
     /** Wire the load meter; ingress/egress points call its record* methods. */
