@@ -1,5 +1,10 @@
 # Architecture Review: Production HA Acceptance
 
+> **Status (2026-09-09): COMPLETE.** Phase 0-4 executed as #5367-#5374; #5363 (Testcontainers
+> E2E) deferred with a compensating-coverage note on the issue. Evidence:
+> `docs/architecture-review/evidence.md` § "Production-HA acceptance". The three parent
+> issues (#5352 / #5353 / #5354) close with the evidence table.
+
 > Tracking issue: #5354 (parent)
 > Sub-issues: #5352 (data-path), #5353 (control-plane)
 > Baseline: `apache/eventmesh` `develop` at commit `b08e591ac59c64479caf80bced59421bf7207262` (post-#5296 closure)
