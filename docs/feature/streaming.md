@@ -91,7 +91,7 @@ client.subscribeSession(sessionId, chunk -> render(chunk));
 > bootstrap: an embedder builds it via the session builders
 > (`withAgentRegistrar` / `withMatchmaker` / `withSessionRouter`) before
 > `start()` — the channel strategy is an explicit embedder choice. See
-> [Deployment → deployment modes](../reference/deployment.md#deployment-modes).
+> [Deployment → deployment modes](deployment.md#deployment-modes).
 
 Load balancing for sessions uses the **sticky recommendation** model: the
 runtime's `LoadMeter` self-reports load and `/session/recommend` pins a

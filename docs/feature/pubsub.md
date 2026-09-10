@@ -3,7 +3,7 @@
 **Audience:** application developers publishing or subscribing via the HTTP
 API or the Java SDK. Covers topics, the event format, distribution modes,
 filtering, and batching. For the endpoint-by-endpoint reference see
-[HTTP API](../reference/http-api.md); for delivery guarantees see
+[HTTP API](http-api.md); for delivery guarantees see
 [Reliable delivery](delivery-reliability.md).
 
 ---
@@ -95,7 +95,7 @@ A subscriber can attach a filter at subscribe time so the runtime only
 buffers matching events (server-side, evaluated on the frame). In the SDK
 this is `subscribeWithAck(topic, mode, predicate)` — the same predicate
 mechanism that decides ACK on the long-poll transport. See
-[Java client guide §4–5](../reference/client-java.md) for patterns.
+[Java client guide §4–5](client-java.md) for patterns.
 
 ## Receiving
 
@@ -144,6 +144,6 @@ Keys live in `eventmesh-runtime/conf/eventmesh.properties`
 | --- | --- | --- |
 | `eventmesh.http.port` | `8080` | Traffic endpoints |
 | `eventmesh.ws.port` | `-1` (off) | WebSocket push transport |
-| `eventmesh.delivery.topology` | `LOCAL_STICKY_PULL` | Single- vs multi-instance polling (see [Control plane](../architecture/control-plane.md)) |
+| `eventmesh.delivery.topology` | `LOCAL_STICKY_PULL` | Single- vs multi-instance polling (see [Control plane](control-plane.md)) |
 
 Full reference: [Configuration](../quickstart/configuration.md).

@@ -66,7 +66,7 @@ before serving traffic.
 (`configureTopicRateLimit(topic, capacity, permitsPerSecond)`). Exhausted
 buckets fail publish with `RateLimitedException` → HTTP **429**.
 Cluster-wide limits are inspectable/adjustable at `/admin/ratelimit` —
-see [Admin API](../reference/admin-api.md).
+see [Admin API](../feature/admin-api.md).
 
 ## TLS / mTLS on the traffic port
 
