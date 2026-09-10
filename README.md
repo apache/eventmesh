@@ -5,7 +5,7 @@
 <br />
 
 [![CI status](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/ci.yml?logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/ci.yml)
-[![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
+[![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/develop?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
 [![Code Scanning](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/code-scanning.yml?label=code%20scanning&logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/code-scanning.yml)
 
 [![License](https://img.shields.io/github/license/apache/eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
@@ -14,7 +14,7 @@
   
 
 [📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
-[📔 Examples](https://github.com/apache/eventmesh/tree/master/eventmesh-examples) |
+[📔 Examples](https://github.com/apache/eventmesh/tree/develop/eventmesh-examples) |
 [⚙️ Roadmap](https://eventmesh.apache.org/docs/roadmap) |
 [🌐 简体中文](README.zh-CN.md)
 </div>
@@ -47,9 +47,9 @@ Apache EventMesh is packed with features that help users build event-driven appl
 **Extensibility & ecosystem**
 
 - **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/feature/a2a.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
-- **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), and more.
+- **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org) (4.x / 5.x) and [Apache Kafka](https://kafka.apache.org) ship today; more backends via the `MeshStoragePlugin` SPI.
 - **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
-- **Pluggable meta service** — [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io), and [Zookeeper](https://zookeeper.apache.org/).
+- **Pluggable meta service** — [Nacos](https://nacos.io) ships today (multi-instance coordination); more backends via the same storage SPI.
 - **Event schema management** via catalog service.
 - **Powerful event orchestration** through the [Serverless workflow](https://serverlessworkflow.io/) engine.
 - **Powerful event filtering and transformation.**
@@ -106,7 +106,7 @@ A full step-by-step walkthrough — prerequisites, backend choice, run via Docke
 or from source, first publish, three receive transports, unsubscribe, and the SDK
 path — lives in [Getting started](docs/quickstart/getting-started.md). The
 first-event examples in that guide work against the standard ports
-(`8080` HTTP, `8081` admin, `8082` WebSocket, `8083` connector admin).
+(`8080` HTTP, `8081` admin, `8082` WebSocket opt-in).
 
 ## Contributing
 
