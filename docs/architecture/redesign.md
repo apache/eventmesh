@@ -1,7 +1,7 @@
 # EventMesh 架构简化重构方案
 
 > **状态说明**：本文是架构重写的设计文档（历史记录）。各能力的当前实现状态与成熟度
-> 以主 README 的[能力状态表](../README.md#能力状态capability-status)为准。
+> 以主 README 的[能力状态表](../../README.md#能力状态capability-status)为准。
 
 > 分支：`refactor/unified-runtime-pipeline` → 基于 本次讨论的全新方向
 >
@@ -4642,7 +4642,7 @@ CompletableFuture<CloudEvent> request(CloudEvent event, Duration timeout);
 
 ## 附录 E： 定制（masa 子模块）迁移清单
 
-> 已拆分为独立文档：[`-masa-migration-inventory.md`](./-masa-migration-inventory.md)。该文档盘点 `apache-eventmesh-old/masa-eventmesh` 子模块的 8 个  定制（connector-wemq / trace-weapm / trace-mss / registry-namesrv / registry-nacos / security-acl / wemq-access-starter / logappender），映射到新架构的处理方式（重写/合并/保留/弃）、重写要点、迁移批次（对应 §11 Phase）与风险点，作为 §15.4 基线决策的迁移资产登记。
+> 已拆分为独立文档：[`-masa-migration-inventory.md`)。该文档盘点 `apache-eventmesh-old/masa-eventmesh` 子模块的 8 个  定制（connector-wemq / trace-weapm / trace-mss / registry-namesrv / registry-nacos / security-acl / wemq-access-starter / logappender），映射到新架构的处理方式（重写/合并/保留/弃）、重写要点、迁移批次（对应 §11 Phase）与风险点，作为 §15.4 基线决策的迁移资产登记。
 
 ---
 

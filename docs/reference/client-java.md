@@ -1,14 +1,11 @@
 # Apache EventMesh Client Guide
 
-> **Audience:** application developers using the `eventmesh-sdk-java` `CloudEventsClient`
-> and `A2AClient` to publish / subscribe / stream / dispatch A2A tasks.
->
-> **Backend-agnostic.** This guide covers the full API surface and is the single
-> source of truth for what the client SDK does. The capability status table in
-> the project README is the source of truth for GA / Beta / Experimental / Legacy
-> tags; backend-specific configuration is in
-> [docs/eventmesh-configuration.md](eventmesh-configuration.md); architectural
-> context is in [docs/eventmesh-architecture.md](eventmesh-architecture.md).
+> **Audience:** Java application developers using `eventmesh-sdk-java`
+> (`CloudEventsClient` / `A2AClient`). Backend-agnostic — the complete API
+> surface. Configuration: [Configuration](../quickstart/configuration.md);
+> architectural context: [Architecture](../architecture/overview.md).
+
+---
 
 The new architecture ships with **one client SDK** that exposes two surface APIs:
 
@@ -17,7 +14,7 @@ The new architecture ships with **one client SDK** that exposes two surface APIs
   This is the **primary user path** and the recommended way to integrate with
   EventMesh.
 * `A2AClient` — Agent-to-Agent task dispatch on top of the same Runtime
-  ([docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md)). Used by multi-agent systems that
+  ([docs/eventmesh-a2a-protocol.md](../feature/a2a.md)). Used by multi-agent systems that
   need a durable task lifecycle.
 
 Both clients talk **only to the EventMesh Runtime** (HTTP). The underlying
@@ -148,7 +145,7 @@ CloudEventsClient client = CloudEventsClient.builder()
 
 TLS / mTLS is configured at the **Runtime** (server side), not the client. The
 client just talks to `https://...` once TLS is enabled. See
-[docs/eventmesh-configuration.md](eventmesh-configuration.md#security).
+[docs/eventmesh-configuration.md](../quickstart/configuration.md#security).
 
 ---
 
@@ -398,8 +395,8 @@ The gate runs `FilterChain` (TokenAuth → SignatureVerifier → Acl) →
 For configuration and the three wiring points
 (`UniHttpServer.withSecurityGate`, `A2AGatewayHttpHandler.withSecurityGate`,
 `ConnectorScheduler.withSecurityGate`) see
-[docs/eventmesh-configuration.md](eventmesh-configuration.md#security) and
-[docs/eventmesh-architecture.md §4](eventmesh-architecture.md#4-security-gate-issue-5304).
+[docs/eventmesh-configuration.md](../quickstart/configuration.md#security) and
+[docs/eventmesh-architecture.md §4](../architecture/overview.md#4-security-gate-issue-5304).
 
 > **The client SDK does not need to "know" about the gate.** A deployment that
 > enables the gate is a server-side change. The client sends the same CloudEvent
@@ -414,7 +411,7 @@ For configuration and the three wiring points
 | --- | --- | --- |
 | At-least-once | Runtime `DeliveryStateStore` | Use `subscribeWithAck` and return `true` only after success |
 | Retries | Runtime retry policy | `false` from your predicate triggers a re-delivery after the dispatcher timeout |
-| Dead-letter | Runtime `DeadLetterStore` | Inspect / replay via admin endpoints (see [eventmesh-configuration.md](eventmesh-configuration.md#admin)) |
+| Dead-letter | Runtime `DeadLetterStore` | Inspect / replay via admin endpoints (see [eventmesh-configuration.md](../quickstart/configuration.md#admin)) |
 | Idempotency | — | **You.** Use `event.getId()` as the dedup key. The Runtime does not deduplicate. |
 | Offset | Runtime `OffsetStore` (L1) | — |
 | Subscription state | Runtime `SubscriptionStore` (L2) | Survives Runtime restart via the meta store |
@@ -422,17 +419,17 @@ For configuration and the three wiring points
 
 For the storage-state taxonomy (L1 / L2 / L3) and the
 `MeshStoragePlugin` / `MeshStoragePluginTCK` contract, see
-[docs/eventmesh-architecture.md §3](eventmesh-architecture.md#3-control-plane--state-sessions-and-coordination).
+[docs/eventmesh-architecture.md §3](../architecture/overview.md#3-control-plane--state-sessions-and-coordination).
 
 Configuration knobs: see
-[docs/eventmesh-configuration.md](eventmesh-configuration.md#deliverystate)
+[docs/eventmesh-configuration.md](../quickstart/configuration.md#deliverystate)
 (`eventmesh.runtime.delivery.*`).
 
 ---
 
 ## 11. `A2AClient` for agent workloads
 
-For multi-agent systems, the [A2A protocol](eventmesh-a2a-protocol.md) gives you a
+For multi-agent systems, the [A2A protocol](../feature/a2a.md) gives you a
 durable task lifecycle (`submitted → working → completed | failed |
 canceled`) on top of the same storage substrate. The client side is
 `org.apache.eventmesh.protocol.a2a.A2AClient` (in the
@@ -493,8 +490,8 @@ surface is:
 * `GET /a2a/agents` — list agents
 * `POST /a2a/agents` — register an agent card
 
-See [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) for the wire contract and
-[docs/eventmesh-architecture.md §5](eventmesh-architecture.md#5-agent-plane--a2a-on-the-same-substrate)
+See [docs/eventmesh-a2a-protocol.md](../feature/a2a.md) for the wire contract and
+[docs/eventmesh-architecture.md §5](../architecture/overview.md#5-agent-plane--a2a-on-the-same-substrate)
 for the runtime architecture.
 
 ---
@@ -516,7 +513,7 @@ backend to another is a **Runtime** configuration change; the same
 | Lite Topic | — | yes (`LiteTopicCapable`) | — |
 
 Per-backend keys are listed in
-[docs/eventmesh-configuration.md](eventmesh-configuration.md#storage).
+[docs/eventmesh-configuration.md](../quickstart/configuration.md#storage).
 Pick one `eventmesh.storage.type` at Runtime startup:
 
 ```bash
@@ -622,7 +619,7 @@ The same `Demo` class runs unchanged on all three.
 | Dead-letter inspection | admin HTTP (port 8081) | `GET /admin/dlq?topic=<topic>` |
 | A2A agent registry | `A2AClient.listAgents()` | Should return at least one `AgentCard` for `agentName` you registered |
 
-See [docs/production-readiness.md](production-readiness.md) for SLOs and
+See [docs/production-readiness.md](../reference/deployment.md) for SLOs and
 runbooks.
 
 ---
@@ -673,13 +670,13 @@ history for the migration notes.
 
 See also:
 
-* [docs/eventmesh-architecture.md](eventmesh-architecture.md) — system
+* [docs/eventmesh-architecture.md](../architecture/overview.md) — system
   architecture, control / data / agent planes
-* [docs/eventmesh-features.md](eventmesh-features.md) — feature-by-feature
+* [docs/eventmesh-features.md](../index.md) — feature-by-feature
   guide
-* [docs/eventmesh-configuration.md](eventmesh-configuration.md) — every
+* [docs/eventmesh-configuration.md](../quickstart/configuration.md) — every
   runtime key
-* [docs/eventmesh-getting-started.md](eventmesh-getting-started.md) —
+* [docs/eventmesh-getting-started.md](../quickstart/getting-started.md) —
   zero-to-running guide
-* [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) — A2A wire contract
-* [docs/production-readiness.md](production-readiness.md) — SLOs, runbooks
+* [docs/eventmesh-a2a-protocol.md](../feature/a2a.md) — A2A wire contract
+* [docs/production-readiness.md](../reference/deployment.md) — SLOs, runbooks

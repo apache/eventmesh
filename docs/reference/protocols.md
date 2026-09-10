@@ -1,10 +1,10 @@
 # EventMesh protocols and SDKs
 
-> **Status:** This page is the canonical inventory of wire protocols, server-side
-> protocol plugins, and client SDKs. It is referenced from
-> `docs/eventmesh-architecture.md` section 9. Status tags are kept in sync
-> with the project README capability table - that table is the source of
-> truth for GA / Beta / Experimental / Legacy classification.
+> **Audience:** anyone choosing a wire protocol or SDK. The canonical
+> inventory of protocols, server-side plugins, and client SDKs, with
+> GA / Beta / Experimental / Legacy status (README table is authoritative).
+
+---
 
 This issue tracks the separation called out in #5296 review question Q5
 (2026-09-07): the modern **HTTP + CloudEvents + EventMeshFrame** path must be
