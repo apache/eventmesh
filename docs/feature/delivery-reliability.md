@@ -50,7 +50,7 @@ Retry policy per delivery (defaults in `ReliableDispatcher`):
 
 Operators inspect and replay the DLQ through the admin plane:
 `GET /admin/dlq/browse?topic=…&max=…`, `POST /admin/dlq/replay?topic=…&max=…`
-(see [Admin API](../reference/admin-api.md)).
+(see [Admin API](admin-api.md)).
 
 ## Crash recovery — what restarts guarantee
 
@@ -75,7 +75,7 @@ When several instances run with a meta store, each topic partition is owned
 by exactly one instance (`PARTITION_OWNED_PULL`). If ownership moves while a
 delivery is in flight, the old owner's ACK is fenced: it raises
 `StaleOwnerException`, writes nothing, and the broker redelivers to the new
-owner. Details: [Control plane → delivery topology](../architecture/control-plane.md#1-deliverytopology).
+owner. Details: [Control plane → delivery topology](control-plane.md#1-deliverytopology).
 
 ## Delivery failure matrix (per backend)
 
@@ -87,7 +87,7 @@ owner. Details: [Control plane → delivery topology](../architecture/control-pl
 | Process kill -9 | WAL + persisted delivery state survive | — | Boot recovery re-dispatches in-flight records |
 
 Full per-store failure behavior:
-[Control plane → state store failure matrix](../architecture/control-plane.md#state-store-failure-matrix).
+[Control plane → state store failure matrix](control-plane.md#state-store-failure-matrix).
 
 ## Where the code lives
 

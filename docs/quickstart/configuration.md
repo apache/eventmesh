@@ -122,7 +122,7 @@ Cluster-wide limits can be inspected and adjusted at `POST /admin/ratelimit`.
 
 ## 7. Traffic endpoints (port 8080)
 
-Full request/response shapes: see the [client guide](../reference/client-java.md).
+Full request/response shapes: see the [client guide](../feature/client-java.md).
 Summary:
 
 | Group | Endpoints |

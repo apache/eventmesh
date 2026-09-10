@@ -62,12 +62,12 @@ status. See [docs](docs/) for the per-capability guides.
 
 | Capability | Status | Recommendation | Migration target |
 | --- | :---: | --- | --- |
-| [HTTP + CloudEvents](docs/reference/client-java.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
+| [HTTP + CloudEvents](docs/feature/client-java.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
 | SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
 | Connector Runtime | **Experimental** | Working end-to-end, but only 4 of 23 plugins (file/kafka/pulsar/rocketmq) have unit tests — the rest are templates; data-loss hardening landed in [#5328](https://github.com/apache/eventmesh/pull/5328) | SPI split into `eventmesh-connector-api` (#5328); remaining plugin tests + GA criteria tracked under the #5296 architecture review |
 | [A2A / Agent Gateway](docs/feature/a2a.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
-| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/reference/client-java.md) |
+| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/feature/client-java.md) |
 
 Status meanings:
 
@@ -77,7 +77,7 @@ Status meanings:
 - **Legacy-compatible** — maintained for zero-change compatibility with existing clients; receives fixes but no new features. New integrations should not start here.
 
 > Migrating off TCP / gRPC SDKs? The legacy clients keep working against the current
-> runtime; see the [client guide](docs/reference/client-java.md) for the
+> runtime; see the [client guide](docs/feature/client-java.md) for the
 > HTTP + CloudEvents replacement (`CloudEventsClient`).
 
 ### Documentation
@@ -88,9 +88,9 @@ The docs tree is organized by audience — start from the
 - [Introduction](docs/introduction.md) — what EventMesh is and when to use it
 - [Getting started](docs/quickstart/getting-started.md) — zero to a running runtime in minutes
 - [Configuration reference](docs/quickstart/configuration.md) — every runtime key, per-backend settings, security &amp; quota
-- User guides — [Java client](docs/reference/client-java.md) · [pub/sub](docs/feature/pubsub.md) · [delivery reliability](docs/feature/delivery-reliability.md) · [streaming](docs/feature/streaming.md) · [lite topic](docs/feature/lite-topic.md) · [A2A](docs/feature/a2a.md)
-- Architecture — [overview](docs/architecture/overview.md) · [control plane](docs/architecture/control-plane.md) · [security](docs/architecture/security.md)
-- Reference — [HTTP API](docs/reference/http-api.md) · [admin API](docs/reference/admin-api.md) · [observability](docs/reference/observability.md) · [deployment](docs/reference/deployment.md) · [protocols &amp; SDKs](docs/reference/protocols.md) · [storage SPI](docs/reference/storage-spi.md)
+- User guides — [Java client](docs/feature/client-java.md) · [pub/sub](docs/feature/pubsub.md) · [delivery reliability](docs/feature/delivery-reliability.md) · [streaming](docs/feature/streaming.md) · [lite topic](docs/feature/lite-topic.md) · [A2A](docs/feature/a2a.md)
+- Architecture — [overview](docs/architecture/overview.md) · [control plane](docs/feature/control-plane.md) · [security](docs/architecture/security.md)
+- API & operations — [HTTP API](docs/feature/http-api.md) · [admin API](docs/feature/admin-api.md) · [observability](docs/feature/observability.md) · [deployment](docs/feature/deployment.md) · [protocols &amp; SDKs](docs/feature/protocols.md) · [storage SPI](docs/feature/storage-spi.md)
 
 ## Subprojects
 

@@ -409,7 +409,7 @@ EventMesh supports several wire protocols and ships client SDKs in
 multiple languages. The canonical inventory - including GA / Beta /
 Experimental / Legacy status for each protocol, the server-side
 protocol plugin that handles it, and the corresponding client SDK
-surface - lives in [docs/protocols.md](../reference/protocols.md). The policy
+surface - lives in [docs/protocols.md](../feature/protocols.md). The policy
 summarized there:
 
 * The modern **HTTP + CloudEvents + EventMeshFrame** path is the
@@ -440,14 +440,14 @@ The [documentation map](../index.md) organizes everything by audience. Highlight
 | [Introduction](../introduction.md) | What EventMesh is; the three planes; deployment shape |
 | [Getting started](../quickstart/getting-started.md) | Zero-to-running runtime; per-backend quickstarts |
 | [Configuration](../quickstart/configuration.md) | Every runtime key, security & quota, per-backend overrides |
-| [Java client guide](../reference/client-java.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
+| [Java client guide](../feature/client-java.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
 | [Pub/sub](../feature/pubsub.md) | Topics, distribution modes, filtering |
 | [Reliable delivery](../feature/delivery-reliability.md) | ACK tracking, retries, DLQ, crash recovery |
 | [A2A protocol](../feature/a2a.md) | A2A wire contract and task lifecycle |
 | [Security](security.md) | The unified gate, TLS/mTLS, admin token |
-| [HTTP API](../reference/http-api.md) | Traffic endpoints |
-| [Admin API](../reference/admin-api.md) | Operational surface + token guard |
-| [Protocols & SDKs](../reference/protocols.md) | Wire protocol inventory and per-language SDK status |
-| [Storage SPI](../reference/storage-spi.md) | `MeshStoragePlugin` contract and capability matrix |
-| [Deployment](../reference/deployment.md) | Modes, Docker, multi-instance, runbooks |
+| [HTTP API](../feature/http-api.md) | Traffic endpoints |
+| [Admin API](../feature/admin-api.md) | Operational surface + token guard |
+| [Protocols & SDKs](../feature/protocols.md) | Wire protocol inventory and per-language SDK status |
+| [Storage SPI](../feature/storage-spi.md) | `MeshStoragePlugin` contract and capability matrix |
+| [Deployment](../feature/deployment.md) | Modes, Docker, multi-instance, runbooks |
 | [Design records](../index.md#design-records-contributors) | Redesign rationale, evidence, plans |

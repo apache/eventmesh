@@ -619,7 +619,7 @@ The same `Demo` class runs unchanged on all three.
 | Dead-letter inspection | admin HTTP (port 8081) | `GET /admin/dlq?topic=<topic>` |
 | A2A agent registry | `A2AClient.listAgents()` | Should return at least one `AgentCard` for `agentName` you registered |
 
-See [docs/production-readiness.md](../reference/deployment.md) for SLOs and
+See [docs/production-readiness.md](deployment.md) for SLOs and
 runbooks.
 
 ---
@@ -679,4 +679,4 @@ See also:
 * [docs/eventmesh-getting-started.md](../quickstart/getting-started.md) —
   zero-to-running guide
 * [docs/eventmesh-a2a-protocol.md](../feature/a2a.md) — A2A wire contract
-* [docs/production-readiness.md](../reference/deployment.md) — SLOs, runbooks
+* [docs/production-readiness.md](deployment.md) — SLOs, runbooks

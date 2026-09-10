@@ -68,7 +68,7 @@ curl http://localhost:8081/admin/health     # {"status":"UP"}
 ## Single-instance vs multi-instance
 
 The delivery topology (`-Deventmesh.delivery.topology`, see
-[Control plane](../architecture/control-plane.md#1-deliverytopology)):
+[Control plane](control-plane.md#1-deliverytopology)):
 
 | Mode | Default | What it does | Requires |
 | --- | --- | --- | --- |

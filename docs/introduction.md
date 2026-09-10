@@ -38,7 +38,7 @@ makes the rest of the properties possible:
    offsets, dead-letter and A2A task records, each behind a typed store
    (L1 local / L2 cluster-shared / L3 durable). Multi-instance coordination
    runs over a meta store (Nacos today). See
-   [Control plane](architecture/control-plane.md).
+   [Control plane](feature/control-plane.md).
 
 3. **Agent plane** — the A2A gateway: a task lifecycle
    (`submitted → working → completed | failed | canceled`) mapped onto the
@@ -81,9 +81,9 @@ makes the rest of the properties possible:
 | Lite Topic | RocketMQ 5.x hierarchical messaging | [Lite Topic](feature/lite-topic.md) |
 | A2A protocol | Durable agent-to-agent tasks bridging MCP / JSON-RPC | [A2A](feature/a2a.md) |
 | Security gate | Auth filters + per-tenant quota + audit at every ingress | [Security](architecture/security.md) |
-| Observability | Prometheus metrics, traces, health, SLOs/alerts | [Observability](reference/observability.md) |
-| Pluggable storage | `MeshStoragePlugin` SPI with a TCK per backend | [Storage SPI](reference/storage-spi.md) |
-| Connectors | 23 source/sink plugins in a separate process | [Deployment](reference/deployment.md#connectors) |
+| Observability | Prometheus metrics, traces, health, SLOs/alerts | [Observability](feature/observability.md) |
+| Pluggable storage | `MeshStoragePlugin` SPI with a TCK per backend | [Storage SPI](feature/storage-spi.md) |
+| Connectors | 23 source/sink plugins in a separate process | [Deployment](feature/deployment.md#connectors) |
 
 ## Try it in five minutes
 
