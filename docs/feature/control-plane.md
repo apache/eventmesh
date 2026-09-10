@@ -55,7 +55,7 @@ construction:
 | --- | --- |
 | HTTP `POST /events/publish` | `UniHttpServer` -> `UniIngressService.publish` -> `Frame` -> `Producer.send` -> `poll loop` -> topology-selected partition set |
 | A2A `POST /a2a/tasks/send` | `A2AGatewayHttpHandler` -> `A2AGatewayService` -> `UniIngressService` -> same as above |
-| Legacy TCP (`UniTcpServer`) | main path is being phased out (see docs/protocols.md #5341); when active, the TCP server feeds the same `UniIngressService` |
+| Legacy TCP (`UniTcpServer`) | main path is being phased out (see docs/feature/protocols.md #5341); when active, the TCP server feeds the same `UniIngressService` |
 | WebSocket push | passive receiver; not gated by topology (the topology decides *which* partitions to *poll*, not the push path) |
 | SSE | passive receiver; not gated by topology |
 
@@ -79,7 +79,7 @@ source tree (only `UniRuntime` and `DeliveryTopology` itself should match in
   `eventmesh.security.gate.*` and the per-filter keys).
 * **Default:** a no-op gate that allows every request. This is the
   backward-compatible default and is documented as such in
-  `docs/eventmesh-configuration.md`.
+  `docs/quickstart/configuration.md`.
 * **Fail-closed mode:** when `eventmesh.security.gate.failClosed=true`,
   any filter chain exception (auth failed, signature invalid, ACL denied)
   results in a 401/403 response. The default is fail-open (allowed) so a
@@ -102,7 +102,7 @@ source tree (only `UniRuntime` and `DeliveryTopology` itself should match in
 | HTTP `POST /events/publish` | **Yes** | `UniHttpServer` -> `RequestContext` -> `SecurityGate.check(ctx, frame)` -> `UniIngressService.publish` |
 | HTTP `POST /events/subscribe` | **Yes** | same chain |
 | A2A `POST /a2a/tasks/send` | **Yes** | `A2AGatewayHttpHandler` -> gate -> `A2AGatewayService` -> `UniIngressService` |
-| Legacy TCP | **Yes** (gated by TCP-level auth, separate from SecurityGate) | `UniTcpServer` -> `TcpIngressBridge` (the TCP path has its own connection-level auth, see docs/protocols.md) |
+| Legacy TCP | **Yes** (gated by TCP-level auth, separate from SecurityGate) | `UniTcpServer` -> `TcpIngressBridge` (the TCP path has its own connection-level auth, see docs/feature/protocols.md) |
 | Admin HTTP | **Yes** | `UniAdminServer` -> `UniAdminService` (separate gate, configured under `eventmesh.admin.security.*`) |
 | WebSocket push | n/a (passive) | push does not invoke the gate; the gate ran at subscribe time |
 | SSE | n/a (passive) | same as WS |
@@ -124,8 +124,8 @@ source tree (only `UniRuntime` and `DeliveryTopology` itself should match in
 * DeliveryTopology decision: #5293 (closed via PR #5308, implementing `LOCAL_STICKY_PULL`)
 * DeliveryTopology wiring follow-up: #5309 (`PARTITION_OWNED_PULL` wiring)
 * SecurityGate: #5304
-* Architecture: `docs/eventmesh-architecture.md` (section 4, Security gate)
-* Configuration: `docs/eventmesh-configuration.md`
+* Architecture: `docs/architecture/overview.md` (section 4, Security gate)
+* Configuration: `docs/quickstart/configuration.md`
 
 
 ## State store failure matrix
@@ -192,7 +192,7 @@ Each row maps an issue #5339 acceptance scenario to the test that exercises it.
 * The test for each scenario above is referenced in the table in section 3.
 * No production-code store is backed by an `InMemory*` implementation; the
   in-memory implementations live in `state/fault/` (test-only).
-* This document exists (`docs/state-store-failure-matrix.md`).
+* This document exists (`docs/feature/control-plane.md`).
 
 ## 5. References
 

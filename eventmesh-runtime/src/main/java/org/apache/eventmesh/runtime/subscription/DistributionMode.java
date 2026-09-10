@@ -21,7 +21,7 @@ package org.apache.eventmesh.runtime.subscription;
  * Distribution modes for EventMesh's self-managed subscription model.
  *
  * <p>EventMesh owns the distribution logic (the MQ exposes no consumer-group semantics); see
- * {@code docs/eventmesh-uni-architecture-redesign.md} §4.2.</p>
+ * {@code docs/architecture/redesign.md} §4.2.</p>
  */
 public enum DistributionMode {
 

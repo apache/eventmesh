@@ -20,7 +20,7 @@ deployments. It supports three wire formats:
 
 1. Switch to
    `org.apache.eventmesh.client.cloudevents.CloudEventsClient`. See
-   `docs/eventmesh-client-guide.md`.
+   `docs/feature/client-java.md`.
 2. The CloudEvents wire format replaces the `EventMeshMessage` / OMA
    `Message` envelope. Event payload stays the same.
 3. Remove `io.openmessaging:openmessaging-api` from your application's
@@ -30,4 +30,4 @@ A deprecation warning is logged on every legacy client construction; the
 class itself is not removed in this release but is planned for removal
 in the next major version.
 
-Tracked by #5341. See `docs/protocols.md` for the full inventory.
+Tracked by #5341. See `docs/feature/protocols.md` for the full inventory.

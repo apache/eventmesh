@@ -128,6 +128,6 @@ pattern ArchUnit's own examples use for "prove the rule works."
 
 ## Further reading
 
-- `docs/storage-spi.md` -- the storage capability matrix
+- `docs/feature/storage-spi.md` -- the storage capability matrix
 - `eventmesh-architecture-guard/README.md` -- module-level summary
 - CONTRIBUTING.md -- how to add a new module
