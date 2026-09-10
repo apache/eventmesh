@@ -46,7 +46,7 @@ Apache EventMesh is packed with features that help users build event-driven appl
 
 **Extensibility & ecosystem**
 
-- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/eventmesh-a2a-protocol.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
+- **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/feature/a2a.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
 - **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), and more.
 - **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
 - **Pluggable meta service** — [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io), and [Zookeeper](https://zookeeper.apache.org/).
@@ -62,12 +62,12 @@ status. See [docs](docs/) for the per-capability guides.
 
 | Capability | Status | Recommendation | Migration target |
 | --- | :---: | --- | --- |
-| [HTTP + CloudEvents](docs/eventmesh-client-guide.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
+| [HTTP + CloudEvents](docs/reference/client-java.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
 | SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
 | Connector Runtime | **Experimental** | Working end-to-end, but only 4 of 23 plugins (file/kafka/pulsar/rocketmq) have unit tests — the rest are templates; data-loss hardening landed in [#5328](https://github.com/apache/eventmesh/pull/5328) | SPI split into `eventmesh-connector-api` (#5328); remaining plugin tests + GA criteria tracked under the #5296 architecture review |
-| [A2A / Agent Gateway](docs/eventmesh-a2a-protocol.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
-| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/eventmesh-client-guide.md) |
+| [A2A / Agent Gateway](docs/feature/a2a.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
+| TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/reference/client-java.md) |
 
 Status meanings:
 
@@ -77,16 +77,20 @@ Status meanings:
 - **Legacy-compatible** — maintained for zero-change compatibility with existing clients; receives fixes but no new features. New integrations should not start here.
 
 > Migrating off TCP / gRPC SDKs? The legacy clients keep working against the current
-> runtime; see the [client guide](docs/eventmesh-client-guide.md) for the
+> runtime; see the [client guide](docs/reference/client-java.md) for the
 > HTTP + CloudEvents replacement (`CloudEventsClient`).
 
 ### Documentation
 
-- [Getting started](docs/eventmesh-getting-started.md) — zero to running runtime in minutes
-- [Configuration reference](docs/eventmesh-configuration.md) — every runtime key, per-backend settings, security &amp; quota
-- [Client guide](docs/eventmesh-client-guide.md) — complete `CloudEventsClient` walkthrough (pub/sub, request-reply, streaming, lite topics)
-- [Architecture](docs/eventmesh-architecture.md) — control / data / agent planes; storage SPI; security gate; A2A stack
-- [Features](docs/eventmesh-features.md) — feature-by-feature guide (pub/sub, A2A, connectors, security, reliability)
+The docs tree is organized by audience — start from the
+[documentation map](docs/index.md):
+
+- [Introduction](docs/introduction.md) — what EventMesh is and when to use it
+- [Getting started](docs/quickstart/getting-started.md) — zero to a running runtime in minutes
+- [Configuration reference](docs/quickstart/configuration.md) — every runtime key, per-backend settings, security &amp; quota
+- User guides — [Java client](docs/reference/client-java.md) · [pub/sub](docs/feature/pubsub.md) · [delivery reliability](docs/feature/delivery-reliability.md) · [streaming](docs/feature/streaming.md) · [lite topic](docs/feature/lite-topic.md) · [A2A](docs/feature/a2a.md)
+- Architecture — [overview](docs/architecture/overview.md) · [control plane](docs/architecture/control-plane.md) · [security](docs/architecture/security.md)
+- Reference — [HTTP API](docs/reference/http-api.md) · [admin API](docs/reference/admin-api.md) · [observability](docs/reference/observability.md) · [deployment](docs/reference/deployment.md) · [protocols &amp; SDKs](docs/reference/protocols.md) · [storage SPI](docs/reference/storage-spi.md)
 
 ## Subprojects
 
@@ -100,7 +104,7 @@ Status meanings:
 
 A full step-by-step walkthrough — prerequisites, backend choice, run via Docker
 or from source, first publish, three receive transports, unsubscribe, and the SDK
-path — lives in [Getting started](docs/eventmesh-getting-started.md). The
+path — lives in [Getting started](docs/quickstart/getting-started.md). The
 first-event examples in that guide work against the standard ports
 (`8080` HTTP, `8081` admin, `8082` WebSocket, `8083` connector admin).
 

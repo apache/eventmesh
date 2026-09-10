@@ -1,16 +1,16 @@
 # Apache EventMesh Architecture
 
-> **Status:** Living document. Reflects the **post-#5296 architecture review** state of the
-> `develop` branch (16-issue refactor: #5297–#5306, #5309, #5288). Code locations are
-> relative to the module root. Cross-references in the [Documentation](#documentation) table
-> link into module-level guides; the **capability status table** in the project README is the
-> single source of truth for GA / Beta / Experimental / Legacy tags.
+> **Audience:** anyone who wants the structural view — the three planes,
+> module decomposition, and the publish wire path. Code locations are
+> relative to the module root.
+
+---
 
 Apache EventMesh is a **stateless application-layer event mesh** built around three
 separation-of-concerns planes:
 
 1. **Control plane** — subscription / session / state management, cluster coordination,
-   routing decisions. Stored in a *pluggable meta store* (Consul / Nacos / ETCD / ZK)
+   routing decisions. Stored in a *pluggable meta store* (Nacos today; in-memory single-instance)
    and *pluggable storage SPI* (RocksDB / MQ-as-WAL / external KV).
 2. **Data plane** — the wire path from a client SDK to a backend MQ, then to subscriber
    delivery transports (HTTP long-polling, SSE, WebSocket, request-reply). The
@@ -38,8 +38,8 @@ capability contract, see the `eventmesh-storage-api` TCK.
 │  eventmesh-storage-plugin/  // pluggable MeshStoragePlugin SPI      │
 │      eventmesh-storage-api  // interface + TCK (StorageCapabilities, │
 │      │                       // LiteTopicCapable, MeshStoragePlugin) │
-│      eventmesh-storage-*    // backends: RocketMQ, Kafka, Pulsar,   │
-│                              // RabbitMQ, Redis, …                  │
+│      eventmesh-storage-*    // backends: RocketMQ 4.x/5.x, Kafka    │
+│                              // (SPI: add more via MeshStoragePlugin)│
 │  eventmesh-connector-plugin/ // 24+ source/sink connector plugins   │
 │  eventmesh-connector-runtime // standalone process running them      │
 │  eventmesh-protocol-plugin/  // eventmesh-protocol-api + cloudevents│
@@ -127,7 +127,7 @@ semantics of the old `MeshMessage` / `OpenMessage` clients.
 | Filter chain | `eventmesh-runtime/.../security/FilterChain.java` | Auth + ACL filters executed before the gate |
 | A2A HTTP handler | `eventmesh-runtime/.../a2a/A2AGatewayHttpHandler.java` | Netty handler for `/a2a/*`; `withSecurityGate(...)` wiring point |
 | Connector scheduler | `eventmesh-runtime/.../connector/ConnectorScheduler.java` | Validates `ConnectorDef` against the gate; `withSecurityGate(...)` wiring point |
-| Storage SPI | `eventmesh-storage-plugin/eventmesh-storage-api/.../storage/MeshStoragePlugin.java` | Capability-aware contract; backends: `eventmesh-storage-rocketmq`, `eventmesh-storage-kafka`, `eventmesh-storage-pulsar`, `eventmesh-storage-rabbitmq`, `eventmesh-storage-redis`, `eventmesh-storage-rocksdb` |
+| Storage SPI | `eventmesh-storage-plugin/eventmesh-storage-api/.../storage/MeshStoragePlugin.java` | Capability-aware contract; backends: `eventmesh-storage-rocketmq`, `eventmesh-storage-rocketmq5`, `eventmesh-storage-kafka` |
 | Offset store | `eventmesh-runtime/.../offset/` | Local offset tracking; survives restart via RocksDB or via the meta store |
 | Delivery state | `eventmesh-runtime/.../state/` | `DeliveryStateStore` (RocksDB) for at-least-once, dead-letter handling |
 
@@ -142,7 +142,7 @@ classification:
 | Level | Purpose | Examples | Stores |
 | --- | --- | --- | --- |
 | **L1 — local-only** | per-instance delivery hints, cheap to recompute | `OffsetStore` (RocksDB or local KV) | Local file / memory |
-| **L2 — cluster-shared** | subscriptions, sessions, agent cards | `SubscriptionStore`, `SessionStore`, `AgentCardRegistry` | Meta store (Nacos / Consul / ETCD / ZK) |
+| **L2 — cluster-shared** | subscriptions, sessions, agent cards | `SubscriptionStore`, `SessionStore`, `AgentCardRegistry` | Meta store (Nacos; Consul/ETCD/ZK are SPI work) |
 | **L3 — durable-egress** | dead-letter, task records | `DeadLetterStore`, `TaskStore` | Meta store with CAS + fencing epoch |
 
 The contract for each interface is the same:
@@ -277,9 +277,9 @@ Key classes:
 
 The protocol is **Experimental** (see capability status table). The wire
 contract is the JSON envelope from
-[docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md); the runtime
+[docs/eventmesh-a2a-protocol.md](../feature/a2a.md); the runtime
 implementation is documented in
-[docs/eventmesh-uni-architecture-redesign.md](eventmesh-uni-architecture-redesign.md).
+[docs/eventmesh-uni-architecture-redesign.md](redesign.md).
 
 ---
 
@@ -383,7 +383,7 @@ PR workflow are both in place to make this discipline cheap.
 ### Configuration
 
 * Runtime configuration is documented in
-  [docs/eventmesh-configuration.md](eventmesh-configuration.md). New
+  [docs/eventmesh-configuration.md](../quickstart/configuration.md). New
   keys are added behind the existing prefixes (`eventmesh.runtime.*`,
   `eventmesh.security.gate.*`, `eventmesh.storage.*`,
   `eventmesh.connector.*`) — never under a global `eventmesh.*` root.
@@ -409,7 +409,7 @@ EventMesh supports several wire protocols and ships client SDKs in
 multiple languages. The canonical inventory - including GA / Beta /
 Experimental / Legacy status for each protocol, the server-side
 protocol plugin that handles it, and the corresponding client SDK
-surface - lives in [docs/protocols.md](protocols.md). The policy
+surface - lives in [docs/protocols.md](../reference/protocols.md). The policy
 summarized there:
 
 * The modern **HTTP + CloudEvents + EventMeshFrame** path is the
@@ -433,14 +433,21 @@ ingress path does not import legacy wire types.
 
 ## Documentation
 
+The [documentation map](../index.md) organizes everything by audience. Highlights:
+
 | Page | What it covers |
 | --- | --- |
-| [docs/eventmesh-getting-started.md](eventmesh-getting-started.md) | Zero-to-running runtime; per-backend quickstarts |
-| [docs/eventmesh-configuration.md](eventmesh-configuration.md) | Every runtime key, security & quota, per-backend overrides |
-| [docs/eventmesh-client-guide.md](eventmesh-client-guide.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
-| [docs/eventmesh-a2a-protocol.md](eventmesh-a2a-protocol.md) | A2A wire contract and task lifecycle |
-| [docs/protocols.md](protocols.md) | Canonical inventory of wire protocols, server-side plugins, and client SDKs (GA / Beta / Experimental / Legacy) |
-| [docs/production-readiness.md](production-readiness.md) | Verified capabilities, SLOs, runbooks |
-| [docs/eventmesh-uni-architecture-redesign.md](eventmesh-uni-architecture-redesign.md) | End-to-end flow diagrams and the redesign rationale |
-| [docs/eventmesh-offset-lb-frame-design.md](eventmesh-offset-lb-frame-design.md) | `EventMeshFrame` design (single protocol path, `#5299`) |
-| [docs/eventmesh-features.md](eventmesh-features.md) | Feature-by-feature guide (the companion to this page) |
+| [Introduction](../introduction.md) | What EventMesh is; the three planes; deployment shape |
+| [Getting started](../quickstart/getting-started.md) | Zero-to-running runtime; per-backend quickstarts |
+| [Configuration](../quickstart/configuration.md) | Every runtime key, security & quota, per-backend overrides |
+| [Java client guide](../reference/client-java.md) | `CloudEventsClient` walkthrough: pub/sub, request-reply, SSE, WebSocket, lite topics |
+| [Pub/sub](../feature/pubsub.md) | Topics, distribution modes, filtering |
+| [Reliable delivery](../feature/delivery-reliability.md) | ACK tracking, retries, DLQ, crash recovery |
+| [A2A protocol](../feature/a2a.md) | A2A wire contract and task lifecycle |
+| [Security](security.md) | The unified gate, TLS/mTLS, admin token |
+| [HTTP API](../reference/http-api.md) | Traffic endpoints |
+| [Admin API](../reference/admin-api.md) | Operational surface + token guard |
+| [Protocols & SDKs](../reference/protocols.md) | Wire protocol inventory and per-language SDK status |
+| [Storage SPI](../reference/storage-spi.md) | `MeshStoragePlugin` contract and capability matrix |
+| [Deployment](../reference/deployment.md) | Modes, Docker, multi-instance, runbooks |
+| [Design records](../index.md#design-records-contributors) | Redesign rationale, evidence, plans |

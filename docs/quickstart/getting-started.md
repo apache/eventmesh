@@ -1,12 +1,17 @@
 # EventMesh Getting Started
 
+> **Audience:** first-time users. Zero to a running runtime (Docker or
+> source), first publish, subscribe and receive. 5–10 minutes.
+
+---
+
 This guide takes you from zero to a running EventMesh Runtime with a working publisher and
 subscriber, using the recommended **HTTP + CloudEvents** path. Configuration reference:
-[`eventmesh-configuration.md`](eventmesh-configuration.md). SDK details:
-[`eventmesh-client-guide.md`](eventmesh-client-guide.md).
+[`eventmesh-configuration.md`](configuration.md). SDK details:
+[`eventmesh-client-guide.md`](../reference/client-java.md).
 
 > Capability maturity levels (GA / Beta / Experimental / Legacy) are defined in the
-> [capability status table](../README.md#capability-status) in the main README.
+> [capability status table](../../README.md#capability-status) in the main README.
 
 ---
 
@@ -61,7 +66,7 @@ cd eventmesh-runtime/dist && bash bin/start.sh
 ```
 
 Storage-specific keys (all overridable via `-D` system properties) are documented in
-[`eventmesh-configuration.md`](eventmesh-configuration.md#storage-backends).
+[`eventmesh-configuration.md`](configuration.md).
 
 ### Verify it is up
 
@@ -133,7 +138,7 @@ curl --include --no-buffer \r
 
 The `CloudEventsClient` Java SDK wraps all three transports —
 `subscribe` (long-poll) / `subscribeSse` / `subscribeWs` — see the
-[client guide](eventmesh-client-guide.md) for the trade-offs.
+[client guide](../reference/client-java.md) for the trade-offs.
 
 ## 6. Use the SDK instead of raw HTTP (recommended)
 
@@ -158,14 +163,14 @@ client.subscribe("orders", "LOAD_BALANCE", event -> {
 ```
 
 Full API (request/reply, streaming sessions, lite topics, SSE/WS): see the
-[client guide](eventmesh-client-guide.md).
+[client guide](../reference/client-java.md).
 
 ## 7. Where to go next
 
-- [Configuration reference](eventmesh-configuration.md) — every runtime key, per-backend settings
-- [Client guide](eventmesh-client-guide.md) — complete SDK walkthrough
-- [Production readiness](production-readiness.md) — verified capabilities, SLOs, runbooks
-- [A2A gateway](eventmesh-a2a-protocol.md) — agent-to-agent messaging (Experimental)
+- [Configuration reference](configuration.md) — every runtime key, per-backend settings
+- [Client guide](../reference/client-java.md) — complete SDK walkthrough
+- [Production readiness](../reference/deployment.md) — verified capabilities, SLOs, runbooks
+- [A2A gateway](../feature/a2a.md) — agent-to-agent messaging (Experimental)
 - Admin API (`/admin/*`) quick reference: `metrics`, `subscriptions`, `offsets`, `clients`,
   `client/reject`, `dlq/replay`, `dlq/browse`, `ratelimit`, `health`, `connectors`,
   `connector-workers` on port 8081

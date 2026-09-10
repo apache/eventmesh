@@ -1,7 +1,10 @@
 # EventMesh Storage SPI
 
-> Issue: #5342 (Q6 storage capability coverage)
-> Landed in: PR #5323 (#5303 -- StorageCapabilities) + PR (this doc)
+> **Audience:** storage-plugin authors and reviewers. The capability
+> matrix is the single source of truth for which plugin implements which
+> capability.
+
+---
 
 This document is the **single source of truth** for which storage plugin
 implements which capability, and how callers detect a capability at

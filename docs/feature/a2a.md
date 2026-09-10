@@ -1,25 +1,10 @@
 # EventMesh A2A 协议（Agent-to-Agent Communication Protocol）
 
-> **⚠️ EXPERIMENTAL — Issue #5302 D1 scope**
->
-> The A2A Gateway is **Experimental** as of Sub-PR D1 (issue #5302). The gateway now persists
-> tasks through the unified `TaskStore` (issue #5301 Sub-PR A/C) and bridges A2A publish/subscribe
-> onto the Runtime via `EventMeshA2ATransport` — there is no longer a parallel in-memory transport.
-> However, the following pieces land in follow-up PRs and are required before the gateway is
-> suitable for production use:
->
-> 1. **TaskExpirer reaper** (Sub-PR D2): periodic `TaskStore.expireStale()` sweep so terminal
->    tasks do not accumulate in the Meta store.
-> 2. **AgentCard Meta-ization** (Sub-PR D2): `A2APublishSubscribeService` still uses an
->    in-memory `ConcurrentHashMap` for the agent-card registry; production needs a Meta-backed
->    `SessionStore` (Sub-PR A) or equivalent.
-> 3. **End-to-end Testcontainers test** (Sub-PR D2): fault-injection under a real Meta + Runtime
->    wiring.
->
-> Until all three land, treat the gateway as Experimental — wire it up against the
-> `MetaBackedTaskStore` only on dev clusters.
->
-> Canonical maturity level: **Experimental** — see the [capability status table](../README.md#capability-status).
+> **Audience:** builders of agent systems. The A2A wire contract, task
+> lifecycle, and usage via REST / SDK. **Experimental** — see
+> [readiness decision](a2a-readiness.md) for the promotion gates.
+
+---
 
 ---
 

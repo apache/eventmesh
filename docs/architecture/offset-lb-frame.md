@@ -1,10 +1,10 @@
 # EventMesh Offset 管理 · 负载均衡 · Frame 协议转换 设计总结
 
 > **状态说明**：本文是 offset/负载均衡/Frame 的设计文档（历史记录）。各能力的当前实现状态
-> 以主 README 的[能力状态表](../README.md#能力状态capability-status)为准。
+> 以主 README 的[能力状态表](../../README.md#能力状态capability-status)为准。
 
 > 整合 offset 管理、全面粘性负载均衡、EventMeshFrame 协议转换三块设计的完整方案（2026-08-13）。
-> 关联文档：[`eventmesh-uni-architecture-redesign.md`](./eventmesh-uni-architecture-redesign.md) §19 架构深化。
+> 关联文档：[`eventmesh-uni-architecture-redesign.md`](redesign.md) §19 架构深化。
 
 ---
 
@@ -388,4 +388,4 @@ poll(topic, partition, ...):
 
 ---
 
-**文档版本**: v1.0 · **整理时间**: 2026-08-13 · 关联: [`eventmesh-uni-architecture-redesign.md`](./eventmesh-uni-architecture-redesign.md) §19
+**文档版本**: v1.0 · **整理时间**: 2026-08-13 · 关联: [`eventmesh-uni-architecture-redesign.md`](redesign.md) §19

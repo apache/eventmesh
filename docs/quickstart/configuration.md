@@ -1,11 +1,18 @@
 # EventMesh Configuration Reference
 
+> **Audience:** operators and embedders. Every EventMesh Runtime
+> configuration key in one place. Precedence: **system property (`-D`) >
+> environment variable > properties file**; defaults live in
+> `eventmesh-runtime/conf/eventmesh.properties`.
+
+---
+
 Every configuration key for the EventMesh Runtime, in one place. Defaults live in
-[`eventmesh-runtime/conf/eventmesh.properties`](../eventmesh-runtime/conf/eventmesh.properties);
+[`eventmesh-runtime/conf/eventmesh.properties`](../../eventmesh-runtime/conf/eventmesh.properties);
 precedence is **system property (`-D`) > environment variable > properties file**.
 
 > Status of each capability (GA / Beta / Experimental / Legacy): see the
-> [capability status table](../README.md#capability-status).
+> [capability status table](../../README.md#capability-status).
 
 ---
 
@@ -115,7 +122,7 @@ Cluster-wide limits can be inspected and adjusted at `POST /admin/ratelimit`.
 
 ## 7. Traffic endpoints (port 8080)
 
-Full request/response shapes: see the [client guide](eventmesh-client-guide.md).
+Full request/response shapes: see the [client guide](../reference/client-java.md).
 Summary:
 
 | Group | Endpoints |
@@ -127,7 +134,7 @@ Summary:
 | Agent control | `/agent/register`, `/agent/ready`, `/agent/heartbeat`, `/agent/unregister` |
 | Sessions | `/session/open`, `/session/recommend`, `/session/close`, `/session/stream`, `/session/publish`, `/session/subscribe` |
 | Legacy bridge | `/eventmesh/publish`, `/eventmesh/subscribe`, `/eventmesh/unsubscribe` (old SDK compat) |
-| A2A gateway | `/a2a/tasks` family — separate port, [A2A docs](eventmesh-a2a-protocol.md) (Experimental) |
+| A2A gateway | `/a2a/tasks` family — separate port, [A2A docs](../feature/a2a.md) (Experimental) |
 
 ## 8. Deployment checklist
 
