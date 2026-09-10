@@ -83,7 +83,7 @@ classpath.
 
 1. Switch the client to
    `org.apache.eventmesh.client.cloudevents.CloudEventsClient` (see
-   `docs/eventmesh-client-guide.md`).
+   `docs/feature/client-java.md`).
 2. The CloudEvents wire format replaces the `EventMeshMessage` / OMA
    `Message` envelope. Event payload stays the same.
 3. If you depended on the TCP framing for performance reasons, note that
@@ -114,8 +114,8 @@ classpath.
 
 For the #5341 acceptance check, the following must hold:
 
-* `docs/protocols.md` exists and is linked from
-  `docs/eventmesh-architecture.md` (section 9) and from the README.
+* `docs/feature/protocols.md` exists and is linked from
+  `docs/architecture/overview.md` (section 9) and from the README.
 * The Java SDK's `build.gradle` declares `io.openmessaging:openmessaging-api`
   as `implementation`, not `api`.
 * `git grep "import.*MeshMessage\\|import io.openmessaging"`
@@ -130,7 +130,7 @@ For the #5341 acceptance check, the following must hold:
 
 * Parent issue: #5296 (Architecture Review, "New review questions" 2026-09-07)
 * Tracking issue: #5341
-* Architecture: `docs/eventmesh-architecture.md`
-* SDK guide: `docs/eventmesh-client-guide.md`
-* Arch-guard: `eventmesh-architecture-guard/`, `docs/architecture-guard.md`
-* A2A wire: `docs/eventmesh-a2a-protocol.md`
+* Architecture: `docs/architecture/overview.md`
+* SDK guide: `docs/feature/client-java.md`
+* Arch-guard: `eventmesh-architecture-guard/`, `docs/feature/architecture-guard.md`
+* A2A wire: `docs/feature/a2a.md`

@@ -56,7 +56,7 @@ RUN chmod +x bin/*.sh
 # 8080 = traffic HTTP (/events/* CloudEvents + legacy /eventmesh/*).
 # 8081 = independent admin port (UniAdminServer /admin/*, incl. GET /admin/health).
 # 8082 = WebSocket push transport (opt-in via -Deventmesh.ws.port in JAVA_OPTS).
-# Note (#5380 deployment modes, see docs/eventmesh-features.md §5b): this image is the
+# Note (#5380 deployment modes, see docs/feature/deployment.md, deployment modes): this image is the
 # CORE Runtime. The A2A Gateway (A2AGatewayServer, EXPERIMENTAL) and the v2 streaming
 # session layer are NOT started by bin/start.sh; they require a dedicated launcher /
 # embedder wiring and are documented as separate deployment modes.

@@ -63,7 +63,7 @@ All of the following must be true before A2A is promoted to Beta:
 3. **The `eventmesh-a2a-protocol.md` document is updated** with the
    post-D2b wire contract, a worked example, and the SLOs from item 2.
 4. **A deprecation note for the legacy A2A path (if any)** is added to the
-   changelog and to `docs/protocols.md` (see #5341).
+   changelog and to `docs/feature/protocols.md` (see #5341).
 
 When all four are true, this page is updated, the EXPERIMENTAL banner in
 `docs/a2a-protocol/README.md` is changed to **BETA**, and the tracking issue
@@ -109,6 +109,6 @@ Plus the existing `A2AGatewayServiceTest` (in
   durability), #5341 (protocol/SDK boundary)
 * Docs:
   - `docs/a2a-protocol/README.md` (carries the EXPERIMENTAL banner)
-  - `docs/eventmesh-architecture.md` (A2A section)
-  - `docs/control-plane.md` (DeliveryTopology / SecurityGate)
-  - `docs/state-store-failure-matrix.md` (per-backend failure mode)
+  - `docs/architecture/overview.md` (A2A section)
+  - `docs/feature/control-plane.md` (DeliveryTopology / SecurityGate)
+  - `docs/feature/control-plane.md` (per-backend failure mode)

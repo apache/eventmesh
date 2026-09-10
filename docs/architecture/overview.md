@@ -21,7 +21,7 @@ separation-of-concerns planes:
    pipeline as ordinary events.
 
 This page gives the **structural** view. For end-to-end data flow diagrams see
-`docs/eventmesh-uni-architecture-redesign.md`. For the security / quota gate, see
+`docs/architecture/redesign.md`. For the security / quota gate, see
 the "Security gate" section below and the `#5304` reference docs; for the storage
 capability contract, see the `eventmesh-storage-api` TCK.
 
@@ -277,9 +277,9 @@ Key classes:
 
 The protocol is **Experimental** (see capability status table). The wire
 contract is the JSON envelope from
-[docs/eventmesh-a2a-protocol.md](../feature/a2a.md); the runtime
+[docs/feature/a2a.md](../feature/a2a.md); the runtime
 implementation is documented in
-[docs/eventmesh-uni-architecture-redesign.md](redesign.md).
+[docs/architecture/redesign.md](redesign.md).
 
 ---
 
@@ -383,7 +383,7 @@ PR workflow are both in place to make this discipline cheap.
 ### Configuration
 
 * Runtime configuration is documented in
-  [docs/eventmesh-configuration.md](../quickstart/configuration.md). New
+  [docs/quickstart/configuration.md](../quickstart/configuration.md). New
   keys are added behind the existing prefixes (`eventmesh.runtime.*`,
   `eventmesh.security.gate.*`, `eventmesh.storage.*`,
   `eventmesh.connector.*`) — never under a global `eventmesh.*` root.
@@ -409,7 +409,7 @@ EventMesh supports several wire protocols and ships client SDKs in
 multiple languages. The canonical inventory - including GA / Beta /
 Experimental / Legacy status for each protocol, the server-side
 protocol plugin that handles it, and the corresponding client SDK
-surface - lives in [docs/protocols.md](../feature/protocols.md). The policy
+surface - lives in [docs/feature/protocols.md](../feature/protocols.md). The policy
 summarized there:
 
 * The modern **HTTP + CloudEvents + EventMeshFrame** path is the
@@ -417,7 +417,7 @@ summarized there:
 * Legacy **TCP** (MeshMessage, OpenMessaging) and the legacy
   HTTP codec are still supported for backward compatibility but
   are explicitly marked Legacy and receive only critical bug
-  fixes. See `docs/protocols.md` for the migration path.
+  fixes. See `docs/feature/protocols.md` for the migration path.
 * gRPC framing is **Beta**: stable, but the API surface may shift.
 * A2A is **Experimental** until the readiness checks in #5340
   pass.

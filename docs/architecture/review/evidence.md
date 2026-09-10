@@ -69,8 +69,8 @@ Actions recovers. No PR is blocked on code; the three open PRs (#5345,
 | #5301 Sub-PR C | #5312 | `ef0fb1857` | `ReliableDispatcherDlqLedgerTest`, `MetaBackedDeadLetterStoreTest`, `MetaBackedTaskStoreTest` | `./gradlew :eventmesh-runtime:test --tests "*DlqLedger*" --tests "*MetaBacked*"` | merged | Nacos in-memory | single | pass on merge |
 | #5301 Sub-PR D (D1) | #5313 | `6ec99215c` | `A2AGatewayServiceTest`, `A2AGatewaySmokeTest` | `./gradlew :eventmesh-a2a:test` | merged | in-process | single | pass on merge |
 | #5301 E2E (#5314) | #5318 | `7abca88aa` | `CrossStoreFaultInjectionTest` | `./gradlew :eventmesh-runtime:test --tests "*CrossStoreFault*"` | merged | RocksDB + Nacos in-memory | crash-recovery | pass on merge |
-| #5339 (Q3) | #5345 | `04247475b` | `StateStoreDurabilityTest` (@Nested 6 scenarios) + `docs/state-store-failure-matrix.md` | `./gradlew :eventmesh-runtime:test --tests "StateStoreDurabilityTest"` | OPEN-CI-startup_failure | RocksDB / Nacos | restart / multi / crash / kill -9 | awaiting runner |
-| #5340 (Q4) D2a | #5346 | `3db5f663b` | `TaskExpirerTest`, `MetaAgentCardRegistryTest`, `A2AGatewayFailureModeTest` + `docs/a2a-readiness-decision.md` | `./gradlew :eventmesh-a2a:test --tests "*TaskExpirer*" --tests "*MetaAgentCard*" --tests "*A2AGatewayFailure*"` | OPEN-CI-startup_failure | Meta in-memory | single | awaiting runner |
+| #5339 (Q3) | #5345 | `04247475b` | `StateStoreDurabilityTest` (@Nested 6 scenarios) + `docs/feature/control-plane.md` | `./gradlew :eventmesh-runtime:test --tests "StateStoreDurabilityTest"` | OPEN-CI-startup_failure | RocksDB / Nacos | restart / multi / crash / kill -9 | awaiting runner |
+| #5340 (Q4) D2a | #5346 | `3db5f663b` | `TaskExpirerTest`, `MetaAgentCardRegistryTest`, `A2AGatewayFailureModeTest` + `docs/feature/a2a-readiness.md` | `./gradlew :eventmesh-a2a:test --tests "*TaskExpirer*" --tests "*MetaAgentCard*" --tests "*A2AGatewayFailure*"` | OPEN-CI-startup_failure | Meta in-memory | single | awaiting runner |
 
 ### #5302 -- A2A must not form a parallel Runtime
 
@@ -82,7 +82,7 @@ Already covered by #5301 D1 above (#5313 / #5346). Follow-ups tracked at
 | Issue | PR | Commit | Test files | Test command | CI | Backend | Topology | Result |
 |---|---|---|---|---|---|---|---|---|
 | #5303 | #5323 | `054127e0a` | `MeshStoragePluginTCK`, `MeshStoragePluginTCKSelfTest`, `KafkaMeshStoragePluginTCKTest`, `RocketMQRemotingStoragePluginTCKTest`, `RocketMQ5RemotingStoragePluginTCKTest` | `./gradlew :eventmesh-storage-plugin:test` | merged | Kafka / RocketMQ 4.x / RocketMQ 5.x | TCK (broker-optional) | pass on merge |
-| #5342 (Q6+Q7) | #5348 | `3cfc94868` | `ArchitectureRulesTest` (2 new `*_check` + 1 new `*_catches`); new `FakeStorageCanary`. Plus `docs/storage-spi.md` + `docs/architecture-guard.md` + `CONTRIBUTING.md` | `./gradlew :eventmesh-architecture-guard:architectureCheck` + `./gradlew :eventmesh-storage-plugin:test` | OPEN-CI-startup_failure | n/a + Kafka / RocketMQ / RocketMQ5 | unit + TCK | awaiting runner |
+| #5342 (Q6+Q7) | #5348 | `3cfc94868` | `ArchitectureRulesTest` (2 new `*_check` + 1 new `*_catches`); new `FakeStorageCanary`. Plus `docs/feature/storage-spi.md` + `docs/feature/architecture-guard.md` + `CONTRIBUTING.md` | `./gradlew :eventmesh-architecture-guard:architectureCheck` + `./gradlew :eventmesh-storage-plugin:test` | OPEN-CI-startup_failure | n/a + Kafka / RocketMQ / RocketMQ5 | unit + TCK | awaiting runner |
 
 ### #5304 -- Unified multi-tenant / security / quota entrypoint
 
@@ -158,7 +158,7 @@ of the open PR #5345 -- the new `StateStoreDurabilityTest` class
 encompasses both, and the open CI run will provide the first
 fully-executable evidence at the `OffsetStoreRestart` and
 `SubscriptionStoreMultiInstance` levels. The corresponding
-`docs/state-store-failure-matrix.md` (also in #5345) lists the per-backend
+`docs/feature/control-plane.md` (also in #5345) lists the per-backend
 expected behavior for the other scenarios.
 
 ## Items lacking evidence (out of scope or follow-up)
@@ -167,7 +167,7 @@ expected behavior for the other scenarios.
   Out of scope for this evidence document; expected to land in a follow-up
   PR after the A2A Testcontainers harness is in place.
 - **#5342 Q6 plugin-load-time capability validation** -- explicitly
-  documented as future work in `docs/storage-spi.md` (the
+  documented as future work in `docs/feature/storage-spi.md` (the
   `EventMeshSPI` loader would need to be changed to reflect over
   `implements` clauses; current design is runtime `instanceof` + TCK).
 - **Scenario 4 (Crash recovery) on a non-Kafka backend (RocketMQ 5.x
@@ -196,17 +196,17 @@ expected behavior for the other scenarios.
 - #5296 -- parent issue
 - #5337 -- tracking issue for this evidence document
 - #5342 -- this evidence document's "Q6 + Q7 governance" PR
-- `docs/architecture-guard.md` -- arch-guard canonical reference
-- `docs/storage-spi.md` -- storage capability matrix
-- `docs/state-store-failure-matrix.md` -- per-backend failure modes
+- `docs/feature/architecture-guard.md` -- arch-guard canonical reference
+- `docs/feature/storage-spi.md` -- storage capability matrix
+- `docs/feature/control-plane.md` -- per-backend failure modes
   (from #5345)
-- `docs/a2a-readiness-decision.md` -- A2A experimental / GA decision
+- `docs/feature/a2a-readiness.md` -- A2A experimental / GA decision
   (from #5346)
 
 
 ## Production-HA acceptance (#5354): evidence table
 
-> Parent: #5354 (production HA) · Plan: `docs/architecture-review/production-ha-plan.md` (PR #5366)
+> Parent: #5354 (production HA) · Plan: `docs/architecture/review/production-ha-plan.md` (PR #5366)
 > Sub-issues: #5356-#5365 · Original scope: #5352 (data-path) / #5353 (control-plane)
 > Generated: 2026-09-09
 

@@ -14,7 +14,7 @@ The new architecture ships with **one client SDK** that exposes two surface APIs
   This is the **primary user path** and the recommended way to integrate with
   EventMesh.
 * `A2AClient` — Agent-to-Agent task dispatch on top of the same Runtime
-  ([docs/eventmesh-a2a-protocol.md](../feature/a2a.md)). Used by multi-agent systems that
+  ([docs/feature/a2a.md](../feature/a2a.md)). Used by multi-agent systems that
   need a durable task lifecycle.
 
 Both clients talk **only to the EventMesh Runtime** (HTTP). The underlying
@@ -145,7 +145,7 @@ CloudEventsClient client = CloudEventsClient.builder()
 
 TLS / mTLS is configured at the **Runtime** (server side), not the client. The
 client just talks to `https://...` once TLS is enabled. See
-[docs/eventmesh-configuration.md](../quickstart/configuration.md#security).
+[docs/quickstart/configuration.md](../quickstart/configuration.md#security).
 
 ---
 
@@ -395,8 +395,8 @@ The gate runs `FilterChain` (TokenAuth → SignatureVerifier → Acl) →
 For configuration and the three wiring points
 (`UniHttpServer.withSecurityGate`, `A2AGatewayHttpHandler.withSecurityGate`,
 `ConnectorScheduler.withSecurityGate`) see
-[docs/eventmesh-configuration.md](../quickstart/configuration.md#security) and
-[docs/eventmesh-architecture.md §4](../architecture/overview.md#4-security-gate-issue-5304).
+[docs/quickstart/configuration.md](../quickstart/configuration.md#security) and
+[docs/architecture/overview.md §4](../architecture/overview.md#4-security-gate-issue-5304).
 
 > **The client SDK does not need to "know" about the gate.** A deployment that
 > enables the gate is a server-side change. The client sends the same CloudEvent
@@ -419,10 +419,10 @@ For configuration and the three wiring points
 
 For the storage-state taxonomy (L1 / L2 / L3) and the
 `MeshStoragePlugin` / `MeshStoragePluginTCK` contract, see
-[docs/eventmesh-architecture.md §3](../architecture/overview.md#3-control-plane--state-sessions-and-coordination).
+[docs/architecture/overview.md §3](../architecture/overview.md#3-control-plane--state-sessions-and-coordination).
 
 Configuration knobs: see
-[docs/eventmesh-configuration.md](../quickstart/configuration.md#deliverystate)
+[docs/quickstart/configuration.md](../quickstart/configuration.md#deliverystate)
 (`eventmesh.runtime.delivery.*`).
 
 ---
@@ -490,8 +490,8 @@ surface is:
 * `GET /a2a/agents` — list agents
 * `POST /a2a/agents` — register an agent card
 
-See [docs/eventmesh-a2a-protocol.md](../feature/a2a.md) for the wire contract and
-[docs/eventmesh-architecture.md §5](../architecture/overview.md#5-agent-plane--a2a-on-the-same-substrate)
+See [docs/feature/a2a.md](../feature/a2a.md) for the wire contract and
+[docs/architecture/overview.md §5](../architecture/overview.md#5-agent-plane--a2a-on-the-same-substrate)
 for the runtime architecture.
 
 ---
@@ -513,7 +513,7 @@ backend to another is a **Runtime** configuration change; the same
 | Lite Topic | — | yes (`LiteTopicCapable`) | — |
 
 Per-backend keys are listed in
-[docs/eventmesh-configuration.md](../quickstart/configuration.md#storage).
+[docs/quickstart/configuration.md](../quickstart/configuration.md#storage).
 Pick one `eventmesh.storage.type` at Runtime startup:
 
 ```bash
@@ -619,7 +619,7 @@ The same `Demo` class runs unchanged on all three.
 | Dead-letter inspection | admin HTTP (port 8081) | `GET /admin/dlq?topic=<topic>` |
 | A2A agent registry | `A2AClient.listAgents()` | Should return at least one `AgentCard` for `agentName` you registered |
 
-See [docs/production-readiness.md](deployment.md) for SLOs and
+See [docs/feature/deployment.md](deployment.md) for SLOs and
 runbooks.
 
 ---
@@ -670,13 +670,13 @@ history for the migration notes.
 
 See also:
 
-* [docs/eventmesh-architecture.md](../architecture/overview.md) — system
+* [docs/architecture/overview.md](../architecture/overview.md) — system
   architecture, control / data / agent planes
-* [docs/eventmesh-features.md](../index.md) — feature-by-feature
+* [docs/index.md](../index.md) — feature-by-feature
   guide
-* [docs/eventmesh-configuration.md](../quickstart/configuration.md) — every
+* [docs/quickstart/configuration.md](../quickstart/configuration.md) — every
   runtime key
-* [docs/eventmesh-getting-started.md](../quickstart/getting-started.md) —
+* [docs/quickstart/getting-started.md](../quickstart/getting-started.md) —
   zero-to-running guide
-* [docs/eventmesh-a2a-protocol.md](../feature/a2a.md) — A2A wire contract
-* [docs/production-readiness.md](deployment.md) — SLOs, runbooks
+* [docs/feature/a2a.md](../feature/a2a.md) — A2A wire contract
+* [docs/feature/deployment.md](deployment.md) — SLOs, runbooks

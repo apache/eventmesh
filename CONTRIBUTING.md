@@ -7,7 +7,7 @@ process (releases, PMC, voting), see the
 
 ## Before you open a PR
 
-1. Read the [EventMesh architecture guard](docs/architecture-guard.md)
+1. Read the [EventMesh architecture guard](docs/feature/architecture-guard.md)
    if your change touches any of these modules:
    - `eventmesh-common`
    - `eventmesh-runtime`
@@ -25,7 +25,7 @@ process (releases, PMC, voting), see the
    ```
 
 2. If your change adds or modifies a **storage plugin capability**,
-   update the [Storage SPI capability matrix](docs/storage-spi.md).
+   update the [Storage SPI capability matrix](docs/feature/storage-spi.md).
 
 3. Make sure the build is green on your local:
 
@@ -51,7 +51,7 @@ If you are introducing a new module (say `eventmesh-foo`):
    `eventmesh-architecture-guard/build.gradle` if the new module's
    packages should be analysed.
 2. Add an entry in the analysed-modules table in
-   `docs/architecture-guard.md`.
+   `docs/feature/architecture-guard.md`.
 3. Add an `on: pull_request: paths:` entry in
    `.github/workflows/architecture-guard.yml` so violations are
    flagged on PR.

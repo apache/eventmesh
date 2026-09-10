@@ -2,7 +2,7 @@
 
 > **Status (2026-09-09): COMPLETE.** Phase 0-4 executed as #5367-#5374; #5363 (Testcontainers
 > E2E) deferred with a compensating-coverage note on the issue. Evidence:
-> `docs/architecture-review/evidence.md` § "Production-HA acceptance". The three parent
+> `docs/architecture/review/evidence.md` § "Production-HA acceptance". The three parent
 > issues (#5352 / #5353 / #5354) close with the evidence table.
 
 > Tracking issue: #5354 (parent)
@@ -116,16 +116,16 @@ acceptance criteria are answered with evidence, not that the work is small.
   roll one instance at a time with mixed versions for 5 minutes, assert no offset regression
   and no duplicate delivery beyond the configured at-least-once bound. Admin: lock down
   `/admin/*` and `/metrics` behind a config-gated token (fail-closed by default), document
-  the security posture in `docs/control-plane.md`.
+  the security posture in `docs/feature/control-plane.md`.
 
 ### Phase 4 — Documentation + evidence (P2)
 
 The last mile.
 
-- **#5365** — Update `docs/eventmesh-architecture.md`, `docs/control-plane.md`,
-  `docs/production-readiness.md`, `docs/eventmesh-offset-lb-frame-design.md` to reflect the
+- **#5365** — Update `docs/architecture/overview.md`, `docs/feature/control-plane.md`,
+  `docs/feature/deployment.md`, `docs/feature/offset-management.md` to reflect the
   real behavior of the runtime after #5359-#5364. Add a row to
-  `docs/architecture-review/evidence.md` for each of the 8 tracking issues, with the same
+  `docs/architecture/review/evidence.md` for each of the 8 tracking issues, with the same
   7-column format as the #5296 evidence table. Final cross-link from #5354 to the updated
   docs; close #5352, #5353, #5354.
 
@@ -157,7 +157,7 @@ in its `Depends on` column.
 | C7 | Resource limits prevent unbounded memory under tenant/topic/partition pressure | #5359 + #5362 |
 | C8 | Required failure / recovery metrics are emitted and alertable | #5364 |
 | C9 | Request-reply / streaming / connector / admin HA guarantees are explicit and tested | #5363 + #5364 |
-| C10 | Evidence is recorded in `docs/architecture-review/evidence.md` before closing | #5365 |
+| C10 | Evidence is recorded in `docs/architecture/review/evidence.md` before closing | #5365 |
 
 ## 4. PR plan (one PR per issue, plus evidence PRs)
 
@@ -197,4 +197,4 @@ depends on #5359's boot wiring to exist.
   close on unit / boot tests, with a follow-up issue for the E2E harness.
 - **`LOCAL_STICKY_PULL` semantics.** The new "multi-instance = duplicate delivery"
   documentation is a behavior change for anyone who had been running two instances. The
-  `docs/production-readiness.md` update in #5365 must call this out clearly.
+  `docs/feature/deployment.md` update in #5365 must call this out clearly.

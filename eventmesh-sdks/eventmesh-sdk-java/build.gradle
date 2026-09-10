@@ -43,7 +43,7 @@ dependencies {
     api "io.cloudevents:cloudevents-json-jackson"
     // OpenMessaging is a legacy TCP-only transport; demoted to `implementation`
     // so the modern CloudEvents HTTP client surface (org.apache.eventmesh.client.cloudevents.*)
-    // does not leak OMA types to downstream consumer classpaths. See docs/protocols.md
+    // does not leak OMA types to downstream consumer classpaths. See docs/feature/protocols.md
     // (#5341).
     implementation "io.openmessaging:openmessaging-api"
 
