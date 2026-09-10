@@ -49,7 +49,7 @@ sudo docker run -d --name eventmesh \
 ```
 
 Ports: `8080` = traffic HTTP (`/events/*`), `8081` = admin HTTP (`/admin/*`). The WebSocket
-push port (`8082`) and the connector runtime admin port (`8083`) are opt-in.
+push port (`8082`) is opt-in.
 
 ### Option B — From source
 

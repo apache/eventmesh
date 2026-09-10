@@ -6,7 +6,7 @@
 <br />
 
 [![CI status](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/ci.yml?logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/ci.yml)
-[![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
+[![CodeCov](https://img.shields.io/codecov/c/gh/apache/eventmesh/develop?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/eventmesh)
 [![Code Scanning](https://img.shields.io/github/actions/workflow/status/apache/eventmesh/code-scanning.yml?label=code%20scanning&logo=github&style=for-the-badge)](https://github.com/apache/eventmesh/actions/workflows/code-scanning.yml)
 
 [![License](https://img.shields.io/github/license/apache/eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
@@ -14,7 +14,7 @@
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1t1816dli-I0t3OE~IpdYWrZbIWhMbXg)
 
 [📦 文档(英文)](https://eventmesh.apache.org/docs/introduction) |
-[📔 例子](https://github.com/apache/eventmesh/tree/master/eventmesh-examples) |
+[📔 例子](https://github.com/apache/eventmesh/tree/develop/eventmesh-examples) |
 [⚙️ 路线图](https://eventmesh.apache.org/docs/roadmap) |
 [🌐 英文版](README.zh-CN.md)
 </div>
@@ -48,9 +48,9 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 **扩展性与生态**
 
 - **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/feature/a2a.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
-- **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)、[Apache Kafka](https://kafka.apache.org)、[Apache Pulsar](https://pulsar.apache.org)、[RabbitMQ](https://rabbitmq.com)、[Redis](https://redis.io) 等。
+- **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)（4.x / 5.x）与 [Apache Kafka](https://kafka.apache.org) 已随包提供；更多后端经 `MeshStoragePlugin` SPI 接入。
 - **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
-- **可插拔元数据服务** —— [Consul](https://consulproject.org/en/)、[Nacos](https://nacos.io)、[ETCD](https://etcd.io) 和 [Zookeeper](https://zookeeper.apache.org/)。
+- **可插拔元数据服务** —— [Nacos](https://nacos.io) 已随包提供（多实例协调）；更多后端经同一存储 SPI 接入。
 - **事件模式管理** —— 通过目录（catalog）服务实现。
 - **强大的事件编排** —— 基于 [Serverless workflow](https://serverlessworkflow.io/) 引擎。
 - **强大的事件过滤与转换能力。**
@@ -102,7 +102,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 完整的步骤引导——前置依赖、后端选择、通过 Docker 或源码启动、首个事件、三种接收传输、取消订阅以及 SDK 路径——均在
 [快速上手](docs/quickstart/getting-started.md)。该文档中的首事件示例可针对标准端口
-（`8080` HTTP、`8081` 管理、`8082` WebSocket、`8083` 连接器管理）运行。
+（`8080` HTTP、`8081` 管理、`8082` WebSocket 可选）运行。
 
 ## 贡献
 
