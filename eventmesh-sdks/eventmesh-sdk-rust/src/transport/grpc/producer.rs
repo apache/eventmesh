@@ -26,7 +26,6 @@ use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
-use crate::transport::{Publisher, RequestReply};
 
 /// gRPC-based producer.
 pub struct GrpcProducer {
@@ -192,8 +191,9 @@ fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Re
     }
 }
 
-impl Publisher for GrpcProducer {
-    async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
+impl GrpcProducer {
+    /// Publish a native EventMesh message and wait for acknowledgement.
+    pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         message.validate_for_grpc_publish()?;
         let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
         let resp = self
@@ -211,35 +211,8 @@ impl Publisher for GrpcProducer {
         Ok(response)
     }
 
-    async fn publish_batch(&self, messages: Vec<EventMeshMessage>) -> Result<PublishResponse> {
-        if messages.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "batch publish requires at least one message".into(),
-            ));
-        }
-        for m in &messages {
-            m.validate_for_grpc_publish()?;
-        }
-        let batch = codec::from_event_mesh_messages(&messages, &self.config, self.options.group())?;
-        let resp = self
-            .client
-            .batch_publish(batch, self.config.request_timeout())
-            .await?;
-        let response = codec::to_response(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "batch publish failed".into()),
-            });
-        }
-        Ok(response)
-    }
-}
-
-impl RequestReply for GrpcProducer {
-    async fn request_reply(
+    /// Send a native EventMesh request and await its reply.
+    pub(crate) async fn request_reply(
         &self,
         message: EventMeshMessage,
         timeout: Duration,

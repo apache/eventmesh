@@ -5,7 +5,8 @@ This document records implementation constraints and protocol boundaries. For pu
 ## Public API boundaries
 
 - `src/lib.rs` denies unsafe code.
-- `src/transport/mod.rs` defines `Publisher` with async functions in the trait. It is not object-safe; use `GrpcProducer`, `HttpProducer`, or `TcpProducer` directly rather than `dyn Publisher`.
+- Consumers and webhook servers invoke the public `MessageHandler` directly with `Message`. Transport-private helpers decode and encode that envelope; there is no separate listener trait or handler adapter with an associated message type.
+- Producers use concrete transport methods behind the public `GrpcProducer`, `HttpProducer`, and `TcpProducer` APIs. Message dialect selection remains in the public producer facade, while each transport owns its wire encoding and supported operations. There is no internal `Publisher` or `RequestReply` trait requiring unused or unsupported methods.
 - Subscription is intentionally transport-specific. Each consumer owns its receive loop where applicable and exposes lifecycle methods suited to its protocol.
 - `src/common/` contains protocol keys, status codes, constants, and the shared `LoadBalanceSelector`.
 

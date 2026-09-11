@@ -28,16 +28,13 @@ use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, UserAgent};
 use crate::transport::tcp::message;
-use crate::transport::{Publisher, RequestReply};
 
 /// TCP-based producer.
 ///
 /// Created via [`TcpProducer::connect`], which opens a TCP connection, performs
 /// the HELLO handshake (role = pub), and starts the background heartbeat.
-/// Implements the [`Publisher`] trait.
 pub struct TcpProducer {
     conn: Arc<TcpConnection>,
-    config: TcpConfig,
     request_timeout: std::time::Duration,
 }
 
@@ -70,7 +67,6 @@ impl TcpProducer {
 
         Ok(Self {
             conn,
-            config,
             request_timeout,
         })
     }
@@ -196,27 +192,9 @@ impl TcpProducer {
         self.conn.shutdown().await;
     }
 
-    /// Current config.
-    pub fn config(&self) -> &TcpConfig {
-        &self.config
-    }
-}
-
-fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishResponse> {
-    if response.is_success() {
-        Ok(response)
-    } else {
-        Err(EventMeshError::Server {
-            code: response.code.unwrap_or(-1) as i32,
-            message: response.message.unwrap_or_else(|| fallback.into()),
-        })
-    }
-}
-
-impl Publisher for TcpProducer {
     /// Publish a message and wait for the broker ACK.
     /// Uses `ASYNC_MESSAGE_TO_SERVER` + `io()` (mirrors the Java SDK).
-    async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
+    pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         message.validate_for_tcp_publish()?;
         let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
         debug!(topic = ?message.topic, "publishing via TCP");
@@ -232,18 +210,9 @@ impl Publisher for TcpProducer {
         Ok(response)
     }
 
-    /// TCP has no batch semantics — returns [`EventMeshError::Unsupported`].
-    async fn publish_batch(&self, _messages: Vec<EventMeshMessage>) -> Result<PublishResponse> {
-        Err(EventMeshError::Unsupported(
-            "batch publish is not supported over TCP".into(),
-        ))
-    }
-}
-
-impl RequestReply for TcpProducer {
     /// Synchronous request/reply. Uses `REQUEST_TO_SERVER` + `io()` and waits
     /// for the `RESPONSE_TO_CLIENT` push from the server.
-    async fn request_reply(
+    pub(crate) async fn request_reply(
         &self,
         message: EventMeshMessage,
         timeout: Duration,

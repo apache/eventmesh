@@ -15,48 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Transport-agnostic async traits and transport modules.
+//! Private transport implementations and wire codecs.
 //!
-//! Only the publish side is abstracted into a trait ([`Publisher`]). Each
-//! transport exposes its own consumer type with transport-specific subscribe /
-//! unsubscribe methods and a background receive loop — see the `grpc`,
-//! `http`, and `tcp` modules for details.
-//!
-//! These traits use native Rust-1.86 `async fn in trait` and are therefore
-//! **not object-safe** — use concrete types (`GrpcProducer`, etc.) directly,
-//! never `dyn`.
-
-use std::future::Future;
-use std::time::Duration;
-
-use crate::model::{EventMeshMessage, PublishResponse};
-
-/// Publish-side capability.
-pub trait Publisher {
-    /// Fire-and-forget publish; returns the broker ack.
-    fn publish(
-        &self,
-        message: EventMeshMessage,
-    ) -> impl Future<Output = crate::Result<PublishResponse>> + Send;
-
-    /// Publish many messages in one RPC.
-    fn publish_batch(
-        &self,
-        messages: Vec<EventMeshMessage>,
-    ) -> impl Future<Output = crate::Result<PublishResponse>> + Send;
-}
-
-/// Request/reply capability implemented only by transports with a complete
-/// responder path.
-pub trait RequestReply {
-    /// Synchronous request/reply. `timeout` bounds how long we wait for the
-    /// consumer reply.
-    fn request_reply(
-        &self,
-        message: EventMeshMessage,
-        timeout: Duration,
-    ) -> impl Future<Output = crate::Result<EventMeshMessage>> + Send;
-}
+//! Public clients delegate to concrete producer and consumer types. Each
+//! transport exposes only the operations supported by its wire protocol.
 
 #[cfg(feature = "grpc")]
 pub mod grpc;

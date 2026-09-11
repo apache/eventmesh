@@ -15,8 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Public handler contract and private adapters for the previous transport
-//! engines.
+//! Shared handler contract used directly by every transport.
 
 use std::future::Future;
 
@@ -41,28 +40,5 @@ where
 {
     fn handle(&self, message: Message) -> impl Future<Output = Result<Option<Message>>> + Send {
         (self)(message)
-    }
-}
-
-/// Adapter used by the public protocol clients. It preserves the message
-/// dialect selected by the transport decoder.
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-pub(crate) struct PublicHandler<H> {
-    handler: H,
-}
-
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-impl<H> PublicHandler<H> {
-    pub(crate) fn new(handler: H) -> Self {
-        Self { handler }
-    }
-}
-
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-impl<H: MessageHandler> crate::MessageListener for PublicHandler<H> {
-    type Message = Message;
-
-    async fn handle(&self, message: Message) -> Result<Option<Message>> {
-        self.handler.handle(message).await
     }
 }

@@ -170,18 +170,6 @@ pub fn unsubscribe(items: &[TopicSubscription]) -> Package {
 // ACK builders
 // ---------------------------------------------------------------------------
 
-pub fn async_message_ack(in_pkg: &Package) -> Package {
-    ack(Command::AsyncMessageToClientAck, in_pkg)
-}
-
-pub fn broadcast_message_ack(in_pkg: &Package) -> Package {
-    ack(Command::BroadcastMessageToClientAck, in_pkg)
-}
-
-pub fn request_to_client_ack(in_pkg: &Package) -> Package {
-    ack(Command::RequestToClientAck, in_pkg)
-}
-
 pub fn response_to_client_ack(in_pkg: &Package) -> Package {
     ack(Command::ResponseToClientAck, in_pkg)
 }
@@ -362,9 +350,8 @@ pub fn parse_cloud_event(body: &PackageBody) -> Option<cloudevents::Event> {
     }
 }
 
-/// Convert a CloudEvent to an [`EventMeshMessage`] so the consumer's existing
-/// `MessageListener<Message = EventMeshMessage>` can handle CloudEvents
-/// deliveries transparently.
+/// Convert a CloudEvent to an [`EventMeshMessage`] when merging request/reply
+/// metadata across message dialects.
 ///
 /// - `subject` → `topic`
 /// - `data` → `content` (string values are kept as-is; JSON values are
@@ -448,7 +435,7 @@ mod tests {
     #[test]
     fn ack_preserves_seq() {
         let pkg = package(Command::AsyncMessageToClient);
-        let ack_pkg = async_message_ack(&pkg);
+        let ack_pkg = ack(Command::AsyncMessageToClientAck, &pkg);
         assert_eq!(ack_pkg.header.seq, pkg.header.seq);
         assert_eq!(ack_pkg.header.cmd, Command::AsyncMessageToClientAck);
     }

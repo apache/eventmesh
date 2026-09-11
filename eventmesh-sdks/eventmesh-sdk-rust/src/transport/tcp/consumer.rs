@@ -23,42 +23,7 @@
 //! tasks.  Subscribe and unsubscribe RPCs can be called at any time after
 //! construction — they are sent over the same connection via `conn.io()`.
 //!
-//! # Example
-//!
-//! ```ignore
-//! use eventmesh::{
-//!     config::{ConsumerOptions, Endpoint, TcpConfig}, tcp::TcpConsumer,
-//!     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
-//!     MessageListener,
-//! };
-//!
-//! struct MyListener;
-//! impl MessageListener for MyListener {
-//!     type Message = EventMeshMessage;
-//!     async fn handle(&self, msg: EventMeshMessage) -> Option<EventMeshMessage> {
-//!         println!("received: {:?}", msg.content());
-//!         None
-//!     }
-//! }
-//!
-//! #[tokio::main]
-//! async fn main() -> eventmesh::Result<()> {
-//!     let config = TcpClientConfig::builder()
-//!         .server_addr("127.0.0.1").server_port(10000)
-//!         .consumer_group("g")
-//!         .build().unwrap();
-//!     let consumer = TcpConsumer::connect(
-//!         config,
-//!         MyListener,
-//!         async { tokio::signal::ctrl_c().await.ok(); },
-//!     ).await?;
-//!     consumer.subscribe(vec![Subscription::new(
-//!         "t", DeliveryMode::Cluster, DeliveryType::Async,
-//!     )]).await?;
-//!     consumer.wait_for_shutdown().await;
-//!     Ok(())
-//! }
-//! ```
+//! See [`crate::tcp`] for the public client and consumer API.
 
 use std::future::Future;
 use std::sync::Arc;
@@ -71,147 +36,82 @@ use tracing::{debug, info, warn};
 use crate::config::{ConsumerOptions, TcpConfig};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
-use crate::model::{EventMeshMessage, PublishResponse};
+#[cfg(test)]
+use crate::model::EventMeshMessage;
+use crate::model::PublishResponse;
 use crate::subscription::Subscription;
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
 use crate::transport::tcp::message;
-use crate::MessageListener;
+use crate::MessageHandler;
 
-/// A message representation supported by the TCP consumer receive loop.
-///
-/// This is implemented by the SDK's native EventMeshMessage and, with the
-/// `cloud_events` feature, native CloudEvents. It keeps TCP wire codecs out
-/// of the normal producer and consumer APIs.
-pub trait TcpMessage: Clone + Send + 'static {
-    #[doc(hidden)]
-    fn decode_tcp(pkg: &Package) -> Option<Self>
-    where
-        Self: Sized;
-
-    #[doc(hidden)]
-    fn encode_tcp_reply(&self) -> Result<Package>;
-
-    /// Copy request routing and correlation metadata into a fresh reply when
-    /// the runtime has sent a request/reply delivery.
-    #[doc(hidden)]
-    fn inherit_request_metadata(&mut self, request: &Self);
-}
-
-impl TcpMessage for EventMeshMessage {
-    fn decode_tcp(pkg: &Package) -> Option<Self> {
-        if message::is_cloudevents(pkg) {
-            #[cfg(feature = "cloud_events")]
-            return message::parse_cloud_event(&pkg.body)
-                .and_then(|event| message::cloud_event_to_message(&event).ok());
-            #[cfg(not(feature = "cloud_events"))]
-            return None;
-        }
-        if !message::is_event_mesh_message(pkg) {
-            return None;
-        }
-        message::parse_message(&pkg.body)
-    }
-
-    fn encode_tcp_reply(&self) -> Result<Package> {
-        message::build_message_package(self, Command::ResponseToServer)
-    }
-
-    fn inherit_request_metadata(&mut self, request: &Self) {
-        for (key, value) in &request.props {
-            self.props
-                .entry(key.clone())
-                .or_insert_with(|| value.clone());
-        }
-    }
-}
-
-impl TcpMessage for Message {
-    fn decode_tcp(pkg: &Package) -> Option<Self> {
-        if message::is_cloudevents(pkg) {
-            #[cfg(feature = "cloud_events")]
-            return message::parse_cloud_event(&pkg.body).map(Self::CloudEvent);
-            #[cfg(not(feature = "cloud_events"))]
-            return None;
-        }
-
-        if !message::is_event_mesh_message(pkg) {
-            return None;
-        }
-
-        message::parse_message(&pkg.body).map(Self::EventMesh)
-    }
-
-    fn encode_tcp_reply(&self) -> Result<Package> {
-        match self {
-            Self::EventMesh(message) => {
-                message::build_message_package(message, Command::ResponseToServer)
-            }
-            #[cfg(feature = "cloud_events")]
-            Self::CloudEvent(event) => {
-                message::build_cloud_event_package(event, Command::ResponseToServer)
-            }
-        }
-    }
-
-    fn inherit_request_metadata(&mut self, request: &Self) {
+pub(crate) fn decode_message(pkg: &Package) -> Option<Message> {
+    if message::is_cloudevents(pkg) {
         #[cfg(feature = "cloud_events")]
-        if let (Self::CloudEvent(reply), Self::CloudEvent(request)) = (&mut *self, request) {
-            for (key, value) in request.iter_extensions() {
-                if reply.extension(key).is_none() {
-                    reply.set_extension(key, value.clone());
-                }
-            }
-            return;
-        }
-
-        // Normalize non-CloudEvent replies to EventMeshMessage before merging
-        // request metadata.
-        #[cfg(feature = "cloud_events")]
-        let reply = match self.clone() {
-            Self::EventMesh(message) => Ok(message),
-            Self::CloudEvent(event) => message::cloud_event_to_message(&event),
-        };
-        #[cfg(feature = "cloud_events")]
-        let request = match request.clone() {
-            Self::EventMesh(message) => Ok(message),
-            Self::CloudEvent(event) => message::cloud_event_to_message(&event),
-        };
-        #[cfg(feature = "cloud_events")]
-        let (Ok(mut reply), Ok(request)) = (reply, request) else {
-            return;
-        };
+        return message::parse_cloud_event(&pkg.body).map(Message::CloudEvent);
         #[cfg(not(feature = "cloud_events"))]
-        let (mut reply, request) = match (self.clone(), request.clone()) {
-            (Self::EventMesh(reply), Self::EventMesh(request)) => (reply, request),
-        };
-        <EventMeshMessage as TcpMessage>::inherit_request_metadata(&mut reply, &request);
-        *self = Self::EventMesh(reply);
+        return None;
+    }
+
+    if !message::is_event_mesh_message(pkg) {
+        return None;
+    }
+
+    message::parse_message(&pkg.body).map(Message::EventMesh)
+}
+
+pub(crate) fn encode_reply(message: &Message) -> Result<Package> {
+    match message {
+        Message::EventMesh(message) => {
+            message::build_message_package(message, Command::ResponseToServer)
+        }
+        #[cfg(feature = "cloud_events")]
+        Message::CloudEvent(event) => {
+            message::build_cloud_event_package(event, Command::ResponseToServer)
+        }
     }
 }
 
-#[cfg(feature = "cloud_events")]
-impl TcpMessage for cloudevents::Event {
-    fn decode_tcp(pkg: &Package) -> Option<Self> {
-        if message::is_cloudevents(pkg) {
-            message::parse_cloud_event(&pkg.body)
-        } else {
-            message::parse_message(&pkg.body)
-                .and_then(|message| message::message_to_cloud_event(&message).ok())
-        }
-    }
-
-    fn encode_tcp_reply(&self) -> Result<Package> {
-        message::build_cloud_event_package(self, Command::ResponseToServer)
-    }
-
-    fn inherit_request_metadata(&mut self, request: &Self) {
+fn inherit_request_metadata(reply_message: &mut Message, request: &Message) {
+    #[cfg(feature = "cloud_events")]
+    if let (Message::CloudEvent(reply), Message::CloudEvent(request)) =
+        (&mut *reply_message, request)
+    {
         for (key, value) in request.iter_extensions() {
-            if self.extension(key).is_none() {
-                self.set_extension(key, value.clone());
+            if reply.extension(key).is_none() {
+                reply.set_extension(key, value.clone());
             }
         }
+        return;
     }
+
+    // Normalize non-CloudEvent replies to EventMeshMessage before merging
+    // request metadata.
+    #[cfg(feature = "cloud_events")]
+    let reply = match reply_message.clone() {
+        Message::EventMesh(message) => Ok(message),
+        Message::CloudEvent(event) => message::cloud_event_to_message(&event),
+    };
+    #[cfg(feature = "cloud_events")]
+    let request = match request.clone() {
+        Message::EventMesh(message) => Ok(message),
+        Message::CloudEvent(event) => message::cloud_event_to_message(&event),
+    };
+    #[cfg(feature = "cloud_events")]
+    let (Ok(mut reply), Ok(request)) = (reply, request) else {
+        return;
+    };
+    #[cfg(not(feature = "cloud_events"))]
+    let (mut reply, request) = match (reply_message.clone(), request.clone()) {
+        (Message::EventMesh(reply), Message::EventMesh(request)) => (reply, request),
+    };
+    for (key, value) in &request.props {
+        reply
+            .props
+            .entry(key.clone())
+            .or_insert_with(|| value.clone());
+    }
+    *reply_message = Message::EventMesh(reply);
 }
 
 /// Why the TCP consumer's receive loop stopped.
@@ -248,7 +148,7 @@ enum InboundResult {
     Stop,
 }
 
-/// TCP-based consumer, generic over the user's [`MessageListener`] type.
+/// TCP-based consumer, generic over the user's [`MessageHandler`] type.
 ///
 /// Created via [`TcpConsumer::connect`], which opens a TCP connection, performs
 /// the HELLO handshake (role = sub), sends `LISTEN_REQUEST`, and spawns the
@@ -256,8 +156,8 @@ enum InboundResult {
 ///
 /// Subscribe and unsubscribe RPCs can be called at any time after construction.
 /// The background tasks are stopped when the consumer is dropped or explicitly
-/// via [`shutdown`](Self::shutdown) / [`wait_for_shutdown`](Self::wait_for_shutdown).
-pub struct TcpConsumer<L: MessageListener> {
+/// via [`request_shutdown`](Self::request_shutdown) / [`wait_for_shutdown`](Self::wait_for_shutdown).
+pub struct TcpConsumer<L: MessageHandler> {
     conn: Arc<TcpConnection>,
     config: TcpConfig,
     _listener: std::marker::PhantomData<Arc<L>>,
@@ -269,25 +169,16 @@ pub struct TcpConsumer<L: MessageListener> {
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 }
 
-/// Native CloudEvents TCP consumer.
-///
-/// Unlike the EventMeshMessage consumer, this type passes the TCP
-/// CloudEvents JSON body directly to a `MessageListener<cloudevents::Event>`
-/// and serializes listener replies back as CloudEvents.
-#[cfg(feature = "cloud_events")]
-pub type TcpCloudEventConsumer<L> = TcpConsumer<L>;
-
 impl<L> TcpConsumer<L>
 where
-    L: MessageListener,
-    L::Message: TcpMessage,
+    L: MessageHandler,
 {
     /// Connect to the EventMesh TCP endpoint, perform the HELLO handshake
     /// (role = sub), send `LISTEN_REQUEST`, and spawn the receive loop.
     ///
     /// `shutdown_signal` is an optional future whose resolution triggers
     /// graceful shutdown.  When omitted, shutdown can only be initiated by
-    /// [`shutdown`](Self::shutdown) or drop.
+    /// [`request_shutdown`](Self::request_shutdown) or drop.
     ///
     /// The reconnect policy from the config controls automatic reconnection
     /// after I/O failures (enabled by default).  When a reconnect succeeds,
@@ -458,17 +349,13 @@ where
         self.unsubscribe(items).await
     }
 
-    /// Current config.
-    pub fn config(&self) -> &TcpConfig {
-        &self.config
-    }
-
     /// Signal the receive-loop driver to stop.
     pub fn request_shutdown(&self) {
         self.shutdown.cancel();
     }
 
     /// Signal shutdown, close the connection, and await the driver task.
+    #[cfg(test)]
     pub async fn shutdown(&self) {
         self.request_shutdown();
         self.conn.shutdown().await;
@@ -529,7 +416,7 @@ where
     }
 }
 
-impl<L: MessageListener> Drop for TcpConsumer<L> {
+impl<L: MessageHandler> Drop for TcpConsumer<L> {
     fn drop(&mut self) {
         self.shutdown.cancel();
         if let Ok(mut guard) = self.driver_handle.try_lock() {
@@ -563,8 +450,7 @@ fn spawn_driver<L>(
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 ) -> JoinHandle<Result<()>>
 where
-    L: MessageListener,
-    L::Message: TcpMessage,
+    L: MessageHandler,
 {
     tokio::spawn(async move {
         loop {
@@ -720,8 +606,7 @@ where
 /// it is not silently swallowed.
 async fn handle_inbound<L>(pkg: &Package, conn: &TcpConnection, listener: &L) -> InboundResult
 where
-    L: MessageListener,
-    L::Message: TcpMessage,
+    L: MessageHandler,
 {
     let ack_cmd = match pkg.header.cmd {
         Command::RequestToClient => Some(Command::RequestToClientAck),
@@ -764,7 +649,7 @@ where
         }
     };
 
-    let msg = match L::Message::decode_tcp(pkg) {
+    let msg = match decode_message(pkg) {
         Some(msg) => msg,
         None => {
             warn!("failed to parse inbound message body; disconnecting without ACK");
@@ -786,9 +671,9 @@ where
     };
     if let Some(mut reply) = reply {
         if let Some(request) = request.as_ref() {
-            reply.inherit_request_metadata(request);
+            inherit_request_metadata(&mut reply, request);
         }
-        let reply_pkg = match reply.encode_tcp_reply() {
+        let reply_pkg = match encode_reply(&reply) {
             Ok(reply_pkg) => reply_pkg,
             Err(error) => {
                 warn!(%error, "failed to serialize reply; disconnecting without ACK");
@@ -817,7 +702,7 @@ mod tests {
 
     use super::*;
     use crate::config::{ConsumerOptions, Endpoint, ReconnectPolicy, TcpConfig};
-    use crate::subscription::{DeliveryMode, DeliveryType, Subscription};
+    use crate::subscription::{DeliveryType, Subscription};
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody, RedirectInfo};
 
@@ -828,9 +713,8 @@ mod tests {
 
     /// A no-op listener used only to satisfy `TcpConsumer`'s type parameter.
     struct NoopListener;
-    impl MessageListener for NoopListener {
-        type Message = EventMeshMessage;
-        async fn handle(&self, _: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
+    impl MessageHandler for NoopListener {
+        async fn handle(&self, _: Message) -> Result<Option<Message>> {
             Ok(None)
         }
     }
@@ -838,40 +722,31 @@ mod tests {
     /// A listener failure must tear down the TCP session without ACKing the
     /// delivery so the server can redeliver it on a subsequent connection.
     struct FailingListener;
-    impl MessageListener for FailingListener {
-        type Message = EventMeshMessage;
-        async fn handle(&self, _: EventMeshMessage) -> Result<Option<EventMeshMessage>> {
+    impl MessageHandler for FailingListener {
+        async fn handle(&self, _: Message) -> Result<Option<Message>> {
             Err(EventMeshError::Tcp("listener failure".into()))
         }
     }
 
-    /// A message type whose inbound representation is valid but whose reply
-    /// encoder fails, allowing the no-ACK failure path to be tested directly.
-    #[derive(Clone)]
-    struct ReplyEncodingFailure(EventMeshMessage);
-
-    impl TcpMessage for ReplyEncodingFailure {
-        fn decode_tcp(pkg: &Package) -> Option<Self> {
-            <EventMeshMessage as TcpMessage>::decode_tcp(pkg).map(Self)
-        }
-
-        fn encode_tcp_reply(&self) -> Result<Package> {
-            Err(EventMeshError::InvalidMessage(
-                "intentional reply encoding failure".into(),
-            ))
-        }
-
-        fn inherit_request_metadata(&mut self, request: &Self) {
-            <EventMeshMessage as TcpMessage>::inherit_request_metadata(&mut self.0, &request.0);
-        }
-    }
-
+    /// A reply that fails the TCP CloudEvents compatibility check must not ACK
+    /// the request or leave the session accepting deliveries.
+    #[cfg(feature = "cloud_events")]
     struct ReplyEncodingFailingListener;
-    impl MessageListener for ReplyEncodingFailingListener {
-        type Message = ReplyEncodingFailure;
 
-        async fn handle(&self, message: Self::Message) -> Result<Option<Self::Message>> {
-            Ok(Some(message))
+    #[cfg(feature = "cloud_events")]
+    impl MessageHandler for ReplyEncodingFailingListener {
+        async fn handle(&self, _: Message) -> Result<Option<Message>> {
+            use cloudevents::{EventBuilder, EventBuilderV10};
+
+            let reply = EventBuilderV10::new()
+                .id("reply")
+                .source("urn:test")
+                .ty("reply")
+                .subject("topic")
+                .data("text/plain", "reply")
+                .build()
+                .unwrap();
+            Ok(Some(Message::CloudEvent(reply)))
         }
     }
 
@@ -884,8 +759,7 @@ mod tests {
         .unwrap();
         package.header.set_property("protocoltype", "openmessage");
 
-        assert!(<Message as TcpMessage>::decode_tcp(&package).is_none());
-        assert!(<EventMeshMessage as TcpMessage>::decode_tcp(&package).is_none());
+        assert!(decode_message(&package).is_none());
     }
 
     #[cfg(feature = "cloud_events")]
@@ -903,7 +777,7 @@ mod tests {
             .expect("build event");
         let package =
             message::build_cloud_event_package(&event, Command::AsyncMessageToClient).unwrap();
-        let decoded = <Message as TcpMessage>::decode_tcp(&package).expect("decode message");
+        let decoded = decode_message(&package).expect("decode message");
         match decoded {
             Message::CloudEvent(decoded) => {
                 use cloudevents::AttributesReader;
@@ -992,6 +866,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "cloud_events")]
     #[tokio::test]
     async fn reply_encoding_error_closes_tcp_connection_without_ack() {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -1021,15 +896,17 @@ mod tests {
                 .await
                 .unwrap();
 
-            let delivery = message::build_message_package(
-                &EventMeshMessage::builder()
-                    .topic("topic")
-                    .content("payload")
-                    .build()
-                    .unwrap(),
-                Command::RequestToClient,
-            )
-            .unwrap();
+            use cloudevents::{EventBuilder, EventBuilderV10};
+            let request = EventBuilderV10::new()
+                .id("request")
+                .source("urn:test")
+                .ty("request")
+                .subject("topic")
+                .data("application/cloudevents+json", "payload")
+                .build()
+                .unwrap();
+            let delivery =
+                message::build_cloud_event_package(&request, Command::RequestToClient).unwrap();
             framed.send(delivery).await.unwrap();
 
             tokio::time::timeout(Duration::from_secs(3), async {
@@ -1078,15 +955,16 @@ mod tests {
             .prop("correlation-id", "request-id")
             .build()
             .unwrap();
-        let mut reply = EventMeshMessage::builder()
+        let reply = EventMeshMessage::builder()
             .topic("reply-topic")
             .content("reply")
             .prop("correlation-id", "reply-id")
             .build()
             .unwrap();
 
-        reply.inherit_request_metadata(&request);
-        let pkg = reply.encode_tcp_reply().expect("encode reply");
+        let mut reply = Message::from(reply);
+        inherit_request_metadata(&mut reply, &Message::from(request));
+        let pkg = encode_reply(&reply).expect("encode reply");
         let encoded = message::parse_message(&pkg.body).expect("decode reply");
 
         assert_eq!(encoded.get_prop("cluster"), Some("remote-cluster"));
@@ -1105,16 +983,20 @@ mod tests {
             .extension("cluster", "remote-cluster")
             .build()
             .expect("build request");
-        let mut reply = EventBuilderV10::new()
+        let reply = EventBuilderV10::new()
             .id("reply")
             .source("urn:test")
             .ty("test")
             .build()
             .expect("build reply");
 
-        reply.inherit_request_metadata(&request);
+        let mut reply = Message::from(reply);
+        inherit_request_metadata(&mut reply, &Message::from(request));
         assert_eq!(
-            reply.extension("cluster").unwrap().to_string(),
+            match reply {
+                Message::CloudEvent(reply) => reply.extension("cluster").unwrap().to_string(),
+                other => panic!("expected CloudEvent, got {other:?}"),
+            },
             "remote-cluster"
         );
     }

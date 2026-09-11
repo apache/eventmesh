@@ -19,14 +19,12 @@
 
 use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions, ProducerOptions};
 use crate::error::{EventMeshError, Result};
-use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
 use crate::transport::grpc::{
     ChannelClient as TransportChannel, GrpcProducer as TransportProducer,
     GrpcStreamConsumer as TransportConsumer, GrpcWebhookConsumer as TransportWebhookConsumer,
 };
-use crate::transport::{Publisher as TransportPublisher, RequestReply as TransportRequestReply};
 use crate::MessageHandler;
 
 /// A connected EventMesh gRPC channel.
@@ -63,7 +61,7 @@ pub struct GrpcProducer {
 
 /// A long-lived gRPC stream consumer.
 pub struct GrpcStreamConsumer<H: MessageHandler> {
-    inner: TransportConsumer<PublicHandler<H>>,
+    inner: TransportConsumer<H>,
 }
 
 /// A gRPC consumer that registers HTTP webhook subscriptions.
@@ -165,7 +163,7 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
             channel.inner,
             channel.config,
             options,
-            PublicHandler::new(handler),
+            handler,
             subscriptions,
             None::<std::future::Ready<()>>,
         )

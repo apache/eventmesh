@@ -17,47 +17,10 @@
 
 //! Built-in webhook server (axum).
 //!
-//! A batteries-included HTTP server that receives webhook pushes from the
-//! EventMesh runtime. For users who don't want to wire up their own axum/hyper
-//! application, this provides a one-liner server.
-//!
-//! # Example
-//!
-//! ```ignore
-//! # use eventmesh::{
-//! #     config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
-//! #     http::{HttpConsumer, WebhookServer},
-//! #     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
-//! #     MessageListener,
-//! # };
-//! # struct MyListener;
-//! # impl MessageListener for MyListener {
-//! #     type Message = EventMeshMessage;
-//! #     async fn handle(&self, _: Self::Message) -> Option<Self::Message> { None }
-//! # }
-//! # #[tokio::main]
-//! # async fn main() -> eventmesh::Result<()> {
-//! use std::sync::Arc;
-//!
-//! let listener = Arc::new(MyListener);
-//! let addr: std::net::SocketAddr = "0.0.0.0:8080".parse().unwrap();
-//! let server = WebhookServer::bind(addr, listener.clone()).await?;
-//!
-//! let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?]).unwrap();
-//! let consumer = HttpConsumer::new(
-//!     HttpConfig::new(endpoints),
-//!     &ConsumerOptions::new("group"),
-//!     None::<std::future::Ready<()>>,
-//! )?;
-//! consumer.subscribe_webhook(
-//!     vec![Subscription::new("test-topic")],
-//!     server.url(),
-//! ).await?;
-//!
-//! server.await?; // blocks until shutdown
-//! # Ok(())
-//! # }
-//! ```
+//! Receives EventMesh pushes and dispatches them to [`MessageHandler`]. The
+//! public [`crate::http::HttpClient::consumer`] API manages this server with
+//! its subscriptions, or applications can bind [`crate::webhook::WebhookServer`]
+//! separately. See `examples/http/consumer_server.rs` for the managed lifecycle.
 
 use std::future::{Future, IntoFuture};
 use std::net::SocketAddr;
@@ -69,7 +32,7 @@ use tracing::info;
 
 use crate::error::{EventMeshError, Result};
 use crate::transport::http::webhook::{WebhookHandler, WebhookState};
-use crate::MessageListener;
+use crate::MessageHandler;
 
 /// Default path the webhook server listens on.
 pub const DEFAULT_WEBHOOK_PATH: &str = "/eventmesh/callback";
@@ -98,8 +61,7 @@ impl WebhookServer {
     /// URL without a connection-refused window.
     pub async fn bind<L>(addr: SocketAddr, listener: Arc<L>) -> Result<Self>
     where
-        L: MessageListener,
-        L::Message: crate::transport::http::webhook::WebhookMessage,
+        L: MessageHandler,
     {
         Self::bind_with_path(addr, listener, DEFAULT_WEBHOOK_PATH).await
     }
@@ -107,8 +69,7 @@ impl WebhookServer {
     /// Like [`WebhookServer::bind`] but with a custom webhook path.
     pub async fn bind_with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Result<Self>
     where
-        L: MessageListener,
-        L::Message: crate::transport::http::webhook::WebhookMessage,
+        L: MessageHandler,
     {
         let socket = tokio::net::TcpListener::bind(addr)
             .await
@@ -120,23 +81,10 @@ impl WebhookServer {
         Ok(server)
     }
 
-    /// Construct an unbound webhook server.
-    ///
-    /// Prefer [`bind`](Self::bind), which reports address conflicts before the
-    /// callback URL is registered.
-    pub fn new<L>(addr: SocketAddr, listener: Arc<L>) -> Self
+    /// Assemble the router before attaching the bound callback socket.
+    fn with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Self
     where
-        L: MessageListener,
-        L::Message: crate::transport::http::webhook::WebhookMessage,
-    {
-        Self::with_path(addr, listener, DEFAULT_WEBHOOK_PATH)
-    }
-
-    /// Like [`WebhookServer::new`] but with a custom webhook path.
-    pub fn with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Self
-    where
-        L: MessageListener,
-        L::Message: crate::transport::http::webhook::WebhookMessage,
+        L: MessageHandler,
     {
         let state = WebhookState::new(listener);
         let router = Router::new()
@@ -172,11 +120,6 @@ impl WebhookServer {
     pub fn with_advertise_url(mut self, url: impl Into<String>) -> Self {
         self.advertise_url = Some(url.into());
         self
-    }
-
-    /// The address the server will bind to.
-    pub fn addr(&self) -> SocketAddr {
-        self.addr
     }
 
     /// Attach a graceful shutdown signal. When `signal` resolves, the server

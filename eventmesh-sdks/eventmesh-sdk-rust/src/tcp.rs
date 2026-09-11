@@ -19,13 +19,10 @@
 
 use crate::config::{ConsumerOptions, ProducerOptions, TcpConfig};
 use crate::error::{EventMeshError, Result};
-use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
-use crate::transport::tcp::{
-    TcpConsumer as TransportConsumer, TcpMessage, TcpProducer as TransportProducer,
-};
-use crate::transport::{Publisher, RequestReply};
+use crate::transport::tcp::consumer::{decode_message, encode_reply};
+use crate::transport::tcp::{TcpConsumer as TransportConsumer, TcpProducer as TransportProducer};
 use crate::MessageHandler;
 use tracing::warn;
 
@@ -81,7 +78,7 @@ impl TcpClient {
             inner: TransportConsumer::connect(
                 self.config.clone(),
                 &options,
-                PublicHandler::new(handler),
+                handler,
                 None::<std::future::Ready<()>>,
             )
             .await?,
@@ -98,7 +95,7 @@ pub struct TcpProducer {
 
 /// A long-lived TCP consumer.
 pub struct TcpConsumer<H: MessageHandler> {
-    inner: TransportConsumer<PublicHandler<H>>,
+    inner: TransportConsumer<H>,
 }
 
 impl<H: MessageHandler> TcpConsumer<H> {
@@ -253,13 +250,13 @@ impl TcpProducer {
                 if package.header.cmd != crate::transport::tcp::frame::Command::ResponseToClient {
                     continue;
                 }
-                let Some(message) = Message::decode_tcp(&package) else {
+                let Some(message) = decode_message(&package) else {
                     warn!("failed to decode publisher-side response; closing without ACK");
                     connection.shutdown().await;
                     break;
                 };
                 match handler.handle(message).await {
-                    Ok(Some(reply)) => match reply.encode_tcp_reply() {
+                    Ok(Some(reply)) => match encode_reply(&reply) {
                         Ok(reply) => {
                             if let Err(error) = connection.send(reply).await {
                                 warn!(%error, "failed to send publisher-side reply; closing without ACK");
@@ -393,10 +390,7 @@ mod tests {
     async fn broadcast_is_written_before_shutdown() {
         let message = crate::EventMeshMessage::new("orders", "created").unwrap();
         let package = broadcast_before_shutdown(Message::EventMesh(message.clone())).await;
-        let received = Message::decode_tcp(&package)
-            .unwrap()
-            .into_event_mesh()
-            .unwrap();
+        let received = decode_message(&package).unwrap().into_event_mesh().unwrap();
         assert_eq!(received.topic(), message.topic());
         assert_eq!(received.content(), message.content());
     }
@@ -418,7 +412,7 @@ mod tests {
             .build()
             .unwrap();
         let package = broadcast_before_shutdown(Message::CloudEvent(event.clone())).await;
-        let received = Message::decode_tcp(&package).unwrap();
+        let received = decode_message(&package).unwrap();
         assert!(matches!(received, Message::CloudEvent(received) if received == event));
     }
 

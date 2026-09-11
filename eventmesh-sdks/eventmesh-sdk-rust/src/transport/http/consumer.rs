@@ -55,7 +55,7 @@ struct SubscriptionEntry {
 /// [`codec`](crate::transport::http::codec) helpers.
 ///
 /// A background heartbeat task is spawned on construction and stopped on drop
-/// or via [`HttpConsumer::shutdown`] / [`HttpConsumer::wait_for_shutdown`].
+/// or via [`HttpConsumer::request_shutdown`] / [`HttpConsumer::wait_for_shutdown`].
 pub struct HttpConsumer {
     client: EventMeshHttpClient,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
@@ -68,7 +68,7 @@ impl HttpConsumer {
     ///
     /// `shutdown_signal` is an optional future whose resolution triggers
     /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
-    /// initiated by [`shutdown`](Self::shutdown) or drop.
+    /// initiated by [`request_shutdown`](Self::request_shutdown) or drop.
     pub fn new(
         config: HttpConfig,
         options: &ConsumerOptions,
@@ -173,20 +173,9 @@ impl HttpConsumer {
         }
     }
 
-    /// Current consumer group.
-    pub fn consumer_group(&self) -> &str {
-        self.client.role().consumer_group()
-    }
-
     /// Signal the heartbeat task to stop.
     pub fn request_shutdown(&self) {
         self.shutdown.cancel();
-    }
-
-    /// Signal shutdown and wait for the heartbeat task to finish.
-    pub async fn shutdown(&self) -> Result<()> {
-        self.request_shutdown();
-        self.wait_for_shutdown().await
     }
 
     /// Block until the shutdown signal fires or the heartbeat task exits.
@@ -377,7 +366,6 @@ fn spawn_heartbeat(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::subscription::DeliveryMode;
 
     fn make_consumer() -> HttpConsumer {
         let endpoints =

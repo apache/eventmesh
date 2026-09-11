@@ -67,7 +67,6 @@ pub mod webhook;
 mod proto_gen;
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-#[allow(dead_code, unused_imports)]
 mod transport;
 
 /// gRPC client API.
@@ -97,23 +96,3 @@ pub use http::HttpClient;
 
 #[cfg(feature = "tcp")]
 pub use tcp::TcpClient;
-
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-use std::future::Future;
-
-/// Convenience trait alias for an async listener of delivered messages.
-///
-/// A listener returns `Some(message)` to send a reply back to the broker
-/// (request-reply semantics), `None` for plain async consumption, or an error
-/// to tell the adapter that the delivery was not handled successfully.
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-pub(crate) trait MessageListener: Send + Sync + 'static {
-    /// The message type this listener accepts.
-    type Message: Send;
-
-    /// Handle a delivered message. Return `Some` to reply, `None` to ack only.
-    fn handle(
-        &self,
-        message: Self::Message,
-    ) -> impl Future<Output = Result<Option<Self::Message>>> + Send;
-}

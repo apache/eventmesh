@@ -21,68 +21,17 @@
 //! frames with a `"EventMesh"` magic prefix) and is fully interoperable with
 //! the Java runtime's TCP endpoint (default port `10000`).
 //!
-//! Like the other transports, it normalizes everything onto the
-//! [`EventMeshMessage`](crate::model::EventMeshMessage) model.  The producer
-//! implements the [`Publisher`](crate::transport::Publisher) trait; the
-//! consumer exposes transport-specific subscribe / unsubscribe methods with
-//! a background receive loop.
-//!
-//! # Quick example (producer)
-//!
-//! ```ignore
-//! use eventmesh::{
-//!     config::{Endpoint, ProducerOptions, TcpConfig}, tcp::TcpProducer,
-//!     model::EventMeshMessage, transport::Publisher,
-//! };
-//!
-//! #[tokio::main]
-//! async fn main() -> eventmesh::Result<()> {
-//!     let config = TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?);
-//!     let producer = TcpProducer::connect(config, &ProducerOptions::new("g")).await?;
-//!     let msg = EventMeshMessage::builder().topic("t").content("hi").build()?;
-//!     producer.publish(msg).await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! # Quick example (consumer)
-//!
-//! ```ignore
-//! use eventmesh::{
-//!     config::{ConsumerOptions, Endpoint, TcpConfig}, tcp::TcpConsumer,
-//!     DeliveryMode, DeliveryType, EventMeshMessage, Subscription,
-//!     MessageListener,
-//! };
-//!
-//! struct MyListener;
-//! impl MessageListener for MyListener {
-//!     type Message = EventMeshMessage;
-//!     async fn handle(&self, msg: EventMeshMessage) -> Option<EventMeshMessage> {
-//!         println!("received: {:?}", msg.content());
-//!         None
-//!     }
-//! }
-//!
-//! #[tokio::main]
-//! async fn main() -> eventmesh::Result<()> {
-//!     let config = TcpConfig::new(Endpoint::new("127.0.0.1", 10_000)?);
-//!     let consumer = TcpConsumer::connect(
-//!         config, &ConsumerOptions::new("g"), MyListener,
-//!         async { tokio::signal::ctrl_c().await.ok(); },
-//!     ).await?;
-//!     consumer.wait_for_shutdown().await;
-//!     Ok(())
-//! }
-//! ```
+//! Producers provide publishing, request/reply, and broadcast operations.
+//! Consumers decode deliveries into [`crate::Message`] and dispatch them to
+//! [`crate::MessageHandler`]. See [`crate::tcp`] for the public client API.
 //!
 //! # CloudEvents over TCP
 //!
 //! With the `cloud_events` feature, the TCP producer can send native
 //! [`cloudevents::Event`] values via [`TcpProducer::publish_cloud_event`],
 //! [`TcpProducer::broadcast_cloud_event`], and
-//! [`TcpProducer::request_reply_cloud_event`]. Use [`TcpCloudEventConsumer`]
-//! to receive native [`cloudevents::Event`] values, or [`TcpConsumer`] for
-//! the existing EventMeshMessage conversion.
+//! [`TcpProducer::request_reply_cloud_event`]. Consumers preserve inbound
+//! CloudEvents as `Message::CloudEvent` values.
 //!
 //! **Important:** the event's `datacontenttype` must be set to
 //! `application/cloudevents+json`. The Java runtime's downlink codec
@@ -110,7 +59,5 @@ pub mod frame;
 pub mod message;
 pub mod producer;
 
-#[cfg(feature = "cloud_events")]
-pub use consumer::TcpCloudEventConsumer;
-pub use consumer::{ShutdownReason, TcpConsumer, TcpMessage};
+pub use consumer::{ShutdownReason, TcpConsumer};
 pub use producer::TcpProducer;

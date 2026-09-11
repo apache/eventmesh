@@ -95,11 +95,8 @@ impl<H: crate::MessageHandler> WebhookServer<H> {
     /// Bind before returning, guaranteeing that [`url`](Self::url) is ready to
     /// register with EventMesh.
     pub async fn bind(addr: std::net::SocketAddr, handler: H) -> crate::Result<Self> {
-        let inner = crate::transport::http::WebhookServer::bind(
-            addr,
-            std::sync::Arc::new(crate::handler::PublicHandler::new(handler)),
-        )
-        .await?;
+        let inner =
+            crate::transport::http::WebhookServer::bind(addr, std::sync::Arc::new(handler)).await?;
         Ok(Self {
             inner,
             _handler: std::marker::PhantomData,

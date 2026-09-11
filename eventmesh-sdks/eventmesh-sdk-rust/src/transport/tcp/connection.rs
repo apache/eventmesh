@@ -96,6 +96,7 @@ pub struct TcpConnection {
     /// (cancellation, I/O error, server close, all-senders-dropped). Mirrors
     /// Java's `channel.isActive()` more faithfully than the cancellation token
     /// alone, which only flips on explicit shutdown.
+    #[cfg(test)]
     alive: Arc<AtomicBool>,
     /// Background task handle.
     join: Mutex<Option<JoinHandle<()>>>,
@@ -174,6 +175,7 @@ impl TcpConnection {
             deliver_orphan_responses,
             cancel,
             outbound_timeout: control_timeout,
+            #[cfg(test)]
             alive,
             join: Mutex::new(Some(join)),
         })
@@ -359,6 +361,7 @@ impl TcpConnection {
     /// dropped) — not just explicit shutdown. During a reconnect backoff it is
     /// also `false`; it returns to `true` once the new connection is
     /// established.
+    #[cfg(test)]
     pub fn is_active(&self) -> bool {
         self.alive.load(Ordering::Acquire)
     }
@@ -399,7 +402,6 @@ mod tests {
     use crate::model::EventMeshMessage;
     use crate::transport::tcp::codec::TcpCodec;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody};
-    use crate::transport::{Publisher, RequestReply};
 
     use futures::SinkExt;
     use tokio::net::TcpListener;

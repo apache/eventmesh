@@ -26,14 +26,12 @@ pub mod codec {
 
 use crate::config::{ConsumerOptions, HttpConfig, ProducerOptions};
 use crate::error::{EventMeshError, Result};
-use crate::handler::PublicHandler;
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::{DeliveryType, Subscription};
 use crate::transport::http::{
     EventMeshHttpClient as TransportClient, HttpConsumer as TransportConsumer,
     HttpProducer as TransportProducer, WebhookServer,
 };
-use crate::transport::Publisher;
 use crate::webhook::WebhookOptions;
 use crate::MessageHandler;
 use std::sync::Arc;
@@ -95,8 +93,7 @@ impl HttpClient {
             &options,
             Some(lifecycle.clone().cancelled_owned()),
         )?;
-        let mut server =
-            WebhookServer::bind(webhook.bind_addr(), Arc::new(PublicHandler::new(handler))).await?;
+        let mut server = WebhookServer::bind(webhook.bind_addr(), Arc::new(handler)).await?;
         if let Some(url) = webhook.advertise_url() {
             server = server.with_advertise_url(url);
         }

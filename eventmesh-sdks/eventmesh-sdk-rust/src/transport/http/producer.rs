@@ -19,12 +19,11 @@
 
 use tracing::debug;
 
-use crate::config::{Credentials, HttpConfig, Identity, ProducerOptions};
+use crate::config::{HttpConfig, ProducerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::transport::http::client::{EventMeshHttpClient, HttpRole};
 use crate::transport::http::codec::{self, uri};
-use crate::transport::Publisher;
 
 /// HTTP-based producer.
 ///
@@ -100,25 +99,11 @@ impl HttpProducer {
         debug!("published topic={:?}", message.topic);
         Ok(response)
     }
-}
 
-impl Publisher for HttpProducer {
-    async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
+    /// Publish a native EventMesh message and wait for acknowledgement.
+    pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
         self.publish_with_protocol(message, EventMeshProtocolType::EventMeshMessage)
             .await
-    }
-
-    async fn publish_batch(&self, _messages: Vec<EventMeshMessage>) -> Result<PublishResponse> {
-        // The runtime's HTTP batch path (request code 102) expects a legacy
-        // `batchId`/`size`/`contents`/`producerGroup` body that is routed
-        // through `ProtocolAdaptor.toBatchCloudEvent`, which does not accept
-        // `HttpCommand` inputs — only the gRPC `BatchEventMeshCloudEventWrapper`.
-        // Until a supported HTTP batch format is available, this operation is
-        // not exposed.
-        Err(EventMeshError::Unsupported(
-            "batch publish is not supported over the HTTP transport; use individual publish calls or the gRPC transport"
-                .into(),
-        ))
     }
 }
 

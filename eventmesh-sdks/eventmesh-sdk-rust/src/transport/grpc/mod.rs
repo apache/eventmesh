@@ -17,13 +17,13 @@
 
 //! gRPC transport for the EventMesh server.
 //!
-//! - [`GrpcProducer`] implements [`crate::transport::Publisher`].
+//! - [`GrpcProducer`] implements publishing, batch publishing, and request/reply.
 //! - [`GrpcStreamConsumer`] opens a bidirectional stream and dispatches
-//!   delivered messages to a [`crate::MessageListener`].
+//!   delivered messages to a [`crate::MessageHandler`].
 //! - [`GrpcWebhookConsumer`] is a lightweight RPC-only client for webhook
 //!   subscriptions.
 //!
-//! Wire format is CloudEvents-protobuf; [`EventMeshMessage`] is converted at
+//! Wire format is CloudEvents-protobuf; [`crate::EventMeshMessage`] is converted at
 //! the boundary by [`codec`].
 
 pub mod client;

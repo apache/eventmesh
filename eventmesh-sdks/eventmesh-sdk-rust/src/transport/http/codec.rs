@@ -36,37 +36,6 @@
 //!   ([`WebhookReply::ok()`] returns `retCode: 1`; the runtime also accepts
 //!   `retCode: 0`. A non-zero code other than 1 requests retry).
 //!
-//! ```ignore
-//! # use eventmesh::http::codec::{parse_push_body, WebhookReply};
-//! # use eventmesh::MessageListener;
-//! # use eventmesh::model::EventMeshMessage;
-//! # use axum::{extract::State, response::IntoResponse, Json};
-//! # use bytes::Bytes;
-//! # use std::sync::Arc;
-//! # struct MyListener;
-//! # impl MessageListener for MyListener {
-//! #     type Message = EventMeshMessage;
-//! #     async fn handle(&self, _: Self::Message) -> Option<Self::Message> { None }
-//! # }
-//! // Axum handler written by the user — no SDK handler type involved.
-//! async fn webhook(
-//!     State(listener): State<Arc<MyListener>>,
-//!     body: Bytes,
-//! ) -> impl IntoResponse {
-//!     let text = match std::str::from_utf8(&body) {
-//!         Ok(s) => s,
-//!         Err(_) => return Json(WebhookReply::retry("invalid UTF-8")),
-//!     };
-//!     match parse_push_body(text).and_then(|p| p.to_event_mesh_message()) {
-//!         Ok(msg) => {
-//!             listener.handle(msg).await;
-//!             Json(WebhookReply::ok())
-//!         }
-//!         Err(_) => Json(WebhookReply::retry("decode error")),
-//!     }
-//! }
-//! ```
-//!
 //! See the `http_consumer_custom` example for a complete, runnable version.
 
 use std::collections::HashMap;
@@ -108,25 +77,12 @@ const PROTOCOL_VERSION: &str = "1.0";
 ///
 /// Because this SDK sends `application/x-www-form-urlencoded` bodies (matching
 /// the Java SDK), **all** operations — publish, subscribe, unsubscribe, and
-/// heartbeat — must use [`ROOT`] so the request falls through to code-header
+/// heartbeat — use a path such as [`uri::ROOT`] so the request falls through to code-header
 /// dispatch. Posting to a path-based handler with a form body breaks body
 /// decoding on the runtime side.
 pub mod uri {
     /// Root path — matches no path-based handler, forcing code-header routing.
     pub const ROOT: &str = "/";
-    /// Async single-message publish — path-based handler `SendAsyncEventProcessor`.
-    pub const PUBLISH: &str = "/eventmesh/publish";
-    /// Path-based subscribe handler on the runtime side (`LocalSubscribeEventProcessor`).
-    ///
-    /// **Do not use for form-based subscribe** — that handler expects a JSON
-    /// body and fails to deserialize a form-urlencoded `topic` field. Use
-    /// [`ROOT`] with the `SUBSCRIBE` code header instead.
-    pub const SUBSCRIBE: &str = "/eventmesh/subscribe/local";
-    /// Path-based unsubscribe handler on the runtime side (`LocalUnSubscribeEventProcessor`).
-    ///
-    /// **Do not use for form-based unsubscribe** — same issue as [`SUBSCRIBE`].
-    /// Use [`ROOT`] with the `UNSUBSCRIBE` code header instead.
-    pub const UNSUBSCRIBE: &str = "/eventmesh/unsubscribe/local";
     /// Heartbeat — no dedicated path handler; any non-matching path works.
     pub const HEARTBEAT: &str = "/eventmesh/heartbeat";
 }
@@ -143,12 +99,6 @@ pub struct EventMeshRetObj {
     pub ret_msg: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "resTime")]
     pub res_time: Option<i64>,
-}
-
-impl EventMeshRetObj {
-    pub fn is_success(&self) -> bool {
-        self.ret_code == 0
-    }
 }
 
 impl From<EventMeshRetObj> for PublishResponse {
@@ -428,6 +378,7 @@ pub fn parse_response(body: &str) -> Result<PublishResponse> {
 }
 
 /// Form-encode a list of `(key, value)` pairs into a URL-encoded body string.
+#[cfg(test)]
 pub fn form_encode(fields: &[(String, String)]) -> String {
     serde_urlencoded::to_string(fields).unwrap_or_default()
 }

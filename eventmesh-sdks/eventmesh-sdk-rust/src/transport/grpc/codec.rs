@@ -33,8 +33,7 @@ use crate::config::GrpcConfig;
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::proto_gen::{
-    attr_as_str, attr_int, attr_str, PbAttr, PbCloudEvent, PbCloudEventAttributeValue,
-    PbCloudEventBatch, PbData,
+    attr_as_str, attr_int, attr_str, PbAttr, PbCloudEvent, PbCloudEventAttributeValue, PbData,
 };
 use crate::subscription::Subscription;
 
@@ -193,19 +192,6 @@ pub fn from_event_mesh_message(
     };
 
     Ok(base_event(attrs, data))
-}
-
-/// Build a `CloudEventBatch` from many messages (one RPC, many events).
-pub fn from_event_mesh_messages(
-    messages: &[EventMeshMessage],
-    config: &GrpcConfig,
-    producer_group: &str,
-) -> Result<PbCloudEventBatch> {
-    let mut events = Vec::with_capacity(messages.len());
-    for m in messages {
-        events.push(from_event_mesh_message(m, config, producer_group)?);
-    }
-    Ok(PbCloudEventBatch { events })
 }
 
 /// Decode a delivered CloudEvent back into an [`EventMeshMessage`].
@@ -881,8 +867,6 @@ mod tests {
     #[cfg(feature = "cloud_events")]
     #[test]
     fn to_cloudevent_leaves_missing_data_absent() {
-        use cloudevents::AttributesReader;
-
         let pb = PbCloudEvent {
             id: "empty-id".into(),
             source: "/".into(),
@@ -897,8 +881,6 @@ mod tests {
     #[cfg(feature = "cloud_events")]
     #[test]
     fn to_cloudevent_preserves_complete_protobuf_any_as_binary() {
-        use cloudevents::AttributesReader;
-
         let any = PbAny {
             type_url: "type.googleapis.com/example.Payload".into(),
             value: vec![0xff, 0x00, 0x80, 0x01],

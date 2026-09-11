@@ -20,7 +20,7 @@
 //! Two consumer types are provided:
 //!
 //! - [`GrpcStreamConsumer<L>`] — opens a bidirectional gRPC stream and
-//!   dispatches delivered messages to a user-supplied [`MessageListener`].
+//!   dispatches delivered messages to a user-supplied [`MessageHandler`].
 //!   The stream, receive loop, and heartbeat all run as background tasks.
 //! - [`GrpcWebhookConsumer`] — a lightweight RPC-only client that registers
 //!   webhook URLs with the runtime (the runtime POSTs delivered messages to
@@ -50,12 +50,14 @@ use crate::common::protocol_key::ProtocolKey;
 use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
-use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
+#[cfg(test)]
+use crate::model::EventMeshMessage;
+use crate::model::{EventMeshProtocolType, PublishResponse};
 use crate::subscription::Subscription;
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::heartbeat::{self, StreamTx};
-use crate::MessageListener;
+use crate::MessageHandler;
 
 const DEFAULT_REPLY_PRODUCER_GROUP: &str = "DefaultProducerGroup";
 
@@ -71,76 +73,47 @@ pub(crate) struct SubscriptionEntry {
     pub(crate) url: String,
 }
 
-/// Message representation supported by the gRPC stream decoder.
-pub trait GrpcMessage: Send + 'static {
-    fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self>
-    where
-        Self: Sized;
+fn decode_message(event: &crate::proto_gen::PbCloudEvent) -> Result<Message> {
+    let protocol_type = event
+        .attributes
+        .get(ProtocolKey::PROTOCOL_TYPE)
+        .map(crate::proto_gen::attr_as_str)
+        .unwrap_or_default();
 
-    fn encode_grpc(
-        &self,
-        config: &GrpcConfig,
-        producer_group: &str,
-    ) -> Result<crate::proto_gen::PbCloudEvent>;
-}
-
-impl GrpcMessage for EventMeshMessage {
-    fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self> {
-        codec::to_event_mesh_message(event)
-    }
-
-    fn encode_grpc(
-        &self,
-        config: &GrpcConfig,
-        producer_group: &str,
-    ) -> Result<crate::proto_gen::PbCloudEvent> {
-        codec::from_event_mesh_message(self, config, producer_group)
-    }
-}
-
-impl GrpcMessage for Message {
-    fn decode_grpc(event: &crate::proto_gen::PbCloudEvent) -> Result<Self> {
-        let protocol_type = event
-            .attributes
-            .get(ProtocolKey::PROTOCOL_TYPE)
-            .map(crate::proto_gen::attr_as_str)
-            .unwrap_or_default();
-
-        match protocol_type.as_str() {
-            protocol if protocol == EventMeshProtocolType::CloudEvents.as_str() => {
-                #[cfg(feature = "cloud_events")]
-                return codec::to_cloudevent(event.clone()).map(Self::CloudEvent);
-
-                #[cfg(not(feature = "cloud_events"))]
-                return Err(EventMeshError::Unsupported(
-                    "received a CloudEvent without the 'cloud_events' feature enabled".into(),
-                ));
-            }
-            "" => {}
-            protocol if protocol == EventMeshProtocolType::EventMeshMessage.as_str() => {}
-            protocol => {
-                return Err(EventMeshError::Protocol {
-                    transport: "grpc",
-                    message: format!("unsupported protocoltype {protocol:?}"),
-                });
-            }
-        }
-
-        Ok(Self::EventMesh(codec::to_event_mesh_message(event)?))
-    }
-
-    fn encode_grpc(
-        &self,
-        config: &GrpcConfig,
-        producer_group: &str,
-    ) -> Result<crate::proto_gen::PbCloudEvent> {
-        match self {
-            Self::EventMesh(message) => {
-                codec::from_event_mesh_message(message, config, producer_group)
-            }
+    match protocol_type.as_str() {
+        protocol if protocol == EventMeshProtocolType::CloudEvents.as_str() => {
             #[cfg(feature = "cloud_events")]
-            Self::CloudEvent(event) => codec::from_cloudevent(event, config, producer_group),
+            return codec::to_cloudevent(event.clone()).map(Message::CloudEvent);
+
+            #[cfg(not(feature = "cloud_events"))]
+            return Err(EventMeshError::Unsupported(
+                "received a CloudEvent without the 'cloud_events' feature enabled".into(),
+            ));
         }
+        "" => {}
+        protocol if protocol == EventMeshProtocolType::EventMeshMessage.as_str() => {}
+        protocol => {
+            return Err(EventMeshError::Protocol {
+                transport: "grpc",
+                message: format!("unsupported protocoltype {protocol:?}"),
+            });
+        }
+    }
+
+    Ok(Message::EventMesh(codec::to_event_mesh_message(event)?))
+}
+
+fn encode_message(
+    message: &Message,
+    config: &GrpcConfig,
+    producer_group: &str,
+) -> Result<crate::proto_gen::PbCloudEvent> {
+    match message {
+        Message::EventMesh(message) => {
+            codec::from_event_mesh_message(message, config, producer_group)
+        }
+        #[cfg(feature = "cloud_events")]
+        Message::CloudEvent(event) => codec::from_cloudevent(event, config, producer_group),
     }
 }
 
@@ -151,7 +124,7 @@ impl GrpcMessage for Message {
 /// Spawn a watcher that cancels `token` when `signal` resolves.
 ///
 /// If `signal` is `None`, nothing is spawned — the token can only be
-/// cancelled by `shutdown()` / drop.
+/// cancelled by `request_shutdown()` / drop.
 fn spawn_signal_watcher(
     signal: Option<impl Future<Output = ()> + Send + 'static>,
     token: CancellationToken,
@@ -191,7 +164,7 @@ async fn await_task<T: Send + 'static>(
 /// Opens a bidirectional gRPC stream, dispatches delivered messages to the
 /// listener, and maintains a background heartbeat.  The stream, receive loop,
 /// and heartbeat all run as background tokio tasks that are stopped when the
-/// consumer is dropped or explicitly via [`shutdown`](Self::shutdown) /
+/// consumer is dropped or explicitly via [`request_shutdown`](Self::request_shutdown) /
 /// [`wait_for_shutdown`](Self::wait_for_shutdown).
 ///
 /// [`GrpcConsumerOptions::with_max_concurrent_handlers`] bounds the number of
@@ -230,10 +203,7 @@ async fn await_task<T: Send + 'static>(
 /// # Ok(())
 /// # }
 /// ```
-pub struct GrpcStreamConsumer<L: MessageListener>
-where
-    L::Message: GrpcMessage,
-{
+pub struct GrpcStreamConsumer<L: MessageHandler> {
     client: ChannelClient,
     config: GrpcConfig,
     options: GrpcConsumerOptions,
@@ -245,17 +215,14 @@ where
     driver_handle: Mutex<Option<JoinHandle<Result<()>>>>,
 }
 
-impl<L: MessageListener> GrpcStreamConsumer<L>
-where
-    L::Message: GrpcMessage,
-{
+impl<L: MessageHandler> GrpcStreamConsumer<L> {
     /// Open a bidirectional stream subscription and spawn the receive loop +
     /// heartbeat as background tasks.
     ///
     /// `items` are sent as the first message on the stream (the subscription
     /// request).  `shutdown_signal` is an optional future whose resolution
     /// triggers graceful shutdown of the stream and heartbeat.  When omitted,
-    /// shutdown can only be initiated by [`shutdown`](Self::shutdown) or drop.
+    /// shutdown can only be initiated by [`request_shutdown`](Self::request_shutdown) or drop.
     ///
     /// # Runtime requirement
     ///
@@ -417,26 +384,6 @@ where
         }
     }
 
-    /// Subscribe via webhook: the server POSTs delivered events to `url`.
-    ///
-    /// This is a unary gRPC RPC — it does not use the stream.  It can be
-    /// called on a stream consumer to mix stream and webhook subscriptions.
-    pub async fn subscribe_webhook(
-        &self,
-        items: Vec<Subscription>,
-        url: impl Into<String>,
-    ) -> Result<PublishResponse> {
-        subscribe_webhook_rpc(
-            &self.client,
-            &self.config,
-            self.options.consumer(),
-            &self.subscriptions,
-            items,
-            url,
-        )
-        .await
-    }
-
     /// Unsubscribe stream-mode topics (registered via `subscribe_stream` or
     /// `subscribe`).
     ///
@@ -454,41 +401,9 @@ where
         .await
     }
 
-    /// Unsubscribe webhook-mode topics (registered via `subscribe_webhook`).
-    ///
-    /// `url` must be the same webhook URL passed to `subscribe_webhook`.
-    /// The server matches webhook clients by URL — omitting or mismatching
-    /// it leaves a ghost subscription that continues to receive pushes.
-    pub async fn unsubscribe_webhook(
-        &self,
-        items: Vec<Subscription>,
-        url: impl Into<String>,
-    ) -> Result<PublishResponse> {
-        unsubscribe_webhook_rpc(
-            &self.client,
-            &self.config,
-            self.options.consumer(),
-            &self.subscriptions,
-            items,
-            url,
-        )
-        .await
-    }
-
-    /// Current consumer group.
-    pub fn consumer_group(&self) -> &str {
-        self.options.consumer().group()
-    }
-
     /// Signal the stream driver and heartbeat task to stop.
     pub fn request_shutdown(&self) {
         self.shutdown.cancel();
-    }
-
-    /// Signal shutdown and wait for all background work to finish.
-    pub async fn shutdown(&self) -> Result<()> {
-        self.request_shutdown();
-        self.wait_for_shutdown().await
     }
 
     /// Block until the shutdown signal fires or the stream / heartbeat tasks
@@ -526,10 +441,7 @@ where
     }
 }
 
-impl<L: MessageListener> Drop for GrpcStreamConsumer<L>
-where
-    L::Message: GrpcMessage,
-{
+impl<L: MessageHandler> Drop for GrpcStreamConsumer<L> {
     fn drop(&mut self) {
         self.shutdown.cancel();
         if let Ok(mut guard) = self.heartbeat_handle.try_lock() {
@@ -597,7 +509,7 @@ impl GrpcWebhookConsumer {
     ///
     /// `shutdown_signal` is an optional future whose resolution triggers
     /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
-    /// initiated by [`shutdown`](Self::shutdown) or drop.
+    /// initiated by [`request_shutdown`](Self::request_shutdown) or drop.
     pub async fn new(
         client: ChannelClient,
         config: GrpcConfig,
@@ -673,20 +585,9 @@ impl GrpcWebhookConsumer {
         .await
     }
 
-    /// Current consumer group.
-    pub fn consumer_group(&self) -> &str {
-        self.options.group()
-    }
-
     /// Signal the heartbeat task to stop.
     pub fn request_shutdown(&self) {
         self.shutdown.cancel();
-    }
-
-    /// Signal shutdown and wait for the heartbeat task to finish.
-    pub async fn shutdown(&self) -> Result<()> {
-        self.request_shutdown();
-        self.wait_for_shutdown().await
     }
 
     /// Block until the shutdown signal fires or the heartbeat task exits.
@@ -905,8 +806,7 @@ fn spawn_stream_driver<L>(
     shutdown: CancellationToken,
 ) -> JoinHandle<Result<()>>
 where
-    L: MessageListener,
-    L::Message: GrpcMessage,
+    L: MessageHandler,
 {
     tokio::spawn(async move {
         let semaphore = Arc::new(Semaphore::new(max_concurrent_handlers));
@@ -934,7 +834,7 @@ where
                             debug!("skipping control frame (no seqnum)");
                             continue;
                         }
-                        let message = match L::Message::decode_grpc(&cloud_event) {
+                        let message = match decode_message(&cloud_event) {
                             Ok(message) => message,
                             Err(error) => {
                                 terminal_error = Some(error);
@@ -1023,17 +923,14 @@ where
 /// The `_permit` is held for the lifetime of this future; dropping it (when
 /// the future completes or is cancelled) releases the concurrency slot back
 /// to the semaphore, allowing the receive loop to pull the next message.
-async fn handle_one<L: MessageListener>(
+async fn handle_one<L: MessageHandler>(
     cloud_event: crate::proto_gen::PbCloudEvent,
-    message: L::Message,
+    message: Message,
     listener: Arc<L>,
     reply_tx: Arc<tokio::sync::mpsc::Sender<crate::proto_gen::PbCloudEvent>>,
     config: GrpcConfig,
     _permit: tokio::sync::OwnedSemaphorePermit,
-) -> Result<()>
-where
-    L::Message: GrpcMessage,
-{
+) -> Result<()> {
     match listener.handle(message).await? {
         Some(reply) => {
             let reply_event = build_reply(&reply, &cloud_event, &config)?;
@@ -1054,12 +951,12 @@ where
 /// request's attributes are carried over into the reply so the broker can
 /// correlate the reply with the original request.  The reply's own attributes
 /// take precedence.
-pub(crate) fn build_reply<M: GrpcMessage>(
-    reply: &M,
+pub(crate) fn build_reply(
+    reply: &Message,
     request: &crate::proto_gen::PbCloudEvent,
     config: &GrpcConfig,
 ) -> Result<crate::proto_gen::PbCloudEvent> {
-    let mut event = reply.encode_grpc(config, DEFAULT_REPLY_PRODUCER_GROUP)?;
+    let mut event = encode_message(reply, config, DEFAULT_REPLY_PRODUCER_GROUP)?;
     for (key, value) in &request.attributes {
         event
             .attributes
@@ -1091,7 +988,7 @@ mod tests {
             crate::proto_gen::attr_str("openmessage"),
         );
 
-        let error = Message::decode_grpc(&wire).unwrap_err();
+        let error = decode_message(&wire).unwrap_err();
         assert!(matches!(
             error,
             EventMeshError::Protocol {
@@ -1138,15 +1035,14 @@ mod tests {
             .build()
             .expect("build event");
         let original = Message::CloudEvent(event);
-        let mut request = original
-            .encode_grpc(&config(), "producer")
-            .expect("encode CloudEvent request");
+        let mut request =
+            encode_message(&original, &config(), "producer").expect("encode CloudEvent request");
         request.attributes.insert(
             "correlation-id".into(),
             crate::proto_gen::attr_str("request-7"),
         );
 
-        let decoded = Message::decode_grpc(&request).expect("decode CloudEvent request");
+        let decoded = decode_message(&request).expect("decode CloudEvent request");
         assert!(matches!(decoded, Message::CloudEvent(_)));
         let reply = build_reply(&original, &request, &config()).expect("encode reply");
         assert_eq!(

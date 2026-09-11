@@ -112,11 +112,6 @@ pub enum Command {
 }
 
 impl Command {
-    /// Numeric wire value.
-    pub fn as_u8(self) -> u8 {
-        self as u8
-    }
-
     /// The wire name — the exact Java `Command` enum constant name in
     /// SCREAMING_SNAKE_CASE, which is how the Java runtime (Jackson default)
     /// serializes the `cmd` field on the wire.
