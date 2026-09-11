@@ -24,24 +24,56 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * Openfunction sink connector (new architecture stub). Implements {@link SinkConnector} directly.
- * TODO: implement put() with real openfunction client logic (reference: KafkaSinkConnector template).
+ * New-architecture OpenFunction sink connector: invokes the function's HTTP trigger (Knative
+ * serving style) with each CloudEvent. A non-2xx response throws so the runtime does not ACK.
  */
+@Slf4j
 public class OpenfunctionSinkConnector implements SinkConnector {
+
+    private String functionUrl;
+    private int timeoutMs;
 
     @Override
     public void init(Properties props) {
-        // TODO: init openfunction client
+        this.functionUrl = props.getProperty("connector.functionUrl", "http://localhost:8081/function");
+        this.timeoutMs = Integer.parseInt(props.getProperty("connector.timeoutMs", "30000"));
     }
 
     @Override
     public void put(List<CloudEvent> events) {
-        // TODO: write CloudEvents → openfunction
+        for (CloudEvent event : events) {
+            try {
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection)
+                    new java.net.URL(functionUrl).openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(timeoutMs);
+                conn.setReadTimeout(timeoutMs);
+                conn.setRequestProperty("Content-Type",
+                    event.getDataContentType() != null ? event.getDataContentType() : "application/octet-stream");
+                conn.setRequestProperty("Ce-Id", event.getId());
+                conn.setRequestProperty("Ce-Type", event.getType());
+                conn.setRequestProperty("Ce-Source", event.getSource().toString());
+                conn.getOutputStream().write(
+                    event.getData() != null ? event.getData().toBytes() : new byte[0]);
+                int code = conn.getResponseCode();
+                conn.disconnect();
+                if (code < 200 || code >= 300) {
+                    throw new RuntimeException("openfunction sink http " + code + " for event " + event.getId());
+                }
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Exception e) {
+                throw new RuntimeException("openfunction sink failed for event " + event.getId() + ": " + e.getMessage(), e);
+            }
+        }
     }
 
     @Override
     public void commit(List<CloudEvent> written) {
-        // TODO: checkpoint
+        // Stateless invoke: the 2xx response is the write ack.
     }
 }

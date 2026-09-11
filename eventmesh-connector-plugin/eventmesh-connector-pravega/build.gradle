@@ -19,6 +19,7 @@ dependencies {
     implementation project(":eventmesh-connector-api")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'org.slf4j:slf4j-api'
+    implementation 'io.pravega:pravega-client:0.11.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }

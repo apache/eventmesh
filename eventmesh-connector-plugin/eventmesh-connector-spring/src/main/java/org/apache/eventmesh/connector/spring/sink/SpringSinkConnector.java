@@ -26,27 +26,56 @@ import io.cloudevents.CloudEvent;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * New-architecture Spring sink connector: bridges EventMesh deliveries into a hosting Spring
+ * application context.
+ *
+ * <p>The host Spring application injects an {@link EventForwarder} (e.g. an
+ * ApplicationEventPublisher adapter bean) via {@link #setForwarder(EventForwarder)}. Until a
+ * forwarder is injected, {@code put} fails fast with {@link IllegalStateException} so the
+ * runtime does not ACK and EventMesh redelivers — events are never silently dropped.</p>
+ */
 @Slf4j
 public class SpringSinkConnector implements SinkConnector {
 
-    private Properties props;
+    /** Bridge the host Spring context injects; typically wraps ApplicationEventPublisher. */
+    public interface EventForwarder {
+
+        /** Publish one CloudEvent into the Spring context; may throw to signal failure. */
+        void forward(CloudEvent event);
+    }
+
+    private volatile EventForwarder forwarder;
+
+    /** Called by the host Spring application to wire the publisher bridge. */
+    public void setForwarder(EventForwarder forwarder) {
+        this.forwarder = forwarder;
+    }
 
     @Override
     public void init(Properties props) {
-        this.props = props;
-        log.info("Spring sink connector initialized (inject ApplicationEventPublisher in Spring context)");
+        log.info("spring sink initialized: waiting for EventForwarder injection from the Spring context");
     }
 
     @Override
     public void put(List<CloudEvent> events) {
-        // In Spring context: convert each CloudEvent to ApplicationEvent and publish
+        EventForwarder f = forwarder;
+        if (f == null) {
+            throw new IllegalStateException(
+                "spring sink: no EventForwarder injected — call setForwarder() from the Spring context");
+        }
         for (CloudEvent event : events) {
-            log.info("spring sink received event: {}", event.getId());
+            try {
+                f.forward(event);
+            } catch (Exception e) {
+                throw new RuntimeException("spring sink forward failed for event " + event.getId()
+                    + ": " + e.getMessage(), e);
+            }
         }
     }
 
     @Override
     public void commit(List<CloudEvent> written) {
-
+        // The forwarder's successful publish is the write ack.
     }
 }

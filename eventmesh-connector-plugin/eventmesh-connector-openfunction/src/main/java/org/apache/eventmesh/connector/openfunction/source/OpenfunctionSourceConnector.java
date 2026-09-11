@@ -19,31 +19,100 @@ package org.apache.eventmesh.connector.openfunction.source;
 
 import org.apache.eventmesh.connector.SourceConnector;
 
-import java.util.Collections;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Openfunction source connector (new architecture stub). Implements {@link SourceConnector} directly.
- * TODO: implement poll() with real openfunction client logic (reference: KafkaSourceConnector template).
+ * New-architecture OpenFunction source connector: receives function output pushes (the function
+ * runtime POSTs its result to the connector endpoint) and exposes them as CloudEvents.
  */
+@Slf4j
 public class OpenfunctionSourceConnector implements SourceConnector {
+
+    private int port;
+    private String path;
+
+    private HttpServer server;
+    private final LinkedBlockingQueue<CloudEvent> buffer = new LinkedBlockingQueue<>();
 
     @Override
     public void init(Properties props) {
-        // TODO: init openfunction client
+        this.port = Integer.parseInt(props.getProperty("connector.port", "8097"));
+        this.path = props.getProperty("connector.path", "/openfunction");
+    }
+
+    private synchronized void ensureStarted() {
+        if (server != null) {
+            return;
+        }
+        try {
+            server = HttpServer.create(new InetSocketAddress(port), 0);
+            server.createContext(path, this::handle);
+            server.start();
+            log.info("openfunction source listening on {}{}", port, path);
+        } catch (Exception e) {
+            throw new RuntimeException("openfunction source server start failed: " + e.getMessage(), e);
+        }
+    }
+
+    private void handle(HttpExchange exchange) {
+        try {
+            byte[] body = exchange.getRequestBody().readAllBytes();
+            String functionName = header(exchange, "X-Function-Name");
+            CloudEvent event = CloudEventBuilder.v1()
+                .withId("openfunction-" + System.nanoTime())
+                .withSource(URI.create("openfunction"))
+                .withType("openfunction.output")
+                .withSubject(functionName)
+                .withDataContentType(header(exchange, "Content-Type"))
+                .withData(body)
+                .build();
+            buffer.offer(event);
+            byte[] resp = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, resp.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(resp);
+            }
+        } catch (Exception e) {
+            log.warn("openfunction source request failed: {}", e.toString());
+            try {
+                exchange.sendResponseHeaders(500, -1);
+            } catch (Exception ignored) {
+                // client gone
+            }
+        }
+    }
+
+    private static String header(HttpExchange exchange, String name) {
+        String v = exchange.getRequestHeaders().getFirst(name);
+        return v != null ? v : "application/octet-stream";
     }
 
     @Override
     public List<CloudEvent> poll() {
-        // TODO: poll openfunction → CloudEvents
-        return Collections.emptyList();
+        ensureStarted();
+        List<CloudEvent> out = new ArrayList<>(buffer.size());
+        buffer.drainTo(out);
+        return out;
     }
 
     @Override
     public void commit(CloudEvent lastPublished) {
-        // TODO: checkpoint
+        // Push-style source: accepted function outputs are checkpoint-free.
     }
 }
