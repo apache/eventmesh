@@ -26,4 +26,6 @@ The examples intentionally use minimal configuration. For timeouts, identity, cr
 
 The two HTTP consumer examples handle Ctrl-C and call `close().await`, which unregisters their remote subscriptions before stopping local background work. Use the same shutdown pattern in long-running applications.
 
+The custom HTTP webhook uses `PushMessageRequestBody::to_message` with the request headers to detect the message dialect. To receive CloudEvents as well as native messages, run `cargo run --example http_consumer_custom --features http,cloud_events`.
+
 The gRPC webhook consumer has no automatic remote cleanup. Its example retains the subscription and URL, calls `unsubscribe().await` after Ctrl-C, and then stops and joins the local heartbeat task.

@@ -40,7 +40,7 @@
 //! 2. **Your own endpoint** — host any HTTP server (axum, actix, plain hyper,
 //!    …) and decode pushes with the framework-agnostic
 //!    [`codec`](crate::transport::http::codec) helpers
-//!    ([`codec::parse_push_body`], [`codec::PushMessageRequestBody`],
+//!    ([`codec::parse_push_body`], [`codec::PushMessageRequestBody::to_message`],
 //!    [`codec::WebhookReply`]). See the `http_consumer_custom` example.
 
 pub mod client;

@@ -161,12 +161,10 @@ impl ChannelClient {
     /// Open a bidirectional stream subscription. The first message on the
     /// request stream should be the subscription CloudEvent.
     ///
-    /// The stream-open future is wrapped in a timeout to surface a helpful
-    /// diagnostic when the caller is running on a **current-thread** tokio
-    /// runtime. On a current-thread runtime tonic's background connection
-    /// tasks cannot make progress while the caller awaits the server's
-    /// response headers, producing an indefinite hang; the timeout converts
-    /// that hang into a clear error message instead.
+    /// Wait at most 15 seconds for the server's response headers. This
+    /// establishment timeout does not limit the lifetime of an open stream.
+    /// Both current-thread and multi-thread Tokio runtimes can drive the
+    /// connection while this future is awaited.
     pub async fn subscribe_stream(
         &self,
         first: PbCloudEvent,
@@ -180,10 +178,8 @@ impl ChannelClient {
             .map_err(|e| EventMeshError::ChannelClosed(format!("stream open send: {e}")))?;
         let mut stream_client = ConsumerServiceClient::new(self.channel());
 
-        // The stream-open `.await` resolves once the server sends response
-        // headers. On a single-threaded runtime this never completes because
-        // tonic's internal connection driver task is starved. Wrap it in a
-        // timeout so the caller gets an actionable error instead of a hang.
+        // Bound the wait for response headers without setting a deadline on
+        // the long-lived subscription stream.
         const STREAM_OPEN_TIMEOUT: Duration = Duration::from_secs(15);
         let response = tokio::time::timeout(
             STREAM_OPEN_TIMEOUT,
@@ -194,12 +190,7 @@ impl ChannelClient {
             transport: "grpc",
             message: format!(
                 "subscribe_stream did not receive server headers within \
-                 {STREAM_OPEN_TIMEOUT:?}. This is almost always caused by a \
-                 current-thread tokio runtime (the default for \
-                 #[tokio::test]); tonic's background connection tasks \
-                 cannot progress. Fix: use #[tokio::test(flavor = \
-                 \"multi_thread\")] or \
-                 tokio::runtime::Builder::new_multi_thread()"
+                 {STREAM_OPEN_TIMEOUT:?}"
             ),
         })??;
         Ok((tx, response.into_inner()))

@@ -147,8 +147,9 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
     ///
     /// At least one initial subscription is required. Additional subscriptions
     /// can be added after the stream opens with [`subscribe`](Self::subscribe).
-    /// This operation requires a multi-threaded Tokio runtime so tonic's
-    /// connection driver can progress while the stream is being opened.
+    /// Both current-thread and multi-thread Tokio runtimes are supported.
+    /// Keep the channel's owning runtime running to drive the stream and its
+    /// background tasks.
     pub async fn open(
         channel: GrpcChannel,
         options: GrpcConsumerOptions,

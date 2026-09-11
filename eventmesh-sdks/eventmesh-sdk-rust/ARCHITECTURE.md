@@ -44,7 +44,7 @@ TCP CloudEvents use `protocoltype=cloudevents` and raw `application/cloudevents+
 
 ## HTTP lifecycle and routing
 
-The managed `HttpConsumer` binds its axum callback server before registration, then owns registration, heartbeat, and shutdown. Applications that host their own endpoint use `WebhookRegistration` and the public codec helpers `parse_push_body`, `PushMessageRequestBody::to_event_mesh_message`, and `WebhookReply`. `WebhookHandler` and `WebhookState` in `src/transport/http/webhook.rs` are internal implementation details.
+The managed `HttpConsumer` binds its axum callback server before registration, then owns registration, heartbeat, and shutdown. Applications that host their own endpoint use `WebhookRegistration` and the public codec helpers `parse_push_body`, `PushMessageRequestBody::to_message`, and `WebhookReply`. `to_message` resolves the dialect from the HTTP headers and `extFields`; the built-in handler calls the same decoder. `WebhookHandler` and `WebhookState` in `src/transport/http/webhook.rs` are internal implementation details.
 
 The consumer owns the spawned server and heartbeat before awaiting registration, so dropping the startup future runs the same local cleanup as dropping an active consumer.
 

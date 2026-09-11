@@ -77,7 +77,149 @@ fn endpoint_sets_require_members() {
 #[test]
 fn custom_webhook_codec_is_public() {
     let parsed: PushMessageRequestBody =
-        parse_push_body("content=hello&topic=orders").expect("decode webhook body");
-    assert_eq!(parsed.topic.as_deref(), Some("orders"));
+        parse_push_body("content=hello&topic=orders&bizseqno=seq-1&uniqueId=id-1")
+            .expect("decode webhook body");
+    for protocol in [None, Some("eventmeshmessage")] {
+        let mut headers = http::HeaderMap::new();
+        if let Some(protocol) = protocol {
+            headers.insert("protocoltype", protocol.parse().unwrap());
+        }
+        let message = parsed.to_message(&headers).unwrap();
+        let message = message.as_event_mesh().unwrap();
+        assert_eq!(message.topic(), "orders");
+        assert_eq!(message.content(), "hello");
+        assert_eq!(message.biz_seq_no(), Some("seq-1"));
+        assert_eq!(message.unique_id(), Some("id-1"));
+    }
     assert_eq!(WebhookReply::ok().ret_code, 1);
+}
+
+#[cfg(feature = "http")]
+mod webhook_messages {
+    use super::*;
+    use eventmesh::Error;
+    use http::{HeaderMap, HeaderValue};
+
+    fn push(content: &str, protocol: Option<&str>) -> PushMessageRequestBody {
+        let extfields = protocol
+            .map(|protocol| serde_json::json!({"protocoltype": protocol}).to_string())
+            .unwrap_or_default();
+        let body = serde_urlencoded::to_string([
+            ("topic", "orders"),
+            ("content", content),
+            ("extFields", &extfields),
+        ])
+        .unwrap();
+        parse_push_body(&body).unwrap()
+    }
+
+    #[test]
+    fn rejects_unknown_protocol_in_headers_or_extensions() {
+        let mut headers = HeaderMap::new();
+        headers.insert("protocoltype", "openmessage".parse().unwrap());
+        for (body, headers) in [
+            (push("created", None), headers),
+            (push("created", Some("openmessage")), HeaderMap::new()),
+        ] {
+            assert!(matches!(
+                body.to_message(&headers),
+                Err(Error::Protocol {
+                    transport: "http",
+                    ..
+                })
+            ));
+        }
+    }
+
+    #[test]
+    fn rejects_conflicting_protocol_sources() {
+        let mut headers = HeaderMap::new();
+        headers.insert("protocoltype", "eventmeshmessage".parse().unwrap());
+        assert!(matches!(
+            push("created", Some("cloudevents")).to_message(&headers),
+            Err(Error::Protocol {
+                transport: "http",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn rejects_malformed_protocol_metadata() {
+        let mut headers = HeaderMap::new();
+        headers.insert("protocoltype", HeaderValue::from_bytes(&[0xff]).unwrap());
+        assert!(matches!(
+            push("created", None).to_message(&headers),
+            Err(Error::Protocol {
+                transport: "http",
+                ..
+            })
+        ));
+
+        let mut body = push("created", None);
+        body.extfields = Some("invalid JSON".into());
+        assert!(matches!(
+            body.to_message(&HeaderMap::new()),
+            Err(Error::Protocol {
+                transport: "http",
+                ..
+            })
+        ));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn preserves_cloud_events_from_either_or_both_protocol_sources() {
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        let event = EventBuilderV10::new()
+            .id("event-1")
+            .source("urn:test")
+            .ty("orders.created")
+            .subject("orders")
+            .data(
+                "application/json",
+                serde_json::json!({"text": "订单 + & ="}),
+            )
+            .extension("custom", "value")
+            .build()
+            .unwrap();
+        let content = serde_json::to_string(&event).unwrap();
+        for (header, extension) in [(true, false), (false, true), (true, true)] {
+            let mut headers = HeaderMap::new();
+            if header {
+                headers.insert("protocoltype", "cloudevents".parse().unwrap());
+            }
+            let body = push(&content, extension.then_some("cloudevents"));
+            assert_eq!(
+                body.to_message(&headers).unwrap(),
+                Message::CloudEvent(event.clone())
+            );
+        }
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn rejects_malformed_cloud_event_payload() {
+        assert!(matches!(
+            push("invalid JSON", Some("cloudevents")).to_message(&HeaderMap::new()),
+            Err(Error::Codec(_))
+        ));
+    }
+
+    #[cfg(not(feature = "cloud_events"))]
+    #[test]
+    fn rejects_cloud_events_when_feature_is_disabled() {
+        let mut headers = HeaderMap::new();
+        headers.insert("protocoltype", "cloudevents".parse().unwrap());
+        for (body, headers) in [
+            (push("{}", None), headers),
+            (push("{}", Some("cloudevents")), HeaderMap::new()),
+        ] {
+            assert!(matches!(
+                body.to_message(&headers),
+                Err(Error::Unsupported(_))
+            ));
+        }
+    }
 }

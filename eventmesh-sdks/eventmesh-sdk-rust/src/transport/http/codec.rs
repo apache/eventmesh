@@ -30,8 +30,8 @@
 //!
 //! - [`parse_push_body`] — parse the form-urlencoded push body into a
 //!   [`PushMessageRequestBody`].
-//! - [`PushMessageRequestBody::to_event_mesh_message`] — decode it into an
-//!   [`EventMeshMessage`].
+//! - [`PushMessageRequestBody::to_message`] — decode it with the request
+//!   headers into a [`Message`], preserving its EventMesh or CloudEvents dialect.
 //! - [`WebhookReply`] — the JSON acknowledgment the runtime expects
 //!   ([`WebhookReply::ok()`] returns `retCode: 1`; the runtime also accepts
 //!   `retCode: 0`. A non-zero code other than 1 requests retry).
@@ -40,6 +40,7 @@
 
 use std::collections::HashMap;
 
+use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
 use crate::common::status_code::RequestCode;
@@ -47,6 +48,7 @@ use crate::common::util::RandomStringUtils;
 use crate::common::{ProtocolKey, DEFAULT_MESSAGE_TTL};
 use crate::config::{Credentials, Identity};
 use crate::error::{EventMeshError, Result};
+use crate::message::Message;
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::subscription::Subscription;
 
@@ -165,7 +167,105 @@ pub struct PushMessageRequestBody {
 }
 
 impl PushMessageRequestBody {
+    /// Decode a webhook delivery into the public [`Message`] envelope.
+    ///
+    /// Uses the `protocoltype` HTTP header, falling back to `extFields` when
+    /// the header is absent. If neither declares a protocol, the delivery is
+    /// treated as a native EventMesh message. This is the same decoder used
+    /// by the built-in webhook server.
+    ///
+    /// CloudEvents are preserved when the `cloud_events` feature is enabled;
+    /// otherwise a CloudEvent delivery returns [`crate::Error::Unsupported`].
+    /// An invalid `protocoltype` header, malformed `extFields`, conflicting
+    /// protocol sources, and unknown protocols return [`crate::Error::Protocol`]. Invalid
+    /// CloudEvents JSON returns [`crate::Error::Codec`].
+    ///
+    /// ```
+    /// use eventmesh::http::codec::parse_push_body;
+    /// use http::HeaderMap;
+    ///
+    /// let headers = HeaderMap::new();
+    /// let push = parse_push_body("topic=orders&content=created")?;
+    /// let message = push.to_message(&headers)?;
+    /// assert_eq!(message.as_event_mesh().unwrap().content(), "created");
+    /// # Ok::<(), eventmesh::Error>(())
+    /// ```
+    pub fn to_message(&self, headers: &HeaderMap) -> Result<Message> {
+        let header_protocol_type = headers
+            .get("protocoltype")
+            .map(|value| {
+                value.to_str().map_err(|error| EventMeshError::Protocol {
+                    transport: "http",
+                    message: format!("invalid protocoltype header: {error}"),
+                })
+            })
+            .transpose()?;
+        let extension_protocol_type = self
+            .extfields
+            .as_deref()
+            .filter(|fields| !fields.trim().is_empty())
+            .map(|fields| {
+                serde_json::from_str::<HashMap<String, String>>(fields).map_err(|error| {
+                    EventMeshError::Protocol {
+                        transport: "http",
+                        message: format!("failed to parse extFields JSON: {error}"),
+                    }
+                })
+            })
+            .transpose()?
+            .and_then(|fields| fields.get("protocoltype").cloned());
+
+        if let (Some(header), Some(extension)) =
+            (header_protocol_type, extension_protocol_type.as_deref())
+        {
+            if header != extension {
+                return Err(EventMeshError::Protocol {
+                    transport: "http",
+                    message: format!(
+                        "conflicting protocoltype values: header={header:?}, \
+                         extFields={extension:?}"
+                    ),
+                });
+            }
+        }
+
+        // Runtime HTTP pushes created from an HttpCommand do not carry the
+        // original `protocoltype` as an HTTP header. They do retain all
+        // CloudEvent extensions in the form-level `extFields`, including
+        // `protocoltype`, so consult that field before applying the legacy
+        // native-message default.
+        let protocol_type = header_protocol_type
+            .or(extension_protocol_type.as_deref())
+            .unwrap_or(EventMeshProtocolType::EventMeshMessage.as_str());
+
+        if protocol_type == EventMeshProtocolType::CloudEvents.as_str() {
+            #[cfg(feature = "cloud_events")]
+            {
+                return serde_json::from_str(&self.content)
+                    .map(Message::CloudEvent)
+                    .map_err(EventMeshError::Codec);
+            }
+
+            #[cfg(not(feature = "cloud_events"))]
+            return Err(EventMeshError::Unsupported(
+                "received a CloudEvent without the 'cloud_events' feature enabled".into(),
+            ));
+        }
+
+        if protocol_type != EventMeshProtocolType::EventMeshMessage.as_str() {
+            return Err(EventMeshError::Protocol {
+                transport: "http",
+                message: format!("unsupported protocoltype {protocol_type:?}"),
+            });
+        }
+
+        Ok(Message::EventMesh(self.to_event_mesh_message()?))
+    }
+
     /// Decode the pushed body into an [`EventMeshMessage`].
+    ///
+    /// This explicitly selects the native dialect. Use [`Self::to_message`]
+    /// to detect the dialect from the request headers and body metadata.
     ///
     /// The `content` field is **always** treated as the business payload —
     /// the Runtime puts the original user payload there, not a serialized

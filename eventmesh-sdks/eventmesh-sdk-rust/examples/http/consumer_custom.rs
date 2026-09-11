@@ -17,7 +17,7 @@
 
 //! Host an EventMesh webhook in an application-owned axum router.
 
-use axum::{body::Bytes, response::IntoResponse, routing::post, Json, Router};
+use axum::{body::Bytes, http::HeaderMap, response::IntoResponse, routing::post, Json, Router};
 use eventmesh::{
     config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
     http::codec::{parse_push_body, WebhookReply},
@@ -25,12 +25,12 @@ use eventmesh::{
     HttpClient,
 };
 
-async fn webhook(body: Bytes) -> impl IntoResponse {
+async fn webhook(headers: HeaderMap, body: Bytes) -> impl IntoResponse {
     let body = match std::str::from_utf8(&body) {
         Ok(body) => body,
         Err(_) => return Json(WebhookReply::retry("invalid UTF-8")),
     };
-    match parse_push_body(body).and_then(|push| push.to_event_mesh_message()) {
+    match parse_push_body(body).and_then(|push| push.to_message(&headers)) {
         Ok(message) => {
             println!("received: {message:?}");
             Json(WebhookReply::ok())

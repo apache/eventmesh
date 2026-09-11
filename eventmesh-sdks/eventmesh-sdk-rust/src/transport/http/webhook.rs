@@ -36,86 +36,8 @@ use axum::Json;
 use bytes::Bytes;
 use tracing::{debug, error, warn};
 
-use crate::error::EventMeshError;
-use crate::message::Message;
-use crate::model::EventMeshProtocolType;
 use crate::transport::http::codec::{parse_push_body, WebhookReply};
 use crate::MessageHandler;
-
-fn decode_message(
-    body: &crate::transport::http::codec::PushMessageRequestBody,
-    headers: &HeaderMap,
-) -> crate::Result<Message> {
-    let header_protocol_type = headers
-        .get("protocoltype")
-        .map(|value| {
-            value.to_str().map_err(|error| EventMeshError::Protocol {
-                transport: "http",
-                message: format!("invalid protocoltype header: {error}"),
-            })
-        })
-        .transpose()?;
-    let extension_protocol_type = body
-        .extfields
-        .as_deref()
-        .filter(|fields| !fields.trim().is_empty())
-        .map(|fields| {
-            serde_json::from_str::<std::collections::HashMap<String, String>>(fields).map_err(
-                |error| EventMeshError::Protocol {
-                    transport: "http",
-                    message: format!("failed to parse extFields JSON: {error}"),
-                },
-            )
-        })
-        .transpose()?
-        .and_then(|fields| fields.get("protocoltype").cloned());
-
-    if let (Some(header), Some(extension)) =
-        (header_protocol_type, extension_protocol_type.as_deref())
-    {
-        if header != extension {
-            return Err(EventMeshError::Protocol {
-                transport: "http",
-                message: format!(
-                    "conflicting protocoltype values: header={header:?}, \
-                     extFields={extension:?}"
-                ),
-            });
-        }
-    }
-
-    // Runtime HTTP pushes created from an HttpCommand do not carry the
-    // original `protocoltype` as an HTTP header. They do retain all
-    // CloudEvent extensions in the form-level `extFields`, including
-    // `protocoltype`, so consult that field before applying the legacy
-    // native-message default.
-    let protocol_type = header_protocol_type
-        .or(extension_protocol_type.as_deref())
-        .unwrap_or(EventMeshProtocolType::EventMeshMessage.as_str());
-
-    if protocol_type == EventMeshProtocolType::CloudEvents.as_str() {
-        #[cfg(feature = "cloud_events")]
-        {
-            return serde_json::from_str(&body.content)
-                .map(Message::CloudEvent)
-                .map_err(crate::error::EventMeshError::Codec);
-        }
-
-        #[cfg(not(feature = "cloud_events"))]
-        return Err(EventMeshError::Unsupported(
-            "received a CloudEvent without the 'cloud_events' feature enabled".into(),
-        ));
-    }
-
-    if protocol_type != EventMeshProtocolType::EventMeshMessage.as_str() {
-        return Err(EventMeshError::Protocol {
-            transport: "http",
-            message: format!("unsupported protocoltype {protocol_type:?}"),
-        });
-    }
-
-    Ok(Message::EventMesh(body.to_event_mesh_message()?))
-}
 
 /// Shared state for the webhook handler, holding the message listener.
 pub(crate) struct WebhookState<L: MessageHandler> {
@@ -169,7 +91,7 @@ impl WebhookHandler {
             }
         };
 
-        let msg = match decode_message(&push_body, &headers) {
+        let msg = match push_body.to_message(&headers) {
             Ok(m) => m,
             Err(e) => {
                 error!("webhook message decode error: {e}");
@@ -202,105 +124,5 @@ impl WebhookHandler {
                 Json(WebhookReply::retry("handler failed")).into_response()
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn push(content: String) -> crate::transport::http::codec::PushMessageRequestBody {
-        crate::transport::http::codec::PushMessageRequestBody {
-            content,
-            bizseqno: Some("seq-1".into()),
-            unique_id: Some("id-1".into()),
-            random_no: None,
-            topic: Some("orders".into()),
-            extfields: None,
-        }
-    }
-
-    fn push_with_protocol(
-        content: String,
-        protocol_type: &str,
-    ) -> crate::transport::http::codec::PushMessageRequestBody {
-        let mut body = push(content);
-        body.extfields = Some(
-            serde_json::json!({
-                "protocoltype": protocol_type,
-                "protocoldesc": "http"
-            })
-            .to_string(),
-        );
-        body
-    }
-
-    #[test]
-    fn public_message_rejects_unknown_protocol() {
-        let mut headers = HeaderMap::new();
-        headers.insert("protocoltype", "openmessage".parse().unwrap());
-        let error = decode_message(&push("created".into()), &headers).unwrap_err();
-        assert!(matches!(
-            error,
-            EventMeshError::Protocol {
-                transport: "http",
-                ..
-            }
-        ));
-    }
-
-    #[cfg(feature = "cloud_events")]
-    #[test]
-    fn public_message_preserves_cloud_event_protocol() {
-        use cloudevents::{EventBuilder, EventBuilderV10};
-
-        let event = EventBuilderV10::new()
-            .id("event-1")
-            .source("urn:test")
-            .ty("orders.created")
-            .build()
-            .unwrap();
-        let mut headers = HeaderMap::new();
-        headers.insert("protocoltype", "cloudevents".parse().unwrap());
-        let decoded =
-            decode_message(&push(serde_json::to_string(&event).unwrap()), &headers).unwrap();
-        assert_eq!(decoded, Message::CloudEvent(event));
-    }
-
-    #[cfg(feature = "cloud_events")]
-    #[test]
-    fn public_message_recovers_cloud_event_protocol_from_extfields() {
-        use cloudevents::{EventBuilder, EventBuilderV10};
-
-        let event = EventBuilderV10::new()
-            .id("event-1")
-            .source("urn:test")
-            .ty("orders.created")
-            .build()
-            .unwrap();
-        let decoded = decode_message(
-            &push_with_protocol(serde_json::to_string(&event).unwrap(), "cloudevents"),
-            &HeaderMap::new(),
-        )
-        .unwrap();
-        assert_eq!(decoded, Message::CloudEvent(event));
-    }
-
-    #[test]
-    fn public_message_rejects_conflicting_protocol_sources() {
-        let mut headers = HeaderMap::new();
-        headers.insert("protocoltype", "eventmeshmessage".parse().unwrap());
-        let error = decode_message(
-            &push_with_protocol("created".into(), "cloudevents"),
-            &headers,
-        )
-        .unwrap_err();
-        assert!(matches!(
-            error,
-            EventMeshError::Protocol {
-                transport: "http",
-                ..
-            }
-        ));
     }
 }

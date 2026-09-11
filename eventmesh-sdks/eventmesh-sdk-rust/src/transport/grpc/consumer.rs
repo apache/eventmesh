@@ -224,18 +224,10 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
     /// triggers graceful shutdown of the stream and heartbeat.  When omitted,
     /// shutdown can only be initiated by [`request_shutdown`](Self::request_shutdown) or drop.
     ///
-    /// # Runtime requirement
-    ///
-    /// This method **requires a multi-threaded tokio runtime**. On a
-    /// current-thread runtime (the default for `#[tokio::test]`),
-    /// tonic's background connection tasks cannot progress and the call
-    /// will time out after 15 seconds with a diagnostic error. Use:
-    ///
-    /// ```text
-    /// #[tokio::test(flavor = "multi_thread")]
-    /// ```
-    ///
-    /// (`#[tokio::main]` is already multi-threaded by default.)
+    /// Both current-thread and multi-thread Tokio runtimes are supported.
+    /// The channel's owning runtime must keep running to drive the stream,
+    /// heartbeat, and handler tasks. Stream establishment waits at most
+    /// 15 seconds for the server's response headers.
     pub async fn subscribe_stream(
         client: ChannelClient,
         config: GrpcConfig,

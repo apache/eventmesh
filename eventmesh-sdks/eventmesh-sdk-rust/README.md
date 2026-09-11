@@ -76,7 +76,7 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 | HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | publish, weighted endpoint selection |
 | TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
-`HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
+`HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. Decode each delivery with `parse_push_body(body)?.to_message(&headers)?`, passing its `http::HeaderMap`; this uses the same dialect detection as the built-in server and preserves CloudEvents when `cloud_events` is enabled. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
 Cancelling `HttpClient::consumer` during startup stops its local callback server and heartbeat task. A subscription already accepted by the Runtime is not rolled back by cancellation.
 
@@ -88,7 +88,10 @@ Create each `GrpcChannel` inside the Tokio runtime that will drive it. Clone tha
 channel to share one multiplexed HTTP/2 connection among producers and consumers
 in the same runtime. If an application uses another Tokio runtime, call
 `GrpcChannel::connect` again from that runtime instead of carrying over an
-existing channel.
+existing channel. Both current-thread and multi-thread Tokio runtimes are supported;
+keep the owning runtime running to drive the channel and consumer tasks. Opening
+a subscription stream waits up to 15 seconds for response headers; this timeout
+does not limit the lifetime of an established stream.
 
 `GrpcWebhookConsumer` does not automatically unregister remote webhook subscriptions when `shutdown()` or `join()` is called. Retain the subscriptions and webhook URL, call `unsubscribe(...).await` explicitly, and only then call `shutdown()` and `join().await`. See the `grpc_webhook_consumer` example.
 
