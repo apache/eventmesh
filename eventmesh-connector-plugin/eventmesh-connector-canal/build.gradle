@@ -19,6 +19,10 @@ dependencies {
     implementation project(":eventmesh-connector-api")
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'org.slf4j:slf4j-api'
+    implementation 'com.alibaba.otter:canal.client:1.1.7'
+    implementation 'com.alibaba.otter:canal.protocol:1.1.7'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+    compileOnly 'com.mysql:mysql-connector-j:8.3.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
