@@ -65,6 +65,21 @@ onto `-D` system properties.
 curl http://localhost:8081/admin/health     # {"status":"UP"}
 ```
 
+## Kubernetes
+
+Plain manifests live in [`deploy/kubernetes/`](../../deploy/kubernetes/) —
+runtime **StatefulSet** (PVC-backed RocksDB offsets, `/admin/health` probes,
+non-root) + connector-runtime **Deployment**, kustomize-ready:
+
+```shell
+kubectl apply -k deploy/kubernetes
+```
+
+Edit `runtime-configmap.yaml` (storage endpoints) and `runtime-secret.yaml`
+(admin token) first. Scaling to `PARTITION_OWNED_PULL` requires the meta keys
+in `JAVA_OPTS` — see the manifests README. A Helm chart and a decision on the
+legacy operator path (#3327) are planned follow-ups.
+
 ## Single-instance vs multi-instance
 
 The delivery topology (`-Deventmesh.delivery.topology`, see
