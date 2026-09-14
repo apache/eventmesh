@@ -1,0 +1,37 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eventmesh-runtime-conf
+  namespace: eventmesh-system
+  labels:
+    app.kubernetes.io/name: eventmesh
+    app.kubernetes.io/component: runtime
+data:
+  # Loaded by EventMeshApplication from the classpath (conf/ is on -cp) and
+  # then OVERRIDDEN by -D system properties assembled by bin/start.sh. Keys
+  # here configure the storage plugin; JAVA_OPTS in the StatefulSet adds the
+  # -D flags (admin token, meta store, ws port, ...) from env/Secrets.
+  eventmesh.properties: |
+    # Storage plugin settings (kafka | rocketmq | rocketmq5; the storage type
+    # itself is selected by EVENTMESH_STORAGE_TYPE on the pod).
+    eventMesh.server.kafka.namesrvAddr=my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+    eventMesh.server.rocketmq.namesrvAddr=my-rocketmq-name-server.rocketmq.svc.cluster.local:9876

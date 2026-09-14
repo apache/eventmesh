@@ -1,0 +1,117 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eventmesh-runtime
+  namespace: eventmesh-system
+  labels:
+    app.kubernetes.io/name: eventmesh
+    app.kubernetes.io/component: runtime
+spec:
+  serviceName: eventmesh-runtime
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: eventmesh
+      app.kubernetes.io/component: runtime
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: eventmesh
+        app.kubernetes.io/component: runtime
+    spec:
+      # Image runs as uid/gid 10001 (eventmesh) with nologin; the runtime
+      # needs no privileged / host namespaces.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: runtime
+          image: apache/eventmesh:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: admin
+              containerPort: 8081
+          env:
+            - name: EVENTMESH_STORAGE_TYPE
+              value: kafka
+            - name: EVENTMESH_HTTP_PORT
+              value: "8080"
+            - name: EVENTMESH_ADMIN_PORT
+              value: "8081"
+            # Dependent env var: bin/start.sh passes JAVA_OPTS to java as
+            # extra -D flags, so the admin token reaches the JVM without
+            # landing in the pod spec or `kubectl describe` output.
+            - name: EVENTMESH_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: eventmesh-admin-token
+                  key: token
+            - name: JAVA_OPTS
+              value: "-Deventmesh.admin.token=$(EVENTMESH_ADMIN_TOKEN) -XX:MaxRAMPercentage=70"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 2Gi
+          readinessProbe:
+            httpGet:
+              path: /admin/health
+              port: admin
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /admin/health
+              port: admin
+            initialDelaySeconds: 40
+            periodSeconds: 20
+            failureThreshold: 5
+          volumeMounts:
+            # conf/ is on the JVM classpath, so mounting the WHOLE dir from a
+            # ConfigMap would hide log4j2.xml. subPath mounts only the single
+            # file into the existing directory.
+            - name: conf
+              mountPath: /data/app/eventmesh/conf/eventmesh.properties
+              subPath: eventmesh.properties
+            - name: data
+              mountPath: /data/app/eventmesh/data
+      volumes:
+        - name: conf
+          configMap:
+            name: eventmesh-runtime-conf
+  # Persistent claim per pod: the RocksDB offset store under data/ is what
+  # makes at-least-once delivery survive restarts. Without it, every pod
+  # reschedule silently resets delivery progress.
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
