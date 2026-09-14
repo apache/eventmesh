@@ -26,8 +26,10 @@
 //! See [`crate::tcp`] for the public client and consumer API.
 
 use std::future::Future;
+use std::panic::AssertUnwindSafe;
 use std::sync::Arc;
 
+use futures::FutureExt;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
@@ -605,8 +607,8 @@ where
 /// the Java SDK, where a parse exception propagates to `exceptionCaught` and
 /// closes the channel. A listener failure or a reply encoding / enqueue
 /// failure follows the same no-ACK path so the server can redeliver the
-/// request. A listener panic likewise propagates and kills the receive task;
-/// it is not silently swallowed.
+/// request. An unwinding listener panic is logged and leaves only that delivery
+/// without a reply or ACK; the receive loop continues with the next message.
 async fn handle_inbound<L>(pkg: &Package, conn: &TcpConnection, listener: &L) -> InboundResult
 where
     L: MessageHandler,
@@ -661,15 +663,31 @@ where
     };
 
     debug!("dispatching to listener");
-    // A listener panic propagates naturally and kills the receive task —
-    // mirroring Java where the exception escapes to exceptionCaught and
-    // closes the channel.  The message is NOT acknowledged.
     let request = (pkg.header.cmd == Command::RequestToClient).then(|| msg.clone());
-    let reply = match listener.handle(msg).await {
-        Ok(reply) => reply,
-        Err(error) => {
+    // Include both construction and polling of the handler future in the panic
+    // boundary. No SDK state is mutated inside it; application state remains
+    // the handler's responsibility when it is called again after a panic.
+    let handled = AssertUnwindSafe(async { listener.handle(msg).await })
+        .catch_unwind()
+        .await;
+    let reply = match handled {
+        Ok(Ok(reply)) => reply,
+        Ok(Err(error)) => {
             warn!(%error, "listener failed; disconnecting without ACK");
             return InboundResult::Stop;
+        }
+        Err(panic) => {
+            let reason = panic
+                .downcast_ref::<&str>()
+                .copied()
+                .or_else(|| panic.downcast_ref::<String>().map(String::as_str))
+                .unwrap_or("non-string panic payload");
+            warn!(
+                seq = ?pkg.header.seq,
+                reason,
+                "TCP handler panicked; continuing without replying or ACKing this delivery"
+            );
+            return InboundResult::Continue;
         }
     };
     if let Some(mut reply) = reply {
@@ -701,6 +719,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Duration;
 
     use super::*;
@@ -729,6 +748,106 @@ mod tests {
         async fn handle(&self, _: Message) -> Result<Option<Message>> {
             Err(EventMeshError::Tcp("listener failure".into()))
         }
+    }
+
+    struct PanicsOnce {
+        calls: AtomicUsize,
+        panic_before_future: bool,
+    }
+
+    impl MessageHandler for PanicsOnce {
+        fn handle(&self, _: Message) -> impl Future<Output = Result<Option<Message>>> + Send {
+            let call = self.calls.fetch_add(1, Ordering::SeqCst);
+            if call == 0 && self.panic_before_future {
+                panic!("handler panicked before returning its future");
+            }
+            async move {
+                tokio::task::yield_now().await;
+                if call == 0 {
+                    std::panic::panic_any(String::from("handler panicked after yielding"));
+                }
+                Ok(None)
+            }
+        }
+    }
+
+    async fn assert_handler_panic_isolated(panic_before_future: bool) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            for (request, response) in [
+                (Command::HelloRequest, Command::HelloResponse),
+                (Command::ListenRequest, Command::ListenResponse),
+            ] {
+                let package = framed.next().await.unwrap().unwrap();
+                assert_eq!(package.header.cmd, request);
+                framed
+                    .send(Package::new(Header::new(
+                        response,
+                        package.header.seq.unwrap(),
+                    )))
+                    .await
+                    .unwrap();
+            }
+
+            for (seq, command) in [
+                ("first", Command::RequestToClient),
+                ("second", Command::AsyncMessageToClient),
+            ] {
+                let mut package = message::build_message_package(
+                    &EventMeshMessage::new("topic", seq).unwrap(),
+                    command,
+                )
+                .unwrap();
+                package.header.seq = Some(seq.into());
+                framed.send(package).await.unwrap();
+            }
+
+            // No reply, ACK, or disconnect may precede the second delivery's ACK.
+            let ack = tokio::time::timeout(Duration::from_secs(3), framed.next())
+                .await
+                .expect("the next delivery must be handled after a panic")
+                .expect("the same connection must remain open")
+                .unwrap();
+            assert_eq!(ack.header.cmd, Command::AsyncMessageToClientAck);
+            assert_eq!(ack.header.seq.as_deref(), Some("second"));
+            framed
+        });
+
+        let consumer = TcpConsumer::connect(
+            TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+                .with_reconnect(ReconnectPolicy::default().with_enabled(false))
+                .with_control_timeout(Duration::from_secs(3))
+                .with_heartbeat_interval(Duration::from_secs(60)),
+            &ConsumerOptions::new("g"),
+            PanicsOnce {
+                calls: AtomicUsize::new(0),
+                panic_before_future,
+            },
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .unwrap();
+
+        let _server_connection = server.await.unwrap();
+        assert!(consumer.conn.is_active());
+        consumer.request_shutdown();
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+            .await
+            .expect("consumer must still shut down cleanly");
+        assert!(matches!(reason, ShutdownReason::Cancelled));
+    }
+
+    #[tokio::test]
+    async fn handler_panic_before_future_does_not_stop_next_delivery() {
+        assert_handler_panic_isolated(true).await;
+    }
+
+    #[tokio::test]
+    async fn handler_panic_during_poll_does_not_stop_next_delivery() {
+        assert_handler_panic_isolated(false).await;
     }
 
     /// A reply that fails the TCP CloudEvents compatibility check must not ACK

@@ -94,6 +94,11 @@ pub struct TcpProducer {
 }
 
 /// A long-lived TCP consumer.
+///
+/// Unwinding handler panics are logged per delivery. That delivery receives no
+/// reply or ACK, and the same consumer continues processing later messages.
+/// Redelivery depends on the runtime's retry policy. This does not recover
+/// handler-owned state or catch panics compiled with `panic = "abort"`.
 pub struct TcpConsumer<H: MessageHandler> {
     inner: TransportConsumer<H>,
 }

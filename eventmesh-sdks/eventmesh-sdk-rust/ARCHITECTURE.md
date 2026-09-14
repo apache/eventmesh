@@ -54,6 +54,8 @@ All SDK HTTP operations use code-header routing at `/`. The bodies are `applicat
 
 ## TCP connection lifecycle
 
+The consumer invokes each handler inside an asynchronous `catch_unwind` boundary covering both future construction and polling. An unwinding handler panic is logged with the delivery sequence, skips reply/ACK for that delivery, and keeps the receive loop running. The boundary does not restore application state. Explicit handler errors and reply encoding/enqueue failures still close the connection without ACK.
+
 In `src/transport/tcp/connection.rs`, `establish()` performs the socket and HELLO handshake. `run()` wraps `io_loop()` in the reconnect loop. With reconnect enabled, I/O failures trigger exponential backoff and re-establishment. `take_reconnect_rx()` notifies consumers after successful reconnects so they can replay subscriptions.
 
 Broadcasts use a driver completion channel to await `Framed::send`, including its socket flush, without waiting for a server ACK. Queue reservation and completion share one control-timeout deadline. A cancelled broadcast still waiting in the outbound queue is skipped; a write already in progress may have reached the server.
