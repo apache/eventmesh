@@ -105,6 +105,9 @@ fn inherit_request_metadata(reply_message: &mut Message, request: &Message) {
     let (mut reply, request) = match (reply_message.clone(), request.clone()) {
         (Message::EventMesh(reply), Message::EventMesh(request)) => (reply, request),
     };
+    if reply.ttl.is_none() {
+        reply.ttl = request.ttl;
+    }
     for (key, value) in &request.props {
         reply
             .props
@@ -951,6 +954,7 @@ mod tests {
         let request = EventMeshMessage::builder()
             .topic("request-topic")
             .content("request")
+            .ttl_millis(4000)
             .prop("cluster", "remote-cluster")
             .prop("correlation-id", "request-id")
             .build()
@@ -967,6 +971,8 @@ mod tests {
         let pkg = encode_reply(&reply).expect("encode reply");
         let encoded = message::parse_message(&pkg.body).expect("decode reply");
 
+        assert_eq!(encoded.ttl_millis(), Some(4000));
+        assert_eq!(encoded.get_prop("ttl"), None);
         assert_eq!(encoded.get_prop("cluster"), Some("remote-cluster"));
         assert_eq!(encoded.get_prop("correlation-id"), Some("reply-id"));
     }

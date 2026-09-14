@@ -142,7 +142,10 @@ async fn request_reply_deadline_times_out() {
 /// The server-side reply wait is bounded by the message TTL (the SDK defaults
 /// it to 4s), so the late replies in the deadline test need a longer one.
 fn request_message(topic: &str) -> EventMeshMessage {
-    EventMeshMessage::new(topic, "ping")
+    EventMeshMessage::builder()
+        .topic(topic)
+        .content("ping")
+        .ttl_millis(15_000)
+        .build()
         .expect("build request message")
-        .with_property("ttl", "15000")
 }

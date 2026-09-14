@@ -63,9 +63,18 @@ struct TcpWireMessage {
 
 impl From<&EventMeshMessage> for TcpWireMessage {
     fn from(msg: &EventMeshMessage) -> Self {
+        let mut properties: HashMap<_, _> = msg
+            .props
+            .iter()
+            .filter(|(key, _)| key.as_str() != "ttl")
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect();
+        if let Some(ttl) = msg.ttl {
+            properties.insert("ttl".into(), ttl.to_string());
+        }
         Self {
             topic: Some(msg.topic.clone()),
-            properties: msg.props.clone(),
+            properties,
             headers: HashMap::new(),
             body: Some(msg.content.clone()),
         }
@@ -84,7 +93,8 @@ impl TryFrom<TcpWireMessage> for EventMeshMessage {
         for (k, v) in wire.headers {
             props.entry(k).or_insert(v);
         }
-        EventMeshMessage::builder()
+        let ttl = crate::transport::take_wire_ttl(&mut props)?;
+        let mut builder = EventMeshMessage::builder()
             .topic(
                 wire.topic
                     .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?,
@@ -93,8 +103,11 @@ impl TryFrom<TcpWireMessage> for EventMeshMessage {
                 wire.body
                     .ok_or_else(|| EventMeshError::InvalidMessage("content is required".into()))?,
             )
-            .props(props)
-            .build()
+            .props(props);
+        if let Some(ttl) = ttl {
+            builder = builder.ttl_millis(ttl);
+        }
+        builder.build()
     }
 }
 
@@ -356,7 +369,8 @@ pub fn parse_cloud_event(body: &PackageBody) -> Option<cloudevents::Event> {
 /// - `subject` → `topic`
 /// - `data` → `content` (string values are kept as-is; JSON values are
 ///   stringified; binary values are lossily converted to UTF-8)
-/// - CloudEvent extensions (e.g. `ttl`, `seqnum`, `uniqueid`) → `props`
+/// - `ttl` extension → the dedicated TTL field
+/// - Other CloudEvent extensions (e.g. `seqnum`, `uniqueid`) → `props`
 ///
 /// This mirrors the gRPC codec's `to_event_mesh_message`.
 #[cfg(feature = "cloud_events")]
@@ -376,17 +390,20 @@ pub fn cloud_event_to_message(event: &cloudevents::Event) -> Result<EventMeshMes
         props.insert(k.to_string(), v.to_string());
     }
 
-    EventMeshMessage::builder()
-        .topic(topic.ok_or_else(|| {
-            EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
-        })?)
-        .content(
-            content.ok_or_else(|| {
+    let ttl = crate::transport::take_wire_ttl(&mut props)?;
+    let mut builder =
+        EventMeshMessage::builder()
+            .topic(topic.ok_or_else(|| {
+                EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
+            })?)
+            .content(content.ok_or_else(|| {
                 EventMeshError::InvalidMessage("CloudEvent data is required".into())
-            })?,
-        )
-        .props(props)
-        .build()
+            })?)
+            .props(props);
+    if let Some(ttl) = ttl {
+        builder = builder.ttl_millis(ttl);
+    }
+    builder.build()
 }
 
 /// Convert an [`EventMeshMessage`] back into a native [`cloudevents::Event`].
@@ -411,7 +428,12 @@ pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Eve
     builder = builder.subject(&msg.topic);
     builder = builder.data("text/plain", msg.content.clone());
     for (k, v) in &msg.props {
-        builder = builder.extension(k.as_str(), v.as_str());
+        if k != "ttl" {
+            builder = builder.extension(k.as_str(), v.as_str());
+        }
+    }
+    if let Some(ttl) = msg.ttl {
+        builder = builder.extension("ttl", ttl.to_string());
     }
     builder
         .build()
@@ -486,7 +508,7 @@ mod tests {
         let msg = EventMeshMessage::builder()
             .topic("test-topic")
             .content("hello-body")
-            .prop("ttl", "4000")
+            .ttl_millis(4000)
             .build()
             .unwrap();
         let pkg = build_message_package(&msg, Command::AsyncMessageToServer).expect("build pkg");
@@ -527,7 +549,8 @@ mod tests {
         let server_json = r#"{"topic":"t","properties":{"ttl":"2147483648"},"body":""}"#;
         let message = parse_message(&PackageBody::Text(server_json.into())).expect("parse");
         assert_eq!(message.content(), "");
-        assert_eq!(message.get_prop("ttl"), Some("2147483648"));
+        assert_eq!(message.get_prop("ttl"), None);
+        assert_eq!(message.ttl_millis(), Some(2_147_483_648));
     }
 
     #[test]
@@ -695,6 +718,9 @@ mod tests {
         let msg = cloud_event_to_message(&event).unwrap();
         assert_eq!(msg.topic(), "conv-topic");
         assert_eq!(msg.content(), "conv-content");
-        assert_eq!(msg.get_prop("ttl"), Some("5000"));
+        assert_eq!(msg.get_prop("ttl"), None);
+        assert_eq!(msg.ttl_millis(), Some(5000));
+        let roundtrip = message_to_cloud_event(&msg).unwrap();
+        assert_eq!(roundtrip.extension("ttl").unwrap().to_string(), "5000");
     }
 }

@@ -99,7 +99,7 @@ HTTP request/reply is not exposed because the current SDK and stock Runtime do n
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
-`EventMeshMessage` is likewise a business model rather than a stable serde JSON contract. gRPC, HTTP, and TCP convert it into private transport-specific wire DTOs. A topic must be non-blank and content must be present, but empty content is accepted for Java SDK interoperability. Inbound TTL metadata is preserved as received; each transport applies its own outbound content and TTL limits when publishing.
+`EventMeshMessage` is likewise a business model rather than a stable serde JSON contract. gRPC, HTTP, and TCP convert it into private transport-specific wire DTOs. A topic must be non-blank and content must be present, but empty content is accepted for Java SDK interoperability. Native-message TTL is stored only in the dedicated `ttl` field: set it with `EventMeshMessageBuilder::ttl_millis` and read it with `EventMeshMessage::ttl_millis`. Native encoders ignore any `ttl` entry supplied through generic properties. Decoders extract wire TTL into the dedicated field and omit it from message properties; malformed or out-of-i64-range values are rejected, while numeric values are preserved until outbound validation. Each transport applies its own outbound content and TTL limits when publishing. CloudEvents continue to use their native TTL extension.
 
 ## Configuration and errors
 

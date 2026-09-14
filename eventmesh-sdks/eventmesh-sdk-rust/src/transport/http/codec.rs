@@ -45,7 +45,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::status_code::RequestCode;
 use crate::common::util::RandomStringUtils;
-use crate::common::{ProtocolKey, DEFAULT_MESSAGE_TTL};
+#[cfg(test)]
+use crate::common::ProtocolKey;
+use crate::common::DEFAULT_MESSAGE_TTL;
 use crate::config::{Credentials, Identity};
 use crate::error::{EventMeshError, Result};
 use crate::message::Message;
@@ -270,7 +272,9 @@ impl PushMessageRequestBody {
     /// The `content` field is **always** treated as the business payload —
     /// the Runtime puts the original user payload there, not a serialized
     /// `EventMeshMessage`.  Message metadata (`topic`, `bizseqno`,
-    /// `uniqueId`, `extFields`) is taken from the form-level fields.
+    /// `uniqueId`, `extFields`) is taken from the form-level fields. Wire TTL
+    /// is extracted into the dedicated TTL field and excluded from properties;
+    /// a present value that cannot be parsed as i64 is rejected.
     pub fn to_event_mesh_message(&self) -> Result<EventMeshMessage> {
         let topic = self
             .topic
@@ -287,10 +291,14 @@ impl PushMessageRequestBody {
             }
         }
 
+        let ttl = crate::transport::take_wire_ttl(&mut props)?;
         let mut builder = EventMeshMessage::builder()
             .topic(topic)
             .content(self.content.clone())
             .props(props);
+        if let Some(ttl) = ttl {
+            builder = builder.ttl_millis(ttl);
+        }
         if let Some(value) = &self.bizseqno {
             builder = builder.biz_seq_no(value.clone());
         }
@@ -355,8 +363,8 @@ pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(Stri
     // `SendSyncMessageProcessor` rejects a blank TTL with
     // `EVENTMESH_PROTOCOL_BODY_ERR` before any defaulting (unlike the async
     // processor, which patches in a default after validation), so request-reply
-    // calls would fail whenever `EventMeshMessage::ttl` / the `ttl` prop is
-    // unset. This mirrors the gRPC codec (and the Java gRPC SDK's
+    // calls would fail whenever `EventMeshMessage::ttl` is unset. This mirrors
+    // the gRPC codec (and the Java gRPC SDK's
     // `EventMeshCloudEventBuilder`, which falls back to
     // `Constants.DEFAULT_EVENTMESH_MESSAGE_TTL`).
     //
@@ -369,7 +377,6 @@ pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(Stri
     let ttl = msg
         .ttl
         .map(|t| t.to_string())
-        .or_else(|| msg.get_prop(ProtocolKey::TTL).map(str::to_string))
         .unwrap_or_else(|| DEFAULT_MESSAGE_TTL.to_string());
     fields.push(("ttl".into(), ttl));
     // The runtime's code-header publish processors (MSG_SEND_ASYNC /
@@ -695,9 +702,8 @@ mod tests {
     }
 
     #[test]
-    fn encode_publish_keeps_ttl_from_prop_when_field_unset() {
-        // A `ttl` prop should be honored when the typed `ttl` field is None,
-        // matching the gRPC codec's fallback chain.
+    fn encode_publish_ignores_ttl_prop_when_field_unset() {
+        // Generic properties never configure native-message TTL.
         let msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
@@ -706,7 +712,7 @@ mod tests {
             .unwrap();
         let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
-        assert_eq!(map.get("ttl"), Some(&"99000".to_string()));
+        assert_eq!(map.get("ttl"), Some(&DEFAULT_MESSAGE_TTL.to_string()));
     }
 
     #[test]
@@ -814,14 +820,16 @@ mod tests {
             ("topic".to_string(), "test-topic".to_string()),
             (
                 "extFields".to_string(),
-                r#"{"ttl":"java-specific"}"#.to_string(),
+                r#"{"ttl":"2147483648","custom":"value"}"#.to_string(),
             ),
         ]);
         let msg = parse_push_body(&body)
             .and_then(|body| body.to_event_mesh_message())
             .unwrap();
         assert_eq!(msg.content(), "");
-        assert_eq!(msg.get_prop(ProtocolKey::TTL), Some("java-specific"));
+        assert_eq!(msg.ttl_millis(), Some(2_147_483_648));
+        assert_eq!(msg.get_prop(ProtocolKey::TTL), None);
+        assert_eq!(msg.get_prop("custom"), Some("value"));
     }
 
     #[test]

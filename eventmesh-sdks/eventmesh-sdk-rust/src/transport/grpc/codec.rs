@@ -131,7 +131,6 @@ pub fn from_event_mesh_message(
     let ttl = message
         .ttl
         .map(|t| t.to_string())
-        .or_else(|| message.get_prop(ProtocolKey::TTL).map(str::to_string))
         .unwrap_or_else(|| DEFAULT_MESSAGE_TTL.to_string());
     let seq_num = message
         .biz_seq_no
@@ -204,7 +203,7 @@ pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> Result<EventMeshMess
     let biz_seq_no = get_seq_num(cloud_event);
     let unique_id = get_unique_id(cloud_event);
     let content = get_text_data(cloud_event);
-    let ttl = get_ttl(cloud_event).parse::<i64>().ok();
+    let ttl = crate::transport::take_wire_ttl(&mut props)?;
 
     let mut builder = EventMeshMessage::builder()
         .topic(topic)
@@ -269,14 +268,6 @@ pub fn get_subject(cloud_event: &PbCloudEvent) -> String {
     cloud_event
         .attributes
         .get(ProtocolKey::SUBJECT)
-        .map(attr_as_str)
-        .unwrap_or_default()
-}
-
-pub fn get_ttl(cloud_event: &PbCloudEvent) -> String {
-    cloud_event
-        .attributes
-        .get(ProtocolKey::TTL)
         .map(attr_as_str)
         .unwrap_or_default()
 }
@@ -710,25 +701,25 @@ mod tests {
         let msg = EventMeshMessage::builder()
             .topic("test-topic")
             .content(" \t")
-            .prop(ProtocolKey::TTL, "2147483648")
+            .ttl_millis(2_147_483_648)
             .build()
             .unwrap();
         let wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
         let decoded = to_event_mesh_message(&wire).unwrap();
         assert_eq!(decoded.content(), " \t");
-        assert_eq!(decoded.get_prop(ProtocolKey::TTL), Some("2147483648"));
+        assert_eq!(decoded.get_prop(ProtocolKey::TTL), None);
         assert_eq!(decoded.ttl_millis(), Some(2_147_483_648));
 
         let msg = EventMeshMessage::builder()
             .topic("test-topic")
             .content("payload")
-            .prop(ProtocolKey::TTL, "java-specific")
+            .ttl_millis(4000)
             .build()
             .unwrap();
-        let wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
-        let decoded = to_event_mesh_message(&wire).unwrap();
-        assert_eq!(decoded.get_prop(ProtocolKey::TTL), Some("java-specific"));
-        assert_eq!(decoded.ttl_millis(), None);
+        let mut wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
+        wire.attributes
+            .insert(ProtocolKey::TTL.into(), attr_str("java-specific"));
+        assert!(to_event_mesh_message(&wire).is_err());
     }
 
     #[test]

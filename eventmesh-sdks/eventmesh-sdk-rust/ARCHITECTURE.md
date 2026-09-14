@@ -24,6 +24,8 @@ This document records implementation constraints and protocol boundaries. For pu
 | HTTP | `src/transport/http/codec.rs` | Form URL encoding, with JSON in `content` |
 | TCP | `src/transport/tcp/message.rs` | Length-prefixed binary frames with `EventMesh` magic |
 
+Native `EventMeshMessage` TTL has one source: its dedicated `ttl` field. HTTP form TTL, gRPC attributes, and TCP wire properties are codec representations of that field. Native decoders extract and remove TTL from wire attribute maps before constructing business properties. Native encoders ignore generic `props["ttl"]`; HTTP/gRPC retain their 4000 ms outbound default, and TCP leaves an unset TTL to the runtime. CloudEvents retain their native extensions, with explicit TTL mapping when TCP request/reply converts between message dialects.
+
 TCP CloudEvents use `protocoltype=cloudevents` and raw `application/cloudevents+json` bytes, matching the Java runtime codec path.
 
 ## Configuration

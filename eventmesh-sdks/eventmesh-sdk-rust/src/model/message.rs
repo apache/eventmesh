@@ -102,15 +102,19 @@ impl EventMeshMessage {
         self.create_time
     }
 
-    /// Return the optional time-to-live in milliseconds.
+    /// Return the optional EventMesh TTL in milliseconds.
+    ///
+    /// TTL is stored only in this dedicated field. It is not read from the
+    /// extension properties. Runtime timeout semantics depend on the transport.
     pub fn ttl_millis(&self) -> Option<i64> {
         self.ttl
     }
 
     /// Insert or overwrite an extension property.
     ///
-    /// Transport-specific values such as `ttl` are validated when the message
-    /// is sent, while received values are preserved verbatim.
+    /// The reserved `ttl` property does not configure message TTL and is
+    /// ignored by native-message encoders. Use
+    /// [`EventMeshMessageBuilder::ttl_millis`] to configure TTL.
     pub fn set_prop(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
         self.props.insert(key.into(), value.into());
         self
@@ -134,13 +138,6 @@ impl EventMeshMessage {
         }
 
         if let Some(ttl) = self.ttl {
-            validate_ttl(ttl)?;
-        } else if let Some(ttl) = self.get_prop(crate::common::ProtocolKey::TTL) {
-            let ttl = ttl.parse::<i64>().map_err(|_| {
-                EventMeshError::InvalidMessage(
-                    "ttl property must be a positive integer number of milliseconds".into(),
-                )
-            })?;
             validate_ttl(ttl)?;
         }
         Ok(())
@@ -207,9 +204,10 @@ impl EventMeshMessageBuilder {
         self.content = Some(v.into());
         self
     }
-    /// Set the optional time-to-live in milliseconds.
+    /// Set the optional EventMesh TTL in milliseconds in its dedicated field.
     ///
-    /// Its transport-specific range is validated when the message is sent.
+    /// This does not modify extension properties. Its transport-specific range
+    /// is validated when the message is sent.
     pub fn ttl_millis(mut self, v: i64) -> Self {
         self.ttl = Some(v);
         self
@@ -312,11 +310,12 @@ mod tests {
             message.get_prop(crate::common::ProtocolKey::TTL),
             Some("not-a-number")
         );
-        assert!(message.validate_for_publish().is_err());
+        assert_eq!(message.ttl_millis(), None);
+        assert!(message.validate_for_publish().is_ok());
     }
 
     #[test]
-    fn publish_validation_accepts_positive_typed_or_property_ttl() {
+    fn publish_validation_uses_only_typed_ttl() {
         EventMeshMessage::builder()
             .topic("topic")
             .content("content")
@@ -329,5 +328,14 @@ mod tests {
             .with_property(crate::common::ProtocolKey::TTL, "4000")
             .validate_for_publish()
             .unwrap();
+
+        let invalid = EventMeshMessage::builder()
+            .topic("topic")
+            .content("content")
+            .ttl_millis(-1)
+            .prop("ttl", "4000")
+            .build()
+            .unwrap();
+        assert!(invalid.validate_for_publish().is_err());
     }
 }
