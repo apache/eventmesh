@@ -19,6 +19,10 @@ name: Docker
 on:
   release:
     types: [released]
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
 
 jobs:
   docker:
@@ -48,6 +52,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ matrix.image }}
+          # develop push / manual dispatch -> moving snapshot tag (version is
+          # 2.0.0-SNAPSHOT on develop); release -> latest + vX.Y.Z as before.
+          tags: |
+            type=raw,value=2.0.0-snapshot,enable=${{ github.event_name != 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
