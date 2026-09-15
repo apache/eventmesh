@@ -35,15 +35,15 @@ actually implement them.
 
 ## Capability matrix
 
-| Capability              | Universal?  | Kafka | RocketMQ 4.x | RocketMQ 5.x | Why                                                                   |
-|-------------------------|-------------|-------|--------------|--------------|-----------------------------------------------------------------------|
-| TopicManagement         | yes (U)     |   Y   |       Y      |       Y      | All 3 MQs expose `createTopic` (Kafka Admin / RocketMQ Admin).        |
-| PartitionAssignment     | yes (U)     |   Y   |       Y      |       Y      | All 3 MQs treat the topic as a partitionable stream.                  |
-| ExplicitOffsetCommit    | yes (U)     |   Y   |       Y      |       Y      | All 3 MQs persist an explicit commitOffset on demand.                |
-| EndOffsetQuery          | no (Kafka)  |   Y   |       N      |       N      | Only Kafka exposes a high-watermark via `endOffsets`.                 |
-| AlignPullOffset         | mixed       |   Y   |       Y      |       N      | Kafka + RocketMQ 4.x manage a client-side pull cursor; R5 POP is broker-managed. |
-| DeferredPopAck          | R5 only     |   N   |       N      |       Y      | R5 POP holds messages invisible until client ACK.                     |
-| LiteTopic               | R5 only     |   N   |       N      |       Y      | R5 RIP-83 lite sub-topics; not in Kafka or R4.                        |
+| Capability              | Universal?  | Kafka | RocketMQ 4.x | RocketMQ 5.x | Memory | Why                                                                   |
+|-------------------------|-------------|-------|--------------|--------------|-------|-----------------------------------------------------------------------|
+| TopicManagement         | yes (U)     |   Y   |       Y      |       Y      |   Y   | All 3 MQs expose `createTopic` (Kafka Admin / RocketMQ Admin).        |
+| PartitionAssignment     | yes (U)     |   Y   |       Y      |       Y      |   Y   | All 3 MQs treat the topic as a partitionable stream.                  |
+| ExplicitOffsetCommit    | yes (U)     |   Y   |       Y      |       Y      |   Y   | All 3 MQs persist an explicit commitOffset on demand.                |
+| EndOffsetQuery          | no (Kafka)  |   Y   |       N      |       N      |   Y   | Only Kafka exposes a high-watermark via `endOffsets`.                 |
+| AlignPullOffset         | mixed       |   Y   |       Y      |       N      |   Y   | Kafka + RocketMQ 4.x manage a client-side pull cursor; R5 POP is broker-managed. |
+| DeferredPopAck          | R5 only     |   N   |       N      |       Y      |   Y   | R5 POP holds messages invisible until client ACK.                     |
+| LiteTopic               | R5 only     |   N   |       N      |       Y      |   Y   | R5 RIP-83 lite sub-topics; not in Kafka or R4.                        |
 
 U = Universal (every backend MUST implement).
 

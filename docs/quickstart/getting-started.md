@@ -18,7 +18,8 @@ subscriber, using the recommended **HTTP + CloudEvents** path. Configuration ref
 ## 1. Prerequisites
 
 - JDK 21+ (Temurin recommended)
-- Docker (for the container path), or a local install of one storage backend:
+- Docker (for the container path - the default `memory` backend needs no broker), or a
+  local install of one storage backend for production-like runs:
   - [Apache RocketMQ](https://rocketmq.apache.org) 4.x or 5.x, **or**
   - [Apache Kafka](https://kafka.apache.org) 2.8+ (3.x recommended)
 - (SDK only) Java 11+ application with `eventmesh-sdk-java` on the classpath
@@ -31,6 +32,7 @@ changes.
 
 | Backend | Type value | Notes |
 |---|---|---|
+| Memory (default) | `memory` | in-process WAL, zero dependency - dev/CI/quick start only |
 | RocketMQ 4.x | `rocketmq` | classic PULL over remoting |
 | RocketMQ 5.x | `rocketmq5` | 5.x POP + Lite Topic support |
 | Kafka | `kafka` | assign+seek+poll (no consumer groups), SASL/SSL supported |
@@ -42,11 +44,14 @@ changes.
 ```shell
 sudo docker pull apache/eventmesh:latest
 sudo docker run -d --name eventmesh \
-  -e EVENTMESH_STORAGE_TYPE=kafka \
-  -e EVENTMESH_KAFKA_NAMESRV=YOUR_KAFKA:9092 \
   -p 8080:8080 -p 8081:8081 \
   apache/eventmesh:latest
 ```
+
+The image defaults to the `memory` storage backend - zero external
+dependency, ready for a smoke test as-is. For a real broker add
+`-e EVENTMESH_STORAGE_TYPE=kafka` (or `rocketmq` / `rocketmq5`) and the
+backend address keys shown below.
 
 Ports: `8080` = traffic HTTP (`/events/*`), `8081` = admin HTTP (`/admin/*`). The WebSocket
 push port (`8082`) is opt-in.
@@ -57,9 +62,9 @@ push port (`8082`) is opt-in.
 git clone https://github.com/apache/eventmesh.git
 cd eventmesh
 
-# pick your backend via EVENTMESH_STORAGE_TYPE (rocketmq | rocketmq5 | kafka)
-export EVENTMESH_STORAGE_TYPE=kafka
-export EVENTMESH_KAFKA_NAMESRV=localhost:9092
+# the memory backend is the default - no env needed. For a real broker:
+# export EVENTMESH_STORAGE_TYPE=kafka  (or rocketmq | rocketmq5)
+# export EVENTMESH_KAFKA_NAMESRV=localhost:9092
 
 ./gradlew :eventmesh-runtime:clean :eventmesh-runtime:dist
 cd eventmesh-runtime/dist && bash bin/start.sh

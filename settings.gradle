@@ -55,6 +55,7 @@ include 'eventmesh-sdks:eventmesh-sdk-java'
 // Storage 后端 (新架构适配了 kafka/rocketmq)
 include 'eventmesh-storage-plugin:eventmesh-storage-api'
 include 'eventmesh-storage-plugin:eventmesh-storage-kafka'
+include 'eventmesh-storage-plugin:eventmesh-storage-memory'
 include 'eventmesh-storage-plugin:eventmesh-storage-rocketmq'
 include 'eventmesh-storage-plugin:eventmesh-storage-rocketmq5'
 

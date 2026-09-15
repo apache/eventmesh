@@ -74,10 +74,10 @@ ENV DOCKER=true
 ENV EVENTMESH_HOME=/data/app/eventmesh
 ENV EVENTMESH_LOG_HOME=/data/app/eventmesh/logs
 ENV CONFPATH=/data/app/eventmesh/conf
-# Only kafka/rocketmq storage plugins ship (standalone was removed). Override
-# with -e EVENTMESH_STORAGE_TYPE=rocketmq. Storage bootstrap (namesrv) is read
-# from conf/eventmesh.properties — mount a volume over conf/ to override.
-ENV EVENTMESH_STORAGE_TYPE=kafka
+# memory ships as the zero-dependency default for dev/CI/quick start - no broker
+# needed. Override with -e EVENTMESH_STORAGE_TYPE=kafka|rocketmq|rocketmq5 and
+# supply the backend address via conf/eventmesh.properties (mount a volume over
+ENV EVENTMESH_STORAGE_TYPE=memory
 ENV EVENTMESH_HTTP_PORT=8080
 ENV EVENTMESH_ADMIN_PORT=8081
 ENV EVENTMESH_OFFSET_PATH=/data/app/eventmesh/data/offset
