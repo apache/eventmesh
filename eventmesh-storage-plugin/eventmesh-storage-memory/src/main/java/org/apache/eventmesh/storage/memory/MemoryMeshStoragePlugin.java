@@ -69,7 +69,10 @@ public class MemoryMeshStoragePlugin
     private final ConcurrentMap<String, Runnable> pendingAcks = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, List<EventMeshFrame>> liteTopics = new ConcurrentHashMap<>();
 
-    private final AtomicLong pullCursors = new AtomicLong(0);
+    // Per-(topic, partition) pull cursor. startOffset < 0 means "self-resume from the
+    // cursor" (the runtime pull-loop contract); alignPullOffset rewinds it on ACK-timeout
+    // redelivery, giving at-least-once without re-scanning the whole log every tick.
+    private final ConcurrentMap<String, AtomicLong> pullCursors = new ConcurrentHashMap<>();
     private final AtomicLong litePullCursors = new AtomicLong(0);
 
     private volatile boolean started = false;
@@ -106,11 +109,13 @@ public class MemoryMeshStoragePlugin
             return Collections.emptyList();
         }
         synchronized (topicFrames) {
-            int from = startOffset < 0 ? 0 : (int) startOffset;
+            AtomicLong cursor = pullCursors.computeIfAbsent(key(topic, partition), k -> new AtomicLong());
+            int from = startOffset < 0 ? (int) Math.min(cursor.get(), Integer.MAX_VALUE) : (int) startOffset;
             if (from >= topicFrames.size()) {
                 return Collections.emptyList();
             }
             int to = Math.min(from + maxEvents, topicFrames.size());
+            cursor.set(to);
             return new ArrayList<>(topicFrames.subList(from, to));
         }
     }
@@ -147,8 +152,9 @@ public class MemoryMeshStoragePlugin
         if (ackOffset < 0) {
             return false;
         }
-        // In-memory: just remember the rewind position; poll() picks it up on next call.
-        pullCursors.set(ackOffset);
+        // Rewind the per-(topic, partition) pull cursor so the next poll re-delivers from
+        // ackOffset — the redelivery path for un-ACKed events (at-least-once).
+        pullCursors.computeIfAbsent(key(topic, partition), k -> new AtomicLong()).set(ackOffset);
         return true;
     }
 
