@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.eventmesh.api.storage.MeshStoragePlugin;
 import org.apache.eventmesh.api.storage.StorageCapabilities;
 import org.apache.eventmesh.api.storage.tck.MeshStoragePluginTCK;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
