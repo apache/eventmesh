@@ -31,7 +31,7 @@ data:
   # here configure the storage plugin; JAVA_OPTS in the StatefulSet adds the
   # -D flags (admin token, meta store, ws port, ...) from env/Secrets.
   eventmesh.properties: |
-    # Storage plugin settings (kafka | rocketmq | rocketmq5; the storage type
+    # Storage plugin settings (memory | kafka | rocketmq | rocketmq5; the storage type
     # itself is selected by EVENTMESH_STORAGE_TYPE on the pod).
     eventMesh.server.kafka.namesrvAddr=my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
     eventMesh.server.rocketmq.namesrvAddr=my-rocketmq-name-server.rocketmq.svc.cluster.local:9876

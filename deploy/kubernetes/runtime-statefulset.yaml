@@ -56,7 +56,7 @@ spec:
               containerPort: 8081
           env:
             - name: EVENTMESH_STORAGE_TYPE
-              value: kafka
+              value: memory
             - name: EVENTMESH_HTTP_PORT
               value: "8080"
             - name: EVENTMESH_ADMIN_PORT

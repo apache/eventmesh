@@ -20,11 +20,20 @@ precedence is **system property (`-D`) > environment variable > properties file*
 
 | Key | Env override | Values | Default |
 |---|---|---|---|
-| `eventmesh.storage.type` | `EVENTMESH_STORAGE_TYPE` | `rocketmq` / `rocketmq5` / `kafka` | `kafka` |
+| `eventmesh.storage.type` | `EVENTMESH_STORAGE_TYPE` | `memory` / `rocketmq` / `rocketmq5` / `kafka` | `memory` |
 
 <a name="storage-backends"></a>
 
 ## 2. Storage backends
+
+### Memory (`memory`, default)
+
+In-process WAL with zero external dependency - the default for dev / CI / quick start.
+State is process-local and lost on restart; not for production.
+
+| Key | Default | Description |
+|---|---|---|
+| (none) | - | No keys required - no broker address |
 
 ### RocketMQ 4.x (`rocketmq`)
 

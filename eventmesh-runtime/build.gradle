@@ -61,6 +61,8 @@ dependencies {
     testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-rocketmq5')
     // KafkaClientE2EIntegrationTest boots the full app with the kafka plugin (incl. SASL/JAAS).
     testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-kafka')
+    // MemoryStorageE2EIntegrationTest boots the runtime over the zero-dependency memory plugin.
+    testImplementation project(':eventmesh-storage-plugin:eventmesh-storage-memory')
     // Topic creation in RealBrokerIntegrationTest (broker may have autoCreateTopicEnable=false).
     testImplementation 'org.apache.rocketmq:rocketmq-tools:4.9.5'
     // ClientBrokerIntegrationTest drives the runtime via the real CloudEventsClient SDK over HTTP.

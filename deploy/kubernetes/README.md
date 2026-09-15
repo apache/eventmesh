@@ -56,7 +56,8 @@ kubectl -n eventmesh-system run curl --rm -it --image=curlimages/curl --   curl 
 
 ## Storage backends
 
-The image ships the kafka / rocketmq / rocketmq5 storage plugins. Switch with
-`EVENTMESH_STORAGE_TYPE` on the runtime container and point
-`eventMesh.server.<backend>.namesrvAddr` in the ConfigMap at the in-cluster
-service (e.g. Strimzi Kafka bootstrap or a RocketMQ name server Service).
+The image ships the memory (default, zero-dependency) / kafka / rocketmq / rocketmq5
+storage plugins. Switch with `EVENTMESH_STORAGE_TYPE` on the runtime container
+and point `eventMesh.server.<backend>.namesrvAddr` in the ConfigMap at the
+in-cluster service (e.g. Strimzi Kafka bootstrap or a RocketMQ name server
+Service).

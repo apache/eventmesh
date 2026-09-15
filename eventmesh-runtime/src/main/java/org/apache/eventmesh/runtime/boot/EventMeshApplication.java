@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * the traffic {@link UniHttpServer}, and the independent {@link UniAdminServer} as one process with
  * a single graceful-shutdown hook. This is the only {@code main} for the new architecture.
  *
- * <p>Config via system properties: {@code eventmesh.storage.type} (kafka/rocketmq/…),
+ * <p>Config via system properties: {@code eventmesh.storage.type} (memory by default; kafka/rocketmq/rocketmq5 for a real broker),
  * {@code eventmesh.http.port}, {@code eventmesh.admin.port}, {@code eventmesh.offset.path}.
  */
 @Slf4j
@@ -375,7 +375,7 @@ public class EventMeshApplication {
     }
 
     public static void main(String[] args) throws Exception {
-        String storageType = System.getProperty("eventmesh.storage.type", "standalone");
+        String storageType = System.getProperty("eventmesh.storage.type", "memory");
         int httpPort = Integer.getInteger("eventmesh.http.port", 8080);
         final int adminPort = Integer.getInteger("eventmesh.admin.port", 8081);
         final String offsetPath = System.getProperty("eventmesh.offset.path", "./data/offset");
