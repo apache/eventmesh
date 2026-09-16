@@ -51,7 +51,12 @@ RUN groupadd --gid 10001 eventmesh \
  && useradd --uid 10001 --gid eventmesh --home-dir /data/app/eventmesh --shell /usr/sbin/nologin eventmesh
 WORKDIR /data/app/eventmesh
 COPY --from=builder --chown=eventmesh:eventmesh /build/dist ./
-RUN chmod +x bin/*.sh
+RUN chmod +x bin/*.sh \
+ # Create the writable state dir up front: a bare VOLUME would be auto-created
+ # by the docker daemon as root, leaving the uid-10001 process unable to open
+ # the RocksDB offset store inside it (EACCES at boot).
+ && mkdir -p /data/app/eventmesh/data /data/app/eventmesh/logs \
+ && chown eventmesh:eventmesh /data/app/eventmesh/data /data/app/eventmesh/logs
 
 # 8080 = traffic HTTP (/events/* CloudEvents + legacy /eventmesh/*).
 # 8081 = independent admin port (UniAdminServer /admin/*, incl. GET /admin/health).

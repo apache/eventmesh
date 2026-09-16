@@ -1,0 +1,66 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# TEMPORARY smoke test: pull the freshly published snapshot image and run the
+# quick-start flow against it (memory storage, no broker). Remove after the
+# 2.0.0 release pipeline stabilizes.
+name: Image Smoke Test
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull the snapshot image
+        run: docker pull apache/eventmesh:2.0.0-snapshot
+
+      - name: Run the runtime (memory storage default, no broker)
+        run: |
+          docker run -d --name em-smoke -p 18080:8080 -p 18081:8081 apache/eventmesh:2.0.0-snapshot
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:18081/admin/health > /dev/null 2>&1; then
+              echo "healthy after ${i}s"; break
+            fi
+            sleep 1
+          done
+          curl -s http://localhost:18081/admin/health
+          echo
+          docker logs em-smoke 2>&1 | tail -20
+
+      - name: Subscribe / publish / poll round trip
+        run: |
+          # subscribe BEFORE publish (same order as the runtime ITs; the pull-loop
+          # covers offset 0 for pre-existing subscribers)
+          code=$(curl -s -o sub.json -w "%{http_code}" -X POST http://localhost:18080/events/subscribe \
+            -H "Content-Type: application/json" \
+            -d '{"clientId":"smoke-client","topic":"smoke","mode":"BROADCAST"}')
+          echo "subscribe http=$code body=$(cat sub.json)"
+          [ "$code" = "200" ] || [ "$code" = "202" ]
+
+          code=$(curl -s -o pub.json -w "%{http_code}" -X POST "http://localhost:18080/events/publish?topic=smoke" \
+            -H "Content-Type: application/cloudevents+json" \
+            -d '{"specversion":"1.0","id":"smoke-1","source":"/smoke","type":"smoke.event","datacontenttype":"application/json","data":{"ok":true}}')
+          echo "publish http=$code body=$(cat pub.json)"
+          [ "$code" = "200" ] || [ "$code" = "202" ]
+
+          curl -s "http://localhost:18080/events/poll?clientId=smoke-client&topics=smoke&timeout=10000" | tee poll.json
+          grep -q "smoke-1" poll.json && echo "POLL: event delivered"
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker logs em-smoke | tail -80

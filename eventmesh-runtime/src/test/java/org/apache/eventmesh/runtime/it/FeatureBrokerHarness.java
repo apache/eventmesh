@@ -94,11 +94,11 @@ final class FeatureBrokerHarness implements AutoCloseable {
     }
 
     private static FeatureBrokerHarness build(String storageType, String namesrv) {
-        MeshStoragePlugin storage = lookup(storageType);
         Properties props = new Properties();
         props.setProperty("namesrvAddr", namesrv);
         props.setProperty("eventMesh.server.rocketmq.namesrvAddr", namesrv);
         props.setProperty("eventMesh.server.kafka.namesrvAddr", namesrv);
+        MeshStoragePlugin storage = lookup(storageType);
         // BrokerDiscoverer.ensureTopicOnReachableBroker() keys off `it.storage` (the legacy
         // system property used by every other broker IT), so propagate our backend name into
         // that slot before the test method touches it.

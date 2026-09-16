@@ -48,7 +48,7 @@ too.
   inside a parent topic; publish/poll semantics and checkpoints.
 - [A2A — Agent-to-Agent](feature/a2a.md) — the agent collaboration protocol:
   task lifecycle, JSON-RPC/MCP bridge, REST + SDK usage
-  *(Experimental)*; [readiness decision](feature/a2a-readiness.md).
+  *(Experimental)*.
 
 - [Connectors](feature/connectors/README.md) — bridge EventMesh with external
   systems (Kafka, RocketMQ, RabbitMQ, databases, chat platforms): the connector

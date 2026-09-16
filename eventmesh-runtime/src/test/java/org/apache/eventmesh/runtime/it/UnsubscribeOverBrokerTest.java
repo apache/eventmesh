@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 /**
@@ -74,14 +73,14 @@ class UnsubscribeOverBrokerTest {
             // 3. Publish one event to each topic; tag by id prefix so we can route the received events
             //    back to their originating topic on the single polling client.
             long token = System.nanoTime();
-            String aId = "ua-" + token;
-            String bId = "ub-" + token;
+            String firstTag = "ua-" + token;
+            String secondTag = "ub-" + token;
             fx.runtime().ingress().publish(topicA, CloudEventBuilder.v1()
-                .withId(aId).withSource(URI.create("broker://ua"))
+                .withId(firstTag).withSource(URI.create("broker://ua"))
                 .withType("ua").withDataContentType("text/plain")
                 .withData("ua-payload".getBytes(StandardCharsets.UTF_8)).build()).get(10, TimeUnit.SECONDS);
             fx.runtime().ingress().publish(topicB, CloudEventBuilder.v1()
-                .withId(bId).withSource(URI.create("broker://ub"))
+                .withId(secondTag).withSource(URI.create("broker://ub"))
                 .withType("ub").withDataContentType("text/plain")
                 .withData("ub-payload".getBytes(StandardCharsets.UTF_8)).build()).get(10, TimeUnit.SECONDS);
 
@@ -100,10 +99,10 @@ class UnsubscribeOverBrokerTest {
                 }
             }
 
-            if (!receivedIds.contains(bId)) {
+            if (!receivedIds.contains(secondTag)) {
                 throw new AssertionError("topic B event was not delivered: received=" + receivedIds);
             }
-            if (receivedIds.contains(aId)) {
+            if (receivedIds.contains(firstTag)) {
                 throw new AssertionError("topic A event leaked after unsubscribe: received=" + receivedIds);
             }
             if (receivedTypes.contains("ua")) {

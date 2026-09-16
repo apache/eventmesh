@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.it;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
 import org.apache.eventmesh.runtime.http.UniHttpServer;
@@ -24,15 +27,11 @@ import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import io.cloudevents.CloudEvent;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Real-broker request-reply end-to-end: responder subscribes via HTTP long-poll, broker-side
@@ -67,7 +66,7 @@ class RequestReplyOverBrokerTest {
                 fx.runtime().ingress().subscribe(topic, "req-rr-broker", DistributionMode.BROADCAST, null);
 
                 String runtimeUrl = "http://localhost:" + httpPort;
-CloudEventsClient responder = CloudEventsClient.builder()
+                CloudEventsClient responder = CloudEventsClient.builder()
                         .runtimeUrl(runtimeUrl).clientId("rr-responder-" + UUID.randomUUID()).pollIntervalMs(200L).build();
                 try {
                     responder.subscribe(topic, "BROADCAST", event -> {

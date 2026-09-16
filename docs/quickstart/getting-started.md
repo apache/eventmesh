@@ -109,13 +109,15 @@ curl -X POST http://localhost:8080/events/subscribe \
   -H "Content-Type: application/json" \
   -d '{"clientId":"order-svc","topic":"orders","mode":"LOAD_BALANCE"}'
 
-# 2a. HTTP long-polling
-curl "http://localhost:8080/events/poll?clientId=order-svc&topics=orders&timeout=30000"
+# 2a. HTTP long-polling (params: clientId, max, timeoutMs)
+curl "http://localhost:8080/events/poll?clientId=order-svc&max=100&timeoutMs=30000"
+# → [{"deliveryId":"d-...","event":{...CloudEvent...}}, ...]
 
-# 2b. after processing, acknowledge so the offset advances (at-least-once)
+# 2b. after processing, acknowledge so the offset advances (at-least-once).
+#     One deliveryId per call - take it from the poll response above.
 curl -X POST http://localhost:8080/events/ack \
   -H "Content-Type: application/json" \
-  -d '{"clientId":"order-svc","deliveryIds":["..."]}'
+  -d '{"deliveryId":"d-..."}'
 ```
 
 Distribution modes:
@@ -130,7 +132,7 @@ SSE and WebSocket push are also available; the raw HTTP forms are:
 
 ```shell
 # SSE — server push over a long-lived HTTP connection
-curl -N "http://localhost:8080/events/stream?clientId=order-svc&topics=orders" \r
+curl -N "http://localhost:8080/events/stream?clientId=order-svc" \r
   -H "Accept: text/event-stream"
 
 # WebSocket — full-duplex server push over the dedicated WS port
@@ -138,7 +140,7 @@ curl -N "http://localhost:8080/events/stream?clientId=order-svc&topics=orders" \
 curl --include --no-buffer \r
   -H "Connection: Upgrade" -H "Upgrade: websocket" \r
   -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGVzdA==" \r
-  "http://localhost:8082/events/stream?clientId=order-svc&topics=orders"
+  "http://localhost:8082/events/stream?clientId=order-svc"
 ```
 
 The `CloudEventsClient` Java SDK wraps all three transports —

@@ -19,6 +19,7 @@ name: Docker
 on:
   release:
     types: [released]
+  workflow_dispatch:
 
 jobs:
   docker:
@@ -27,30 +28,39 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # EventMesh unified runtime (traffic HTTP + admin).
+          # EventMesh unified runtime (traffic HTTP + admin). The connector-runtime
+          # image (Dockerfile.connector) is NOT built here yet: the
+          # apache/eventmesh-connector Docker Hub repository does not exist and the
+          # push is denied. Re-add its matrix leg once infra creates the repo.
           - image: apache/eventmesh
             dockerfile: ./docker/Dockerfile
-          # Connector-runtime (separate process, talks HTTP+CloudEvents to the runtime).
-          - image: apache/eventmesh-connector
-            dockerfile: ./docker/Dockerfile.connector
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Login to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ matrix.image }}
+          # Manual dispatch (or release) only - NOT every develop push, image
+          # publishing is an explicit action. dispatch -> moving snapshot tag
+          # (version is 2.0.0-SNAPSHOT on develop) + latest pointing at the
+          # same image; release -> latest + vX.Y.Z as before.
+          tags: |
+            type=raw,value=2.0.0-snapshot,enable=${{ github.event_name != 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}

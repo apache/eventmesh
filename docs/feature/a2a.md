@@ -1,22 +1,21 @@
-# EventMesh A2A 协议（Agent-to-Agent Communication Protocol）
+# EventMesh A2A Protocol (Agent-to-Agent Communication)
 
 > **Audience:** builders of agent systems. The A2A wire contract, task
-> lifecycle, and usage via REST / SDK. **Experimental** — see
-> [readiness decision](a2a-readiness.md) for the promotion gates.
+> lifecycle, and usage via REST / SDK. **Experimental**
 
 ---
 
 ---
 
-## 目录
+## Table of Contents
 
 - [1. Overview](#1-overview)
 - [2. Core Philosophy](#2-core-philosophy)
 - [3. Architecture](#3-architecture)
 - [4. Protocol Specification](#4-protocol-specification)
-- [5. Implementation Summary](#实现总结eventmesh-a2a-协议-v20-mcp-版)
+- [5. Implementation Summary](#5-implementation-summary)
 - [6. Test Results](#test-results-eventmesh-a2a-protocol-v20)
-- [7. 中文使用指南](#中文使用指南整合自-readmemd)
+- [7. Usage Guide](#7-usage-guide-integrated-from-readmemd)
 
 ---
 
@@ -216,8 +215,8 @@ To support MCP on an Event Bus, synchronous RPC concepts are mapped to asynchron
 
 | Concept | MCP / JSON-RPC | CloudEvent Mapping |
 | :--- | :--- | :--- |
-| **Action** | `method` (e.g., `tools/call`) | **Type**: `org.apache.eventmesh.a2a.tools.call.req`<br>**Extension**: `a2amethod` |
-| **Correlation** | `id` (e.g., `req-123`) | **Extension**: `collaborationid` (on Response)<br>**ID**: Preserved on Request |
+| **Action** | `method` (e.g., `tools/call`) | **Type**: `org.apache.eventmesh.a2a.tools.call.req`<br/>**Extension**: `a2amethod` |
+| **Correlation** | `id` (e.g., `req-123`) | **Extension**: `collaborationid` (on Response)<br/>**ID**: Preserved on Request |
 | **Direction** | Implicit (Request vs Result) | **Extension**: `mcptype` (`request` or `response`) |
 | **P2P Routing** | `params._agentId` | **Extension**: `targetagent` |
 | **Pub/Sub Topic** | `params._topic` | **Subject**: The topic value (e.g. `market.btc`) |
@@ -497,7 +496,7 @@ client.shutdown();
 ---
 
 
-## 核心成果
+## 5. Implementation Summary
 
 A2A 协议已成功重构为采用 **MCP (Model Context Protocol)** 架构，将 EventMesh 定位为现代化的 **智能体协作总线 (Agent Collaboration Bus)**。
 
@@ -715,7 +714,7 @@ The A2A Protocol v2.0 implementation is stable, functionally complete, and ready
 
 ---
 
-## 中文使用指南（整合自 README.md）
+## 7. Usage Guide (integrated from README.md)
 
 ## 使用指南
 
