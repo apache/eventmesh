@@ -156,7 +156,7 @@ pub fn from_event_mesh_message(
 
     // Resolve the content type from props (default text/plain).
     let data_content_type = message
-        .get_prop(ProtocolKey::DATA_CONTENT_TYPE)
+        .data_content_type()
         .unwrap_or(DataContentType::TEXT_PLAIN)
         .to_string();
     attrs.insert(
@@ -164,9 +164,13 @@ pub fn from_event_mesh_message(
         attr_str(data_content_type.as_str()),
     );
 
-    // Fold remaining user props into attributes (excluding ones we already set).
+    // Rebuild transport metadata from this client, even when an optional
+    // attribute such as token is unset. Never inherit a previous sender's
+    // credentials when forwarding a received message.
     for (k, v) in &message.props {
-        attrs.entry(k.clone()).or_insert_with(|| attr_str(v));
+        if !crate::model::delivery::is_reserved_property(k) {
+            attrs.entry(k.clone()).or_insert_with(|| attr_str(v));
+        }
     }
 
     let data = match &message.content {
@@ -200,25 +204,8 @@ pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> Result<EventMeshMess
         props.insert(key.clone(), attr_as_str(value));
     }
     let topic = get_subject(cloud_event);
-    let biz_seq_no = get_seq_num(cloud_event);
-    let unique_id = get_unique_id(cloud_event);
     let content = get_text_data(cloud_event);
-    let ttl = crate::transport::take_wire_ttl(&mut props)?;
-
-    let mut builder = EventMeshMessage::builder()
-        .topic(topic)
-        .content(content)
-        .props(props);
-    if !biz_seq_no.is_empty() {
-        builder = builder.biz_seq_no(biz_seq_no);
-    }
-    if !unique_id.is_empty() {
-        builder = builder.unique_id(unique_id);
-    }
-    if let Some(ttl) = ttl {
-        builder = builder.ttl_millis(ttl);
-    }
-    builder.build()
+    crate::transport::decode_native_message(EventMeshMessage::new(topic, content)?, props)
 }
 
 /// Extract the broker [`PublishResponse`] (status_code / message / time).
@@ -252,6 +239,7 @@ pub fn get_seq_num(cloud_event: &PbCloudEvent) -> String {
         .unwrap_or_default()
 }
 
+#[cfg(feature = "cloud_events")]
 pub fn get_unique_id(cloud_event: &PbCloudEvent) -> String {
     cloud_event
         .attributes

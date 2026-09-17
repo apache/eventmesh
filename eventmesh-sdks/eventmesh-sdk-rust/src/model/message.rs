@@ -20,11 +20,12 @@
 use std::collections::HashMap;
 use std::fmt;
 
+use super::delivery::{is_reserved_property, DeliveryContext};
 use crate::common::util::now_millis;
 use crate::error::{EventMeshError, Result};
 
-/// A simple, idiomatic EventMesh message: a topic + string content + arbitrary
-/// string properties.
+/// A native EventMesh message with dedicated business fields, business
+/// properties, and an optional read-only delivery context.
 ///
 /// This maps directly to `org.apache.eventmesh.common.EventMeshMessage` on the
 /// Java side. It is the primary message type of the SDK; CloudEvents interop is
@@ -43,6 +44,8 @@ pub struct EventMeshMessage {
     pub(crate) props: HashMap<String, String>,
     pub(crate) create_time: u64,
     pub(crate) ttl: Option<i64>,
+    pub(crate) data_content_type: Option<String>,
+    pub(crate) delivery_context: Option<Box<DeliveryContext>>,
 }
 
 impl fmt::Display for EventMeshMessage {
@@ -92,7 +95,20 @@ impl EventMeshMessage {
         self.unique_id.as_deref()
     }
 
-    /// Return all extension properties.
+    /// Return the payload's media type, if supplied.
+    pub fn data_content_type(&self) -> Option<&str> {
+        self.data_content_type.as_deref()
+    }
+
+    /// Inspect protocol and routing metadata from the received delivery.
+    ///
+    /// Locally built messages have no delivery context. Publishing ignores
+    /// this context; the SDK restores routing only when sending a reply.
+    pub fn delivery_context(&self) -> Option<&DeliveryContext> {
+        self.delivery_context.as_deref()
+    }
+
+    /// Return business extension properties, excluding protocol metadata.
     pub fn properties(&self) -> &HashMap<String, String> {
         &self.props
     }
@@ -110,14 +126,20 @@ impl EventMeshMessage {
         self.ttl
     }
 
-    /// Insert or overwrite an extension property.
+    /// Insert or overwrite a business extension property.
     ///
-    /// The reserved `ttl` property does not configure message TTL and is
-    /// ignored by native-message encoders. Use
-    /// [`EventMeshMessageBuilder::ttl_millis`] to configure TTL.
-    pub fn set_prop(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
-        self.props.insert(key.into(), value.into());
-        self
+    /// Reserved names such as `ttl`, `protocoldesc`, and `cluster` return
+    /// [`crate::Error::InvalidArgument`]. Use dedicated builder fields for
+    /// business metadata and client configuration for transport settings.
+    pub fn set_prop(
+        &mut self,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Result<&mut Self> {
+        let key = key.into();
+        validate_property_key(&key)?;
+        self.props.insert(key, value.into());
+        Ok(self)
     }
 
     /// Get a property by key.
@@ -125,10 +147,17 @@ impl EventMeshMessage {
         self.props.get(key).map(|s| s.as_str())
     }
 
-    /// Return a copy with an additional extension property.
-    pub fn with_property(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
-        self.set_prop(key, value);
-        self
+    /// Return a copy with an additional business extension property.
+    ///
+    /// Reserved names return [`crate::Error::InvalidArgument`], as with
+    /// [`Self::set_prop`].
+    pub fn with_property(
+        mut self,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Result<Self> {
+        self.set_prop(key, value)?;
+        Ok(self)
     }
 
     /// Validate requirements shared by all publishing transports.
@@ -162,6 +191,15 @@ impl EventMeshMessage {
     }
 }
 
+fn validate_property_key(key: &str) -> Result<()> {
+    if is_reserved_property(key) {
+        return Err(EventMeshError::InvalidArgument(format!(
+            "{key:?} is reserved message/transport metadata, not a business property"
+        )));
+    }
+    Ok(())
+}
+
 fn validate_ttl(ttl: i64) -> Result<()> {
     if !(1..=i64::from(i32::MAX)).contains(&ttl) {
         return Err(EventMeshError::InvalidMessage(format!(
@@ -181,6 +219,7 @@ pub struct EventMeshMessageBuilder {
     content: Option<String>,
     props: HashMap<String, String>,
     ttl: Option<i64>,
+    data_content_type: Option<String>,
 }
 
 impl EventMeshMessageBuilder {
@@ -212,22 +251,30 @@ impl EventMeshMessageBuilder {
         self.ttl = Some(v);
         self
     }
-    /// Insert or overwrite an extension property.
+    /// Set the payload's media type (for example `application/json`).
+    pub fn data_content_type(mut self, value: impl Into<String>) -> Self {
+        self.data_content_type = Some(value.into());
+        self
+    }
+    /// Insert or overwrite a business property. Reserved names fail at build.
     pub fn prop(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.props.insert(key.into(), value.into());
         self
     }
-    /// Replace all extension properties.
+    /// Replace all business properties. Reserved names fail at build.
     pub fn props(mut self, props: HashMap<String, String>) -> Self {
         self.props = props;
         self
     }
 
-    /// Validate the required fields and construct the message.
+    /// Validate required fields and business property names, then construct the message.
     ///
     /// The payload must be present but may be empty. Transport-specific
     /// constraints such as TTL range are checked when publishing.
     pub fn build(self) -> Result<EventMeshMessage> {
+        for key in self.props.keys() {
+            validate_property_key(key)?;
+        }
         let message = EventMeshMessage {
             biz_seq_no: self.biz_seq_no,
             unique_id: self.unique_id,
@@ -240,6 +287,8 @@ impl EventMeshMessageBuilder {
             props: self.props,
             create_time: now_millis(),
             ttl: self.ttl,
+            data_content_type: self.data_content_type,
+            delivery_context: None,
         };
         if message.topic.trim().is_empty() {
             return Err(EventMeshError::InvalidMessage("topic is required".into()));
@@ -302,16 +351,43 @@ mod tests {
             .unwrap();
         assert_eq!(message.ttl_millis(), Some(0));
         assert!(message.validate_for_publish().is_err());
+    }
 
-        let message = EventMeshMessage::new("topic", "content")
-            .unwrap()
-            .with_property(crate::common::ProtocolKey::TTL, "not-a-number");
-        assert_eq!(
-            message.get_prop(crate::common::ProtocolKey::TTL),
-            Some("not-a-number")
-        );
-        assert_eq!(message.ttl_millis(), None);
-        assert!(message.validate_for_publish().is_ok());
+    #[test]
+    fn business_properties_reject_reserved_metadata() {
+        for key in [
+            "ttl",
+            "protocoldesc",
+            "sys",
+            "passwd",
+            "seqnum",
+            "datacontenttype",
+            "cluster",
+            "req0sys",
+            "correlation99id",
+        ] {
+            assert!(EventMeshMessage::builder()
+                .topic("t")
+                .content("c")
+                .prop(key, "value")
+                .build()
+                .is_err());
+            let mut message = EventMeshMessage::new("t", "c").unwrap();
+            assert!(message.set_prop(key, "value").is_err());
+            assert!(message.properties().is_empty());
+            assert!(message.delivery_context().is_none());
+            assert!(message.with_property(key, "value").is_err());
+        }
+        let mut message = EventMeshMessage::builder()
+            .topic("t")
+            .content("c")
+            .data_content_type("application/json")
+            .prop("requestid", "business-id")
+            .build()
+            .unwrap();
+        message.set_prop("custom", "value").unwrap();
+        assert_eq!(message.get_prop("requestid"), Some("business-id"));
+        assert_eq!(message.data_content_type(), Some("application/json"));
     }
 
     #[test]
@@ -323,17 +399,10 @@ mod tests {
             .build()
             .unwrap();
 
-        EventMeshMessage::new("topic", "content")
-            .unwrap()
-            .with_property(crate::common::ProtocolKey::TTL, "4000")
-            .validate_for_publish()
-            .unwrap();
-
         let invalid = EventMeshMessage::builder()
             .topic("topic")
             .content("content")
             .ttl_millis(-1)
-            .prop("ttl", "4000")
             .build()
             .unwrap();
         assert!(invalid.validate_for_publish().is_err());

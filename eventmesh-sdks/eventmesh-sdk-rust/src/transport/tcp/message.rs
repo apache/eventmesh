@@ -66,16 +66,26 @@ impl From<&EventMeshMessage> for TcpWireMessage {
         let mut properties: HashMap<_, _> = msg
             .props
             .iter()
-            .filter(|(key, _)| key.as_str() != "ttl")
+            .filter(|(key, _)| !crate::model::delivery::is_reserved_property(key))
             .map(|(key, value)| (key.clone(), value.clone()))
             .collect();
         if let Some(ttl) = msg.ttl {
             properties.insert("ttl".into(), ttl.to_string());
         }
+        if let Some(sequence) = &msg.biz_seq_no {
+            properties.insert("seqnum".into(), sequence.clone());
+        }
+        if let Some(unique_id) = &msg.unique_id {
+            properties.insert("uniqueid".into(), unique_id.clone());
+        }
+        let mut headers = HashMap::new();
+        if let Some(content_type) = &msg.data_content_type {
+            headers.insert("datacontenttype".into(), content_type.clone());
+        }
         Self {
             topic: Some(msg.topic.clone()),
             properties,
-            headers: HashMap::new(),
+            headers,
             body: Some(msg.content.clone()),
         }
     }
@@ -85,16 +95,13 @@ impl TryFrom<TcpWireMessage> for EventMeshMessage {
     type Error = crate::Error;
 
     fn try_from(wire: TcpWireMessage) -> Result<Self> {
-        // Merge wire `headers` into `props` so protocol-level metadata
-        // (e.g. `datacontenttype`) set by the Java runtime is not lost.
-        // The Rust SDK's `EventMeshMessage` model does not have a separate
-        // `headers` field, so `props` is the only place to carry them.
+        // Collect wire attributes before separating business fields, business
+        // properties, and the read-only delivery context.
         let mut props = wire.properties;
         for (k, v) in wire.headers {
             props.entry(k).or_insert(v);
         }
-        let ttl = crate::transport::take_wire_ttl(&mut props)?;
-        let mut builder = EventMeshMessage::builder()
+        let builder = EventMeshMessage::builder()
             .topic(
                 wire.topic
                     .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?,
@@ -102,12 +109,8 @@ impl TryFrom<TcpWireMessage> for EventMeshMessage {
             .content(
                 wire.body
                     .ok_or_else(|| EventMeshError::InvalidMessage("content is required".into()))?,
-            )
-            .props(props);
-        if let Some(ttl) = ttl {
-            builder = builder.ttl_millis(ttl);
-        }
-        builder.build()
+            );
+        crate::transport::decode_native_message(builder.build()?, props)
     }
 }
 
@@ -209,7 +212,14 @@ pub fn build_message_package(msg: &EventMeshMessage, cmd: Command) -> Result<Pac
     // Serialize the message body using the TCP wire format
     // (`org.apache.eventmesh.common.protocol.tcp.EventMeshMessage`), which uses
     // `body`/`properties` — NOT the SDK's `content`/`props` field names.
-    let wire = TcpWireMessage::from(msg);
+    let mut wire = TcpWireMessage::from(msg);
+    if cmd == Command::ResponseToServer {
+        if let Some(context) = msg.delivery_context() {
+            for (key, value) in context.reply_attributes() {
+                wire.properties.insert(key.clone(), value.clone());
+            }
+        }
+    }
     let json = serde_json::to_string(&wire)?;
     pkg.body = PackageBody::Text(json);
 
@@ -370,7 +380,9 @@ pub fn parse_cloud_event(body: &PackageBody) -> Option<cloudevents::Event> {
 /// - `data` → `content` (string values are kept as-is; JSON values are
 ///   stringified; binary values are lossily converted to UTF-8)
 /// - `ttl` extension → the dedicated TTL field
-/// - Other CloudEvent extensions (e.g. `seqnum`, `uniqueid`) → `props`
+/// - Message IDs/content type → dedicated business fields
+/// - Known protocol/routing extensions → read-only delivery context
+/// - Remaining extensions → business properties
 ///
 /// This mirrors the gRPC codec's `to_event_mesh_message`.
 #[cfg(feature = "cloud_events")]
@@ -390,20 +402,18 @@ pub fn cloud_event_to_message(event: &cloudevents::Event) -> Result<EventMeshMes
         props.insert(k.to_string(), v.to_string());
     }
 
-    let ttl = crate::transport::take_wire_ttl(&mut props)?;
-    let mut builder =
+    let builder =
         EventMeshMessage::builder()
             .topic(topic.ok_or_else(|| {
                 EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
             })?)
             .content(content.ok_or_else(|| {
                 EventMeshError::InvalidMessage("CloudEvent data is required".into())
-            })?)
-            .props(props);
-    if let Some(ttl) = ttl {
-        builder = builder.ttl_millis(ttl);
+            })?);
+    if let Some(content_type) = event.datacontenttype() {
+        props.insert("datacontenttype".into(), content_type.into());
     }
-    builder.build()
+    crate::transport::decode_native_message(builder.build()?, props)
 }
 
 /// Convert an [`EventMeshMessage`] back into a native [`cloudevents::Event`].
@@ -426,14 +436,28 @@ pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Eve
         .ty("org.apache.eventmesh");
 
     builder = builder.subject(&msg.topic);
-    builder = builder.data("text/plain", msg.content.clone());
+    builder = builder.data(
+        msg.data_content_type().unwrap_or("text/plain"),
+        msg.content.clone(),
+    );
     for (k, v) in &msg.props {
-        if k != "ttl" {
+        if !crate::model::delivery::is_reserved_property(k) {
             builder = builder.extension(k.as_str(), v.as_str());
         }
     }
     if let Some(ttl) = msg.ttl {
         builder = builder.extension("ttl", ttl.to_string());
+    }
+    if let Some(sequence) = msg.biz_seq_no() {
+        builder = builder.extension("seqnum", sequence);
+    }
+    if let Some(unique_id) = msg.unique_id() {
+        builder = builder.extension("uniqueid", unique_id);
+    }
+    if let Some(context) = msg.delivery_context() {
+        for (key, value) in context.reply_attributes() {
+            builder = builder.extension(key.as_str(), value.as_str());
+        }
     }
     builder
         .build()
@@ -563,9 +587,9 @@ mod tests {
         assert_eq!(msg.content(), "payload");
         assert_eq!(msg.get_prop("k"), Some("v"));
         assert_eq!(
-            msg.get_prop("datacontenttype"),
+            msg.data_content_type(),
             Some("application/json"),
-            "wire headers must be merged into props"
+            "wire content type must populate its dedicated field"
         );
     }
 

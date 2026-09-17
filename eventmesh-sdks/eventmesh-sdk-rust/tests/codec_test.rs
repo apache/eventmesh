@@ -223,3 +223,48 @@ mod webhook_messages {
         }
     }
 }
+
+#[cfg(feature = "http")]
+#[test]
+fn native_webhook_exposes_read_only_context_and_typed_fields() {
+    let ext = serde_json::json!({
+        "protocoltype": "eventmeshmessage", "protocoldesc": "http", "protocolversion": "1.0",
+        "sys": "source-system", "cluster": "source-cluster", "correlation99id": "correlation",
+        "ttl": "7000", "datacontenttype": "application/json", "custom": "business-value",
+        "seqnum": "old-sequence", "uniqueid": "old-id"
+    })
+    .to_string();
+    let body = serde_urlencoded::to_string([
+        ("topic", "orders"),
+        ("content", "{}"),
+        ("bizseqno", "form-sequence"),
+        ("uniqueId", "form-id"),
+        ("extFields", ext.as_str()),
+    ])
+    .unwrap();
+    let mut headers = http::HeaderMap::new();
+    headers.insert("language", "JAVA".parse().unwrap());
+    let message = parse_push_body(&body)
+        .unwrap()
+        .to_message(&headers)
+        .unwrap();
+    let mut message = message.into_event_mesh().unwrap();
+    assert_eq!(message.properties().len(), 1);
+    assert_eq!(message.get_prop("custom"), Some("business-value"));
+    assert_eq!(message.biz_seq_no(), Some("form-sequence"));
+    assert_eq!(message.unique_id(), Some("form-id"));
+    assert_eq!(message.ttl_millis(), Some(7000));
+    assert_eq!(message.data_content_type(), Some("application/json"));
+    let context: &eventmesh::DeliveryContext = message.delivery_context().unwrap();
+    assert_eq!(context.protocol_type(), Some("eventmeshmessage"));
+    assert_eq!(context.protocol_version(), Some("1.0"));
+    assert_eq!(context.protocol_description(), Some("http"));
+    assert_eq!(context.attribute("sys"), Some("source-system"));
+    assert_eq!(context.attribute("language"), Some("JAVA"));
+    assert_eq!(context.attribute("cluster"), Some("source-cluster"));
+    assert_eq!(context.attribute("correlation99id"), Some("correlation"));
+    let context = context.clone();
+    assert!(message.set_prop("protocoldesc", "tcp").is_err());
+    message.set_prop("custom", "updated").unwrap();
+    assert_eq!(message.delivery_context(), Some(&context));
+}

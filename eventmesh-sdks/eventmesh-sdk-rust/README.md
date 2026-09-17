@@ -101,7 +101,28 @@ HTTP request/reply is not exposed because the current SDK and stock Runtime do n
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
-`EventMeshMessage` is likewise a business model rather than a stable serde JSON contract. gRPC, HTTP, and TCP convert it into private transport-specific wire DTOs. A topic must be non-blank and content must be present, but empty content is accepted for Java SDK interoperability. Native-message TTL is stored only in the dedicated `ttl` field: set it with `EventMeshMessageBuilder::ttl_millis` and read it with `EventMeshMessage::ttl_millis`. Native encoders ignore any `ttl` entry supplied through generic properties. Decoders extract wire TTL into the dedicated field and omit it from message properties; malformed or out-of-i64-range values are rejected, while numeric values are preserved until outbound validation. Each transport applies its own outbound content and TTL limits when publishing. CloudEvents continue to use their native TTL extension.
+`EventMeshMessage` is a business model rather than a stable serde JSON contract. Topic, content, message IDs, TTL, and payload content type have dedicated fields. Set TTL with `EventMeshMessageBuilder::ttl_millis` and content type with `data_content_type`; read them through the matching message accessors. Native decoders preserve numeric TTL until outbound validation and reject malformed or out-of-i64-range TTL. CloudEvents retain their standard attributes and extensions.
+
+`properties()` and `get_prop()` expose only business extensions. Received protocol descriptors, identity, and known routing attributes live in the separate, read-only `DeliveryContext` returned by `message.delivery_context()`. It is `None` on locally built messages. Use `context.protocol_description()` for the source protocol and `context.attribute("cluster")` for received routing metadata. Producers ignore this context and rebuild transport metadata from the destination client. Consumer reply paths automatically restore the original request's routing; ACKs continue to use the received transport frame.
+
+Reserved names cannot be injected through business properties. `builder.prop(...)` and `builder.props(...)` report `Error::InvalidArgument` at `build()` for reserved keys; `set_prop` and `with_property` now return `Result` and reject them immediately. For example:
+
+```rust
+use eventmesh::EventMeshMessage;
+
+let mut message = EventMeshMessage::builder()
+    .topic("orders")
+    .content(r#"{"id":42}"#)
+    .ttl_millis(7_000)
+    .data_content_type("application/json")
+    .prop("tenant", "store-a")
+    .build()?;
+message.set_prop("tenant", "store-b")?;
+assert!(message.set_prop("protocoldesc", "tcp").is_err());
+# Ok::<(), eventmesh::Error>(())
+```
+
+Migration: replace `get_prop("ttl")`, `get_prop("seqnum")`, `get_prop("uniqueid")`, and `get_prop("datacontenttype")` with the dedicated accessors. Read protocol/routing attributes from `delivery_context()`; do not copy them into a reply's properties. Add `?` to business-property `set_prop`/`with_property` calls. The `MessageHandler` signature is unchanged.
 
 ## Configuration and errors
 

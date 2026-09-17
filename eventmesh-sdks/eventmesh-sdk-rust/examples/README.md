@@ -29,3 +29,5 @@ The two HTTP consumer examples handle Ctrl-C and call `close().await`, which unr
 The custom HTTP webhook uses `PushMessageRequestBody::to_message` with the request headers to detect the message dialect. To receive CloudEvents as well as native messages, run `cargo run --example http_consumer_custom --features http,cloud_events`.
 
 The gRPC webhook consumer has no automatic remote cleanup. Its example retains the subscription and URL, calls `unsubscribe().await` after Ctrl-C, and then stops and joins the local heartbeat task.
+
+Native handlers can inspect source protocol/routing information through `message.as_event_mesh().and_then(|message| message.delivery_context())`. Business extensions remain in `properties()`. Return a newly built message for request/reply; the SDK supplies the original request context automatically. Configure TTL/content type with dedicated builder methods, and handle the `Result` from `set_prop`/`with_property` when changing business properties.

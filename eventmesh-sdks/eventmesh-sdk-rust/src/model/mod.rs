@@ -17,10 +17,12 @@
 
 //! Message, subscription and response types.
 
+pub(crate) mod delivery;
 pub mod message;
 pub mod response;
 pub mod subscription;
 
+pub use delivery::DeliveryContext;
 pub use message::{EventMeshMessage, EventMeshMessageBuilder};
 pub use response::PublishResponse;
 pub use subscription::HeartbeatItem;

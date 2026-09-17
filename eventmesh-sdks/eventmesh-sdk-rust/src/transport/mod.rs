@@ -29,6 +29,33 @@ pub mod http;
 #[cfg(feature = "tcp")]
 pub mod tcp;
 
+/// Decode native wire attributes into their owning fields. Business properties
+/// are the remainder; protocol/routing context can never be published as props.
+pub(crate) fn decode_native_message(
+    mut message: crate::EventMeshMessage,
+    mut attributes: std::collections::HashMap<String, String>,
+) -> crate::Result<crate::EventMeshMessage> {
+    message.ttl = take_wire_ttl(&mut attributes)?;
+    let sequence = attributes
+        .remove("bizseqno")
+        .or(attributes.remove("seqnum"));
+    let unique_id = attributes.remove("uniqueid");
+    if message.biz_seq_no.is_none() {
+        message.biz_seq_no = sequence;
+    }
+    if message.unique_id.is_none() {
+        message.unique_id = unique_id;
+    }
+    message.data_content_type = attributes.remove("datacontenttype");
+    // Topic and content already came from each protocol's authoritative fields.
+    for key in ["topic", "subject", "content"] {
+        attributes.remove(key);
+    }
+    message.delivery_context = Some(Box::new(crate::DeliveryContext::take_from(&mut attributes)));
+    message.props = attributes;
+    Ok(message)
+}
+
 /// Extract native-message TTL from wire attributes without duplicating it in
 /// the business model's extension properties. Inbound values need only fit i64;
 /// publishing applies the outbound range limits separately.
@@ -45,6 +72,201 @@ pub(crate) fn take_wire_ttl(
             })
         })
         .transpose()
+}
+
+#[cfg(all(test, feature = "grpc", feature = "http", feature = "tcp"))]
+mod forwarding_tests {
+    use super::{grpc, http, tcp};
+    use crate::config::{Credentials, Endpoint, GrpcConfig, Identity};
+    use crate::model::EventMeshProtocolType;
+    use crate::proto_gen::attr_as_str;
+    use crate::EventMeshMessage;
+    use std::collections::HashMap;
+
+    #[test]
+    fn forwarding_rebuilds_transport_metadata_without_changing_the_received_message() {
+        let source_config = GrpcConfig::new(Endpoint::new("127.0.0.1", 10205).unwrap())
+            .with_identity(Identity::default().with_system("source-system"))
+            .with_credentials(
+                Credentials::new()
+                    .with_basic("source-user", "source-password")
+                    .with_token("source-token"),
+            );
+        let original = EventMeshMessage::builder()
+            .topic("orders")
+            .content("payload")
+            .biz_seq_no("business-id")
+            .unique_id("unique-id")
+            .ttl_millis(7000)
+            .prop("custom", "business-value")
+            .prop("tag", "order-created")
+            .build()
+            .unwrap();
+        let wire = grpc::codec::from_event_mesh_message(&original, &source_config, "source-group")
+            .unwrap();
+        let received = grpc::codec::to_event_mesh_message(&wire).unwrap();
+        let before = received.clone();
+        assert_eq!(received.properties(), original.properties());
+        assert_eq!(received.data_content_type(), Some("text/plain"));
+        let debug = format!("{received:?}");
+        assert!(!debug.contains("source-password"));
+        assert!(!debug.contains("source-token"));
+        assert_eq!(received.get_prop("protocoldesc"), None);
+        assert_eq!(
+            received.delivery_context().unwrap().protocol_description(),
+            Some("grpc-cloud-event")
+        );
+
+        let identity = Identity::default().with_system("destination-system");
+        let credentials = Credentials::new().with_basic("destination-user", "destination-password");
+        let mut http_attributes: HashMap<String, String> = http::codec::build_headers(
+            http::codec::publish_code(),
+            EventMeshProtocolType::EventMeshMessage,
+            &identity,
+            &credentials,
+        )
+        .into_iter()
+        .map(|(key, value)| (key.to_string(), value))
+        .collect();
+        let http_fields: HashMap<_, _> =
+            http::codec::encode_publish(&received, "destination-group")
+                .into_iter()
+                .collect();
+        // Java's resolver applies extFields after the request's own metadata.
+        let extensions: HashMap<String, String> =
+            serde_json::from_str(&http_fields["extFields"]).unwrap();
+        http_attributes.extend(extensions);
+        assert_eq!(http_attributes["protocoldesc"], "http");
+        assert_eq!(http_attributes["protocoltype"], "eventmeshmessage");
+        assert_eq!(http_attributes["sys"], "destination-system");
+        assert_eq!(http_attributes["username"], "destination-user");
+        assert_eq!(http_attributes["passwd"], "destination-password");
+        assert!(!http_attributes.contains_key("token"));
+        assert_eq!(http_fields["ttl"], "7000");
+        assert_eq!(http_fields["bizseqno"], "business-id");
+        assert_eq!(http_fields["uniqueid"], "unique-id");
+        assert_eq!(http_fields["producergroup"], "destination-group");
+        assert_eq!(http_attributes["custom"], "business-value");
+
+        let tcp_forwarded = tcp::message::build_message_package(
+            &received,
+            tcp::frame::Command::AsyncMessageToServer,
+        )
+        .unwrap();
+        let tcp::frame::PackageBody::Text(body) = tcp_forwarded.body else {
+            panic!("TCP text body")
+        };
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+        assert!(body["properties"].get("protocoldesc").is_none());
+        assert!(body["properties"].get("passwd").is_none());
+        assert_eq!(body["properties"]["custom"], "business-value");
+        assert_eq!(body["properties"]["ttl"], "7000");
+        assert_eq!(
+            tcp_forwarded.header.get_string_property("protocoldesc"),
+            Some("tcp")
+        );
+        assert_eq!(
+            tcp_forwarded.header.get_string_property("uniqueid"),
+            Some("unique-id")
+        );
+
+        let destination_config = GrpcConfig::new(Endpoint::new("127.0.0.1", 10205).unwrap())
+            .with_identity(identity)
+            .with_credentials(credentials);
+        let forwarded = grpc::codec::from_event_mesh_message(
+            &received,
+            &destination_config,
+            "destination-group",
+        )
+        .unwrap();
+        assert_eq!(
+            attr_as_str(&forwarded.attributes["sys"]),
+            "destination-system"
+        );
+        assert!(!forwarded.attributes.contains_key("token"));
+        assert_eq!(
+            attr_as_str(&forwarded.attributes["custom"]),
+            "business-value"
+        );
+        assert_eq!(received, before);
+    }
+
+    #[test]
+    fn tcp_forwarding_preserves_business_and_reply_properties_but_not_transport_overrides() {
+        use tcp::frame::{Command, PackageBody};
+
+        for source in ["http", "grpc-cloud-event", "tcp"] {
+            let json = serde_json::json!({
+                "topic": "orders", "body": "payload",
+                "properties": {
+                    "protocoldesc": source, "protocoltype": "eventmeshmessage", "protocolversion": "0.3",
+                    "env": "old-env", "sys": "old-system", "token": "old-token", "code": "999", "version": "old-version",
+                    "ttl": "7000", "custom": "business-value", "tag": "order-created",
+                    "seqnum": "request-sequence", "req0sys": "request-system", "req0group": "request-group",
+                    "cluster": "reply-cluster", "correlation99id": "broker-correlation", "reply99to99client": "request-client"
+                }
+            });
+            let received =
+                tcp::message::parse_message(&PackageBody::Text(json.to_string())).unwrap();
+            for command in [
+                Command::AsyncMessageToServer,
+                Command::BroadcastMessageToServer,
+                Command::RequestToServer,
+                Command::ResponseToServer,
+            ] {
+                let forwarded = tcp::message::build_message_package(&received, command).unwrap();
+                let PackageBody::Text(body) = forwarded.body else {
+                    panic!("TCP text body")
+                };
+                let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+                let properties = body["properties"].as_object().unwrap();
+                for key in [
+                    "protocoldesc",
+                    "protocoltype",
+                    "protocolversion",
+                    "env",
+                    "sys",
+                    "token",
+                    "code",
+                    "version",
+                ] {
+                    assert!(
+                        !properties.contains_key(key),
+                        "{source} -> TCP {command:?}: stale {key}"
+                    );
+                }
+                assert_eq!(
+                    forwarded.header.get_string_property("protocoldesc"),
+                    Some("tcp")
+                );
+                assert_eq!(
+                    forwarded.header.get_string_property("protocoltype"),
+                    Some("eventmeshmessage")
+                );
+                assert_eq!(
+                    forwarded.header.get_string_property("protocolversion"),
+                    Some("1.0")
+                );
+                assert_eq!(properties["ttl"], "7000");
+                assert_eq!(properties["custom"], "business-value");
+                assert_eq!(properties["tag"], "order-created");
+                assert_eq!(properties["seqnum"], "request-sequence");
+                if command == Command::ResponseToServer {
+                    assert_eq!(properties["req0sys"], "request-system");
+                    assert_eq!(properties["req0group"], "request-group");
+                    assert_eq!(properties["cluster"], "reply-cluster");
+                    assert_eq!(properties["correlation99id"], "broker-correlation");
+                    assert_eq!(properties["reply99to99client"], "request-client");
+                } else {
+                    assert!(!properties.contains_key("req0sys"));
+                    assert!(!properties.contains_key("req0group"));
+                    assert!(!properties.contains_key("cluster"));
+                    assert!(!properties.contains_key("correlation99id"));
+                    assert!(!properties.contains_key("reply99to99client"));
+                }
+            }
+        }
+    }
 }
 
 #[cfg(all(test, feature = "grpc", feature = "http", feature = "tcp"))]
@@ -164,12 +386,13 @@ mod ttl_tests {
             let mut builder = EventMeshMessage::builder()
                 .topic("orders")
                 .content("payload")
-                .prop("ttl", "99000")
                 .prop("custom", "value");
             if let Some(ttl) = ttl {
                 builder = builder.ttl_millis(ttl);
             }
-            let message = builder.build().unwrap();
+            let mut message = builder.build().unwrap();
+            // Defense in depth if crate-private code supplies a reserved key.
+            message.props.insert("ttl".into(), "99000".into());
             assert_outbound_ttl(&message);
             // Encoding borrows the model; it does not rewrite user properties.
             assert_eq!(message.get_prop("ttl"), Some("99000"));

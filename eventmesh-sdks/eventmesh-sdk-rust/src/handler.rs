@@ -28,6 +28,10 @@ use crate::message::Message;
 /// `Ok(Some(reply))` to reply to a synchronous delivery.  Returning an error
 /// reports application failure to the transport adapter rather than treating
 /// it as a successful business acknowledgement.
+///
+/// Native messages expose received metadata through
+/// [`crate::EventMeshMessage::delivery_context`]. Return a newly built business
+/// reply; the SDK restores the original request routing automatically.
 pub trait MessageHandler: Send + Sync + 'static {
     /// Handle one delivery.
     fn handle(&self, message: Message) -> impl Future<Output = Result<Option<Message>>> + Send;

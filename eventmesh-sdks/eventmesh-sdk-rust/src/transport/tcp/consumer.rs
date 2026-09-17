@@ -59,7 +59,19 @@ pub(crate) fn decode_message(pkg: &Package) -> Option<Message> {
         return None;
     }
 
-    message::parse_message(&pkg.body).map(Message::EventMesh)
+    let mut message = message::parse_message(&pkg.body)?;
+    if let Some(context) = message.delivery_context.as_mut() {
+        for (key, value) in &pkg.header.properties {
+            context.insert_missing(
+                key,
+                value
+                    .as_str()
+                    .map(str::to_owned)
+                    .unwrap_or_else(|| value.to_string()),
+            );
+        }
+    }
+    Some(Message::EventMesh(message))
 }
 
 pub(crate) fn encode_reply(message: &Message) -> Result<Package> {
@@ -110,6 +122,15 @@ fn inherit_request_metadata(reply_message: &mut Message, request: &Message) {
     if reply.ttl.is_none() {
         reply.ttl = request.ttl;
     }
+    if reply.biz_seq_no.is_none() {
+        reply.biz_seq_no = request.biz_seq_no.clone();
+    }
+    if reply.unique_id.is_none() {
+        reply.unique_id = request.unique_id.clone();
+    }
+    // A reply always belongs to this request, even if the application returned
+    // a message originally received from another delivery.
+    reply.delivery_context = request.delivery_context.clone();
     for (key, value) in &request.props {
         reply
             .props
@@ -1074,7 +1095,6 @@ mod tests {
             .topic("request-topic")
             .content("request")
             .ttl_millis(4000)
-            .prop("cluster", "remote-cluster")
             .prop("correlation-id", "request-id")
             .build()
             .unwrap();
@@ -1085,6 +1105,15 @@ mod tests {
             .build()
             .unwrap();
 
+        let request = crate::transport::decode_native_message(
+            request,
+            std::collections::HashMap::from([
+                ("cluster".into(), "remote-cluster".into()),
+                ("correlation-id".into(), "request-id".into()),
+                ("ttl".into(), "4000".into()),
+            ]),
+        )
+        .unwrap();
         let mut reply = Message::from(reply);
         inherit_request_metadata(&mut reply, &Message::from(request));
         let pkg = encode_reply(&reply).expect("encode reply");
@@ -1092,7 +1121,11 @@ mod tests {
 
         assert_eq!(encoded.ttl_millis(), Some(4000));
         assert_eq!(encoded.get_prop("ttl"), None);
-        assert_eq!(encoded.get_prop("cluster"), Some("remote-cluster"));
+        assert_eq!(encoded.get_prop("cluster"), None);
+        assert_eq!(
+            encoded.delivery_context().unwrap().attribute("cluster"),
+            Some("remote-cluster")
+        );
         assert_eq!(encoded.get_prop("correlation-id"), Some("reply-id"));
     }
 

@@ -84,7 +84,8 @@ pub mod tcp;
 pub use error::{Error, Result};
 pub use handler::MessageHandler;
 pub use message::{
-    EventMeshMessage, EventMeshMessageBuilder, Message, MessageKind, PublishReceipt,
+    DeliveryContext, EventMeshMessage, EventMeshMessageBuilder, Message, MessageKind,
+    PublishReceipt,
 };
 pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 

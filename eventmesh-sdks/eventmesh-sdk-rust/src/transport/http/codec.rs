@@ -261,7 +261,15 @@ impl PushMessageRequestBody {
             });
         }
 
-        Ok(Message::EventMesh(self.to_event_mesh_message()?))
+        let mut message = self.to_event_mesh_message()?;
+        if let Some(context) = message.delivery_context.as_mut() {
+            for (key, value) in headers {
+                if let Ok(value) = value.to_str() {
+                    context.insert_missing(key.as_str(), value.to_string());
+                }
+            }
+        }
+        Ok(Message::EventMesh(message))
     }
 
     /// Decode the pushed body into an [`EventMeshMessage`].
@@ -291,21 +299,16 @@ impl PushMessageRequestBody {
             }
         }
 
-        let ttl = crate::transport::take_wire_ttl(&mut props)?;
         let mut builder = EventMeshMessage::builder()
             .topic(topic)
-            .content(self.content.clone())
-            .props(props);
-        if let Some(ttl) = ttl {
-            builder = builder.ttl_millis(ttl);
-        }
+            .content(self.content.clone());
         if let Some(value) = &self.bizseqno {
             builder = builder.biz_seq_no(value.clone());
         }
         if let Some(value) = &self.unique_id {
             builder = builder.unique_id(value.clone());
         }
-        builder.build()
+        crate::transport::decode_native_message(builder.build()?, props)
     }
 }
 
@@ -398,31 +401,22 @@ pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(Stri
         .unwrap_or_else(|| RandomStringUtils::generate_num(30));
     fields.push(("bizseqno".into(), biz));
     fields.push(("uniqueid".into(), uid));
-    if !msg.props.is_empty() {
-        // Filter out reserved keys that are already emitted as typed form
-        // fields above. The runtime post-processes `extFields` and would
-        // reverse-overwrite the typed values (e.g. a stale `ttl` prop
-        // clobbering the resolved TTL, or an old `bizseqno` overwriting the
-        // auto-generated one).
-        const RESERVED_KEYS: &[&str] = &[
-            "producergroup",
-            "topic",
-            "content",
-            "ttl",
-            "bizseqno",
-            "uniqueid",
-        ];
-        let filtered: HashMap<&String, &String> = msg
-            .props
-            .iter()
-            .filter(|(k, _)| !RESERVED_KEYS.contains(&k.as_str()))
-            .collect();
-        if !filtered.is_empty() {
-            fields.push((
-                "extFields".into(),
-                serde_json::to_string(&filtered).unwrap_or_default(),
-            ));
-        }
+    // Only business extensions and explicitly mapped payload metadata enter
+    // extFields. Java merges this map after the current request's headers.
+    let mut extensions: HashMap<&str, &str> = msg
+        .props
+        .iter()
+        .filter(|(key, _)| !crate::model::delivery::is_reserved_property(key))
+        .map(|(key, value)| (key.as_str(), value.as_str()))
+        .collect();
+    if let Some(content_type) = msg.data_content_type() {
+        extensions.insert("datacontenttype", content_type);
+    }
+    if !extensions.is_empty() {
+        fields.push((
+            "extFields".into(),
+            serde_json::to_string(&extensions).unwrap_or_default(),
+        ));
     }
     fields
 }
@@ -617,21 +611,23 @@ mod tests {
 
     #[test]
     fn encode_publish_filters_reserved_keys_from_ext_fields() {
-        let msg = EventMeshMessage::builder()
+        let mut msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .ttl_millis(7_000)
             .biz_seq_no("my-seq")
             .unique_id("my-uid")
             .prop("key1", "val1")
-            .prop("ttl", "99000")
-            .prop("bizseqno", "stale-seq")
-            .prop("uniqueid", "stale-uid")
-            .prop("topic", "stale-topic")
-            .prop("content", "stale-content")
-            .prop("producergroup", "stale-group")
             .build()
             .unwrap();
+        // Exercise the encoder guard against malformed crate-private state.
+        msg.props.insert("ttl".into(), "99000".into());
+        msg.props.insert("bizseqno".into(), "stale-seq".into());
+        msg.props.insert("uniqueid".into(), "stale-uid".into());
+        msg.props.insert("topic".into(), "stale-topic".into());
+        msg.props.insert("content".into(), "stale-content".into());
+        msg.props
+            .insert("producergroup".into(), "stale-group".into());
         let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         let ext = map.get("extFields").expect("extFields should be present");
@@ -650,13 +646,14 @@ mod tests {
 
     #[test]
     fn encode_publish_omits_ext_fields_when_all_props_filtered() {
-        let msg = EventMeshMessage::builder()
+        let mut msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
-            .prop("ttl", "99000")
-            .prop("bizseqno", "stale")
             .build()
             .unwrap();
+        // Exercise the encoder guard against malformed crate-private state.
+        msg.props.insert("ttl".into(), "99000".into());
+        msg.props.insert("bizseqno".into(), "stale".into());
         let fields = encode_publish(&msg, "DefaultProducerGroup");
         // All props were reserved keys → no extFields field should be emitted.
         assert!(!fields.iter().any(|(k, _)| k == "extFields"));
@@ -704,12 +701,13 @@ mod tests {
     #[test]
     fn encode_publish_ignores_ttl_prop_when_field_unset() {
         // Generic properties never configure native-message TTL.
-        let msg = EventMeshMessage::builder()
+        let mut msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
-            .prop(ProtocolKey::TTL, "99000")
             .build()
             .unwrap();
+        // Exercise the encoder guard against malformed crate-private state.
+        msg.props.insert(ProtocolKey::TTL.into(), "99000".into());
         let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&DEFAULT_MESSAGE_TTL.to_string()));
@@ -717,13 +715,14 @@ mod tests {
 
     #[test]
     fn encode_publish_typed_ttl_takes_precedence_over_prop() {
-        let msg = EventMeshMessage::builder()
+        let mut msg = EventMeshMessage::builder()
             .topic("t")
             .content("c")
             .ttl_millis(7_000)
-            .prop(ProtocolKey::TTL, "99000")
             .build()
             .unwrap();
+        // Exercise the encoder guard against malformed crate-private state.
+        msg.props.insert(ProtocolKey::TTL.into(), "99000".into());
         let fields = encode_publish(&msg, "DefaultProducerGroup");
         let map: HashMap<String, String> = fields.into_iter().collect();
         assert_eq!(map.get("ttl"), Some(&"7000".to_string()));

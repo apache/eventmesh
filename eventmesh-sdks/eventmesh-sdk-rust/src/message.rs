@@ -22,12 +22,17 @@
 //! encoding remains an implementation detail. [`EventMeshMessage`] deliberately
 //! does not implement serde: each transport maps it to a private protobuf,
 //! form, or TCP JSON wire DTO.
+//!
+//! Native messages expose business properties separately from their read-only
+//! [`DeliveryContext`]. Publishers ignore that context; consumers use the
+//! original request context to correlate replies automatically. CloudEvents
+//! keep their standard attributes and extensions.
 
 #[cfg(feature = "cloud_events")]
 use crate::error::EventMeshError;
 use crate::error::Result;
 
-pub use crate::model::{EventMeshMessage, EventMeshMessageBuilder};
+pub use crate::model::{DeliveryContext, EventMeshMessage, EventMeshMessageBuilder};
 
 /// Which public event dialect a [`Message`] contains.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

@@ -950,6 +950,9 @@ pub(crate) fn build_reply(
 ) -> Result<crate::proto_gen::PbCloudEvent> {
     let mut event = encode_message(reply, config, DEFAULT_REPLY_PRODUCER_GROUP)?;
     for (key, value) in &request.attributes {
+        if crate::model::delivery::is_transport_property(key) {
+            continue;
+        }
         event
             .attributes
             .entry(key.clone())
@@ -988,6 +991,47 @@ mod tests {
                 ..
             }
         ));
+    }
+
+    #[test]
+    fn native_reply_restores_routing_without_inheriting_sender_credentials() {
+        let mut request = codec::from_event_mesh_message(
+            &EventMeshMessage::new("orders", "request").unwrap(),
+            &config(),
+            "producer",
+        )
+        .unwrap();
+        for (key, value) in [
+            ("cluster", "request-cluster"),
+            ("correlation99id", "request-id"),
+            ("reply99to99client", "request-client"),
+            ("req0sys", "request-system"),
+            ("token", "sender-token"),
+        ] {
+            request
+                .attributes
+                .insert(key.into(), crate::proto_gen::attr_str(value));
+        }
+        let decoded = decode_message(&request).unwrap().into_event_mesh().unwrap();
+        assert!(decoded.properties().is_empty());
+        assert_eq!(
+            decoded
+                .delivery_context()
+                .unwrap()
+                .attribute("correlation99id"),
+            Some("request-id")
+        );
+
+        let reply = build_reply(
+            &Message::from(EventMeshMessage::new("orders", "reply").unwrap()),
+            &request,
+            &config(),
+        )
+        .unwrap();
+        for key in ["cluster", "correlation99id", "reply99to99client", "req0sys"] {
+            assert_eq!(reply.attributes.get(key), request.attributes.get(key));
+        }
+        assert!(!reply.attributes.contains_key("token"));
     }
 
     #[tokio::test]
