@@ -31,14 +31,14 @@ jobs:
 
       - name: Run the runtime (memory storage default, no broker)
         run: |
-          docker run -d --name em-smoke -p 18080:8080 -p 18081:8081 apache/eventmesh:2.0.0-snapshot
+          docker run -d --name em-smoke -p 10105:10105 -p 10106:10106 apache/eventmesh:2.0.0-snapshot
           for i in $(seq 1 60); do
-            if curl -sf http://localhost:18081/admin/health > /dev/null 2>&1; then
+            if curl -sf http://localhost:10106/admin/health > /dev/null 2>&1; then
               echo "healthy after ${i}s"; break
             fi
             sleep 1
           done
-          curl -s http://localhost:18081/admin/health
+          curl -s http://localhost:10106/admin/health
           echo
           docker logs em-smoke 2>&1 | tail -20
 
@@ -46,19 +46,19 @@ jobs:
         run: |
           # subscribe BEFORE publish (same order as the runtime ITs; the pull-loop
           # covers offset 0 for pre-existing subscribers)
-          code=$(curl -s -o sub.json -w "%{http_code}" -X POST http://localhost:18080/events/subscribe \
+          code=$(curl -s -o sub.json -w "%{http_code}" -X POST http://localhost:10105/events/subscribe \
             -H "Content-Type: application/json" \
             -d '{"clientId":"smoke-client","topic":"smoke","mode":"BROADCAST"}')
           echo "subscribe http=$code body=$(cat sub.json)"
           [ "$code" = "200" ] || [ "$code" = "202" ]
 
-          code=$(curl -s -o pub.json -w "%{http_code}" -X POST "http://localhost:18080/events/publish?topic=smoke" \
+          code=$(curl -s -o pub.json -w "%{http_code}" -X POST "http://localhost:10105/events/publish?topic=smoke" \
             -H "Content-Type: application/cloudevents+json" \
             -d '{"specversion":"1.0","id":"smoke-1","source":"/smoke","type":"smoke.event","datacontenttype":"application/json","data":{"ok":true}}')
           echo "publish http=$code body=$(cat pub.json)"
           [ "$code" = "200" ] || [ "$code" = "202" ]
 
-          curl -s "http://localhost:18080/events/poll?clientId=smoke-client&topics=smoke&timeout=10000" | tee poll.json
+          curl -s "http://localhost:10105/events/poll?clientId=smoke-client&topics=smoke&timeout=10000" | tee poll.json
           grep -q "smoke-1" poll.json && echo "POLL: event delivered"
 
       - name: Dump logs on failure

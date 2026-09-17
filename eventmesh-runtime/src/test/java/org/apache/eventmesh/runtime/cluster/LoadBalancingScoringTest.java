@@ -57,13 +57,13 @@ class LoadBalancingScoringTest {
         AtomicClock clock = new AtomicClock(20_000L);
         InMemoryMetaStore meta = new InMemoryMetaStore();
         // Instance A: light load
-        meta.put("/em/instances/a", "19000|h1:8080|2|500|400|0.10");
+        meta.put("/em/instances/a", "19000|h1:10105|2|500|400|0.10");
         // Instance B: heavy load
-        meta.put("/em/instances/b", "19500|h2:8080|20|5000000|4000000|0.90");
+        meta.put("/em/instances/b", "19500|h2:10105|20|5000000|4000000|0.90");
         // Instance C: stale (should be pruned)
-        meta.put("/em/instances/c", "1000|h3:8080|1|100|50|0.01");
+        meta.put("/em/instances/c", "1000|h3:10105|1|100|50|0.01");
 
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:10105", 15_000L, clock::get, new FencingToken());
         Map<String, ClusterMembership.InstanceInfo> live = m.liveInstancesWithLoad();
 
         assertEquals(2, live.size(), "stale instance c must be pruned");
@@ -84,11 +84,11 @@ class LoadBalancingScoringTest {
         AtomicClock clock = new AtomicClock(10_000L);
         InMemoryMetaStore meta = new InMemoryMetaStore();
         // Normal instance
-        meta.put("/em/instances/normal", "9000|h1:8080|3|1000|800|0.20");
+        meta.put("/em/instances/normal", "9000|h1:10105|3|1000|800|0.20");
         // Overloaded instance (cpu > 0.8)
-        meta.put("/em/instances/overloaded", "9500|h2:8080|5|2000|1500|0.90");
+        meta.put("/em/instances/overloaded", "9500|h2:10105|5|2000|1500|0.90");
 
-        ClusterMembership m = new ClusterMembership(meta, "self", "self:8080", 15_000L, clock::get, new FencingToken());
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:10105", 15_000L, clock::get, new FencingToken());
         Map<String, ClusterMembership.InstanceInfo> live = m.liveInstancesWithLoad();
 
         LoadMeter.Snapshot normal = live.get("normal").load;

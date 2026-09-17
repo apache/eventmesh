@@ -2,7 +2,7 @@
 
 **Audience:** application developers integrating with the EventMesh traffic
 port directly (any language, no SDK required). Every endpoint below lives on
-the **traffic HTTP port (default 8080)** and is registered in
+the **traffic HTTP port (default 10105)** and is registered in
 `UniHttpServer`. The Java SDK wraps all of these — see the
 [Java client guide](client-java.md).
 

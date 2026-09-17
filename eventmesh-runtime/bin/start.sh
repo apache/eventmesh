@@ -24,8 +24,8 @@
 #
 # Env vars (all optional):
 #   EVENTMESH_STORAGE_TYPE  kafka | rocketmq | rocketmq5    (default kafka)
-#   EVENTMESH_HTTP_PORT     traffic HTTP port              (default 8080)
-#   EVENTMESH_ADMIN_PORT    admin HTTP port                (default 8081)
+#   EVENTMESH_HTTP_PORT     traffic HTTP port              (default 10105)
+#   EVENTMESH_ADMIN_PORT    admin HTTP port                (default 10106)
 #   EVENTMESH_OFFSET_PATH   RocksDB offset dir             (default $EVENTMESH_HOME/data/offset)
 #   JAVA_OPTS               extra -D flags (tls.*, ws.port, meta.*, …)
 #
@@ -36,8 +36,8 @@ EVENTMESH_HOME="${EVENTMESH_HOME:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 cd "$EVENTMESH_HOME"
 
 EVENTMESH_STORAGE_TYPE="${EVENTMESH_STORAGE_TYPE:-kafka}"
-EVENTMESH_HTTP_PORT="${EVENTMESH_HTTP_PORT:-8080}"
-EVENTMESH_ADMIN_PORT="${EVENTMESH_ADMIN_PORT:-8081}"
+EVENTMESH_HTTP_PORT="${EVENTMESH_HTTP_PORT:-10105}"
+EVENTMESH_ADMIN_PORT="${EVENTMESH_ADMIN_PORT:-10106}"
 EVENTMESH_OFFSET_PATH="${EVENTMESH_OFFSET_PATH:-$EVENTMESH_HOME/data/offset}"
 JAVA_OPTS="${JAVA_OPTS:-}"
 

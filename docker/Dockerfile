@@ -58,20 +58,24 @@ RUN chmod +x bin/*.sh \
  && mkdir -p /data/app/eventmesh/data /data/app/eventmesh/logs \
  && chown eventmesh:eventmesh /data/app/eventmesh/data /data/app/eventmesh/logs
 
-# 8080 = traffic HTTP (/events/* CloudEvents + legacy /eventmesh/*).
-# 8081 = independent admin port (UniAdminServer /admin/*, incl. GET /admin/health).
-# 8082 = WebSocket push transport (opt-in via -Deventmesh.ws.port in JAVA_OPTS).
+# 10105 = traffic HTTP (/events/* CloudEvents + legacy /eventmesh/*).
+# 10106 = independent admin port (UniAdminServer /admin/*, incl. GET /admin/health).
+# 10107 = WebSocket push transport (opt-in via -Deventmesh.ws.port in JAVA_OPTS).
+# 10108 = A2A gateway demos (Experimental, not started by bin/start.sh).
+# 10205 = RESERVED for the future gRPC protocol port (the 1.x default; the uni
+#         runtime does not ship a gRPC server yet - do not bind it to another
+#         service so gRPC can land on its historical number).
 # Note (#5380 deployment modes, see docs/feature/deployment.md, deployment modes): this image is the
 # CORE Runtime. The A2A Gateway (A2AGatewayServer, EXPERIMENTAL) and the v2 streaming
 # session layer are NOT started by bin/start.sh; they require a dedicated launcher /
 # embedder wiring and are documented as separate deployment modes.
-EXPOSE 8080 8081 8082
+EXPOSE 10105 10106 10107
 
 # Liveness probe against the admin health endpoint (issue #5350). Uses bash's
 # /dev/tcp redirection so no curl/wget layer is added; any non-200 first line
 # (connection refused, 5xx) fails the check.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/${EVENTMESH_ADMIN_PORT:-8081} \
+  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/${EVENTMESH_ADMIN_PORT:-10106} \
     && printf "GET /admin/health HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3 \
     && head -n1 <&3 | grep -q " 200 "' || exit 1
 
@@ -83,8 +87,8 @@ ENV CONFPATH=/data/app/eventmesh/conf
 # needed. Override with -e EVENTMESH_STORAGE_TYPE=kafka|rocketmq|rocketmq5 and
 # supply the backend address via conf/eventmesh.properties (mount a volume over
 ENV EVENTMESH_STORAGE_TYPE=memory
-ENV EVENTMESH_HTTP_PORT=8080
-ENV EVENTMESH_ADMIN_PORT=8081
+ENV EVENTMESH_HTTP_PORT=10105
+ENV EVENTMESH_ADMIN_PORT=10106
 ENV EVENTMESH_OFFSET_PATH=/data/app/eventmesh/data/offset
 # Extra -D flags: TLS keystore, ws.port, meta.type/meta.addr for clustering, …
 # For container memory limits consider -XX:MaxRAMPercentage=70.

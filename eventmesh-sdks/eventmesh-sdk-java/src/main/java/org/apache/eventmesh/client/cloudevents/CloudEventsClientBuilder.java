@@ -20,7 +20,7 @@ package org.apache.eventmesh.client.cloudevents;
 /** Builder for {@link CloudEventsClient}. */
 public class CloudEventsClientBuilder {
 
-    private String runtimeUrl = "http://localhost:8080";
+    private String runtimeUrl = "http://localhost:10105";
     private String clientId = "client-1";
     private long pollIntervalMs = 1000L;
     /** WebSocket push server base URL (e.g. {@code http://localhost:8082}) — the runtime's WS

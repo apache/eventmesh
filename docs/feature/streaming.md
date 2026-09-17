@@ -10,9 +10,9 @@ long-poll, SSE, WebSocket, and the two streaming-session modes.
 
 | Transport | Endpoint | Direction | Port | Best for |
 | --- | --- | --- | --- | --- |
-| **HTTP long-poll** | `GET /events/poll` | client-driven | 8080 | Batch consumers, scheduled jobs, serverless; NAT-friendly |
-| **SSE** | `GET /events/stream` | server push (one-way) | 8080 | Browser/mobile push, dashboards, LLM token streams |
-| **WebSocket** | WS upgrade on the dedicated port | server push, bi-directional | 8082 (opt-in) | Low-latency interactive clients |
+| **HTTP long-poll** | `GET /events/poll` | client-driven | 10105 | Batch consumers, scheduled jobs, serverless; NAT-friendly |
+| **SSE** | `GET /events/stream` | server push (one-way) | 10105 | Browser/mobile push, dashboards, LLM token streams |
+| **WebSocket** | WS upgrade on the dedicated port | server push, bi-directional | 10107 (opt-in) | Low-latency interactive clients |
 
 All three deliver identical CloudEvent payloads and share the same ACK /
 retry / quota machinery — the only difference is the push direction.
@@ -20,7 +20,7 @@ retry / quota machinery — the only difference is the push direction.
 ## Long-poll
 
 ```shell
-curl "http://localhost:8080/events/poll?clientId=order-svc&timeoutMs=30000"
+curl "http://localhost:10105/events/poll?clientId=order-svc&timeoutMs=30000"
 # → [{ "deliveryId": "...", "event": { ...CloudEvent... } }, ...]
 ```
 
@@ -31,7 +31,7 @@ Batches up to `max` (default 100) buffered events; blocks up to
 ## SSE
 
 ```shell
-curl -N "http://localhost:8080/events/stream?clientId=order-svc" \
+curl -N "http://localhost:10105/events/stream?clientId=order-svc" \
   -H "Accept: text/event-stream"
 ```
 
@@ -42,15 +42,15 @@ frames as events arrive. Write failures nack the dispatcher immediately
 
 ## WebSocket
 
-The WS server is a separate port (`-Deventmesh.ws.port=8082`, disabled by
+The WS server is a separate port (`-Deventmesh.ws.port=10107`, disabled by
 default) because the upgrade handshake is a different protocol negotiation.
 The **client must configure `wsUrl` explicitly** — pointing it at the HTTP
 port fails the handshake:
 
 ```java
 CloudEventsClient wsClient = CloudEventsClient.builder()
-    .runtimeUrl("http://localhost:8080")   // publish / long-poll / SSE
-    .wsUrl("http://localhost:8082")        // WS push
+    .runtimeUrl("http://localhost:10105")   // publish / long-poll / SSE
+    .wsUrl("http://localhost:10107")        // WS push
     .clientId("ws-sub").build();
 wsClient.subscribeWs("orders", "BROADCAST", event -> { ... });
 ```

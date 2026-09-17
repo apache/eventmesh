@@ -17,13 +17,13 @@ operator path from the legacy `master` branch (`eventmesh-operator/`, issue
 kubectl apply -k .
 ```
 
-The runtime Service exposes `eventmesh-runtime.eventmesh-system:8080`
-(traffic) and `:8081` (admin). Verify:
+The runtime Service exposes `eventmesh-runtime.eventmesh-system:10105`
+(traffic) and `:10106` (admin). Verify:
 
 ```shell
 kubectl -n eventmesh-system get pods
 TOKEN=$(kubectl -n eventmesh-system get secret eventmesh-admin-token -o jsonpath='{.data.token}' | base64 -d)
-kubectl -n eventmesh-system run curl --rm -it --image=curlimages/curl --   curl -s -H "Authorization: Bearer $TOKEN"   http://eventmesh-runtime.eventmesh-system.svc.cluster.local:8081/admin/health
+kubectl -n eventmesh-system run curl --rm -it --image=curlimages/curl --   curl -s -H "Authorization: Bearer $TOKEN"   http://eventmesh-runtime.eventmesh-system.svc.cluster.local:10106/admin/health
 ```
 
 ## What each piece does
@@ -34,7 +34,7 @@ kubectl -n eventmesh-system run curl --rm -it --image=curlimages/curl --   curl 
 | `runtime-configmap.yaml` | `eventmesh.properties` (storage endpoints) — subPath-mounted into `conf/` |
 | `runtime-secret.yaml` | Admin bearer token (example; replace before use) |
 | `runtime-statefulset.yaml` | Runtime pods: ports, probes on `/admin/health`, non-root (uid 10001), PVC for the RocksDB offset store |
-| `runtime-service.yaml` | Stable DNS for traffic (8080) + admin (8081) |
+| `runtime-service.yaml` | Stable DNS for traffic (10105) + admin (10106) |
 | `connector-configmap.yaml` | Connector topology as `CONNECTOR_OPTS` (edit + rollout restart) |
 | `connector-deployment.yaml` | Connector-runtime pods (non-root uid 10002, process liveness probe) |
 

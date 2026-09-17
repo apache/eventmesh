@@ -376,8 +376,8 @@ public class EventMeshApplication {
 
     public static void main(String[] args) throws Exception {
         String storageType = System.getProperty("eventmesh.storage.type", "memory");
-        int httpPort = Integer.getInteger("eventmesh.http.port", 8080);
-        final int adminPort = Integer.getInteger("eventmesh.admin.port", 8081);
+        int httpPort = Integer.getInteger("eventmesh.http.port", 10105);
+        final int adminPort = Integer.getInteger("eventmesh.admin.port", 10106);
         final String offsetPath = System.getProperty("eventmesh.offset.path", "./data/offset");
 
         // Cluster config (optional): -Deventmesh.meta.type=nacos -Deventmesh.meta.addr=localhost:8848

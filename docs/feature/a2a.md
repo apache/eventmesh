@@ -191,7 +191,7 @@ The `A2AClient` provides a typed Java API for agent developers:
 
 ```java
 A2AClient client = A2AClient.builder()
-    .gatewayUrl("http://localhost:10105")
+    .gatewayUrl("http://localhost:10108")
     .namespace("global")
     .agentName("my-agent")
     .agentCard(card)
@@ -401,7 +401,7 @@ The A2A Gateway provides a REST API for external clients and non-Java agents.
 #### 5.3.1 Submit Task (Sync)
 
 ```bash
-curl -X POST 'http://localhost:10105/a2a/tasks?mode=sync' \
+curl -X POST 'http://localhost:10108/a2a/tasks?mode=sync' \
   -H 'Content-Type: application/json' \
   -d '{"targetAgent":"weather-agent","message":"Beijing"}'
 ```
@@ -418,7 +418,7 @@ Response:
 #### 5.3.2 Submit Task (Async)
 
 ```bash
-curl -X POST 'http://localhost:10105/a2a/tasks?mode=async' \
+curl -X POST 'http://localhost:10108/a2a/tasks?mode=async' \
   -H 'Content-Type: application/json' \
   -d '{"targetAgent":"weather-agent","message":"Shanghai"}'
 ```
@@ -435,7 +435,7 @@ Response (HTTP 202):
 #### 5.3.3 SSE Stream
 
 ```bash
-curl -N http://localhost:10105/a2a/tasks/task-a1b2c3d4/stream
+curl -N http://localhost:10108/a2a/tasks/task-a1b2c3d4/stream
 ```
 
 Response (`text/event-stream`):
@@ -450,14 +450,14 @@ data: {"taskId":"task-a1b2c3d4","state":"completed","data":"The weather in Beiji
 #### 5.3.4 List Agents
 
 ```bash
-curl http://localhost:10105/a2a/agents
+curl http://localhost:10108/a2a/agents
 ```
 
 ### 5.4 A2AClient SDK (Java)
 
 ```java
 A2AClient client = A2AClient.builder()
-    .gatewayUrl("http://localhost:10105")
+    .gatewayUrl("http://localhost:10108")
     .namespace("global")
     .agentName("my-agent")
     .agentCard(card)
@@ -767,29 +767,29 @@ A2A Gateway 提供完整的 REST API，支持非 Java 客户端通过 HTTP 交�
 
 ```bash
 # 同步提交 task
-curl -X POST 'http://localhost:10105/a2a/tasks?mode=sync' \
+curl -X POST 'http://localhost:10108/a2a/tasks?mode=sync' \
   -H 'Content-Type: application/json' \
   -d '{"targetAgent":"weather-agent","message":"Beijing"}'
 
 # 异步提交 task
-curl -X POST 'http://localhost:10105/a2a/tasks?mode=async' \
+curl -X POST 'http://localhost:10108/a2a/tasks?mode=async' \
   -H 'Content-Type: application/json' \
   -d '{"targetAgent":"weather-agent","message":"Shanghai"}'
 
 # 查询状态
-curl http://localhost:10105/a2a/tasks/{taskId}
+curl http://localhost:10108/a2a/tasks/{taskId}
 
 # 列出 tasks（支持 state/limit/offset）
-curl 'http://localhost:10105/a2a/tasks?state=COMPLETED&limit=20&offset=0'
+curl 'http://localhost:10108/a2a/tasks?state=COMPLETED&limit=20&offset=0'
 
 # SSE 流式推送（含 heartbeat 保活）
-curl -N http://localhost:10105/a2a/tasks/{taskId}/stream
+curl -N http://localhost:10108/a2a/tasks/{taskId}/stream
 
 # 健康检查
-curl http://localhost:10105/a2a/health
+curl http://localhost:10108/a2a/health
 
 # 列出 agents
-curl http://localhost:10105/a2a/agents
+curl http://localhost:10108/a2a/agents
 ```
 
 #### REST API 端点列表
@@ -812,7 +812,7 @@ curl http://localhost:10105/a2a/agents
 
 ```java
 A2AClient client = A2AClient.builder()
-    .gatewayUrl("http://localhost:10105")
+    .gatewayUrl("http://localhost:10108")
     .namespace("global")
     .agentName("my-agent")
     .agentCard(card)

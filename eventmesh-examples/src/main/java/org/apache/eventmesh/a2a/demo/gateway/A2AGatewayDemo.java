@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  * <ol>
  *   <li>Start the A2A Gateway Server first:
  *       <pre>java org.apache.eventmesh.runtime.a2a.A2AGatewayServer</pre>
- *       (server listens on port 10105 by default, with a pre-registered weather-agent)</li>
+ *       (server listens on port 10108 by default, with a pre-registered weather-agent)</li>
  *   <li>Then run this client demo.</li>
  * </ol>
  *
@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class A2AGatewayDemo {
 
-    private static final String GATEWAY_URL = "http://localhost:10105";
+    private static final String GATEWAY_URL = "http://localhost:10108";
     private static final String NAMESPACE = "global";
 
     public static void main(String[] args) throws Exception {

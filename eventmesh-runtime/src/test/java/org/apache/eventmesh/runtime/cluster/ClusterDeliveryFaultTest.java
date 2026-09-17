@@ -191,7 +191,7 @@ class ClusterDeliveryFaultTest {
             this.id = id;
             this.meta = new PartitionedMetaStore(sharedMeta);
             FencingToken token = new FencingToken(bootEpoch, new AtomicLong(0));
-            this.membership = new ClusterMembership(meta, id, id + ":8080", TTL_MS, clock::get, token);
+            this.membership = new ClusterMembership(meta, id, id + ":10105", TTL_MS, clock::get, token);
             this.storage = new FakeStorage();
             this.ownership = new PartitionOwnership(membership, meta, storage, id, 1_000L, clock::get, token);
         }

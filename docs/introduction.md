@@ -51,8 +51,8 @@ makes the rest of the properties possible:
 ```
                      ┌─────────────────────────────┐
   publishers /       │   EventMesh Runtime(s)      │        storage backend
-  subscribers ─HTTP─▶│  8080 traffic   8081 admin  │─WAL──▶ RocketMQ / Kafka
-  (SDK or curl)      │  8082 WebSocket (opt-in)    │        (pluggable SPI)
+  subscribers ─HTTP─▶│  10105 traffic   10106 admin  │─WAL──▶ RocketMQ / Kafka
+  (SDK or curl)      │  10107 WebSocket (opt-in)    │        (pluggable SPI)
                      └──────────────┬──────────────┘
                                     │ meta (optional, multi-instance)
                                     ▼
@@ -91,10 +91,10 @@ makes the rest of the properties possible:
 docker run -d --name eventmesh \
   -e EVENTMESH_STORAGE_TYPE=kafka \
   -e EVENTMESH_KAFKA_NAMESRV=YOUR_KAFKA:9092 \
-  -p 8080:8080 -p 8081:8081 \
+  -p 10105:10105 -p 10106:10106 \
   apache/eventmesh:latest
 
-curl -X POST "http://localhost:8080/events/publish?topic=hello" \
+curl -X POST "http://localhost:10105/events/publish?topic=hello" \
   -H "Content-Type: application/cloudevents+json" \
   -d '{"specversion":"1.0","id":"1","source":"/demo","type":"demo.hello","data":"world"}'
 ```

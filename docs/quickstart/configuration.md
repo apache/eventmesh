@@ -75,9 +75,10 @@ Usually set via `-D` by `bin/start.sh`; override here if needed.
 
 | Key | Default | Description |
 |---|---|---|
-| `eventmesh.http.port` | `8080` | Traffic HTTP (`/events/*`, `/agent/*`, `/session/*`) |
-| `eventmesh.admin.port` | `8081` | Admin HTTP (`/admin/*`, `/metrics`) |
-| `eventmesh.ws.port` | `-1` (disabled) | WebSocket push port; set e.g. `8082` to enable |
+| `eventmesh.http.port` | `10105` | Traffic HTTP (`/events/*`, `/agent/*`, `/session/*`) |
+| `eventmesh.admin.port` | `10106` | Admin HTTP (`/admin/*`, `/metrics`) |
+| `eventmesh.ws.port` | `-1` (disabled) | WebSocket push port; set e.g. `10107` to enable |
+| `eventmesh.grpc.port` | `10205` | RESERVED for the future gRPC protocol (not served yet; keeps the 1.x default warm) |
 | `eventmesh.offset.path` | `./data/offset` | Local offset store directory |
 
 ## 4. Security
@@ -112,7 +113,7 @@ programmatically via `configureTopicRateLimit(topic, capacity, permitsPerSecond)
 buckets make publish fail with `RateLimitedException` → HTTP `429` on the publish endpoint.
 Cluster-wide limits can be inspected and adjusted at `POST /admin/ratelimit`.
 
-## 6. Admin endpoints (port 8081)
+## 6. Admin endpoints (port 10106)
 
 | Endpoint | Purpose |
 |---|---|
@@ -129,7 +130,7 @@ Cluster-wide limits can be inspected and adjusted at `POST /admin/ratelimit`.
 | `GET/POST /admin/connectors` | connector definitions (CRUD) |
 | `GET /admin/connector-workers` | connector worker registry |
 
-## 7. Traffic endpoints (port 8080)
+## 7. Traffic endpoints (port 10105)
 
 Full request/response shapes: see the [client guide](../feature/client-java.md).
 Summary:

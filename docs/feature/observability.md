@@ -14,7 +14,7 @@ Observability is **OpenTelemetry-first**: every metric is an OTel instrument
 deployment configures (OTLP, Prometheus-via-OTel, …). For zero-dependency
 scraping the admin server also mirrors the same counters:
 
-- `GET /metrics` — Prometheus text exposition (port 8081)
+- `GET /metrics` — Prometheus text exposition (port 10106)
 - `GET /admin/metrics` — JSON snapshot
 
 | Metric (Prometheus name) | Kind | Meaning |

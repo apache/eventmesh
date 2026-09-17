@@ -99,7 +99,7 @@ class EventMeshApplicationStartupTest {
 
     private static UniRuntime runtime() {
         return new UniRuntime(new StubStorage(), new InMemoryOffsetStore(),
-            20L, 50L, 100, 50L, DeliveryTopology.LOCAL_STICKY_PULL, "test", "test:8080");
+            20L, 50L, 100, 50L, DeliveryTopology.LOCAL_STICKY_PULL, "test", "test:10105");
     }
 
     @Test

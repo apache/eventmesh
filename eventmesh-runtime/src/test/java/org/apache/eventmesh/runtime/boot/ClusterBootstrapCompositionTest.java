@@ -50,7 +50,7 @@ class ClusterBootstrapCompositionTest {
     private UniRuntime runtime() {
         return new UniRuntime(new StubStorage(), new InMemoryOffsetStore(),
             20L, 50L, 100, 50L,
-            org.apache.eventmesh.runtime.cluster.DeliveryTopology.LOCAL_STICKY_PULL, "test", "test:8080");
+            org.apache.eventmesh.runtime.cluster.DeliveryTopology.LOCAL_STICKY_PULL, "test", "test:10105");
     }
 
     /** #5377: with the app-layer ownership pre-installed, UniRuntime reuses it — one lifecycle. */
@@ -62,7 +62,7 @@ class ClusterBootstrapCompositionTest {
         org.apache.eventmesh.runtime.cluster.FencingToken token =
             new org.apache.eventmesh.runtime.cluster.FencingToken();
         org.apache.eventmesh.runtime.cluster.ClusterMembership membership =
-            new org.apache.eventmesh.runtime.cluster.ClusterMembership(meta, "test", "test:8080",
+            new org.apache.eventmesh.runtime.cluster.ClusterMembership(meta, "test", "test:10105",
                 15_000L, System::currentTimeMillis, token);
         PartitionOwnership installed = new PartitionOwnership(
             membership, meta, runtime.storage(), "test", 5_000L, System::currentTimeMillis, token);

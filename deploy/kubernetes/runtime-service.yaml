@@ -31,8 +31,8 @@ spec:
     app.kubernetes.io/component: runtime
   ports:
     - name: http
-      port: 8080
+      port: 10105
       targetPort: http
     - name: admin
-      port: 8081
+      port: 10106
       targetPort: admin

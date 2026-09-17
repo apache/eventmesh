@@ -44,7 +44,7 @@ changes.
 ```shell
 sudo docker pull apache/eventmesh:latest
 sudo docker run -d --name eventmesh \
-  -p 8080:8080 -p 8081:8081 \
+  -p 10105:10105 -p 10106:10106 \
   apache/eventmesh:latest
 ```
 
@@ -53,8 +53,8 @@ dependency, ready for a smoke test as-is. For a real broker add
 `-e EVENTMESH_STORAGE_TYPE=kafka` (or `rocketmq` / `rocketmq5`) and the
 backend address keys shown below.
 
-Ports: `8080` = traffic HTTP (`/events/*`), `8081` = admin HTTP (`/admin/*`). The WebSocket
-push port (`8082`) is opt-in.
+Ports: `10105` = traffic HTTP (`/events/*`), `10106` = admin HTTP (`/admin/*`). The WebSocket
+push port (`10107`) is opt-in.
 
 ### Option B — From source
 
@@ -76,7 +76,7 @@ Storage-specific keys (all overridable via `-D` system properties) are documente
 ### Verify it is up
 
 ```shell
-curl http://localhost:8081/admin/health
+curl http://localhost:10106/admin/health
 # {"status":"UP"}
 ```
 
@@ -86,7 +86,7 @@ Applications send standard [CloudEvents](https://cloudevents.io) 1.0 over HTTP. 
 means the event is durably in the WAL:
 
 ```shell
-curl -X POST "http://localhost:8080/events/publish?topic=orders" \
+curl -X POST "http://localhost:10105/events/publish?topic=orders" \
   -H "Content-Type: application/cloudevents+json" \
   -d '{
     "specversion": "1.0",
@@ -105,17 +105,17 @@ then receive via one of three transports:
 
 ```shell
 # 1. register: clientId + topic + distribution mode
-curl -X POST http://localhost:8080/events/subscribe \
+curl -X POST http://localhost:10105/events/subscribe \
   -H "Content-Type: application/json" \
   -d '{"clientId":"order-svc","topic":"orders","mode":"LOAD_BALANCE"}'
 
 # 2a. HTTP long-polling (params: clientId, max, timeoutMs)
-curl "http://localhost:8080/events/poll?clientId=order-svc&max=100&timeoutMs=30000"
+curl "http://localhost:10105/events/poll?clientId=order-svc&max=100&timeoutMs=30000"
 # → [{"deliveryId":"d-...","event":{...CloudEvent...}}, ...]
 
 # 2b. after processing, acknowledge so the offset advances (at-least-once).
 #     One deliveryId per call - take it from the poll response above.
-curl -X POST http://localhost:8080/events/ack \
+curl -X POST http://localhost:10105/events/ack \
   -H "Content-Type: application/json" \
   -d '{"deliveryId":"d-..."}'
 ```
@@ -132,7 +132,7 @@ SSE and WebSocket push are also available; the raw HTTP forms are:
 
 ```shell
 # SSE — server push over a long-lived HTTP connection
-curl -N "http://localhost:8080/events/stream?clientId=order-svc" \r
+curl -N "http://localhost:10105/events/stream?clientId=order-svc" \r
   -H "Accept: text/event-stream"
 
 # WebSocket — full-duplex server push over the dedicated WS port
@@ -140,7 +140,7 @@ curl -N "http://localhost:8080/events/stream?clientId=order-svc" \r
 curl --include --no-buffer \r
   -H "Connection: Upgrade" -H "Upgrade: websocket" \r
   -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGVzdA==" \r
-  "http://localhost:8082/events/stream?clientId=order-svc"
+  "http://localhost:10107/events/stream?clientId=order-svc"
 ```
 
 The `CloudEventsClient` Java SDK wraps all three transports —
@@ -151,7 +151,7 @@ The `CloudEventsClient` Java SDK wraps all three transports —
 
 ```java
 CloudEventsClient client = CloudEventsClient.builder()
-    .baseUrl("http://localhost:8080")
+    .baseUrl("http://localhost:10105")
     .build();
 client.init();
 
@@ -180,4 +180,4 @@ Full API (request/reply, streaming sessions, lite topics, SSE/WS): see the
 - [A2A gateway](../feature/a2a.md) — agent-to-agent messaging (Experimental)
 - Admin API (`/admin/*`) quick reference: `metrics`, `subscriptions`, `offsets`, `clients`,
   `client/reject`, `dlq/replay`, `dlq/browse`, `ratelimit`, `health`, `connectors`,
-  `connector-workers` on port 8081
+  `connector-workers` on port 10106

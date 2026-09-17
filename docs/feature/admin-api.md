@@ -1,7 +1,7 @@
 # Admin API Reference
 
 **Audience:** operators and dashboards. Every endpoint below lives on the
-**admin HTTP port (default 8081)**, served by `UniAdminServer` — a separate
+**admin HTTP port (default 10106)**, served by `UniAdminServer` — a separate
 server so management traffic never competes with data traffic.
 
 ---

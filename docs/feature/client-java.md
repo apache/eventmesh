@@ -56,7 +56,7 @@ A typical client looks like this:
 
 ```java
 CloudEventsClient client = CloudEventsClient.builder()
-    .runtimeUrl("http://localhost:8080")          // EventMesh Runtime HTTP endpoint
+    .runtimeUrl("http://localhost:10105")          // EventMesh Runtime HTTP endpoint
     .clientId("order-svc")                         // unique per JVM
     .pollIntervalMs(500L)                          // long-poll cadence
     .build();
@@ -120,10 +120,10 @@ org.apache.eventmesh.client.cloudevents.CloudEventsClient
 
 ```java
 CloudEventsClient.builder()
-    .runtimeUrl("http://localhost:8080")     // required — Runtime HTTP endpoint
+    .runtimeUrl("http://localhost:10105")     // required — Runtime HTTP endpoint
     .clientId("my-service")                  // required — unique per JVM
     .pollIntervalMs(500L)                    // long-poll cadence (default: builder default)
-    .wsUrl("http://localhost:8082")          // optional — required for subscribeWs
+    .wsUrl("http://localhost:10107")          // optional — required for subscribeWs
     .build();
 ```
 
@@ -138,7 +138,7 @@ Environment variables are honored via `System.getProperty` for tests:
 
 ```java
 CloudEventsClient client = CloudEventsClient.builder()
-    .runtimeUrl(System.getProperty("eventmesh.runtime.url", "http://localhost:8080"))
+    .runtimeUrl(System.getProperty("eventmesh.runtime.url", "http://localhost:10105"))
     .clientId("demo-" + System.currentTimeMillis())
     .build();
 ```
@@ -224,9 +224,9 @@ only difference is the **push direction**.
 
 | Transport | Endpoint | Push direction | Port |
 | --- | --- | --- | --- |
-| Long-poll | `POST /events/subscribe` | client-driven | Runtime HTTP port (default 8080) |
-| SSE | `GET /events/stream` (text/event-stream) | server push | Runtime HTTP port (default 8080) |
-| WebSocket | runtime WS endpoint | server push, bi-directional | Runtime WS port (default 8082, configurable) |
+| Long-poll | `POST /events/subscribe` | client-driven | Runtime HTTP port (default 10105) |
+| SSE | `GET /events/stream` (text/event-stream) | server push | Runtime HTTP port (default 10105) |
+| WebSocket | runtime WS endpoint | server push, bi-directional | Runtime WS port (default 10107, configurable) |
 
 WebSocket needs a separate port because the WS upgrade is a different protocol
 negotiation than plain HTTP. The Runtime starts the WS server on its own port
@@ -239,8 +239,8 @@ client.subscribeSse("orders", "BROADCAST", event -> { /* server-push */ });
 
 // WebSocket — separate port
 CloudEventsClient wsClient = CloudEventsClient.builder()
-    .runtimeUrl("http://localhost:8080")    // HTTP (publish / long-poll / SSE)
-    .wsUrl("http://localhost:8082")         // WS push
+    .runtimeUrl("http://localhost:10105")    // HTTP (publish / long-poll / SSE)
+    .wsUrl("http://localhost:10107")         // WS push
     .clientId("ws-sub").build();
 wsClient.subscribeWs("orders", "BROADCAST", event -> { /* WS push */ });
 ```
@@ -298,7 +298,7 @@ chunks flowing back, multi-turn conversation context).
 
 ```java
 CloudEventsClient client = CloudEventsClient.builder()
-    .runtimeUrl("http://localhost:8080").clientId("my-app").build();
+    .runtimeUrl("http://localhost:10105").clientId("my-app").build();
 
 try (StreamingResponse r = client.streaming()
         .openSession(OpenSession.builder().clientId(client.clientId()).build())
@@ -439,7 +439,7 @@ canceled`) on top of the same storage substrate. The client side is
 
 ```java
 A2AClient client = A2AClient.builder()
-    .gatewayUrl("http://localhost:8080")    // Runtime A2A gateway (port 8080 by default)
+    .gatewayUrl("http://localhost:10105")    // Runtime A2A gateway (port 10105 by default)
     .namespace("default")
     .agentName("order-agent")
     .heartbeatInterval(30_000L)
@@ -567,7 +567,7 @@ Plain-text Kafka clusters need none of these.
 public class Demo {
     public static void main(String[] args) throws Exception {
         CloudEventsClient client = CloudEventsClient.builder()
-            .runtimeUrl(System.getProperty("eventmesh.runtime.url", "http://localhost:8080"))
+            .runtimeUrl(System.getProperty("eventmesh.runtime.url", "http://localhost:10105"))
             .clientId("demo-" + System.currentTimeMillis())
             .pollIntervalMs(500L)
             .build();
@@ -616,7 +616,7 @@ The same `Demo` class runs unchanged on all three.
 | Backend connection | Runtime startup log | `[storage] connected to <backend>` line; otherwise no subscriptions will fire |
 | Security gate | Runtime response | `401` on first request → auth header missing; `429` → quota exhausted; `403` → ACL denied |
 | Quota exhaustion | Runtime metrics | `eventmesh_security_gate_quota_*` per-tenant counters |
-| Dead-letter inspection | admin HTTP (port 8081) | `GET /admin/dlq?topic=<topic>` |
+| Dead-letter inspection | admin HTTP (port 10106) | `GET /admin/dlq?topic=<topic>` |
 | A2A agent registry | `A2AClient.listAgents()` | Should return at least one `AgentCard` for `agentName` you registered |
 
 See [docs/feature/deployment.md](deployment.md) for SLOs and

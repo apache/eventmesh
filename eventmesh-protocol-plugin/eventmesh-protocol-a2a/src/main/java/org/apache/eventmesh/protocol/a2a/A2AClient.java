@@ -442,7 +442,7 @@ public class A2AClient implements AutoCloseable {
 
     public static class Builder {
 
-        private String gatewayUrl = "http://localhost:10105";
+        private String gatewayUrl = "http://localhost:10108";
         private String namespace = "global";
         private String agentName;
         private AgentCard agentCard;

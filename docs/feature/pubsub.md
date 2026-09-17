@@ -38,7 +38,7 @@ legacy MeshMessage / OpenMessaging formats are adapted onto the same frame.
 Raw HTTP:
 
 ```shell
-curl -X POST "http://localhost:8080/events/publish?topic=orders" \
+curl -X POST "http://localhost:10105/events/publish?topic=orders" \
   -H "Content-Type: application/cloudevents+json" \
   -d '{ ... event above ... }'
 ```
@@ -69,10 +69,10 @@ mode**. There are **no consumer groups** — EventMesh tracks offsets per
 (topic, clientId) itself.
 
 ```shell
-curl -X POST http://localhost:8080/events/subscribe \
+curl -X POST http://localhost:10105/events/subscribe \
   -H "Content-Type: application/json" \
   -d '{"clientId":"order-svc","topic":"orders","mode":"LOAD_BALANCE"}'
-# → {"subscriptionId":"...", "instanceUrl":"http://10.0.0.5:8080"}
+# → {"subscriptionId":"...", "instanceUrl":"http://10.0.0.5:10105"}
 ```
 
 The response's `instanceUrl` is the instance the subscriber should pin
@@ -142,7 +142,7 @@ Keys live in `eventmesh-runtime/conf/eventmesh.properties`
 
 | Key | Default | Effect |
 | --- | --- | --- |
-| `eventmesh.http.port` | `8080` | Traffic endpoints |
+| `eventmesh.http.port` | `10105` | Traffic endpoints |
 | `eventmesh.ws.port` | `-1` (off) | WebSocket push transport |
 | `eventmesh.delivery.topology` | `LOCAL_STICKY_PULL` | Single- vs multi-instance polling (see [Control plane](control-plane.md)) |
 

@@ -76,9 +76,9 @@ too.
 - [Java client guide](feature/client-java.md) — the complete
   `CloudEventsClient` / `A2AClient` API surface: builders, pub/sub patterns,
   request-reply, transports, security, reliability, backends.
-- [HTTP API](feature/http-api.md) — every traffic endpoint on port 8080:
+- [HTTP API](feature/http-api.md) — every traffic endpoint on port 10105:
   methods, request/response shapes, error codes.
-- [Admin API](feature/admin-api.md) — the operational surface on port 8081,
+- [Admin API](feature/admin-api.md) — the operational surface on port 10106,
   including the fail-closed bearer-token guard.
 - [Observability](feature/observability.md) — metrics (Prometheus + JSON),
   traces, health checks, SLOs and alert rules.

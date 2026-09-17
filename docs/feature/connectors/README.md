@@ -46,7 +46,7 @@ CONNECTOR_OPTS="-Dconnector.class=org.apache.eventmesh.connector.kafka.source.Ka
 bin/start-connector.sh
 ```
 
-Common flags: `eventmesh.runtime.url` (default `http://localhost:8080`),
+Common flags: `eventmesh.runtime.url` (default `http://localhost:10105`),
 `connector.offset.mode` (`remote` | `rocksdb` | `inmemory`), and for multiple
 connectors per process the numbered form `-Dconnector.1.class=...`,
 `-Dconnector.2.class=...` (any `-Dconnector.N.*` key is passed through to the

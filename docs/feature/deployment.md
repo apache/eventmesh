@@ -25,9 +25,9 @@ distribution does not start the A2A listener.
 
 | Port | Server | Notes |
 | --- | --- | --- |
-| 8080 | Traffic HTTP | `/events/*`, `/session/*`, `/agent/*`, legacy `/eventmesh/*` |
-| 8081 | Admin HTTP | `/admin/*` + `/metrics` (Prometheus); token-guarded |
-| 8082 | WebSocket *(opt-in)* | `-Deventmesh.ws.port=8082`; disabled by default |
+| 10105 | Traffic HTTP | `/events/*`, `/session/*`, `/agent/*`, legacy `/eventmesh/*` |
+| 10106 | Admin HTTP | `/admin/*` + `/metrics` (Prometheus); token-guarded |
+| 10107 | WebSocket *(opt-in)* | `-Deventmesh.ws.port=10107`; disabled by default |
 
 ## Running
 
@@ -37,7 +37,7 @@ distribution does not start the A2A listener.
 docker run -d --name eventmesh \
   -e EVENTMESH_STORAGE_TYPE=kafka \
   -e EVENTMESH_KAFKA_NAMESRV=YOUR_KAFKA:9092 \
-  -p 8080:8080 -p 8081:8081 \
+  -p 10105:10105 -p 10106:10106 \
   apache/eventmesh:latest
 ```
 
@@ -62,7 +62,7 @@ onto `-D` system properties.
 ### Verify
 
 ```shell
-curl http://localhost:8081/admin/health     # {"status":"UP"}
+curl http://localhost:10106/admin/health     # {"status":"UP"}
 ```
 
 ## Kubernetes
@@ -95,7 +95,7 @@ Multi-instance coordination keys:
 ```properties
 -Deventmesh.meta.type=nacos          # cluster mode; currently: nacos
 -Deventmesh.meta.addr=nacos:8848
--Deventmesh.instance.id=10.0.0.5:8080   # defaults to host:port
+-Deventmesh.instance.id=10.0.0.5:10105  # defaults to host:port
 -Deventmesh.offset.meta=true         # opt-in remote offset tier (see below)
 ```
 
@@ -113,7 +113,7 @@ process** — `eventmesh-connector-runtime` — and talk to the runtime over
 HTTP + CloudEvents:
 
 ```shell
-docker run -e EVENTMESH_RUNTIME_URL=http://runtime:8080 eventmesh-connector:uni
+docker run -e EVENTMESH_RUNTIME_URL=http://runtime:10105 eventmesh-connector:uni
 ```
 
 Connector definitions are managed through `/admin/connectors` (CRUD) and

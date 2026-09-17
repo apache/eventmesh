@@ -50,7 +50,7 @@ public class AgentLauncher {
             System.exit(1);
         }
         String agentId = args[0];
-        String runtimeUrl = System.getProperty("em.runtimeUrl", "http://localhost:8080");
+        String runtimeUrl = System.getProperty("em.runtimeUrl", "http://localhost:10105");
         String agentParent = System.getProperty("em.agentParent", "em-agent");
         String llmBaseUrl = System.getProperty("llm.base.url", E2EConfig.LLM_BASE_URL);
         String llmApiKey = System.getProperty("llm.api.key",

@@ -34,7 +34,7 @@ import com.sun.net.httpserver.HttpServer;
  * A one-command, self-contained runner for {@code StreamingCallDemo} (eventmesh-examples): it boots
  * an in-process {@code EventMeshApplication} + {@code StreamingAgent} (mock LLM, deterministic
  * Ev/ent/Mesh tokens) against a real RocketMQ 5.x broker, then drives the demo's {@code main()}
- * against the booted server on {@code http://localhost:8080}. Lets you SEE the streaming demo run
+ * against the booted server on {@code http://localhost:10105}. Lets you SEE the streaming demo run
  * without manually wiring a server.
  *
  * <p>Run (see the {@code runDemo} gradle task):<pre>
@@ -74,7 +74,7 @@ public class StreamingDemoRunner {
         // --- runtime + session layer (mode 1: streaming call) ---
         org.apache.eventmesh.runtime.boot.EventMeshApplication app =
             new org.apache.eventmesh.runtime.boot.EventMeshApplication(
-                storage, new org.apache.eventmesh.runtime.offset.InMemoryOffsetStore(), 8080, 8081);
+                storage, new org.apache.eventmesh.runtime.offset.InMemoryOffsetStore(), 10105, 10106);
         app.runtime().withStorageConfig(props);
         org.apache.eventmesh.runtime.ingress.UniIngressService ingress = app.runtime().ingress();
         org.apache.eventmesh.runtime.session.SessionRegistry registry =
@@ -130,8 +130,8 @@ public class StreamingDemoRunner {
         // --- drive the (unmodified) demo client ---
         int exit = 0;
         try {
-            String[] demoArgs = port == 8080
-                ? new String[0] // demo defaults to localhost:8080
+            String[] demoArgs = port == 10105
+                ? new String[0] // demo defaults to localhost:10105
                 : new String[] {"http://localhost:" + port};
             log.info("=== running StreamingCallDemo.main({}) ===",
                 demoArgs.length == 0 ? "(defaults)" : java.util.Arrays.toString(demoArgs));

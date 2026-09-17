@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <pre>
  *   CloudEventsClient client = CloudEventsClient.builder()
- *       .runtimeUrl("http://localhost:8080").clientId("order-svc").build();
+ *       .runtimeUrl("http://localhost:10105").clientId("order-svc").build();
  *   client.publish("orders", event);
  *   client.subscribe("orders", "BROADCAST", e -> handle(e));
  * </pre>

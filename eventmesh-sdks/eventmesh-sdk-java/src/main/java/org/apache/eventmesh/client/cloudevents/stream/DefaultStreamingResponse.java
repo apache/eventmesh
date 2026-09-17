@@ -103,7 +103,7 @@ public class DefaultStreamingResponse implements StreamingResponse {
      * write the request body, and return a live {@link DefaultStreamingResponse} (its SSE-read
      * virtual thread starts here).
      *
-     * @param baseUrl       runtime base URL (e.g. {@code http://localhost:8080})
+     * @param baseUrl       runtime base URL (e.g. {@code http://localhost:10105})
      * @param mapper        Jackson ObjectMapper for deserializing StreamChunk JSON
      * @param sessionId     the session id
      * @param agentId       the agent id (for {@link #agentId()})

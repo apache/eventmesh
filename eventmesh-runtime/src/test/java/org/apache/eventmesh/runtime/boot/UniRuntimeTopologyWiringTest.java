@@ -62,7 +62,7 @@ class UniRuntimeTopologyWiringTest {
         // #5356: PARTITION_OWNED_PULL + missing MetaStore must throw at start(), never
         // silently degrade to an isolated in-process store (poll-all duplicate consumption).
         UniRuntime runtime = new UniRuntime(new RecordingStorage(), new InMemoryOffsetStore(),
-            20L, 50L, 100, 50L, DeliveryTopology.PARTITION_OWNED_PULL, "A", "A:8080");
+            20L, 50L, 100, 50L, DeliveryTopology.PARTITION_OWNED_PULL, "A", "A:10105");
         // clusterMeta deliberately left null
         IllegalStateException ex = assertThrows(IllegalStateException.class, runtime::start);
         assertTrue(ex.getMessage().contains("PARTITION_OWNED_PULL requires a shared MetaStore"),
@@ -75,9 +75,9 @@ class UniRuntimeTopologyWiringTest {
         RecordingStorage storageA = new RecordingStorage();
         RecordingStorage storageB = new RecordingStorage();
         UniRuntime runtimeA = new UniRuntime(storageA, new InMemoryOffsetStore(), 20L, 50L, 100, 50L,
-            DeliveryTopology.PARTITION_OWNED_PULL, "A", "A:8080");
+            DeliveryTopology.PARTITION_OWNED_PULL, "A", "A:10105");
         UniRuntime runtimeB = new UniRuntime(storageB, new InMemoryOffsetStore(), 20L, 50L, 100, 50L,
-            DeliveryTopology.PARTITION_OWNED_PULL, "B", "B:8080");
+            DeliveryTopology.PARTITION_OWNED_PULL, "B", "B:10105");
         runtimeA.clusterMeta = sharedMeta;
         runtimeB.clusterMeta = sharedMeta;
         try {

@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Usage:<pre>
  *   gradle :eventmesh-runtime:startRuntime
- *   # override: -Dit.namesrv5=host:9876 -Dem.agentParent=my-agent -Dem.port=8080
+ *   # override: -Dit.namesrv5=host:9876 -Dem.agentParent=my-agent -Dem.port=10105
  * </pre>
  */
 public class RuntimeLauncher {
@@ -54,7 +54,7 @@ public class RuntimeLauncher {
         String namesrv = System.getProperty("it.namesrv5", E2EConfig.ROCKETMQ5_NAMESRV);
         String agentParent = System.getProperty("em.agentParent", "em-agent");
         String clientParent = System.getProperty("em.clientParent", "em-client");
-        int trafficPort = Integer.getInteger("em.port", 8080);
+        int trafficPort = Integer.getInteger("em.port", 10105);
 
         log.info("=== RuntimeLauncher: broker={} port={} ===", namesrv, trafficPort);
         log.info("  agentParent={} clientParent={}", agentParent, clientParent);
@@ -70,7 +70,7 @@ public class RuntimeLauncher {
         Thread.sleep(3_000L);
 
         // --- runtime + session layer (mode 1: streaming call) ---
-        EventMeshApplication app = new EventMeshApplication(storage, new InMemoryOffsetStore(), trafficPort, 8081);
+        EventMeshApplication app = new EventMeshApplication(storage, new InMemoryOffsetStore(), trafficPort, 10106);
         app.runtime().withStorageConfig(props);
         UniIngressService ingress = app.runtime().ingress();
         SessionRegistry registry = new SessionRegistry(new InMemoryMetaStore(), 30_000L);
@@ -82,7 +82,7 @@ public class RuntimeLauncher {
         app.withAgentRegistrar(agentRegistrar).withMatchmaker(matchmaker).withSessionRouter(router);
         app.start();
         log.info("=== Runtime ready on http://localhost:{} (traffic) http://localhost:{} (admin) ===",
-            trafficPort, 8081);
+            trafficPort, 10106);
 
         // Block until killed (Ctrl+C). Add a shutdown hook so the process exits cleanly.
         Thread main = Thread.currentThread();

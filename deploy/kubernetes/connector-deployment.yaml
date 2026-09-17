@@ -48,7 +48,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: EVENTMESH_RUNTIME_URL
-              value: http://eventmesh-runtime.eventmesh-system.svc.cluster.local:8080
+              value: http://eventmesh-runtime.eventmesh-system.svc.cluster.local:10105
             - name: CONNECTOR_OFFSET_MODE
               value: remote
           envFrom:

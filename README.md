@@ -47,7 +47,7 @@ Apache EventMesh is packed with features that help users build event-driven appl
 **Extensibility & ecosystem**
 
 - **Agent-to-Agent (A2A) collaboration** — a built-in [A2A protocol](docs/feature/a2a.md) turns EventMesh into an agent collaboration bus, bridging synchronous MCP / JSON-RPC 2.0 tool calls and asynchronous event-driven pub/sub for LLM and multi-agent systems.
-- **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org) (4.x / 5.x) and [Apache Kafka](https://kafka.apache.org) ship today; more backends via the `MeshStoragePlugin` SPI.
+- **Pluggable storage layer** — [Apache RocketMQ](https://rocketmq.apache.org) (4.x / 5.x) and [Apache Kafka](https://kafka.apache.org) ship today, plus a zero-dependency in-memory backend as the dev/CI default; more backends via the `MeshStoragePlugin` SPI.
 - **Pluggable interconnector layer** — [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) run as standalone processes acting as the source or sink of SaaS, CloudService, Database, etc.
 - **Pluggable meta service** — [Nacos](https://nacos.io) ships today (multi-instance coordination); more backends via the same storage SPI.
 - **Event schema management** via catalog service.
@@ -64,9 +64,10 @@ status. See [docs](docs/) for the per-capability guides.
 | --- | :---: | --- | --- |
 | [HTTP + CloudEvents](docs/feature/client-java.md) | **GA target** | Recommended — the primary user path (`CloudEventsClient` + `/events/*`) | Primary path |
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
-| SSE / WebSocket push | **Beta** | Usable — integration-tested; unified ACK/redelivery semantics still landing | Unified push transports |
-| Connector Runtime | **Experimental** | Working end-to-end, but only 4 of 23 plugins (file/kafka/pulsar/rocketmq) have unit tests — the rest are templates; data-loss hardening landed in [#5328](https://github.com/apache/eventmesh/pull/5328) | SPI split into `eventmesh-connector-api` (#5328); remaining plugin tests + GA criteria tracked under the #5296 architecture review |
-| [A2A / Agent Gateway](docs/feature/a2a.md) | **Experimental** | Evaluate — task store + runtime bridge landed (#5302/#5304); reaper & Meta-backed agent cards pending | Unified Runtime A2A |
+| [Memory storage](eventmesh-storage-plugin/eventmesh-storage-memory/) (default) | **Beta** | Zero-dependency dev/CI/quick-start backend (`docker run apache/eventmesh` with no broker); state is process-local — not for production | Switch `EVENTMESH_STORAGE_TYPE` to kafka / rocketmq / rocketmq5 |
+| SSE / WebSocket push | **Beta** | Usable — integration-tested; ACK-tracked redelivery + DLQ are shared with long-polling (same `ReliableDispatcher`), e2e-real-broker suite in [#5389](https://github.com/apache/eventmesh/pull/5389) | Unified push transports |
+| Connector Runtime | **Experimental** | Working end-to-end; all 23 plugins fully implemented since [#5394](https://github.com/apache/eventmesh/pull/5394) (no template stubs left), data-loss hardening in [#5328](https://github.com/apache/eventmesh/pull/5328); 4 of 23 (file/kafka/pulsar/rocketmq) still carry the only unit tests | SPI split into `eventmesh-connector-api` (#5328); remaining plugin tests + GA criteria tracked under the #5296 architecture review |
+| [A2A / Agent Gateway](docs/feature/a2a.md) | **Experimental** | Evaluate — task store + runtime bridge (#5302/#5304), task reaper + Meta-backed agent cards landed in [#5346](https://github.com/apache/eventmesh/pull/5346), quota classification in [#5373](https://github.com/apache/eventmesh/pull/5373); promotion to Beta gated on the Testcontainers E2E suite (#5340) | Unified Runtime A2A |
 | TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/feature/client-java.md) |
 
 Status meanings:
@@ -106,7 +107,7 @@ A full step-by-step walkthrough — prerequisites, backend choice, run via Docke
 or from source, first publish, three receive transports, unsubscribe, and the SDK
 path — lives in [Getting started](docs/quickstart/getting-started.md). The
 first-event examples in that guide work against the standard ports
-(`8080` HTTP, `8081` admin, `8082` WebSocket opt-in).
+(`10105` HTTP, `10106` admin, `10107` WebSocket opt-in).
 
 ## Contributing
 

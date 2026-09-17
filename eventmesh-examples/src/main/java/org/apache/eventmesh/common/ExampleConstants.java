@@ -28,7 +28,7 @@ public class ExampleConstants {
     public static final String EVENTMESH_GRPC_PORT = "eventmesh.grpc.port";
 
     public static final String DEFAULT_EVENTMESH_IP = "localhost";
-    public static final String DEFAULT_EVENTMESH_IP_PORT = "127.0.0.1:10105";
+    public static final String DEFAULT_EVENTMESH_IP_PORT = "127.0.0.1:10108";
 
     public static final String EVENTMESH_GRPC_ASYNC_TEST_TOPIC = "TEST-TOPIC-GRPC-ASYNC";
     public static final String EVENTMESH_GRPC_RR_TEST_TOPIC = "TEST-TOPIC-GRPC-RR";

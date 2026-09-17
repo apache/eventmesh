@@ -64,9 +64,10 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 | --- | :---: | --- | --- |
 | [HTTP + CloudEvents](docs/feature/client-java.md) | **GA 目标** | 推荐——主用户路径（`CloudEventsClient` + `/events/*`） | 主路径 |
 | [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
-| SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；统一 ACK/重投递语义仍在收敛 | 统一推送传输 |
-| Connector Runtime | **Experimental** | 端到端可用，但 23 个插件中仅 4 个（file/kafka/pulsar/rocketmq）有单元测试，其余为模板实现；数据丢失加固已由 [#5328](https://github.com/apache/eventmesh/pull/5328) 落地 | SPI 拆分至 `eventmesh-connector-api`（#5328）；剩余插件测试与 GA 标准由 #5296 架构 review 跟踪 |
-| [A2A / Agent 网关](docs/feature/a2a.md) | **实验性** | 评估——TaskStore + Runtime 桥已落地（#5302/#5304）；reaper 与 Meta 化 AgentCard 待做 | 统一 Runtime A2A |
+| [Memory 内存存储](eventmesh-storage-plugin/eventmesh-storage-memory/)（默认） | **Beta** | 零依赖的开发/CI/快速上手后端（`docker run apache/eventmesh` 无需 broker）；状态仅存于进程内——不可用于生产 | 切换 `EVENTMESH_STORAGE_TYPE` 为 kafka / rocketmq / rocketmq5 |
+| SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；ACK 追踪的重投递与 DLQ 已与长轮询共享同一 `ReliableDispatcher`，真实 broker 的 e2e 套件见 [#5389](https://github.com/apache/eventmesh/pull/5389) | 统一推送传输 |
+| Connector Runtime | **Experimental** | 端到端可用；自 [#5394](https://github.com/apache/eventmesh/pull/5394) 起 23 个插件全部完整实现（不再有模板桩），数据丢失加固见 [#5328](https://github.com/apache/eventmesh/pull/5328)；单元测试仍仅覆盖其中 4 个（file/kafka/pulsar/rocketmq） | SPI 拆分至 `eventmesh-connector-api`（#5328）；剩余插件测试与 GA 标准由 #5296 架构 review 跟踪 |
+| [A2A / Agent 网关](docs/feature/a2a.md) | **实验性** | 评估——TaskStore + Runtime 桥（#5302/#5304）、任务 reaper 与 Meta 化 AgentCard（[#5346](https://github.com/apache/eventmesh/pull/5346)）、配额分类（[#5373](https://github.com/apache/eventmesh/pull/5373)）均已落地；升 Beta 以 Testcontainers E2E 套件转绿为门槛（#5340） | 统一 Runtime A2A |
 | TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/feature/client-java.md) |
 
 状态含义：
@@ -102,7 +103,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 
 完整的步骤引导——前置依赖、后端选择、通过 Docker 或源码启动、首个事件、三种接收传输、取消订阅以及 SDK 路径——均在
 [快速上手](docs/quickstart/getting-started.md)。该文档中的首事件示例可针对标准端口
-（`8080` HTTP、`8081` 管理、`8082` WebSocket 可选）运行。
+（`10105` HTTP、`10106` 管理、`10107` WebSocket 可选）运行。
 
 ## 贡献
 

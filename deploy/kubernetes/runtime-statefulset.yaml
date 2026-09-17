@@ -51,16 +51,16 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 10105
             - name: admin
-              containerPort: 8081
+              containerPort: 10106
           env:
             - name: EVENTMESH_STORAGE_TYPE
               value: memory
             - name: EVENTMESH_HTTP_PORT
-              value: "8080"
+              value: "10105"
             - name: EVENTMESH_ADMIN_PORT
-              value: "8081"
+              value: "10106"
             # Dependent env var: bin/start.sh passes JAVA_OPTS to java as
             # extra -D flags, so the admin token reaches the JVM without
             # landing in the pod spec or `kubectl describe` output.
