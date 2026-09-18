@@ -153,6 +153,13 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
     /// Both current-thread and multi-thread Tokio runtimes are supported.
     /// Keep the channel's owning runtime running to drive the stream and its
     /// background tasks.
+    ///
+    /// # Known limitation
+    ///
+    /// Opening the stream does not await subscription acceptance. Runtime
+    /// rejection control frames (including ACL and validation errors) are
+    /// currently ignored, so both `open()` and [`join`](Self::join) can succeed
+    /// for a rejected subscription. Check Runtime logs to diagnose rejection.
     pub async fn open(
         channel: GrpcChannel,
         options: GrpcConsumerOptions,
@@ -176,12 +183,26 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
     }
 
     /// Add a subscription to the active stream.
+    ///
+    /// Success means the request was queued, not that the Runtime accepted it.
+    /// Subscription rejection control frames are currently ignored, as with
+    /// [`open`](Self::open).
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
         subscription.validate()?;
         self.inner.subscribe(vec![subscription]).await
     }
 
     /// Remove a stream subscription.
+    ///
+    /// # Known limitation
+    ///
+    /// The Java Runtime closes the shared stream even when other topics remain
+    /// subscribed. This stops their delivery and this consumer's heartbeat;
+    /// the SDK does not recreate the stream or replay remaining subscriptions.
+    /// After teardown, [`subscribe`](Self::subscribe) returns
+    /// [`Error::ChannelClosed`](crate::Error::ChannelClosed). Wait for this
+    /// consumer to finish, drop it, and explicitly [`open`](Self::open) a new
+    /// consumer with the remaining subscriptions to resume consumption.
     pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
         subscription.validate()?;
         self.inner
@@ -196,6 +217,9 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
     }
 
     /// Wait for stream shutdown.
+    ///
+    /// A successful return does not confirm subscription acceptance: rejection
+    /// control frames followed by normal stream closure are currently ignored.
     ///
     /// Cancelling this wait preserves task ownership and pending results. Call
     /// `join()` again to finish waiting, or drop the consumer to abort its tasks.

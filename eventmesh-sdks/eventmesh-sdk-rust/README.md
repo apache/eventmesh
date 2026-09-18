@@ -72,7 +72,7 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 
 | Transport | Client | Consumer model | Notable operations |
 | --- | --- | --- | --- |
-| gRPC | `GrpcChannel` | `GrpcStreamConsumer` invokes a `MessageHandler` | batch publish, request/reply, live subscribe/unsubscribe |
+| gRPC | `GrpcChannel` | `GrpcStreamConsumer` invokes a `MessageHandler` | batch publish, request/reply, stream subscriptions with the limitations below |
 | HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | publish, weighted endpoint selection |
 | TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
@@ -94,6 +94,13 @@ existing channel. Both current-thread and multi-thread Tokio runtimes are suppor
 keep the owning runtime running to drive the channel and consumer tasks. Opening
 a subscription stream waits up to 15 seconds for response headers; this timeout
 does not limit the lifetime of an established stream.
+
+Known gRPC stream subscription limitations (retained in this SDK revision):
+
+- **Subscription rejection is not reported reliably.** `GrpcStreamConsumer::open()` establishes the stream without waiting for a successful subscription acknowledgement, and `subscribe()` queues the request without waiting for acceptance. The receive loop ignores control frames without `seqnum`, including Runtime ACL and validation errors carried in `statuscode` / `responsemessage`. If the Runtime then closes the stream normally, `join()` can return `Ok(())`. These successful returns do not prove that the subscription was accepted; check Runtime logs when diagnosing missing deliveries. The repository's Java SDK stream consumer also does not propagate these rejection statuses to the caller.
+- **Unsubscribing one topic can stop every topic on the stream.** With A and B on one stream, `unsubscribe(A)` removes A locally, but the Java Runtime closes their shared emitter. The Rust receive loop and heartbeat stop, B stops receiving, and subsequent `subscribe()` calls fail with `Error::ChannelClosed` once stream teardown is observed. There is no automatic stream recreation or replay of B. Treat unsubscribe as ending the current stream: wait for it to finish, drop the consumer, and explicitly open a new consumer with the desired remaining subscriptions. Delivery is interrupted during this transition. The repository's Java SDK also does not recreate the closed stream; its heartbeat may continue despite the loss of delivery.
+
+These are documented limitations, not fixes. See [ARCHITECTURE.md](ARCHITECTURE.md#grpc-stream-subscription-limitations) for the Runtime and Java SDK paths behind them. They concern stream subscriptions; gRPC webhook registration uses unary responses.
 
 `GrpcWebhookConsumer` does not automatically unregister remote webhook subscriptions when `shutdown()` or `join()` is called. Retain the subscriptions and webhook URL, call `unsubscribe(...).await` explicitly, and only then call `shutdown()` and `join().await`. See the `grpc_webhook_consumer` example.
 

@@ -367,6 +367,10 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
     /// This is an independent unary RPC — it is **not** sent over the open
     /// stream. The server matches stream clients by IP + PID, so no URL is
     /// needed.
+    ///
+    /// Known limitation: the Java Runtime closes the shared emitter even for
+    /// partial unsubscribe. Remaining topics are not replayed on a new stream;
+    /// EOF stops the driver and heartbeat. See the public unsubscribe rustdoc.
     pub async fn unsubscribe_stream(&self, items: Vec<Subscription>) -> Result<PublishResponse> {
         unsubscribe_stream_rpc(
             &self.client,
@@ -648,6 +652,9 @@ async fn unsubscribe_stream_rpc(
     let resp = timed(config.request_timeout(), client.unsubscribe(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
+        // Only the requested topics are removed locally, although the Java
+        // Runtime closes their shared stream. Remaining entries do not imply
+        // active delivery; no stream recreation/replay is implemented here.
         let mut guard = subscriptions.lock().await;
         for item in &items {
             guard.remove(&(item.topic.clone(), SDK_STREAM_URL.to_string()));
@@ -770,6 +777,12 @@ where
                     }
                     Some(Ok(cloud_event)) => {
                         if codec::get_seq_num(&cloud_event).is_empty() {
+                            // Known limitation: this also ignores subscription
+                            // rejection statuscode/responsemessage attributes.
+                            // Normal EOF then lets join() return success. The
+                            // Java SDK likewise does not propagate these
+                            // statuses; retained behavior is documented in
+                            // GrpcStreamConsumer::open and ARCHITECTURE.md.
                             debug!("skipping control frame (no seqnum)");
                             continue;
                         }

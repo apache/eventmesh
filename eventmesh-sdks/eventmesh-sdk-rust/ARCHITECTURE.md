@@ -56,6 +56,15 @@ TCP CloudEvents use `protocoltype=cloudevents` and raw `application/cloudevents+
 
 Consumer lifecycle waits keep task ownership in `transport::task::BackgroundTask`. Waiting borrows the `JoinHandle`; completed results stay in the owner until the remaining cleanup has finished. Cancelling `join()` therefore preserves both unfinished tasks and pending failures for a later wait. Dropping the owner aborts any unfinished task.
 
+## gRPC stream subscription limitations
+
+Two known stream lifecycle limitations are retained without behavior changes in this SDK revision:
+
+- `spawn_stream_driver` ignores frames without `seqnum`, including subscription responses with a non-success `statuscode`. Runtime `SubscribeStreamProcessor` uses `ServiceUtils.sendResponseCompleted` for validation errors and `sendStreamResponseCompleted` for ACL errors, followed by normal stream completion. Consequently, `open()` and `join()` can both succeed for a rejected subscription. In the Java SDK, `EventMeshCloudEventBuilder.buildMessageFromEventMeshCloudEvent` treats an event with neither `seqnum` nor `uniqueid` as subscription-list content; `SubStreamHandler.onNext` logs a resulting `Set` without checking the response status. Its stream `subscribe` returns `void` and does not await acceptance.
+- `unsubscribe_stream_rpc` removes only the requested local topics. Runtime `ConsumerManager.deregisterClient` calls `closeEventStream` on the removed topic's emitter, which is shared by all topics on that subscription stream. The Rust driver treats EOF as terminal and cancels the heartbeat; it does not reconnect or replay remaining subscriptions. Java `EventMeshGrpcConsumer.unsubscribe` likewise retains the remaining topics, while `SubStreamHandler.onCompleted` only logs completion. Its `sender` is never reset, so subsequent subscriptions and heartbeat-triggered `resubscribe` reuse the closed stream. Java heartbeats can continue because Runtime `updateClientTime` checks client records, not emitter liveness.
+
+The relevant Java sources are under `eventmesh-sdks/eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/grpc/` and `eventmesh-runtime/src/main/java/org/apache/eventmesh/runtime/core/protocol/grpc/` in this repository. These observations come from source review; they do not establish live Java end-to-end coverage. Public usage constraints are documented in the README and `GrpcStreamConsumer` rustdoc.
+
 ## HTTP lifecycle and routing
 
 The managed `HttpConsumer` binds its axum callback server before registration, then owns registration, heartbeat, and shutdown. Applications that host their own endpoint use `WebhookRegistration` and the public codec helpers `parse_push_body`, `PushMessageRequestBody::to_message`, and `WebhookReply`. `to_message` resolves the dialect from the HTTP headers and `extFields`; the built-in handler calls the same decoder. `WebhookHandler` and `WebhookState` in `src/transport/http/webhook.rs` are internal implementation details.
