@@ -125,6 +125,9 @@ impl<H: MessageHandler> TcpConsumer<H> {
     }
 
     /// Wait for TCP consumer shutdown.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
     pub async fn join(&self) -> Result<()> {
         shutdown_result(self.inner.wait_for_shutdown().await)
     }

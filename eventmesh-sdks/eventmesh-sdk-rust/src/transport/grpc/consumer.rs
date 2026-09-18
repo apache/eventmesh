@@ -57,6 +57,7 @@ use crate::subscription::Subscription;
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::grpc::heartbeat::{self, StreamTx};
+use crate::transport::task::BackgroundTask;
 use crate::MessageHandler;
 
 const DEFAULT_REPLY_PRODUCER_GROUP: &str = "DefaultProducerGroup";
@@ -139,22 +140,6 @@ fn spawn_signal_watcher(
     }
 }
 
-/// Wait for a background task to finish, preserving task panics.
-async fn await_task<T: Send + 'static>(
-    handle: &Mutex<Option<JoinHandle<T>>>,
-    task_name: &str,
-) -> Result<Option<T>> {
-    match handle.lock().await.take() {
-        Some(h) => match h.await {
-            Ok(result) => Ok(Some(result)),
-            Err(error) => Err(EventMeshError::ChannelClosed(format!(
-                "{task_name} task panicked: {error}"
-            ))),
-        },
-        None => Ok(None),
-    }
-}
-
 // ---------------------------------------------------------------------------
 // GrpcStreamConsumer
 // ---------------------------------------------------------------------------
@@ -210,9 +195,9 @@ pub struct GrpcStreamConsumer<L: MessageHandler> {
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
-    heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
+    heartbeat_handle: Mutex<BackgroundTask<()>>,
     stream_tx: StreamTx,
-    driver_handle: Mutex<Option<JoinHandle<Result<()>>>>,
+    driver_handle: Mutex<BackgroundTask<Result<()>>>,
 }
 
 impl<L: MessageHandler> GrpcStreamConsumer<L> {
@@ -311,9 +296,9 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
             subscriptions,
             _listener: std::marker::PhantomData,
             shutdown,
-            heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
+            heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat_handle)),
             stream_tx,
-            driver_handle: Mutex::new(Some(driver_handle)),
+            driver_handle: Mutex::new(BackgroundTask::new(driver_handle)),
         })
     }
 
@@ -404,31 +389,24 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the tasks exit naturally (e.g. the server closes the stream).
     pub async fn wait_for_shutdown(&self) -> Result<()> {
-        let handle = self.driver_handle.lock().await.take();
-        let driver_result = match handle {
-            Some(mut handle) => {
-                tokio::select! {
-                    _ = self.shutdown.cancelled() => {
-                        handle.await.map_err(|error| EventMeshError::ChannelClosed(
-                            format!("gRPC consumer driver task panicked: {error}")
-                        ))?
-                    }
-                    result = &mut handle => {
-                        self.shutdown.cancel();
-                        result.map_err(|error| EventMeshError::ChannelClosed(
-                            format!("gRPC consumer driver task panicked: {error}")
-                        ))?
-                    }
-                }
-            }
-            None => {
-                self.shutdown.cancelled().await;
-                Ok(())
-            }
-        };
-        let heartbeat_result = await_task(&self.heartbeat_handle, "gRPC consumer heartbeat")
-            .await
-            .map(|_| ());
+        let mut driver = self.driver_handle.lock().await;
+        driver.wait().await;
+        self.shutdown.cancel();
+        let mut heartbeat = self.heartbeat_handle.lock().await;
+        heartbeat.wait().await;
+        // No awaits after consuming either result: cancellation while waiting
+        // for heartbeat cleanup must not discard a driver failure.
+        let driver_result = driver
+            .take_result()
+            .unwrap_or(Ok(Ok(())))
+            .map_err(|error| {
+                EventMeshError::ChannelClosed(format!(
+                    "gRPC consumer driver task panicked: {error}"
+                ))
+            })?;
+        let heartbeat_result = heartbeat.take_result().unwrap_or(Ok(())).map_err(|error| {
+            EventMeshError::ChannelClosed(format!("gRPC consumer heartbeat task panicked: {error}"))
+        });
         driver_result.and(heartbeat_result)
     }
 }
@@ -436,16 +414,6 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
 impl<L: MessageHandler> Drop for GrpcStreamConsumer<L> {
     fn drop(&mut self) {
         self.shutdown.cancel();
-        if let Ok(mut guard) = self.heartbeat_handle.try_lock() {
-            if let Some(handle) = guard.take() {
-                handle.abort();
-            }
-        }
-        if let Ok(mut guard) = self.driver_handle.try_lock() {
-            if let Some(handle) = guard.take() {
-                handle.abort();
-            }
-        }
     }
 }
 
@@ -493,7 +461,7 @@ pub struct GrpcWebhookConsumer {
     options: ConsumerOptions,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
-    heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
+    heartbeat_handle: Mutex<BackgroundTask<()>>,
 }
 
 impl GrpcWebhookConsumer {
@@ -530,7 +498,7 @@ impl GrpcWebhookConsumer {
             options,
             subscriptions,
             shutdown,
-            heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
+            heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat_handle)),
         })
     }
 
@@ -584,39 +552,18 @@ impl GrpcWebhookConsumer {
 
     /// Block until the shutdown signal fires or the heartbeat task exits.
     pub async fn wait_for_shutdown(&self) -> Result<()> {
-        let handle = self.heartbeat_handle.lock().await.take();
-        match handle {
-            Some(mut handle) => {
-                tokio::select! {
-                    _ = self.shutdown.cancelled() => {
-                        handle.await.map_err(|error| EventMeshError::ChannelClosed(
-                            format!("gRPC webhook heartbeat task panicked: {error}")
-                        ))
-                    }
-                    result = &mut handle => {
-                        self.shutdown.cancel();
-                        result.map_err(|error| EventMeshError::ChannelClosed(
-                            format!("gRPC webhook heartbeat task panicked: {error}")
-                        ))
-                    }
-                }
-            }
-            None => {
-                self.shutdown.cancelled().await;
-                Ok(())
-            }
-        }
+        let mut task = self.heartbeat_handle.lock().await;
+        task.wait().await;
+        self.shutdown.cancel();
+        task.take_result().unwrap_or(Ok(())).map_err(|error| {
+            EventMeshError::ChannelClosed(format!("gRPC webhook heartbeat task panicked: {error}"))
+        })
     }
 }
 
 impl Drop for GrpcWebhookConsumer {
     fn drop(&mut self) {
         self.shutdown.cancel();
-        if let Ok(mut guard) = self.heartbeat_handle.try_lock() {
-            if let Some(handle) = guard.take() {
-                handle.abort();
-            }
-        }
     }
 }
 
@@ -1034,6 +981,116 @@ mod tests {
         assert!(!reply.attributes.contains_key("token"));
     }
 
+    type TestHandler = fn(Message) -> std::future::Ready<Result<Option<Message>>>;
+
+    fn consumer_with_tasks(
+        driver: JoinHandle<Result<()>>,
+        heartbeat: JoinHandle<()>,
+    ) -> GrpcStreamConsumer<TestHandler> {
+        let config = config();
+        GrpcStreamConsumer {
+            client: ChannelClient::connect_lazy(&config).unwrap(),
+            config,
+            options: GrpcConsumerOptions::new("consumer"),
+            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+            _listener: std::marker::PhantomData,
+            shutdown: CancellationToken::new(),
+            heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat)),
+            stream_tx: Arc::new(Mutex::new(None)),
+            driver_handle: Mutex::new(BackgroundTask::new(driver)),
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cancelled_stream_join_preserves_driver_failure() {
+        let (release, released) = tokio::sync::oneshot::channel::<()>();
+        let consumer = consumer_with_tasks(
+            tokio::spawn(async move {
+                released.await.unwrap();
+                Err(EventMeshError::Server {
+                    code: 17,
+                    message: "driver failure".into(),
+                })
+            }),
+            tokio::spawn(async {}),
+        );
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                    .await
+                    .is_err()
+            );
+            consumer.request_shutdown();
+        }
+        release.send(()).unwrap();
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+            .await
+            .unwrap();
+        assert!(matches!(
+            result,
+            Err(EventMeshError::Server { code: 17, .. })
+        ));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cancelled_stream_join_during_cleanup_preserves_driver_panic() {
+        let (release, released) = tokio::sync::oneshot::channel::<()>();
+        let consumer = consumer_with_tasks(
+            tokio::spawn(async {
+                panic!("driver regression");
+            }),
+            tokio::spawn(async move {
+                released.await.unwrap();
+            }),
+        );
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                    .await
+                    .is_err()
+            );
+            assert!(consumer.shutdown.is_cancelled());
+        }
+        release.send(()).unwrap();
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+            .await
+            .unwrap();
+        assert!(matches!(result, Err(EventMeshError::ChannelClosed(message))
+            if message.contains("driver regression")));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cancelled_webhook_join_preserves_heartbeat_panic() {
+        let config = config();
+        let consumer = GrpcWebhookConsumer::new(
+            ChannelClient::connect_lazy(&config).unwrap(),
+            config,
+            ConsumerOptions::new("consumer"),
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .unwrap();
+        let (release, released) = tokio::sync::oneshot::channel::<()>();
+        *consumer.heartbeat_handle.lock().await = BackgroundTask::new(tokio::spawn(async move {
+            released.await.unwrap();
+            panic!("heartbeat regression");
+        }));
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                    .await
+                    .is_err()
+            );
+            consumer.request_shutdown();
+        }
+        release.send(()).unwrap();
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+            .await
+            .unwrap();
+        assert!(matches!(result, Err(EventMeshError::ChannelClosed(message))
+            if message.contains("heartbeat regression")));
+    }
+
     #[tokio::test]
     async fn webhook_shutdown_then_join_preserves_task_panic() {
         let config = config();
@@ -1045,10 +1102,7 @@ mod tests {
         )
         .await
         .unwrap();
-        let original = consumer.heartbeat_handle.lock().await.take().unwrap();
-        original.abort();
-        let _ = original.await;
-        *consumer.heartbeat_handle.lock().await = Some(tokio::spawn(async {
+        *consumer.heartbeat_handle.lock().await = BackgroundTask::new(tokio::spawn(async {
             panic!("heartbeat panic");
         }));
 

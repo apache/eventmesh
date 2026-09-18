@@ -84,7 +84,7 @@ TCP `broadcast().await` waits for the local socket write before returning, so a 
 
 TCP consumers isolate unwinding handler panics to one delivery: they log the panic, send no reply or ACK for that delivery, and continue processing subsequent messages on the same connection. Redelivery depends on the Runtime's retry policy. The SDK does not restore handler-owned state after a panic, and `panic = "abort"` cannot be caught.
 
-All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. HTTP consumers and webhook registrations additionally provide `close().await`, which unregisters remote subscriptions before signalling shutdown and joining.
+All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. Cancelling a `join()` wait preserves task ownership and pending failures: call `join()` again to finish waiting, or drop the consumer to abort its tasks. HTTP consumers and webhook registrations additionally provide `close().await`, which unregisters remote subscriptions before signalling shutdown and joining.
 
 Create each `GrpcChannel` inside the Tokio runtime that will drive it. Clone that
 channel to share one multiplexed HTTP/2 connection among producers and consumers

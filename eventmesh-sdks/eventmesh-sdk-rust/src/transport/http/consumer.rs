@@ -33,6 +33,7 @@ use crate::model::{EventMeshProtocolType, PublishResponse};
 use crate::subscription::{DeliveryType, Subscription};
 use crate::transport::http::client::{EventMeshHttpClient, HttpRole};
 use crate::transport::http::codec::{self, uri};
+use crate::transport::task::BackgroundTask;
 
 /// Heartbeat interval (mirrors the Java SDK: 30s).
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);
@@ -60,7 +61,7 @@ pub struct HttpConsumer {
     client: EventMeshHttpClient,
     subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
     shutdown: CancellationToken,
-    heartbeat_handle: Mutex<Option<JoinHandle<()>>>,
+    heartbeat_handle: Mutex<BackgroundTask<()>>,
 }
 
 impl HttpConsumer {
@@ -105,7 +106,7 @@ impl HttpConsumer {
             client,
             subscriptions,
             shutdown,
-            heartbeat_handle: Mutex::new(Some(heartbeat_handle)),
+            heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat_handle)),
         })
     }
 
@@ -184,28 +185,12 @@ impl HttpConsumer {
     /// until the heartbeat task exits (which typically only happens on
     /// explicit shutdown or drop).
     pub async fn wait_for_shutdown(&self) -> Result<()> {
-        let handle = self.heartbeat_handle.lock().await.take();
-        match handle {
-            Some(mut handle) => {
-                tokio::select! {
-                    _ = self.shutdown.cancelled() => {
-                        handle.await.map_err(|error| EventMeshError::ChannelClosed(
-                            format!("HTTP heartbeat task panicked: {error}")
-                        ))
-                    }
-                    result = &mut handle => {
-                        self.shutdown.cancel();
-                        result.map_err(|error| EventMeshError::ChannelClosed(
-                            format!("HTTP heartbeat task panicked: {error}")
-                        ))
-                    }
-                }
-            }
-            None => {
-                self.shutdown.cancelled().await;
-                Ok(())
-            }
-        }
+        let mut task = self.heartbeat_handle.lock().await;
+        task.wait().await;
+        self.shutdown.cancel();
+        task.take_result().unwrap_or(Ok(())).map_err(|error| {
+            EventMeshError::ChannelClosed(format!("HTTP heartbeat task panicked: {error}"))
+        })
     }
 }
 
@@ -298,11 +283,6 @@ impl HttpConsumer {
 impl Drop for HttpConsumer {
     fn drop(&mut self) {
         self.shutdown.cancel();
-        if let Ok(mut guard) = self.heartbeat_handle.try_lock() {
-            if let Some(handle) = guard.take() {
-                handle.abort();
-            }
-        }
     }
 }
 
@@ -379,6 +359,30 @@ mod tests {
             None::<std::future::Ready<()>>,
         )
         .unwrap()
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cancelled_join_preserves_http_heartbeat_panic() {
+        let consumer = make_consumer();
+        let (release, released) = tokio::sync::oneshot::channel::<()>();
+        *consumer.heartbeat_handle.lock().await = BackgroundTask::new(tokio::spawn(async move {
+            released.await.unwrap();
+            panic!("heartbeat regression");
+        }));
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                    .await
+                    .is_err()
+            );
+            consumer.request_shutdown();
+        }
+        release.send(()).unwrap();
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+            .await
+            .unwrap();
+        assert!(matches!(result, Err(EventMeshError::ChannelClosed(message))
+            if message.contains("heartbeat regression")));
     }
 
     #[tokio::test]

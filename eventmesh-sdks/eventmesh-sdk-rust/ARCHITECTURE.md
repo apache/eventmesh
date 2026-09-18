@@ -52,6 +52,10 @@ TCP CloudEvents use `protocoltype=cloudevents` and raw `application/cloudevents+
   and reconnect timeouts separate for Java compatibility. Heartbeats and
   GOODBYE are fire-and-forget.
 
+## Consumer lifecycle waits
+
+Consumer lifecycle waits keep task ownership in `transport::task::BackgroundTask`. Waiting borrows the `JoinHandle`; completed results stay in the owner until the remaining cleanup has finished. Cancelling `join()` therefore preserves both unfinished tasks and pending failures for a later wait. Dropping the owner aborts any unfinished task.
+
 ## HTTP lifecycle and routing
 
 The managed `HttpConsumer` binds its axum callback server before registration, then owns registration, heartbeat, and shutdown. Applications that host their own endpoint use `WebhookRegistration` and the public codec helpers `parse_push_body`, `PushMessageRequestBody::to_message`, and `WebhookReply`. `to_message` resolves the dialect from the HTTP headers and `extFields`; the built-in handler calls the same decoder. `WebhookHandler` and `WebhookState` in `src/transport/http/webhook.rs` are internal implementation details.

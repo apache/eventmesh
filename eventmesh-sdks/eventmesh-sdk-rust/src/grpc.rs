@@ -137,6 +137,9 @@ impl GrpcWebhookConsumer {
     }
 
     /// Wait for the heartbeat task to stop and report task failure.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
     pub async fn join(&self) -> Result<()> {
         self.inner.wait_for_shutdown().await
     }
@@ -193,6 +196,9 @@ impl<H: MessageHandler> GrpcStreamConsumer<H> {
     }
 
     /// Wait for stream shutdown.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
     pub async fn join(&self) -> Result<()> {
         self.inner.wait_for_shutdown().await
     }

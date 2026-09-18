@@ -32,10 +32,12 @@ use crate::transport::http::{
     EventMeshHttpClient as TransportClient, HttpConsumer as TransportConsumer,
     HttpProducer as TransportProducer, WebhookServer,
 };
+use crate::transport::task::BackgroundTask;
 use crate::webhook::WebhookOptions;
 use crate::MessageHandler;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+#[cfg(test)]
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
@@ -112,7 +114,7 @@ impl HttpClient {
             inner,
             webhook_url,
             lifecycle,
-            server_handle: Mutex::new(Some(server_handle)),
+            server_handle: Mutex::new(BackgroundTask::new(server_handle)),
         };
 
         if let Err(error) = consumer
@@ -125,12 +127,7 @@ impl HttpClient {
             return Err(error);
         }
 
-        let server_finished = consumer
-            .server_handle
-            .lock()
-            .await
-            .as_ref()
-            .is_some_and(JoinHandle::is_finished);
+        let server_finished = consumer.server_handle.lock().await.is_finished();
         if server_finished {
             consumer.shutdown();
             let _ = consumer.inner.unsubscribe_all().await;
@@ -187,7 +184,7 @@ pub struct HttpConsumer {
     inner: TransportConsumer,
     webhook_url: String,
     lifecycle: CancellationToken,
-    server_handle: Mutex<Option<JoinHandle<Result<()>>>>,
+    server_handle: Mutex<BackgroundTask<Result<()>>>,
 }
 
 impl HttpConsumer {
@@ -221,13 +218,21 @@ impl HttpConsumer {
     }
 
     /// Wait until the callback server exits and report background task failure.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
     pub async fn join(&self) -> Result<()> {
-        let server_result = self.wait_for_server().await;
+        let mut server = self.server_handle.lock().await;
+        server.wait().await;
         // A panicked server task cannot cancel the lifecycle token itself.
         // Cancel it here so heartbeat shutdown is guaranteed before returning.
         self.lifecycle.cancel();
         self.inner.request_shutdown();
         let heartbeat_result = self.inner.wait_for_shutdown().await;
+        let server_result = match server.take_result() {
+            Some(result) => result.map_err(server_join_error)?,
+            None => Ok(()),
+        };
         server_result.and(heartbeat_result)
     }
 
@@ -238,23 +243,11 @@ impl HttpConsumer {
         let join_result = self.join().await;
         combine_cleanup_results(unregister_result, join_result)
     }
-
-    async fn wait_for_server(&self) -> Result<()> {
-        match self.server_handle.lock().await.take() {
-            Some(handle) => handle.await.map_err(server_join_error)?,
-            None => Ok(()),
-        }
-    }
 }
 
 impl Drop for HttpConsumer {
     fn drop(&mut self) {
         self.lifecycle.cancel();
-        if let Ok(mut handle) = self.server_handle.try_lock() {
-            if let Some(handle) = handle.take() {
-                handle.abort();
-            }
-        }
     }
 }
 
@@ -300,6 +293,9 @@ impl WebhookRegistration {
     }
 
     /// Wait for the heartbeat task to stop and report task failure.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
     pub async fn join(&self) -> Result<()> {
         self.inner.wait_for_shutdown().await
     }
@@ -544,6 +540,94 @@ mod tests {
         let codes = codes.lock().await.clone();
         assert!(codes.contains(&crate::common::status_code::RequestCode::SUBSCRIBE));
         assert!(codes.contains(&crate::common::status_code::RequestCode::UNSUBSCRIBE));
+        runtime.abort();
+    }
+
+    #[tokio::test]
+    async fn cancelled_join_still_waits_for_inflight_http_handler() {
+        let (client, _, runtime) = mock_runtime(false, 0).await;
+        let entered = Arc::new(tokio::sync::Notify::new());
+        let release = Arc::new(tokio::sync::Notify::new());
+        let handler_entered = entered.clone();
+        let handler_release = release.clone();
+        let consumer = client
+            .consumer(
+                ConsumerOptions::new("group"),
+                WebhookOptions::new("127.0.0.1:0".parse().unwrap()),
+                [Subscription::new("orders")],
+                move |_| {
+                    let entered = handler_entered.clone();
+                    let release = handler_release.clone();
+                    async move {
+                        entered.notify_one();
+                        release.notified().await;
+                        Ok(None)
+                    }
+                },
+            )
+            .await
+            .unwrap();
+        let url = consumer.webhook_url().to_owned();
+        let request = tokio::spawn(async move {
+            reqwest::Client::new()
+                .post(url)
+                .form(&[("content", "created"), ("topic", "orders")])
+                .send()
+                .await
+                .unwrap()
+                .error_for_status()
+                .unwrap()
+        });
+        tokio::time::timeout(std::time::Duration::from_secs(3), entered.notified())
+            .await
+            .unwrap();
+        consumer.shutdown();
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(std::time::Duration::from_millis(20), consumer.join())
+                    .await
+                    .is_err(),
+                "join must keep waiting for the handler after cancellation"
+            );
+        }
+        release.notify_one();
+        tokio::time::timeout(std::time::Duration::from_secs(3), consumer.join())
+            .await
+            .unwrap()
+            .unwrap();
+        request.await.unwrap();
+        runtime.abort();
+    }
+
+    #[tokio::test]
+    async fn cancelled_join_then_drop_aborts_http_server_task() {
+        let (client, _, runtime) = mock_runtime(false, 0).await;
+        let consumer = client
+            .consumer(
+                ConsumerOptions::new("group"),
+                WebhookOptions::new("127.0.0.1:0".parse().unwrap()),
+                [Subscription::new("orders")],
+                |_| async { Ok(None) },
+            )
+            .await
+            .unwrap();
+        let (alive, dropped) = tokio::sync::oneshot::channel::<()>();
+        *consumer.server_handle.lock().await = BackgroundTask::new(tokio::spawn(async move {
+            let _alive = alive;
+            std::future::pending::<Result<()>>().await
+        }));
+        assert!(
+            tokio::time::timeout(std::time::Duration::from_millis(20), consumer.join())
+                .await
+                .is_err()
+        );
+        drop(consumer);
+        assert!(
+            tokio::time::timeout(std::time::Duration::from_secs(3), dropped)
+                .await
+                .expect("Drop must abort the retained server task")
+                .is_err()
+        );
         runtime.abort();
     }
 

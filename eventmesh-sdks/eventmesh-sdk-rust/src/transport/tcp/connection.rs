@@ -375,8 +375,10 @@ impl TcpConnection {
             .outbound_tx
             .try_send(OutboundCommand::Send(message::goodbye()));
         self.cancel.cancel();
-        if let Some(join) = self.join.lock().await.take() {
+        let mut task = self.join.lock().await;
+        if let Some(join) = task.as_mut() {
             let _ = join.await;
+            task.take();
         }
     }
 }
@@ -442,6 +444,26 @@ mod tests {
 
     fn blocked_test_connection() -> (Arc<TcpConnection>, mpsc::Receiver<OutboundCommand>) {
         blocked_test_connection_with_timeout(Duration::from_secs(5))
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cancelled_shutdown_keeps_waiting_for_connection_task() {
+        let (mut connection, _outbound) = blocked_test_connection();
+        let (release, released) = oneshot::channel::<()>();
+        *Arc::get_mut(&mut connection).unwrap().join.get_mut() = Some(tokio::spawn(async move {
+            released.await.unwrap();
+        }));
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(Duration::from_secs(1), connection.shutdown())
+                    .await
+                    .is_err()
+            );
+        }
+        release.send(()).unwrap();
+        tokio::time::timeout(Duration::from_secs(1), connection.shutdown())
+            .await
+            .unwrap();
     }
 
     async fn simulate_teardown(

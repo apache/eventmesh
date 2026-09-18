@@ -42,6 +42,7 @@ use crate::message::Message;
 use crate::model::EventMeshMessage;
 use crate::model::PublishResponse;
 use crate::subscription::Subscription;
+use crate::transport::task::BackgroundTask;
 use crate::transport::tcp::connection::TcpConnection;
 use crate::transport::tcp::frame::{Command, Package, PackageBody, RedirectInfo, UserAgent};
 use crate::transport::tcp::message;
@@ -189,7 +190,7 @@ pub struct TcpConsumer<L: MessageHandler> {
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
     subscriptions: Arc<Mutex<Vec<Subscription>>>,
-    driver_handle: Mutex<Option<JoinHandle<Result<()>>>>,
+    driver_handle: Mutex<BackgroundTask<Result<()>>>,
     /// Filled by the driver before it exits, so `wait_for_shutdown` can
     /// return a structured [`ShutdownReason`].
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
@@ -292,7 +293,7 @@ where
             _listener: std::marker::PhantomData,
             shutdown,
             subscriptions,
-            driver_handle: Mutex::new(Some(driver_handle)),
+            driver_handle: Mutex::new(BackgroundTask::new(driver_handle)),
             shutdown_reason,
         })
     }
@@ -385,19 +386,26 @@ where
     pub async fn shutdown(&self) {
         self.request_shutdown();
         self.conn.shutdown().await;
-        if let Some(handle) = self.driver_handle.lock().await.take() {
-            match handle.await {
-                Ok(Ok(())) => {}
-                Ok(Err(error)) => {
-                    *self.shutdown_reason.lock().await =
-                        Some(ShutdownReason::Error(error.to_string()));
-                }
-                Err(error) => {
-                    *self.shutdown_reason.lock().await = Some(ShutdownReason::Error(format!(
-                        "receive-loop driver task panicked: {error}"
-                    )));
-                }
+        self.wait_for_driver().await;
+    }
+
+    async fn wait_for_driver(&self) {
+        let mut driver = self.driver_handle.lock().await;
+        driver.wait().await;
+        self.shutdown.cancel();
+        // Acquire the state lock before consuming the task result, so a
+        // cancelled wait cannot lose an error while acquiring this lock.
+        let mut reason = self.shutdown_reason.lock().await;
+        match driver.take_result() {
+            Some(Ok(Err(error))) => {
+                *reason = Some(ShutdownReason::Error(error.to_string()));
             }
+            Some(Err(error)) => {
+                *reason = Some(ShutdownReason::Error(format!(
+                    "receive-loop driver task panicked: {error}"
+                )));
+            }
+            _ => {}
         }
     }
 
@@ -413,25 +421,7 @@ where
     /// If no shutdown signal was provided at construction time, this blocks
     /// until the driver exits naturally.
     pub async fn wait_for_shutdown(&self) -> ShutdownReason {
-        let handle = self.driver_handle.lock().await.take();
-
-        if let Some(handle) = handle {
-            match handle.await {
-                Ok(Ok(())) => {}
-                Ok(Err(error)) => {
-                    *self.shutdown_reason.lock().await =
-                        Some(ShutdownReason::Error(error.to_string()));
-                }
-                Err(error) => {
-                    *self.shutdown_reason.lock().await = Some(ShutdownReason::Error(format!(
-                        "receive-loop driver task panicked: {error}"
-                    )));
-                }
-            }
-            self.shutdown.cancel();
-        } else {
-            self.shutdown.cancelled().await;
-        }
+        self.wait_for_driver().await;
         self.conn.shutdown().await;
 
         self.shutdown_reason
@@ -445,11 +435,6 @@ where
 impl<L: MessageHandler> Drop for TcpConsumer<L> {
     fn drop(&mut self) {
         self.shutdown.cancel();
-        if let Ok(mut guard) = self.driver_handle.try_lock() {
-            if let Some(handle) = guard.take() {
-                handle.abort();
-            }
-        }
     }
 }
 
@@ -760,6 +745,63 @@ mod tests {
         async fn handle(&self, _: Message) -> Result<Option<Message>> {
             Ok(None)
         }
+    }
+
+    #[tokio::test]
+    async fn cancelled_join_preserves_tcp_driver_failure() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            for (request, response) in [
+                (Command::HelloRequest, Command::HelloResponse),
+                (Command::ListenRequest, Command::ListenResponse),
+            ] {
+                let package = framed.next().await.unwrap().unwrap();
+                assert_eq!(package.header.cmd, request);
+                framed
+                    .send(Package::new(Header::new(
+                        response,
+                        package.header.seq.unwrap(),
+                    )))
+                    .await
+                    .unwrap();
+            }
+            while framed.next().await.is_some() {}
+        });
+        let consumer = TcpConsumer::connect(
+            TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+                .with_reconnect(ReconnectPolicy::default().with_enabled(false)),
+            &ConsumerOptions::new("consumer"),
+            NoopListener,
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .unwrap();
+        let (release, released) = tokio::sync::oneshot::channel::<()>();
+        *consumer.driver_handle.lock().await = BackgroundTask::new(tokio::spawn(async move {
+            released.await.unwrap();
+            Err(EventMeshError::Tcp("driver regression".into()))
+        }));
+        for _ in 0..2 {
+            assert!(
+                tokio::time::timeout(Duration::from_millis(20), consumer.wait_for_shutdown())
+                    .await
+                    .is_err()
+            );
+            consumer.request_shutdown();
+        }
+        release.send(()).unwrap();
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+            .await
+            .unwrap();
+        assert!(matches!(reason, ShutdownReason::Error(message)
+            if message.contains("driver regression")));
+        tokio::time::timeout(Duration::from_secs(3), server)
+            .await
+            .unwrap()
+            .unwrap();
     }
 
     /// A listener failure must tear down the TCP session without ACKing the

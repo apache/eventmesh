@@ -20,6 +20,8 @@
 //! Public clients delegate to concrete producer and consumer types. Each
 //! transport exposes only the operations supported by its wire protocol.
 
+pub(crate) mod task;
+
 #[cfg(feature = "grpc")]
 pub mod grpc;
 
