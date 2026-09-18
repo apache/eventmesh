@@ -21,7 +21,10 @@
 /// CloudEvent attribute (mirrors `org.apache.eventmesh.common.protocol.grpc.common.StatusCode`).
 ///
 /// `SUCCESS` (0) means OK; everything else is an error.
+#[cfg(feature = "grpc")]
 pub struct StatusCode;
+// Keep the Runtime status-code catalog even when only resubscribe is inspected.
+#[cfg(feature = "grpc")]
 #[allow(dead_code)]
 impl StatusCode {
     pub const SUCCESS: i32 = 0;
@@ -52,29 +55,20 @@ impl StatusCode {
 
 /// HTTP consumer return codes (returned in the webhook response body as
 /// `{"retCode": n}`). Mirrors `ClientRetCode`.
+#[cfg(feature = "http")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClientRetCode {
-    /// Remote consumer accepted and handled the message.
-    RemoteOk = 0,
     /// Healthy consumption.
     Ok = 1,
     /// Transient failure; broker should retry.
     Retry = 2,
-    /// Permanent failure.
-    Fail = 3,
-    /// No active listener; broker should stop pushing.
-    NoListen = 5,
 }
 
-impl ClientRetCode {
-    pub fn as_i32(self) -> i32 {
-        self as i32
-    }
-}
-
-/// Legacy request-code integer for the old HTTP `code` header (rarely needed
-/// with the path-based API, kept for completeness).
+/// Request codes for the HTTP `code` header used by root-path routing.
+#[cfg(feature = "http")]
 pub struct RequestCode;
+// Keep the Java HTTP request-code catalog, including operations not exposed here.
+#[cfg(feature = "http")]
 #[allow(dead_code)]
 impl RequestCode {
     pub const MSG_SEND_SYNC: i32 = 101;

@@ -21,7 +21,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 use rand::Rng;
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(
+    feature = "grpc",
+    all(feature = "tcp", feature = "cloud_events"),
+    all(test, any(feature = "grpc", feature = "http", feature = "tcp"))
+))]
 use uuid::Uuid;
 
 /// Best-effort local IPv4 (used to populate the `ip` attribute / header).
@@ -43,6 +47,11 @@ pub struct RandomStringUtils;
 #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
 impl RandomStringUtils {
     /// A random UUID v4 (lowercase, hyphenated).
+    #[cfg(any(
+        feature = "grpc",
+        all(feature = "tcp", feature = "cloud_events"),
+        all(test, any(feature = "grpc", feature = "http", feature = "tcp"))
+    ))]
     pub fn generate_uuid() -> String {
         Uuid::new_v4().to_string()
     }
@@ -53,15 +62,6 @@ impl RandomStringUtils {
         (0..len)
             .map(|_| char::from_digit(rng.gen_range(0..10), 10).unwrap())
             .collect()
-    }
-
-    /// An alphanumeric string of the given length.
-    pub fn generate_alphanumeric(len: usize) -> String {
-        rand::thread_rng()
-            .sample_iter(&rand::distributions::Alphanumeric)
-            .take(len)
-            .map(char::from)
-            .collect::<String>()
     }
 }
 

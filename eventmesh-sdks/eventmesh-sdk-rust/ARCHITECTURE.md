@@ -9,6 +9,7 @@ This document records implementation constraints and protocol boundaries. For pu
 - Producers use concrete transport methods behind the public `GrpcProducer`, `HttpProducer`, and `TcpProducer` APIs. Message dialect selection remains in the public producer facade, while each transport owns its wire encoding and supported operations. There is no internal `Publisher` or `RequestReply` trait requiring unused or unsupported methods.
 - Subscription is intentionally transport-specific. Each consumer owns its receive loop where applicable and exposes lifecycle methods suited to its protocol.
 - `src/common/` contains protocol keys, status codes, constants, and the shared `LoadBalanceSelector`.
+- Internal transport helpers and re-exports are gated by their consuming features; `common` and `model` have no module-wide unused-code exemptions. The shared Java wire-key and status/request-code catalogs retain documented `dead_code` exemptions on their constant-only implementations.
 
 ## Generated protobuf code
 

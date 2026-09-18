@@ -161,6 +161,7 @@ impl EventMeshMessage {
     }
 
     /// Validate requirements shared by all publishing transports.
+    #[cfg(any(test, feature = "grpc", feature = "http", feature = "tcp"))]
     pub(crate) fn validate_for_publish(&self) -> Result<()> {
         if self.topic.trim().is_empty() {
             return Err(EventMeshError::InvalidMessage("topic is required".into()));
@@ -173,6 +174,7 @@ impl EventMeshMessage {
     }
 
     /// Validate requirements imposed by the gRPC runtime.
+    #[cfg(any(test, feature = "grpc"))]
     pub(crate) fn validate_for_grpc_publish(&self) -> Result<()> {
         self.validate_for_publish()?;
         if self.content.is_empty() {
@@ -182,6 +184,7 @@ impl EventMeshMessage {
     }
 
     /// Validate requirements imposed by the Java-compatible TCP client.
+    #[cfg(any(test, feature = "tcp"))]
     pub(crate) fn validate_for_tcp_publish(&self) -> Result<()> {
         self.validate_for_publish()?;
         if self.content.trim().is_empty() {
@@ -200,6 +203,7 @@ fn validate_property_key(key: &str) -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(test, feature = "grpc", feature = "http", feature = "tcp"))]
 fn validate_ttl(ttl: i64) -> Result<()> {
     if !(1..=i64::from(i32::MAX)).contains(&ttl) {
         return Err(EventMeshError::InvalidMessage(format!(

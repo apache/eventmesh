@@ -34,8 +34,7 @@ pub enum LoadBalance {
     WeightRoundRobin,
 }
 
-/// A server endpoint, optionally weighted. Address format: `host:port` or
-/// `host:port:weight` (weight defaults to 1 when omitted).
+/// A weighted server endpoint supplied by the validated HTTP configuration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServerNode {
     pub host: String,
@@ -44,44 +43,6 @@ pub struct ServerNode {
 }
 
 impl ServerNode {
-    /// Parse `host:port` or `host:port:weight`.
-    pub fn parse(addr: &str) -> Result<Self> {
-        let parts: Vec<&str> = addr.split(':').collect();
-        match parts.len() {
-            2 => {
-                let port = parts[1]
-                    .parse::<u16>()
-                    .map_err(|e| EventMeshError::Config(format!("bad port in {addr:?}: {e}")))?;
-                Ok(Self {
-                    host: parts[0].to_string(),
-                    port,
-                    weight: 1,
-                })
-            }
-            3 => {
-                let port = parts[1]
-                    .parse::<u16>()
-                    .map_err(|e| EventMeshError::Config(format!("bad port in {addr:?}: {e}")))?;
-                let weight = parts[2]
-                    .parse::<i32>()
-                    .map_err(|e| EventMeshError::Config(format!("bad weight in {addr:?}: {e}")))?;
-                if weight <= 0 {
-                    return Err(EventMeshError::Config(format!(
-                        "weight must be > 0: {addr:?}"
-                    )));
-                }
-                Ok(Self {
-                    host: parts[0].to_string(),
-                    port,
-                    weight,
-                })
-            }
-            _ => Err(EventMeshError::Config(format!(
-                "expected host:port[:weight], got {addr:?}"
-            ))),
-        }
-    }
-
     pub fn addr(&self) -> String {
         format!("{}:{}", self.host, self.port)
     }
@@ -187,27 +148,17 @@ impl LoadBalanceSelector {
 mod tests {
     use super::*;
 
-    #[test]
-    fn parse_host_port() {
-        let n = ServerNode::parse("1.2.3.4:10105").unwrap();
-        assert_eq!(n.host, "1.2.3.4");
-        assert_eq!(n.port, 10105);
-        assert_eq!(n.weight, 1);
-    }
-
-    #[test]
-    fn parse_weighted() {
-        let n = ServerNode::parse("1.2.3.4:10105:5").unwrap();
-        assert_eq!(n.weight, 5);
-        assert_eq!(n.addr(), "1.2.3.4:10105");
+    fn node(host: &str, port: u16, weight: i32) -> ServerNode {
+        ServerNode {
+            host: host.to_string(),
+            port,
+            weight,
+        }
     }
 
     #[test]
     fn random_selects_within_set() {
-        let nodes = vec![
-            ServerNode::parse("a:1").unwrap(),
-            ServerNode::parse("b:2").unwrap(),
-        ];
+        let nodes = vec![node("a", 1, 1), node("b", 2, 1)];
         let sel = LoadBalanceSelector::new(nodes.clone(), LoadBalance::Random).unwrap();
         for _ in 0..20 {
             let n = sel.select();
@@ -217,10 +168,7 @@ mod tests {
 
     #[test]
     fn weight_round_robin_distributes_proportionally() {
-        let nodes = vec![
-            ServerNode::parse("a:1:5").unwrap(),
-            ServerNode::parse("b:1:1").unwrap(),
-        ];
+        let nodes = vec![node("a", 1, 5), node("b", 1, 1)];
         let sel = LoadBalanceSelector::new(nodes, LoadBalance::WeightRoundRobin).unwrap();
         let mut a = 0;
         for _ in 0..60 {
@@ -234,10 +182,7 @@ mod tests {
 
     #[test]
     fn weight_random_distributes_proportionally() {
-        let nodes = vec![
-            ServerNode::parse("a:1:9").unwrap(),
-            ServerNode::parse("b:1:1").unwrap(),
-        ];
+        let nodes = vec![node("a", 1, 9), node("b", 1, 1)];
         let sel = LoadBalanceSelector::new(nodes, LoadBalance::WeightRandom).unwrap();
         let mut a = 0;
         for _ in 0..1000 {
@@ -252,10 +197,7 @@ mod tests {
     #[test]
     fn weight_random_handles_large_weight_without_oom() {
         // Previously this would expand to a Vec of 1 billion entries.
-        let nodes = vec![
-            ServerNode::parse("a:1:1000000").unwrap(),
-            ServerNode::parse("b:1:1").unwrap(),
-        ];
+        let nodes = vec![node("a", 1, 1000000), node("b", 1, 1)];
         let sel = LoadBalanceSelector::new(nodes, LoadBalance::WeightRandom).unwrap();
         for _ in 0..10 {
             sel.select();

@@ -50,15 +50,11 @@
 
 #![deny(missing_docs, unsafe_code)]
 
-// Common helpers are shared across feature-gated transports, so not every
-// item is referenced in every feature combination.
-#[allow(dead_code, unused_imports)]
 mod common;
 pub mod config;
 mod error;
 mod handler;
 pub mod message;
-#[allow(dead_code, unused_imports)]
 mod model;
 pub mod subscription;
 pub mod webhook;

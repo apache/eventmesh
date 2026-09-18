@@ -26,6 +26,7 @@ pub struct HeartbeatItem {
     pub url: String,
 }
 
+#[cfg(feature = "http")]
 impl HeartbeatItem {
     pub fn new(topic: impl Into<String>, url: impl Into<String>) -> Self {
         Self {

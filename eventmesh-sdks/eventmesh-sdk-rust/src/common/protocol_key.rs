@@ -23,6 +23,7 @@
 
 /// Container for all well-known attribute key constants.
 pub struct ProtocolKey;
+// Keep the wire-key catalog shared with Java; usage varies by transport and dialect.
 #[allow(dead_code)]
 impl ProtocolKey {
     // ---- client identity (carried in every request) ----
