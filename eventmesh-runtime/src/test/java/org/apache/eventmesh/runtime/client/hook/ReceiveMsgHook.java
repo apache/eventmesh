@@ -15,9 +15,13 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/client/hook/ReceiveMsgHook.java
 package org.apache.eventmesh.runtime.client.hook;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
+========
+package org.apache.eventmesh.client.tcp.common;
+>>>>>>>> 4bc230e32 (refactor(eventmesh-sdk-java):rename to org.apache(#281)):eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/tcp/common/ReceiveMsgHook.java
 
 import io.netty.channel.ChannelHandlerContext;
 

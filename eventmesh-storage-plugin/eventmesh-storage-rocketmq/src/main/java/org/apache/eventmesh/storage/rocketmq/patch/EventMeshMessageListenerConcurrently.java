@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-storage-plugin/eventmesh-storage-rocketmq/src/main/java/org/apache/eventmesh/storage/rocketmq/patch/EventMeshMessageListenerConcurrently.java
 package org.apache.eventmesh.storage.rocketmq.patch;
+========
+package com.webank.runtime.patch;
+>>>>>>>> 43bf39791 (event mesh project architecture adjustment):eventmesh-runtime/src/main/java/com/webank/runtime/patch/ProxyMessageListenerConcurrently.java
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;

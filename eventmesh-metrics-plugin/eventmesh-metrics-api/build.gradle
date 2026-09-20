@@ -28,6 +28,5 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation "org.mockito:mockito-core"
-    testImplementation "org.mockito:mockito-inline"
 }
 
