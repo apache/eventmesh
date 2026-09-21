@@ -66,12 +66,21 @@ public class A2AGatewayServer {
     private A2AGatewayService gatewayService;
     private A2AGatewayHttpHandler gatewayHandler;
 
+    /** #5405: optional bearer token for the gateway REST plane; null = open (dev). */
+    private volatile String token;
+
     public A2AGatewayServer(int port, A2AMessageTransport transport, TaskStore taskStore,
                               AgentCardRegistry agentCardRegistry) {
         this.port = port;
         this.transport = transport;
         this.taskStore = taskStore;
         this.agentCardRegistry = agentCardRegistry;
+    }
+
+    /** #5405: require {@code Authorization: Bearer <token>} (constant-time compare). */
+    public A2AGatewayServer withToken(String token) {
+        this.token = token;
+        return this;
     }
 
     public void start() throws Exception {
@@ -81,6 +90,9 @@ public class A2AGatewayServer {
         gatewayService.start();
 
         gatewayHandler = new A2AGatewayHttpHandler(gatewayService);
+        if (token != null) {
+            gatewayHandler.withToken(token);
+        }
 
         // 2. Start Netty HTTP server
         bossGroup = new NioEventLoopGroup(1);
@@ -123,7 +135,14 @@ public class A2AGatewayServer {
         }
     }
 
+    /**
+     * The actually bound port. When the server was constructed with {@code port = 0}
+     * (auto-select), this returns the OS-assigned port after {@link #start()}.
+     */
     public int getPort() {
+        if (serverChannel != null && serverChannel.localAddress() instanceof java.net.InetSocketAddress) {
+            return ((java.net.InetSocketAddress) serverChannel.localAddress()).getPort();
+        }
         return port;
     }
 

@@ -348,6 +348,15 @@ public class UniHttpServer {
             // path; the protocol adaptor owns the conversion.)
             frame = FrameAdaptors.get("cloudevents").toFrame(new ByteTransport(body));
         } catch (RuntimeException | org.apache.eventmesh.protocol.api.exception.ProtocolHandleException e) {
+            // #5225 / #5405: an A2A JSON-RPC body posted here is the most common class confusion —
+            // point the caller at the gateway endpoints instead of an opaque transform error.
+            if (looksLikeA2aJsonRpc(body)) {
+                writeJson(exchange, 400, error(
+                    "this endpoint accepts CloudEvents JSON, not A2A JSON-RPC; post A2A task "
+                    + "requests to the A2A gateway instead (POST /a2a/tasks on the a2a port, "
+                    + "default 10108, enabled via -Deventmesh.a2a.enabled=true)"));
+                return;
+            }
             writeJson(exchange, 400, error("invalid CloudEvent: " + e.getMessage()));
             return;
         }
@@ -1372,6 +1381,19 @@ public class UniHttpServer {
         } finally {
             exchange.close();
         }
+    }
+
+    /**
+     * #5405: heuristic A2A JSON-RPC detection for the traffic-port guidance — a body whose
+     * first object contains a {@code "jsonrpc":"2.0"} member (A2A/MCP wire shape) or an
+     * {@code "protocoltype: a2a"} request header. Cheap prefix scan, no full parse.
+     */
+    private static boolean looksLikeA2aJsonRpc(byte[] body) {
+        if (body == null || body.length == 0 || body.length > 4096) {
+            return false;
+        }
+        String head = new String(body, 0, Math.min(body.length, 4096), java.nio.charset.StandardCharsets.UTF_8);
+        return head.contains("\"jsonrpc\"") && head.contains("\"2.0\"");
     }
 
     private static Map<String, Object> error(String msg) {

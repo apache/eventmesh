@@ -39,6 +39,9 @@ EVENTMESH_STORAGE_TYPE="${EVENTMESH_STORAGE_TYPE:-kafka}"
 EVENTMESH_HTTP_PORT="${EVENTMESH_HTTP_PORT:-10105}"
 EVENTMESH_ADMIN_PORT="${EVENTMESH_ADMIN_PORT:-10106}"
 EVENTMESH_OFFSET_PATH="${EVENTMESH_OFFSET_PATH:-$EVENTMESH_HOME/data/offset}"
+EVENTMESH_A2A_ENABLED="${EVENTMESH_A2A_ENABLED:-false}"
+EVENTMESH_A2A_PORT="${EVENTMESH_A2A_PORT:-10108}"
+EVENTMESH_A2A_TOKEN="${EVENTMESH_A2A_TOKEN:-}"
 JAVA_OPTS="${JAVA_OPTS:-}"
 
 exec java $JAVA_OPTS \
@@ -47,4 +50,7 @@ exec java $JAVA_OPTS \
     -Deventmesh.http.port="${EVENTMESH_HTTP_PORT}" \
     -Deventmesh.admin.port="${EVENTMESH_ADMIN_PORT}" \
     -Deventmesh.offset.path="${EVENTMESH_OFFSET_PATH}" \
+    -Deventmesh.a2a.enabled="${EVENTMESH_A2A_ENABLED}" \
+    -Deventmesh.a2a.port="${EVENTMESH_A2A_PORT}" \
+    -Deventmesh.a2a.token="${EVENTMESH_A2A_TOKEN}" \
     org.apache.eventmesh.runtime.boot.EventMeshApplication

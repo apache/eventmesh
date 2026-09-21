@@ -61,9 +61,20 @@ public interface TaskStore {
         public volatile String output;
         /** Monotonic per-task epoch; set at creation, never reset, used to reject stale writes. */
         public final long taskEpoch;
+        /**
+         * Optional conversation linkage (A2A {@code contextId}, issue #5405): groups tasks that
+         * belong to the same multi-turn conversation. Null when the caller did not supply one.
+         */
+        public final String contextId;
 
         public TaskRecord(String taskId, String agentId, String clientId, Status status,
                           long createdAtMs, long updatedAtMs, String input, String output, long taskEpoch) {
+            this(taskId, agentId, clientId, status, createdAtMs, updatedAtMs, input, output, taskEpoch, null);
+        }
+
+        public TaskRecord(String taskId, String agentId, String clientId, Status status,
+                          long createdAtMs, long updatedAtMs, String input, String output, long taskEpoch,
+                          String contextId) {
             this.taskId = taskId;
             this.agentId = agentId;
             this.clientId = clientId;
@@ -73,6 +84,7 @@ public interface TaskStore {
             this.input = input;
             this.output = output;
             this.taskEpoch = taskEpoch;
+            this.contextId = contextId;
         }
     }
 
@@ -81,6 +93,16 @@ public interface TaskStore {
      * duplicate returns {@code null} (caller should retry with a fresh id).
      */
     TaskRecord createTask(String taskId, String agentId, String clientId, String input);
+
+    /**
+     * Create a new task with an optional conversation {@code contextId} (issue #5405). Backends
+     * that do not persist the field may ignore it; the default delegates to
+     * {@link #createTask(String, String, String, String)}.
+     */
+    default TaskRecord createTask(String taskId, String agentId, String clientId, String input,
+                                  String contextId) {
+        return createTask(taskId, agentId, clientId, input);
+    }
 
     /**
      * @return the task record, or {@code null} if no such task

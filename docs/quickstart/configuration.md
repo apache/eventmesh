@@ -79,6 +79,7 @@ Usually set via `-D` by `bin/start.sh`; override here if needed.
 | `eventmesh.admin.port` | `10106` | Admin HTTP (`/admin/*`, `/metrics`) |
 | `eventmesh.ws.port` | `-1` (disabled) | WebSocket push port; set e.g. `10107` to enable |
 | `eventmesh.grpc.port` | `10205` | RESERVED for the future gRPC protocol (not served yet; keeps the 1.x default warm) |
+| `eventmesh.a2a.port` | `10108` | A2A gateway REST plane (opt-in via `eventmesh.a2a.enabled=true`) |
 | `eventmesh.offset.path` | `./data/offset` | Local offset store directory |
 
 ## 4. Security
@@ -147,6 +148,19 @@ Summary:
 | A2A gateway | `/a2a/tasks` family — separate port, [A2A docs](../feature/a2a.md) (Experimental) |
 
 ## 8. Deployment checklist
+
+## A2A gateway (optional)
+
+| Key | Default | Description |
+|---|---|---|
+| `eventmesh.a2a.enabled` | `false` | Boot the A2A gateway plane with the main process (`EVENTMESH_A2A_ENABLED=true`) |
+| `eventmesh.a2a.port` | `10108` | A2A gateway REST + SSE port (`POST /a2a/tasks`, `/a2a/tasks/{id}/stream`) |
+| `eventmesh.a2a.token` | _(empty)_ | Bearer token required on every gateway endpoint; empty = open (dev mode, logged at boot) |
+| `eventmesh.a2a.taskstore` | _(local)_ | `meta` to persist tasks in the cluster Meta store (needs Nacos); default = local RocksDB under `<data>/a2a-tasks` |
+
+The v2 **agent process** (`eventmesh-agent`) has its own `-D` config set (`agent.*`, `llm.*`) —
+see [feature/agent.md](../feature/agent.md).
+
 
 - [ ] `EVENTMESH_STORAGE_TYPE` and the backend address set consistently on every instance
 - [ ] `eventmesh.offset.path` points at persistent storage (survives restarts)

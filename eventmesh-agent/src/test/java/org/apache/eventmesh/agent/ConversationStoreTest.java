@@ -57,6 +57,30 @@ class ConversationStoreTest {
     }
 
     @Test
+    void evictsLeastRecentlyUsedConversationPastBound() {
+        ConversationStore store = new ConversationStore(20, 2);
+        store.appendTurn("c1", "p1", "a1");
+        store.appendTurn("c2", "p2", "a2");
+        assertThat(store.conversationCount()).isEqualTo(2);
+        // touch c1 so c2 becomes the LRU victim
+        store.get("c1");
+        store.appendTurn("c3", "p3", "a3");
+        assertThat(store.conversationCount()).isEqualTo(2);
+        assertThat(store.get("c2")).isEmpty();      // evicted
+        assertThat(store.get("c1")).hasSize(2);     // survived (was touched)
+        assertThat(store.get("c3")).hasSize(2);     // newest
+    }
+
+    @Test
+    void singleArgConstructorKeepsUnboundedConversations() {
+        ConversationStore store = new ConversationStore(20);
+        for (int i = 0; i < 500; i++) {
+            store.appendTurn("c" + i, "p", "a");
+        }
+        assertThat(store.conversationCount()).isEqualTo(500);
+    }
+
+    @Test
     void trimsToSlidingWindow() {
         ConversationStore store = new ConversationStore(4); // 2 turns kept
         store.appendTurn("c1", "p1", "a1");
