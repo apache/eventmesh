@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>Prerequisites:
  * <ol>
- *   <li>A running EventMesh Runtime on {@code runtimeUrl} (default {@code http://localhost:8080}),
+ *   <li>A running EventMesh Runtime on {@code runtimeUrl} (default {@code http://localhost:10105}),
  *       wired with a {@code SessionRouter} (see docs/sdk-streaming-call-guide.md §9).</li>
  *   <li>At least one streaming Agent registered + heartbeating against that runtime.</li>
  * </ol>
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>Run:
  * <pre>
  *   java org.apache.eventmesh.cloudevents.demo.stream.StreamingCallDemo [runtimeUrl] [prompt]
- *   # defaults: runtimeUrl=http://localhost:8080  prompt="Introduce Apache EventMesh in three sentences."
+ *   # defaults: runtimeUrl=http://localhost:10105  prompt="Introduce Apache EventMesh in three sentences."
  * </pre>
  *
  * <p>The demo exercises {@code forEach}-only consumption (the sole posture) on a single-turn call,
@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StreamingCallDemo {
 
-    private static final String DEFAULT_RUNTIME_URL = "http://localhost:8080";
+    private static final String DEFAULT_RUNTIME_URL = "http://localhost:10105";
     private static final String DEFAULT_PROMPT = "Introduce Apache EventMesh in three sentences.";
 
     public static void main(String[] args) throws Exception {

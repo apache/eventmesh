@@ -19,6 +19,8 @@ package org.apache.eventmesh.agent.llm;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -30,14 +32,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Minimal OpenAI-compatible chat-completion streaming client. Issues {@code POST {base}/v1/chat/
- * completions} with {@code stream:true} and {@code Authorization: Bearer <key>}, reads the SSE token
- * stream and invokes {@code chunkCb} per {@code choices[0].delta.content}. Compatible with OpenAI,
- * Azure-OpenAI, vLLM, Ollama (OpenAI mode), DeepSeek, Moonshot and most internal gateways. Blocking;
- * intended to run on a virtual thread.
+ * Minimal OpenAI-compatible chat-completion client — the default {@link LlmClient} implementation.
+ * Issues {@code POST {base}/v1/chat/completions}; with {@code stream:true} it reads the SSE token
+ * stream and invokes {@code chunkCb} per {@code choices[0].delta.content}; via {@link #chat} it
+ * performs a single-shot completion that may return a function call. Compatible with OpenAI,
+ * Azure-OpenAI, vLLM, Ollama (OpenAI mode), DeepSeek, Moonshot and most internal gateways.
+ * Blocking; intended to run on a virtual thread.
  */
 @Slf4j
-public class OpenAiLlmClient {
+public class OpenAiLlmClient implements LlmClient {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -74,28 +77,12 @@ public class OpenAiLlmClient {
      * Stream a completion for the given message list (supports multi-turn: pass prior history +
      * the current user message). Each map must contain {@code role} + {@code content}.
      */
+    @Override
     public void stream(java.util.List<java.util.Map<String, String>> messages, String model,
                        Consumer<String> chunkCb) throws Exception {
-        String useModel = (model != null && !model.isEmpty()) ? model : defaultModel;
-        ObjectNode body = MAPPER.createObjectNode();
-        body.put("model", useModel);
-        ArrayNode msgs = body.putArray("messages");
-        for (java.util.Map<String, String> message : messages) {
-            ObjectNode msg = msgs.addObject();
-            msg.put("role", message.getOrDefault("role", "user"));
-            msg.put("content", message.getOrDefault("content", ""));
-        }
+        ObjectNode body = baseBody(messages, model);
         body.put("stream", true);
-
-        java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
-            .uri(URI.create(trimSlash(this.baseUrl) + "/v1/chat/completions"))
-            .timeout(Duration.ofMinutes(3))
-            .header("Content-Type", "application/json")
-            .header("Accept", "text/event-stream")
-            .header("Authorization", "Bearer " + apiKey)
-            .POST(java.net.http.HttpRequest.BodyPublishers.ofString(MAPPER.writeValueAsString(body)))
-            .build();
-
+        java.net.http.HttpRequest req = request(body);
         java.net.http.HttpResponse<Stream<String>> resp =
             http.send(req, java.net.http.HttpResponse.BodyHandlers.ofLines());
         int status = resp.statusCode();
@@ -125,6 +112,66 @@ public class OpenAiLlmClient {
                 }
             });
         }
+    }
+
+    /**
+     * Single-shot completion with optional function-calling tools (non-streaming): parses
+     * {@code choices[0].message} into either assistant text or the first requested tool call.
+     */
+    @Override
+    public LlmCompletion chat(List<Map<String, String>> messages, List<ToolSpec> tools,
+                                     String model) throws Exception {
+        ObjectNode body = baseBody(messages, model);
+        if (tools != null && !tools.isEmpty()) {
+            ArrayNode toolsArr = body.putArray("tools");
+            for (ToolSpec spec : tools) {
+                ObjectNode fn = toolsArr.addObject().put("type", "function").putObject("function");
+                fn.put("name", spec.name());
+                fn.put("description", spec.description());
+                fn.set("parameters", MAPPER.readTree(
+                    spec.parametersJsonSchema() == null ? "{\"type\":\"object\"}" : spec.parametersJsonSchema()));
+            }
+        }
+        java.net.http.HttpResponse<String> resp =
+            http.send(request(body), java.net.http.HttpResponse.BodyHandlers.ofString());
+        int status = resp.statusCode();
+        if (status != 200) {
+            throw new RuntimeException("LLM HTTP " + status + " (check llm.base.url / llm.api.key / llm.model)");
+        }
+        JsonNode message = MAPPER.readTree(resp.body()).path("choices").path(0).path("message");
+        JsonNode toolCalls = message.get("tool_calls");
+        if (toolCalls != null && toolCalls.isArray() && toolCalls.size() > 0) {
+            JsonNode call = toolCalls.get(0).path("function");
+            return LlmCompletion.ofToolCall(new ToolCall(
+                toolCalls.get(0).path("id").asText(""),
+                call.path("name").asText(""),
+                call.path("arguments").asText("{}")));
+        }
+        return LlmCompletion.ofText(message.path("content").asText(""));
+    }
+
+    private ObjectNode baseBody(List<Map<String, String>> messages, String model) {
+        String useModel = (model != null && !model.isEmpty()) ? model : defaultModel;
+        ObjectNode body = MAPPER.createObjectNode();
+        body.put("model", useModel);
+        ArrayNode msgs = body.putArray("messages");
+        for (Map<String, String> message : messages) {
+            ObjectNode msg = msgs.addObject();
+            msg.put("role", message.getOrDefault("role", "user"));
+            msg.put("content", message.getOrDefault("content", ""));
+        }
+        return body;
+    }
+
+    private java.net.http.HttpRequest request(ObjectNode body) throws Exception {
+        return java.net.http.HttpRequest.newBuilder()
+            .uri(URI.create(trimSlash(this.baseUrl) + "/v1/chat/completions"))
+            .timeout(Duration.ofMinutes(3))
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer " + apiKey)
+            .POST(java.net.http.HttpRequest.BodyPublishers.ofString(MAPPER.writeValueAsString(body)))
+            .build();
     }
 
     private static String trimSlash(String url) {

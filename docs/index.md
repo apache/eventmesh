@@ -49,6 +49,10 @@ too.
 - [A2A — Agent-to-Agent](feature/a2a.md) — the agent collaboration protocol:
   task lifecycle, JSON-RPC/MCP bridge, REST + SDK usage
   *(Experimental)*.
+- [Agent tools & event triggers](feature/agent-tools.md) — the agent
+  extension points (LLM client, conversation memory, function-calling tools)
+  and connector plugins as the agent tool library; event-driven agents
+  *(Experimental)*.
 
 - [Connectors](feature/connectors/README.md) — bridge EventMesh with external
   systems (Kafka, RocketMQ, RabbitMQ, databases, chat platforms): the connector

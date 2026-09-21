@@ -18,9 +18,15 @@
 package org.apache.eventmesh.agent;
 
 import org.apache.eventmesh.agent.llm.OpenAiLlmClient;
+import org.apache.eventmesh.agent.tool.AgentTool;
+import org.apache.eventmesh.agent.tool.ConnectorToolAdapter;
+import org.apache.eventmesh.agent.tool.ToolRegistry;
 import org.apache.eventmesh.client.cloudevents.CloudEventsClient;
+import org.apache.eventmesh.connector.SinkConnector;
+import org.apache.eventmesh.connector.SourceConnector;
 
 import java.util.List;
+import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +37,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>Config keys: {@code agent.runtime.url}, {@code agent.id}, {@code agent.heartbeat.intervalMs},
  * {@code agent.capacity}, {@code agent.conversation.maxHistory}, {@code llm.base.url},
- * {@code llm.api.key}, {@code llm.model}.</p>
+ * {@code llm.api.key}, {@code llm.model}; connector tools via
+ * {@code agent.tools.sink.<name>=<fqcn>} / {@code agent.tools.source.<name>=<fqcn>}
+ * (+ {@code agent.tools.props.<name>.*}); event triggers via {@code agent.subscribe.topics} +
+ * {@code agent.trigger.output.topic}.</p>
  */
 @Slf4j
 public class AgentApplication {
@@ -57,6 +66,8 @@ public class AgentApplication {
         // supervisor can restart it; the runtime TTL has evicted the registration by then
         // and a silent zombie serves nothing.
         final int heartbeatFailLimit = Integer.getInteger("agent.heartbeat.failLimit", 6);
+        String triggerTopics = System.getProperty("agent.subscribe.topics", "");
+        String triggerOutput = System.getProperty("agent.trigger.output.topic", "agent.triggers");
 
         // Step 1: register (gets the assigned agent-parent + client-reply-parent)
         AgentControlClient control = new AgentControlClient(runtimeUrl);
@@ -64,12 +75,28 @@ public class AgentApplication {
         String agentParent = reg.parent();
         log.info("agent registered: agentId={} parent={} clientParent={}", agentId, agentParent, reg.clientParent());
 
-        // Step 2: subscribe the agent's channel
+        // Step 2: subscribe the agent's channel (with connector tools, if configured)
         CloudEventsClient client = CloudEventsClient.builder().runtimeUrl(runtimeUrl).clientId(agentId).build();
         OpenAiLlmClient llm = new OpenAiLlmClient(llmBase, llmKey, llmModel);
         ConversationStore store = new ConversationStore(maxHistory, maxConversations);
-        StreamingAgent agent = new StreamingAgent(client, agentParent, agentId, llm, store);
+        ToolRegistry tools = buildConnectorTools();
+        StreamingAgent agent = new StreamingAgent(client, agentParent, agentId, llm, store, tools);
         agent.start(); // subscribe (agentParent, agent.<agentId>)
+
+        // Step 2b: optional event-driven triggers (own client so the lite-channel poller is untouched)
+        CloudEventsClient triggerClient = null;
+        if (!triggerTopics.isBlank()) {
+            triggerClient = CloudEventsClient.builder().runtimeUrl(runtimeUrl)
+                .clientId(agentId + "-triggers").build();
+            for (String topic : triggerTopics.split(",")) {
+                String trimmed = topic.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                triggerClient.subscribe(trimmed, "LOAD_BALANCE", event -> agent.onEvent(event, triggerOutput));
+            }
+            log.info("agent trigger subscriptions: [{}] -> output topic {}", triggerTopics, triggerOutput);
+        }
 
         // Step 3: ready-before-route: only now is this agent eligible for matchmaking
         control.ready(agentId);
@@ -99,6 +126,7 @@ public class AgentApplication {
             }
         });
 
+        final CloudEventsClient finalTriggerClient = triggerClient;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("shutting down agent...");
             heartbeatThread.interrupt();
@@ -108,11 +136,61 @@ public class AgentApplication {
                 log.warn("unregister failed: {}", e.toString());
             }
             agent.shutdown();
+            if (finalTriggerClient != null) {
+                finalTriggerClient.shutdown();
+            }
             client.shutdown();
         }, "agent-shutdown"));
 
-        log.info("AgentApplication running: runtime={} agentId={} parent={} model={} (Ctrl+C to stop)",
-            runtimeUrl, agentId, agentParent, llmModel);
+        log.info("AgentApplication running: runtime={} agentId={} parent={} model={} tools={} (Ctrl+C to stop)",
+            runtimeUrl, agentId, agentParent, llmModel, tools.size());
         Thread.currentThread().join();
+    }
+
+    /**
+     * Build the connector-backed tool registry from {@code -Dagent.tools.sink.<name>=<fqcn>} /
+     * {@code -Dagent.tools.source.<name>=<fqcn>} plus per-tool connector properties under
+     * {@code agent.tools.props.<name>.*}. Empty registry when nothing is configured.
+     */
+    private static ToolRegistry buildConnectorTools() {
+        ToolRegistry registry = new ToolRegistry();
+        for (String key : System.getProperties().stringPropertyNames()) {
+            if (key.startsWith("agent.tools.sink.")) {
+                String name = key.substring("agent.tools.sink.".length());
+                registerConnectorTool(registry, "sink", name, System.getProperty(key));
+            } else if (key.startsWith("agent.tools.source.")) {
+                String name = key.substring("agent.tools.source.".length());
+                registerConnectorTool(registry, "source", name, System.getProperty(key));
+            }
+        }
+        return registry;
+    }
+
+    private static void registerConnectorTool(ToolRegistry registry, String kind, String name, String fqcn) {
+        Properties props = new Properties();
+        String prefix = "agent.tools.props." + name + ".";
+        for (String key : System.getProperties().stringPropertyNames()) {
+            if (key.startsWith(prefix)) {
+                props.put(key.substring(prefix.length()), System.getProperty(key));
+            }
+        }
+        AgentTool tool;
+        if ("sink".equals(kind)) {
+            tool = ConnectorToolAdapter.sinkTool(name, "Deliver a JSON payload through the '" + name + "' connector",
+                loadConnector(fqcn, SinkConnector.class), props);
+        } else {
+            tool = ConnectorToolAdapter.sourceTool(name, "Poll the next event batch from the '" + name
+                + "' connector", loadConnector(fqcn, SourceConnector.class), props);
+        }
+        registry.register(tool);
+        log.info("connector tool registered: {}={} ({})", kind, name, fqcn);
+    }
+
+    private static <T> Class<? extends T> loadConnector(String fqcn, Class<T> spi) {
+        try {
+            return Class.forName(fqcn).asSubclass(spi);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("connector class not found on agent classpath: " + fqcn, e);
+        }
     }
 }

@@ -32,10 +32,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * number of conversations themselves ({@code maxConversations}, access-order eviction) —
  * without the outer bound a long-lived agent leaks memory one session at a time (#5405).
  *
- * <p>Lost on agent restart (MVP — persistence to Redis/DB is a TODO). Thread-safe per conversation
+ * <p>Lost on agent restart (persistence to Redis/DB is a TODO — implement {@link ConversationMemory}
+ * and inject it into {@code StreamingAgent} to add one). Thread-safe per conversation
  * (synchronized on the per-id list).</p>
  */
-public class ConversationStore {
+public class ConversationStore implements ConversationMemory {
 
     private final int maxMessages;
     private final ConcurrentHashMap<String, List<Map<String, String>>> history = new ConcurrentHashMap<>();
@@ -55,6 +56,7 @@ public class ConversationStore {
     private final int maxConversations;
 
     /** Snapshot of the conversation history (empty list if convId null/unknown). Caller may mutate. */
+    @Override
     public List<Map<String, String>> get(String conversationId) {
         if (conversationId == null) {
             return new ArrayList<>();
@@ -94,6 +96,7 @@ public class ConversationStore {
     }
 
     /** Append a completed turn (user prompt + assistant answer). No-op if convId is null. */
+    @Override
     public void appendTurn(String conversationId, String userPrompt, String assistantAnswer) {
         if (conversationId == null) {
             return;
