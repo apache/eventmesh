@@ -23,7 +23,7 @@
 # (unlike the runtime) connector jars MUST be on the -cp.
 #
 # Env vars (all optional):
-#   EVENTMESH_RUNTIME_URL   EventMesh runtime URL          (default http://localhost:8080)
+#   EVENTMESH_RUNTIME_URL   EventMesh runtime URL          (default http://localhost:10105)
 #   CONNECTOR_ADMIN_PORT    connector admin HTTP port      (default 0 = off)
 #   CONNECTOR_OFFSET_MODE   remote | rocksdb | inmemory    (default remote)
 #   CONNECTOR_OFFSET_PATH   rocksdb offset path            (default $EVENTMESH_HOME/data/connector-offset)
@@ -36,7 +36,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EVENTMESH_HOME="${EVENTMESH_HOME:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 cd "$EVENTMESH_HOME"
 
-EVENTMESH_RUNTIME_URL="${EVENTMESH_RUNTIME_URL:-http://localhost:8080}"
+EVENTMESH_RUNTIME_URL="${EVENTMESH_RUNTIME_URL:-http://localhost:10105}"
 CONNECTOR_ADMIN_PORT="${CONNECTOR_ADMIN_PORT:-0}"
 CONNECTOR_OFFSET_MODE="${CONNECTOR_OFFSET_MODE:-remote}"
 CONNECTOR_OFFSET_PATH="${CONNECTOR_OFFSET_PATH:-$EVENTMESH_HOME/data/connector-offset}"

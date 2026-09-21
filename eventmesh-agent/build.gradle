@@ -1,6 +1,6 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -16,10 +16,13 @@
  */
 
 // Agent — 独立进程, 仅经 lite topic + CloudEvents 与 EventMesh Runtime 通信.
-// 不依赖 eventmesh-runtime, 复用 sdk-java (CloudEventsClient) + common (stream framing) + 一个
+// 不依赖 eventmesh-runtime, 复用 sdk-java (CloudEventsClient) + common (stream framing) +
+// connector-api (ConnectorToolAdapter 把存量 connector 插件变成 LLM 工具) + 一个
 // OpenAI 兼容的 LLM SSE client.
 dependencies {
     implementation project(':eventmesh-sdks:eventmesh-sdk-java')
+    implementation project(':eventmesh-connector-api')
+    implementation 'io.cloudevents:cloudevents-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api'
     runtimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl'

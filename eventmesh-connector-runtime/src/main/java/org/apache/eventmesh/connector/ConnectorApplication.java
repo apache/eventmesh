@@ -54,7 +54,7 @@ public class ConnectorApplication {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static void main(String[] args) throws Exception {
-        String runtimeUrl = System.getProperty("eventmesh.runtime.url", "http://localhost:8080");
+        String runtimeUrl = System.getProperty("eventmesh.runtime.url", "http://localhost:10105");
         String offsetPath = System.getProperty("connector.offset.path");
         final int adminPort = Integer.getInteger("connector.admin.port", 0);
         final String workerId = System.getProperty("connector.worker.id", "");
