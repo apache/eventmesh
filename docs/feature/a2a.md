@@ -714,6 +714,25 @@ The A2A Protocol v2.0 implementation is stable, functionally complete, and ready
 
 ---
 
+## Related capabilities
+
+The A2A protocol is one half of EventMesh's agent story; the other half is the
+**streaming agent runtime** ([`eventmesh-agent-runtime`](../feature/agent-tools.md)):
+
+- **A2A (this page)** — agent-*to*-agent collaboration: MCP / JSON-RPC 2.0 method calls,
+  task lifecycle, AgentCard discovery, SSE streaming between agents.
+- **[Streaming agent + tools](agent-tools.md)** — agent-*to*-LLM: OpenAI-compatible
+  streaming sessions with a function-calling tool loop. Any connector plugin doubles as an
+  agent tool; custom tools ship as [`eventmesh-agent-plugin/`](../../eventmesh-agent-plugin/)
+  jars; topics can trigger agents as events (`agent.subscribe.topics`) with decisions
+  published back onto the mesh for sink delivery.
+
+Typical composition: an A2A orchestrator agent delegates a specialist task; the specialist
+(a streaming agent) answers using its tools (e.g. the shipped `http-fetch` plugin or a
+connector-backed write tool); the result flows back over A2A to the requester.
+
+---
+
 ## 7. Usage Guide (integrated from README.md)
 
 ## 使用指南

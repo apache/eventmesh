@@ -48,6 +48,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 **扩展性与生态**
 
 - **智能体协作（A2A）** —— 内置的 [A2A 协议](docs/feature/a2a.md) 将 EventMesh 打造成智能体协作总线，打通同步的 MCP / JSON-RPC 2.0 工具调用与异步的事件驱动发布订阅，原生支撑大模型（LLM）与多智能体（Multi-Agent）场景。
+- **LLM 流式智能体运行时** —— 独立的 [agent 进程](docs/feature/agent-tools.md) 在消息网格上承载 OpenAI 兼容的 LLM 流式会话，支持函数调用工具：任意 [connector](docs/feature/connectors/README.md) 皆可作为智能体工具，自定义工具以[智能体插件](eventmesh-agent-plugin/)（SPI）形式交付，topic 事件可直接触发智能体并把决策发布回网格由 sink 投递。
 - **可插拔存储层** —— [Apache RocketMQ](https://rocketmq.apache.org)（4.x / 5.x）与 [Apache Kafka](https://kafka.apache.org) 已随包提供；更多后端经 `MeshStoragePlugin` SPI 接入。
 - **可插拔互联层（Connector）** —— [connectors](https://github.com/apache/eventmesh/tree/develop/eventmesh-connector-plugin) 作为独立进程运行，可充当 SaaS、CloudService、数据库等的 source 或 sink。
 - **可插拔元数据服务** —— [Nacos](https://nacos.io) 已随包提供（多实例协调）；更多后端经同一存储 SPI 接入。
@@ -66,8 +67,9 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 | [Kafka / RocketMQ 存储](eventmesh-storage-plugin/)（4.x、5.x） | **GA 目标** | 推荐——可插拔 WAL 后端，TCK 覆盖（`MeshStoragePluginTCK`） | 主路径 |
 | [Memory 内存存储](eventmesh-storage-plugin/eventmesh-storage-memory/)（默认） | **Beta** | 零依赖的开发/CI/快速上手后端（`docker run apache/eventmesh` 无需 broker）；状态仅存于进程内——不可用于生产 | 切换 `EVENTMESH_STORAGE_TYPE` 为 kafka / rocketmq / rocketmq5 |
 | SSE / WebSocket 推送 | **Beta** | 可用——已有集成测试；ACK 追踪的重投递与 DLQ 已与长轮询共享同一 `ReliableDispatcher`，真实 broker 的 e2e 套件见 [#5389](https://github.com/apache/eventmesh/pull/5389) | 统一推送传输 |
-| Connector Runtime | **Experimental** | 端到端可用；自 [#5394](https://github.com/apache/eventmesh/pull/5394) 起 23 个插件全部完整实现（不再有模板桩），数据丢失加固见 [#5328](https://github.com/apache/eventmesh/pull/5328)；单元测试仍仅覆盖其中 4 个（file/kafka/pulsar/rocketmq） | SPI 拆分至 `eventmesh-connector-api`（#5328）；剩余插件测试与 GA 标准由 #5296 架构 review 跟踪 |
-| [A2A / Agent 网关](docs/feature/a2a.md) | **实验性** | 评估——TaskStore + Runtime 桥（#5302/#5304）、任务 reaper 与 Meta 化 AgentCard（[#5346](https://github.com/apache/eventmesh/pull/5346)）、配额分类（[#5373](https://github.com/apache/eventmesh/pull/5373)）均已落地；升 Beta 以 Testcontainers E2E 套件转绿为门槛（#5340） | 统一 Runtime A2A |
+| Connector Runtime | **Beta** | 可用——端到端工作；自 [#5394](https://github.com/apache/eventmesh/pull/5394) 起 23 个插件全部完整实现（不再有模板桩），数据丢失加固见 [#5328](https://github.com/apache/eventmesh/pull/5328)；单元测试仍仅覆盖其中 4 个（file/kafka/pulsar/rocketmq） | 剩余插件测试与 GA 标准由 #5296 架构 review 跟踪 |
+| [A2A / Agent 网关](docs/feature/a2a.md) | **Beta** | 可用——TaskStore + Runtime 桥（#5302/#5304）、任务 reaper 与 Meta 化 AgentCard（[#5346](https://github.com/apache/eventmesh/pull/5346)）、配额分类（[#5373](https://github.com/apache/eventmesh/pull/5373)）均已落地；Testcontainers E2E 门槛（#5340）已于 2026 年 9 月关闭 | 统一 Runtime A2A |
+| [智能体工具与事件触发](docs/feature/agent-tools.md) | **实验性** | 评估——`LlmClient`/`ConversationMemory`/`AgentTool` 扩展点、connector 工具化与 SPI 插件化部署已落地（[#5408](https://github.com/apache/eventmesh/pull/5408)/[#5409](https://github.com/apache/eventmesh/pull/5409)）；运行时在 `eventmesh-agent-runtime`，插件在 `eventmesh-agent-plugin/` | 智能体工具生态 |
 | TCP / gRPC / OpenMessaging SDK | **Legacy 兼容** | 仅存量用户——保持老客户端零改动运行；不再扩展 | [HTTP + CloudEvents](docs/feature/client-java.md) |
 
 状态含义：
@@ -88,7 +90,7 @@ Apache EventMesh 提供了丰富的能力，帮助用户轻松构建事件驱动
 - [快速上手（英文）](docs/quickstart/getting-started.md) —— 零到运行
 - [配置参考（英文）](docs/quickstart/configuration.md) —— 每个运行时键、后端设置、安全 &amp; 配额
 - [客户端指引（英文）](docs/feature/client-java.md) —— `CloudEventsClient` 完整用法
-- 特性指引（英文）—— [发布订阅](docs/feature/pubsub.md) · [可靠投递](docs/feature/delivery-reliability.md) · [流式推送](docs/feature/streaming.md) · [Lite Topic](docs/feature/lite-topic.md) · [A2A](docs/feature/a2a.md) · [HTTP API](docs/feature/http-api.md) · [Admin API](docs/feature/admin-api.md) · [部署运维](docs/feature/deployment.md)
+- 特性指引（英文）—— [发布订阅](docs/feature/pubsub.md) · [可靠投递](docs/feature/delivery-reliability.md) · [流式推送](docs/feature/streaming.md) · [Lite Topic](docs/feature/lite-topic.md) · [A2A](docs/feature/a2a.md) · [智能体工具](docs/feature/agent-tools.md) · [HTTP API](docs/feature/http-api.md) · [Admin API](docs/feature/admin-api.md) · [部署运维](docs/feature/deployment.md)
 - 架构（英文）—— [总览](docs/architecture/overview.md) · [安全](docs/architecture/security.md) · [架构重构设计档案](docs/architecture/redesign.md)
 
 ## 子项目
