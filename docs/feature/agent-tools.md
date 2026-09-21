@@ -53,7 +53,7 @@ results as messages, and continues until it produces a final answer (bounded
 at 5 tool iterations). Without tools, behavior is unchanged
 token-by-token streaming.
 
-## SPI-deployed custom tools
+## In-tree agent plugins (`eventmesh-agent-plugin/`)
 
 Beyond connector-backed tools, custom tools follow the repo-standard plugin
 mechanism (same as storage/connector plugins):
@@ -71,6 +71,21 @@ mechanism (same as storage/connector plugins):
 Resolution goes through `EventMeshExtensionFactory` — the same loader that
 serves storage and connector plugins, so singleton semantics and the
 `META-INF/eventmesh/` convention are identical.
+
+## In-tree agent plugins
+
+The repo ships a plugin tree for agent tools — `eventmesh-agent-plugin/` — mirroring
+`eventmesh-connector-plugin/`: each sub-module is a standalone jar with the
+`META-INF/eventmesh/org.apache.eventmesh.agent.tool.AgentTool` service file, declared in
+`gradle.properties` with `pluginType=agentTool` + `pluginName=<name>`. The `dist-agent` task
+installs every agent plugin into `dist-agent/plugin/agent/<name>/` (the directory the agent
+launcher puts on the classpath), so custom in-tree tools need zero wiring:
+
+- `eventmesh-agent-plugin-http-fetch` — reference implementation: fetch a URL and return the
+  (truncated) body to the model. Enable with `AGENT_TOOLS_SPI=http-fetch`.
+
+Third-party jars follow the same shape: implement `AgentTool`, ship the service file, drop the
+jar into `plugin/agent/`.
 
 ## Event-driven agents (no user in the loop)
 
@@ -122,9 +137,9 @@ default `http://localhost:10105`).
 
 | Piece | Location |
 | --- | --- |
-| LLM SPI + OpenAI default | `eventmesh-agent/.../agent/llm/{LlmClient,OpenAiLlmClient}.java` |
-| Memory SPI + in-memory default | `eventmesh-agent/.../agent/{ConversationMemory,ConversationStore}.java` |
-| Tool SPI + registry + adapter | `eventmesh-agent/.../agent/tool/{AgentTool,ToolRegistry,ConnectorToolAdapter}.java` |
-| Tool loop + event trigger path | `eventmesh-agent/.../agent/StreamingAgent.java` |
-| Boot wiring (tools + triggers) | `eventmesh-agent/.../agent/AgentApplication.java` |
-| Tests | `eventmesh-agent/src/test/.../tool/*`, `.../llm/OpenAiLlmClientChatTest.java` |
+| LLM SPI + OpenAI default | `eventmesh-agent-runtime/.../agent/llm/{LlmClient,OpenAiLlmClient}.java` |
+| Memory SPI + in-memory default | `eventmesh-agent-runtime/.../agent/{ConversationMemory,ConversationStore}.java` |
+| Tool SPI + registry + adapter | `eventmesh-agent-runtime/.../agent/tool/{AgentTool,ToolRegistry,ConnectorToolAdapter}.java` |
+| Tool loop + event trigger path | `eventmesh-agent-runtime/.../agent/StreamingAgent.java` |
+| Boot wiring (tools + triggers) | `eventmesh-agent-runtime/.../agent/AgentApplication.java` |
+| Tests | `eventmesh-agent-runtime/src/test/.../tool/*`, `.../llm/OpenAiLlmClientChatTest.java` |

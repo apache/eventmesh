@@ -68,7 +68,7 @@ dependencies {
     // ClientBrokerIntegrationTest drives the runtime via the real CloudEventsClient SDK over HTTP.
     testImplementation project(':eventmesh-sdks:eventmesh-sdk-java')
     // LiteStreamCallIntegrationTest boots the agent (StreamingAgent + OpenAiLlmClient) in-process.
-    testImplementation project(':eventmesh-agent')
+    testImplementation project(':eventmesh-agent-runtime')
     // StreamingCallDemoE2ETest drives the demo's main() against a real booted runtime + agent.
     testImplementation project(':eventmesh-examples')
 }

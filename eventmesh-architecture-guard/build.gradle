@@ -50,7 +50,7 @@ dependencies {
     // test so the connector SPI boundary rule (plugins must not reach into runtime
     // internals) has classes in scope. Full plugin matrix enforced in CI via the
     // module graph; the guard samples one plugin (file) as the canary.
-    testImplementation project(':eventmesh-connector-api')
+    testImplementation project(':eventmesh-connector-plugin:eventmesh-connector-api')
     testImplementation project(':eventmesh-connector-runtime')
     testImplementation project(':eventmesh-connector-plugin:eventmesh-connector-file')
     // :eventmesh-storage-plugin:eventmesh-storage-kafka added for issue #5342 Q7

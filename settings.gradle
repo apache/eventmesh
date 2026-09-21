@@ -67,11 +67,16 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-a2a'
 
 // Connector Runtime — 独立模块 (与 EventMesh Runtime 经 HTTP 通信, 不互相依赖)
-include 'eventmesh-connector-api'
+// connector SPI (api) lives under the plugin tree like the other plugin families
+include 'eventmesh-connector-plugin:eventmesh-connector-api'
 include 'eventmesh-connector-runtime'
 
 // Agent — 独立进程, 经 lite topic + CloudEvents 与 Runtime 通信, 调用真实 LLM (OpenAI 兼容)
-include 'eventmesh-agent'
+include 'eventmesh-agent-runtime'
+
+// Agent tool plugins (AgentTool SPI, #5409): drop-in jars for plugin/agent/
+include 'eventmesh-agent-plugin'
+include 'eventmesh-agent-plugin:eventmesh-agent-plugin-http-fetch'
 
 // Examples — 可运行 demo (uni-architecture: 流式调用等); 依赖 SDK + common + a2a 协议
 include 'eventmesh-examples'

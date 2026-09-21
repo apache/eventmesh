@@ -21,7 +21,7 @@
 // OpenAI 兼容的 LLM SSE client.
 dependencies {
     implementation project(':eventmesh-sdks:eventmesh-sdk-java')
-    implementation project(':eventmesh-connector-api')
+    implementation project(':eventmesh-connector-plugin:eventmesh-connector-api')
     implementation project(':eventmesh-spi')
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

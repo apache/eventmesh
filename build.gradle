@@ -248,7 +248,7 @@ tasks.register('dist-connector') {
         // exclude 'eventmesh-*' below, but ConnectorApplication itself imports the
         // SPI interfaces — ship it next to the runtime jar in apps/ so a bare
         // runtime (no plugins installed) still boots.
-        def connectorApi = findProject('eventmesh-connector-api')
+        def connectorApi = findProject('eventmesh-connector-plugin:eventmesh-connector-api')
         copy {
             from connectorApi.jar.archivePath
             into rootProject.file('dist-connector/apps')
@@ -304,7 +304,7 @@ tasks.register('dist-agent') {
     doLast {
         // Core: the agent process jar + its third-party deps (sdk-java, common, cloudevents,
         // jackson, log4j binding). The agent talks to the runtime only over HTTP + lite topics.
-        def core = findProject('eventmesh-agent')
+        def core = findProject('eventmesh-agent-runtime')
         logger.lifecycle('Install module: module: {}', core.name)
         copy {
             from core.jar.archivePath
@@ -326,6 +326,26 @@ tasks.register('dist-agent') {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             exclude 'META-INF'
         }
+        // Agent tool plugins (pluginType == agentTool) into dist-agent/plugin/agent/<name>/
+        String[] agentLibJars = java.util.Optional.ofNullable(file('dist-agent/lib').list()).orElse(new String[0])
+        def agentPlugins = subprojects.findAll {
+            it.file('gradle.properties').exists()
+                    && it.properties.containsKey('pluginType')
+                    && it.properties.get('pluginType') == 'agentTool'
+        }
+        agentPlugins.forEach(subProject -> {
+            var pluginName = subProject.properties.get('pluginName')
+            logger.lifecycle('Install agent plugin: {}, module: {}', pluginName, subProject.name)
+            copy {
+                from subProject.jar.archivePath
+                into rootProject.file("dist-agent/plugin/agent/${pluginName}")
+            }
+            copy {
+                from subProject.configurations.runtimeClasspath
+                into rootProject.file("dist-agent/plugin/agent/${pluginName}")
+                exclude(agentLibJars)
+            }
+        })
         copy {
             from 'tools/dist-license'
             into rootProject.file('dist-agent')
