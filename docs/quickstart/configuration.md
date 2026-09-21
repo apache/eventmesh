@@ -158,6 +158,9 @@ Summary:
 | `eventmesh.a2a.token` | _(empty)_ | Bearer token required on every gateway endpoint; empty = open (dev mode, logged at boot) |
 | `eventmesh.a2a.taskstore` | _(local)_ | `meta` to persist tasks in the cluster Meta store (needs Nacos); default = local RocksDB under `<data>/a2a-tasks` |
 
+The v2 **agent process** (`eventmesh-agent`) has its own `-D` config set (`agent.*`, `llm.*`) —
+see [feature/agent.md](../feature/agent.md).
+
 
 - [ ] `EVENTMESH_STORAGE_TYPE` and the backend address set consistently on every instance
 - [ ] `eventmesh.offset.path` points at persistent storage (survives restarts)

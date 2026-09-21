@@ -37,14 +37,26 @@ import lombok.extern.slf4j.Slf4j;
 public class AgentApplication {
 
     public static void main(String[] args) throws Exception {
-        String runtimeUrl = System.getProperty("agent.runtime.url", "http://localhost:8080");
+        String runtimeUrl = System.getProperty("agent.runtime.url", "http://localhost:10105");
         String agentId = System.getProperty("agent.id", "agent-" + Long.toString(System.currentTimeMillis(), 36));
         String llmBase = System.getProperty("llm.base.url", "https://api.openai.com");
         String llmKey = System.getProperty("llm.api.key", "");
         String llmModel = System.getProperty("llm.model", "gpt-4o-mini");
         final long heartbeatMs = Long.getLong("agent.heartbeat.intervalMs", 10_000L);
         int maxHistory = Integer.getInteger("agent.conversation.maxHistory", 20);
+        int maxConversations = Integer.getInteger("agent.conversation.maxConversations", 1000);
         int capacity = Integer.getInteger("agent.capacity", 100);
+        // #5405: fail fast on an empty LLM key — an agent that registers READY without a usable
+        // key fails every routed request. Opt out explicitly for local/mock gateways.
+        boolean llmKeyOptional = Boolean.parseBoolean(System.getProperty("llm.api.key.optional", "false"));
+        if (llmKey.isEmpty() && !llmKeyOptional) {
+            throw new IllegalStateException("llm.api.key is empty - set -Dllm.api.key=<key>"
+                + " (or -Dllm.api.key.optional=true for mock gateways)");
+        }
+        // #5405: after this many consecutive heartbeat failures the process exits so a
+        // supervisor can restart it; the runtime TTL has evicted the registration by then
+        // and a silent zombie serves nothing.
+        final int heartbeatFailLimit = Integer.getInteger("agent.heartbeat.failLimit", 6);
 
         // Step 1: register (gets the assigned agent-parent + client-reply-parent)
         AgentControlClient control = new AgentControlClient(runtimeUrl);
@@ -55,7 +67,7 @@ public class AgentApplication {
         // Step 2: subscribe the agent's channel
         CloudEventsClient client = CloudEventsClient.builder().runtimeUrl(runtimeUrl).clientId(agentId).build();
         OpenAiLlmClient llm = new OpenAiLlmClient(llmBase, llmKey, llmModel);
-        ConversationStore store = new ConversationStore(maxHistory);
+        ConversationStore store = new ConversationStore(maxHistory, maxConversations);
         StreamingAgent agent = new StreamingAgent(client, agentParent, agentId, llm, store);
         agent.start(); // subscribe (agentParent, agent.<agentId>)
 
@@ -63,16 +75,26 @@ public class AgentApplication {
         control.ready(agentId);
         log.info("agent READY: agentId={} (subscribed agent.{})", agentId, agentId);
 
-        // Step 4: heartbeat loop (refresh TTL + report load)
+        // Step 4: heartbeat loop (refresh TTL + report load). Consecutive failures beyond
+        // agent.heartbeat.failLimit exit the process (nonzero) — the registration is gone by
+        // then, so staying alive would only serve errors.
+        final java.util.concurrent.atomic.AtomicInteger heartbeatFailures = new java.util.concurrent.atomic.AtomicInteger();
         Thread heartbeatThread = Thread.startVirtualThread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Thread.sleep(heartbeatMs);
                     control.heartbeat(agentId, agent.activeSessions());
+                    heartbeatFailures.set(0);
                 } catch (InterruptedException ie) {
                     return;
                 } catch (Exception e) {
-                    log.warn("heartbeat failed: {}", e.toString());
+                    int fails = heartbeatFailures.incrementAndGet();
+                    log.warn("heartbeat failed ({}/{}): {}", fails, heartbeatFailLimit, e.toString());
+                    if (fails >= heartbeatFailLimit) {
+                        log.error("heartbeat failed {} consecutive times - registration is gone; exiting for supervisor restart",
+                            fails);
+                        Runtime.getRuntime().halt(1);
+                    }
                 }
             }
         });
