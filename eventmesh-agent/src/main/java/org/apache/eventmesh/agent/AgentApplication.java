@@ -68,6 +68,7 @@ public class AgentApplication {
         final int heartbeatFailLimit = Integer.getInteger("agent.heartbeat.failLimit", 6);
         String triggerTopics = System.getProperty("agent.subscribe.topics", "");
         String triggerOutput = System.getProperty("agent.trigger.output.topic", "agent.triggers");
+        String spiTools = System.getProperty("agent.tools.spi", "");
 
         // Step 1: register (gets the assigned agent-parent + client-reply-parent)
         AgentControlClient control = new AgentControlClient(runtimeUrl);
@@ -161,6 +162,15 @@ public class AgentApplication {
             } else if (key.startsWith("agent.tools.source.")) {
                 String name = key.substring("agent.tools.source.".length());
                 registerConnectorTool(registry, "source", name, System.getProperty(key));
+            }
+        }
+        // SPI-deployed custom tools (jars in plugin/agent/ with a META-INF/eventmesh service file)
+        String spiTools = System.getProperty("agent.tools.spi", "");
+        for (String spiName : spiTools.split(",")) {
+            String trimmed = spiName.trim();
+            if (!trimmed.isEmpty()) {
+                registry.registerSpi(trimmed);
+                log.info("SPI agent tool registered: {}", trimmed);
             }
         }
         return registry;

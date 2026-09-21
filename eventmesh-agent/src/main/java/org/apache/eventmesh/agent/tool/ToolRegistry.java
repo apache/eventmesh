@@ -18,6 +18,7 @@
 package org.apache.eventmesh.agent.tool;
 
 import org.apache.eventmesh.agent.llm.ToolSpec;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,6 +33,19 @@ public class ToolRegistry {
     public ToolRegistry register(AgentTool tool) {
         tools.put(tool.name(), tool);
         return this;
+    }
+
+    /**
+     * Register a tool discovered via the EventMesh SPI: the implementation jar carries a
+     * {@code META-INF/eventmesh/org.apache.eventmesh.agent.tool.AgentTool} service file mapping
+     * {@code spiName} to the implementation class. Throws when no such name is registered.
+     */
+    public ToolRegistry registerSpi(String spiName) {
+        AgentTool tool = EventMeshExtensionFactory.getExtension(AgentTool.class, spiName);
+        if (tool == null) {
+            throw new IllegalArgumentException("no AgentTool SPI implementation named: " + spiName);
+        }
+        return register(tool);
     }
 
     public boolean isEmpty() {

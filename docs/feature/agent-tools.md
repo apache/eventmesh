@@ -53,6 +53,25 @@ results as messages, and continues until it produces a final answer (bounded
 at 5 tool iterations). Without tools, behavior is unchanged
 token-by-token streaming.
 
+## SPI-deployed custom tools
+
+Beyond connector-backed tools, custom tools follow the repo-standard plugin
+mechanism (same as storage/connector plugins):
+
+1. Implement `agent.tool.AgentTool` (name + description + JSON schema +
+   `invoke`), no extra annotation needed on your class.
+2. In your jar add a service file
+   `META-INF/eventmesh/org.apache.eventmesh.agent.tool.AgentTool` containing
+   `mytool=com.example.MyTool`.
+3. Drop the jar into the agent's `plugin/agent/` directory (the launcher
+   puts every jar there on the classpath) and enable it with
+   `AGENT_TOOLS_SPI=mytool` (i.e. `-Dagent.tools.spi=mytool`; comma-list
+   supported).
+
+Resolution goes through `EventMeshExtensionFactory` — the same loader that
+serves storage and connector plugins, so singleton semantics and the
+`META-INF/eventmesh/` convention are identical.
+
 ## Event-driven agents (no user in the loop)
 
 Set a subscription list and an output topic:
@@ -89,6 +108,7 @@ StreamingAgent agent = new StreamingAgent(client, parent, agentId, llm, memory, 
 
 | Key | Default | Meaning |
 | --- | --- | --- |
+| `agent.tools.spi` | (empty) | Comma list of SPI names resolved via `EventMeshExtensionFactory` (jars in `plugin/agent/`) |
 | `agent.tools.sink.<name>` | — | FQCN of a `SinkConnector` exposed as write tool `<name>` |
 | `agent.tools.source.<name>` | — | FQCN of a `SourceConnector` exposed as read tool `<name>` |
 | `agent.tools.props.<name>.*` | — | Connector init properties for tool `<name>` |

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.agent.tool;
 
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
+
 import java.util.Map;
 
 /**
@@ -24,7 +27,15 @@ import java.util.Map;
  * {@code StreamingAgent} tool loop. Register instances on a {@link ToolRegistry} and pass the
  * registry to the agent; the agent advertises every tool to the model, executes the calls the
  * model requests, and feeds results back until a final answer.
+ *
+ * <p><b>SPI deployment</b> (same mechanism as storage/connector plugins): annotate nothing extra —
+ * implementations register themselves via a {@code META-INF/eventmesh/&lt;this-interface-FQCN&gt;}
+ * service file ({@code <name>=<impl FQCN>}) inside their jar. Drop the jar into the agent's
+ * {@code plugin/agent/} directory and reference it by name with
+ * {@code -Dagent.tools.spi=<name>}; {@link ToolRegistry#registerSpi(String)} resolves it through
+ * {@code EventMeshExtensionFactory}.</p>
  */
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.AGENT_TOOL)
 public interface AgentTool {
 
     /** Stable tool name the model addresses this tool by. */

@@ -53,9 +53,17 @@ AGENT_MAX_CONVERSATIONS="${AGENT_MAX_CONVERSATIONS:-1000}"
 AGENT_CAPACITY="${AGENT_CAPACITY:-100}"
 AGENT_OPTS="${AGENT_OPTS:-}"
 
+# SPI-deployed agent tools: every jar under plugin/agent/ joins the classpath (an AgentTool
+# implementation registers itself via META-INF/eventmesh/<AgentTool-FQCN> inside the jar; enable
+# with -Dagent.tools.spi=<name>).
+PLUGIN_CP=""
+if compgen -G "$AGENT_HOME/plugin/agent/*.jar" > /dev/null; then
+    PLUGIN_CP="$(find "$AGENT_HOME/plugin/agent" -name '*.jar' | paste -sd ':' -)"
+fi
+
 ARGS=""
 if [ -n "$AGENT_ID" ]; then
     ARGS="$ARGS -Dagent.id=${AGENT_ID}"
 fi
 
-exec java     -Xmx512m     $AGENT_OPTS     -cp "conf:apps/*:lib/*"     -Dagent.runtime.url="${AGENT_RUNTIME_URL}"     -Dllm.base.url="${LLM_BASE_URL}"     -Dllm.api.key="${LLM_API_KEY}"     -Dllm.model="${LLM_MODEL}"     -Dagent.heartbeat.intervalMs="${AGENT_HEARTBEAT_MS}"     -Dagent.heartbeat.failLimit="${AGENT_HEARTBEAT_FAILLIMIT}"     -Dagent.conversation.maxHistory="${AGENT_MAX_HISTORY}"     -Dagent.conversation.maxConversations="${AGENT_MAX_CONVERSATIONS}"     -Dagent.capacity="${AGENT_CAPACITY}"     $ARGS     org.apache.eventmesh.agent.AgentApplication
+exec java     -Xmx512m     $AGENT_OPTS     -cp "conf:apps/*:lib/*${PLUGIN_CP:+:$PLUGIN_CP}"     -Dagent.runtime.url="${AGENT_RUNTIME_URL}"     -Dllm.base.url="${LLM_BASE_URL}"     -Dllm.api.key="${LLM_API_KEY}"     -Dllm.model="${LLM_MODEL}"     -Dagent.heartbeat.intervalMs="${AGENT_HEARTBEAT_MS}"     -Dagent.heartbeat.failLimit="${AGENT_HEARTBEAT_FAILLIMIT}"     -Dagent.conversation.maxHistory="${AGENT_MAX_HISTORY}"     -Dagent.conversation.maxConversations="${AGENT_MAX_CONVERSATIONS}"     -Dagent.capacity="${AGENT_CAPACITY}"     $ARGS     org.apache.eventmesh.agent.AgentApplication
