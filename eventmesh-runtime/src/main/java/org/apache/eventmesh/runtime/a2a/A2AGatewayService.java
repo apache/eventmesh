@@ -192,8 +192,16 @@ public class A2AGatewayService {
      * Submits an A2A task to a target agent with an auto-generated task id.
      */
     public CompletableFuture<TaskResult> submitTask(String targetAgent, String message, String parentTaskId) {
-        String taskId = generateTaskId();
-        return submitTask(taskId, targetAgent, message, parentTaskId);
+        return submitTask(generateTaskId(), targetAgent, message, parentTaskId, null);
+    }
+
+    /**
+     * Submits an A2A task with an explicit conversation {@code contextId} (issue #5405): groups
+     * tasks of one multi-turn conversation; persisted with the record and echoed in snapshots.
+     */
+    public CompletableFuture<TaskResult> submitTask(String taskId, String targetAgent,
+                                                    String message, String parentTaskId, String contextId) {
+        return submitTaskInternal(taskId, targetAgent, message, parentTaskId, contextId);
     }
 
     /**
@@ -202,6 +210,11 @@ public class A2AGatewayService {
      */
     public CompletableFuture<TaskResult> submitTask(String taskId, String targetAgent,
                                                      String message, String parentTaskId) {
+        return submitTaskInternal(taskId, targetAgent, message, parentTaskId, null);
+    }
+
+    private CompletableFuture<TaskResult> submitTaskInternal(String taskId, String targetAgent,
+                                                     String message, String parentTaskId, String contextId) {
         if (!started) {
             CompletableFuture<TaskResult> future = new CompletableFuture<>();
             future.completeExceptionally(new IllegalStateException("Gateway not started"));
@@ -225,7 +238,7 @@ public class A2AGatewayService {
         // throw from submitTask).
         TaskRecord rec;
         try {
-            rec = taskStore.createTask(taskId, targetAgent, gatewayId, message);
+            rec = taskStore.createTask(taskId, targetAgent, gatewayId, message, contextId);
         } catch (RuntimeException e) {
             log.warn("Failed to create task in store: taskId={}: {}", taskId, e.getMessage());
             CompletableFuture<TaskResult> failed = new CompletableFuture<>();
@@ -241,9 +254,11 @@ public class A2AGatewayService {
             parentTaskIdCache.put(taskId, parentTaskId);
         }
         taskEpochCache.put(taskId, rec.taskEpoch);
+        A2AMetrics.inc(A2AMetrics.TASKS_SUBMITTED);
+        A2AMetrics.setGauge(A2AMetrics.TASKS_ACTIVE, pendingTasks.size());
 
         // Build A2A CloudEvent
-        CloudEvent event = buildTaskRequestEvent(taskId, targetAgent, message, parentTaskId);
+        CloudEvent event = buildTaskRequestEvent(taskId, targetAgent, message, parentTaskId, contextId);
 
         // Register pending future BEFORE publishing: a synchronous transport callback (e.g. a
         // local in-memory test) could deliver the response before submitTask returns, and we
@@ -262,6 +277,7 @@ public class A2AGatewayService {
                         taskStore.updateStatus(taskId, epoch, Status.FAILED, errMsg);
                     }
                     pendingTasks.remove(taskId);
+                    A2AMetrics.inc(A2AMetrics.TASKS_FAILED);
                     pending.completeExceptionally(new java.util.concurrent.TimeoutException(errMsg));
                     notifyStatusSubscribers(taskId, "failed", errMsg);
                     log.warn("Task timed out: taskId={}, targetAgent={}", taskId, targetAgent);
@@ -304,6 +320,7 @@ public class A2AGatewayService {
         }
         boolean ok = taskStore.updateStatus(taskId, epoch, Status.CANCELED, null);
         if (ok) {
+            A2AMetrics.inc(A2AMetrics.TASKS_CANCELED);
             CompletableFuture<TaskResult> future = pendingTasks.remove(taskId);
             if (future != null) {
                 future.complete(new TaskResult(TaskState.CANCELLED, null, "Task cancelled"));
@@ -412,11 +429,13 @@ public class A2AGatewayService {
 
         String resultData = extractEventData(event);
         taskStore.updateStatus(taskId, rec.taskEpoch, Status.COMPLETED, resultData);
+        A2AMetrics.inc(A2AMetrics.TASKS_COMPLETED);
 
         CompletableFuture<TaskResult> future = pendingTasks.remove(taskId);
         if (future != null) {
             future.complete(new TaskResult(TaskState.COMPLETED, resultData, null));
         }
+        A2AMetrics.setGauge(A2AMetrics.TASKS_ACTIVE, pendingTasks.size());
 
         // Notify SSE subscribers
         notifyStatusSubscribers(taskId, "completed", resultData);
@@ -461,7 +480,7 @@ public class A2AGatewayService {
     // =========================================================================
 
     private CloudEvent buildTaskRequestEvent(String taskId, String targetAgent,
-                                              String message, String parentTaskId) {
+                                              String message, String parentTaskId, String contextId) {
         CloudEventBuilder builder = CloudEventBuilder.v1()
             .withId(taskId)
             .withType(A2AProtocolConstants.CE_TYPE_PREFIX + "task.request")
@@ -475,6 +494,9 @@ public class A2AGatewayService {
 
         if (parentTaskId != null) {
             builder.withExtension(A2AProtocolConstants.CE_EXTENSION_COLLABORATION_ID, parentTaskId);
+        }
+        if (contextId != null) {
+            builder.withExtension("a2acontextid", contextId);
         }
 
         return builder.build();

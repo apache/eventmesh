@@ -98,7 +98,10 @@ public class MetaBackedTaskStore implements TaskStore {
              .append(r.createdAtMs).append('|')
              .append(r.updatedAtMs).append('|')
              .append(b64(r.input)).append('|')
-             .append(b64(r.output));
+             .append(b64(r.output))
+             // issue #5405: optional 10th field (contextId). The v1 decoder reads exactly 9
+             // fields, so older readers ignore the suffix; this reader takes 10 when present.
+             .append('|').append(b64(r.contextId));
         String payload = Base64.getEncoder().encodeToString(
             inner.toString().getBytes(StandardCharsets.UTF_8));
         return WIRE_VERSION + "|" + payload;
@@ -121,7 +124,7 @@ public class MetaBackedTaskStore implements TaskStore {
         // The inner payload contains 9 base64'd fields joined by '|' (output may be empty = null).
         // Split on '|' with a fixed cap of 8 separators so the trailing field can contain '|'
         // (it is base64, so it cannot, but defensive splitting is cheap).
-        List<String> parts = splitFixed(payload, 9);
+        List<String> parts = splitFixed(payload, 10);
         String taskId  = b64Decode(parts.get(0));
         String agentId = b64Decode(parts.get(1));
         String clientId = b64Decode(parts.get(2));
@@ -131,7 +134,8 @@ public class MetaBackedTaskStore implements TaskStore {
         long updated   = Long.parseLong(parts.get(6));
         String input   = b64Decode(parts.get(7));
         String output  = b64Decode(parts.get(8));
-        return new TaskRecord(taskId, agentId, clientId, status, created, updated, input, output, epoch);
+        String contextId = b64Decode(parts.get(9));
+        return new TaskRecord(taskId, agentId, clientId, status, created, updated, input, output, epoch, contextId);
     }
 
     private static List<String> splitFixed(String s, int expectedFields) {
@@ -153,6 +157,12 @@ public class MetaBackedTaskStore implements TaskStore {
 
     @Override
     public TaskRecord createTask(String taskId, String agentId, String clientId, String input) {
+        return createTask(taskId, agentId, clientId, input, null);
+    }
+
+    @Override
+    public TaskRecord createTask(String taskId, String agentId, String clientId, String input,
+                                 String contextId) {
         if (taskId == null) {
             return null;
         }
@@ -161,7 +171,7 @@ public class MetaBackedTaskStore implements TaskStore {
         // resulting taskEpoch is unique across restarts of the same JVM and across instances.
         long epoch = (System.currentTimeMillis() << 20) | (localEpoch.incrementAndGet() & 0xFFFFF);
         TaskRecord rec = new TaskRecord(taskId, agentId, clientId, Status.PENDING,
-            now, now, input, null, epoch);
+            now, now, input, null, epoch, contextId);
         if (!meta.putIfAbsent(key(taskId), encode(rec))) {
             return null;
         }
@@ -187,7 +197,7 @@ public class MetaBackedTaskStore implements TaskStore {
         }
         // Build the candidate new value with bumped updatedAtMs
         TaskRecord next = new TaskRecord(cur.taskId, cur.agentId, cur.clientId, newStatus,
-            cur.createdAtMs, System.currentTimeMillis(), cur.input, output, cur.taskEpoch);
+            cur.createdAtMs, System.currentTimeMillis(), cur.input, output, cur.taskEpoch, cur.contextId);
         // CAS the encoded value. expectedOldValue must match the current Meta value verbatim,
         // so re-read just before the CAS to minimise the lost-update window.
         String currentEncoded = meta.get(key(taskId));

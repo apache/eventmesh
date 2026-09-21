@@ -60,17 +60,31 @@ import lombok.extern.slf4j.Slf4j;
  * final result.</p>
  */
 @Slf4j
+@io.netty.channel.ChannelHandler.Sharable
 public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final A2AGatewayService gatewayService;
 
+    // NOTE (@Sharable): one handler instance is shared across every connection channel (the
+    // server adds it to each pipeline in initChannel). Safe because all fields are either
+    // final or volatile and no per-connection state lives on the handler.
+
     /** #5304: optional unified security/quota/audit gate; null = allow all (current behavior). */
     private volatile org.apache.eventmesh.runtime.security.gate.SecurityGate securityGate;
 
+    /** #5405: optional bearer token; null = open gateway (dev mode, logged at boot). */
+    private volatile String a2aToken;
+
     public A2AGatewayHttpHandler(A2AGatewayService gatewayService) {
         this.gatewayService = gatewayService;
+    }
+
+    /** #5405: require {@code Authorization: Bearer <token>} on every gateway endpoint. */
+    public A2AGatewayHttpHandler withToken(String token) {
+        this.a2aToken = token;
+        return this;
     }
 
     /** #5304: install the unified gate so A2A task ops flow through RequestContext. */
@@ -85,6 +99,10 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
         String uri = req.uri();
         // #5362: classify the sub-operation from the route shape so the gate charges the
         // right resource (SUBMIT -> BACKLOG; GET / CANCEL / STREAM / list -> THROUGHPUT).
+        // #5405: bearer token check first (cheapest rejection before gate/classify).
+        if (!tokenCheck(ctx, req)) {
+            return;
+        }
         org.apache.eventmesh.runtime.security.gate.RequestContext.A2aOperation a2aOp =
             classify(req.method().name(), uri);
         // #5304: every A2A task operation goes through the unified gate first.
@@ -151,8 +169,33 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
         return null;
     }
 
-    private boolean gateCheck(ChannelHandlerContext ctx, FullHttpRequest req, String uri) {
-        return gateCheck(ctx, req, uri, null);
+
+    /**
+     * #5405: constant-time bearer check against the configured token (same pattern as the
+     * admin token guard, #5364). A null token means the gateway is open — the boot logs a
+     * warning so dev-mode openness is never silent.
+     */
+    private boolean tokenCheck(ChannelHandlerContext ctx, FullHttpRequest req) {
+        String token = a2aToken;
+        if (token == null) {
+            return true;
+        }
+        String header = req.headers().get("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            A2AMetrics.inc(A2AMetrics.GATEWAY_REJECTIONS);
+            writeJson(ctx, HttpResponseStatus.UNAUTHORIZED,
+                "{\"error\":\"unauthorized\",\"message\":\"A2A gateway requires Authorization: Bearer <eventmesh.a2a.token>\"}");
+            return false;
+        }
+        String presented = header.substring("Bearer ".length());
+        boolean ok = java.security.MessageDigest.isEqual(
+            presented.getBytes(StandardCharsets.UTF_8), token.getBytes(StandardCharsets.UTF_8));
+        if (!ok) {
+            A2AMetrics.inc(A2AMetrics.GATEWAY_REJECTIONS);
+            writeJson(ctx, HttpResponseStatus.UNAUTHORIZED,
+                "{\"error\":\"unauthorized\",\"message\":\"invalid A2A gateway token\"}");
+        }
+        return ok;
     }
 
     /**
@@ -191,6 +234,10 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
         return false;
     }
 
+    private boolean gateCheck(ChannelHandlerContext ctx, FullHttpRequest req, String uri) {
+        return gateCheck(ctx, req, uri, null);
+    }
+
     // =========================================================================
     // Endpoint handlers
     // =========================================================================
@@ -202,6 +249,7 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
         String targetAgent = (String) payload.get("targetAgent");
         String message = (String) payload.get("message");
         String parentTaskId = (String) payload.get("parentTaskId");
+        String contextId = (String) payload.get("contextId");
         Boolean sync = (Boolean) payload.getOrDefault("sync", Boolean.FALSE);
 
         if (targetAgent == null || message == null) {
@@ -218,7 +266,7 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
             } else {
                 // Async: return 202 with taskId
                 String taskId = "task-async-" + System.nanoTime();
-                gatewayService.submitTask(taskId, targetAgent, message, parentTaskId);
+                gatewayService.submitTask(taskId, targetAgent, message, parentTaskId, contextId);
                 writeJson(ctx, HttpResponseStatus.ACCEPTED,
                     "{\"taskId\":\"" + taskId + "\",\"state\":\"SUBMITTED\"}");
                 return;
@@ -406,6 +454,9 @@ public class A2AGatewayHttpHandler extends SimpleChannelInboundHandler<FullHttpR
                 : "")
             + (snap.getParentTaskId() != null
                 ? ",\"parentTaskId\":\"" + snap.getParentTaskId() + "\""
+                : "")
+            + (snap.getRecord().contextId != null
+                ? ",\"contextId\":\"" + snap.getRecord().contextId + "\""
                 : "")
             + "}";
     }

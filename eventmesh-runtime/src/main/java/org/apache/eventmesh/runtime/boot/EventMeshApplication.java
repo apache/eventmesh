@@ -66,6 +66,10 @@ public class EventMeshApplication {
     private int wsPort = -1;
     private int wsBoundPort = -1;
     private org.apache.eventmesh.runtime.connector.ConnectorScheduler connectorScheduler;
+    /** #5405: optional A2A gateway (Netty REST plane) booted with the main process. */
+    private org.apache.eventmesh.runtime.a2a.A2AGatewayServer a2aGateway;
+    private org.apache.eventmesh.runtime.a2a.EventMeshA2ATransport a2aTransport;
+    private org.apache.eventmesh.runtime.state.TaskStore a2aTaskStore;
     private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
     private org.apache.eventmesh.runtime.session.Matchmaker matchmaker;
     private org.apache.eventmesh.runtime.session.SessionRouter sessionRouter;
@@ -148,6 +152,38 @@ public class EventMeshApplication {
     public EventMeshApplication withConnectorScheduler(
             org.apache.eventmesh.runtime.connector.ConnectorScheduler scheduler) {
         this.connectorScheduler = scheduler;
+        return this;
+    }
+
+    /** #5405: the live gateway service (null before {@link #start()} or when not enabled). */
+    public org.apache.eventmesh.runtime.a2a.A2AGatewayService a2aGatewayService() {
+        return a2aGateway == null ? null : a2aGateway.getGatewayService();
+    }
+
+    /** #5405: the gateway's actually bound port (resolves auto-select {@code 0}); -1 when off. */
+    public int a2aGatewayPort() {
+        return a2aGateway == null ? -1 : a2aGateway.getPort();
+    }
+
+    /**
+     * Enable the A2A gateway (issue #5405): boots a Netty REST plane ({@code /a2a/*}) on
+     * {@code port}, bridged onto the runtime ingress via the REAL transport
+     * ({@code EventMeshA2ATransport} → CloudEvents-over-MQ), with {@code taskStore} for
+     * durable task state and an optional bearer {@code token} (null = open, dev mode).
+     *
+     * <p>Must be called before {@link #start()}. The gateway shuts down with the application.</p>
+     */
+    public EventMeshApplication withA2aGateway(int port,
+            org.apache.eventmesh.runtime.state.TaskStore taskStore, String token) {
+        this.a2aTransport = new org.apache.eventmesh.runtime.a2a.EventMeshA2ATransport(
+            runtime.ingress(), "a2a-gw-" + httpPort);
+        this.a2aTaskStore = taskStore;
+        this.a2aGateway = new org.apache.eventmesh.runtime.a2a.A2AGatewayServer(
+            port, a2aTransport, taskStore,
+            new org.apache.eventmesh.runtime.a2a.InMemoryAgentCardRegistry());
+        if (token != null && !token.isEmpty()) {
+            a2aGateway.withToken(token);
+        }
         return this;
     }
 
@@ -314,8 +350,23 @@ public class EventMeshApplication {
             }
             wsBoundPort = wsServer.start(wsPort);
         }
-        log.info("EventMeshApplication started: traffic port={} admin port={} ws port={}",
-            trafficBoundPort, adminBoundPort, wsBoundPort);
+        // #5405: optional A2A gateway plane, started after the core servers so the ingress
+        // it bridges onto is fully up. TaskExpirer keeps the durable task store bounded.
+        if (a2aGateway != null) {
+            a2aGateway.start();
+            org.apache.eventmesh.runtime.a2a.TaskExpirer expirer =
+                new org.apache.eventmesh.runtime.a2a.TaskExpirer(a2aTaskStore,
+                    org.apache.eventmesh.runtime.a2a.TaskExpirer.DEFAULT_IDLE_TTL_MS,
+                    org.apache.eventmesh.runtime.a2a.TaskExpirer.DEFAULT_SCAN_INTERVAL_MS,
+                    ids -> org.apache.eventmesh.runtime.a2a.A2AMetrics.add(
+                        org.apache.eventmesh.runtime.a2a.A2AMetrics.TASKS_EXPIRED, ids.size()));
+            a2aGateway.getGatewayService().setTaskExpirer(expirer);
+            expirer.start();
+            log.info("A2A gateway started: port={} taskStore={} auth={}",
+                a2aGateway.getPort(), a2aTaskStore.getClass().getSimpleName(), "enabled");
+        }
+        log.info("EventMeshApplication started: traffic port={} admin port={} ws port={} a2a={}",
+            trafficBoundPort, adminBoundPort, wsBoundPort, a2aGateway != null);
     }
 
     /** Graceful shutdown: admin → traffic → runtime (flush offsets, release storage). */
@@ -328,6 +379,21 @@ public class EventMeshApplication {
         }
         if (wsServer != null) {
             wsServer.stop();
+        }
+        // #5405: gateway first (unsubscribes its transport), then its stores.
+        if (a2aGateway != null) {
+            try {
+                a2aGateway.shutdown();
+            } catch (Exception e) {
+                log.warn("A2A gateway shutdown: {}", e.toString());
+            }
+        }
+        if (a2aTransport != null) {
+            a2aTransport.shutdown();
+        }
+        if (a2aTaskStore != null) {
+            a2aTaskStore.flush();
+            a2aTaskStore.close();
         }
         if (sessionRouter != null) {
             sessionRouter.shutdown();
@@ -504,6 +570,28 @@ public class EventMeshApplication {
         if (wsPort >= 0) {
             app.withWs(wsPort);
             log.info("WebSocket push transport enabled on port {}", wsPort);
+        }
+
+        // A2A gateway (optional, issue #5405): -Deventmesh.a2a.enabled=true, port 10108 by
+        // default, token via -Deventmesh.a2a.token (open gateway without it — dev mode).
+        // Task store: local RocksDB under the same data dir by default; the Meta-backed store
+        // (cluster-visible) when -Deventmesh.a2a.taskstore=meta and a real Meta is configured.
+        if (Boolean.parseBoolean(System.getProperty("eventmesh.a2a.enabled", "false"))) {
+            int a2aPort = Integer.getInteger("eventmesh.a2a.port", 10108);
+            String a2aToken = System.getProperty("eventmesh.a2a.token", "");
+            org.apache.eventmesh.runtime.state.TaskStore a2aTasks;
+            if ("meta".equalsIgnoreCase(System.getProperty("eventmesh.a2a.taskstore", ""))
+                    && metaStore != null && clustered) {
+                a2aTasks = new org.apache.eventmesh.runtime.state.MetaBackedTaskStore(metaStore);
+            } else {
+                String a2aDataDir = new java.io.File(offsetPath).getParentFile().getAbsolutePath()
+                    + java.io.File.separator + "a2a-tasks";
+                a2aTasks = new org.apache.eventmesh.runtime.state.RocksDBTaskStore(a2aDataDir);
+            }
+            app.withA2aGateway(a2aPort, a2aTasks, a2aToken.isEmpty() ? null : a2aToken);
+            log.info("A2A gateway enabled: port={} taskStore={} token={}",
+                a2aPort, a2aTasks.getClass().getSimpleName(),
+                a2aToken.isEmpty() ? "off (open gateway)" : "on");
         }
 
         // v2 streaming sessions are NOT auto-wired here: the channel strategy is an explicit choice,

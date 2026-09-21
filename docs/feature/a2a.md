@@ -486,12 +486,12 @@ client.shutdown();
 
 ## 6. Future Roadmap
 
-*   **EventMesh Broker Integration**: Replace `InMemoryA2AMessageTransport` with the real EventMesh broker for production deployment.
+*   **EventMesh Broker Integration**: DONE for the main-process gateway (#5405): `-Deventmesh.a2a.enabled=true` boots the gateway on the runtime's own transport (`EventMeshA2ATransport` → CloudEvents-over-MQ).
 *   **Schema Registry**: Implement dynamic discovery of Agent capabilities via `methods/list`.
 *   **Sidecar Injection**: Fully integrate the adaptor into the EventMesh Sidecar for non-Java agents (Python, Node.js).
 *   **WebSocket Streaming**: Extend SSE to bidirectional WebSocket for real-time agent-to-agent dialogue.
-*   **Task Persistence**: Persist `TaskRegistry` state to a durable store (Redis/DB) for crash recovery.
-*   **Authentication**: Add API key / JWT authentication to the Gateway REST API.
+*   **Task Persistence**: DONE (#5405): local `RocksDBTaskStore` under `<data>/a2a-tasks` by default, or the Meta-backed store in clustered mode.
+*   **Authentication**: bearer-token auth landed (#5405, `-Deventmesh.a2a.token`); JWT / API-key variants remain open.
 
 ---
 

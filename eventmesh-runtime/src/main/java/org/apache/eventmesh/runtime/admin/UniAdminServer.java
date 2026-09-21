@@ -165,6 +165,12 @@ public class UniAdminServer {
         out.put("redeliveries", admin.metrics().getRedeliveries());
         out.put("dlqCount", admin.metrics().getDlqCount());
         out.put("pendingDeliveries", admin.pendingDeliveries());
+        // #5405: A2A gateway plane counters (zero when the gateway is not enabled).
+        out.put("a2a", org.apache.eventmesh.runtime.a2a.A2AMetrics.counters());
+        java.util.Map<String, Long> a2aGauges = org.apache.eventmesh.runtime.a2a.A2AMetrics.gauges();
+        for (java.util.Map.Entry<String, Long> g : a2aGauges.entrySet()) {
+            out.put(g.getKey(), g.getValue());
+        }
         writeJson(exchange, 200, out);
     }
 
@@ -185,6 +191,13 @@ public class UniAdminServer {
         counter(sb, "eventmesh_redeliveries_count", m.getRedeliveries());
         counter(sb, "eventmesh_dlq_count", m.getDlqCount());
         gauge(sb, "eventmesh_pending_deliveries", admin.pendingDeliveries());
+        // #5405: A2A gateway plane.
+        for (java.util.Map.Entry<String, Long> c : org.apache.eventmesh.runtime.a2a.A2AMetrics.counters().entrySet()) {
+            counter(sb, "eventmesh_" + c.getKey(), c.getValue());
+        }
+        for (java.util.Map.Entry<String, Long> g : org.apache.eventmesh.runtime.a2a.A2AMetrics.gauges().entrySet()) {
+            gauge(sb, "eventmesh_" + g.getKey(), g.getValue());
+        }
         byte[] body = sb.toString().getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
         exchange.sendResponseHeaders(200, body.length);
