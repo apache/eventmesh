@@ -28,14 +28,11 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Reference {@link AgentTool} implementation shipped as the first in-tree agent plugin: fetches a
  * URL and returns the body (truncated) as the tool result for the model. Deployed via the
  * META-INF/eventmesh service file; enable with {@code -Dagent.tools.spi=http-fetch}.
  */
-@Slf4j
 public class HttpFetchTool implements AgentTool {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
