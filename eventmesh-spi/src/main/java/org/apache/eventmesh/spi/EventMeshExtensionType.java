@@ -36,6 +36,7 @@ public enum EventMeshExtensionType {
     JDBC_DATABASE_DIALECT("jdbc_database_dialect"),
     OFFSETMGMT("offsetMgmt"),
     RETRY("retry"),
+    AGENT_TOOL("agentTool"),
     ;
 
     private final String extensionTypeName;

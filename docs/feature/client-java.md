@@ -361,7 +361,7 @@ An agent that participates in Mode 1 follows a four-step contract:
 3. on normal completion → emit a terminal frame `{chunk: "", done: true}`
 4. on error → emit a terminal error frame `{chunk: "", done: true, error: "..."}`
 
-Reference implementation: `eventmesh-agent/.../StreamingAgent.java`
+Reference implementation: `eventmesh-agent-runtime/.../StreamingAgent.java`
 (instantiate with an LLM client, an `agentParent` topic, the agent's `agentId`,
 and a `ConversationStore`).
 
@@ -656,7 +656,7 @@ history for the migration notes.
   (`/events/*` endpoints; `withSecurityGate(...)` wiring point)
 * A2A HTTP handler — `eventmesh-runtime/.../a2a/A2AGatewayHttpHandler.java`
   (`/a2a/*` endpoints; `withSecurityGate(...)` wiring point)
-* Streaming agent — `eventmesh-agent/.../StreamingAgent.java`
+* Streaming agent — `eventmesh-agent-runtime/.../StreamingAgent.java`
 * Storage plugins —
   * `eventmesh-storage-plugin/eventmesh-storage-rocketmq/` (SPI key `rocketmq`)
   * `eventmesh-storage-plugin/eventmesh-storage-rocketmq5/` (SPI key `rocketmq5`,

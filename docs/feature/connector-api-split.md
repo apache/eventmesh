@@ -6,7 +6,7 @@
 ## Goal
 
 Move the connector SPI interfaces out of `eventmesh-connector-runtime` into a new
-`eventmesh-connector-api` module so plugins depend on a stable, minimal API jar and the runtime
+`eventmesh-connector-plugin:eventmesh-connector-plugin:eventmesh-connector-api` module so plugins depend on a stable, minimal API jar and the runtime
 implements / orchestrates against that API.
 
 ## Interfaces to move
@@ -24,7 +24,7 @@ From `eventmesh-connector-runtime/src/main/java/org/apache/eventmesh/connector/`
 ## Target layout
 
 ```
-eventmesh-connector-api/
+eventmesh-connector-plugin/eventmesh-connector-api/
   src/main/java/org/apache/eventmesh/connector/api/
     SourceConnector.java
     SinkConnector.java
@@ -37,20 +37,20 @@ eventmesh-connector-api/
   build.gradle (deps: cloudevents-core only — no plugin imports, no HTTP libs)
 ```
 
-`eventmesh-connector-runtime` depends on `:eventmesh-connector-api` and continues to provide
+`eventmesh-connector-runtime` depends on `:eventmesh-connector-plugin:eventmesh-connector-api` and continues to provide
 implementations (`EventMeshHttpEndpoint`, `RocksDBConnectorOffsetStore`, `RemoteOffsetStore`,
 `InMemoryOffsetStore`, `ConnectorRuntime`, `ConnectorManager`, `ConnectorAdminServer`,
 `ConnectorApplication`, `ConnectorDef`).
 
 Each plugin under `eventmesh-connector-plugin/eventmesh-connector-*` should depend on
-`:eventmesh-connector-api` instead of `:eventmesh-connector-runtime`.
+`:eventmesh-connector-plugin:eventmesh-connector-api` instead of `:eventmesh-connector-runtime`.
 
 ## Plugin changes (mechanical)
 
 For each of the 23 plugins:
 
 1. `build.gradle`: replace `implementation project(":eventmesh-connector-runtime")` with
-   `implementation project(":eventmesh-connector-api")`.
+   `implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")`.
 2. Source code: if the plugin imports `org.apache.eventmesh.connector.ConnectorRuntime` (it should
    not — plugins only use the SPI), add `implementation project(":eventmesh-connector-runtime")`
    back. Initial audit shows no plugin currently touches runtime internals.
@@ -90,9 +90,9 @@ will fail the architecture guard.
 
 ## Acceptance criteria for the implementation PR(s)
 
-- [ ] `eventmesh-connector-api` jar builds standalone (deps: cloudevents-core only).
-- [ ] `eventmesh-connector-runtime` depends on `:eventmesh-connector-api`.
-- [ ] All 23 plugin modules depend on `:eventmesh-connector-api`, not on `:eventmesh-connector-runtime`.
+- [ ] `eventmesh-connector-plugin:eventmesh-connector-plugin:eventmesh-connector-api` jar builds standalone (deps: cloudevents-core only).
+- [ ] `eventmesh-connector-runtime` depends on `:eventmesh-connector-plugin:eventmesh-connector-api`.
+- [ ] All 23 plugin modules depend on `:eventmesh-connector-plugin:eventmesh-connector-api`, not on `:eventmesh-connector-runtime`.
 - [ ] ArchUnit rule is added and **fails** the build if any plugin reaches into runtime internals.
 - [ ] `:eventmesh-architecture-guard:test` passes.
 - [ ] Existing runtime + plugin tests stay green (this PR added the baseline tests they will
