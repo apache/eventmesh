@@ -47,7 +47,8 @@ too.
 - [Lite Topic (RocketMQ 5.x)](feature/lite-topic.md) — hierarchical messaging
   inside a parent topic; publish/poll semantics and checkpoints.
 - [A2A — Agent-to-Agent](feature/a2a.md) — the agent collaboration protocol:
-  task lifecycle, JSON-RPC/MCP bridge, REST + SDK usage
+  task lifecycle, JSON-RPC/MCP bridge, REST + SDK usage; pairs with the
+  [streaming agent runtime](feature/agent-tools.md) for agent-to-LLM sessions
   *(Experimental)*.
 - [Agent tools & event triggers](feature/agent-tools.md) — the agent
   extension points (LLM client, conversation memory, function-calling tools)
