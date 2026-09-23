@@ -1,0 +1,90 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.eventmesh.connector.wecom.source;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.jupiter.api.Test;
+
+import io.cloudevents.CloudEvent;
+
+import com.sun.net.httpserver.HttpServer;
+
+/**
+ * Hermetic unit test: WecomSourceConnector lazily boots its webhook endpoint on first poll; a native wecom
+ * callback payload POSTed to the hook surfaces via poll() as a CloudEvent carrying the platform
+ * message id / subject mapping.
+ */
+class WecomSourceConnectorTest {
+
+    private static final String BODY = "{\"msgid\":\"w-1\",\"event_type\":\"message\",\"from\":{\"user_id\":\"u-1\"}}";
+
+    private int hookPort(WecomSourceConnector source) throws Exception {
+        Field f = WecomSourceConnector.class.getDeclaredField("server");
+        f.setAccessible(true);
+        HttpServer s = (HttpServer) f.get(source);
+        return s.getAddress().getPort();
+    }
+
+    private WecomSourceConnector boot() {
+        WecomSourceConnector source = new WecomSourceConnector();
+        Properties props = new Properties();
+        props.setProperty("connector.port", "0");
+        props.setProperty("connector.path", "/wecom");
+        // no secret/token set -> signature checks are disabled (dev mode)
+        source.init(props);
+        return source;
+    }
+
+    @Test
+    void postedCallbackSurfacesAsEvent() throws Exception {
+        WecomSourceConnector source = boot();
+        source.poll(); // trigger lazy server start
+        int port = hookPort(source);
+
+        HttpURLConnection conn = (HttpURLConnection) new URL(
+            "http://127.0.0.1:" + port + "/wecom").openConnection();
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type",
+            BODY.startsWith("<") ? "text/xml" : "application/json");
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(BODY.getBytes(StandardCharsets.UTF_8));
+        }
+        assertTrue(conn.getResponseCode() < 400, "callback must be accepted, got "
+            + conn.getResponseCode());
+        conn.disconnect();
+
+        List<CloudEvent> events = source.poll();
+        assertEquals(1, events.size(), "callback must surface as exactly one event");
+        CloudEvent event = events.get(0);
+        assertEquals("wecom.message", event.getType());
+        assertEquals("u-1", event.getSubject());
+        assertTrue(event.getId().startsWith("wecom-"),
+            "event id must be namespaced by the platform, got: " + event.getId());
+    }
+}
