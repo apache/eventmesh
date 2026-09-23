@@ -20,13 +20,40 @@ public surface.
 | EventMeshFrame (internal) | **GA** | `org.apache.eventmesh.common.wire.EventMeshFrame` (Frame architecture) | runtime internal; producer / storage / push path | - |
 | A2A (Agent-to-Agent) | **Experimental** | A2A JSON-RPC + SSE | `eventmesh-protocol-plugin/eventmesh-protocol-a2a`, A2A gateway on Runtime | - |
 | MeshMessage TCP | **Legacy** | length-prefixed `MeshMessage` bytes | runtime `tcp/` subpackage, `eventmesh-protocol-plugin/eventmesh-protocol-meshmessage/resolver/tcp` | CloudEvents HTTP, or A2A (for agent workloads) |
-| gRPC (CloudEvents + EventMeshMessage) | **Beta** | protobuf over HTTP/2 | runtime `transport/grpc`, `eventmesh-protocol-plugin/eventmesh-protocol-meshmessage/resolver/grpc` | CloudEvents HTTP for new clients |
+| gRPC (CloudEvents + EventMeshMessage) | **Beta** | protobuf over HTTP/2 | runtime `grpc/` bridge (issue #5411), `eventmesh-protocol-plugin/eventmesh-protocol-meshmessage/resolver/grpc` | CloudEvents HTTP for new clients |
 | OpenMessaging API (TCP) | **Legacy** | OMA spec, used by the legacy TCP client only | `eventmesh-sdks/eventmesh-sdk-java/client/tcp/impl/openmessage` | CloudEvents HTTP client |
 
 > **GA** = production-ready and the recommended path. **Beta** = stable but
 > the API surface may still shift. **Experimental** = subject to breaking
 > change without notice. **Legacy** = still works, but is no longer the
 > recommended choice and is being phased out.
+
+### 1.1 Legacy gRPC bridge (served, opt-in — issue #5411)
+
+The v2 runtime serves the legacy SDK gRPC protocol as a **compatibility
+bridge** on `eventmesh.grpc.port` (1.x default `10205`; unset / `-1` =
+disabled, opt-in like the WS port). There is no second messaging engine:
+every call maps onto the same v2 ingress/delivery pipeline the HTTP plane
+uses (WAL durability, at-least-once, shared retry/DLQ).
+
+| Legacy call | v2 mapping |
+| --- | --- |
+| `publish` / `batchPublish` / `publishOneWay` / `batchPublishOneWay` | proto `CloudEvent` → v2 CloudEvent, persisted via `UniIngressService.publish` (topic = proto `subject` attribute) |
+| `requestReply` | v2 request/reply correlation (`UniIngressService.request`), TTL attribute drives the timeout |
+| `subscribe` (webhook `url`) | `WebHookChannel` push target + v2 subscription per topic |
+| `subscribeStream` (bidi) | `GrpcStreamChannel` push target pumping the v2 dispatcher into the stream; ACKs ride back as stream replies |
+| `unsubscribe` | v2 unsubscribe per topic + client deregistration |
+| `heartbeat` | TTL refresh in the `GrpcClientRegistry`; a reaper evicts stale clients (unsubscribes them) |
+
+Group semantics: the legacy `consumerGroup` maps onto a v2 subscription
+group; the SDK's default `CLUSTERING` mode maps to `LOAD_BALANCE`
+distribution, `BROADCASTING` maps to `BROADCAST`. The clientId is derived
+from `consumerGroup` + `env` + `idc` (the 1.x triple).
+
+Non-goals (follow-ups): a new gRPC-native v2 API (HTTP + CloudEvents stays
+the primary path), the gRPC admin surface (stays unimplemented as on 1.x),
+and Go/Rust SDK verification (the protos are shared; Java SDK is the
+conformance suite — see `GrpcLegacyBridgeIntegrationTest`).
 
 ## 2. Server-side protocol plugins
 
