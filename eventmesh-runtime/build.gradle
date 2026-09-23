@@ -28,6 +28,12 @@ dependencies {
     implementation 'io.cloudevents:cloudevents-core'
     implementation 'io.cloudevents:cloudevents-json-jackson'
 
+    // #5411: legacy SDK gRPC bridge — gRPC runtime (netty-shaded server + protobuf plumbing).
+    // Version aligns with eventmesh-common's grpcVersion (1.68.0).
+    implementation 'io.grpc:grpc-netty-shaded:1.68.0'
+    implementation 'io.grpc:grpc-protobuf:1.68.0'
+    implementation 'io.grpc:grpc-stub:1.68.0'
+
     implementation 'io.opentelemetry:opentelemetry-api'
 
     implementation 'io.netty:netty-all'
