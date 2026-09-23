@@ -120,8 +120,10 @@ Connector definitions are managed through `/admin/connectors` (CRUD) and
 scheduled by the runtime's `ConnectorScheduler` with **generation
 fencing** (#5382): every (re)assignment bumps a per-connector generation,
 and a stale delayed start can never take over a connector running a newer
-generation. Status: **Experimental** — only 4 of 23 plugins carry unit
-tests today.
+generation. Status: **Experimental** — all 23 plugins carry unit tests
+since [#5412](https://github.com/apache/eventmesh/pull/5412) (hermetic
+webhook tests + contract tests for external-client plugins); real-backend
+integration tests remain the GA gate.
 
 ## Production checklist
 

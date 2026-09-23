@@ -54,7 +54,8 @@ dependency, ready for a smoke test as-is. For a real broker add
 backend address keys shown below.
 
 Ports: `10105` = traffic HTTP (`/events/*`), `10106` = admin HTTP (`/admin/*`). The WebSocket
-push port (`10107`) is opt-in.
+push port (`10107`) is opt-in, and the legacy SDK gRPC bridge (`10205`, for old
+`EventMeshGrpcProducer`/`EventMeshGrpcConsumer` clients) is opt-in since #5411.
 
 ### Option B — From source
 
