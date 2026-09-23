@@ -70,6 +70,9 @@ public class EventMeshApplication {
     private org.apache.eventmesh.runtime.a2a.A2AGatewayServer a2aGateway;
     private org.apache.eventmesh.runtime.a2a.EventMeshA2ATransport a2aTransport;
     private org.apache.eventmesh.runtime.state.TaskStore a2aTaskStore;
+    /** #5411: optional legacy SDK gRPC bridge (Publisher/Consumer/Heartbeat on port 10205). */
+    private org.apache.eventmesh.runtime.grpc.EventMeshGrpcServer grpcBridge;
+    private int grpcPort = -1;
     private org.apache.eventmesh.runtime.session.AgentRegistrar agentRegistrar;
     private org.apache.eventmesh.runtime.session.Matchmaker matchmaker;
     private org.apache.eventmesh.runtime.session.SessionRouter sessionRouter;
@@ -185,6 +188,21 @@ public class EventMeshApplication {
             a2aGateway.withToken(token);
         }
         return this;
+    }
+
+    /**
+     * #5411: enable the legacy SDK gRPC compatibility bridge (PublisherService /
+     * ConsumerService / HeartbeatService on {@code port}, 0 = auto-select). Must be called
+     * before {@link #start()}; the bridge shuts down with the application.
+     */
+    public EventMeshApplication withGrpcBridge(int port) {
+        this.grpcPort = port;
+        return this;
+    }
+
+    /** #5411: the live gRPC bridge (null before {@link #start()} or when not enabled). */
+    public org.apache.eventmesh.runtime.grpc.EventMeshGrpcServer grpcBridge() {
+        return grpcBridge;
     }
 
     public EventMeshApplication(MeshStoragePlugin storage, OffsetStore offsetStore, int httpPort, int adminPort) {
@@ -365,8 +383,35 @@ public class EventMeshApplication {
             log.info("A2A gateway started: port={} taskStore={} auth={}",
                 a2aGateway.getPort(), a2aTaskStore.getClass().getSimpleName(), "enabled");
         }
-        log.info("EventMeshApplication started: traffic port={} admin port={} ws port={} a2a={}",
-            trafficBoundPort, adminBoundPort, wsBoundPort, a2aGateway != null);
+        // #5411: optional legacy SDK gRPC bridge, started after the core servers so the ingress
+        // it bridges onto is fully up. Pushes share the v2 delivery engine (WAL + retry/DLQ).
+        if (grpcPort >= 0) {
+            grpcBridge = new org.apache.eventmesh.runtime.grpc.EventMeshGrpcServer(
+                runtime.ingress(), grpcPort,
+                (url, body, headers) -> {
+                    try {
+                        java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                        conn.setRequestMethod("POST");
+                        conn.setDoOutput(true);
+                        conn.setConnectTimeout(3_000);
+                        conn.setReadTimeout(10_000);
+                        for (java.util.Map.Entry<String, String> h : headers.entrySet()) {
+                            conn.setRequestProperty(h.getKey(), h.getValue());
+                        }
+                        try (java.io.OutputStream os = conn.getOutputStream()) {
+                            os.write(body);
+                        }
+                        return conn.getResponseCode();
+                    } catch (java.io.IOException e) {
+                        throw new IllegalStateException("webhook POST failed: " + e.getMessage(), e);
+                    }
+                },
+                event -> event.getData() == null ? new byte[0] : event.getData().toBytes());
+            grpcBridge.start();
+            log.info("legacy gRPC bridge started: port={}", grpcBridge.port());
+        }
+        log.info("EventMeshApplication started: traffic port={} admin port={} ws port={} a2a={} grpc={}",
+            trafficBoundPort, adminBoundPort, wsBoundPort, a2aGateway != null, grpcBridge != null);
     }
 
     /** Graceful shutdown: admin → traffic → runtime (flush offsets, release storage). */
@@ -379,6 +424,14 @@ public class EventMeshApplication {
         }
         if (wsServer != null) {
             wsServer.stop();
+        }
+        // #5411: stop the gRPC bridge before the runtime so in-flight stream pushes settle.
+        if (grpcBridge != null) {
+            try {
+                grpcBridge.stop();
+            } catch (RuntimeException e) {
+                log.warn("gRPC bridge shutdown: {}", e.toString());
+            }
         }
         // #5405: gateway first (unsubscribes its transport), then its stores.
         if (a2aGateway != null) {
@@ -570,6 +623,14 @@ public class EventMeshApplication {
         if (wsPort >= 0) {
             app.withWs(wsPort);
             log.info("WebSocket push transport enabled on port {}", wsPort);
+        }
+
+        // Legacy SDK gRPC bridge (optional, issue #5411): -Deventmesh.grpc.port=10205 (0 = auto,
+        // omit/negative = disabled - opt-in like the WS port; keeps the 1.x default warm).
+        int grpcPort = Integer.getInteger("eventmesh.grpc.port", -1);
+        if (grpcPort >= 0) {
+            app.withGrpcBridge(grpcPort);
+            log.info("legacy gRPC bridge enabled on port {}", grpcPort);
         }
 
         // A2A gateway (optional, issue #5405): -Deventmesh.a2a.enabled=true, port 10108 by

@@ -78,7 +78,7 @@ Usually set via `-D` by `bin/start.sh`; override here if needed.
 | `eventmesh.http.port` | `10105` | Traffic HTTP (`/events/*`, `/agent/*`, `/session/*`) |
 | `eventmesh.admin.port` | `10106` | Admin HTTP (`/admin/*`, `/metrics`) |
 | `eventmesh.ws.port` | `-1` (disabled) | WebSocket push port; set e.g. `10107` to enable |
-| `eventmesh.grpc.port` | `10205` | RESERVED for the future gRPC protocol (not served yet; keeps the 1.x default warm) |
+| `eventmesh.grpc.port` | `-1` (disabled) | Legacy SDK gRPC bridge (Publisher/Consumer/Heartbeat services, issue #5411); set `10205` (the 1.x default) to serve old `EventMeshGrpcProducer`/`EventMeshGrpcConsumer` clients on the v2 runtime |
 | `eventmesh.a2a.port` | `10108` | A2A gateway REST plane (opt-in via `eventmesh.a2a.enabled=true`) |
 | `eventmesh.offset.path` | `./data/offset` | Local offset store directory |
 

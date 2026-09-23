@@ -114,7 +114,8 @@ request-reply).
 The legacy TCP / gRPC / OpenMessaging SDKs still work because the new
 `EventMeshFrame` adaptor (`eventmesh-runtime/.../protocol/meshmessage`) and the
 `UniTcpServer` (public/internal split per `#5297`) preserve the wire format and
-semantics of the old `MeshMessage` / `OpenMessage` clients.
+semantics of the old `MeshMessage` / `OpenMessage` clients; the legacy gRPC
+SDK family is served by the opt-in `EventMeshGrpcServer` bridge (#5411).
 
 ### Key classes
 
@@ -122,6 +123,7 @@ semantics of the old `MeshMessage` / `OpenMessage` clients.
 | --- | --- | --- |
 | HTTP entry | `eventmesh-runtime/.../http/UniHttpServer.java` | Netty HTTP/S; entry of all `/events/*` + `/a2a/*` traffic; `withSecurityGate(...)` wiring point |
 | WebSocket entry | `eventmesh-runtime/.../http/UniWsServer.java` | WebSocket transport for subscribers |
+| Legacy gRPC bridge | `eventmesh-runtime/.../grpc/EventMeshGrpcServer.java` | Opt-in port-10205 bridge serving the 1.x `PublisherService`/`ConsumerService`/`HeartbeatService` (#5411) |
 | Ingress orchestrator | `eventmesh-runtime/.../ingress/UniIngressService.java` | Frame-typed facade; single protocol path (`EventMeshFrame`) used by both HTTP and the legacy TCP adaptor |
 | Security gate | `eventmesh-runtime/.../security/gate/SecurityGate.java` | Opt-in unified gate (see §4) |
 | Filter chain | `eventmesh-runtime/.../security/FilterChain.java` | Auth + ACL filters executed before the gate |
@@ -418,7 +420,9 @@ summarized there:
   HTTP codec are still supported for backward compatibility but
   are explicitly marked Legacy and receive only critical bug
   fixes. See `docs/feature/protocols.md` for the migration path.
-* gRPC framing is **Beta**: stable, but the API surface may shift.
+* gRPC framing is **Beta**: stable, but the API surface may shift. The
+  legacy SDK gRPC surface is served again as an opt-in compatibility bridge
+  on `eventmesh.grpc.port` since #5411 (see `docs/feature/protocols.md` §1.1).
 * A2A is **Experimental** until the readiness checks in #5340
   pass.
 

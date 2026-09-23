@@ -67,7 +67,7 @@ status. See [docs](docs/) for the per-capability guides.
 | [Kafka / RocketMQ storage](eventmesh-storage-plugin/) (4.x, 5.x) | **GA target** | Recommended — pluggable WAL backends, TCK-covered (`MeshStoragePluginTCK`) | Primary path |
 | [Memory storage](eventmesh-storage-plugin/eventmesh-storage-memory/) (default) | **Beta** | Zero-dependency dev/CI/quick-start backend (`docker run apache/eventmesh` with no broker); state is process-local — not for production | Switch `EVENTMESH_STORAGE_TYPE` to kafka / rocketmq / rocketmq5 |
 | SSE / WebSocket push | **Beta** | Usable — integration-tested; ACK-tracked redelivery + DLQ are shared with long-polling (same `ReliableDispatcher`), e2e-real-broker suite in [#5389](https://github.com/apache/eventmesh/pull/5389) | Unified push transports |
-| Connector Runtime | **Beta** | Usable — working end-to-end; all 23 plugins fully implemented since [#5394](https://github.com/apache/eventmesh/pull/5394) (no template stubs left), data-loss hardening in [#5328](https://github.com/apache/eventmesh/pull/5328); 4 of 23 (file/kafka/pulsar/rocketmq) still carry the only unit tests | Remaining plugin tests + GA criteria tracked under the #5296 architecture review |
+| Connector Runtime | **Beta** | Usable — working end-to-end; all 23 plugins fully implemented since [#5394](https://github.com/apache/eventmesh/pull/5394) (no template stubs left), data-loss hardening in [#5328](https://github.com/apache/eventmesh/pull/5328); unit tests cover all 23 plugins since [#5412](https://github.com/apache/eventmesh/pull/5412) | Promote to GA once the remaining #5296 review items land (real-backend integration tests per plugin, connector-runtime HA story) |
 | [A2A / Agent Gateway](docs/feature/a2a.md) | **Beta** | Usable — task store + runtime bridge (#5302/#5304), task reaper + Meta-backed agent cards in [#5346](https://github.com/apache/eventmesh/pull/5346), quota classification in [#5373](https://github.com/apache/eventmesh/pull/5373); the Testcontainers E2E gate (#5340) closed in September 2026 | Unified Runtime A2A |
 | [Agent tools & event triggers](docs/feature/agent-tools.md) | **Experimental** | Evaluate — `LlmClient`/`ConversationMemory`/`AgentTool` extension points, connector-backed tools and SPI plugin deployment landed in [#5408](https://github.com/apache/eventmesh/pull/5408)/[#5409](https://github.com/apache/eventmesh/pull/5409); runtime in `eventmesh-agent-runtime`, plugins in `eventmesh-agent-plugin/` | Agent tool ecosystem |
 | TCP / gRPC / OpenMessaging SDKs | **Legacy-compatible** | Existing users only — kept so old clients run unmodified; not extended | [HTTP + CloudEvents](docs/feature/client-java.md) |
@@ -81,7 +81,10 @@ Status meanings:
 
 > Migrating off TCP / gRPC SDKs? The legacy clients keep working against the current
 > runtime; see the [client guide](docs/feature/client-java.md) for the
-> HTTP + CloudEvents replacement (`CloudEventsClient`).
+> HTTP + CloudEvents replacement (`CloudEventsClient`). The legacy gRPC SDK
+> surface is served again since the #5411 bridge (opt-in via
+> `eventmesh.grpc.port=10205`) — old `EventMeshGrpcProducer` /
+> `EventMeshGrpcConsumer` clients run unmodified on the v2 runtime.
 
 ### Documentation
 

@@ -65,6 +65,9 @@ public final class ArchitectureRules {
             .and().resideOutsideOfPackage("org.apache.eventmesh.common..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.protocol.meshmessage..")
             .and().resideOutsideOfPackage("org.apache.eventmesh.client..")
+            // #5411: the legacy gRPC bridge (runtime.grpc..) is the sanctioned server-side
+            // adapter for these types — same carve-out the TCP rule grants runtime..
+            .and().resideOutsideOfPackage("org.apache.eventmesh.runtime.grpc..")
             .should().dependOnClassesThat().resideInAPackage("org.apache.eventmesh.common.protocol.grpc..");
 
     public static ArchRule ruleTcpProtocolHidden = noClasses()
