@@ -23,7 +23,7 @@ use std::time::Duration;
 
 use futures::SinkExt;
 use tokio::net::TcpStream;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{mpsc, watch, Mutex};
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
 use tokio_util::sync::CancellationToken;
@@ -42,6 +42,7 @@ use super::driver::{IoExitReason, SocketDriver};
 pub(super) struct ConnectionState {
     pub(super) generation: u64,
     pub(super) active: bool,
+    pub(super) socket_cancel: CancellationToken,
 }
 
 pub(super) struct ConnectionSupervisor;
@@ -104,7 +105,7 @@ impl ConnectionSupervisor {
         mut framed: Framed<TcpStream, TcpCodec>,
         mut outbound_rx: mpsc::Receiver<OutboundCommand>,
         inbound_tx: mpsc::Sender<Package>,
-        reconnect_tx: mpsc::Sender<()>,
+        reconnect_tx: watch::Sender<u64>,
         mut pending_cancel_rx: mpsc::UnboundedReceiver<PendingKey>,
         state: Arc<Mutex<ConnectionState>>,
         deliver_orphan_responses: Arc<AtomicBool>,
@@ -113,7 +114,10 @@ impl ConnectionSupervisor {
     ) {
         let mut dispatcher = RpcDispatcher::new();
         loop {
-            let generation = state.lock().await.generation;
+            let (generation, socket_cancel) = {
+                let state = state.lock().await;
+                (state.generation, state.socket_cancel.clone())
+            };
             let reason = SocketDriver::run(
                 &mut framed,
                 &mut outbound_rx,
@@ -124,10 +128,13 @@ impl ConnectionSupervisor {
                 generation,
                 heartbeat_interval,
                 control_timeout,
-                &cancel,
+                &socket_cancel,
             )
             .await;
 
+            // Release the old session before backoff or another HELLO. Keeping
+            // its socket alive would strand unacknowledged deliveries there.
+            drop(framed);
             {
                 let mut state = state.lock().await;
                 state.active = false;
@@ -138,6 +145,9 @@ impl ConnectionSupervisor {
             }
 
             match reason {
+                IoExitReason::Cancelled if !cancel.is_cancelled() => {
+                    debug!("socket closed for consumer recovery");
+                }
                 IoExitReason::Cancelled | IoExitReason::AllSendersDropped => {
                     debug!(?reason, "connection task exiting");
                     return;
@@ -193,9 +203,16 @@ impl ConnectionSupervisor {
                 match result {
                     Ok(new_framed) => {
                         info!(attempt, peer = %format!("{addr}:{port}"), "TCP reconnected");
-                        state.lock().await.active = true;
+                        let generation = {
+                            let mut state = state.lock().await;
+                            state.socket_cancel = cancel.child_token();
+                            state.active = true;
+                            state.generation
+                        };
                         alive.store(true, Ordering::Release);
-                        let _ = reconnect_tx.try_send(());
+                        // Retain the newest generation even if the consumer
+                        // is still handling a delivery from an older socket.
+                        reconnect_tx.send_replace(generation);
                         framed = new_framed;
                         break;
                     }

@@ -171,8 +171,8 @@ enum InboundResult {
     Continue,
     /// Stop the loop and report a redirect target to the caller.
     Redirect(RedirectInfo),
-    /// Stop the loop (parse failure, unknown command, etc.).
-    Stop,
+    /// Close the current session and recover according to the reconnect policy.
+    Reconnect,
 }
 
 /// TCP-based consumer, generic over the user's [`MessageHandler`] type.
@@ -208,9 +208,9 @@ where
     /// [`request_shutdown`](Self::request_shutdown) or drop.
     ///
     /// The reconnect policy from the config controls automatic reconnection
-    /// after I/O failures (enabled by default).  When a reconnect succeeds,
-    /// the receive loop automatically replays all subscriptions and re-issues
-    /// `LISTEN_REQUEST`.
+    /// after I/O failures or failed deliveries (enabled by default). After a
+    /// successful reconnect, the receive loop automatically replays all
+    /// subscriptions and re-issues `LISTEN_REQUEST`.
     pub async fn connect(
         config: TcpConfig,
         options: &ConsumerOptions,
@@ -453,7 +453,7 @@ impl<L: MessageHandler> Drop for TcpConsumer<L> {
 fn spawn_driver<L>(
     conn: Arc<TcpConnection>,
     mut inbound_rx: tokio::sync::mpsc::Receiver<Package>,
-    mut reconnect_rx: Option<tokio::sync::mpsc::Receiver<()>>,
+    mut reconnect_rx: Option<tokio::sync::watch::Receiver<u64>>,
     listener: Arc<L>,
     config: TcpConfig,
     subscriptions: Arc<Mutex<Vec<Subscription>>>,
@@ -464,6 +464,7 @@ where
     L: MessageHandler,
 {
     tokio::spawn(async move {
+        let mut recovering_generation = None;
         loop {
             tokio::select! {
                 biased;
@@ -477,15 +478,24 @@ where
                 // the TCP session. Replay all subscriptions + LISTEN.
                 event = async {
                     match reconnect_rx.as_mut() {
-                        Some(rx) => rx.recv().await,
+                        Some(rx) => match rx.changed().await {
+                            Ok(()) => Some(*rx.borrow_and_update()),
+                            Err(_) => None,
+                        },
                         None => std::future::pending().await,
                     }
                 } => {
-                    if event.is_none() {
+                    let Some(generation) = event else {
                         info!("reconnect channel closed, exiting receive loop");
                         *shutdown_reason.lock().await = Some(ShutdownReason::ChannelClosed);
                         break;
+                    };
+                    if recovering_generation.is_some_and(|minimum| generation < minimum) {
+                        continue;
                     }
+                    // These frames belong to the retired session. The Runtime
+                    // owns their redelivery; never ACK them on the new socket.
+                    while inbound_rx.try_recv().is_ok() {}
                     info!("connection reconnected, replaying subscriptions");
                     let subs_snapshot = subscriptions.lock().await.clone();
                     let mut replay_error = None;
@@ -552,10 +562,11 @@ where
                             break;
                         }
                     }
+                    recovering_generation = None;
                 }
 
                 // Inbound message from the server.
-                pkg = inbound_rx.recv() => {
+                pkg = inbound_rx.recv(), if recovering_generation.is_none() => {
                     match pkg {
                         Some(pkg) => {
                             match handle_inbound(&pkg, &conn, &*listener).await {
@@ -570,16 +581,9 @@ where
                                         Some(ShutdownReason::Redirect(ri));
                                     break;
                                 }
-                                InboundResult::Stop => {
-                                    info!("receive loop stopping (disconnect or parse failure)");
-                                    // The consumer keeps an Arc to the connection after the
-                                    // driver exits. Close it here so an unacknowledged delivery
-                                    // is released for server-side redelivery instead of leaving
-                                    // the I/O task and socket alive until the caller joins.
-                                    conn.shutdown().await;
-                                    *shutdown_reason.lock().await =
-                                        Some(ShutdownReason::ChannelClosed);
-                                    break;
+                                InboundResult::Reconnect => {
+                                    info!("closing failed delivery's session without ACK");
+                                    recovering_generation = Some(conn.request_reconnect().await);
                                 }
                             }
                         }
@@ -605,16 +609,16 @@ where
 ///
 /// Returns [`InboundResult::Continue`] to keep the receive loop running,
 /// [`InboundResult::Redirect`] to stop and report a redirect target, or
-/// [`InboundResult::Stop`] to stop the loop (which triggers reconnection
-/// and server-side redelivery).
+/// [`InboundResult::Reconnect`] to close the session without ACK and recover
+/// according to the configured reconnect policy. Redelivery is Runtime-dependent.
 ///
 /// If the message cannot be parsed, **no ACK is sent** and the function
-/// returns [`InboundResult::Stop`] so the connection is torn down — mirroring
+/// returns [`InboundResult::Reconnect`] so the connection is torn down — mirroring
 /// the Java SDK, where a parse exception propagates to `exceptionCaught` and
 /// closes the channel. A listener failure or a reply encoding / enqueue
 /// failure follows the same no-ACK path so the server can redeliver the
-/// request. An unwinding listener panic is logged and leaves only that delivery
-/// without a reply or ACK; the receive loop continues with the next message.
+/// request. An unwinding listener panic follows the same path as a listener
+/// error: no reply or ACK, then session teardown, reconnect, and subscription replay.
 async fn handle_inbound<L>(pkg: &Package, conn: &TcpConnection, listener: &L) -> InboundResult
 where
     L: MessageHandler,
@@ -652,7 +656,7 @@ where
                     "unexpected body shape for REDIRECT_TO_CLIENT; stopping receive loop"
                 ),
             }
-            return InboundResult::Stop;
+            return InboundResult::Reconnect;
         }
         cmd => {
             warn!(?cmd, "unexpected inbound command, ignoring");
@@ -664,7 +668,7 @@ where
         Some(msg) => msg,
         None => {
             warn!("failed to parse inbound message body; disconnecting without ACK");
-            return InboundResult::Stop;
+            return InboundResult::Reconnect;
         }
     };
 
@@ -680,7 +684,7 @@ where
         Ok(Ok(reply)) => reply,
         Ok(Err(error)) => {
             warn!(%error, "listener failed; disconnecting without ACK");
-            return InboundResult::Stop;
+            return InboundResult::Reconnect;
         }
         Err(panic) => {
             let reason = panic
@@ -691,9 +695,9 @@ where
             warn!(
                 seq = ?pkg.header.seq,
                 reason,
-                "TCP handler panicked; continuing without replying or ACKing this delivery"
+                "TCP handler panicked; disconnecting without reply or ACK"
             );
-            return InboundResult::Continue;
+            return InboundResult::Reconnect;
         }
     };
     if let Some(mut reply) = reply {
@@ -704,12 +708,12 @@ where
             Ok(reply_pkg) => reply_pkg,
             Err(error) => {
                 warn!(%error, "failed to serialize reply; disconnecting without ACK");
-                return InboundResult::Stop;
+                return InboundResult::Reconnect;
             }
         };
         if let Err(error) = conn.send(reply_pkg).await {
             warn!(%error, "failed to send reply; disconnecting without ACK");
-            return InboundResult::Stop;
+            return InboundResult::Reconnect;
         }
     }
 
@@ -735,7 +739,7 @@ mod tests {
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody, RedirectInfo};
 
     use futures::SinkExt;
-    use tokio::net::TcpListener;
+    use tokio::net::{TcpListener, TcpStream};
     use tokio_stream::StreamExt;
     use tokio_util::codec::Framed;
 
@@ -813,89 +817,186 @@ mod tests {
         }
     }
 
-    struct PanicsOnce {
-        calls: AtomicUsize,
-        panic_before_future: bool,
+    #[derive(Clone, Copy)]
+    enum HandlerFailure {
+        Error,
+        PanicBeforeFuture,
+        PanicDuringPoll,
     }
 
-    impl MessageHandler for PanicsOnce {
+    struct FailsOnce {
+        calls: Arc<AtomicUsize>,
+        failure: HandlerFailure,
+    }
+
+    impl MessageHandler for FailsOnce {
         fn handle(&self, _: Message) -> impl Future<Output = Result<Option<Message>>> + Send {
             let call = self.calls.fetch_add(1, Ordering::SeqCst);
-            if call == 0 && self.panic_before_future {
+            let failure = self.failure;
+            if call == 0 && matches!(failure, HandlerFailure::PanicBeforeFuture) {
                 panic!("handler panicked before returning its future");
             }
             async move {
                 tokio::task::yield_now().await;
                 if call == 0 {
-                    std::panic::panic_any(String::from("handler panicked after yielding"));
+                    match failure {
+                        HandlerFailure::Error => {
+                            return Err(EventMeshError::Tcp("listener failure".into()));
+                        }
+                        HandlerFailure::PanicBeforeFuture | HandlerFailure::PanicDuringPoll => {
+                            std::panic::panic_any(String::from("handler panicked after yielding"));
+                        }
+                    }
                 }
                 Ok(None)
             }
         }
     }
 
-    async fn assert_handler_panic_isolated(panic_before_future: bool) {
+    async fn confirm_request(
+        framed: &mut Framed<TcpStream, TcpCodec>,
+        request: Command,
+        response: Command,
+    ) -> Package {
+        let package = framed.next().await.unwrap().unwrap();
+        assert_eq!(package.header.cmd, request);
+        framed
+            .send(Package::new(Header::new(
+                response,
+                package.header.seq.clone().unwrap(),
+            )))
+            .await
+            .unwrap();
+        package
+    }
+
+    async fn assert_handler_failure_recovers(failure: HandlerFailure) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
+        let (deliver_tx, deliver_rx) = tokio::sync::oneshot::channel();
         let server = tokio::spawn(async move {
             let (stream, _) = listener.accept().await.unwrap();
-            let mut framed = Framed::new(stream, TcpCodec::new());
+            let mut first = Framed::new(stream, TcpCodec::new());
             for (request, response) in [
                 (Command::HelloRequest, Command::HelloResponse),
                 (Command::ListenRequest, Command::ListenResponse),
             ] {
-                let package = framed.next().await.unwrap().unwrap();
-                assert_eq!(package.header.cmd, request);
-                framed
-                    .send(Package::new(Header::new(
-                        response,
-                        package.header.seq.unwrap(),
-                    )))
-                    .await
-                    .unwrap();
+                confirm_request(&mut first, request, response).await;
             }
-
-            for (seq, command) in [
-                ("first", Command::RequestToClient),
-                ("second", Command::AsyncMessageToClient),
-            ] {
-                let mut package = message::build_message_package(
-                    &EventMeshMessage::new("topic", seq).unwrap(),
-                    command,
+            let mut subscriptions = Vec::new();
+            for _ in 0..2 {
+                let package = confirm_request(
+                    &mut first,
+                    Command::SubscribeRequest,
+                    Command::SubscribeResponse,
                 )
-                .unwrap();
-                package.header.seq = Some(seq.into());
-                framed.send(package).await.unwrap();
+                .await;
+                let PackageBody::Subscription(subscription) = package.body else {
+                    panic!("expected subscription body");
+                };
+                subscriptions.push(serde_json::to_value(subscription).unwrap());
+            }
+            // Wait until subscribe() has recorded both confirmed subscriptions.
+            deliver_rx.await.unwrap();
+
+            let mut delivery = message::build_message_package(
+                &EventMeshMessage::new("orders", "failed delivery").unwrap(),
+                Command::RequestToClient,
+            )
+            .unwrap();
+            delivery.header.seq = Some("failed".into());
+            let mut stale = message::build_message_package(
+                &EventMeshMessage::new("orders", "old session delivery").unwrap(),
+                Command::AsyncMessageToClient,
+            )
+            .unwrap();
+            stale.header.seq = Some("stale".into());
+            first.feed(delivery.clone()).await.unwrap();
+            first.feed(stale).await.unwrap();
+            first.flush().await.unwrap();
+            match first.next().await {
+                None | Some(Err(_)) => {}
+                Some(Ok(package)) => panic!(
+                    "a failed handler must close its session without reply or ACK: {package:?}"
+                ),
             }
 
-            // No reply, ACK, or disconnect may precede the second delivery's ACK.
-            let ack = tokio::time::timeout(Duration::from_secs(3), framed.next())
-                .await
-                .expect("the next delivery must be handled after a panic")
-                .expect("the same connection must remain open")
-                .unwrap();
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut second = Framed::new(stream, TcpCodec::new());
+            confirm_request(&mut second, Command::HelloRequest, Command::HelloResponse).await;
+            for expected in subscriptions {
+                let replay = confirm_request(
+                    &mut second,
+                    Command::SubscribeRequest,
+                    Command::SubscribeResponse,
+                )
+                .await;
+                let PackageBody::Subscription(subscription) = replay.body else {
+                    panic!("expected replayed subscription body");
+                };
+                assert_eq!(serde_json::to_value(subscription).unwrap(), expected);
+            }
+            confirm_request(&mut second, Command::ListenRequest, Command::ListenResponse).await;
+
+            // Simulate Runtime redelivery only after the new session is ready.
+            second.send(delivery).await.unwrap();
+            let ack = second.next().await.unwrap().unwrap();
+            assert_eq!(ack.header.cmd, Command::RequestToClientAck);
+            assert_eq!(ack.header.seq.as_deref(), Some("failed"));
+
+            let mut next = message::build_message_package(
+                &EventMeshMessage::new("audit", "new delivery").unwrap(),
+                Command::AsyncMessageToClient,
+            )
+            .unwrap();
+            next.header.seq = Some("next".into());
+            second.send(next).await.unwrap();
+            let ack = second.next().await.unwrap().unwrap();
             assert_eq!(ack.header.cmd, Command::AsyncMessageToClientAck);
-            assert_eq!(ack.header.seq.as_deref(), Some("second"));
-            framed
+            assert_eq!(ack.header.seq.as_deref(), Some("next"));
+            second
         });
 
+        let calls = Arc::new(AtomicUsize::new(0));
         let consumer = TcpConsumer::connect(
             TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
-                .with_reconnect(ReconnectPolicy::default().with_enabled(false))
+                .with_reconnect(
+                    ReconnectPolicy::default()
+                        .with_initial_backoff(Duration::from_millis(20))
+                        .with_max_backoff(Duration::from_millis(20))
+                        .with_max_retries(3),
+                )
                 .with_control_timeout(Duration::from_secs(3))
                 .with_heartbeat_interval(Duration::from_secs(60)),
             &ConsumerOptions::new("g"),
-            PanicsOnce {
-                calls: AtomicUsize::new(0),
-                panic_before_future,
+            FailsOnce {
+                calls: Arc::clone(&calls),
+                failure,
             },
             None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
+        consumer
+            .subscribe(&[
+                Subscription::new("orders").with_delivery_type(DeliveryType::Sync),
+                Subscription::new("audit"),
+            ])
+            .await
+            .unwrap();
+        deliver_tx.send(()).unwrap();
 
-        let _server_connection = server.await.unwrap();
+        let _server_connection = tokio::time::timeout(Duration::from_secs(5), server)
+            .await
+            .expect("handler failure must reconnect and replay subscriptions")
+            .unwrap();
         assert!(consumer.conn.is_active());
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            3,
+            "stale frames must be discarded"
+        );
+        assert_eq!(consumer.subscriptions.lock().await.len(), 2);
         consumer.request_shutdown();
         let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
             .await
@@ -904,13 +1005,127 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn handler_panic_before_future_does_not_stop_next_delivery() {
-        assert_handler_panic_isolated(true).await;
+    async fn handler_panic_before_future_reconnects_and_replays_subscriptions() {
+        assert_handler_failure_recovers(HandlerFailure::PanicBeforeFuture).await;
     }
 
     #[tokio::test]
-    async fn handler_panic_during_poll_does_not_stop_next_delivery() {
-        assert_handler_panic_isolated(false).await;
+    async fn handler_panic_during_poll_reconnects_and_replays_subscriptions() {
+        assert_handler_failure_recovers(HandlerFailure::PanicDuringPoll).await;
+    }
+
+    #[tokio::test]
+    async fn handler_error_reconnects_and_replays_subscriptions() {
+        assert_handler_failure_recovers(HandlerFailure::Error).await;
+    }
+
+    #[tokio::test]
+    async fn handler_error_ignores_reconnect_from_before_the_failure() {
+        struct BlockedFailure {
+            calls: Arc<AtomicUsize>,
+            started: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+            release: Mutex<tokio::sync::oneshot::Receiver<()>>,
+        }
+
+        impl MessageHandler for BlockedFailure {
+            async fn handle(&self, _: Message) -> Result<Option<Message>> {
+                if self.calls.fetch_add(1, Ordering::SeqCst) == 0 {
+                    self.started.lock().await.take().unwrap().send(()).unwrap();
+                    (&mut *self.release.lock().await).await.unwrap();
+                    return Err(EventMeshError::Tcp("failure after I/O reconnect".into()));
+                }
+                Ok(None)
+            }
+        }
+
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+        let (release_tx, release_rx) = tokio::sync::oneshot::channel();
+        let (reconnected_tx, reconnected_rx) = tokio::sync::oneshot::channel();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut first = Framed::new(stream, TcpCodec::new());
+            confirm_request(&mut first, Command::HelloRequest, Command::HelloResponse).await;
+            confirm_request(&mut first, Command::ListenRequest, Command::ListenResponse).await;
+            confirm_request(
+                &mut first,
+                Command::SubscribeRequest,
+                Command::SubscribeResponse,
+            )
+            .await;
+            let delivery = message::build_message_package(
+                &EventMeshMessage::new("orders", "payload").unwrap(),
+                Command::AsyncMessageToClient,
+            )
+            .unwrap();
+            first.send(delivery.clone()).await.unwrap();
+            started_rx.await.unwrap();
+            drop(first);
+
+            // An I/O reconnect completes while the original handler is blocked.
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut second = Framed::new(stream, TcpCodec::new());
+            confirm_request(&mut second, Command::HelloRequest, Command::HelloResponse).await;
+            reconnected_tx.send(()).unwrap();
+            assert!(matches!(second.next().await, None | Some(Err(_))));
+
+            // The handler then fails, requiring a newer session than that notification.
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut third = Framed::new(stream, TcpCodec::new());
+            confirm_request(&mut third, Command::HelloRequest, Command::HelloResponse).await;
+            confirm_request(
+                &mut third,
+                Command::SubscribeRequest,
+                Command::SubscribeResponse,
+            )
+            .await;
+            confirm_request(&mut third, Command::ListenRequest, Command::ListenResponse).await;
+            third.send(delivery.clone()).await.unwrap();
+            let ack = third.next().await.unwrap().unwrap();
+            assert_eq!(ack.header.cmd, Command::AsyncMessageToClientAck);
+            assert_eq!(ack.header.seq, delivery.header.seq);
+            third
+        });
+        let calls = Arc::new(AtomicUsize::new(0));
+        let consumer = TcpConsumer::connect(
+            TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+                .with_reconnect(
+                    ReconnectPolicy::default()
+                        .with_initial_backoff(Duration::from_millis(20))
+                        .with_max_backoff(Duration::from_millis(20)),
+                )
+                .with_control_timeout(Duration::from_secs(3))
+                .with_heartbeat_interval(Duration::from_secs(60)),
+            &ConsumerOptions::new("g"),
+            BlockedFailure {
+                calls: Arc::clone(&calls),
+                started: Mutex::new(Some(started_tx)),
+                release: Mutex::new(release_rx),
+            },
+            None::<std::future::Ready<()>>,
+        )
+        .await
+        .unwrap();
+        consumer
+            .subscribe(&[Subscription::new("orders")])
+            .await
+            .unwrap();
+        tokio::time::timeout(Duration::from_secs(3), async {
+            reconnected_rx.await.unwrap();
+            while !consumer.conn.is_active() {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .expect("I/O reconnect must finish while the handler is blocked");
+        release_tx.send(()).unwrap();
+        let _server_connection = tokio::time::timeout(Duration::from_secs(5), server)
+            .await
+            .expect("stale reconnect notification must not prevent recovery")
+            .unwrap();
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        consumer.shutdown().await;
     }
 
     /// A reply that fails the TCP CloudEvents compatibility check must not ACK
@@ -974,8 +1189,9 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    async fn listener_error_closes_tcp_connection_without_ack() {
+    async fn failed_delivery_consumer(
+        reconnect: ReconnectPolicy,
+    ) -> (TcpConsumer<FailingListener>, TcpListener) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
 
@@ -1030,9 +1246,11 @@ mod tests {
             })
             .await
             .expect("listener failure should close the TCP connection promptly");
+            listener
         });
 
         let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_reconnect(reconnect)
             .with_control_timeout(Duration::from_secs(3))
             .with_heartbeat_interval(Duration::from_secs(60));
         let consumer = TcpConsumer::connect(
@@ -1044,11 +1262,57 @@ mod tests {
         .await
         .expect("connect");
 
-        server.await.unwrap();
+        let listener = tokio::time::timeout(Duration::from_secs(5), server)
+            .await
+            .expect("failed delivery must close the old socket without requiring join")
+            .unwrap();
+        (consumer, listener)
+    }
+
+    #[tokio::test]
+    async fn listener_error_stops_without_ack_when_reconnect_disabled() {
+        let (consumer, _listener) =
+            failed_delivery_consumer(ReconnectPolicy::default().with_enabled(false)).await;
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+            .await
+            .expect("disabled reconnect must stop the consumer");
+        assert!(matches!(reason, ShutdownReason::ChannelClosed));
         assert!(
             !consumer.conn.is_active(),
             "listener failure must stop the connection I/O task without requiring join"
         );
+    }
+
+    #[tokio::test]
+    async fn listener_error_stops_when_reconnect_attempts_are_exhausted() {
+        let (consumer, listener) = failed_delivery_consumer(
+            ReconnectPolicy::default()
+                .with_max_retries(2)
+                .with_initial_backoff(Duration::from_millis(20))
+                .with_max_backoff(Duration::from_millis(20)),
+        )
+        .await;
+        drop(listener);
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+            .await
+            .expect("exhausted reconnect must stop the consumer");
+        assert!(matches!(reason, ShutdownReason::ChannelClosed));
+    }
+
+    #[tokio::test]
+    async fn shutdown_cancels_handler_failure_reconnect_backoff() {
+        let (consumer, _listener) = failed_delivery_consumer(
+            ReconnectPolicy::default()
+                .with_initial_backoff(Duration::from_secs(60))
+                .with_max_backoff(Duration::from_secs(60)),
+        )
+        .await;
+        consumer.request_shutdown();
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+            .await
+            .expect("shutdown must interrupt reconnect backoff");
+        assert!(matches!(reason, ShutdownReason::Cancelled));
+        assert!(!consumer.conn.is_active());
     }
 
     #[cfg(feature = "cloud_events")]
@@ -1113,6 +1377,7 @@ mod tests {
         });
 
         let config = TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap())
+            .with_reconnect(ReconnectPolicy::default().with_enabled(false))
             .with_control_timeout(Duration::from_secs(3))
             .with_heartbeat_interval(Duration::from_secs(60));
         let consumer = TcpConsumer::connect(

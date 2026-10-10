@@ -73,7 +73,7 @@ impl SocketDriver {
                 biased;
 
                 _ = cancel.cancelled() => {
-                    debug!("connection task cancelled");
+                    debug!("socket driver cancelled");
                     return IoExitReason::Cancelled;
                 }
 
@@ -238,7 +238,7 @@ impl SocketDriver {
             biased;
             _ = cancel.cancelled() => Err((
                 IoExitReason::Cancelled,
-                EventMeshError::ChannelClosed("TCP write cancelled by shutdown".into()),
+                EventMeshError::ChannelClosed("TCP socket write cancelled".into()),
             )),
             result = tokio::time::timeout(timeout, framed.send(package)) => match result {
                 Ok(Ok(())) => Ok(()),

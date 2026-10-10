@@ -73,7 +73,7 @@ public class DownStreamMsgContext extends RetryContext {
         this.lastPushTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
         this.subscriptionItem = subscriptionItem;
-        String ttlStr = (String) event.getExtension("TTL");
+        String ttlStr = (String) event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL);
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
         this.msgFromOtherEventMesh = msgFromOtherEventMesh;

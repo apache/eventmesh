@@ -34,7 +34,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::sync::{mpsc, oneshot, Mutex};
+use tokio::sync::{mpsc, oneshot, watch, Mutex};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
@@ -55,12 +55,6 @@ use supervisor::{ConnectionState, ConnectionSupervisor};
 /// Default channel capacity for outbound and inbound message queues.
 const CHANNEL_CAPACITY: usize = 256;
 
-/// Capacity of the reconnect-event channel. A bounded channel of 1 is enough:
-/// `try_send` drops intermediate notifications if the consumer hasn't drained
-/// the previous one yet — the consumer re-subscribes to *all* topics each time,
-/// so missing an intermediate notification is harmless.
-const RECONNECT_CHANNEL_CAPACITY: usize = 1;
-
 /// A connected TCP transport.
 ///
 /// Created by [`TcpConnection::connect`], which performs the TCP connect +
@@ -79,7 +73,7 @@ pub struct TcpConnection {
     inbound_rx: Mutex<Option<mpsc::Receiver<Package>>>,
     /// Reconnect-event receiver (taken by the consumer via
     /// [`take_reconnect_rx`]).
-    reconnect_rx: Mutex<Option<mpsc::Receiver<()>>>,
+    reconnect_rx: Mutex<Option<watch::Receiver<u64>>>,
     /// Non-blocking cancellation path to the driver-owned pending map.
     pending_cancel_tx: mpsc::UnboundedSender<PendingKey>,
     /// Serializes enqueue commitment with connection teardown.
@@ -136,13 +130,14 @@ impl TcpConnection {
         let (outbound_tx, outbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
         let (pending_cancel_tx, pending_cancel_rx) = mpsc::unbounded_channel();
         let (inbound_tx, inbound_rx) = mpsc::channel(CHANNEL_CAPACITY);
-        let (reconnect_tx, reconnect_rx) = mpsc::channel(RECONNECT_CHANNEL_CAPACITY);
+        let (reconnect_tx, reconnect_rx) = watch::channel(0);
+        let cancel = CancellationToken::new();
         let state = Arc::new(Mutex::new(ConnectionState {
             generation: 0,
             active: true,
+            socket_cancel: cancel.child_token(),
         }));
         let deliver_orphan_responses = Arc::new(AtomicBool::new(false));
-        let cancel = CancellationToken::new();
         let alive = Arc::new(AtomicBool::new(true));
 
         let join = tokio::spawn(ConnectionSupervisor::run(
@@ -347,10 +342,24 @@ impl TcpConnection {
     /// consumer to get notified when the connection has been automatically
     /// re-established, so it can replay subscriptions.
     ///
-    /// Each `()` received means a reconnect just succeeded and the consumer
-    /// should re-send `SUBSCRIBE_REQUEST` + `LISTEN_REQUEST`.
-    pub async fn take_reconnect_rx(&self) -> Option<mpsc::Receiver<()>> {
+    /// Each change reports the latest connected generation. Consumers should
+    /// re-send `SUBSCRIBE_REQUEST` + `LISTEN_REQUEST` before handling deliveries.
+    pub async fn take_reconnect_rx(&self) -> Option<watch::Receiver<u64>> {
         self.reconnect_rx.lock().await.take()
+    }
+
+    /// Close the current socket without stopping the reconnect supervisor.
+    /// Returns the earliest generation that can complete this recovery.
+    pub(super) async fn request_reconnect(&self) -> u64 {
+        let mut state = self.state.lock().await;
+        let next_generation = if state.active {
+            state.generation.wrapping_add(1)
+        } else {
+            state.generation
+        };
+        state.active = false;
+        state.socket_cancel.cancel();
+        next_generation
     }
 
     /// Whether the background task is still alive.
@@ -421,8 +430,9 @@ mod tests {
             ))))
             .unwrap();
         let (_inbound_tx, inbound_rx) = mpsc::channel(1);
-        let (_reconnect_tx, reconnect_rx) = mpsc::channel(1);
+        let (_reconnect_tx, reconnect_rx) = watch::channel(0);
         let (pending_cancel_tx, _pending_cancel_rx) = mpsc::unbounded_channel();
+        let cancel = CancellationToken::new();
 
         let connection = TcpConnection {
             outbound_tx,
@@ -432,9 +442,10 @@ mod tests {
             state: Arc::new(Mutex::new(ConnectionState {
                 generation: 0,
                 active: true,
+                socket_cancel: cancel.child_token(),
             })),
             deliver_orphan_responses: Arc::new(AtomicBool::new(false)),
-            cancel: CancellationToken::new(),
+            cancel,
             outbound_timeout,
             alive: Arc::new(AtomicBool::new(true)),
             join: Mutex::new(None),
@@ -985,11 +996,11 @@ mod tests {
         // reconnect. The reconnect event channel fires after the new HELLO.
         let mut reconnect_rx = conn.take_reconnect_rx().await.expect("reconnect receiver");
 
-        let result = tokio::time::timeout(Duration::from_secs(5), reconnect_rx.recv()).await;
-        assert!(
-            result.is_ok(),
-            "should receive a reconnect event within 5 s"
-        );
+        tokio::time::timeout(Duration::from_secs(5), reconnect_rx.changed())
+            .await
+            .expect("should receive a reconnect event within 5 s")
+            .expect("reconnect supervisor must remain alive");
+        assert_eq!(*reconnect_rx.borrow_and_update(), 1);
         assert!(
             conn.is_active(),
             "connection should be alive after reconnect"

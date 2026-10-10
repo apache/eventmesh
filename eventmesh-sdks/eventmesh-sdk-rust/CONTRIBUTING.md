@@ -45,6 +45,12 @@ Those tests build `interop/java-peer` with Maven on first use. The standalone pe
 
 The TCP reconnect test runs in the normal e2e suite. It uses a unique client subsystem and the Runtime admin API to disconnect only its own TCP sessions, so it does not restart or disrupt the shared Runtime container.
 
+TCP handler failure tests verify real redelivery to another active session after a panic or returned error, followed by reconnect and replay of all subscriptions. The explicit TTL regression waits past the Runtime's old 3-second fallback and cleaner interval. It is ignored for the pinned release image, which predates the lowercase TTL fix. Run it against a Runtime containing that fix:
+
+```bash
+EVENTMESH_E2E_EXTERNAL=1 cargo test --features e2e --test e2e tcp_explicit_ttl -- --ignored
+```
+
 Each test uses a unique topic and consumer group. gRPC and HTTP cases may run in parallel; TCP cases are serialized because Runtime route refresh and RocketMQ rebalance state are shared. The harness creates and warms topics through the admin API before publishing.
 
 The standalone in-memory broker requires a topic and subscription before the first publish and does not implement request/reply. Use a runtime profile with request/reply support for complete release verification. Topic creation uses form URL encoding at `POST /topic`.
