@@ -66,7 +66,7 @@ impl From<&EventMeshMessage> for TcpWireMessage {
         let mut properties: HashMap<_, _> = msg
             .props
             .iter()
-            .filter(|(key, _)| !crate::model::delivery::is_reserved_property(key))
+            .filter(|(key, _)| !crate::common::metadata::is_reserved_property(key))
             .map(|(key, value)| (key.clone(), value.clone()))
             .collect();
         if let Some(ttl) = msg.ttl {
@@ -201,6 +201,8 @@ pub fn response_to_client_ack(in_pkg: &Package) -> Package {
 ///
 /// Returns a [`crate::error::EventMeshError::Codec`] if the message cannot be
 /// serialized — never silently sends an empty body.
+/// Producer-only validation belongs at the publishing operation: this encoder
+/// also handles replies, which preserve callback content and request metadata.
 pub fn build_message_package(msg: &EventMeshMessage, cmd: Command) -> Result<Package> {
     let mut pkg = package(cmd);
     pkg.header
@@ -335,7 +337,9 @@ pub fn build_cloud_event_package(event: &cloudevents::Event, cmd: Command) -> Re
     // produces the canonical CloudEvents JSON format, matching what the Java
     // runtime's `EventFormatProvider.resolveFormat(JsonFormat.CONTENT_TYPE)`
     // expects on decode.
-    let json = serde_json::to_vec(event)?;
+    let outbound =
+        crate::transport::metadata::outbound_cloud_event(event, cmd == Command::ResponseToServer);
+    let json = serde_json::to_vec(&outbound)?;
     pkg.body = PackageBody::Bytes(json);
 
     Ok(pkg)
@@ -441,7 +445,7 @@ pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Eve
         msg.content.clone(),
     );
     for (k, v) in &msg.props {
-        if !crate::model::delivery::is_reserved_property(k) {
+        if !crate::common::metadata::is_reserved_property(k) {
             builder = builder.extension(k.as_str(), v.as_str());
         }
     }

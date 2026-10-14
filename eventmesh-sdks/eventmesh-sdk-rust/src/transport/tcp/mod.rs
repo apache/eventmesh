@@ -55,6 +55,7 @@
 pub mod codec;
 pub mod connection;
 pub mod consumer;
+pub(crate) mod delivery;
 pub mod frame;
 pub mod message;
 pub mod producer;

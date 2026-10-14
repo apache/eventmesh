@@ -33,7 +33,6 @@
 //! [`unsubscribe_stream`]: GrpcStreamConsumer::unsubscribe_stream
 //! [`unsubscribe_webhook`]: GrpcStreamConsumer::unsubscribe_webhook
 
-use std::collections::HashMap;
 use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
@@ -56,7 +55,10 @@ use crate::model::{EventMeshProtocolType, PublishResponse};
 use crate::subscription::Subscription;
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
-use crate::transport::grpc::heartbeat::{self, StreamTx};
+use crate::transport::grpc::heartbeat;
+use crate::transport::grpc::subscription::{
+    StreamTx, SubscriptionEntry, SubscriptionState, Subscriptions,
+};
 use crate::transport::task::BackgroundTask;
 use crate::MessageHandler;
 
@@ -65,14 +67,6 @@ const DEFAULT_REPLY_PRODUCER_GROUP: &str = "DefaultProducerGroup";
 // ---------------------------------------------------------------------------
 // Shared types
 // ---------------------------------------------------------------------------
-
-/// A locally-recorded subscription entry, used by the heartbeat loop.
-#[derive(Debug, Clone)]
-pub(crate) struct SubscriptionEntry {
-    #[allow(dead_code)]
-    pub(crate) item: Subscription,
-    pub(crate) url: String,
-}
 
 fn decode_message(event: &crate::proto_gen::PbCloudEvent) -> Result<Message> {
     let protocol_type = event
@@ -192,7 +186,7 @@ pub struct GrpcStreamConsumer<L: MessageHandler> {
     client: ChannelClient,
     config: GrpcConfig,
     options: GrpcConsumerOptions,
-    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: Subscriptions,
     _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<BackgroundTask<()>>,
@@ -228,8 +222,8 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
             ));
         }
 
-        let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
+        let subscriptions = Arc::new(Mutex::new(SubscriptionState::new(shutdown.clone())));
         let stream_tx: StreamTx = Arc::new(Mutex::new(None));
         let listener = Arc::new(listener);
 
@@ -258,7 +252,7 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
         {
             let mut guard = subscriptions.lock().await;
             for item in &items {
-                guard.insert(
+                guard.entries.insert(
                     (item.topic.clone(), SDK_STREAM_URL.to_string()),
                     SubscriptionEntry {
                         item: item.clone(),
@@ -320,11 +314,13 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
             None,
             &items,
         )?;
+        let mut sub_guard = self.subscriptions.lock().await;
+        sub_guard.ensure_open()?;
         match heartbeat::stream_sender(&self.stream_tx).await {
             Some(tx) => {
-                // The state lock is released before awaiting bounded-channel
-                // capacity. This keeps stream teardown and heartbeat replay
-                // from being blocked by a backpressured caller subscription.
+                // StreamTx is unlocked before waiting for channel capacity,
+                // so teardown can close it. The subscription control lock
+                // stays held to serialize this commit with heartbeat replay.
                 match heartbeat::await_with_timeout_or_shutdown(
                     &self.shutdown,
                     self.config.request_timeout(),
@@ -334,9 +330,8 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
                 {
                     heartbeat::OperationOutcome::Completed(Ok(permit)) => {
                         permit.send(event);
-                        let mut sub_guard = self.subscriptions.lock().await;
                         for item in &items {
-                            sub_guard.insert(
+                            sub_guard.entries.insert(
                                 (item.topic.clone(), SDK_STREAM_URL.to_string()),
                                 SubscriptionEntry {
                                     item: item.clone(),
@@ -463,7 +458,7 @@ pub struct GrpcWebhookConsumer {
     client: ChannelClient,
     config: GrpcConfig,
     options: ConsumerOptions,
-    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: Subscriptions,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<BackgroundTask<()>>,
 }
@@ -481,8 +476,8 @@ impl GrpcWebhookConsumer {
         shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
         options.validate()?;
-        let subscriptions = Arc::new(Mutex::new(HashMap::new()));
         let shutdown = CancellationToken::new();
+        let subscriptions = Arc::new(Mutex::new(SubscriptionState::new(shutdown.clone())));
 
         spawn_signal_watcher(shutdown_signal, shutdown.clone());
 
@@ -586,7 +581,7 @@ async fn subscribe_webhook_rpc(
     client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
-    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: &Subscriptions,
     items: Vec<Subscription>,
     url: impl Into<String>,
 ) -> Result<PublishResponse> {
@@ -603,12 +598,13 @@ async fn subscribe_webhook_rpc(
         Some(&url),
         &items,
     )?;
+    let mut guard = subscriptions.lock().await;
+    guard.ensure_open()?;
     let resp = timed(config.request_timeout(), client.subscribe_webhook(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
-        let mut guard = subscriptions.lock().await;
         for item in items {
-            guard.insert(
+            guard.entries.insert(
                 (item.topic.clone(), url.clone()),
                 SubscriptionEntry {
                     item,
@@ -631,7 +627,7 @@ async fn unsubscribe_stream_rpc(
     client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
-    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: &Subscriptions,
     items: Vec<Subscription>,
 ) -> Result<PublishResponse> {
     if items.is_empty() {
@@ -649,15 +645,18 @@ async fn unsubscribe_stream_rpc(
         None,
         &items,
     )?;
+    let mut guard = subscriptions.lock().await;
+    guard.ensure_open()?;
     let resp = timed(config.request_timeout(), client.unsubscribe(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
         // Only the requested topics are removed locally, although the Java
         // Runtime closes their shared stream. Remaining entries do not imply
         // active delivery; no stream recreation/replay is implemented here.
-        let mut guard = subscriptions.lock().await;
         for item in &items {
-            guard.remove(&(item.topic.clone(), SDK_STREAM_URL.to_string()));
+            guard
+                .entries
+                .remove(&(item.topic.clone(), SDK_STREAM_URL.to_string()));
         }
         Ok(response)
     } else {
@@ -674,7 +673,7 @@ async fn unsubscribe_webhook_rpc(
     client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
-    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: &Subscriptions,
     items: Vec<Subscription>,
     url: impl Into<String>,
 ) -> Result<PublishResponse> {
@@ -700,12 +699,13 @@ async fn unsubscribe_webhook_rpc(
         url_ref,
         &items,
     )?;
+    let mut guard = subscriptions.lock().await;
+    guard.ensure_open()?;
     let resp = timed(config.request_timeout(), client.unsubscribe(event)).await?;
     let response = codec::to_response(&resp);
     if response.is_success() {
-        let mut guard = subscriptions.lock().await;
         for item in &items {
-            guard.remove(&(item.topic.clone(), url.clone()));
+            guard.entries.remove(&(item.topic.clone(), url.clone()));
         }
         Ok(response)
     } else {
@@ -899,10 +899,10 @@ async fn handle_one<L: MessageHandler>(
 /// Build a reply CloudEvent (used by the stream receive loop when the listener
 /// returns `Some(message)`).
 ///
-/// Mirrors the Java SDK's `SubStreamHandler.buildReplyMessage`: the incoming
-/// request's attributes are carried over into the reply so the broker can
-/// correlate the reply with the original request.  The reply's own attributes
-/// take precedence.
+/// The current request owns internal delivery and routing attributes. The
+/// reply owns business attributes and content type; missing business
+/// attributes can be inherited from the request. Client identity and
+/// authentication always come from this consumer's configuration.
 pub(crate) fn build_reply(
     reply: &Message,
     request: &crate::proto_gen::PbCloudEvent,
@@ -910,13 +910,17 @@ pub(crate) fn build_reply(
 ) -> Result<crate::proto_gen::PbCloudEvent> {
     let mut event = encode_message(reply, config, DEFAULT_REPLY_PRODUCER_GROUP)?;
     for (key, value) in &request.attributes {
-        if crate::model::delivery::is_transport_property(key) {
+        if crate::common::metadata::is_transport_property(key) {
             continue;
         }
-        event
-            .attributes
-            .entry(key.clone())
-            .or_insert_with(|| value.clone());
+        if crate::common::metadata::is_delivery_property(key) {
+            event.attributes.insert(key.clone(), value.clone());
+        } else {
+            event
+                .attributes
+                .entry(key.clone())
+                .or_insert_with(|| value.clone());
+        }
     }
     codec::mark_as_reply(&mut event);
     Ok(event)
@@ -994,6 +998,26 @@ mod tests {
         assert!(!reply.attributes.contains_key("token"));
     }
 
+    #[test]
+    fn native_reply_preserves_ttl_outside_publish_range() {
+        let request = codec::from_event_mesh_message(
+            &EventMeshMessage::new("orders", "request").unwrap(),
+            &config(),
+            "producer",
+        )
+        .unwrap();
+        let message = EventMeshMessage::builder()
+            .topic("orders")
+            .content("reply")
+            .ttl_millis(i64::from(i32::MAX) + 1)
+            .build()
+            .unwrap();
+        let reply = build_reply(&message.into(), &request, &config()).unwrap();
+        let decoded = codec::to_event_mesh_message(&reply).unwrap();
+        assert_eq!(decoded.ttl_millis(), Some(i64::from(i32::MAX) + 1));
+        assert_eq!(decoded.content(), "reply");
+    }
+
     type TestHandler = fn(Message) -> std::future::Ready<Result<Option<Message>>>;
 
     fn consumer_with_tasks(
@@ -1005,7 +1029,7 @@ mod tests {
             client: ChannelClient::connect_lazy(&config).unwrap(),
             config,
             options: GrpcConsumerOptions::new("consumer"),
-            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+            subscriptions: Arc::new(Mutex::new(SubscriptionState::new(CancellationToken::new()))),
             _listener: std::marker::PhantomData,
             shutdown: CancellationToken::new(),
             heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat)),

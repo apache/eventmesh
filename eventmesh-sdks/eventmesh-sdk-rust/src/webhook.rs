@@ -18,14 +18,14 @@
 //! Semantic HTTP webhook acknowledgement helpers.
 
 /// Network settings for an SDK-managed HTTP webhook consumer.
-#[cfg(feature = "http")]
+#[cfg(feature = "http-server")]
 #[derive(Debug, Clone)]
 pub struct WebhookOptions {
     bind_addr: std::net::SocketAddr,
     advertise_url: Option<String>,
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-server")]
 impl WebhookOptions {
     /// Listen on `bind_addr` and derive the callback URL from the bound address.
     pub fn new(bind_addr: std::net::SocketAddr) -> Self {
@@ -65,7 +65,7 @@ impl WebhookOptions {
     }
 }
 
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 pub(crate) fn validate_webhook_url(url: &str) -> crate::Result<()> {
     let uri = url
         .parse::<http::Uri>()
@@ -84,13 +84,13 @@ pub(crate) fn validate_webhook_url(url: &str) -> crate::Result<()> {
 }
 
 /// Built-in axum webhook server.
-#[cfg(feature = "http")]
+#[cfg(feature = "http-server")]
 pub struct WebhookServer<H: crate::MessageHandler> {
     inner: crate::transport::http::WebhookServer,
     _handler: std::marker::PhantomData<H>,
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-server")]
 impl<H: crate::MessageHandler> WebhookServer<H> {
     /// Bind before returning, guaranteeing that [`url`](Self::url) is ready to
     /// register with EventMesh.
@@ -124,7 +124,7 @@ impl<H: crate::MessageHandler> WebhookServer<H> {
     }
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-server")]
 impl<H: crate::MessageHandler> std::future::IntoFuture for WebhookServer<H> {
     type Output = crate::Result<()>;
     type IntoFuture =
@@ -135,7 +135,7 @@ impl<H: crate::MessageHandler> std::future::IntoFuture for WebhookServer<H> {
     }
 }
 
-#[cfg(all(test, feature = "http"))]
+#[cfg(all(test, feature = "http-server"))]
 mod tests {
     use super::*;
 

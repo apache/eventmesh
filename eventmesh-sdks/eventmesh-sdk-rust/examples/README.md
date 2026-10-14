@@ -10,10 +10,10 @@ Each example is a small executable with one responsibility. They use the default
 | gRPC | `grpc_producer_cloud_events` | Publish a CloudEvent | `cargo run --example grpc_producer_cloud_events --features grpc,cloud_events` |
 | gRPC | `grpc_batch` | Publish several native messages with one batch RPC | `cargo run --example grpc_batch --features grpc` |
 | gRPC | `grpc_request_reply` | Run a synchronous subscriber and complete request/reply | `cargo run --example grpc_request_reply --features grpc` |
-| HTTP | `http_producer` | Publish over HTTP | `cargo run --example http_producer --features http` |
-| HTTP | `http_producer_cloud_events` | Publish a CloudEvent over HTTP | `cargo run --example http_producer_cloud_events --features http,cloud_events` |
-| HTTP | `http_consumer_server` | SDK-managed axum callback server | `cargo run --example http_consumer_server --features http` |
-| HTTP | `http_consumer_custom` | Application-owned axum webhook endpoint | `cargo run --example http_consumer_custom --features http` |
+| HTTP | `http_producer` | Publish over HTTP | `cargo run --example http_producer --features http-client` |
+| HTTP | `http_producer_cloud_events` | Publish a CloudEvent over HTTP | `cargo run --example http_producer_cloud_events --features http-client,cloud_events` |
+| HTTP | `http_consumer_server` | SDK-managed axum callback server | `cargo run --example http_consumer_server --features http-server` |
+| HTTP | `http_consumer_custom` | Application-owned axum webhook endpoint | `cargo run --example http_consumer_custom --features http-server` |
 | TCP | `tcp_producer` | Connected TCP publish | `cargo run --example tcp_producer --features tcp` |
 | TCP | `tcp_consumer` | Connected TCP subscribe | `cargo run --example tcp_consumer --features tcp` |
 | TCP | `tcp_producer_cloud_events` | Publish a CloudEvent over TCP | `cargo run --example tcp_producer_cloud_events --features tcp,cloud_events` |
@@ -24,10 +24,12 @@ Run a consumer first, then run its corresponding producer. The HTTP examples lis
 
 The examples intentionally use minimal configuration. For timeouts, identity, credentials, HTTP TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.
 
-The two HTTP consumer examples handle Ctrl-C and call `close().await`, which unregisters their remote subscriptions before stopping local background work. Use the same shutdown pattern in long-running applications.
+The two HTTP consumer examples handle Ctrl-C and call `close().await`, which drains an in-flight heartbeat, stops further scheduling, unregisters remote subscriptions, and joins local background work. Use the same shutdown pattern in long-running applications.
 
-The custom HTTP webhook uses `PushMessageRequestBody::to_message` with the request headers to detect the message dialect. To receive CloudEvents as well as native messages, run `cargo run --example http_consumer_custom --features http,cloud_events`.
+The custom HTTP webhook uses `PushMessageRequestBody::to_message` with the request headers to detect the message dialect. To receive CloudEvents as well as native messages, run `cargo run --example http_consumer_custom --features http-server,cloud_events`.
 
 The gRPC webhook consumer has no automatic remote cleanup. Its example retains the subscription and URL, calls `unsubscribe().await` after Ctrl-C, and then stops and joins the local heartbeat task.
 
 Native handlers can inspect source protocol/routing information through `message.as_event_mesh().and_then(|message| message.delivery_context())`. Business extensions remain in `properties()`. Return a newly built message for request/reply; the SDK supplies the original request context automatically. Configure TTL/content type with dedicated builder methods, and handle the `Result` from `set_prop`/`with_property` when changing business properties.
+
+The existing `http` feature remains an alias enabling both `http-client` and `http-server`. Producer-only programs and application-owned webhook registrations/codecs can use `http-client` without axum. The custom example enables `http-server` because the example itself uses axum. See [Migrating from Java](../MIGRATING_FROM_JAVA.md) for credential defaults, reply content types, and lifecycle differences.

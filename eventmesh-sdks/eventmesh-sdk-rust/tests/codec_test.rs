@@ -21,7 +21,7 @@ use eventmesh::{
     subscription::{DeliveryMode, DeliveryType, Subscription},
 };
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 use eventmesh::http::codec::{parse_push_body, PushMessageRequestBody, WebhookReply};
 
 #[test]
@@ -73,7 +73,7 @@ fn endpoint_sets_require_members() {
     );
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 #[test]
 fn custom_webhook_codec_is_public() {
     let parsed: PushMessageRequestBody =
@@ -94,7 +94,7 @@ fn custom_webhook_codec_is_public() {
     assert_eq!(WebhookReply::ok().ret_code, 1);
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 mod webhook_messages {
     use super::*;
     use eventmesh::Error;
@@ -224,7 +224,7 @@ mod webhook_messages {
     }
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 #[test]
 fn native_webhook_exposes_read_only_context_and_typed_fields() {
     let ext = serde_json::json!({

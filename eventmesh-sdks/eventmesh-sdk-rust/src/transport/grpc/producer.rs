@@ -26,6 +26,7 @@ use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
+use crate::transport::validation::validate_grpc_publish;
 
 /// gRPC-based producer.
 pub struct GrpcProducer {
@@ -63,7 +64,7 @@ impl GrpcProducer {
         for message in messages {
             events.push(match message {
                 crate::message::Message::EventMesh(message) => {
-                    message.validate_for_grpc_publish()?;
+                    validate_grpc_publish(&message)?;
                     codec::from_event_mesh_message(&message, &self.config, self.options.group())?
                 }
                 #[cfg(feature = "cloud_events")]
@@ -194,7 +195,7 @@ fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Re
 impl GrpcProducer {
     /// Publish a native EventMesh message and wait for acknowledgement.
     pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        message.validate_for_grpc_publish()?;
+        validate_grpc_publish(&message)?;
         let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
         let resp = self
             .client
@@ -217,7 +218,7 @@ impl GrpcProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        message.validate_for_grpc_publish()?;
+        validate_grpc_publish(&message)?;
         let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
         let resp = self.client.request_reply(event, timeout).await?;
         ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
@@ -232,14 +233,64 @@ mod tests {
     #[test]
     fn publish_validation_rejects_missing_topic_or_empty_content() {
         assert!(EventMeshMessage::new("", "body").is_err());
-        assert!(EventMeshMessage::new("topic", "")
-            .unwrap()
-            .validate_for_grpc_publish()
-            .is_err());
-        assert!(EventMeshMessage::new("topic", " ")
-            .unwrap()
-            .validate_for_grpc_publish()
-            .is_ok());
+        assert!(validate_grpc_publish(&EventMeshMessage::new("topic", "").unwrap()).is_err());
+        assert!(validate_grpc_publish(&EventMeshMessage::new("topic", " ").unwrap()).is_ok());
+    }
+
+    #[tokio::test]
+    async fn publishing_operations_reject_invalid_payloads_before_rpc() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let config = GrpcConfig::new(
+            crate::config::Endpoint::new("127.0.0.1", listener.local_addr().unwrap().port())
+                .unwrap(),
+        )
+        .with_options(
+            crate::config::ClientOptions::default().with_request_timeout(Duration::from_millis(10)),
+        );
+        let producer = GrpcProducer::new(
+            ChannelClient::connect_lazy(&config).unwrap(),
+            config,
+            ProducerOptions::new("validation-test"),
+        )
+        .unwrap();
+        for message in [
+            EventMeshMessage::new("orders", "").unwrap(),
+            EventMeshMessage::builder()
+                .topic("orders")
+                .content("payload")
+                .ttl_millis(0)
+                .build()
+                .unwrap(),
+            EventMeshMessage::builder()
+                .topic("orders")
+                .content("payload")
+                .ttl_millis(i64::from(i32::MAX) + 1)
+                .build()
+                .unwrap(),
+        ] {
+            assert!(matches!(
+                producer.publish(message.clone()).await,
+                Err(EventMeshError::InvalidMessage(_))
+            ));
+            assert!(matches!(
+                producer
+                    .publish_message_batch(vec![message.clone().into()])
+                    .await,
+                Err(EventMeshError::InvalidMessage(_))
+            ));
+            assert!(matches!(
+                producer
+                    .request_reply(message, Duration::from_millis(10))
+                    .await,
+                Err(EventMeshError::InvalidMessage(_))
+            ));
+        }
+        assert!(
+            tokio::time::timeout(Duration::from_millis(10), listener.accept())
+                .await
+                .is_err(),
+            "invalid operations must not initiate an RPC"
+        );
     }
 
     #[test]

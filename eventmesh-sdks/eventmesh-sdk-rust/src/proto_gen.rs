@@ -17,7 +17,9 @@
 
 //! Crate-private generated gRPC stubs, type aliases, and attribute helpers.
 
-#[allow(clippy::enum_variant_names)]
+// Generated tonic signatures return tonic::Status by value. Keep this lint
+// exception at the generated-code boundary rather than changing those APIs.
+#[allow(clippy::enum_variant_names, clippy::result_large_err)]
 pub(crate) mod pb {
     tonic::include_proto!("org.apache.eventmesh.cloudevents.v1");
 }

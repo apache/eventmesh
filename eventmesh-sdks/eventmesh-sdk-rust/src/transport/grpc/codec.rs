@@ -119,7 +119,8 @@ pub fn build_subscription_event(
     Ok(base_event(attrs, Some(PbData::TextData(text))))
 }
 
-/// Convert an [`EventMeshMessage`] into the wire CloudEvent for publishing.
+/// Convert an [`EventMeshMessage`] into a wire CloudEvent for native operations
+/// and replies. Producer-only validation belongs at the publishing operation.
 pub fn from_event_mesh_message(
     message: &EventMeshMessage,
     config: &GrpcConfig,
@@ -154,7 +155,7 @@ pub fn from_event_mesh_message(
 
     attrs.insert(ProtocolKey::SUBJECT.into(), attr_str(&message.topic));
 
-    // Resolve the content type from props (default text/plain).
+    // Resolve the dedicated payload content type (default text/plain).
     let data_content_type = message
         .data_content_type()
         .unwrap_or(DataContentType::TEXT_PLAIN)
@@ -168,7 +169,7 @@ pub fn from_event_mesh_message(
     // attribute such as token is unset. Never inherit a previous sender's
     // credentials when forwarding a received message.
     for (k, v) in &message.props {
-        if !crate::model::delivery::is_reserved_property(k) {
+        if !crate::common::metadata::is_reserved_property(k) {
             attrs.entry(k.clone()).or_insert_with(|| attr_str(v));
         }
     }
@@ -293,10 +294,9 @@ fn base_event(
 
 /// Mark a CloudEvent as a subscription reply (sent back over the stream).
 ///
-/// Mirrors the Java SDK's `SubStreamHandler.buildReplyMessage`:
-/// - Tags the message with `SUB_MESSAGE_TYPE = SUBSCRIPTION_REPLY`.
-/// - Forces `datacontenttype` to `application/json` so cross-SDK consumers
-///   that dispatch on content type decode the reply consistently.
+/// Tags the message with `SUB_MESSAGE_TYPE = SUBSCRIPTION_REPLY`, preserving
+/// the reply's declared content type and matching data variant. Unlike the
+/// Java SDK, this does not relabel arbitrary text or binary payloads as JSON.
 ///
 /// The reply's data is left intact: EventMesh's `ReplyMessageProcessor`
 /// runs `ServiceUtils.validateCloudEventData`, which for text content
@@ -307,10 +307,6 @@ pub fn mark_as_reply(cloud_event: &mut PbCloudEvent) {
     cloud_event.attributes.insert(
         ProtocolKey::SUB_MESSAGE_TYPE.into(),
         attr_str(ProtocolKey::SUBSCRIPTION_REPLY),
-    );
-    cloud_event.attributes.insert(
-        ProtocolKey::DATA_CONTENT_TYPE.into(),
-        attr_str(DataContentType::JSON),
     );
 }
 
@@ -387,7 +383,10 @@ pub fn from_cloudevent(
     // Preserve typed extension values (Boolean / Integer) instead of
     // stringifying everything.
     for (k, v) in event.iter_extensions() {
-        if attrs.contains_key(k) {
+        if attrs.contains_key(k)
+            || crate::common::metadata::is_transport_property(k)
+            || crate::common::metadata::is_delivery_property(k)
+        {
             continue;
         }
         let attr = match v {
@@ -689,10 +688,13 @@ mod tests {
         let msg = EventMeshMessage::builder()
             .topic("test-topic")
             .content(" \t")
-            .ttl_millis(2_147_483_648)
             .build()
             .unwrap();
-        let wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
+        let mut wire = from_event_mesh_message(&msg, &cfg, PRODUCER_GROUP).unwrap();
+        // A Java peer can send TTL values that Rust must preserve on receive
+        // even though they are rejected for a new outbound operation.
+        wire.attributes
+            .insert(ProtocolKey::TTL.into(), attr_str("2147483648"));
         let decoded = to_event_mesh_message(&wire).unwrap();
         assert_eq!(decoded.content(), " \t");
         assert_eq!(decoded.get_prop(ProtocolKey::TTL), None);

@@ -28,10 +28,10 @@ use std::fmt;
 /// CloudEvents retain their standard attributes and extensions instead.
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct DeliveryContext {
-    protocol_type: Option<String>,
-    protocol_version: Option<String>,
-    protocol_description: Option<String>,
-    attributes: HashMap<String, String>,
+    pub(crate) protocol_type: Option<String>,
+    pub(crate) protocol_version: Option<String>,
+    pub(crate) protocol_description: Option<String>,
+    pub(crate) attributes: HashMap<String, String>,
 }
 
 impl DeliveryContext {
@@ -62,51 +62,6 @@ impl DeliveryContext {
             _ => self.attributes.get(key).map(String::as_str),
         }
     }
-
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
-    pub(crate) fn take_from(attributes: &mut HashMap<String, String>) -> Self {
-        let mut context = Self {
-            protocol_type: attributes.remove("protocoltype"),
-            protocol_version: attributes.remove("protocolversion"),
-            protocol_description: attributes.remove("protocoldesc"),
-            attributes: HashMap::new(),
-        };
-        attributes.retain(|key, value| {
-            if is_reserved_property(key) {
-                context.attributes.insert(key.clone(), value.clone());
-                false
-            } else {
-                true
-            }
-        });
-        context
-    }
-
-    #[cfg(any(feature = "http", feature = "tcp"))]
-    pub(crate) fn insert_missing(&mut self, key: &str, value: String) {
-        match key {
-            "protocoltype" => {
-                self.protocol_type.get_or_insert(value);
-            }
-            "protocolversion" => {
-                self.protocol_version.get_or_insert(value);
-            }
-            "protocoldesc" => {
-                self.protocol_description.get_or_insert(value);
-            }
-            _ if is_transport_property(key) || is_delivery_property(key) => {
-                self.attributes.entry(key.to_string()).or_insert(value);
-            }
-            _ => {}
-        }
-    }
-
-    #[cfg(feature = "tcp")]
-    pub(crate) fn reply_attributes(&self) -> impl Iterator<Item = (&String, &String)> {
-        self.attributes
-            .iter()
-            .filter(|(key, _)| is_delivery_property(key))
-    }
 }
 
 impl fmt::Debug for DeliveryContext {
@@ -132,94 +87,4 @@ impl fmt::Debug for DeliveryContext {
             .field("attributes", &attributes)
             .finish()
     }
-}
-
-pub(crate) fn is_transport_property(key: &str) -> bool {
-    matches!(
-        key,
-        "protocoltype"
-            | "protocolversion"
-            | "protocoldesc"
-            | "code"
-            | "version"
-            | "env"
-            | "idc"
-            | "ip"
-            | "pid"
-            | "sys"
-            | "username"
-            | "passwd"
-            | "token"
-            | "language"
-            | "producergroup"
-    )
-}
-
-// Exact runtime/storage keys, not a prefix rule: a business property named
-// `requestid`, for example, must not be mistaken for a routing attribute.
-pub(crate) fn is_delivery_property(key: &str) -> bool {
-    matches!(
-        key,
-        "cluster"
-            | "consumergroup"
-            | "url"
-            | "clienttype"
-            | "submessagetype"
-            | "msgtype"
-            | "req0sys"
-            | "req0ip"
-            | "req0idc"
-            | "req0group"
-            | "rsp0sys"
-            | "rsp0ip"
-            | "rsp0idc"
-            | "rsp0group"
-            | "rsp0url"
-            | "reqc2eventmeshtimestamp"
-            | "reqeventmesh2mqtimestamp"
-            | "reqmq2eventmeshtimestamp"
-            | "reqeventmesh2ctimestamp"
-            | "rspc2eventmeshtimestamp"
-            | "rspeventmesh2mqtimestamp"
-            | "rspmq2eventmeshtimestamp"
-            | "rspeventmesh2ctimestamp"
-            | "reqsendeventmeship"
-            | "reqreceiveeventmeship"
-            | "rspsendeventmeship"
-            | "rspreceiveeventmeship"
-            | "correlation99id"
-            | "reply99to99client"
-            | "arrive99time"
-            | "push99reply99time"
-            | "msg99type"
-            | "bornhost"
-            | "borntimestamp"
-            | "storehost"
-            | "storetimestamp"
-    )
-}
-
-pub(crate) fn is_reserved_property(key: &str) -> bool {
-    is_transport_property(key)
-        || is_delivery_property(key)
-        || matches!(
-            key,
-            "ttl"
-                | "seqnum"
-                | "bizseqno"
-                | "uniqueid"
-                | "topic"
-                | "content"
-                | "datacontenttype"
-                | "id"
-                | "source"
-                | "specversion"
-                | "type"
-                | "dataschema"
-                | "subject"
-                | "time"
-                | "statuscode"
-                | "responsemessage"
-                | "subscription_reply"
-        )
 }

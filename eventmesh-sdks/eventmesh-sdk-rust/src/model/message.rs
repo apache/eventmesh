@@ -20,7 +20,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use super::delivery::{is_reserved_property, DeliveryContext};
+use super::delivery::DeliveryContext;
+use crate::common::metadata::is_reserved_property;
 use crate::common::util::now_millis;
 use crate::error::{EventMeshError, Result};
 
@@ -159,56 +160,12 @@ impl EventMeshMessage {
         self.set_prop(key, value)?;
         Ok(self)
     }
-
-    /// Validate requirements shared by all publishing transports.
-    #[cfg(any(test, feature = "grpc", feature = "http", feature = "tcp"))]
-    pub(crate) fn validate_for_publish(&self) -> Result<()> {
-        if self.topic.trim().is_empty() {
-            return Err(EventMeshError::InvalidMessage("topic is required".into()));
-        }
-
-        if let Some(ttl) = self.ttl {
-            validate_ttl(ttl)?;
-        }
-        Ok(())
-    }
-
-    /// Validate requirements imposed by the gRPC runtime.
-    #[cfg(any(test, feature = "grpc"))]
-    pub(crate) fn validate_for_grpc_publish(&self) -> Result<()> {
-        self.validate_for_publish()?;
-        if self.content.is_empty() {
-            return Err(EventMeshError::InvalidMessage("content is required".into()));
-        }
-        Ok(())
-    }
-
-    /// Validate requirements imposed by the Java-compatible TCP client.
-    #[cfg(any(test, feature = "tcp"))]
-    pub(crate) fn validate_for_tcp_publish(&self) -> Result<()> {
-        self.validate_for_publish()?;
-        if self.content.trim().is_empty() {
-            return Err(EventMeshError::InvalidMessage("content is required".into()));
-        }
-        Ok(())
-    }
 }
 
 fn validate_property_key(key: &str) -> Result<()> {
     if is_reserved_property(key) {
         return Err(EventMeshError::InvalidArgument(format!(
             "{key:?} is reserved message/transport metadata, not a business property"
-        )));
-    }
-    Ok(())
-}
-
-#[cfg(any(test, feature = "grpc", feature = "http", feature = "tcp"))]
-fn validate_ttl(ttl: i64) -> Result<()> {
-    if !(1..=i64::from(i32::MAX)).contains(&ttl) {
-        return Err(EventMeshError::InvalidMessage(format!(
-            "ttl must be between 1 and {} milliseconds; EventMesh does not define a never-expire value",
-            i32::MAX
         )));
     }
     Ok(())
@@ -334,30 +291,6 @@ mod tests {
     }
 
     #[test]
-    fn publish_validation_is_transport_specific() {
-        let empty = EventMeshMessage::new("topic", "").unwrap();
-        assert!(empty.validate_for_publish().is_ok());
-        assert!(empty.validate_for_grpc_publish().is_err());
-        assert!(empty.validate_for_tcp_publish().is_err());
-
-        let whitespace = EventMeshMessage::new("topic", "\t").unwrap();
-        assert!(whitespace.validate_for_grpc_publish().is_ok());
-        assert!(whitespace.validate_for_tcp_publish().is_err());
-    }
-
-    #[test]
-    fn ttl_is_preserved_at_construction_and_validated_for_publish() {
-        let message = EventMeshMessage::builder()
-            .topic("topic")
-            .content("content")
-            .ttl_millis(0)
-            .build()
-            .unwrap();
-        assert_eq!(message.ttl_millis(), Some(0));
-        assert!(message.validate_for_publish().is_err());
-    }
-
-    #[test]
     fn business_properties_reject_reserved_metadata() {
         for key in [
             "ttl",
@@ -392,23 +325,5 @@ mod tests {
         message.set_prop("custom", "value").unwrap();
         assert_eq!(message.get_prop("requestid"), Some("business-id"));
         assert_eq!(message.data_content_type(), Some("application/json"));
-    }
-
-    #[test]
-    fn publish_validation_uses_only_typed_ttl() {
-        EventMeshMessage::builder()
-            .topic("topic")
-            .content("content")
-            .ttl_millis(4_000)
-            .build()
-            .unwrap();
-
-        let invalid = EventMeshMessage::builder()
-            .topic("topic")
-            .content("content")
-            .ttl_millis(-1)
-            .build()
-            .unwrap();
-        assert!(invalid.validate_for_publish().is_err());
     }
 }

@@ -35,3 +35,5 @@ pub mod producer;
 pub use client::ChannelClient;
 pub use consumer::{GrpcStreamConsumer, GrpcWebhookConsumer};
 pub use producer::GrpcProducer;
+
+mod subscription;

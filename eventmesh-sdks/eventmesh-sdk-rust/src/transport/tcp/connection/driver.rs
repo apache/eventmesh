@@ -35,6 +35,7 @@ use super::super::codec::TcpCodec;
 use super::super::frame::{Command, Package};
 use super::super::message;
 use super::dispatcher::{OutboundCommand, PendingKey, RpcDispatcher};
+use super::InboundPackage;
 
 #[derive(Debug)]
 pub(super) enum IoExitReason {
@@ -54,7 +55,7 @@ impl SocketDriver {
         framed: &mut Framed<TcpStream, TcpCodec>,
         outbound_rx: &mut mpsc::Receiver<OutboundCommand>,
         pending_cancel_rx: &mut mpsc::UnboundedReceiver<PendingKey>,
-        inbound_tx: &mpsc::Sender<Package>,
+        inbound_tx: &mpsc::Sender<InboundPackage>,
         dispatcher: &mut RpcDispatcher,
         deliver_orphan_responses: &Arc<AtomicBool>,
         generation: u64,
@@ -177,7 +178,7 @@ impl SocketDriver {
     #[allow(clippy::too_many_arguments)]
     async fn handle_inbound(
         framed: &mut Framed<TcpStream, TcpCodec>,
-        inbound_tx: &mpsc::Sender<Package>,
+        inbound_tx: &mpsc::Sender<InboundPackage>,
         dispatcher: &mut RpcDispatcher,
         deliver_orphan_responses: &Arc<AtomicBool>,
         generation: u64,
@@ -212,7 +213,10 @@ impl SocketDriver {
             return None;
         }
 
-        match inbound_tx.try_send(package) {
+        match inbound_tx.try_send(InboundPackage {
+            generation,
+            package,
+        }) {
             Ok(()) => None,
             Err(mpsc::error::TrySendError::Full(_)) => {
                 warn!(

@@ -47,10 +47,13 @@ pub mod client;
 pub mod codec;
 pub mod consumer;
 pub mod producer;
+#[cfg(feature = "http-server")]
 pub mod server;
+#[cfg(feature = "http-server")]
 mod webhook;
 
 pub use client::EventMeshHttpClient;
 pub use consumer::HttpConsumer;
 pub use producer::HttpProducer;
+#[cfg(feature = "http-server")]
 pub use server::WebhookServer;

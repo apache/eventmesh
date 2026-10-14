@@ -25,58 +25,18 @@ pub(crate) mod task;
 #[cfg(feature = "grpc")]
 pub mod grpc;
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 pub mod http;
 
 #[cfg(feature = "tcp")]
 pub mod tcp;
 
-/// Decode native wire attributes into their owning fields. Business properties
-/// are the remainder; protocol/routing context can never be published as props.
-pub(crate) fn decode_native_message(
-    mut message: crate::EventMeshMessage,
-    mut attributes: std::collections::HashMap<String, String>,
-) -> crate::Result<crate::EventMeshMessage> {
-    message.ttl = take_wire_ttl(&mut attributes)?;
-    let sequence = attributes
-        .remove("bizseqno")
-        .or(attributes.remove("seqnum"));
-    let unique_id = attributes.remove("uniqueid");
-    if message.biz_seq_no.is_none() {
-        message.biz_seq_no = sequence;
-    }
-    if message.unique_id.is_none() {
-        message.unique_id = unique_id;
-    }
-    message.data_content_type = attributes.remove("datacontenttype");
-    // Topic and content already came from each protocol's authoritative fields.
-    for key in ["topic", "subject", "content"] {
-        attributes.remove(key);
-    }
-    message.delivery_context = Some(Box::new(crate::DeliveryContext::take_from(&mut attributes)));
-    message.props = attributes;
-    Ok(message)
-}
+mod metadata;
+mod validation;
 
-/// Extract native-message TTL from wire attributes without duplicating it in
-/// the business model's extension properties. Inbound values need only fit i64;
-/// publishing applies the outbound range limits separately.
-pub(crate) fn take_wire_ttl(
-    attributes: &mut std::collections::HashMap<String, String>,
-) -> crate::Result<Option<i64>> {
-    attributes
-        .remove(crate::common::ProtocolKey::TTL)
-        .map(|value| {
-            value.parse().map_err(|_| {
-                crate::Error::InvalidMessage(
-                    "wire ttl must be an integer number of milliseconds fitting in i64".into(),
-                )
-            })
-        })
-        .transpose()
-}
+pub(crate) use metadata::decode_native_message;
 
-#[cfg(all(test, feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(all(test, feature = "grpc", feature = "http-client", feature = "tcp"))]
 mod forwarding_tests {
     use super::{grpc, http, tcp};
     use crate::config::{Credentials, Endpoint, GrpcConfig, Identity};
@@ -271,7 +231,7 @@ mod forwarding_tests {
     }
 }
 
-#[cfg(all(test, feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(all(test, feature = "grpc", feature = "http-client", feature = "tcp"))]
 mod ttl_tests {
     use super::{grpc, http, tcp};
     use crate::config::{Endpoint, GrpcConfig};
@@ -402,3 +362,12 @@ mod ttl_tests {
         }
     }
 }
+
+#[cfg(all(
+    test,
+    feature = "grpc",
+    feature = "tcp",
+    feature = "http-server",
+    feature = "cloud_events"
+))]
+mod regression_tests;

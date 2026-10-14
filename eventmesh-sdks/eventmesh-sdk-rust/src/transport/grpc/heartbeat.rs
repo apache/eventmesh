@@ -19,10 +19,13 @@
 
 use std::collections::HashMap;
 use std::future::Future;
+#[cfg(test)]
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::mpsc;
+#[cfg(test)]
+use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
@@ -35,16 +38,12 @@ use crate::proto_gen::PbCloudEvent;
 use crate::subscription::Subscription;
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
-use crate::transport::grpc::consumer::SubscriptionEntry;
+use crate::transport::grpc::subscription::{StreamTx, SubscriptionState, Subscriptions};
 
 /// Initial delay before the first heartbeat.
 const HEARTBEAT_INITIAL_DELAY: Duration = Duration::from_secs(10);
 /// Interval between heartbeats.
 pub const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);
-
-/// Type alias for the shared stream sender used to re-send stream subscriptions
-/// during resubscribe. `None` when no stream is currently active.
-pub(crate) type StreamTx = Arc<Mutex<Option<mpsc::Sender<PbCloudEvent>>>>;
 
 /// Outcome of an operation bounded by a timeout and consumer shutdown.
 pub(crate) enum OperationOutcome<T> {
@@ -97,11 +96,11 @@ pub(crate) async fn stream_sender(stream_tx: &StreamTx) -> Option<mpsc::Sender<P
 /// the `subscribe` RPC, stream subscriptions are re-sent over `stream_tx`.
 ///
 /// Returns the task's [`JoinHandle`] so the owner can await clean exit.
-pub(crate) fn spawn(
+pub(super) fn spawn(
     client: ChannelClient,
     config: GrpcConfig,
     consumer: ConsumerOptions,
-    subscriptions: Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: Subscriptions,
     stream_tx: StreamTx,
     shutdown: CancellationToken,
 ) -> JoinHandle<()> {
@@ -118,9 +117,16 @@ pub(crate) fn spawn(
                 _ = interval.tick() => {}
                 _ = shutdown.cancelled() => return,
             }
-            let items: Vec<(String, String)> = subscriptions
-                .lock()
-                .await
+            let state = tokio::select! {
+                biased;
+                _ = shutdown.cancelled() => return,
+                state = subscriptions.lock() => state,
+            };
+            if state.ensure_open().is_err() {
+                return;
+            }
+            let items: Vec<(String, String)> = state
+                .entries
                 .iter()
                 .map(|((topic, url), _entry)| (topic.clone(), url.clone()))
                 .collect();
@@ -140,15 +146,8 @@ pub(crate) fn spawn(
                         let response = codec::to_response(&resp);
                         if response.code == Some(StatusCode::CLIENT_RESUBSCRIBE as i64) {
                             warn!("server requested resubscribe (CLIENT_RESUBSCRIBE)");
-                            resubscribe(
-                                &client,
-                                &config,
-                                &consumer,
-                                &subscriptions,
-                                &stream_tx,
-                                &shutdown,
-                            )
-                            .await;
+                            resubscribe(&client, &config, &consumer, &state, &stream_tx, &shutdown)
+                                .await;
                             if shutdown.is_cancelled() {
                                 return;
                             }
@@ -179,13 +178,14 @@ async fn resubscribe(
     client: &ChannelClient,
     config: &GrpcConfig,
     consumer: &ConsumerOptions,
-    subscriptions: &Arc<Mutex<HashMap<(String, String), SubscriptionEntry>>>,
+    subscriptions: &SubscriptionState,
     stream_tx: &StreamTx,
     shutdown: &CancellationToken,
 ) {
-    // Collect and group subscriptions by URL. We hold the lock only briefly.
+    // The caller retains the control lock across replay so an unsubscribe
+    // cannot be undone by a snapshot taken before its remote acknowledgement.
     let groups: HashMap<String, Vec<Subscription>> = {
-        let guard = subscriptions.lock().await;
+        let guard = &subscriptions.entries;
         if guard.is_empty() {
             return;
         }

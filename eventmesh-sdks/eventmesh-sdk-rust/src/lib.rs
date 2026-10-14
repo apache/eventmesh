@@ -19,8 +19,8 @@
 //!
 //! # API map
 //!
-//! Start with a feature-gated transport handle: [`GrpcChannel`] (`grpc`),
-//! [`HttpClient`] (`http`), or [`TcpClient`] (`tcp`). A gRPC channel is
+//! Start with a feature-gated transport handle: `GrpcChannel` (`grpc`),
+//! `HttpClient` (`http-client` or `http`), or `TcpClient` (`tcp`). A gRPC channel is
 //! connected inside its owning Tokio runtime and passed explicitly to gRPC
 //! producer and consumer roles. Producers accept [`Message`], while consumers
 //! deliver it to [`MessageHandler`]. Use [`config`] for endpoints, identity,
@@ -33,8 +33,9 @@
 //!
 //! # Features
 //!
-//! The default feature set is empty. Enable `grpc`, `http`, or `tcp` for a
-//! transport; `cloud_events` adds CloudEvents support. `full` enables every
+//! The default feature set is empty. Enable `grpc`, `http-client`, or `tcp` for a
+//! transport; `http-server` adds the managed axum callback server. The original
+//! `http` feature includes both HTTP features. `cloud_events` adds CloudEvents support. `full` enables every
 //! runtime feature. See the repository README and
 //! `examples/` for runnable programs.
 //!
@@ -45,8 +46,8 @@
 //! to report application failure. Long-lived consumers use a two-step
 //! lifecycle: `shutdown` only signals cancellation, while `join` waits for
 //! background work and reports failures. Managed HTTP consumers and webhook
-//! registrations additionally expose `close` to unregister remotely before
-//! shutting down and joining.
+//! registrations additionally expose `close` to drain in-flight heartbeats,
+//! stop further scheduling, unregister remotely, and join local work.
 
 #![deny(missing_docs, unsafe_code)]
 
@@ -62,7 +63,7 @@ pub mod webhook;
 #[cfg(feature = "grpc")]
 mod proto_gen;
 
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 mod transport;
 
 /// gRPC client API.
@@ -70,7 +71,7 @@ mod transport;
 pub mod grpc;
 
 /// HTTP client API.
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 pub mod http;
 
 /// TCP client API.
@@ -88,7 +89,7 @@ pub use subscription::{DeliveryMode, DeliveryType, Subscription};
 #[cfg(feature = "grpc")]
 pub use grpc::{GrpcChannel, GrpcProducer, GrpcStreamConsumer, GrpcWebhookConsumer};
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 pub use http::HttpClient;
 
 #[cfg(feature = "tcp")]

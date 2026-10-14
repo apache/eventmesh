@@ -19,20 +19,20 @@
 
 pub(crate) mod delivery;
 pub mod message;
-#[cfg(any(test, feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(test, feature = "grpc", feature = "http-client", feature = "tcp"))]
 pub mod response;
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 pub mod subscription;
 
 pub use delivery::DeliveryContext;
 pub use message::{EventMeshMessage, EventMeshMessageBuilder};
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 pub use response::PublishResponse;
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 pub use subscription::HeartbeatItem;
 
 /// Wire protocol the SDK advertises to the server (`protocoltype` attribute).
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EventMeshProtocolType {
     /// Native CloudEvents (`io.cloudevents`).
@@ -41,7 +41,7 @@ pub enum EventMeshProtocolType {
     EventMeshMessage,
 }
 
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 impl EventMeshProtocolType {
     pub fn as_str(self) -> &'static str {
         match self {

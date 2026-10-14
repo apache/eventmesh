@@ -54,19 +54,21 @@ grpc = [
     "dep:uuid",
     "dep:http",
 ]
-# HTTP transport (producer, consumer, webhook middleware + built-in server).
-http = [
+# Backward-compatible HTTP aggregate, including the managed callback server.
+http = ["http-client", "http-server"]
+# HTTP producer, external webhook registration, and framework-independent codec.
+http-client = [
     "dep:reqwest",
     "dep:serde_urlencoded",
-    "dep:axum",
     "dep:tokio",
     "dep:tokio-util",
     "dep:tracing",
     "dep:rand",
     "dep:uuid",
-    "dep:bytes",
     "dep:http",
 ]
+# Optional managed axum callback server. Producer-only clients avoid this stack.
+http-server = ["http-client", "dep:axum", "dep:bytes"]
 # TCP transport (producer, consumer, native TCP wire protocol).
 # `tokio-util/codec` is required by the framed codec in
 # `src/transport/tcp/{codec,connection}.rs`; without it the crate fails to
@@ -171,22 +173,22 @@ required-features = ["grpc"]
 [[example]]
 name = "http_producer"
 path = "examples/http/producer.rs"
-required-features = ["http"]
+required-features = ["http-client"]
 
 [[example]]
 name = "http_producer_cloud_events"
 path = "examples/http/producer_cloud_events.rs"
-required-features = ["http", "cloud_events"]
+required-features = ["http-client", "cloud_events"]
 
 [[example]]
 name = "http_consumer_server"
 path = "examples/http/consumer_server.rs"
-required-features = ["http"]
+required-features = ["http-server"]
 
 [[example]]
 name = "http_consumer_custom"
 path = "examples/http/consumer_custom.rs"
-required-features = ["http"]
+required-features = ["http-server"]
 
 [[example]]
 name = "tcp_producer"

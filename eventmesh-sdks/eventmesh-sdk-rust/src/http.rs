@@ -15,7 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! HTTP client API.
+//! HTTP client API (`http-client`, also included by `http`).
+//!
+//! Producers, external webhook registration, and codec helpers are independent
+//! of a server framework. `http-server` adds the SDK-managed axum consumer.
 
 /// Framework-independent helpers for custom webhook endpoints.
 pub mod codec {
@@ -28,40 +31,49 @@ use crate::config::{ConsumerOptions, HttpConfig, ProducerOptions};
 use crate::error::{EventMeshError, Result};
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::{DeliveryType, Subscription};
+#[cfg(feature = "http-server")]
+use crate::transport::http::WebhookServer;
 use crate::transport::http::{
     EventMeshHttpClient as TransportClient, HttpConsumer as TransportConsumer,
-    HttpProducer as TransportProducer, WebhookServer,
+    HttpProducer as TransportProducer,
 };
+#[cfg(feature = "http-server")]
 use crate::transport::task::BackgroundTask;
+#[cfg(feature = "http-server")]
 use crate::webhook::WebhookOptions;
+#[cfg(feature = "http-server")]
 use crate::MessageHandler;
+#[cfg(feature = "http-server")]
 use std::sync::Arc;
+#[cfg(feature = "http-server")]
 use tokio::sync::Mutex;
-#[cfg(test)]
+#[cfg(all(test, feature = "http-server"))]
 use tokio::task::JoinHandle;
+#[cfg(feature = "http-server")]
 use tokio_util::sync::CancellationToken;
 
 /// A configured EventMesh HTTP client.
+///
+/// Clones and all roles created from this client share one connection pool and
+/// endpoint selector, including the weighted round-robin sequence.
 #[derive(Clone)]
 pub struct HttpClient {
-    config: HttpConfig,
+    inner: TransportClient,
 }
 
 impl HttpClient {
     /// Validate and create an HTTP client handle.
     pub fn new(config: HttpConfig) -> Result<Self> {
-        config.validate()?;
-        // Constructing the private HTTP client validates the endpoint set and
-        // request client without issuing network I/O.
-        TransportClient::validate(&config)?;
-        Ok(Self { config })
+        Ok(Self {
+            inner: TransportClient::new(config)?,
+        })
     }
 
     /// Create a publishing role.
     pub fn producer(&self, options: ProducerOptions) -> Result<HttpProducer> {
         options.validate()?;
         Ok(HttpProducer {
-            inner: TransportProducer::new(self.config.clone(), &options)?,
+            inner: TransportProducer::new(self.inner.clone(), &options)?,
         })
     }
 
@@ -70,10 +82,12 @@ impl HttpClient {
     /// The callback socket is bound before subscriptions are registered. The
     /// returned consumer owns the axum server, runtime registrations, and
     /// heartbeat task as one lifecycle.
+    /// Requires the `http-server` feature (also included by `http`).
     ///
     /// Cancelling startup stops the local callback server and heartbeat task.
     /// A registration already accepted by the runtime is not rolled back by
     /// cancellation.
+    #[cfg(feature = "http-server")]
     pub async fn consumer<H>(
         &self,
         options: ConsumerOptions,
@@ -91,7 +105,7 @@ impl HttpClient {
 
         let lifecycle = CancellationToken::new();
         let inner = TransportConsumer::new(
-            self.config.clone(),
+            self.inner.clone(),
             &options,
             Some(lifecycle.clone().cancelled_owned()),
         )?;
@@ -147,7 +161,7 @@ impl HttpClient {
         options.validate()?;
         Ok(WebhookRegistration {
             inner: TransportConsumer::new(
-                self.config.clone(),
+                self.inner.clone(),
                 &options,
                 None::<std::future::Ready<()>>,
             )?,
@@ -180,6 +194,7 @@ impl HttpProducer {
 }
 
 /// An SDK-managed HTTP consumer with an embedded axum callback server.
+#[cfg(feature = "http-server")]
 pub struct HttpConsumer {
     inner: TransportConsumer,
     webhook_url: String,
@@ -187,6 +202,7 @@ pub struct HttpConsumer {
     server_handle: Mutex<BackgroundTask<Result<()>>>,
 }
 
+#[cfg(feature = "http-server")]
 impl HttpConsumer {
     /// Add a subscription to this consumer's callback URL.
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
@@ -236,7 +252,10 @@ impl HttpConsumer {
         server_result.and(heartbeat_result)
     }
 
-    /// Unregister all subscriptions, signal shutdown, and join background work.
+    /// Drain a submitted heartbeat, stop scheduling, unregister, and join.
+    ///
+    /// Subscription changes are rejected once closing begins. Failed remote
+    /// unregisters remain tracked and can be retried by calling `close` again.
     pub async fn close(&self) -> Result<()> {
         let unregister_result = self.inner.unsubscribe_all().await;
         self.shutdown();
@@ -245,6 +264,7 @@ impl HttpConsumer {
     }
 }
 
+#[cfg(feature = "http-server")]
 impl Drop for HttpConsumer {
     fn drop(&mut self) {
         self.lifecycle.cancel();
@@ -300,7 +320,10 @@ impl WebhookRegistration {
         self.inner.wait_for_shutdown().await
     }
 
-    /// Unregister every tracked subscription, shut down, and join.
+    /// Drain a submitted heartbeat, stop scheduling, unregister, and join.
+    ///
+    /// Subscription changes are rejected once closing begins. Failed remote
+    /// unregisters remain tracked and can be retried by calling `close` again.
     pub async fn close(&self) -> Result<()> {
         let unregister_result = self.inner.unsubscribe_all().await;
         self.shutdown();
@@ -340,6 +363,7 @@ fn validate_subscriptions(subscriptions: &[Subscription]) -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "http-server")]
 fn server_join_error(error: tokio::task::JoinError) -> EventMeshError {
     EventMeshError::Protocol {
         transport: "http",
@@ -347,7 +371,7 @@ fn server_join_error(error: tokio::task::JoinError) -> EventMeshError {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "http-server"))]
 mod tests {
     use super::*;
     use axum::{extract::State, http::HeaderMap, routing::post, Json, Router};
@@ -373,13 +397,26 @@ mod tests {
         state.codes.lock().await.push(code);
         let reject_subscribe = code == crate::common::status_code::RequestCode::SUBSCRIBE
             && state.reject_subscribe.load(Ordering::Relaxed);
-        let reject_unsubscribe = code == crate::common::status_code::RequestCode::UNSUBSCRIBE
-            && state
-                .rejected_unsubscribes_remaining
-                .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |remaining| {
-                    remaining.checked_sub(1)
-                })
-                .is_ok();
+        let reject_unsubscribe = if code == crate::common::status_code::RequestCode::UNSUBSCRIBE {
+            let counter = &state.rejected_unsubscribes_remaining;
+            let mut remaining = counter.load(Ordering::Relaxed);
+            loop {
+                if remaining == 0 {
+                    break false;
+                }
+                match counter.compare_exchange_weak(
+                    remaining,
+                    remaining - 1,
+                    Ordering::Relaxed,
+                    Ordering::Relaxed,
+                ) {
+                    Ok(_) => break true,
+                    Err(actual) => remaining = actual,
+                }
+            }
+        } else {
+            false
+        };
         let ret_code = if reject_subscribe || reject_unsubscribe {
             17
         } else {

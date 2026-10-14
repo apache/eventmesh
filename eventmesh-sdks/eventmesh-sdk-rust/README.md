@@ -15,7 +15,9 @@ The default feature set is empty. Enable the transport(s) your application uses;
 | Feature | Provides |
 | --- | --- |
 | `grpc` | `GrpcChannel`, producer, stream consumer, and webhook registration |
-| `http` | `HttpClient`, managed HTTP consumer, external webhook registration, and webhook codec helpers |
+| `http-client` | `HttpClient`, producer, external webhook registration, and framework-independent webhook codec helpers |
+| `http-server` | `http-client` plus the managed axum callback server |
+| `http` | Backward-compatible aggregate of `http-client` and `http-server` |
 | `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
 | `full` | All transports and CloudEvents support |
@@ -76,15 +78,15 @@ See the runnable transport-specific consumer programs in [examples/README.md](ex
 | HTTP | `HttpClient` | `consumer` binds and runs an axum callback server; `webhook_registration` supports application-owned endpoints | publish, weighted endpoint selection |
 | TCP | `TcpClient` | connected `consumer` invokes a `MessageHandler` | broadcast, request/reply, automatic reconnect |
 
-`HttpClient::consumer` binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`. Decode each delivery with `parse_push_body(body)?.to_message(&headers)?`, passing its `http::HeaderMap`; this uses the same dialect detection as the built-in server and preserves CloudEvents when `cloud_events` is enabled. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
+`HttpClient::consumer` (requires `http-server` or `http`) binds its callback socket before registering subscriptions, then owns the axum server, heartbeat, and registration lifecycle. For an application-owned endpoint, use `HttpClient::webhook_registration` with `eventmesh::http::codec::{parse_push_body, WebhookReply}`; `http-client` suffices and does not enable axum. Client clones and their roles share one connection pool and endpoint selector. Decode each delivery with `parse_push_body(body)?.to_message(&headers)?`, passing its `http::HeaderMap`; this uses the same dialect detection as the built-in server and preserves CloudEvents when `cloud_events` is enabled. TCP unsubscribe is session-wide, so its API is `unsubscribe_all()`.
 
 Cancelling `HttpClient::consumer` during startup stops its local callback server and heartbeat task. A subscription already accepted by the Runtime is not rolled back by cancellation.
 
 TCP `broadcast().await` waits for the local socket write before returning, so a subsequent `shutdown().await` does not discard the broadcast from the SDK queue. It does not wait for a Runtime acknowledgement or guarantee delivery. Queueing and writing share the TCP control timeout.
 
-TCP consumers treat unwinding handler panics and returned errors alike: they log the failure, send no reply or ACK for that delivery, and close the failed session. With reconnect enabled, they reconnect using the configured backoff and retry limit, restore confirmed subscriptions, and re-issue LISTEN before processing deliveries again. Buffered deliveries from the old session are discarded locally so they cannot be ACKed on the new socket. Disabled or exhausted reconnect stops the consumer; a rejected subscription replay or LISTEN also stops it. Redelivery depends on the Runtime and storage backend, including subscription mode, available sessions, and TTL. The SDK does not restore handler-owned state after a panic, and `panic = "abort"` cannot be caught.
+TCP consumers and publisher push handlers treat unwinding handler panics and returned errors alike: they log the failure, send no reply or ACK for that delivery, and close its failed session. With reconnect enabled, they reconnect using the configured backoff and retry limit; consumers restore confirmed subscriptions and re-issue LISTEN before processing deliveries again. Every delivery is bound to its socket generation. Buffered old deliveries and results of handlers that outlive that socket cannot send ACKs or replies on a replacement session; late failures also leave a healthy replacement session intact. Disabled or exhausted reconnect stops the role; a rejected subscription replay or LISTEN stops the consumer. `TcpProducer::join()` reports terminal socket/handler failures, including after `shutdown().await`. Redelivery depends on the Runtime and storage backend, including subscription mode, available sessions, and TTL. The SDK does not restore handler-owned state after a panic, and `panic = "abort"` cannot be caught.
 
-All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. Cancelling a `join()` wait preserves task ownership and pending failures: call `join()` again to finish waiting, or drop the consumer to abort its tasks. HTTP consumers and webhook registrations additionally provide `close().await`, which unregisters remote subscriptions before signalling shutdown and joining.
+All consumers use the same local lifecycle contract: `shutdown()` only signals background work to stop, while `join().await` waits for it and reports task or transport failures. Cancelling a `join()` wait preserves task ownership and pending failures: call `join()` again to finish waiting, or drop the consumer to abort its tasks. HTTP consumers and webhook registrations additionally provide `close().await`, which drains a submitted heartbeat, stops further scheduling, unregisters tracked remote subscriptions, and joins local work. Failed unregisters can be retried with another `close()`; subscription changes after shutdown/closing return `Error::ChannelClosed`.
 
 Create each `GrpcChannel` inside the Tokio runtime that will drive it. Clone that
 channel to share one multiplexed HTTP/2 connection among producers and consumers
@@ -108,7 +110,7 @@ HTTP request/reply is not exposed because the current SDK and stock Runtime do n
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
-`EventMeshMessage` is a business model rather than a stable serde JSON contract. Topic, content, message IDs, TTL, and payload content type have dedicated fields. Set TTL with `EventMeshMessageBuilder::ttl_millis` and content type with `data_content_type`; read them through the matching message accessors. Native decoders preserve numeric TTL until outbound validation and reject malformed or out-of-i64-range TTL. CloudEvents retain their standard attributes and extensions.
+`EventMeshMessage` is a business model rather than a stable serde JSON contract. Topic, content, message IDs, TTL, and payload content type have dedicated fields. Set TTL with `EventMeshMessageBuilder::ttl_millis` and content type with `data_content_type`; read them through the matching message accessors. Native decoders preserve numeric TTL and reject malformed or out-of-i64-range TTL. New native publishes, broadcasts, and outgoing requests apply producer content/TTL checks; handler reply encoding does not reapply them. CloudEvents retain their standard attributes and extensions on receive. New outbound operations filter known transport/delivery metadata from a copy and use destination credentials and identity. Replies restore routing from the current request, preserving the reply's business extensions, content type, and data variant.
 
 `properties()` and `get_prop()` expose only business extensions. Received protocol descriptors, identity, and known routing attributes live in the separate, read-only `DeliveryContext` returned by `message.delivery_context()`. It is `None` on locally built messages. Use `context.protocol_description()` for the source protocol and `context.attribute("cluster")` for received routing metadata. Producers ignore this context and rebuild transport metadata from the destination client. Consumer reply paths automatically restore the original request's routing; ACKs continue to use the received transport frame.
 
@@ -135,9 +137,13 @@ Migration: replace `get_prop("ttl")`, `get_prop("seqnum")`, `get_prop("uniqueid"
 
 All configurations require a validated `Endpoint`; HTTP uses a non-empty `EndpointSet`. Use `with_*` methods to set optional identity, credentials, timeouts, HTTP TLS, proxy, and reconnect settings. EventMesh Runtime's gRPC endpoint is plaintext and the gRPC client intentionally does not expose TLS configuration. `Debug` output redacts secrets.
 
+`GrpcConfig::new` supplies the Java SDK's `username` / `passwd` defaults because Runtime validates non-empty gRPC credentials even with authentication disabled. Explicit credentials replace them; HTTP, TCP, and generic `Credentials::default()` keep empty defaults.
+
 Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds (TCP). `ClientOptions::with_request_timeout` changes a client's default; gRPC and TCP producers also have `request_reply_with_timeout` for one call. TCP separately has a 1-second connect timeout and a 20-second control timeout.
 
 Operations return the pattern-matchable `eventmesh::Error`; common variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`, `Server`, `Protocol`, `Unsupported`, and transport-specific errors.
+
+See [Migrating from the Java SDK](MIGRATING_FROM_JAVA.md) for behavior changes and callback, metadata, and shutdown migration guidance.
 
 ## API documentation
 

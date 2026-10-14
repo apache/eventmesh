@@ -35,12 +35,12 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use tokio::sync::{mpsc, oneshot, watch, Mutex};
-use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
 use crate::config::ReconnectPolicy;
 use crate::error::{EventMeshError, Result};
+use crate::transport::task::BackgroundTask;
 
 use super::frame::Package;
 use super::message;
@@ -54,6 +54,12 @@ use supervisor::{ConnectionState, ConnectionSupervisor};
 
 /// Default channel capacity for outbound and inbound message queues.
 const CHANNEL_CAPACITY: usize = 256;
+
+/// A server push with the identity of the socket that received it.
+pub(crate) struct InboundPackage {
+    pub(crate) generation: u64,
+    pub(crate) package: Package,
+}
 
 /// A connected TCP transport.
 ///
@@ -70,7 +76,7 @@ pub struct TcpConnection {
     outbound_tx: mpsc::Sender<OutboundCommand>,
     /// Inbound server-pushed messages (taken by the consumer via
     /// [`take_inbound_rx`]).
-    inbound_rx: Mutex<Option<mpsc::Receiver<Package>>>,
+    inbound_rx: Mutex<Option<mpsc::Receiver<InboundPackage>>>,
     /// Reconnect-event receiver (taken by the consumer via
     /// [`take_reconnect_rx`]).
     reconnect_rx: Mutex<Option<watch::Receiver<u64>>>,
@@ -93,7 +99,7 @@ pub struct TcpConnection {
     #[cfg(test)]
     alive: Arc<AtomicBool>,
     /// Background task handle.
-    join: Mutex<Option<JoinHandle<()>>>,
+    join: Mutex<Option<BackgroundTask<Result<()>>>>,
 }
 
 impl TcpConnection {
@@ -172,7 +178,7 @@ impl TcpConnection {
             outbound_timeout: control_timeout,
             #[cfg(test)]
             alive,
-            join: Mutex::new(Some(join)),
+            join: Mutex::new(Some(BackgroundTask::new(join))),
         })
     }
 
@@ -187,6 +193,24 @@ impl TcpConnection {
     ///
     /// Corresponds to Java `TcpClient.io()`.
     pub async fn io(&self, pkg: Package, timeout: Duration) -> Result<Package> {
+        self.io_at_generation(pkg, timeout, None).await
+    }
+
+    pub(super) async fn io_in_generation(
+        &self,
+        pkg: Package,
+        timeout: Duration,
+        generation: u64,
+    ) -> Result<Package> {
+        self.io_at_generation(pkg, timeout, Some(generation)).await
+    }
+
+    async fn io_at_generation(
+        &self,
+        pkg: Package,
+        timeout: Duration,
+        expected: Option<u64>,
+    ) -> Result<Package> {
         let deadline = Self::deadline_after(timeout)?;
         // Client-originated frames always carry a seq (see `message::package`),
         // so this is `Some` in practice. A `None` would mean a programming
@@ -201,6 +225,9 @@ impl TcpConnection {
         // sender that slept on a full channel cannot enqueue onto the next
         // socket after teardown has completed.
         let generation = self.active_generation().await?;
+        if expected.is_some_and(|expected| expected != generation) {
+            return Err(Self::inactive_error());
+        }
         let permit = self.reserve_outbound(deadline, timeout).await?;
         let pending_key = (generation, seq);
         {
@@ -260,11 +287,30 @@ impl TcpConnection {
     /// Enqueue a package without waiting for its socket write or a reply.
     ///
     /// Corresponds to Java `TcpClient.send()`.
+    #[cfg(test)]
     pub async fn send(&self, pkg: Package) -> Result<()> {
         let timeout = self.outbound_timeout;
         let deadline = Self::deadline_after(timeout)?;
-        self.enqueue_send(OutboundCommand::Send(pkg), deadline, timeout)
+        self.enqueue_send(OutboundCommand::Send(pkg), deadline, timeout, None)
             .await
+    }
+
+    /// A reply or ACK may only be queued on the socket that delivered it.
+    pub(super) async fn send_in_generation(&self, pkg: Package, generation: u64) -> Result<()> {
+        let timeout = self.outbound_timeout;
+        let deadline = Self::deadline_after(timeout)?;
+        self.enqueue_send(
+            OutboundCommand::Send(pkg),
+            deadline,
+            timeout,
+            Some(generation),
+        )
+        .await
+    }
+
+    pub(super) async fn is_generation_active(&self, generation: u64) -> bool {
+        let state = self.state.lock().await;
+        !self.cancel.is_cancelled() && state.active && state.generation == generation
     }
 
     /// Wait for the package to be flushed to the local socket, without
@@ -281,6 +327,7 @@ impl TcpConnection {
             },
             deadline,
             timeout,
+            None,
         )
         .await?;
 
@@ -299,8 +346,12 @@ impl TcpConnection {
         command: OutboundCommand,
         deadline: tokio::time::Instant,
         timeout: Duration,
+        expected: Option<u64>,
     ) -> Result<()> {
         let generation = self.active_generation().await?;
+        if expected.is_some_and(|expected| expected != generation) {
+            return Err(Self::inactive_error());
+        }
         let permit = self.reserve_outbound(deadline, timeout).await?;
         let state = self.state.lock().await;
         if self.cancel.is_cancelled() || !state.active || state.generation != generation {
@@ -328,7 +379,7 @@ impl TcpConnection {
 
     /// Take ownership of the inbound receiver. Called once by the consumer to
     /// start receiving server-pushed messages.
-    pub async fn take_inbound_rx(&self) -> Option<mpsc::Receiver<Package>> {
+    pub(crate) async fn take_inbound_rx(&self) -> Option<mpsc::Receiver<InboundPackage>> {
         self.inbound_rx.lock().await.take()
     }
 
@@ -350,8 +401,11 @@ impl TcpConnection {
 
     /// Close the current socket without stopping the reconnect supervisor.
     /// Returns the earliest generation that can complete this recovery.
-    pub(super) async fn request_reconnect(&self) -> u64 {
+    pub(super) async fn request_reconnect(&self, expected_generation: u64) -> u64 {
         let mut state = self.state.lock().await;
+        if state.generation != expected_generation {
+            return state.generation;
+        }
         let next_generation = if state.active {
             state.generation.wrapping_add(1)
         } else {
@@ -385,21 +439,27 @@ impl TcpConnection {
             .try_send(OutboundCommand::Send(message::goodbye()));
         self.cancel.cancel();
         let mut task = self.join.lock().await;
-        if let Some(join) = task.as_mut() {
-            let _ = join.await;
-            task.take();
+        if let Some(task) = task.as_mut() {
+            task.wait().await;
         }
+    }
+
+    /// Wait for connection completion and retain errors across cancelled waits.
+    pub(crate) async fn wait_for_shutdown(&self) -> Result<()> {
+        let mut task = self.join.lock().await;
+        let Some(task) = task.as_mut() else {
+            return Ok(());
+        };
+        task.wait().await;
+        task.take_result()
+            .unwrap_or(Ok(Ok(())))
+            .map_err(|error| EventMeshError::Tcp(format!("TCP connection task failed: {error}")))?
     }
 }
 
 impl Drop for TcpConnection {
     fn drop(&mut self) {
         self.cancel.cancel();
-        if let Ok(mut guard) = self.join.try_lock() {
-            if let Some(join) = guard.take() {
-                join.abort();
-            }
-        }
     }
 }
 
@@ -461,9 +521,11 @@ mod tests {
     async fn cancelled_shutdown_keeps_waiting_for_connection_task() {
         let (mut connection, _outbound) = blocked_test_connection();
         let (release, released) = oneshot::channel::<()>();
-        *Arc::get_mut(&mut connection).unwrap().join.get_mut() = Some(tokio::spawn(async move {
-            released.await.unwrap();
-        }));
+        *Arc::get_mut(&mut connection).unwrap().join.get_mut() =
+            Some(BackgroundTask::new(tokio::spawn(async move {
+                released.await.unwrap();
+                Ok(())
+            })));
         for _ in 0..2 {
             assert!(
                 tokio::time::timeout(Duration::from_secs(1), connection.shutdown())

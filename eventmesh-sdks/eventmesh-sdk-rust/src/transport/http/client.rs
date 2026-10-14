@@ -24,7 +24,7 @@ use std::time::Duration;
 use reqwest::Client;
 
 use crate::common::loadbalance::{LoadBalanceSelector, ServerNode};
-use crate::config::{ConsumerOptions, HttpConfig, ProducerOptions};
+use crate::config::HttpConfig;
 use crate::error::{EventMeshError, Result};
 
 /// Default connection pool size (mirrors the Java SDK).
@@ -32,34 +32,22 @@ const DEFAULT_POOL_SIZE: usize = 30;
 /// Default idle connection eviction (seconds).
 const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 10;
 
-/// The resolved transport parameters shared by every HTTP role.
+/// A pooled, load-balanced HTTP client connected to one or more EventMesh
+/// runtime nodes.
+///
+/// Cheaply cloneable: reqwest shares its pool internally, and clones share
+/// endpoint selection state and immutable configuration as well.
 #[derive(Clone)]
-pub(crate) struct HttpRole {
+pub struct EventMeshHttpClient {
+    inner: Client,
     config: Arc<HttpConfig>,
     selector: Arc<LoadBalanceSelector>,
-    /// Producer group stamped on publish bodies; empty for consumers.
-    producer_group: String,
-    /// Consumer group stamped on subscribe/heartbeat bodies; empty for
-    /// producers.
-    consumer_group: String,
 }
 
-impl HttpRole {
-    /// Resolve a producer role's transport parameters.
-    pub(crate) fn producer(config: HttpConfig, options: &ProducerOptions) -> Result<Self> {
-        Self::build(config, options.group().to_string(), None)
-    }
-
-    /// Resolve a consumer role's transport parameters.
-    pub(crate) fn consumer(config: HttpConfig, options: &ConsumerOptions) -> Result<Self> {
-        Self::build(config, String::new(), Some(options.group().to_string()))
-    }
-
-    fn build(
-        config: HttpConfig,
-        producer_group: impl Into<String>,
-        consumer_group: Option<String>,
-    ) -> Result<Self> {
+impl EventMeshHttpClient {
+    /// Build one pooled client and selector shared by all roles.
+    pub(crate) fn new(config: HttpConfig) -> Result<Self> {
+        config.validate()?;
         let selector = LoadBalanceSelector::new(
             config
                 .endpoints()
@@ -73,61 +61,6 @@ impl HttpRole {
                 .collect(),
             config.load_balance().to_wire(),
         )?;
-        Ok(Self {
-            config: Arc::new(config),
-            selector: Arc::new(selector),
-            producer_group: producer_group.into(),
-            consumer_group: consumer_group.unwrap_or_default(),
-        })
-    }
-
-    /// The public configuration.
-    pub(crate) fn config(&self) -> &HttpConfig {
-        &self.config
-    }
-
-    /// The producer group of this role, if any.
-    pub(crate) fn producer_group(&self) -> &str {
-        &self.producer_group
-    }
-
-    /// The consumer group of this role, if any.
-    pub(crate) fn consumer_group(&self) -> &str {
-        &self.consumer_group
-    }
-
-    /// The request timeout for unary operations.
-    pub(crate) fn timeout(&self) -> Duration {
-        self.config.request_timeout()
-    }
-
-    /// Pick the next server node via the configured load-balance strategy.
-    pub(crate) fn select_node(&self) -> &ServerNode {
-        self.selector.select()
-    }
-}
-
-/// A pooled, load-balanced HTTP client connected to one or more EventMesh
-/// runtime nodes.
-///
-/// Cheaply cloneable (wraps `Arc<reqwest::Client>`).
-#[derive(Clone)]
-pub struct EventMeshHttpClient {
-    inner: Client,
-    role: HttpRole,
-}
-
-impl EventMeshHttpClient {
-    /// Validate the endpoint set and request client construction without
-    /// issuing network I/O.
-    pub(crate) fn validate(config: &HttpConfig) -> Result<Self> {
-        let client = Self::new(HttpRole::build(config.clone(), String::new(), None)?)?;
-        Ok(client)
-    }
-
-    /// Build the request client for a resolved role.
-    pub(crate) fn new(role: HttpRole) -> Result<Self> {
-        let config = &role.config;
         let mut builder = Client::builder()
             .pool_max_idle_per_host(DEFAULT_POOL_SIZE)
             .pool_idle_timeout(Some(Duration::from_secs(DEFAULT_IDLE_TIMEOUT_SECS)))
@@ -148,18 +81,22 @@ impl EventMeshHttpClient {
             .build()
             .map_err(|e| EventMeshError::Config(format!("reqwest client build error: {e}")))?;
 
-        Ok(Self { inner, role })
+        Ok(Self {
+            inner,
+            config: Arc::new(config),
+            selector: Arc::new(selector),
+        })
     }
 
     /// Pick the next server node via the configured load-balance strategy.
     pub fn select_node(&self) -> &ServerNode {
-        self.role.select_node()
+        self.selector.select()
     }
 
     /// Build the base URL for the next request: `http(s)://host:port`.
     pub fn base_url(&self) -> String {
         let node = self.select_node();
-        let scheme = if self.role.config.tls_enabled() {
+        let scheme = if self.config.tls_enabled() {
             "https"
         } else {
             "http"
@@ -222,13 +159,13 @@ impl EventMeshHttpClient {
         Ok(text)
     }
 
-    /// The resolved role parameters.
-    pub(crate) fn role(&self) -> &HttpRole {
-        &self.role
+    /// Validated public configuration shared by every role.
+    pub(crate) fn config(&self) -> &HttpConfig {
+        &self.config
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "http-server"))]
 mod tests {
     use std::sync::Arc;
     use std::time::Duration;
@@ -285,10 +222,7 @@ mod tests {
         .unwrap();
         let config = HttpConfig::new(endpoints)
             .with_load_balance(crate::config::LoadBalance::WeightedRoundRobin);
-        let client = EventMeshHttpClient::new(
-            HttpRole::producer(config, &ProducerOptions::new("g")).unwrap(),
-        )
-        .unwrap();
+        let client = EventMeshHttpClient::new(config).unwrap();
 
         for _ in 0..4 {
             assert_eq!(
@@ -313,10 +247,7 @@ mod tests {
             std::future::pending::<()>().await;
         });
         let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", port).unwrap()]).unwrap();
-        let client = EventMeshHttpClient::new(
-            HttpRole::producer(HttpConfig::new(endpoints), &ProducerOptions::new("g")).unwrap(),
-        )
-        .unwrap();
+        let client = EventMeshHttpClient::new(HttpConfig::new(endpoints)).unwrap();
         let timeout = Duration::from_millis(25);
 
         let error = client.post_form("/", &[], &[], timeout).await.unwrap_err();

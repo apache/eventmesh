@@ -20,14 +20,20 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use tracing::debug;
+use tokio::sync::Mutex;
+use tokio_util::sync::CancellationToken;
+use tracing::{debug, warn};
 
 use crate::config::{ProducerOptions, TcpConfig};
 use crate::error::{EventMeshError, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
+use crate::transport::task::BackgroundTask;
 use crate::transport::tcp::connection::TcpConnection;
+use crate::transport::tcp::delivery::dispatch;
 use crate::transport::tcp::frame::{Command, UserAgent};
 use crate::transport::tcp::message;
+use crate::transport::validation::validate_tcp_publish;
+use crate::MessageHandler;
 
 /// TCP-based producer.
 ///
@@ -36,6 +42,8 @@ use crate::transport::tcp::message;
 pub struct TcpProducer {
     conn: Arc<TcpConnection>,
     request_timeout: std::time::Duration,
+    response_shutdown: CancellationToken,
+    response_driver: Mutex<Option<BackgroundTask<Result<()>>>>,
 }
 
 impl TcpProducer {
@@ -68,13 +76,15 @@ impl TcpProducer {
         Ok(Self {
             conn,
             request_timeout,
+            response_shutdown: CancellationToken::new(),
+            response_driver: Mutex::new(None),
         })
     }
 
     /// Broadcast a message, waiting for its local socket write but no server
     /// ACK. Uses `BROADCAST_MESSAGE_TO_SERVER`, matching Java `broadcast`.
     pub async fn broadcast(&self, msg: EventMeshMessage) -> Result<()> {
-        msg.validate_for_tcp_publish()?;
+        validate_tcp_publish(&msg)?;
         let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
         self.conn.send_and_flush(pkg).await
     }
@@ -177,25 +187,83 @@ impl TcpProducer {
         }
     }
 
-    /// Access the underlying connection (for testing or advanced use).
-    pub fn connection(&self) -> &TcpConnection {
-        &self.conn
+    /// Register the publisher push handler inside the transport lifecycle.
+    pub(crate) async fn start_response_handler<H: MessageHandler>(&self, handler: H) -> Result<()> {
+        let mut task = self.response_driver.lock().await;
+        if task.is_some() {
+            return Err(EventMeshError::InvalidArgument(
+                "publisher handler is already registered".into(),
+            ));
+        }
+        let mut inbound = self.conn.take_inbound_rx().await.ok_or_else(|| {
+            EventMeshError::Tcp("publisher response receiver is already taken".into())
+        })?;
+        self.conn.enable_orphan_response_delivery();
+        let connection = self.conn.clone();
+        let shutdown = self.response_shutdown.clone();
+        *task = Some(BackgroundTask::new(tokio::spawn(async move {
+            let mut last_failure = None;
+            let result = loop {
+                let delivery = tokio::select! {
+                    biased;
+                    _ = shutdown.cancelled() => break Ok(()),
+                    delivery = inbound.recv() => match delivery {
+                        Some(delivery) => delivery,
+                        None => break Err(last_failure.unwrap_or_else(|| {
+                            EventMeshError::ChannelClosed("TCP publisher connection closed".into())
+                        })),
+                    },
+                };
+                if delivery.package.header.cmd != Command::ResponseToClient {
+                    continue;
+                }
+                let handled = tokio::select! {
+                    biased;
+                    _ = shutdown.cancelled() => break Ok(()),
+                    result = dispatch(&delivery, &connection, &handler, Command::ResponseToClientAck) => result,
+                };
+                if let Err(error) = handled {
+                    warn!(%error, "publisher handler failed; recovering without ACK");
+                    last_failure = Some(error);
+                    connection.request_reconnect(delivery.generation).await;
+                }
+            };
+            connection.shutdown().await;
+            result
+        })));
+        Ok(())
     }
 
-    /// Clone the shared connection for a background publisher-side handler.
-    pub fn shared_connection(&self) -> Arc<TcpConnection> {
-        Arc::clone(&self.conn)
-    }
-
-    /// Graceful shutdown.
+    /// Stop local response handling and await the socket and handler tasks.
     pub async fn shutdown(&self) {
+        self.response_shutdown.cancel();
         self.conn.shutdown().await;
+        let mut task = self.response_driver.lock().await;
+        if let Some(task) = task.as_mut() {
+            task.wait().await;
+        }
+    }
+
+    /// Await terminal transport/handler errors without losing them on cancellation.
+    pub(crate) async fn wait_for_shutdown(&self) -> Result<()> {
+        let mut task = self.response_driver.lock().await;
+        if let Some(task) = task.as_mut() {
+            task.wait().await;
+        }
+        let connection_result = self.conn.wait_for_shutdown().await;
+        let handler_result = match task.as_mut().and_then(BackgroundTask::take_result) {
+            Some(result) => result.map_err(|error| {
+                EventMeshError::Tcp(format!("TCP publisher response task failed: {error}"))
+            })?,
+            None => Ok(()),
+        };
+        handler_result.and(connection_result)
     }
 
     /// Publish a message and wait for the broker ACK.
     /// Uses `ASYNC_MESSAGE_TO_SERVER` + `io()` (mirrors the Java SDK).
     pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        message.validate_for_tcp_publish()?;
+        validate_tcp_publish(&message)?;
         let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
         debug!(topic = ?message.topic, "publishing via TCP");
 
@@ -217,7 +285,7 @@ impl TcpProducer {
         message: EventMeshMessage,
         timeout: Duration,
     ) -> Result<EventMeshMessage> {
-        message.validate_for_tcp_publish()?;
+        validate_tcp_publish(&message)?;
         let pkg = super::message::build_message_package(&message, Command::RequestToServer)?;
         debug!(topic = ?message.topic, "request-reply via TCP");
 
@@ -237,5 +305,11 @@ impl TcpProducer {
         message::parse_message(&resp.body).ok_or_else(|| {
             EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
         })
+    }
+}
+
+impl Drop for TcpProducer {
+    fn drop(&mut self) {
+        self.response_shutdown.cancel();
     }
 }

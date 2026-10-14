@@ -23,6 +23,20 @@ cargo test --features full
 cargo doc --features full --no-deps
 ```
 
+Verify feature isolation as well as `full`, especially after moving shared code:
+
+```bash
+cargo check --no-default-features --lib
+cargo check --no-default-features --features grpc --all-targets
+cargo check --no-default-features --features http-client --all-targets
+cargo check --no-default-features --features http-server --all-targets
+cargo check --no-default-features --features tcp --all-targets
+```
+
+Repeat transport checks with `cloud_events` when changing dialect handling. Run
+these with Rust 1.86.0 to verify the MSRV. `http-client` must not enable axum in
+its normal dependency tree. Existing `http` callers retain the managed server.
+
 Use `cargo test --features full --test codec_test` for the codec test binary. Examples are feature-gated in `Cargo.toml`; compile the one you changed with its documented `cargo run --example ... --features ...` command, or compile all supported paths with `cargo check --examples --features full`.
 
 ## End-to-end tests
@@ -42,6 +56,8 @@ cargo test --features interop_e2e --test e2e interop
 ```
 
 Those tests build `interop/java-peer` with Maven on first use. The standalone peer depends on `org.apache.eventmesh:eventmesh-sdk-java:1.12.0-release`; it does not compile or load the Java SDK source tree from this repository.
+
+The gRPC CloudEvent request/reply regressions check text and binary payloads, conflicting reply routing, and default credentials against the real Runtime.
 
 The TCP reconnect test runs in the normal e2e suite. It uses a unique client subsystem and the Runtime admin API to disconnect only its own TCP sessions, so it does not restart or disrupt the shared Runtime container.
 
@@ -66,6 +82,7 @@ Keep each document in its intended layer.
 | Runnable workflow or transport use | the matching file in `examples/` and `examples/README.md` |
 | Validation, e2e, or contributor workflow | this file |
 | Protocol boundary or internal architecture | `ARCHITECTURE.md` |
+| Java compatibility or migration behavior | `MIGRATING_FROM_JAVA.md` |
 
 Public rustdoc should state feature requirements, ownership/lifecycle rules, and error or acknowledgement behavior where relevant. Prefer an executable doctest when it has no runtime dependency; otherwise mark the snippet `rust,ignore` and point users to a runnable example.
 

@@ -47,7 +47,7 @@ impl<T> BackgroundTask<T> {
         self.result.take()
     }
 
-    #[cfg(feature = "http")]
+    #[cfg(feature = "http-server")]
     pub(crate) fn is_finished(&self) -> bool {
         self.handle.as_ref().is_none_or(JoinHandle::is_finished)
     }

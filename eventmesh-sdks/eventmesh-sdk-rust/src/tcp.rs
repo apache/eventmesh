@@ -21,10 +21,10 @@ use crate::config::{ConsumerOptions, ProducerOptions, TcpConfig};
 use crate::error::{EventMeshError, Result};
 use crate::message::{Message, PublishReceipt};
 use crate::subscription::Subscription;
-use crate::transport::tcp::consumer::{decode_message, encode_reply};
+#[cfg(test)]
+use crate::transport::tcp::delivery::decode_message;
 use crate::transport::tcp::{TcpConsumer as TransportConsumer, TcpProducer as TransportProducer};
 use crate::MessageHandler;
-use tracing::warn;
 
 /// A configured EventMesh TCP client.
 #[derive(Clone)]
@@ -46,7 +46,6 @@ impl TcpClient {
         Ok(TcpProducer {
             inner: TransportProducer::connect(self.config.clone(), &options).await?,
             timeout: self.config.request_timeout(),
-            response_driver: tokio::sync::Mutex::new(None),
         })
     }
 
@@ -64,7 +63,7 @@ impl TcpClient {
         H: MessageHandler,
     {
         let producer = self.producer(options).await?;
-        producer.start_response_handler(handler).await?;
+        producer.inner.start_response_handler(handler).await?;
         Ok(producer)
     }
 
@@ -90,7 +89,6 @@ impl TcpClient {
 pub struct TcpProducer {
     inner: TransportProducer,
     timeout: std::time::Duration,
-    response_driver: tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 /// A long-lived TCP consumer.
@@ -234,82 +232,20 @@ impl TcpProducer {
         }
     }
 
-    /// Shut down the TCP connection.
+    /// Shut down the TCP connection and any publisher-side response handler.
+    /// Terminal failures remain available from [`join`](Self::join).
     pub async fn shutdown(&self) {
-        if let Some(driver) = self.response_driver.lock().await.take() {
-            driver.abort();
-        }
         self.inner.shutdown().await;
     }
 
-    async fn start_response_handler<H>(&self, handler: H) -> Result<()>
-    where
-        H: MessageHandler,
-    {
-        let conn = self.inner.connection();
-        conn.enable_orphan_response_delivery();
-        let mut inbound = conn.take_inbound_rx().await.ok_or_else(|| {
-            crate::error::EventMeshError::Tcp(
-                "publisher response handler already registered".into(),
-            )
-        })?;
-        let connection = self.inner.shared_connection();
-        let driver = tokio::spawn(async move {
-            while let Some(package) = inbound.recv().await {
-                if package.header.cmd != crate::transport::tcp::frame::Command::ResponseToClient {
-                    continue;
-                }
-                let Some(message) = decode_message(&package) else {
-                    warn!("failed to decode publisher-side response; closing without ACK");
-                    connection.shutdown().await;
-                    break;
-                };
-                match handler.handle(message).await {
-                    Ok(Some(reply)) => match encode_reply(&reply) {
-                        Ok(reply) => {
-                            if let Err(error) = connection.send(reply).await {
-                                warn!(%error, "failed to send publisher-side reply; closing without ACK");
-                                connection.shutdown().await;
-                                break;
-                            }
-                        }
-                        Err(error) => {
-                            warn!(%error, "failed to encode publisher-side reply; closing without ACK");
-                            connection.shutdown().await;
-                            break;
-                        }
-                    },
-                    Ok(None) => {}
-                    Err(error) => {
-                        warn!(%error, "publisher-side handler failed; closing without ACK");
-                        connection.shutdown().await;
-                        break;
-                    }
-                }
-                if let Err(error) = connection
-                    .send(crate::transport::tcp::message::response_to_client_ack(
-                        &package,
-                    ))
-                    .await
-                {
-                    warn!(%error, "failed to send publisher-side ACK; closing connection");
-                    connection.shutdown().await;
-                    break;
-                }
-            }
-        });
-        *self.response_driver.lock().await = Some(driver);
-        Ok(())
-    }
-}
-
-impl Drop for TcpProducer {
-    fn drop(&mut self) {
-        if let Ok(mut driver) = self.response_driver.try_lock() {
-            if let Some(driver) = driver.take() {
-                driver.abort();
-            }
-        }
+    /// Wait for the connection and response handler, reporting terminal failures.
+    ///
+    /// Cancelling this wait preserves task ownership and pending errors.
+    /// A handler error or unwinding panic closes its session without ACK and
+    /// follows the configured reconnect policy. Dropping the producer aborts
+    /// its tasks; explicit shutdown cancels an in-flight publisher handler.
+    pub async fn join(&self) -> Result<()> {
+        self.inner.wait_for_shutdown().await
     }
 }
 
@@ -335,6 +271,67 @@ mod tests {
             let _ = self.0.send(message);
             Ok(None)
         }
+    }
+
+    #[tokio::test]
+    async fn publishing_operations_reject_invalid_payloads_before_sending() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut framed = Framed::new(stream, TcpCodec::new());
+            let hello = framed.next().await.unwrap().unwrap();
+            assert_eq!(hello.header.cmd, Command::HelloRequest);
+            framed
+                .send(Package::new(Header::new(
+                    Command::HelloResponse,
+                    hello.header.seq.unwrap(),
+                )))
+                .await
+                .unwrap();
+            while let Some(frame) = framed.next().await {
+                assert_eq!(
+                    frame.unwrap().header.cmd,
+                    Command::ClientGoodbyeRequest,
+                    "invalid publishes, broadcasts, and requests must not reach the socket"
+                );
+            }
+        });
+        let producer = TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap()))
+            .unwrap()
+            .producer(ProducerOptions::new("validation-test"))
+            .await
+            .unwrap();
+        for message in [
+            crate::EventMeshMessage::new("orders", " \t\n").unwrap(),
+            crate::EventMeshMessage::builder()
+                .topic("orders")
+                .content("payload")
+                .ttl_millis(0)
+                .build()
+                .unwrap(),
+            crate::EventMeshMessage::builder()
+                .topic("orders")
+                .content("payload")
+                .ttl_millis(i64::from(i32::MAX) + 1)
+                .build()
+                .unwrap(),
+        ] {
+            assert!(matches!(
+                producer.publish(message.clone().into()).await,
+                Err(EventMeshError::InvalidMessage(_))
+            ));
+            assert!(matches!(
+                producer.broadcast(message.clone().into()).await,
+                Err(EventMeshError::InvalidMessage(_))
+            ));
+            assert!(matches!(
+                producer.request_reply(message.into()).await,
+                Err(EventMeshError::InvalidMessage(_))
+            ));
+        }
+        producer.shutdown().await;
+        server.await.unwrap();
     }
 
     #[test]

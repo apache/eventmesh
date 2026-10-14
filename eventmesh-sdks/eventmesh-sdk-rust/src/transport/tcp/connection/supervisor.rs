@@ -33,10 +33,11 @@ use crate::config::ReconnectPolicy;
 use crate::error::{EventMeshError, Result};
 
 use super::super::codec::TcpCodec;
-use super::super::frame::{Command, Package, UserAgent};
+use super::super::frame::{Command, UserAgent};
 use super::super::message;
 use super::dispatcher::{OutboundCommand, PendingKey, RpcDispatcher};
 use super::driver::{IoExitReason, SocketDriver};
+use super::InboundPackage;
 
 #[derive(Debug)]
 pub(super) struct ConnectionState {
@@ -104,14 +105,14 @@ impl ConnectionSupervisor {
         reconnect: ReconnectPolicy,
         mut framed: Framed<TcpStream, TcpCodec>,
         mut outbound_rx: mpsc::Receiver<OutboundCommand>,
-        inbound_tx: mpsc::Sender<Package>,
+        inbound_tx: mpsc::Sender<InboundPackage>,
         reconnect_tx: watch::Sender<u64>,
         mut pending_cancel_rx: mpsc::UnboundedReceiver<PendingKey>,
         state: Arc<Mutex<ConnectionState>>,
         deliver_orphan_responses: Arc<AtomicBool>,
         cancel: CancellationToken,
         alive: Arc<AtomicBool>,
-    ) {
+    ) -> Result<()> {
         let mut dispatcher = RpcDispatcher::new();
         loop {
             let (generation, socket_cancel) = {
@@ -150,15 +151,19 @@ impl ConnectionSupervisor {
                 }
                 IoExitReason::Cancelled | IoExitReason::AllSendersDropped => {
                     debug!(?reason, "connection task exiting");
-                    return;
+                    return Ok(());
                 }
                 IoExitReason::IoError | IoExitReason::ServerClosed | IoExitReason::SlowConsumer => {
                 }
             }
 
-            if !reconnect.enabled() || cancel.is_cancelled() {
-                debug!("reconnect disabled or cancelled, exiting");
-                return;
+            if cancel.is_cancelled() {
+                return Ok(());
+            }
+            if !reconnect.enabled() {
+                return Err(EventMeshError::ChannelClosed(
+                    "TCP session ended with reconnect disabled".into(),
+                ));
             }
 
             let mut backoff = reconnect.initial_backoff();
@@ -171,7 +176,9 @@ impl ConnectionSupervisor {
                         "max reconnect attempts ({}) exceeded, giving up",
                         reconnect.max_retries()
                     );
-                    return;
+                    return Err(EventMeshError::Tcp(
+                        "TCP reconnect attempts exhausted".into(),
+                    ));
                 }
 
                 debug!(attempt, ?backoff, "reconnect backoff");
@@ -179,7 +186,7 @@ impl ConnectionSupervisor {
                     biased;
                     _ = cancel.cancelled() => {
                         debug!("cancelled during reconnect backoff");
-                        return;
+                        return Ok(());
                     }
                     _ = tokio::time::sleep(backoff) => {}
                 }
@@ -189,7 +196,7 @@ impl ConnectionSupervisor {
                     biased;
                     _ = cancel.cancelled() => {
                         debug!("cancelled during reconnect attempt");
-                        return;
+                        return Ok(());
                     }
                     result = Self::establish(
                         &addr,

@@ -197,17 +197,17 @@ impl Credentials {
         self
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn username(&self) -> &str {
         self.username.as_deref().unwrap_or_default()
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn password(&self) -> &str {
         self.password.as_deref().unwrap_or_default()
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn token(&self) -> Option<&str> {
         self.token.as_deref()
     }
@@ -282,32 +282,32 @@ impl Identity {
         self
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn env(&self) -> &str {
         &self.env
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn idc(&self) -> &str {
         &self.idc
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn system(&self) -> &str {
         &self.system
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn process_id(&self) -> &str {
         &self.process_id
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn ip(&self) -> &str {
         &self.ip
     }
 
-    #[cfg(any(feature = "grpc", feature = "http"))]
+    #[cfg(any(feature = "grpc", feature = "http-client"))]
     pub(crate) fn language(&self) -> &str {
         &self.language
     }
@@ -332,7 +332,7 @@ impl ClientOptions {
         self.request_timeout
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     fn validate(&self) -> Result<()> {
         if let Some(timeout) = self.request_timeout {
             validate_non_zero_duration("request timeout", timeout)?;
@@ -355,12 +355,12 @@ impl ProducerOptions {
         }
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn group(&self) -> &str {
         &self.group
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn validate(&self) -> Result<()> {
         validate_group("producer", &self.group)
     }
@@ -384,12 +384,12 @@ impl ConsumerOptions {
         }
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn group(&self) -> &str {
         &self.group
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn validate(&self) -> Result<()> {
         validate_group("consumer", &self.group)
     }
@@ -455,7 +455,7 @@ pub enum LoadBalance {
     WeightedRoundRobin,
 }
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 impl LoadBalance {
     /// Map this policy onto the shared load-balancer strategy.
     pub(crate) const fn to_wire(self) -> crate::common::loadbalance::LoadBalance {
@@ -478,12 +478,17 @@ pub struct GrpcConfig {
 
 impl GrpcConfig {
     /// Build a gRPC configuration for `endpoint`.
+    ///
+    /// Uses Java SDK defaults `username` / `passwd`: the Runtime requires
+    /// non-empty gRPC credentials even when authentication is disabled.
+    /// Override them with [`with_credentials`](Self::with_credentials) for
+    /// an authenticated deployment. Other transports keep empty defaults.
     pub fn new(endpoint: Endpoint) -> Self {
         Self {
             endpoint,
             options: ClientOptions::default(),
             identity: Identity::default(),
-            credentials: Credentials::default(),
+            credentials: Credentials::new().with_basic("username", "passwd"),
         }
     }
 
@@ -640,12 +645,12 @@ impl HttpConfig {
         self.proxy_from_env
     }
 
-    #[cfg(feature = "http")]
+    #[cfg(feature = "http-client")]
     pub(crate) fn validate(&self) -> Result<()> {
         self.options.validate()
     }
 
-    #[cfg(feature = "http")]
+    #[cfg(feature = "http-client")]
     pub(crate) const fn request_timeout(&self) -> Duration {
         match self.options.request_timeout {
             Some(timeout) => timeout,
@@ -861,7 +866,7 @@ impl TcpConfig {
     }
 }
 
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 fn validate_non_zero_duration(name: &str, value: Duration) -> Result<()> {
     if value.is_zero() {
         return Err(EventMeshError::Config(format!(
@@ -871,7 +876,7 @@ fn validate_non_zero_duration(name: &str, value: Duration) -> Result<()> {
     Ok(())
 }
 
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 fn validate_group(role: &str, group: &str) -> Result<()> {
     if group.trim().is_empty() {
         return Err(EventMeshError::Config(format!(
@@ -884,6 +889,28 @@ fn validate_group(role: &str, group: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "grpc")]
+    #[test]
+    fn only_grpc_supplies_java_compatible_default_credentials() {
+        let endpoint = Endpoint::new("127.0.0.1", 10_205).unwrap();
+        let grpc = GrpcConfig::new(endpoint.clone());
+        assert_eq!(grpc.credentials().username(), "username");
+        assert_eq!(grpc.credentials().password(), "passwd");
+        assert!(Credentials::default().username().is_empty());
+        assert!(Credentials::default().password().is_empty());
+        assert!(TcpConfig::new(endpoint.clone())
+            .credentials()
+            .username()
+            .is_empty());
+        assert!(HttpConfig::new(EndpointSet::new([endpoint]).unwrap())
+            .credentials()
+            .username()
+            .is_empty());
+        let explicit = grpc.with_credentials(Credentials::new().with_basic("alice", "secret"));
+        assert_eq!(explicit.credentials().username(), "alice");
+        assert_eq!(explicit.credentials().password(), "secret");
+    }
 
     #[test]
     fn endpoint_brackets_ipv6_authorities() {
@@ -905,7 +932,7 @@ mod tests {
         assert_eq!(options.max_concurrent_handlers(), 8);
     }
 
-    #[cfg(feature = "http")]
+    #[cfg(feature = "http-client")]
     #[test]
     fn http_proxy_from_env_is_explicit() {
         let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105).unwrap()]).unwrap();
@@ -928,7 +955,7 @@ mod tests {
         assert!(EndpointSet::new(Vec::new()).is_err());
     }
 
-    #[cfg(all(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(all(feature = "grpc", feature = "http-client", feature = "tcp"))]
     #[test]
     fn transports_keep_their_protocol_specific_default_timeouts() {
         let endpoint = Endpoint::new("127.0.0.1", 10_205).unwrap();
@@ -1001,7 +1028,7 @@ mod tests {
             .is_err());
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     #[test]
     fn role_groups_must_not_be_blank() {
         assert!(ProducerOptions::new("  ").validate().is_err());

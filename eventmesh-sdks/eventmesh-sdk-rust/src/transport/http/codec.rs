@@ -406,7 +406,7 @@ pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(Stri
     let mut extensions: HashMap<&str, &str> = msg
         .props
         .iter()
-        .filter(|(key, _)| !crate::model::delivery::is_reserved_property(key))
+        .filter(|(key, _)| !crate::common::metadata::is_reserved_property(key))
         .map(|(key, value)| (key.as_str(), value.as_str()))
         .collect();
     if let Some(content_type) = msg.data_content_type() {

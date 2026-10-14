@@ -17,20 +17,22 @@
 
 //! Cross-protocol constants, protocol keys, helpers and load-balancing.
 
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 pub mod constants;
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 pub mod loadbalance;
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 pub mod protocol_key;
-#[cfg(any(feature = "grpc", feature = "http"))]
+#[cfg(any(feature = "grpc", feature = "http-client"))]
 pub mod status_code;
 pub mod util;
 
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 pub use constants::DEFAULT_MESSAGE_TTL;
-#[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+#[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 pub use protocol_key::ProtocolKey;
 pub use util::local_ip_v4;
 #[cfg(any(feature = "grpc", feature = "tcp"))]
 pub use util::RandomStringUtils;
+
+pub(crate) mod metadata;

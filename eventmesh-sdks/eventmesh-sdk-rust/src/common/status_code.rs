@@ -55,7 +55,7 @@ impl StatusCode {
 
 /// HTTP consumer return codes (returned in the webhook response body as
 /// `{"retCode": n}`). Mirrors `ClientRetCode`.
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClientRetCode {
     /// Healthy consumption.
@@ -65,10 +65,10 @@ pub enum ClientRetCode {
 }
 
 /// Request codes for the HTTP `code` header used by root-path routing.
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 pub struct RequestCode;
 // Keep the Java HTTP request-code catalog, including operations not exposed here.
-#[cfg(feature = "http")]
+#[cfg(feature = "http-client")]
 #[allow(dead_code)]
 impl RequestCode {
     pub const MSG_SEND_SYNC: i32 = 101;

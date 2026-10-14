@@ -59,7 +59,7 @@ impl Subscription {
         self
     }
 
-    #[cfg(any(feature = "grpc", feature = "http", feature = "tcp"))]
+    #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
     pub(crate) fn validate(&self) -> crate::Result<()> {
         if self.topic.trim().is_empty() {
             return Err(crate::Error::InvalidArgument(
@@ -164,7 +164,7 @@ impl FromStr for DeliveryType {
     }
 }
 
-#[cfg(all(test, any(feature = "grpc", feature = "http", feature = "tcp")))]
+#[cfg(all(test, any(feature = "grpc", feature = "http-client", feature = "tcp")))]
 mod tests {
     use super::{DeliveryMode, DeliveryType, Subscription};
 
