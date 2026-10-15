@@ -143,6 +143,7 @@ Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds
 
 Operations return the pattern-matchable `eventmesh::Error`; common variants include `Config`, `InvalidArgument`, `InvalidMessage`, `Timeout`, `Server`, `Protocol`, `Unsupported`, and transport-specific errors.
 
+See [Migrating from the master Rust SDK (中文)](MIGRATION.md) for API and behavior changes from `master` to the refactored v2 SDK.
 See [Migrating from the Java SDK](MIGRATING_FROM_JAVA.md) for behavior changes and callback, metadata, and shutdown migration guidance.
 
 ## API documentation
