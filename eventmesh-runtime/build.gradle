@@ -118,7 +118,13 @@ final List<String> BROKER_IT_5X_CLASSES = [
     'org.apache.eventmesh.runtime.it.StreamingSdkE2ETest',
     'org.apache.eventmesh.runtime.it.RocketMQ5BrokerIntegrationTest',
     'org.apache.eventmesh.runtime.it.RocketMQ5LiteHttpIntegrationTest',
-    'org.apache.eventmesh.runtime.it.KafkaClientE2EIntegrationTest'
+    'org.apache.eventmesh.runtime.it.KafkaClientE2EIntegrationTest',
+    'org.apache.eventmesh.runtime.it.LoadBalancingAndFailoverE2EIntegrationTest',
+    'org.apache.eventmesh.runtime.it.ClusterBalanceAndResilienceE2EIntegrationTest',
+    // Same two suites over RocketMQ 5.x (POP mode). They must run in THIS task: the 4.x task
+    // excludes storage-rocketmq5 from the classpath, and these need the 5.x plugin to load.
+    'org.apache.eventmesh.runtime.it.ClusterFailoverRocketMQ5E2EIntegrationTest',
+    'org.apache.eventmesh.runtime.it.ClusterBalanceRocketMQ5E2EIntegrationTest'
 ]
 final List<String> BROKER_IT_4_CLASSES = [
     'org.apache.eventmesh.runtime.it.RealBrokerIntegrationTest',
@@ -127,7 +133,11 @@ final List<String> BROKER_IT_4_CLASSES = [
     'org.apache.eventmesh.runtime.it.ClientBrokerIntegrationTest',
     'org.apache.eventmesh.runtime.it.LoadThroughputIntegrationTest',
     'org.apache.eventmesh.runtime.it.LegacyTcpClusterBrokerIntegrationTest',
-    'org.apache.eventmesh.runtime.it.MultiInstanceRocketMqIntegrationTest'
+    'org.apache.eventmesh.runtime.it.MultiInstanceRocketMqIntegrationTest',
+    // The cluster e2e suites over RocketMQ 4.9.5 — isolated classpath so 4.9.5 wins the
+    // org.apache.rocketmq.* package split against the 5.x plugin.
+    'org.apache.eventmesh.runtime.it.ClusterFailoverRocketMQ4E2EIntegrationTest',
+    'org.apache.eventmesh.runtime.it.ClusterBalanceRocketMQ4E2EIntegrationTest'
 ]
 
 // Feature-level e2e tests over a real broker. Each one pairs an in-process

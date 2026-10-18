@@ -322,6 +322,42 @@ public class UniIngressService {
     }
 
     /**
+     * Drop every subscription this instance holds (local + cluster-wide). Called on graceful
+     * shutdown so the instance leaves no ghost entries behind in the shared MetaStore.
+     *
+     * <p>Why this must exist: cluster subscriptions live in the shared Meta
+     * ({@code /em/subs/<topic>/<clientId>}) and every instance mirrors that prefix. A client that
+     * goes away without deregistering leaves its entry behind, and with nacos-client 2.1.1 a
+     * <b>foreign</b> client's {@code deregisterInstance} is silently ignored by the server (only
+     * the registering client may remove its own ephemeral instance) — so nothing else can clean
+     * the entry up later. A ghost entry keeps the dead instance in every peer's
+     * {@link org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore}, so peers keep
+     * forwarding events to a dead URL and keep pulling/assigning partitions for a dead topic.
+     * Deregistering here — from the instance's OWN client, before it exits — is the only reliable
+     * cleanup.</p>
+     *
+     * @return number of local subscriptions dropped
+     */
+    public int dropAllClusterSubscriptions() {
+        // Snapshot the client ids first: unsubscribeByClient mutates the manager while we iterate.
+        java.util.Set<String> clientIds = new java.util.HashSet<>();
+        for (String topic : subscriptionManager.activeTopics()) {
+            for (org.apache.eventmesh.runtime.subscription.Subscription sub : subscriptionManager.activeSubscriptions(topic)) {
+                clientIds.add(sub.getClientId());
+            }
+        }
+        int removed = 0;
+        for (String clientId : clientIds) {
+            removed += unsubscribeByClient(clientId);
+        }
+        if (!clientIds.isEmpty()) {
+            log.info("dropped {} cluster subscription(s) for {} client(s) on shutdown",
+                removed, clientIds.size());
+        }
+        return removed;
+    }
+
+    /**
      * Pump: pull a batch from storage, route to each target subscriber via the reliability layer.
      *
      * @return number of events pulled
@@ -736,13 +772,19 @@ public class UniIngressService {
      * Stale-poll cleanup (§13.6.5): evict clients that haven't polled within {@code thresholdMs} —
      * drops their subscriptions and push buffer so zombie subscriptions don't leak.
      *
+     * <p>Eviction MUST go through {@link #unsubscribeByClient}, not the subscription manager
+     * directly: that is what also deletes the cluster-wide {@code /em/subs/<topic>/<clientId>}
+     * record and frees the push buffer. A locally-evicted client whose Meta entry survives stays
+     * visible to every peer as a live subscriber, so peers keep forwarding its events to a URL
+     * whose buffer was already dropped (they are then lost) and keep polling for it forever —
+     * the ghost never expires because this reaper only ever looks at the local manager.</p>
+     *
      * @return number of subscriptions removed
      */
     public int cleanupStaleClients(long thresholdMs) {
         int removed = 0;
         for (String cid : pushService.getStaleClientIds(thresholdMs)) {
-            removed += subscriptionManager.unsubscribeByClient(cid);
-            pushService.removeClient(cid);
+            removed += unsubscribeByClient(cid);
             log.info("evicted stale client {} (no poll within {}ms)", cid, thresholdMs);
         }
         return removed;
