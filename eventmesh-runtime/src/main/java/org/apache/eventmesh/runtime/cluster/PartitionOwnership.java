@@ -48,11 +48,12 @@ import lombok.extern.slf4j.Slf4j;
  * unknown (partitionCount -1, e.g. RocketMQ) it returns {@code null} → poll-all fallback.</p>
  *
  * <p><b>Fencing</b>: ownership is recorded in Meta via atomic CAS ({@link MetaStore#tryAcquire})
- * with a monotonically increasing {@link FencingToken} (§13.2.8④). A stale owner whose token is
- * lower than the current Meta value is fenced on its next refresh and stops polling that partition.
- * Liveness is preserved across membership churn: partitions that leave our assigner share are
- * released (CAS to a {@code ""} tombstone), and partitions held by a TTL-evicted owner are taken
- * over regardless of token order (a partitioned zombie has already lost its own lease gate).
+ * with a monotonically increasing {@link FencingToken} (§13.2.8④). A partition held by a LIVE peer
+ * is never taken over by token order (tokens are boot-clock seeded — that would freeze ownership
+ * on boot order forever); the peer releases it via {@link #releaseStale} once the deterministic
+ * plan moves the partition away from it, and the new rightful owner claims it on its next cycle.
+ * Only a TTL-evicted owner (heartbeat expired — crashed / partitioned) is taken over regardless
+ * of token order, preserving liveness across membership churn.
  * Remote offset (§13.2.4, G5) is not yet here — the local offset store remains the source of truth
  * for delivery progress.</p>
  */
@@ -86,8 +87,17 @@ public class PartitionOwnership {
     private volatile boolean leaseValid = true;
     private ScheduledExecutorService scheduler;
     private Supplier<Set<String>> topicSource;
-    /** Tombstone value for released assignment records (§13.2.10; empty string). */
-    private static final String RELEASED = "";
+    /**
+     * Tombstone value for released assignment records (§13.2.10). MUST NOT be empty: the Nacos
+     * ConfigService backend rejects a {@code publishConfigCas} whose new content is empty with
+     * {@code ErrCode:-400 "content invalid"} (verified against a live 2.1.1 server), so an empty
+     * tombstone could never be written — the release silently failed, the record kept naming the
+     * old owner, and the plan's new owner stayed fenced by a LIVE peer forever (the partition was
+     * then polled by NOBODY and its events stranded). A non-empty sentinel is CAS-able and still
+     * parses as "no owner" (no {@code '|'} separator → {@link #ownerOf} returns null), so
+     * {@link #acquireOrFence} treats the record exactly like an absent one.
+     */
+    private static final String RELEASED = "RELEASED";
 
     public PartitionOwnership(ClusterMembership membership, MetaStore metaStore, MeshStoragePlugin storage,
         String selfInstanceId, long intervalMs, LongSupplier clock, FencingToken fencingToken) {
@@ -180,8 +190,8 @@ public class PartitionOwnership {
     /**
      * Acquire (or confirm) ownership of one partition via the Meta assignment table, using an
      * atomic CAS ({@link MetaStore#tryAcquire}) with a monotonically increasing {@link FencingToken}
-     * (§13.2.8④). Returns false when another instance holds a fencing token that is ≥ ours — we've
-     * been fenced and must stop polling this partition.
+     * (§13.2.8④). Returns false when a LIVE peer holds the partition (we are fenced until it
+     * releases it) or when a concurrent CAS lost the race.
      *
      * <p>Meta record: {@code /em/assignments/<topic#partition> = "<token>|<ownerInstanceId>"}.
      *
@@ -211,7 +221,8 @@ public class PartitionOwnership {
 
         FencingToken myToken = fencingToken.next();
 
-        // Case 1: unclaimed (absent, or the "" tombstone left by releaseStale) — CAS → our token
+        // Case 1: unclaimed — absent, or the RELEASED tombstone left by releaseStale (both parse
+        // to currentOwner == null) — CAS → our token.
         if (currentOwner == null) {
             boolean ok = metaStore.tryAcquire(key, currentRec, myToken + "|" + selfInstanceId);
             if (ok) {
@@ -230,17 +241,22 @@ public class PartitionOwnership {
             return true;
         }
 
-        // Case 3: another instance holds it — take over when their lease is gone (TTL eviction)
-        // or our token is strictly higher; otherwise we're fenced and stop polling.
+        // Case 3: another instance holds it. Take over ONLY when that owner is gone from the live
+        // set (TTL eviction — its heartbeat expired, e.g. it crashed) or its Meta record is
+        // malformed. A LIVE peer keeps the partition until IT releases it: releaseStale() drops
+        // every partition that left the peer's own deterministic share, so the cluster converges
+        // to the PartitionAssigner plan within a cycle or two of the views lining up.
+        //
+        // Token order must NOT drive the takeover: FencingToken counters are seeded from the
+        // wall clock at boot, so a later-booted instance's tokens are permanently higher. With a
+        // token-order rule the later instance fences the earlier one forever, ownership freezes
+        // on BOOT order instead of the plan, and partitions the plan gave the earlier instance
+        // are never handed over (it also keeps burning a CAS every cycle re-trying).
         boolean ownerEvicted = !live.contains(currentOwner);
-        FencingToken mine = myGen.get(pkey);
-        if (mine == null) {
-            mine = myToken;
-        }
-        if (ownerEvicted || currentToken == null || mine.compareTo(currentToken) > 0) {
+        if (ownerEvicted || currentToken == null) {
             // Fence them: CAS currentValue → our value. An evicted owner that is still polling has
             // already failed its own heartbeat gate (leaseValid=false → polls nothing), so forcing
-            // the takeover is safe; a live higher-token owner keeps the partition.
+            // the takeover is safe.
             boolean ok = metaStore.tryAcquire(key, currentRec, myToken + "|" + selfInstanceId);
             if (ok) {
                 myGen.put(pkey, myToken);
@@ -249,9 +265,9 @@ public class PartitionOwnership {
             // CAS failed — someone else changed it; re-read next cycle
             return false;
         }
-        // Their token is ≥ ours — we're fenced
-        log.info("fenced: partition {}#{} held by {} (token {} >= our {})",
-            topic, partition, currentOwner, currentToken, mine);
+        // A live peer holds it — we're fenced until it releases the partition (releaseStale).
+        log.info("fenced: partition {}#{} held by live peer {} (waiting for its release)",
+            topic, partition, currentOwner);
         myGen.remove(pkey);
         return false;
     }
@@ -259,9 +275,13 @@ public class PartitionOwnership {
     /**
      * Release Meta assignment records for partitions of {@code topic} that are no longer in
      * {@code mine} — the deterministic assigner moved them to a peer after membership churn. The
-     * record is CAS'd to the released tombstone {@code ""} (only if it still names us, so a
+     * record is CAS'd to the released tombstone {@link #RELEASED} (only if it still names us, so a
      * concurrent takeover is never clobbered), letting the new rightful owner claim it on its next
      * cycle instead of being fenced by our — possibly higher — token forever.
+     *
+     * <p>A release that FAILS is retried on the next cycle (and logged): dropping the key from
+     * {@code myGen} anyway would strand the partition — the record would keep naming us, the new
+     * owner stays fenced by a live peer, and nobody polls it.</p>
      */
     private void releaseStale(String topic, List<Integer> mine) {
         String prefix = topic + "#";
@@ -286,13 +306,24 @@ public class PartitionOwnership {
                 log.debug("assignment read failed for {}: {}", key, e.toString());
             }
             if (selfInstanceId.equals(ownerOf(rec))) {
+                boolean released = false;
                 try {
-                    metaStore.tryAcquire(key, rec, RELEASED);
+                    released = metaStore.tryAcquire(key, rec, RELEASED);
                 } catch (Exception e) {
                     log.debug("assignment release failed for {}: {}", key, e.toString());
                 }
+                if (released) {
+                    log.info("released assignment {} — the plan moved the partition to a peer", key);
+                    myGen.remove(pkey);
+                } else {
+                    // Keep it in myGen: the next cycle retries. The record still names us, so the
+                    // new owner would stay fenced by a LIVE peer until this succeeds.
+                    log.warn("could not release assignment {} (record still names us); retrying next cycle", key);
+                }
+            } else {
+                // Absent, tombstoned, or taken over by someone else — nothing left to release.
+                myGen.remove(pkey);
             }
-            myGen.remove(pkey);
         }
     }
 

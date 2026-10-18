@@ -113,9 +113,11 @@ class PartitionFencingTest {
         String currentRec = meta.get(ASSIGNMENT_KEY);
         FencingToken currentToken = FencingToken.parse(currentRec.split("\\|", 2)[0]);
 
-        // Mirror acquireOrFence Case 3 exactly: the fencing CAS is only attempted when our
-        // token is strictly higher than the one in Meta. A's token is lower, so the guard
-        // fails and A is fenced without writing anything.
+        // Mirror the CAS-level invariant: the MetaStore must reject a value write whose expected
+        // old value does not match, so a stale reader can never clobber a newer record. (The
+        // production acquireOrFence no longer gates on token order for a LIVE peer — it fences
+        // outright and waits for the peer's releaseStale; this scenario pins the CAS mechanics
+        // that make that safe.)
         boolean fenced = false;
         if (nextA.compareTo(currentToken) > 0) {
             fenced = meta.tryAcquire(ASSIGNMENT_KEY, currentRec, nextA + "|instanceA");
