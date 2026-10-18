@@ -81,6 +81,15 @@ public class PushService {
      * @return false if the client is paused (STALLED/EVICTED) or the buffer is full under
      *         BLOCK/DROP_NEWEST/TO_DLQ policy (caller should nack → retry/DLQ). Under DROP_OLDEST
      *         a full buffer drops the oldest entry and accepts the new one.
+     *
+     * <p><b>Invariant:</b> the ACK callback is registered in {@code callbacksByDeliveryId}
+     * <i>before</i> the event becomes visible to {@link #poll}. Otherwise a subscriber whose poll
+     * wakes up on the enqueue can call {@code ack(deliveryId)} while the callback is not yet
+     * resolvable: the ACK is lost (returns false), the delivery stays in flight and is redelivered
+     * after the ACK window, and a caller that treats {@code false} as "unknown delivery" cannot
+     * tell the difference. This was observed in CI as an intermittent
+     * {@code MemoryStorageE2EIntegrationTest#publishSubscribePollAckOverMemoryStorage} failure at
+     * its {@code ack(..)} assertion.</p>
      */
     public boolean offer(String clientId, String deliveryId, EventMeshFrame event, AckCallback callback) {
         LinkedBlockingQueue<BufferedEvent> queue = buffers.computeIfAbsent(clientId, k -> new LinkedBlockingQueue<>());
@@ -102,8 +111,9 @@ public class PushService {
                                 droppedCb.nack(new IllegalStateException("buffer overflow DROP_OLDEST: " + clientId));
                             }
                         }
-                        queue.offer(new BufferedEvent(deliveryId, event));
-                        callbacksByDeliveryId.put(deliveryId, callback);
+                        if (!enqueue(clientId, queue, deliveryId, event, callback)) {
+                            return false;
+                        }
                         log.warn("client {} buffer full ({}), DROP_OLDEST applied", clientId, maxPendingPerClient);
                         return true;
                     case DROP_NEWEST:
@@ -116,10 +126,26 @@ public class PushService {
                 }
             }
             updateClientState(clientId, queue.size(), false);
-            queue.offer(new BufferedEvent(deliveryId, event));
-            callbacksByDeliveryId.put(deliveryId, callback);
+            return enqueue(clientId, queue, deliveryId, event, callback);
+        }
+    }
+
+    /**
+     * Publish a delivery to the client's queue: register the ACK callback first, then make the
+     * event visible. See {@link #offer} for why the order matters.
+     *
+     * @return false only if the (unbounded, therefore normally always-accepting) queue refused the
+     *         event, in which case the callback registration is rolled back so no orphan remains.
+     */
+    private boolean enqueue(String clientId, LinkedBlockingQueue<BufferedEvent> queue, String deliveryId,
+        EventMeshFrame event, AckCallback callback) {
+        callbacksByDeliveryId.put(deliveryId, callback);
+        if (queue.offer(new BufferedEvent(deliveryId, event))) {
             return true;
         }
+        callbacksByDeliveryId.remove(deliveryId, callback);
+        log.warn("client {} buffer rejected delivery {} - backpressure", clientId, deliveryId);
+        return false;
     }
 
     /** Configure the overflow policy (default {@link OverflowPolicy#BLOCK}). */

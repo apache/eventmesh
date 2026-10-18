@@ -25,9 +25,14 @@ import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.runtime.delivery.AckCallback;
 
 import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -60,6 +65,51 @@ class PushServiceTest {
         assertTrue(push.ack("d-1"));
         assertEquals(1, cb.acks.get());
         assertFalse(push.ack("d-1"), "second ack is a no-op");
+    }
+
+    /**
+     * Regression: {@code offer} used to enqueue the event <i>before</i> registering its ACK
+     * callback. A subscriber whose poll was woken by the enqueue could then observe a delivery
+     * whose {@code ack(deliveryId)} was not resolvable yet — the ACK was silently dropped and the
+     * delivery was redelivered after the ACK window. CI surfaced this as an intermittent
+     * {@code MemoryStorageE2EIntegrationTest#publishSubscribePollAckOverMemoryStorage} failure.
+     */
+    @Test
+    @Timeout(60)
+    void everyPolledDeliveryIsImmediatelyAckable() throws Exception {
+        final int deliveries = 2_000;
+        PushService push = new PushService();
+        push.register("client-1");
+        RecordingCallback cb = new RecordingCallback();
+        AtomicInteger polled = new AtomicInteger();
+        AtomicInteger unackable = new AtomicInteger();
+
+        ExecutorService consumer = Executors.newSingleThreadExecutor();
+        try {
+            Future<?> loop = consumer.submit(() -> {
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+                while (polled.get() < deliveries && System.nanoTime() < deadline) {
+                    for (BufferedEvent e : push.poll("client-1", 32, 100)) {
+                        if (!push.ack(e.getDeliveryId())) {
+                            unackable.incrementAndGet();
+                        }
+                        polled.incrementAndGet();
+                    }
+                }
+            });
+
+            EventMeshFrame frame = EventMeshFrame.fromCloudEvent(event("e"));
+            for (int i = 0; i < deliveries; i++) {
+                assertTrue(push.offer("client-1", "d-" + i, frame, cb));
+            }
+            loop.get(45, TimeUnit.SECONDS);
+        } finally {
+            consumer.shutdownNow();
+        }
+
+        assertEquals(deliveries, polled.get(), "every offered delivery must reach the poller");
+        assertEquals(0, unackable.get(),
+            "a delivery must be ACKable the moment it becomes visible to poll()");
     }
 
     @Test
