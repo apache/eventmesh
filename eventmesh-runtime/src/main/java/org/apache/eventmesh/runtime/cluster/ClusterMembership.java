@@ -201,7 +201,16 @@ public class ClusterMembership {
             return null;
         }
         int sep = val.indexOf('|');
-        return sep > 0 ? val.substring(sep + 1) : null;
+        if (sep < 0) {
+            return null;
+        }
+        // Heartbeat value layout: "<ts>|<addr>|<active>|<inflow>|<outflow>|<cpu>" — §3.2 appends
+        // the load fields AFTER the address. Strip them so callers get a routable "host:port";
+        // otherwise HttpForwarder builds "http://host:port|0|0|0|0.42/internal/forward" and every
+        // cross-instance forward fails with an illegal-URL error once a LoadMeter is wired.
+        String rest = val.substring(sep + 1);
+        int addrSep = rest.indexOf('|');
+        return addrSep < 0 ? rest : rest.substring(0, addrSep);
     }
 
     /** Mark this instance as leaving (drops the heartbeat key so peers stop seeing it as live). */

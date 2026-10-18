@@ -66,6 +66,14 @@ public class NacosMetaStore implements MetaStore {
     private static final String INSTANCE_PREFIX = "/em/instances/";
     /** Prefix routed to NamingService (cluster-wide subscription discovery). Must match ClusterSubscriptionStore.SUB_PREFIX. */
     private static final String SUB_PREFIX = "/em/subs/";
+
+    /**
+     * Pseudo endpoint of the single NamingService instance this runtime publishes for its
+     * subscriptions. The endpoint only has to be unique per runtime (a client may publish one
+     * instance per service); the payload lives in the metadata.
+     */
+    private static final String SUB_INSTANCE_IP = "127.0.0.1";
+    private static final int SUB_INSTANCE_PORT = 0;
     private static final long GET_TIMEOUT_MS = 3000L;
 
     private final ConfigService config;
@@ -75,17 +83,38 @@ public class NacosMetaStore implements MetaStore {
      *  the per-key diff fired to {@link #subListeners}. */
     private final java.util.concurrent.ConcurrentHashMap<String, String> subSnapshot = new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.List<MetaListener> subListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** Subscriptions this runtime owns (MetaStore key → encoded ClusterSub) — the naming payload. */
+    private final java.util.Map<String, String> localSubs = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Identifies the one naming instance carrying {@link #localSubs} (stable for this JVM). */
+    private final String subInstanceId = "subs-" + java.util.UUID.randomUUID();
+    /** Whether {@link #subInstanceId} is currently registered (nothing to publish when it is empty). */
+    private boolean subInstancePublished;
+    /**
+     * Instances THIS client registered (instanceId → the exact Instance object sent to Nacos).
+     * Needed for deregistration: with nacos-client 2.1.1, {@code selectInstances(SERVICE, false)}
+     * returns an EMPTY list on the very client that registered the instance (the all-instances
+     * query never populates its local ServiceInfoHolder), so a lookup-based deregister silently
+     * matches nothing and {@code leave()} becomes a no-op. Replaying the registered Instance
+     * object deregisters reliably (verified against a live 2.1.1 server).
+     */
+    private final java.util.concurrent.ConcurrentHashMap<String, Instance> registeredInstances =
+        new java.util.concurrent.ConcurrentHashMap<>();
 
     public NacosMetaStore(String serverAddr) throws NacosException {
         Properties props = new Properties();
         props.setProperty(PropertyKeyConst.SERVER_ADDR, serverAddr);
         this.config = createConfigService(props);
-        this.naming = NacosFactory.createNamingService(props);
+        this.naming = createNamingService(props);
     }
 
     /** Separate so tests can substitute mocks. */
     protected ConfigService createConfigService(Properties props) throws NacosException {
         return new NacosConfigService(props);
+    }
+
+    /** Separate so tests can substitute mocks (same pattern as {@link #createConfigService}). */
+    protected NamingService createNamingService(Properties props) throws NacosException {
+        return NacosFactory.createNamingService(props);
     }
 
     @Override
@@ -287,36 +316,75 @@ public class NacosMetaStore implements MetaStore {
     // ---- NamingService routing for /em/subs/* (cluster-wide subscription discovery) ----
 
     /**
-     * Register one subscription as a NamingService instance under {@link #SUB_SERVICE}. The full
-     * MetaStore key + encoded value ride in metadata so {@link #namingSubList()} can reassemble them
-     * exactly. instanceId (unique per sub) = the key with {@code /}→{@code #} (NamingService
-     * instances are matched by ip:port, which is a shared placeholder here, so the instance-based
-     * {@code deregisterInstance} keyed on the Instance is used for delete).
+     * Publish this runtime's whole subscription set as ONE NamingService instance under
+     * {@link #SUB_SERVICE}.
+     *
+     * <p><b>Why one instance for all subscriptions:</b> a nacos 2.1.1 client connection can publish
+     * at most one instance per service — registering a second one silently REPLACES the first
+     * (verified against a live server: three registrations with distinct ports end up as a single
+     * instance; the same three posted over the HTTP API all survive). Registering one instance per
+     * subscription therefore meant that a runtime with two subscribers only ever exposed the last
+     * one to its peers, and the peers' mirror then dropped the other entry — the subscriber starved
+     * with no error anywhere. Each subscription now rides in the instance metadata
+     * ({@code sub:<base64 key> = <base64 value>}), so one registration per runtime carries them
+     * all and a change is a cheap re-registration of the same instance.</p>
      */
-    private void namingSubRegister(String key, String value) {
-        Instance inst = subInstance(key, value);
+    private synchronized void publishSubInstance() {
+        if (localSubs.isEmpty()) {
+            if (subInstancePublished) {
+                try {
+                    naming.deregisterInstance(SUB_SERVICE, subInstance());
+                    subInstancePublished = false;
+                } catch (NacosException e) {
+                    log.warn("naming sub deregister failed: {}", e.toString());
+                }
+            }
+            return;
+        }
+        Instance inst = subInstance();
+        Map<String, String> meta = new HashMap<>();
+        for (Map.Entry<String, String> e : localSubs.entrySet()) {
+            meta.put("sub:" + b64(e.getKey()), b64(e.getValue()));
+        }
+        inst.setMetadata(meta);
         try {
             naming.registerInstance(SUB_SERVICE, inst);
-            subSnapshot.put(key, value);
+            subInstancePublished = true;
         } catch (NacosException e) {
-            log.warn("naming sub register failed for {}: {}", key, e.toString());
+            log.warn("naming sub register failed ({} subscription(s)): {}", localSubs.size(), e.toString());
         }
+    }
+
+    private void namingSubRegister(String key, String value) {
+        localSubs.put(key, value);
+        subSnapshot.put(key, value);
+        publishSubInstance();
     }
 
     private boolean namingSubDeregister(String key) {
-        try {
-            // Reconstruct the same instance (instanceId + ip + port) for an instance-based deregister.
-            naming.deregisterInstance(SUB_SERVICE, subInstance(key, null));
+        if (localSubs.remove(key) == null) {
+            // Not ours (another runtime owns it) — nothing this client can deregister.
             subSnapshot.remove(key);
             knownKeys.remove(key);
-            return true;
-        } catch (NacosException e) {
-            log.warn("naming sub deregister failed for {}: {}", key, e.toString());
             return false;
         }
+        subSnapshot.remove(key);
+        knownKeys.remove(key);
+        publishSubInstance();
+        return true;
     }
 
-    /** List all subscriptions and reassemble {@code key→value} from each instance's metadata. */
+    /** The single naming instance that carries this runtime's subscriptions. */
+    private Instance subInstance() {
+        Instance inst = new Instance();
+        inst.setIp(SUB_INSTANCE_IP);
+        inst.setPort(SUB_INSTANCE_PORT);
+        inst.setInstanceId(subInstanceId);
+        inst.setMetadata(new HashMap<>());
+        return inst;
+    }
+
+    /** List all subscriptions and reassemble {@code key -> value} from every runtime's metadata. */
     private Map<String, String> namingSubList() {
         Map<String, String> out = new HashMap<>();
         try {
@@ -325,6 +393,16 @@ public class NacosMetaStore implements MetaStore {
                 if (meta == null) {
                     continue;
                 }
+                for (Map.Entry<String, String> e : meta.entrySet()) {
+                    if (e.getKey().startsWith("sub:")) {
+                        String key = unb64(e.getKey().substring(4));
+                        String value = unb64(e.getValue());
+                        if (key != null && value != null) {
+                            out.put(key, value);
+                        }
+                    }
+                }
+                // Tolerate instances published by an older runtime (one registration per sub).
                 String key = meta.get("key");
                 String value = meta.get("value");
                 if (key != null && value != null) {
@@ -335,6 +413,20 @@ public class NacosMetaStore implements MetaStore {
             log.warn("naming sub selectInstances failed: {}", e.toString());
         }
         return out;
+    }
+
+    private static String b64(String s) {
+        return java.util.Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private static String unb64(String s) {
+        try {
+            return new String(java.util.Base64.getUrlDecoder().decode(s),
+                java.nio.charset.StandardCharsets.UTF_8);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     /**
@@ -351,7 +443,15 @@ public class NacosMetaStore implements MetaStore {
                 fireSubChange(e.getKey(), e.getValue(), false);
             }
         }
-        // Removed.
+        // Removed — but only on a listing that can be trusted. A naming client that is
+        // reconnecting returns an EMPTY/PARTIAL listing; treating that as "every subscriber left"
+        // wipes the mirror, and since a refresh only runs on a naming event, nothing would put the
+        // entries back — the instance would then silently drop events for live subscribers.
+        boolean trustworthy = !latest.isEmpty() || subSnapshot.isEmpty();
+        if (!trustworthy) {
+            log.warn("ignoring empty subscription listing — keeping {} mirrored subscription(s)", subSnapshot.size());
+            return;
+        }
         for (String k : subSnapshot.keySet()) {
             if (!latest.containsKey(k)) {
                 subSnapshot.remove(k);
@@ -370,26 +470,20 @@ public class NacosMetaStore implements MetaStore {
         }
     }
 
-    private static Instance subInstance(String key, String value) {
-        Instance inst = new Instance();
-        inst.setIp("0.0.0.0");
-        inst.setPort(0);
-        inst.setInstanceId(key.replace('/', '#'));
-        Map<String, String> meta = new HashMap<>();
-        meta.put("key", key);
-        if (value != null) {
-            meta.put("value", value);
-        }
-        inst.setMetadata(meta);
-        return inst;
-    }
-
-    /** Register (or refresh) one instance: value is "&lt;timestamp&gt;|&lt;address&gt;". */
+    /** Register (or refresh) one instance: value is "&lt;timestamp&gt;|&lt;address&gt;[|&lt;load...&gt;]". */
     private void namingRegister(String key, String value) {
         String instanceId = key.substring(INSTANCE_PREFIX.length());
         String[] parts = value.split("\\|", 2);
         String timestamp = parts.length > 0 ? parts[0] : "0";
-        String address = parts.length > 1 ? parts[1] : "";
+        String rest = parts.length > 1 ? parts[1] : "";
+        // §3.2 appends the load fields after the address ("<addr>|<active>|<inflow>|<outflow>|
+        // <cpu>"). Strip them for the ip:port split so the Nacos registration carries the real
+        // routable port; the full value still rides in metadata for namingList() reassembly.
+        String address = rest;
+        int loadSep = rest.indexOf('|');
+        if (loadSep > 0) {
+            address = rest.substring(0, loadSep);
+        }
         String[] hp = address.split(":", 2);
         String ip = hp.length > 0 && !hp[0].isEmpty() ? hp[0] : "0.0.0.0";
         int port = hp.length > 1 ? parsePort(hp[1]) : 0;
@@ -401,9 +495,10 @@ public class NacosMetaStore implements MetaStore {
             Map<String, String> meta = new HashMap<>();
             meta.put("instanceId", instanceId);
             meta.put("timestamp", timestamp);
-            meta.put("address", address);
+            meta.put("address", rest);
             inst.setMetadata(meta);
             naming.registerInstance(SERVICE, inst);
+            registeredInstances.put(instanceId, inst);
         } catch (NacosException e) {
             // Re-throw so ClusterMembership.heartbeat() can detect the Meta outage and the
             // PartitionOwnership lease gate can stop polling (split-brain prevention). Swallowing
@@ -412,7 +507,7 @@ public class NacosMetaStore implements MetaStore {
         }
     }
 
-    /** List all instances and reassemble the "&lt;timestamp&gt;|&lt;address&gt;" value ClusterMembership expects. */
+    /** List all instances and reassemble the heartbeat value ("ts|address[|load fields]") ClusterMembership expects. */
     private Map<String, String> namingList() {
         Map<String, String> out = new HashMap<>();
         try {
@@ -436,17 +531,42 @@ public class NacosMetaStore implements MetaStore {
         return out;
     }
 
-    /** Deregister by instanceId (look up ip:port first). */
+    /**
+     * Deregister by instanceId. Deregisters the exact {@link Instance} object this client
+     * registered (see {@link #registeredInstances}) instead of looking one up: with nacos-client
+     * 2.1.1 {@code selectInstances(SERVICE, false)} returns an EMPTY list on the registering
+     * client, so the lookup loop silently matched nothing and the departed instance lingered in
+     * the live set until the server's 15s beat timeout — {@code /session/recommend} kept handing
+     * out the dead instance's URL and {@link org.apache.eventmesh.runtime.cluster.PartitionAssigner}
+     * kept spreading partitions over it. The listing scans remain as a fallback for instances
+     * registered by a previous JVM (this store never saw the registration); the healthy-only scan
+     * runs FIRST because — unlike the all-instances scan — it does see the local registration.
+     */
     private boolean namingDeregister(String key) {
         String instanceId = key.substring(INSTANCE_PREFIX.length());
         try {
-            for (Instance inst : naming.selectInstances(SERVICE, false)) {
-                Map<String, String> meta = inst.getMetadata();
-                String iid = meta != null ? meta.get("instanceId") : null;
-                if (instanceId.equals(iid) || instanceId.equals(inst.getInstanceId())) {
-                    naming.deregisterInstance(SERVICE, inst.getIp(), inst.getPort());
-                    knownKeys.remove(key);
-                    return true;
+            Instance registered = registeredInstances.remove(instanceId);
+            if (registered != null) {
+                naming.deregisterInstance(SERVICE, registered);
+                knownKeys.remove(key);
+                return true;
+            }
+            for (boolean healthyOnly : new boolean[] {true, false}) {
+                for (Instance inst : naming.selectInstances(SERVICE, healthyOnly)) {
+                    Map<String, String> meta = inst.getMetadata();
+                    String iid = meta != null ? meta.get("instanceId") : null;
+                    if (instanceId.equals(iid) || instanceId.equals(inst.getInstanceId())) {
+                        // Deregister with the FULL Instance (instanceId + ip + port), not ip:port only:
+                        // registrations carry an explicit instanceId, which Nacos 2.x uses as the
+                        // ephemeral-instance key. An ip:port-only deregister builds a temp Instance
+                        // with a null instanceId, matches nothing, and silently leaves a ZOMBIE in
+                        // the live set — the dead instance keeps receiving partition assignments
+                        // (PartitionAssigner spreads partitions over it) until its heartbeat TTL
+                        // expires, starving subscribers on the partitions it "owns".
+                        naming.deregisterInstance(SERVICE, inst);
+                        knownKeys.remove(key);
+                        return true;
+                    }
                 }
             }
             return false;
