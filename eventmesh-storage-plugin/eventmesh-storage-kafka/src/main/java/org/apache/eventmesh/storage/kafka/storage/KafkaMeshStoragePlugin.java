@@ -57,6 +57,16 @@ public class KafkaMeshStoragePlugin
     /** Topics whose partitions are assigned to this consumer. */
     private final ConcurrentHashMap<String, java.util.Set<org.apache.kafka.common.TopicPartition>> assignedTopics = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ConcurrentHashMap<Integer, Long>> pullOffsets = new ConcurrentHashMap<>();
+    /**
+     * Records pulled from the shared consumer but not yet claimed by a per-partition
+     * {@link #poll(String, int, long, int, long)} call. One KafkaConsumer is assigned EVERY
+     * partition of EVERY topic this instance polls, so a single {@code consumer.poll()} returns
+     * records for all of them; the pull loop asks for one (topic, partition) at a time. Without
+     * this buffer the records of the other partitions/topics would be dropped on the floor while
+     * the consumer position has already advanced past them (silent message loss for any
+     * multi-partition or multi-topic owner).
+     */
+    private final ConcurrentHashMap<String, ConcurrentHashMap<Integer, java.util.Deque<EventMeshFrame>>> pendingByTopic = new ConcurrentHashMap<>();
     private java.nio.file.Path pullOffsetFile;
     /** Base client config (bootstrap + security) for the AdminClient used by {@link #createTopic}. */
     private Properties clientBaseProps;
@@ -92,6 +102,12 @@ public class KafkaMeshStoragePlugin
         consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
             "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+        // Fail safe: a partition whose position was never explicitly seeked (e.g. the
+        // seekToBeginning ListOffsets lookup failed on cold metadata) must resume from the
+        // EARLIEST offset, not the latest. "latest" silently skips every message written
+        // before the consumer's first poll — fatal for partitions acquired late (ownership
+        // churn / restart recovery), which is exactly when the persisted offset is absent.
+        consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         applySecurityProps(consumerProps, properties);
         // No group.id: assign+seek manual partition mode (§3.2 no MQ semantics). A Kafka group.id here
         // would register this consumer in __consumer_offsets and trigger broker-side rebalance when
@@ -148,7 +164,20 @@ public class KafkaMeshStoragePlugin
             for (org.apache.kafka.common.PartitionInfo pi : partInfos) {
                 tps.add(new org.apache.kafka.common.TopicPartition(topic, pi.partition()));
             }
-            consumer.assign(tps);
+            // One shared consumer serves EVERY topic this instance polls, and consumer.assign()
+            // REPLACES the whole assignment: assigning only this topic's partitions would drop the
+            // partitions of every other active topic, and the next poll() for those topics would
+            // then receive THIS topic's records (whose positions have already advanced) — silently
+            // losing them. Merge with the other topics' partitions (assign() preserves the
+            // positions of partitions that stay in the set; only the new ones need a seek).
+            java.util.Set<org.apache.kafka.common.TopicPartition> all = new java.util.HashSet<>();
+            for (var entry : assignedTopics.entrySet()) {
+                if (!entry.getKey().equals(topic)) {
+                    all.addAll(entry.getValue());
+                }
+            }
+            all.addAll(tps);
+            consumer.assign(all);
             if (startOffset >= 0) {
                 for (org.apache.kafka.common.TopicPartition tp : tps) {
                     consumer.seek(tp, startOffset);
@@ -167,33 +196,88 @@ public class KafkaMeshStoragePlugin
             assignedTopics.put(topic, tps);
         }
 
-        // Pull one batch
+        // Pull one batch. The shared consumer is assigned EVERY partition of EVERY topic this
+        // instance polls, so the batch carries records for all of them: buffer them per
+        // (topic, partition), then hand the caller only its own partition's frames. The consumer
+        // position advances for every record in the batch, so dropping the others here would
+        // lose them permanently — file each record under ITS OWN topic (a poll for topic X can
+        // return records of topic Y while the assignment covers both).
         org.apache.kafka.clients.consumer.ConsumerRecords<byte[], byte[]> records =
             consumer.poll(java.time.Duration.ofMillis(timeoutMs));
-        List<EventMeshFrame> frames = new ArrayList<>();
         for (var record : records) {
-            if (!record.topic().equals(topic)) {
-                continue;
+            bufferFrame(record.topic(), record.partition(), decodeFrame(record));
+            pullOffsets.computeIfAbsent(record.topic(), k -> new ConcurrentHashMap<>())
+                .put(record.partition(), record.offset());
+        }
+        return drainPending(topic, partition, maxEvents);
+    }
+
+    /** Decode one Kafka record into a Frame (binary frame body, legacy CE-JSON fallback). */
+    private EventMeshFrame decodeFrame(org.apache.kafka.clients.consumer.ConsumerRecord<byte[], byte[]> record) {
+        try {
+            return stampMqOffset(EventMeshFrame.decode(record.value()), record.partition(), record.offset());
+        } catch (Exception decodeEx) {
+            // fall back: legacy CloudEvents-JSON → CE → frame
+            CloudEvent legacy = deserialize(record.value());
+            return legacy == null ? null : stampMqOffset(EventMeshFrame.fromCloudEvent(legacy),
+                record.partition(), record.offset());
+        }
+    }
+
+    /** Buffer one decoded frame under (topic, partition); null frames (undecodable) are dropped. */
+    private void bufferFrame(String topic, int partition, EventMeshFrame frame) {
+        if (frame == null) {
+            return;
+        }
+        pendingByTopic.computeIfAbsent(topic, k -> new ConcurrentHashMap<>())
+            .computeIfAbsent(partition, k -> new java.util.concurrent.ConcurrentLinkedDeque<>())
+            .add(frame);
+    }
+
+    /**
+     * Drain up to {@code maxEvents} buffered frames for {@code (topic, partition)}; a negative
+     * partition means "all partitions" (the single-instance poll-all path), drained round-robin.
+     */
+    private List<EventMeshFrame> drainPending(String topic, int partition, int maxEvents) {
+        ConcurrentHashMap<Integer, java.util.Deque<EventMeshFrame>> byPartition = pendingByTopic.get(topic);
+        if (byPartition == null || byPartition.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<EventMeshFrame> out = new ArrayList<>();
+        if (partition >= 0) {
+            java.util.Deque<EventMeshFrame> queue = byPartition.get(partition);
+            if (queue != null) {
+                EventMeshFrame f;
+                while (out.size() < maxEvents && (f = queue.poll()) != null) {
+                    out.add(f);
+                }
+                if (queue.isEmpty()) {
+                    byPartition.remove(partition, queue);
+                }
             }
-            if (partition >= 0 && record.partition() != partition) {
-                continue;
-            }
-            pullOffsets.computeIfAbsent(topic, k -> new ConcurrentHashMap<>()).put(record.partition(), record.offset());
-            // The stored body is an EventMeshFrame; decode it back. Legacy CE-JSON bodies (written
-            // before the frame migration) are converted to a frame via the codec.
-            try {
-                EventMeshFrame frame = EventMeshFrame.decode(record.value());
-                frames.add(stampMqOffset(frame, record.partition(), record.offset()));
-            } catch (Exception decodeEx) {
-                // fall back: legacy CloudEvents-JSON → CE → frame
-                CloudEvent legacy = deserialize(record.value());
-                if (legacy != null) {
-                    EventMeshFrame frame = EventMeshFrame.fromCloudEvent(legacy);
-                    frames.add(stampMqOffset(frame, record.partition(), record.offset()));
+            return out;
+        }
+        // partition -1: drain every partition round-robin so one busy partition cannot starve
+        // the others when the caller asks for the whole topic.
+        boolean progress = true;
+        while (out.size() < maxEvents && progress) {
+            progress = false;
+            for (var entry : byPartition.entrySet()) {
+                if (out.size() >= maxEvents) {
+                    break;
+                }
+                java.util.Deque<EventMeshFrame> queue = entry.getValue();
+                EventMeshFrame f = queue.poll();
+                if (f != null) {
+                    out.add(f);
+                    progress = true;
+                }
+                if (queue.isEmpty()) {
+                    byPartition.remove(entry.getKey(), queue);
                 }
             }
         }
-        return frames;
+        return out;
     }
 
     /**
@@ -280,6 +364,16 @@ public class KafkaMeshStoragePlugin
         for (int p : partitions) {
             tps.add(new org.apache.kafka.common.TopicPartition(topic, p));
         }
+        // Partitions NEW to this instance's assignment (ownership churn / first claim): the Kafka
+        // client starts them with a null position, and the first poll would then apply
+        // auto.offset.reset — skipping every message already in the log. Seek them explicitly to
+        // the persisted pull offset (restart recovery / re-acquire) or the beginning (never
+        // pulled here) so a late-acquired partition never loses the backlog written before it.
+        java.util.Set<org.apache.kafka.common.TopicPartition> previous = assignedTopics.get(topic);
+        java.util.Set<org.apache.kafka.common.TopicPartition> added = new java.util.HashSet<>(tps);
+        if (previous != null) {
+            added.removeAll(previous);
+        }
         // Merge with existing assignments for other topics
         java.util.Set<org.apache.kafka.common.TopicPartition> all = new java.util.HashSet<>();
         for (var entry : assignedTopics.entrySet()) {
@@ -289,8 +383,16 @@ public class KafkaMeshStoragePlugin
         }
         all.addAll(tps);
         consumer.assign(all);
+        for (org.apache.kafka.common.TopicPartition tp : added) {
+            Long tracked = pullOffsets.getOrDefault(topic, new ConcurrentHashMap<>()).get(tp.partition());
+            if (tracked != null && tracked >= 0) {
+                consumer.seek(tp, tracked);
+            } else {
+                consumer.seekToBeginning(Collections.singleton(tp));
+            }
+        }
         assignedTopics.put(topic, tps);
-        log.info("assigned partitions for {}: {}", topic, partitions);
+        log.info("assigned partitions for {}: {} (newly added: {})", topic, partitions, added.size());
     }
 
     @Override
