@@ -26,7 +26,6 @@ import org.apache.eventmesh.runtime.cluster.MetaStore;
 import org.apache.eventmesh.runtime.cluster.NacosMetaStore;
 import org.apache.eventmesh.runtime.ingress.LoadMeter;
 import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
-import org.apache.eventmesh.storage.kafka.storage.KafkaMeshStoragePlugin;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -56,33 +55,46 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Shared harness for the cluster (multi-instance) e2e suites: real Kafka storage + real Nacos
- * MetaStore, instances booted in-process (or as a SIGKILL-able child JVM), and the Java SDK
- * ({@link CloudEventsClient}) driving publish/subscribe over real HTTP.
+ * Shared harness for the cluster (multi-instance) e2e suites: a real broker (Kafka, RocketMQ 4.x or
+ * RocketMQ 5.x — see {@link ClusterStorageBackend}) + real Nacos MetaStore, instances booted
+ * in-process (or as a SIGKILL-able child JVM), and the Java SDK ({@link CloudEventsClient}) driving
+ * publish/subscribe over real HTTP.
  *
- * <p>Topology under test (two EventMesh instances by default, one shared Kafka + one shared Nacos):
+ * <p>Topology under test (two EventMesh instances by default, one shared broker + one shared Nacos):
  * <pre>
  *   instance A (localhost:20105) ─┐
- *   instance B (localhost:20205) ─┼─ Kafka (4 partitions) + Nacos (/em/instances, /em/subs, /em/assignments)
- *   instance C (localhost:20405) ─┘   (optional third member for re-balancing tests)
+ *   instance B (localhost:20205) ─┼─ broker (4 partitions/queues) + Nacos (/em/instances, /em/subs,
+ *   instance C (localhost:20405) ─┘   /em/assignments)   (optional third member for rebalancing)
  * </pre>
  *
  * <p>Every test method gets a fresh test instance, hence a fresh {@link #topic} (unique runId) and
  * a clean {@code /em/instances/*} + {@code /em/subs/*} namespace in the shared Meta.</p>
  *
+ * <p>Subclasses pick the backend by overriding {@link #backend()}. Everything backend-specific
+ * (address, plugin class, partition count, whether EventMesh owns partitions at all) lives in
+ * {@link ClusterStorageBackend}.</p>
+ *
  * <p><b>Gated by {@code -Dit.nacos=host:port}</b> (a real MetaStore is required — the cluster
- * features under test need a shared store) and auto-skips when Kafka is unreachable. Run:</p>
+ * features under test need a shared store) and auto-skips when the selected broker is unreachable.
+ * Run (Kafka):</p>
  * <pre>
  *   gradle :eventmesh-runtime:e2eTest5x \
  *     --tests "org.apache.eventmesh.runtime.it.*IntegrationTest" \
- *     -Dit.nacos=127.0.0.1:8848 -Dit.storage=kafka -Dit.kafka.bootstrap=127.0.0.1:9092
+ *     -Dit.nacos=127.0.0.1:8848 -Dit.kafka.bootstrap=127.0.0.1:9092
+ * </pre>
+ * <p>RocketMQ 4.x runs through the isolated-classpath task, RocketMQ 5.x through e2eTest5x:</p>
+ * <pre>
+ *   gradle :eventmesh-runtime:e2eTest4  -Dit.nacos=127.0.0.1:8848 -Dit.namesrv=127.0.0.1:9876
+ *   gradle :eventmesh-runtime:e2eTest5x -Dit.nacos=127.0.0.1:8848 -Dit.namesrv5=127.0.0.1:19876
  * </pre>
  */
 abstract class ClusterE2EHarness {
 
     protected static final String NACOS = System.getProperty("it.nacos", "127.0.0.1:8848");
-    protected static final String KAFKA = System.getProperty("it.kafka.bootstrap", E2EConfig.KAFKA_BOOTSTRAP);
     private static final String STORAGE_PROPS_PREFIX = "eventmesh.offset.path";
+
+    /** Storage backend under test — the single thing a concrete suite has to declare. */
+    protected abstract ClusterStorageBackend backend();
 
     protected static final int PORT_A = 20105;
     protected static final int ADMIN_A = 20106;
@@ -93,7 +105,6 @@ abstract class ClusterE2EHarness {
     protected static final int PORT_CRASH = 20305;
     protected static final int ADMIN_CRASH = 20306;
 
-    protected static final int PARTITIONS = 4;
     /** Mirrors ClusterMembership's heartbeat TTL (15s) used by enableCluster. */
     protected static final long HEARTBEAT_TTL_MS = 15_000L;
     /** Meta prefix of the partition-ownership table written by PartitionOwnership (CAS + fencing). */
@@ -126,8 +137,8 @@ abstract class ClusterE2EHarness {
 
     @BeforeEach
     void setUp() throws Exception {
-        assumeKafkaUp();
-        dataRoot = Files.createTempDirectory("em-lb-failover");
+        assumeBackendUp();
+        dataRoot = Files.createTempDirectory("em-lb-" + backend().label());
         nacosProbe = new NacosMetaStore(NACOS);
         // Clean slate: drop any leftover /em/instances/* registrations (zombies from previous
         // runs of this class, or from the SIGKILLed crash child whose leave() never ran). A
@@ -151,9 +162,11 @@ abstract class ClusterE2EHarness {
             nacosProbe.delete(key);
         }
 
-        // Real topic on the real broker (4 partitions → the two instances split ownership).
+        // Real topic on the real broker (4 partitions/queues → the two instances split ownership
+        // on client-assigned backends; on RocketMQ 5.x the count only widens broker-side POP
+        // parallelism, EventMesh still polls all queues).
         MeshStoragePlugin bootstrap = newStorage("init");
-        ((KafkaMeshStoragePlugin) bootstrap).createTopic(topic, PARTITIONS);
+        backend().createTopic(bootstrap, topic);
         bootstrap.shutdown();
         Thread.sleep(2_000L); // topic metadata settle
     }
@@ -205,39 +218,42 @@ abstract class ClusterE2EHarness {
     // instance lifecycle
     // ------------------------------------------------------------------------------------------------
 
-    protected static void assumeKafkaUp() {
-        Assumptions.assumeTrue(E2EConfig.kafkaAvailable(),
-            "no Kafka reachable at " + E2EConfig.KAFKA_BOOTSTRAP + " — start a broker (docker) or pass -Dit.kafka.bootstrap");
+    /**
+     * Skip the test when the selected backend's broker is unreachable. Each suite therefore runs
+     * only where its own infrastructure exists, instead of failing the ones that are not up.
+     */
+    protected void assumeBackendUp() {
+        Assumptions.assumeTrue(backend().available(),
+            "no " + backend().label() + " broker reachable at " + backend().address()
+                + " — start one (docker) or pass -D" + backend().addressProperty());
     }
 
     protected Properties storageProps(String subdir) {
-        Properties p = new Properties();
-        p.setProperty("namesrvAddr", KAFKA);
-        p.setProperty("eventMesh.server.kafka.namesrvAddr", KAFKA);
-        // Per-instance data dir → the kafka pull-offset file (AlignPullOffset) survives a restart.
+        Properties p = backend().connectionProperties();
+        // Per-instance data dir → the pull-offset file (AlignPullOffset) survives a restart.
         p.setProperty(STORAGE_PROPS_PREFIX, dataRoot.resolve(subdir).resolve("offset").toString());
         return p;
     }
 
     protected MeshStoragePlugin newStorage(String subdir) throws Exception {
-        // Instantiate the plugin DIRECTLY (no SPI): MeshStoragePlugin's @EventMeshSPI defaults to
-        // isSingleton=true, so getExtension would hand every app in this JVM the SAME instance —
-        // after the first app's shutdown closes its producer/consumer, later apps would reuse a
-        // dead plugin (pullLoop: "This consumer has already been closed").
-        MeshStoragePlugin storage = new KafkaMeshStoragePlugin();
+        // One fresh plugin per app: MeshStoragePlugin's @EventMeshSPI defaults to isSingleton=true,
+        // so getExtension would hand every app in this JVM the SAME instance — after the first
+        // app's shutdown closes its producer/consumer, later apps would reuse a dead plugin
+        // (pullLoop: "This consumer has already been closed").
+        MeshStoragePlugin storage = backend().newPlugin();
         storage.init(storageProps(subdir));
         return storage;
     }
 
     /**
-     * Boot one clustered EventMeshApplication: real kafka storage + shared Nacos Meta +
-     * LoadMeter wired BEFORE enableCluster so heartbeats carry load (recommend scoring) +
+     * Boot one clustered EventMeshApplication: real storage (backend-selected) + shared Nacos Meta
+     * + LoadMeter wired BEFORE enableCluster so heartbeats carry load (recommend scoring) +
      * advertisedAddr set so /session/recommend and /events/subscribe can return instance URLs.
      */
     protected EventMeshApplication bootInstance(String instanceId, int port, int adminPort, String subdir)
             throws Exception {
         Properties props = storageProps(subdir);
-        MeshStoragePlugin storage = new KafkaMeshStoragePlugin();
+        MeshStoragePlugin storage = backend().newPlugin();
         storage.init(props);
         EventMeshApplication app = new EventMeshApplication(storage, new InMemoryOffsetStore(), port, adminPort);
         app.runtime().withStorageConfig(props);
@@ -268,9 +284,10 @@ abstract class ClusterE2EHarness {
         Files.createDirectories(crashOffset.getParent().resolve("delivery-state"));
 
         List<String> jvmArgs = new ArrayList<>();
-        jvmArgs.add("-Deventmesh.storage.type=kafka");
-        jvmArgs.add("-DnamesrvAddr=" + KAFKA);
-        jvmArgs.add("-DeventMesh.server.kafka.namesrvAddr=" + KAFKA);
+        jvmArgs.add("-Deventmesh.storage.type=" + backend().storageType());
+        // All three plugins read `namesrvAddr`; EventMeshApplication.main merges -D over
+        // eventmesh.properties before calling storage.init, so this is the only address key needed.
+        jvmArgs.add("-DnamesrvAddr=" + backend().address());
         jvmArgs.add("-Deventmesh.http.port=" + port);
         jvmArgs.add("-Deventmesh.admin.port=" + adminPort);
         jvmArgs.add("-Deventmesh.instance.id=" + instanceId);
@@ -414,7 +431,10 @@ abstract class ClusterE2EHarness {
     /**
      * Current partition-ownership map for {@code targetTopic}: partition → owning instance id,
      * read straight from the Meta assignment table ({@code /em/assignments/<topic>#<p>}).
-     * Partitions whose record is absent or tombstoned ({@code ""} = released) are omitted.
+     * Partitions whose record is absent or released are omitted.
+     *
+     * <p>Always empty on broker-managed backends (RocketMQ 5.x POP): PartitionOwnership leaves such
+     * topics in poll-all mode, so no assignment rows are ever written.</p>
      *
      * <p>Reads per key (not via {@code getWithPrefix}): the assignment table lives in the
      * ConfigService dataId space, which has no prefix scan — {@code getWithPrefix} only replays
@@ -422,10 +442,10 @@ abstract class ClusterE2EHarness {
      */
     protected Map<Integer, String> partitionOwners(String targetTopic) {
         Map<Integer, String> out = new java.util.HashMap<>();
-        for (int p = 0; p < PARTITIONS; p++) {
+        for (int p = 0; p < backend().ownershipPartitions(); p++) {
             String rec = nacosProbe.get(ASSIGNMENT_PREFIX + targetTopic + "#" + p);
             if (rec == null || rec.isEmpty()) {
-                continue; // absent, or the "" tombstone left by a release
+                continue; // absent, or the released sentinel left by a release
             }
             int sep = rec.indexOf('|');
             String owner = sep > 0 ? rec.substring(sep + 1) : rec;
@@ -436,6 +456,11 @@ abstract class ClusterE2EHarness {
         return out;
     }
 
+    /** How many partitions EventMesh is expected to own on this backend (0 = broker-managed). */
+    protected int partitions() {
+        return backend().ownershipPartitions();
+    }
+
     /** The cluster subscription record for (topic, clientId), or null when absent. */
     protected String clusterSubscription(String targetTopic, String clientId) {
         return nacosProbe.get(ClusterSubscriptionStore.SUB_PREFIX + targetTopic + "/" + clientId);
@@ -443,9 +468,44 @@ abstract class ClusterE2EHarness {
 
     /** Wait until every partition of {@code targetTopic} has exactly one live owner. */
     protected void waitForCompleteOwnership(String targetTopic, long timeoutMs) {
+        if (!backend().ownsPartitions()) {
+            log("skipping ownership wait for %s: %s consumes in broker-managed (poll-all) mode",
+                targetTopic, backend().label());
+            return;
+        }
         waitFor("complete partition ownership of " + targetTopic, timeoutMs, () -> {
             Map<Integer, String> owners = partitionOwners(targetTopic);
-            return owners.size() == PARTITIONS;
+            return owners.size() == backend().ownershipPartitions();
+        });
+    }
+
+    /**
+     * Wait until {@code survivorId} is the only thing left that can deliver {@code targetTopic}.
+     *
+     * <p>The two backends need different evidence, because the guarantee itself differs:</p>
+     * <ul>
+     *   <li><b>Client-assigned (Kafka, RocketMQ 4.x)</b> — the survivor must own <i>every</i>
+     *       partition the stopped instance held. Until the Meta assignment table says so, those
+     *       partitions are polled by nobody and anything published would just sit in the broker.</li>
+     *   <li><b>Broker-managed (RocketMQ 5.x)</b> — there is no ownership to transfer: every live
+     *       instance pops all queues, so takeover is complete the moment the dead instance leaves
+     *       the live set. Waiting on {@code /em/assignments} here would hang forever (the table is
+     *       never written for this backend) — that is the trap this method exists to avoid.</li>
+     * </ul>
+     */
+    protected void waitForTakeover(String targetTopic, String survivorId, long timeoutMs) {
+        if (!backend().ownsPartitions()) {
+            waitFor("the stopped peer left the live set (" + backend().label()
+                + " pops all queues, so takeover is immediate)", timeoutMs, () -> {
+                    Map<String, String> live = nacosProbe.getWithPrefix(ClusterMembership.INSTANCE_PREFIX);
+                    return live.containsKey(ClusterMembership.INSTANCE_PREFIX + survivorId);
+                });
+            return;
+        }
+        waitFor("the survivor took over every partition of the stopped instance", timeoutMs, () -> {
+            Map<Integer, String> owners = partitionOwners(targetTopic);
+            return owners.size() == backend().ownershipPartitions()
+                && owners.values().stream().allMatch(survivorId::equals);
         });
     }
 
@@ -515,9 +575,12 @@ abstract class ClusterE2EHarness {
     // docker helpers (infrastructure-outage tests; skipped when the CLI/container is unavailable)
     // ------------------------------------------------------------------------------------------------
 
-    /** Docker container backing the broker / the MetaStore (override for non-local infra). */
-    protected static String kafkaContainer() {
-        return System.getProperty("it.kafka.container", "em-e2e-kafka");
+    /**
+     * Docker container backing the selected broker (override per backend with
+     * {@code -Dit.<backend>.container=<name>} for non-local infra) and the MetaStore.
+     */
+    protected String brokerContainer() {
+        return System.getProperty("it." + backend().label() + ".container", backend().brokerContainer());
     }
 
     protected static String nacosContainer() {
