@@ -107,6 +107,25 @@ class ClusterMembershipLoadTest {
         assertEquals(0L, load.outflowBytesPerSec);
     }
 
+    @Test
+    void addressOfIgnoresLoadFields() {
+        AtomicClock clock = new AtomicClock(10_000L);
+        InMemoryMetaStore meta = new InMemoryMetaStore();
+        meta.put("/em/instances/peer", "9500|h1:10105|5|5000|4000|0.42");
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:10105", 15_000L, clock::get, new FencingToken());
+
+        assertEquals("h1:10105", m.addressOf("peer"),
+            "the load suffix must not become part of the forwarded address");
+    }
+
+    @Test
+    void addressFromHeartbeatHandlesBothFormats() {
+        assertEquals("h1:10105", ClusterMembership.addressFromHeartbeat("9500|h1:10105"));
+        assertEquals("h1:10105", ClusterMembership.addressFromHeartbeat("9500|h1:10105|5|5000|4000|0.42"));
+        assertNull(ClusterMembership.addressFromHeartbeat("9500"));
+        assertNull(ClusterMembership.addressFromHeartbeat(null));
+    }
+
     /** Minimal controllable clock so tests don't depend on wall time. */
     static final class AtomicClock {
 

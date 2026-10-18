@@ -477,12 +477,12 @@ public class NacosMetaStore implements MetaStore {
         String timestamp = parts.length > 0 ? parts[0] : "0";
         String rest = parts.length > 1 ? parts[1] : "";
         // §3.2 appends the load fields after the address ("<addr>|<active>|<inflow>|<outflow>|
-        // <cpu>"). Strip them for the ip:port split so the Nacos registration carries the real
-        // routable port; the full value still rides in metadata for namingList() reassembly.
-        String address = rest;
-        int loadSep = rest.indexOf('|');
-        if (loadSep > 0) {
-            address = rest.substring(0, loadSep);
+        // <cpu>"). Strip them for the ip:port split so parsePort cannot turn the uncut tail into
+        // a garbage port; the full value still rides in metadata for namingList() reassembly.
+        // Shared with ClusterMembership.addressOf so the parsing stays in one testable place.
+        String address = ClusterMembership.addressFromHeartbeat(value);
+        if (address == null) {
+            address = "";
         }
         String[] hp = address.split(":", 2);
         String ip = hp.length > 0 && !hp[0].isEmpty() ? hp[0] : "0.0.0.0";
