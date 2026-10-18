@@ -234,6 +234,16 @@ public class EventMeshApplication {
         // 1. ClusterMembership — heartbeat value carries the fencing token + load snapshot.
         this.clusterMembership = new org.apache.eventmesh.runtime.cluster.ClusterMembership(
             metaStore, selfInstanceId, selfInstanceId, 15_000L, System::currentTimeMillis, selfToken);
+        // The heartbeat below starts with an initial delay of 0, so it can fire BEFORE start() has
+        // resolved the advertised address (startupInternal sets it right before the traffic server
+        // binds). Until then the membership carried the instance id as its "address", and the first
+        // beats therefore published ip=<instanceId>, port=0 — an unroutable registration that peers
+        // mirror in their instance table (and could pick as a /internal/forward or /session/recommend
+        // target). Resolve the same address the traffic server will use, BEFORE scheduling.
+        String selfAddr = System.getProperty("eventmesh.http.advertisedAddr", "");
+        clusterMembership.setSelfAddress(selfAddr.isEmpty()
+            ? org.apache.eventmesh.common.util.IPUtils.getLocalAddress() + ":" + httpPort
+            : selfAddr);
         org.apache.eventmesh.runtime.ingress.LoadMeter lm = runtime.ingress().loadMeter();
         if (lm != null) {
             this.clusterMembership.withLoadSupplier(() -> {
@@ -451,6 +461,13 @@ public class EventMeshApplication {
         if (sessionRouter != null) {
             sessionRouter.shutdown();
         }
+        // Deregister this instance's subscriptions from the shared Meta BEFORE leaving the
+        // cluster. Traffic is already stopped (servers above), so no new subscription can arrive;
+        // dropping the rest now keeps the entry from outliving the instance — peers mirror that
+        // prefix and would keep forwarding to this (dead) URL and pulling partitions for topics
+        // whose only subscriber lived here. Must run while this instance's own Meta client is
+        // still alive: with nacos-client 2.1.1 a foreign client's deregister is silently ignored.
+        runtime.ingress().dropAllClusterSubscriptions();
         // §13.6.4 step 5 / G12: release the partition lease so peers re-assume ownership without
         // waiting for the TTL (15s) to expire — minimises the handover gap on graceful shutdown.
         if (heartbeatScheduler != null) {
