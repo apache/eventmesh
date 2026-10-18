@@ -192,6 +192,49 @@ class UniIngressServiceTest {
         assertEquals(0, metrics.getRedeliveries());
     }
 
+    /**
+     * Graceful shutdown must leave NO cluster subscription behind. A ghost entry in the shared
+     * Meta keeps the dead instance in every peer's subscription view, so peers keep forwarding
+     * to a dead URL and keep pulling/assigning partitions for a dead topic — and with
+     * nacos-client 2.1.1 a foreign client cannot deregister it later (server ignores it).
+     */
+    @Test
+    void dropAllClusterSubscriptionsClearsLocalAndClusterViews() {
+        org.apache.eventmesh.runtime.cluster.InMemoryMetaStore meta =
+            new org.apache.eventmesh.runtime.cluster.InMemoryMetaStore();
+        org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore clusterSubs =
+            new org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore(meta);
+        UniIngressService svc = new UniIngressService(new InMemoryStorage(), new InMemoryOffsetStore());
+        svc.withCluster(new org.apache.eventmesh.runtime.cluster.ClusterCoordinator("self", clusterSubs,
+            (topic, clientId, event) -> true, (inst, cid, topic, event) -> true));
+
+        svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
+        svc.subscribe("payments", "client-2", DistributionMode.BROADCAST, null);
+        assertEquals(2, clusterSubs.topics().size(), "both subscriptions registered cluster-wide");
+
+        int dropped = svc.dropAllClusterSubscriptions();
+
+        assertEquals(2, dropped, "both local subscriptions dropped");
+        assertTrue(svc.getSubscriptionManager().activeTopics().isEmpty(),
+            "no local subscription may survive the drop");
+        assertTrue(clusterSubs.topics().isEmpty(),
+            "no cluster subscription entry may survive the drop (ghost entries cannot be removed "
+                + "by a foreign client later)");
+        assertTrue(meta.getWithPrefix(org.apache.eventmesh.runtime.cluster.ClusterSubscriptionStore.SUB_PREFIX)
+            .isEmpty(), "the shared Meta must no longer carry the subscription keys");
+    }
+
+    @Test
+    void dropAllClusterSubscriptionsWithoutClusterIsANoOpOnMeta() {
+        // Single-instance mode (cluster == null): dropping local subscriptions must not throw and
+        // must not touch any shared state.
+        UniIngressService svc = new UniIngressService(new InMemoryStorage(), new InMemoryOffsetStore());
+        svc.subscribe("orders", "client-1", DistributionMode.BROADCAST, null);
+
+        assertEquals(1, svc.dropAllClusterSubscriptions());
+        assertTrue(svc.getSubscriptionManager().activeTopics().isEmpty());
+    }
+
     private static CloudEvent event(String id) {
         return CloudEventBuilder.v1().withId(id).withSource(URI.create("test")).withType("order.created").build();
     }
