@@ -21,7 +21,13 @@
 # Dependencies resolve against the Maven repositories configured in settings.gradle / build.gradle.
 # Build-stage runs as root (default for the gradle base image); no shipped
 # artifact is affected -- the runtime stage below drops to a non-root user.
-FROM gradle:8.5.0-jdk21 AS builder
+#
+# $BUILDPLATFORM (not the default target platform): the image is published for
+# linux/amd64 and linux/arm64, and the `dist` output is plain Java bytecode, so
+# the compilation only has to happen once, on the native build platform. Pinning
+# this stage also means the arm64 leg does not run a full Gradle build under
+# qemu (slow, and it has no gradle:8.5.0-jdk21 variant to resolve for it).
+FROM --platform=$BUILDPLATFORM gradle:8.5.0-jdk21 AS builder
 USER root
 WORKDIR /build
 COPY . .
@@ -36,6 +42,9 @@ RUN gradle clean dist --no-daemon \
 # WebSocket) as one JVM. Storage/protocol plugins are discovered from ./plugin/
 # by the SPI JarExtensionClassLoader, so only conf/apps/lib need the classpath.
 # bin/start.sh assembles the classpath and maps ENV vars to -D flags.
+# This stage is NOT pinned to $BUILDPLATFORM: it must match the target
+# architecture, so the whole runtime (base JRE, procps, HEALTHCHECK shell) is
+# native on both legs of the published manifest.
 FROM eclipse-temurin:21-jre
 # procps ships pgrep (container introspection / debug). The base image already
 # provides the C.UTF-8 locale, so no locales package / localedef is needed
