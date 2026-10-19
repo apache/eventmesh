@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -40,16 +41,18 @@ public class HandleMsgContext {
 
     private final CloudEvent event;
     private final AbstractContext context;
+    private final EventMeshAsyncConsumeContext asyncConsumeContext;
 
     public HandleMsgContext(String consumerGroup, CloudEvent event, SubscriptionMode subscriptionMode, GrpcType grpcType,
-        AbstractContext context, EventMeshGrpcServer eventMeshGrpcServer,
+        EventMeshAsyncConsumeContext asyncConsumeContext, EventMeshGrpcServer eventMeshGrpcServer,
         EventMeshConsumer eventMeshConsumer, ConsumerGroupTopicConfig consumeTopicConfig) {
         this.msgRandomNo = EventMeshUtil.buildPushMsgSeqNo();
         this.consumerGroup = consumerGroup;
         this.grpcType = grpcType;
         this.subscriptionMode = subscriptionMode;
         this.event = event;
-        this.context = context;
+        this.context = asyncConsumeContext.getAbstractContext();
+        this.asyncConsumeContext = asyncConsumeContext;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.eventMeshConsumer = eventMeshConsumer;
         this.consumeTopicConfig = consumeTopicConfig;
@@ -73,6 +76,10 @@ public class HandleMsgContext {
 
     public AbstractContext getContext() {
         return context;
+    }
+
+    public EventMeshAsyncConsumeContext getAsyncConsumeContext() {
+        return asyncConsumeContext;
     }
 
     public EventMeshGrpcServer getEventMeshGrpcServer() {

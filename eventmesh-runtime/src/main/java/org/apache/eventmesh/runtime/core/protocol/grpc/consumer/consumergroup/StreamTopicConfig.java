@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +43,15 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
      */
     private final Map<String, Map<String, EventEmitter<CloudEvent>>> idcEmitterMap = new ConcurrentHashMap<>();
 
+    // Retain the subscription key while an in-flight delivery still holds an emitter after deregistration.
+    private final Map<EventEmitter<CloudEvent>, String> emitterKeys = new WeakHashMap<>();
+
     /**
      * Key: IDC Value: list of emitters
      */
-    private Map<String, List<EventEmitter<CloudEvent>>> idcEmitters = new ConcurrentHashMap<>();
+    private volatile Map<String, List<EventEmitter<CloudEvent>>> idcEmitters = new ConcurrentHashMap<>();
 
-    private List<EventEmitter<CloudEvent>> totalEmitters = new ArrayList<>();
+    private volatile List<EventEmitter<CloudEvent>> totalEmitters = new ArrayList<>();
 
     public StreamTopicConfig(final String consumerGroup, final String topic, final SubscriptionMode subscriptionMode) {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
@@ -68,13 +72,14 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
 
         idcEmitterMap.computeIfAbsent(client.getIdc(), k -> new HashMap<>())
             .put(concatKey(client.getIp(), client.getPid()), client.getEventEmitter());
+        emitterKeys.put(client.getEventEmitter(), client.getIdc() + '\0' + concatKey(client.getIp(), client.getPid()));
 
         idcEmitters = buildIdcEmitter(idcEmitterMap);
         totalEmitters = buildTotalEmitter(idcEmitters);
     }
 
     @Override
-    public void deregisterClient(final ConsumerGroupClient client) {
+    public synchronized void deregisterClient(final ConsumerGroupClient client) {
         final String idc = client.getIdc();
         final String clientIp = client.getIp();
         final String clientPid = client.getPid();
@@ -84,7 +89,11 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
             return;
         }
 
-        emitters.remove(clientIp + ":" + clientPid);
+        String key = clientIp + ":" + clientPid;
+        if (client.getEventEmitter() != null && emitters.get(key) != client.getEventEmitter()) {
+            return;
+        }
+        emitters.remove(key);
         if (emitters.isEmpty()) {
             idcEmitterMap.remove(idc);
         }
@@ -115,6 +124,21 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
 
     public List<EventEmitter<CloudEvent>> getTotalEmitters() {
         return totalEmitters;
+    }
+
+    public synchronized String getEmitterKey(EventEmitter<CloudEvent> emitter) {
+        return emitterKeys.get(emitter);
+    }
+
+    public synchronized EventEmitter<CloudEvent> getEmitterByKey(String key) {
+        for (Map.Entry<String, Map<String, EventEmitter<CloudEvent>>> idc : idcEmitterMap.entrySet()) {
+            for (Map.Entry<String, EventEmitter<CloudEvent>> client : idc.getValue().entrySet()) {
+                if ((idc.getKey() + '\0' + client.getKey()).equals(key)) {
+                    return client.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     private static Map<String, List<EventEmitter<CloudEvent>>> buildIdcEmitter(

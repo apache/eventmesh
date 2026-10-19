@@ -26,4 +26,27 @@ public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
     private AbstractContext abstractContext;
 
+    /**
+     * Whether this context can redeliver a message after the consume callback has returned.
+     */
+    public boolean supportsAsyncNack() {
+        return false;
+    }
+
+    /**
+     * Whether a synchronous reconsume request keeps the original message pending locally.
+     */
+    public boolean supportsLocalRetry() {
+        return false;
+    }
+
+    /**
+     * Request redelivery without acknowledging the original message.
+     *
+     * @return true only when redelivery has been accepted by the storage plugin
+     */
+    public boolean nack() {
+        return false;
+    }
+
 }

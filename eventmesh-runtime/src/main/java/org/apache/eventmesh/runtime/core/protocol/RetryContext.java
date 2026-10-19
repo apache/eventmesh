@@ -63,6 +63,10 @@ public abstract class RetryContext implements TimerTask {
 
     @Override
     public final void run() throws Exception {
+        if (!useRetryPlugin()) {
+            doRun();
+            return;
+        }
         String eventMeshRetryPluginType = Optional.ofNullable(commonConfiguration.getEventMeshRetryPluginType())
             .orElse(Constants.DEFAULT);
         if (Constants.DEFAULT.equals(eventMeshRetryPluginType)) {
@@ -98,6 +102,10 @@ public abstract class RetryContext implements TimerTask {
             RETRY_STRATEGY_PROCESSED_EVENT_LIST.remove(event.getId());
             getHandleMessageContext().finish();
         }
+    }
+
+    protected boolean useRetryPlugin() {
+        return true;
     }
 
     protected HandleMessageContext getHandleMessageContext() throws Exception {

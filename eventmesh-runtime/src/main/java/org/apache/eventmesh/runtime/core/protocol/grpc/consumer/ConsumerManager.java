@@ -18,11 +18,14 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.grpc.common.GrpcType;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,6 +53,13 @@ public class ConsumerManager {
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
+    // Independent of the bounded gRPC push retry timer, so timer saturation cannot stop broker replay recovery.
+    private final ScheduledExecutorService recoveryExecutor;
+
+    private final Map<String, RecoveryState> recoveringGroups = new ConcurrentHashMap<>();
+
+    private volatile boolean shuttingDown;
+
     // key: ConsumerGroup
     private final Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
 
@@ -56,7 +67,12 @@ public class ConsumerManager {
     private final Map<String, EventMeshConsumer> consumerTable = new ConcurrentHashMap<>();
 
     public ConsumerManager(final EventMeshGrpcServer eventMeshGrpcServer) {
+        this(eventMeshGrpcServer, Executors.newSingleThreadScheduledExecutor());
+    }
+
+    ConsumerManager(final EventMeshGrpcServer eventMeshGrpcServer, final ScheduledExecutorService recoveryExecutor) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.recoveryExecutor = recoveryExecutor;
     }
 
     public Map<String, List<ConsumerGroupClient>> getClientTable() {
@@ -72,7 +88,10 @@ public class ConsumerManager {
         log.info("Grpc ConsumerManager started.");
     }
 
-    public void shutdown() throws Exception {
+    public synchronized void shutdown() throws Exception {
+        shuttingDown = true;
+        recoveryExecutor.shutdownNow();
+        recoveringGroups.clear();
         for (final EventMeshConsumer consumer : consumerTable.values()) {
             consumer.shutdown();
         }
@@ -82,6 +101,35 @@ public class ConsumerManager {
 
     public EventMeshConsumer getEventMeshConsumer(final String consumerGroup) {
         return consumerTable.computeIfAbsent(consumerGroup, key -> new EventMeshConsumer(eventMeshGrpcServer, consumerGroup));
+    }
+
+    public synchronized boolean registerStreamClients(final List<ConsumerGroupClient> clients, final EventEmitter<CloudEvent> emitter)
+        throws Exception {
+        if (shuttingDown || emitter.isClosed()) {
+            return false;
+        }
+        if (clients.isEmpty()) {
+            return true;
+        }
+
+        String consumerGroup = clients.get(0).getConsumerGroup();
+        EventMeshConsumer consumer = getEventMeshConsumer(consumerGroup);
+        boolean requireRestart = false;
+        for (ConsumerGroupClient client : clients) {
+            registerClient(client);
+            if (consumer.registerClient(client)) {
+                requireRestart = true;
+            }
+        }
+
+        if (emitter.isClosed()) {
+            deregisterClientsByEmitter(emitter);
+            return false;
+        }
+        if (requireRestart) {
+            restartEventMeshConsumer(consumerGroup);
+        }
+        return true;
     }
 
     public synchronized void registerClient(final ConsumerGroupClient newClient) {
@@ -123,7 +171,7 @@ public class ConsumerManager {
         }
     }
 
-    public boolean updateClientTime(final ConsumerGroupClient client) {
+    public synchronized boolean updateClientTime(final ConsumerGroupClient client) {
         final List<ConsumerGroupClient> localClients = clientTable.get(client.getConsumerGroup());
         if (CollectionUtils.isEmpty(localClients)) {
             return false;
@@ -153,8 +201,7 @@ public class ConsumerManager {
         synchronized (clientTable) {
             while (iterator.hasNext()) {
                 final ConsumerGroupClient localClient = iterator.next();
-                if (StringUtils.equals(localClient.getTopic(), client.getTopic())
-                    && localClient.getSubscriptionMode() == client.getSubscriptionMode()) {
+                if (matchesClient(localClient, client)) {
                     // close the GRPC client stream before removing it
                     closeEventStream(localClient);
                     iterator.remove();
@@ -168,6 +215,45 @@ public class ConsumerManager {
 
     }
 
+    private boolean matchesClient(ConsumerGroupClient localClient, ConsumerGroupClient client) {
+        if (localClient == client) {
+            return true;
+        }
+        if (!StringUtils.equals(localClient.getTopic(), client.getTopic())
+            || localClient.getSubscriptionMode() != client.getSubscriptionMode()
+            || (client.getGrpcType() != null && localClient.getGrpcType() != client.getGrpcType())) {
+            return false;
+        }
+        if (localClient.getGrpcType() == GrpcType.STREAM) {
+            return client.getIp() != null && client.getPid() != null
+                && StringUtils.equals(localClient.getIp(), client.getIp())
+                && StringUtils.equals(localClient.getPid(), client.getPid());
+        }
+        return localClient.getGrpcType() == GrpcType.WEBHOOK && client.getUrl() != null
+            && StringUtils.equals(localClient.getUrl(), client.getUrl());
+    }
+
+    public synchronized void deregisterClientsByEmitter(final EventEmitter<CloudEvent> emitter) {
+        final Set<String> groupsToRestart = new HashSet<>();
+        clientTable.forEach((consumerGroup, clients) -> {
+            final Iterator<ConsumerGroupClient> iterator = clients.iterator();
+            while (iterator.hasNext()) {
+                ConsumerGroupClient client = iterator.next();
+                if (client.getGrpcType() == GrpcType.STREAM && client.getEventEmitter() == emitter) {
+                    iterator.remove();
+                    EventMeshConsumer consumer = consumerTable.get(consumerGroup);
+                    if (consumer != null && consumer.deregisterClient(client)) {
+                        groupsToRestart.add(consumerGroup);
+                    }
+                }
+            }
+            if (clients.isEmpty()) {
+                clientTable.remove(consumerGroup, clients);
+            }
+        });
+        groupsToRestart.forEach(this::restartEventMeshConsumerWithRecovery);
+    }
+
     private void closeEventStream(final ConsumerGroupClient client) {
         if (client.getEventEmitter() != null) {
             client.getEventEmitter().onCompleted();
@@ -175,6 +261,9 @@ public class ConsumerManager {
     }
 
     public synchronized void restartEventMeshConsumer(final String consumerGroup) throws Exception {
+        if (shuttingDown) {
+            return;
+        }
         final EventMeshConsumer eventMeshConsumer = consumerTable.get(consumerGroup);
 
         if (eventMeshConsumer == null) {
@@ -191,6 +280,91 @@ public class ConsumerManager {
         if (ServiceState.RUNNING != eventMeshConsumer.getStatus()) {
             consumerTable.remove(consumerGroup);
         }
+    }
+
+    public boolean recoverUnacknowledgedMessages(final String consumerGroup) {
+        while (!shuttingDown) {
+            RecoveryState state = recoveringGroups.computeIfAbsent(consumerGroup, group -> new RecoveryState());
+            synchronized (state) {
+                if (shuttingDown) {
+                    return false;
+                }
+                if (recoveringGroups.get(consumerGroup) != state) {
+                    continue;
+                }
+                if (state.scheduled) {
+                    // A request arriving during recovery needs another restart after the current attempt succeeds.
+                    state.repeat = true;
+                    return true;
+                }
+                state.scheduled = true;
+                if (!scheduleRecovery(consumerGroup, state, 0)) {
+                    state.scheduled = false;
+                    recoveringGroups.remove(consumerGroup, state);
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void restartEventMeshConsumerWithRecovery(String consumerGroup) {
+        try {
+            restartEventMeshConsumer(consumerGroup);
+        } catch (Exception e) {
+            log.error("Error restarting EventMeshConsumer [{}] after client removal", consumerGroup, e);
+            recoverUnacknowledgedMessages(consumerGroup);
+        }
+    }
+
+    private boolean scheduleRecovery(final String consumerGroup, final RecoveryState state, long delayMillis) {
+        try {
+            recoveryExecutor.schedule(() -> {
+                if (shuttingDown) {
+                    synchronized (state) {
+                        state.scheduled = false;
+                        recoveringGroups.remove(consumerGroup, state);
+                    }
+                    return;
+                }
+                try {
+                    restartEventMeshConsumer(consumerGroup);
+                } catch (Exception e) {
+                    log.error("Could not restart EventMeshConsumer [{}] to recover unacknowledged messages; retrying", consumerGroup, e);
+                    if (!scheduleRecovery(consumerGroup, state, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS)) {
+                        synchronized (state) {
+                            state.scheduled = false;
+                            recoveringGroups.remove(consumerGroup, state);
+                        }
+                    }
+                    return;
+                }
+                synchronized (state) {
+                    if (state.repeat) {
+                        state.repeat = false;
+                        if (!scheduleRecovery(consumerGroup, state, 0)) {
+                            state.scheduled = false;
+                            recoveringGroups.remove(consumerGroup, state);
+                        }
+                    } else {
+                        state.scheduled = false;
+                        recoveringGroups.remove(consumerGroup, state);
+                    }
+                }
+            }, delayMillis, TimeUnit.MILLISECONDS);
+            return true;
+        } catch (RejectedExecutionException e) {
+            log.error("Could not schedule recovery for EventMeshConsumer [{}]", consumerGroup, e);
+            return false;
+        }
+    }
+
+    private static final class RecoveryState {
+
+        private boolean scheduled;
+
+        private boolean repeat;
     }
 
     private void startClientCheck() {
@@ -210,27 +384,29 @@ public class ConsumerManager {
 
                 final Set<String> consumerGroupRestart = new HashSet<>();
                 clientList.forEach(client -> {
-                    if (System.currentTimeMillis() - client.getLastUpTime().getTime() > clientTimeout) {
-                        log.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
-                            JsonUtils.toJSONString(client), client.getLastUpTime());
-
-                        deregisterClient(client);
-                        if (getEventMeshConsumer(client.getConsumerGroup()).deregisterClient(client)) {
-                            consumerGroupRestart.add(client.getConsumerGroup());
-                        }
+                    if (deregisterExpiredClient(client, clientTimeout)) {
+                        consumerGroupRestart.add(client.getConsumerGroup());
                     }
                 });
 
                 // restart EventMeshConsumer for the group
-                consumerGroupRestart.forEach(consumerGroup -> {
-                    try {
-                        restartEventMeshConsumer(consumerGroup);
-                    } catch (Exception e) {
-                        log.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
-                    }
-                });
+                consumerGroupRestart.forEach(this::restartEventMeshConsumerWithRecovery);
             }, 10_000, 10_000, TimeUnit.MILLISECONDS);
         }
+    }
+
+    boolean deregisterExpiredClient(ConsumerGroupClient client, int clientTimeout) {
+        synchronized (this) {
+            List<ConsumerGroupClient> clients = clientTable.get(client.getConsumerGroup());
+            if (CollectionUtils.isEmpty(clients) || !clients.contains(client)
+                || System.currentTimeMillis() - client.getLastUpTime().getTime() <= clientTimeout) {
+                return false;
+            }
+            log.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
+                JsonUtils.toJSONString(client), client.getLastUpTime());
+            deregisterClient(client);
+        }
+        return getEventMeshConsumer(client.getConsumerGroup()).deregisterClient(client);
     }
 
     public List<String> getAllConsumerTopic() {
