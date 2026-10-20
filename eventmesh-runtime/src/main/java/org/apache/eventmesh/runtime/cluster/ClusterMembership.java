@@ -216,6 +216,7 @@ public class ClusterMembership {
      * stays in one unit-testable place instead of two inline copies.
      *
      * @return the address, or {@code null} when the value carries no timestamp/address separator
+     *         or the address segment is empty
      */
     static String addressFromHeartbeat(String value) {
         if (value == null) {
@@ -227,7 +228,11 @@ public class ClusterMembership {
         }
         String rest = value.substring(sep + 1);
         int loadSep = rest.indexOf('|');
-        return loadSep < 0 ? rest : rest.substring(0, loadSep);
+        String address = loadSep < 0 ? rest : rest.substring(0, loadSep);
+        // "<ts>|" or "<ts>||<load...>" leaves the address segment empty. An empty address is as
+        // unusable as a missing one - HttpForwarder would build "http:///internal/forward" - so
+        // report it as absent instead of propagating "" through addressOf.
+        return address.isEmpty() ? null : address;
     }
 
     /** Mark this instance as leaving (drops the heartbeat key so peers stop seeing it as live). */
