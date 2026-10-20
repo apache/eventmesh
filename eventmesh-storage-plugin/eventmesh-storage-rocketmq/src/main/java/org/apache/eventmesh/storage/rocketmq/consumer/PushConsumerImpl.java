@@ -45,6 +45,7 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -53,6 +54,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PushConsumerImpl {
 
     private final DefaultMQPushConsumer rocketmqPushConsumer;
@@ -81,6 +85,7 @@ public class PushConsumerImpl {
         this.rocketmqPushConsumer.setConsumeTimeout(clientConfig.getRmqMessageConsumeTimeout());
         this.rocketmqPushConsumer.setConsumeThreadMax(clientConfig.getRmqMaxConsumeThreadNums());
         this.rocketmqPushConsumer.setConsumeThreadMin(clientConfig.getRmqMinConsumeThreadNums());
+        this.rocketmqPushConsumer.setConsumeMessageBatchMaxSize(1);
         this.rocketmqPushConsumer.setMessageModel(
             MessageModel.valueOf(clientConfig.getMessageModel()));
 
@@ -102,6 +107,9 @@ public class PushConsumerImpl {
     }
 
     public void start() {
+        if (rocketmqPushConsumer.getConsumeMessageBatchMaxSize() != 1) {
+            throw new StorageRuntimeException("EventMesh RocketMQ push consumer requires a consume message batch size of one");
+        }
         if (this.started.compareAndSet(false, true)) {
             try {
                 this.rocketmqPushConsumer.start();
@@ -160,7 +168,26 @@ public class PushConsumerImpl {
             .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
     }
 
+    static boolean redeliverMessage(ConsumeMessageConcurrentlyService consumeMessageService, MessageExt msg,
+        EventMeshConsumeConcurrentlyContext context) {
+        if (!consumeMessageService.sendMessageBack(msg, context)) {
+            return false;
+        }
+        try {
+            consumeMessageService.updateOffset(Collections.singletonList(msg), context);
+        } catch (RuntimeException e) {
+            // The broker accepted the retry; keeping the original offset is safe but may duplicate delivery.
+            log.error("Failed to update offset after redelivering message {}", msg.getMsgId(), e);
+        }
+        return true;
+    }
+
     private class BroadCastingMessageListener extends EventMeshMessageListenerConcurrently {
+
+        @Override
+        protected boolean retryLocally() {
+            return true;
+        }
 
         @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg,
@@ -199,6 +226,11 @@ public class PushConsumerImpl {
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
                 EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+
+                @Override
+                public boolean supportsLocalRetry() {
+                    return true;
+                }
 
                 @Override
                 public void commit(EventMeshAction action) {
@@ -272,6 +304,28 @@ public class PushConsumerImpl {
                 EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+
+                private boolean redelivered;
+
+                @Override
+                public boolean supportsAsyncNack() {
+                    return true;
+                }
+
+                @Override
+                public synchronized boolean nack() {
+                    if (redelivered) {
+                        return true;
+                    }
+                    ConsumeMessageConcurrentlyService consumeMessageService =
+                        (ConsumeMessageConcurrentlyService) rocketmqPushConsumer.getDefaultMQPushConsumerImpl()
+                            .getConsumeMessageService();
+                    if (!redeliverMessage(consumeMessageService, msg, context)) {
+                        return false;
+                    }
+                    redelivered = true;
+                    return true;
+                }
 
                 @Override
                 public void commit(EventMeshAction action) {

@@ -27,6 +27,7 @@ public class EventMeshConsumeConcurrentlyContext extends ConsumeConcurrentlyCont
 
     private final ProcessQueue processQueue;
     private boolean manualAck = true;
+    private boolean retryIndividually;
 
     public EventMeshConsumeConcurrentlyContext(MessageQueue messageQueue, ProcessQueue processQueue) {
         super(messageQueue);
@@ -43,5 +44,13 @@ public class EventMeshConsumeConcurrentlyContext extends ConsumeConcurrentlyCont
 
     public void setManualAck(boolean manualAck) {
         this.manualAck = manualAck;
+    }
+
+    public boolean isRetryIndividually() {
+        return retryIndividually;
+    }
+
+    public void setRetryIndividually(boolean retryIndividually) {
+        this.retryIndividually = retryIndividually;
     }
 }

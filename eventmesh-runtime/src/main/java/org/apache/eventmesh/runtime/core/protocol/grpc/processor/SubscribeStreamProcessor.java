@@ -29,7 +29,6 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
@@ -64,6 +63,10 @@ public class SubscribeStreamProcessor {
     }
 
     public void process(CloudEvent subscription, EventEmitter<CloudEvent> emitter) throws Exception {
+
+        if (emitter.isClosed()) {
+            return;
+        }
 
         if (!ServiceUtils.validateCloudEventAttributes(subscription)) {
             ServiceUtils.sendResponseCompleted(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
@@ -114,30 +117,14 @@ public class SubscribeStreamProcessor {
             newClients.add(newClient);
         }
 
-        // register new clients into ConsumerManager
-        for (ConsumerGroupClient newClient : newClients) {
-            consumerManager.registerClient(newClient);
-        }
-
-        // register new clients into EventMeshConsumer
-        EventMeshConsumer eventMeshConsumer = consumerManager.getEventMeshConsumer(consumerGroup);
-
-        boolean requireRestart = false;
-        for (ConsumerGroupClient newClient : newClients) {
-            if (eventMeshConsumer.registerClient(newClient)) {
-                requireRestart = true;
-            }
-        }
-
-        // restart consumer group if required
-        if (requireRestart) {
-            log.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
-            consumerManager.restartEventMeshConsumer(consumerGroup);
-        } else {
-            log.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+        if (!consumerManager.registerStreamClients(newClients, emitter)) {
+            return;
         }
 
         ServiceUtils.sendStreamResponse(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
+        if (emitter.isClosed()) {
+            consumerManager.deregisterClientsByEmitter(emitter);
+        }
     }
 
     private void doAclCheck(CloudEvent subscription) throws AclException {

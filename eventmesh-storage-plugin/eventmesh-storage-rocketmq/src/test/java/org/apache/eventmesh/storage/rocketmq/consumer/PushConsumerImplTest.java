@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.storage.rocketmq.consumer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.eventmesh.storage.rocketmq.domain.NonStandardKeys;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -61,9 +63,11 @@ public class PushConsumerImplTest {
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
         field.setAccessible(true);
         DefaultMQPushConsumer innerConsumer = (DefaultMQPushConsumer) field.get(consumer);
+        assertEquals(1, innerConsumer.getConsumeMessageBatchMaxSize());
         field.set(consumer, rocketmqPushConsumer); // Replace
 
         Mockito.when(rocketmqPushConsumer.getMessageListener()).thenReturn(innerConsumer.getMessageListener());
+        Mockito.when(rocketmqPushConsumer.getConsumeMessageBatchMaxSize()).thenReturn(1);
         consumer.start();
     }
 
