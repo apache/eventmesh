@@ -111,21 +111,75 @@ To support the MCP Request/Response model within an event-driven architecture, A
 ### 1. Initiate Call (Client)
 
 ```java
-// 1. Construct MCP Request JSON
-String mcpRequest = "{" +
-    "\"jsonrpc\": \"2.0\"," +
-    "\"method\": \"tools/call\"," +
-    "\"params\": { \"name\": \"weather\", \"_agentId\": \"weather-agent\" }," +
-    "\"id\": \"req-001\"" +
-    "}";
+// 1. Construct the MCP request payload (JSON-RPC 2.0)
+Map<String, Object> params = new HashMap<>();
+params.put("name", "weather");
+params.put("_agentId", "weather-agent"); // routing hint
 
-// 2. Send via EventMesh SDK
-eventMeshProducer.publish(new A2AProtocolTransportObject(mcpRequest));
+Map<String, Object> request = new HashMap<>();
+request.put("jsonrpc", "2.0");
+request.put("method", "tools/call");
+request.put("params", params);
+request.put("id", "req-001");
+
+// 2. Wrap it as a CloudEvent. The "org.apache.eventmesh.a2a." type prefix
+//    together with the protocol=A2A extension triggers the A2A adaptor.
+CloudEvent event = CloudEventBuilder.v1()
+    .withId("req-001")
+    .withSource(URI.create("mcp-client"))
+    .withType("org.apache.eventmesh.a2a.tools.call.req")
+    .withSubject("org.apache.eventmesh.a2a.tools.call.req") // destination topic, take the one the server subscribes to
+    .withDataContentType("application/cloudevents+json")     // required, the HTTP SDK resolves the event format from it
+    .withData(JsonUtils.toJSONString(request).getBytes(StandardCharsets.UTF_8))
+    .withExtension("protocol", "A2A")
+    .withExtension("mcptype", "request")                    // the server dispatches on it, a missing value is ignored
+    .withExtension("a2amethod", "tools/call")              // derived from the JSON-RPC call, set it yourself when publishing directly
+    .withExtension("targetagent", "weather-agent")          // P2P routing, mirrors params._agentId
+    .build();
+
+// 3. Send it via the EventMesh SDK
+eventMeshProducer.publish(event);
 ```
+
+> Note: `A2AProtocolTransportObject` is an internal adaptor type (a private
+> class inside `EnhancedA2AProtocolAdaptor`) and is not part of the public
+> SDK API. Clients publish CloudEvents as shown above. A runnable version
+> lives in
+> `eventmesh-examples/src/main/java/org/apache/eventmesh/a2a/demo/mcp/McpCaller.java`.
 
 ### 2. Handle Request (Server)
 
-Subscribe to the topic `org.apache.eventmesh.a2a.tools.call.req`, process logic, and send back response with matching `id`.
+Subscribe to the topic `org.apache.eventmesh.a2a.tools.call.req`, process logic, and send back response with matching `id`:
+
+```java
+// 1. Build the JSON-RPC response (echo the request id)
+Map<String, Object> response = new HashMap<>();
+response.put("jsonrpc", "2.0");
+response.put("result", Map.of("text", "Sunny"));
+response.put("id", requestId);
+
+// 2. Publish it as a CloudEvent of the response type
+CloudEvent respEvent = CloudEventBuilder.v1()
+    .withId(UUID.randomUUID().toString())
+    .withSource(URI.create("mcp-server"))
+    .withType("org.apache.eventmesh.a2a.common.response")
+    .withSubject("org.apache.eventmesh.a2a.common.response") // response topic the caller subscribes to
+    .withDataContentType("application/cloudevents+json")
+    .withData(JsonUtils.toJSONString(response).getBytes(StandardCharsets.UTF_8))
+    .withExtension("protocol", "A2A")
+    .withExtension("mcptype", "response")                    // the caller looks for this to tell responses apart
+    .withExtension("collaborationid", requestId)              // the request id, so the caller can match the pair
+    .build();
+
+eventMeshProducer.publish(respEvent);
+```
+
+`mcptype`, `a2amethod`, `targetagent` and `collaborationid` are filled in by the
+adaptor when it converts JSON-RPC to and from CloudEvent (see
+`EnhancedA2AProtocolAdaptor`). Clients that build the CloudEvent themselves,
+like this example, do not go through that conversion and have to set them -
+without `mcptype` the peer's `handleCallback` cannot classify the message and
+drops it.
 
 ## Version History
 
