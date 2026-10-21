@@ -128,8 +128,13 @@ CloudEvent event = CloudEventBuilder.v1()
     .withId("req-001")
     .withSource(URI.create("mcp-client"))
     .withType("org.apache.eventmesh.a2a.tools.call.req")
+    .withSubject("org.apache.eventmesh.a2a.tools.call.req") // destination topic, take the one the server subscribes to
+    .withDataContentType("application/cloudevents+json")     // required, the HTTP SDK resolves the event format from it
     .withData(JsonUtils.toJSONString(request).getBytes(StandardCharsets.UTF_8))
     .withExtension("protocol", "A2A")
+    .withExtension("mcptype", "request")                    // the server dispatches on it, a missing value is ignored
+    .withExtension("a2amethod", "tools/call")              // derived from the JSON-RPC call, set it yourself when publishing directly
+    .withExtension("targetagent", "weather-agent")          // P2P routing, mirrors params._agentId
     .build();
 
 // 3. Send it via the EventMesh SDK
@@ -158,16 +163,23 @@ CloudEvent respEvent = CloudEventBuilder.v1()
     .withId(UUID.randomUUID().toString())
     .withSource(URI.create("mcp-server"))
     .withType("org.apache.eventmesh.a2a.common.response")
+    .withSubject("org.apache.eventmesh.a2a.common.response") // response topic the caller subscribes to
+    .withDataContentType("application/cloudevents+json")
     .withData(JsonUtils.toJSONString(response).getBytes(StandardCharsets.UTF_8))
     .withExtension("protocol", "A2A")
+    .withExtension("mcptype", "response")                    // the caller looks for this to tell responses apart
+    .withExtension("collaborationid", requestId)              // the request id, so the caller can match the pair
     .build();
 
 eventMeshProducer.publish(respEvent);
 ```
 
-The adaptor maps a JSON-RPC response (no `method`, has `id`) to the type
-`org.apache.eventmesh.a2a.common.response` and sets `mcptype=response` plus
-`collaborationid=<request id>` on ingress.
+`mcptype`, `a2amethod`, `targetagent` and `collaborationid` are filled in by the
+adaptor when it converts JSON-RPC to and from CloudEvent (see
+`EnhancedA2AProtocolAdaptor`). Clients that build the CloudEvent themselves,
+like this example, do not go through that conversion and have to set them -
+without `mcptype` the peer's `handleCallback` cannot classify the message and
+drops it.
 
 ## Version History
 
