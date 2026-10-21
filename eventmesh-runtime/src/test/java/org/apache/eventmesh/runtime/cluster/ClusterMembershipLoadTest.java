@@ -107,6 +107,46 @@ class ClusterMembershipLoadTest {
         assertEquals(0L, load.outflowBytesPerSec);
     }
 
+    @Test
+    void addressOfIgnoresLoadFields() {
+        AtomicClock clock = new AtomicClock(10_000L);
+        InMemoryMetaStore meta = new InMemoryMetaStore();
+        meta.put("/em/instances/peer", "9500|h1:10105|5|5000|4000|0.42");
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:10105", 15_000L, clock::get, new FencingToken());
+
+        assertEquals("h1:10105", m.addressOf("peer"),
+            "the load suffix must not become part of the forwarded address");
+    }
+
+    @Test
+    void addressFromHeartbeatHandlesBothFormats() {
+        assertEquals("h1:10105", ClusterMembership.addressFromHeartbeat("9500|h1:10105"));
+        assertEquals("h1:10105", ClusterMembership.addressFromHeartbeat("9500|h1:10105|5|5000|4000|0.42"));
+        assertNull(ClusterMembership.addressFromHeartbeat("9500"));
+        assertNull(ClusterMembership.addressFromHeartbeat(null));
+    }
+
+    @Test
+    void addressFromHeartbeatRejectsEmptyAddress() {
+        // "<ts>|" and "<ts>||<load...>" leave the address segment empty; that is as unusable as a
+        // missing separator (HttpForwarder would build "http:///internal/forward"), so the parser
+        // must report null rather than "".
+        assertNull(ClusterMembership.addressFromHeartbeat("9500|"));
+        assertNull(ClusterMembership.addressFromHeartbeat("9500||5|5000|4000|0.42"));
+        assertNull(ClusterMembership.addressFromHeartbeat("|h1:10105"));
+    }
+
+    @Test
+    void addressOfReturnsNullWhenAddressSegmentIsEmpty() {
+        AtomicClock clock = new AtomicClock(10_000L);
+        InMemoryMetaStore meta = new InMemoryMetaStore();
+        meta.put("/em/instances/broken", "9500|");
+        ClusterMembership m = new ClusterMembership(meta, "self", "self:10105", 15_000L, clock::get, new FencingToken());
+
+        assertNull(m.addressOf("broken"),
+            "an empty address segment must not propagate as an empty string to the forwarder");
+    }
+
     /** Minimal controllable clock so tests don't depend on wall time. */
     static final class AtomicClock {
 

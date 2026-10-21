@@ -200,17 +200,39 @@ public class ClusterMembership {
         if (val == null) {
             return null;
         }
-        int sep = val.indexOf('|');
-        if (sep < 0) {
+        return addressFromHeartbeat(val);
+    }
+
+    /**
+     * Extracts {@code host:port} from a heartbeat value of the form
+     * {@code <timestamp>|<address>[|<active>|<inflow>|<outflow>|<cpu>]}.
+     *
+     * <p>The load fields were appended to the value in §3.2. Taking everything after the first
+     * separator therefore yields {@code host:port|0|0|0|0.42}, which {@link HttpForwarder} then
+     * turns into the illegal URL {@code http://host:port|0|0|0|0.42/internal/forward}, silently
+     * degrading cluster delivery to local-only delivery. Cut at the load separator instead.
+     *
+     * <p>Shared by {@link #addressOf} and {@link NacosMetaStore#namingRegister} so the parsing
+     * stays in one unit-testable place instead of two inline copies.
+     *
+     * @return the address, or {@code null} when the value carries no timestamp/address separator
+     *         or the address segment is empty
+     */
+    static String addressFromHeartbeat(String value) {
+        if (value == null) {
             return null;
         }
-        // Heartbeat value layout: "<ts>|<addr>|<active>|<inflow>|<outflow>|<cpu>" — §3.2 appends
-        // the load fields AFTER the address. Strip them so callers get a routable "host:port";
-        // otherwise HttpForwarder builds "http://host:port|0|0|0|0.42/internal/forward" and every
-        // cross-instance forward fails with an illegal-URL error once a LoadMeter is wired.
-        String rest = val.substring(sep + 1);
-        int addrSep = rest.indexOf('|');
-        return addrSep < 0 ? rest : rest.substring(0, addrSep);
+        int sep = value.indexOf('|');
+        if (sep <= 0) {
+            return null;
+        }
+        String rest = value.substring(sep + 1);
+        int loadSep = rest.indexOf('|');
+        String address = loadSep < 0 ? rest : rest.substring(0, loadSep);
+        // "<ts>|" or "<ts>||<load...>" leaves the address segment empty. An empty address is as
+        // unusable as a missing one - HttpForwarder would build "http:///internal/forward" - so
+        // report it as absent instead of propagating "" through addressOf.
+        return address.isEmpty() ? null : address;
     }
 
     /** Mark this instance as leaving (drops the heartbeat key so peers stop seeing it as live). */
