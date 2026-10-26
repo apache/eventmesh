@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.push;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.common.wire.EventMeshFrame;
@@ -138,6 +139,51 @@ class PushServiceTest {
         assertEquals(0, cb1.nacks.get(), "first delivery buffered, not rejected");
         assertEquals(1, cb2.nacks.get(), "overflow delivery nacked");
         assertEquals(1, push.pending("client-1"));
+    }
+
+    /**
+     * Issue #5432: an ACK whose callback fails must stay resolvable so the client can retry.
+     *
+     * <p>{@code ack} used to remove the callback from the map <i>before</i> invoking it. When
+     * the callback threw — the ownership guard rejecting the ACK with
+     * {@code StaleOwnerException} — the callback was already gone, so the client's retry was
+     * answered with "unknown deliveryId" (404) and the delivery could never be acknowledged
+     * at all. The callback must only be dropped once the ACK actually succeeded.
+     */
+    @Test
+    void failedAckKeepsTheDeliveryAckable() {
+        PushService push = new PushService();
+        push.register("client-1");
+
+        AckCallback failing = new AckCallback() {
+
+            @Override
+            public void ack() {
+                throw new IllegalStateException("ack rejected by the ownership guard");
+            }
+
+            @Override
+            public void nack(Throwable reason) {
+                // not used here
+            }
+        };
+        assertTrue(push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), failing));
+
+        assertThrows(IllegalStateException.class, () -> push.ack("d-1"),
+            "the failing callback surfaces its error to the caller");
+
+        // The delivery must still be resolvable so a retry can acknowledge it.
+        RecordingCallback retry = new RecordingCallback();
+        assertTrue(push.offer("client-1", "d-2", EventMeshFrame.fromCloudEvent(event("e-2")), retry));
+        assertTrue(push.ack("d-2"));
+        assertEquals(1, retry.acks.get());
+
+        // Re-offering the same delivery id with a working callback must be ACKable as well —
+        // the failed ack must not have consumed the delivery.
+        assertTrue(push.offer("client-1", "d-1", EventMeshFrame.fromCloudEvent(event("e-1")), retry));
+        assertTrue(push.ack("d-1"),
+            "a delivery whose ack failed must remain ackable");
+        assertEquals(2, retry.acks.get());
     }
 
     private static CloudEvent event(String id) {

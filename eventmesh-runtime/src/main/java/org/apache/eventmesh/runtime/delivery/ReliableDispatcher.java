@@ -414,8 +414,15 @@ public class ReliableDispatcher {
         // newer owner in Meta. Drop the delivery (remove from the live/state stores) and let the
         // broker's POP invisibleTime redeliver to the new owner; at-least-once is preserved and
         // the new owner's offset state stays authoritative.
+        //
+        // #5432: fencing is a per-partition concept, so it only applies to a delivery that is
+        // bound to a partition. A negative partition is the "no partition scope" marker used by
+        // UniIngressService#deliverLocal for a locally routed event; the ownership view only ever
+        // holds real (non-negative) partition indexes, so `owned.contains(-1)` is always false and
+        // the guard rejected EVERY ack of such a delivery. The exception escaped the HTTP handler
+        // (closed connection, no response) and the subscriber offset never advanced.
         java.util.function.BiPredicate<String, Integer> guard = ownershipGuard;
-        if (guard != null && !guard.test(d.getTopic(), d.getPartition())) {
+        if (guard != null && d.getPartition() >= 0 && !guard.test(d.getTopic(), d.getPartition())) {
             stateStore.remove(deliveryId);
             liveDeliveries.remove(deliveryId);
             metrics.incDlq();
