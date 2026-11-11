@@ -32,8 +32,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -146,6 +149,52 @@ public class SubscriptionManager {
                 consumerGroupTopicConf.getIdcUrls().putIfAbsent(clientInfo.getIdc(), new CopyOnWriteArrayList<>());
             }
             consumerGroupTopicConf.getIdcUrls().get(clientInfo.getIdc()).add(url);
+        }
+    }
+
+    /**
+     * Removes only the requested client's subscriptions and returns the remaining group configuration.
+     * A null result means the group no longer has any subscribed topics.
+     */
+    public ConsumerGroupConf removeSubscription(String consumerGroup, String pid, String url, List<String> topics) {
+        synchronized (localClientInfoMapping) {
+            synchronized (localConsumerGroupMapping) {
+                ConsumerGroupConf groupConf = localConsumerGroupMapping.get(consumerGroup);
+                for (String topic : topics) {
+                    String key = consumerGroup + "@" + topic;
+                    List<Client> clients = localClientInfoMapping.get(key);
+                    if (clients == null || !clients.removeIf(client -> Objects.equals(pid, client.getPid())
+                        && Objects.equals(url, client.getUrl()))) {
+                        continue;
+                    }
+                    if (clients.isEmpty()) {
+                        localClientInfoMapping.remove(key);
+                        if (groupConf != null) {
+                            groupConf.getConsumerGroupTopicConf().remove(topic);
+                        }
+                    } else if (groupConf != null) {
+                        ConsumerGroupTopicConf topicConf = groupConf.getConsumerGroupTopicConf().get(topic);
+                        if (topicConf != null) {
+                            Set<String> urls = new HashSet<>();
+                            Map<String, List<String>> idcUrls = new HashMap<>();
+                            for (Client client : clients) {
+                                urls.add(client.getUrl());
+                                List<String> urlsInIdc = idcUrls.computeIfAbsent(client.getIdc(), idc -> new ArrayList<>());
+                                if (!urlsInIdc.contains(client.getUrl())) {
+                                    urlsInIdc.add(client.getUrl());
+                                }
+                            }
+                            topicConf.setUrls(urls);
+                            topicConf.setIdcUrls(idcUrls);
+                        }
+                    }
+                }
+                if (groupConf != null && groupConf.getConsumerGroupTopicConf().isEmpty()) {
+                    localConsumerGroupMapping.remove(consumerGroup);
+                    return null;
+                }
+                return groupConf;
+            }
         }
     }
 

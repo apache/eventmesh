@@ -60,6 +60,8 @@ public class DownStreamMsgContext extends RetryContext {
 
     private final long expireTime;
 
+    private final long ttl;
+
     private final boolean msgFromOtherEventMesh;
 
     public DownStreamMsgContext(CloudEvent event, Session session, MQConsumerWrapper consumer,
@@ -73,10 +75,24 @@ public class DownStreamMsgContext extends RetryContext {
         this.lastPushTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
         this.subscriptionItem = subscriptionItem;
-        String ttlStr = (String) event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL);
-        long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
-        this.expireTime = System.currentTimeMillis() + ttl;
+        this.ttl = messageTtl(event);
+        this.expireTime = ttl > Long.MAX_VALUE - createTime ? Long.MAX_VALUE : createTime + ttl;
         this.msgFromOtherEventMesh = msgFromOtherEventMesh;
+    }
+
+    private static long messageTtl(CloudEvent event) {
+        Object value = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL);
+        if (value instanceof String || value instanceof Number) {
+            try {
+                long valueInMillis = Long.parseLong(value.toString());
+                if (valueInMillis >= 0) {
+                    return valueInMillis;
+                }
+            } catch (NumberFormatException ignored) {
+                // Invalid or out-of-range TTL uses the same default as an absent TTL.
+            }
+        }
+        return EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
     public boolean isExpire() {
@@ -158,8 +174,7 @@ public class DownStreamMsgContext extends RetryContext {
 
     private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext) {
         boolean flag = false;
-        String ttlStr = (String) downStreamMsgContext.event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL);
-        long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        long ttl = downStreamMsgContext.ttl;
 
         String storeTimeStr = (String) downStreamMsgContext.event.getExtension(EventMeshConstants.STORE_TIME);
         long storeTimestamp = StringUtils.isNumeric(storeTimeStr) ? Long.parseLong(storeTimeStr) : 0;

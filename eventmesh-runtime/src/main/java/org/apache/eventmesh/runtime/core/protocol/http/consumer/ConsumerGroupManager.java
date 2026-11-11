@@ -80,14 +80,33 @@ public class ConsumerGroupManager {
             return;
         }
 
-        if (started.get()) {
-            shutdown();
+        if (!started.get()) {
+            this.consumerGroupConfig = consumerGroupConfig;
+            this.eventMeshConsumer.setConsumerGroupConf(consumerGroupConfig);
+            init();
+            start();
+            return;
         }
 
-        this.consumerGroupConfig = consumerGroupConfig;
+        // A stopped storage consumer cannot necessarily be started again (for
+        // example RocketMQ's DefaultMQPushConsumer). Apply only changed broker
+        // subscriptions and keep the existing consumer and its offsets alive.
+        Map<String, ConsumerGroupTopicConf> previousTopics = this.consumerGroupConfig.getConsumerGroupTopicConf();
+        Map<String, ConsumerGroupTopicConf> nextTopics = consumerGroupConfig.getConsumerGroupTopicConf();
+        for (Map.Entry<String, ConsumerGroupTopicConf> previous : previousTopics.entrySet()) {
+            ConsumerGroupTopicConf next = nextTopics.get(previous.getKey());
+            if (next == null || previous.getValue().getSubscriptionItem().getMode() != next.getSubscriptionItem().getMode()) {
+                eventMeshConsumer.unsubscribe(previous.getKey(), previous.getValue().getSubscriptionItem().getMode());
+            }
+        }
         this.eventMeshConsumer.setConsumerGroupConf(consumerGroupConfig);
-        init();
-        start();
+        for (Map.Entry<String, ConsumerGroupTopicConf> next : nextTopics.entrySet()) {
+            ConsumerGroupTopicConf previous = previousTopics.get(next.getKey());
+            if (previous == null || previous.getSubscriptionItem().getMode() != next.getValue().getSubscriptionItem().getMode()) {
+                eventMeshConsumer.subscribe(next.getKey(), next.getValue().getSubscriptionItem());
+            }
+        }
+        this.consumerGroupConfig = consumerGroupConfig;
     }
 
     public ConsumerGroupConf getConsumerGroupConfig() {

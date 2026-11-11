@@ -17,10 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+
 import java.net.URI;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import io.cloudevents.core.builder.CloudEventBuilder;
 
@@ -41,14 +45,48 @@ public class DownStreamMsgContextTest {
         Assertions.assertFalse(newContext("invalid").isExpire());
     }
 
-    private DownStreamMsgContext newContext(String ttl) {
+    @Test
+    public void testIntegerTtl() {
+        Assertions.assertFalse(newContext(5000).isExpire());
+        Assertions.assertTrue(newContext(0).isExpire());
+    }
+
+    @Test
+    public void testLargeTtlDoesNotOverflowExpiration() {
+        Assertions.assertFalse(newContext(Long.toString(Long.MAX_VALUE)).isExpire());
+        Assertions.assertFalse(newContext(Long.MAX_VALUE).isExpire());
+    }
+
+    @Test
+    public void testMalformedTtlUsesDefaultTimeout() {
+        for (Object ttl : new Object[]{"9223372036854775808", "-1", -1, "1.5", 1.5}) {
+            Assertions.assertFalse(newContext(ttl).isExpire());
+        }
+    }
+
+    @Test
+    public void testRetryHonorsIntegerTtl() {
+        MQConsumerWrapper consumer = Mockito.mock(MQConsumerWrapper.class);
+        AbstractContext context = Mockito.mock(AbstractContext.class);
+        DownStreamMsgContext message = new DownStreamMsgContext(eventWithTtl(0).build(), null, consumer, context, false, null);
+        message.retry();
+        Mockito.verify(consumer).updateOffset(Mockito.anyList(), Mockito.same(context));
+    }
+
+    private DownStreamMsgContext newContext(Object ttl) {
+        return new DownStreamMsgContext(eventWithTtl(ttl).build(), null, null, null, false, null);
+    }
+
+    private CloudEventBuilder eventWithTtl(Object ttl) {
         CloudEventBuilder builder = CloudEventBuilder.v1()
             .withId("message-id")
             .withType("message-type")
             .withSource(URI.create("/test"));
-        if (ttl != null) {
-            builder.withExtension("ttl", ttl);
+        if (ttl instanceof Number) {
+            builder.withExtension("ttl", (Number) ttl);
+        } else if (ttl instanceof String) {
+            builder.withExtension("ttl", (String) ttl);
         }
-        return new DownStreamMsgContext(builder.build(), null, null, null, false, null);
+        return builder;
     }
 }
