@@ -17,7 +17,7 @@
 
 use cloudevents::{EventBuilder, EventBuilderV10};
 use eventmesh::{
-    config::{Endpoint, EndpointSet, HttpConfig, ProducerOptions},
+    config::{Credentials, Endpoint, EndpointSet, HttpConfig, ProducerOptions},
     Error, HttpClient, Message,
 };
 
@@ -32,8 +32,12 @@ async fn main() -> eventmesh::Result<()> {
         .build()
         .map_err(|error| Error::InvalidArgument(format!("invalid CloudEvent: {error}")))?;
     let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
-    let producer = HttpClient::new(HttpConfig::new(endpoints))?
-        .producer(ProducerOptions::new("test-producerGroup"))?;
+    let producer = HttpClient::new(
+        HttpConfig::new(endpoints)
+            // Credentials for the bundled Docker Compose runtime. Replace for your deployment.
+            .with_credentials(Credentials::new().with_basic("eventmesh", "eventmesh")),
+    )?
+    .producer(ProducerOptions::new("test-producerGroup"))?;
 
     println!(
         "published: {:?}",

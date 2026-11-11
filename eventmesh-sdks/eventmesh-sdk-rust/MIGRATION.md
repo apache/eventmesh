@@ -46,7 +46,7 @@ git diff master HEAD -- eventmesh-sdks/eventmesh-sdk-rust
 | 无现场集成测试 features | `e2e`、`interop_e2e` | 仅在相应验收阶段启用 |
 
 `http-client` 提供发布、外部 webhook 注册和回调编解码，不引入 axum；`http-server` 增加 SDK 托管的回调服务器。
-`http` 是同时启用这两者的聚合 feature，这种兼容别名针对 HTTP 实现的历史用法，旧 `master` 本身没有 HTTP SDK。
+`http` 是同时启用这两者的便利聚合 feature；旧 `master` 没有 HTTP SDK，它不承担旧接口兼容。
 
 例如，先把应用依赖指向当前分支的本地检出，替换下面的路径：
 
@@ -70,7 +70,7 @@ gRPC 依赖由 tonic 0.10 / prost 0.12 升到 tonic 0.12 / prost 0.13；应用�
 | `config::EventMeshGrpcClientConfig` | `config::{Endpoint, GrpcConfig, Identity, Credentials, ClientOptions}`，角色分组单独配置 |
 | `grpc::GrpcEventMeshProducer<M>` | `GrpcChannel` + 无消息类型参数的 `GrpcProducer` |
 | `grpc::grpc_producer::EventMeshGrpcProducer` trait | 直接调用 `GrpcProducer` 的固有方法，无需导入生产者 trait |
-| `grpc::grpc_consumer::EventMeshGrpcConsumer` | 流消费使用 `GrpcStreamConsumer<H>`；webhook 注册使用 `GrpcWebhookConsumer` |
+| `grpc::grpc_consumer::EventMeshGrpcConsumer` | 流消费使用 `GrpcStreamConsumer`；webhook 注册使用 `GrpcWebhookConsumer` |
 | `common::ReceiveMessageListener` | crate 根的异步 `MessageHandler`，或满足约束的异步闭包 |
 | `model::message::EventMeshMessage` | crate 根的 `EventMeshMessage` 或 `message::EventMeshMessage` |
 | `model::subscription::SubscriptionItem` | crate 根的 `Subscription` 或 `subscription::Subscription` |
@@ -438,9 +438,9 @@ HTTP consumer 启动 future 被取消时会清理本地服务器和心跳，但�
 | 连接与重连 | channel 克隆共享连接；流结束不自动重建消费 | client 克隆及角色共享连接池和端点选择器 | 每个角色建立独立 session；自动重连并重放已确认订阅 |
 | 取消订阅 | 流有上述关闭整个 emitter 的限制 | 按 topic / webhook URL 管理 | Runtime 是 session 级取消，仅公开 `unsubscribe_all()` |
 
-HTTP 使用非空 `EndpointSet`，支持权重、TLS 和代理配置。托管 consumer 需要 Runtime 能访问的 callback URL，
+HTTP 使用非空 `EndpointSet`，支持权重、TLS 和代理配置。使用 RocketMQ 时显式配置非空 basic 凭据；即使关闭鉴权，存储客户端也不接受空用户名/密码属性。托管 consumer 需要 Runtime 能访问的 callback URL，
 应用自己承接 HTTP 回调时可用 `http-client` 的 `parse_push_body(body)?.to_message(&headers)?` 和 `WebhookReply`。
-HTTP 发布/订阅使用 `/` 上的 code-header 路由与 form body，不应把原生业务消息直接序列化成旧 JSON DTO 发送。
+HTTP 发布/订阅使用 `/` 上的 code-header 路由与 form body，不应把原生业务消息直接序列化成旧 JSON DTO 发送。按主题部分退订需要包含本分支 Runtime 修复的服务端；随附的 1.12.0 镜像会误删同组的其他主题。
 
 TCP 默认启用自动重连、重试次数上限为 `usize::MAX`，指数退避从 1 秒到最多 30 秒；
 通过 `TcpConfig::with_reconnect(ReconnectPolicy::...)` 调整。handler 返回错误或发生可展开 panic 时，

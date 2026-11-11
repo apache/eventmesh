@@ -17,7 +17,7 @@
 
 //! TCP consumer.
 //!
-//! [`TcpConsumer`] is constructed via [`TcpConsumer::connect`], which opens a
+//! [`TcpConsumer`] is constructed via [`crate::tcp::TcpClient::consumer`], which opens a
 //! TCP connection, performs the HELLO handshake (role = sub), sends
 //! `LISTEN_REQUEST`, and spawns the receive loop + heartbeat as background
 //! tasks.  Subscribe and unsubscribe RPCs can be called at any time after
@@ -25,6 +25,7 @@
 //!
 //! See [`crate::tcp`] for the public client and consumer API.
 
+#[cfg(test)]
 use std::future::Future;
 use std::sync::Arc;
 
@@ -34,12 +35,11 @@ use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
 use crate::config::{ConsumerOptions, TcpConfig};
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 #[cfg(test)]
 use crate::message::Message;
 #[cfg(test)]
 use crate::model::EventMeshMessage;
-use crate::model::PublishResponse;
 use crate::subscription::Subscription;
 use crate::transport::task::BackgroundTask;
 use crate::transport::tcp::connection::{InboundPackage, TcpConnection};
@@ -55,9 +55,8 @@ use crate::MessageHandler;
 /// Returned by [`TcpConsumer::wait_for_shutdown`] so the caller can react to
 /// server-driven events like redirect.
 #[derive(Debug, Clone)]
-pub enum ShutdownReason {
-    /// The shutdown token was cancelled — either by the user-supplied
-    /// shutdown signal, an explicit `shutdown()` call, or the driver itself
+enum ShutdownReason {
+    /// The shutdown token was cancelled by `shutdown()` or the driver itself
     /// after a clean exit.
     Cancelled,
     /// The server sent `REDIRECT_TO_CLIENT` with a target address. The caller
@@ -84,19 +83,18 @@ enum InboundResult {
     Reconnect,
 }
 
-/// TCP-based consumer, generic over the user's [`MessageHandler`] type.
+/// A long-lived TCP consumer whose background task owns its message handler.
 ///
-/// Created via [`TcpConsumer::connect`], which opens a TCP connection, performs
+/// Created via [`crate::tcp::TcpClient::consumer`], which opens a TCP connection, performs
 /// the HELLO handshake (role = sub), sends `LISTEN_REQUEST`, and spawns the
 /// receive loop + heartbeat as background tasks.
 ///
 /// Subscribe and unsubscribe RPCs can be called at any time after construction.
 /// The background tasks are stopped when the consumer is dropped or explicitly
-/// via [`request_shutdown`](Self::request_shutdown) / [`wait_for_shutdown`](Self::wait_for_shutdown).
-pub struct TcpConsumer<L: MessageHandler> {
+/// via [`shutdown`](Self::shutdown) / [`join`](Self::join).
+pub struct TcpConsumer {
     conn: Arc<TcpConnection>,
     config: TcpConfig,
-    _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
     subscriptions: Arc<Mutex<Vec<Subscription>>>,
     driver_handle: Mutex<BackgroundTask<Result<()>>>,
@@ -105,26 +103,18 @@ pub struct TcpConsumer<L: MessageHandler> {
     shutdown_reason: Arc<Mutex<Option<ShutdownReason>>>,
 }
 
-impl<L> TcpConsumer<L>
-where
-    L: MessageHandler,
-{
+impl TcpConsumer {
     /// Connect to the EventMesh TCP endpoint, perform the HELLO handshake
     /// (role = sub), send `LISTEN_REQUEST`, and spawn the receive loop.
-    ///
-    /// `shutdown_signal` is an optional future whose resolution triggers
-    /// graceful shutdown.  When omitted, shutdown can only be initiated by
-    /// [`request_shutdown`](Self::request_shutdown) or drop.
     ///
     /// The reconnect policy from the config controls automatic reconnection
     /// after I/O failures or failed deliveries (enabled by default). After a
     /// successful reconnect, the receive loop automatically replays all
     /// subscriptions and re-issues `LISTEN_REQUEST`.
-    pub async fn connect(
+    pub(crate) async fn connect<L: MessageHandler>(
         config: TcpConfig,
         options: &ConsumerOptions,
         listener: L,
-        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
     ) -> Result<Self> {
         let user_agent = UserAgent::from_role(
             config.identity(),
@@ -150,23 +140,12 @@ where
         let shutdown_reason = Arc::new(Mutex::new(None));
         let listener = Arc::new(listener);
 
-        // Signal watcher.
-        if let Some(signal) = shutdown_signal {
-            let token = shutdown.clone();
-            tokio::spawn(async move {
-                tokio::select! {
-                    _ = signal => token.cancel(),
-                    _ = token.cancelled() => {}
-                }
-            });
-        }
-
         // Send LISTEN_REQUEST and verify it succeeds.
         let listen_pkg = message::listen();
         let listen_resp = conn.io(listen_pkg, config.control_timeout()).await?;
         let listen_status = message::response_from_pkg(&listen_resp);
         if !listen_status.is_success() {
-            return Err(EventMeshError::Server {
+            return Err(Error::Server {
                 code: listen_status.code.unwrap_or(-1) as i32,
                 message: listen_status
                     .message
@@ -179,7 +158,7 @@ where
         let inbound_rx = conn
             .take_inbound_rx()
             .await
-            .ok_or_else(|| EventMeshError::Tcp("inbound receiver already taken".into()))?;
+            .ok_or_else(|| Error::Tcp("inbound receiver already taken".into()))?;
 
         // Take the reconnect-event receiver.
         let reconnect_rx = conn.take_reconnect_rx().await;
@@ -199,7 +178,6 @@ where
         Ok(Self {
             conn,
             config,
-            _listener: std::marker::PhantomData,
             shutdown,
             subscriptions,
             driver_handle: Mutex::new(BackgroundTask::new(driver_handle)),
@@ -207,117 +185,50 @@ where
         })
     }
 
-    /// Subscribe to additional topics.  Sends a `SUBSCRIBE_REQUEST` for each
-    /// item via `conn.io()` and records it locally after the server confirms.
-    ///
-    /// This can be called at any time after construction — the connection is
-    /// already open and the receive loop is running.
-    pub async fn subscribe(&self, items: &[Subscription]) -> Result<()> {
+    /// Subscribe to one topic, recording it after the server confirms.
+    pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
         let mut subscriptions = self.subscriptions.lock().await;
-        if self.shutdown.is_cancelled() {
-            return Err(EventMeshError::ChannelClosed(
-                "TCP consumer is shut down".into(),
+        self.ensure_running()?;
+        let package = message::subscribe(std::slice::from_ref(&subscription));
+        let response = self.conn.io(package, self.config.control_timeout()).await?;
+        check_control_response(&response, "subscribe failed")?;
+        subscriptions.retain(|existing| existing.topic != subscription.topic);
+        subscriptions.push(subscription);
+        Ok(())
+    }
+
+    /// Unsubscribe every topic on this TCP session.
+    ///
+    /// The Java Runtime ignores the unsubscribe body and clears the entire
+    /// session. Failed requests keep local subscriptions available for replay.
+    pub async fn unsubscribe_all(&self) -> Result<()> {
+        let mut subscriptions = self.subscriptions.lock().await;
+        self.ensure_running()?;
+        if subscriptions.is_empty() {
+            return Err(Error::InvalidArgument(
+                "TCP consumer has no active subscriptions".into(),
             ));
         }
-        for item in items {
-            let sub_pkg = message::subscribe(&item.topic, std::slice::from_ref(item));
-            let resp = self.conn.io(sub_pkg, self.config.control_timeout()).await?;
-            let response = message::response_from_pkg(&resp);
-            if !response.is_success() {
-                return Err(EventMeshError::Server {
-                    code: response.code.unwrap_or(-1) as i32,
-                    message: response
-                        .message
-                        .unwrap_or_else(|| "subscribe failed".into()),
-                });
-            }
-            subscriptions.retain(|subscription| subscription.topic != item.topic);
-            subscriptions.push(item.clone());
+        let response = self
+            .conn
+            .io(message::unsubscribe(), self.config.control_timeout())
+            .await?;
+        check_control_response(&response, "unsubscribe failed")?;
+        subscriptions.clear();
+        Ok(())
+    }
+
+    fn ensure_running(&self) -> Result<()> {
+        if self.shutdown.is_cancelled() {
+            return Err(Error::ChannelClosed("TCP consumer is shut down".into()));
         }
         Ok(())
     }
 
-    /// Unsubscribe from topics.  Sends an `UNSUBSCRIBE_REQUEST` via
-    /// `conn.io()`.
-    ///
-    /// Note: the runtime's TCP `UnSubscribeProcessor` ignores the request body
-    /// and drops **all** session topics.  The local subscription list is
-    /// cleared entirely on success.
-    #[cfg(test)]
-    pub async fn unsubscribe(&self, items: Vec<Subscription>) -> Result<PublishResponse> {
-        if items.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "unsubscribe items must not be empty".into(),
-            ));
-        }
-        let mut subs = self.subscriptions.lock().await;
-        self.unsubscribe_locked(&items, &mut subs).await
-    }
-
-    async fn unsubscribe_locked(
-        &self,
-        items: &[Subscription],
-        subs: &mut Vec<Subscription>,
-    ) -> Result<PublishResponse> {
-        if self.shutdown.is_cancelled() {
-            return Err(EventMeshError::ChannelClosed(
-                "TCP consumer is shut down".into(),
-            ));
-        }
-        let unsub_pkg = message::unsubscribe(items);
-        let resp = self
-            .conn
-            .io(unsub_pkg, self.config.control_timeout())
-            .await?;
-        let response = message::response_from_pkg(&resp);
-
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "unsubscribe failed".into()),
-            });
-        }
-
-        let current: Vec<String> = subs.iter().map(|s| s.topic.clone()).collect();
-        let passed_all =
-            items.len() == current.len() && items.iter().all(|i| current.contains(&i.topic));
-        if !passed_all {
-            warn!(
-                passed = ?items.iter().map(|i| i.topic.clone()).collect::<Vec<_>>(),
-                current = ?current,
-                "TCP unsubscribe drops ALL topics on the server (not just \
-                 the ones passed); clearing local state to match"
-            );
-        }
-        subs.clear();
-        Ok(response)
-    }
-
-    /// Unsubscribe every topic on this TCP session.
-    pub async fn unsubscribe_all(&self) -> Result<PublishResponse> {
-        let mut subs = self.subscriptions.lock().await;
-        let items = subs.clone();
-        if items.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "TCP consumer has no active subscriptions".into(),
-            ));
-        }
-        self.unsubscribe_locked(&items, &mut subs).await
-    }
-
     /// Signal the receive-loop driver to stop.
-    pub fn request_shutdown(&self) {
+    pub fn shutdown(&self) {
         self.shutdown.cancel();
-    }
-
-    /// Signal shutdown, close the connection, and await the driver task.
-    #[cfg(test)]
-    pub async fn shutdown(&self) {
-        self.request_shutdown();
-        self.conn.shutdown().await;
-        self.wait_for_driver().await;
     }
 
     async fn wait_for_driver(&self) {
@@ -340,18 +251,25 @@ where
         }
     }
 
-    /// Block until the shutdown signal fires or the receive loop exits on its
-    /// own (e.g. server redirect or I/O error), then return a
-    /// [`ShutdownReason`] indicating why the driver stopped.
+    /// Wait for shutdown and report terminal task or transport failures.
     ///
-    /// If the driver task panics, the `JoinHandle` resolves with
-    /// `Err(JoinError)` and this method returns `ShutdownReason::Error` — it
-    /// does **not** hang forever waiting for the cancellation token (which the
-    /// panicked driver would never fire).
-    ///
-    /// If no shutdown signal was provided at construction time, this blocks
-    /// until the driver exits naturally.
-    pub async fn wait_for_shutdown(&self) -> ShutdownReason {
+    /// Cancelling this wait preserves task ownership and pending failures.
+    /// Call `join()` again to finish waiting, or drop the consumer to abort.
+    pub async fn join(&self) -> Result<()> {
+        match self.wait_for_shutdown().await {
+            ShutdownReason::Cancelled => Ok(()),
+            ShutdownReason::Redirect(info) => Err(Error::Tcp(format!(
+                "server redirected consumer to {}:{}",
+                info.ip, info.port
+            ))),
+            ShutdownReason::ChannelClosed => Err(Error::ChannelClosed(
+                "TCP consumer connection closed".into(),
+            )),
+            ShutdownReason::Error(message) => Err(Error::Tcp(message)),
+        }
+    }
+
+    async fn wait_for_shutdown(&self) -> ShutdownReason {
         self.wait_for_driver().await;
         self.conn.shutdown().await;
 
@@ -363,10 +281,24 @@ where
     }
 }
 
-impl<L: MessageHandler> Drop for TcpConsumer<L> {
+impl Drop for TcpConsumer {
     fn drop(&mut self) {
         self.shutdown.cancel();
     }
+}
+
+fn check_control_response(package: &super::frame::Package, fallback: &str) -> Result<()> {
+    if package.header.code != 0 {
+        return Err(Error::Server {
+            code: package.header.code,
+            message: package
+                .header
+                .desc
+                .clone()
+                .unwrap_or_else(|| fallback.into()),
+        });
+    }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -493,19 +425,19 @@ async fn replay_subscriptions(
 ) -> Result<()> {
     let subscriptions = subscriptions.lock().await;
     for item in subscriptions.iter() {
-        let package = message::subscribe(&item.topic, std::slice::from_ref(item));
+        let package = message::subscribe(std::slice::from_ref(item));
         let response = conn
             .io_in_generation(package, config.control_timeout(), generation)
             .await
             .map_err(|error| {
-                EventMeshError::Tcp(format!(
+                Error::Tcp(format!(
                     "re-subscribe after reconnect failed for topic {:?}: {error}",
                     item.topic
                 ))
             })?;
         let status = message::response_from_pkg(&response);
         if !status.is_success() {
-            return Err(EventMeshError::Tcp(format!(
+            return Err(Error::Tcp(format!(
                 "re-subscribe after reconnect rejected for topic {:?}: server code {:?}",
                 item.topic, status.code
             )));
@@ -514,12 +446,10 @@ async fn replay_subscriptions(
     let response = conn
         .io_in_generation(message::listen(), config.control_timeout(), generation)
         .await
-        .map_err(|error| {
-            EventMeshError::Tcp(format!("re-LISTEN after reconnect failed: {error}"))
-        })?;
+        .map_err(|error| Error::Tcp(format!("re-LISTEN after reconnect failed: {error}")))?;
     let status = message::response_from_pkg(&response);
     if !status.is_success() {
-        return Err(EventMeshError::Tcp(format!(
+        return Err(Error::Tcp(format!(
             "re-LISTEN after reconnect rejected: server code {:?}",
             status.code
         )));
@@ -656,28 +586,27 @@ mod tests {
                 .with_reconnect(ReconnectPolicy::default().with_enabled(false)),
             &ConsumerOptions::new("consumer"),
             NoopListener,
-            None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
         let (release, released) = tokio::sync::oneshot::channel::<()>();
         *consumer.driver_handle.lock().await = BackgroundTask::new(tokio::spawn(async move {
             released.await.unwrap();
-            Err(EventMeshError::Tcp("driver regression".into()))
+            Err(Error::Tcp("driver regression".into()))
         }));
         for _ in 0..2 {
             assert!(
-                tokio::time::timeout(Duration::from_millis(20), consumer.wait_for_shutdown())
+                tokio::time::timeout(Duration::from_millis(20), consumer.join())
                     .await
                     .is_err()
             );
-            consumer.request_shutdown();
+            consumer.shutdown();
         }
         release.send(()).unwrap();
-        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.join())
             .await
             .unwrap();
-        assert!(matches!(reason, ShutdownReason::Error(message)
+        assert!(matches!(reason, Err(Error::Tcp(message))
             if message.contains("driver regression")));
         tokio::time::timeout(Duration::from_secs(3), server)
             .await
@@ -690,7 +619,7 @@ mod tests {
     struct FailingListener;
     impl MessageHandler for FailingListener {
         async fn handle(&self, _: Message) -> Result<Option<Message>> {
-            Err(EventMeshError::Tcp("listener failure".into()))
+            Err(Error::Tcp("listener failure".into()))
         }
     }
 
@@ -718,7 +647,7 @@ mod tests {
                 if call == 0 {
                     match failure {
                         HandlerFailure::Error => {
-                            return Err(EventMeshError::Tcp("listener failure".into()));
+                            return Err(Error::Tcp("listener failure".into()));
                         }
                         HandlerFailure::PanicBeforeFuture | HandlerFailure::PanicDuringPoll => {
                             std::panic::panic_any(String::from("handler panicked after yielding"));
@@ -850,15 +779,15 @@ mod tests {
                 calls: Arc::clone(&calls),
                 failure,
             },
-            None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
         consumer
-            .subscribe(&[
-                Subscription::new("orders").with_delivery_type(DeliveryType::Sync),
-                Subscription::new("audit"),
-            ])
+            .subscribe(Subscription::new("orders").with_delivery_type(DeliveryType::Sync))
+            .await
+            .unwrap();
+        consumer
+            .subscribe(Subscription::new("audit"))
             .await
             .unwrap();
         deliver_tx.send(()).unwrap();
@@ -874,11 +803,11 @@ mod tests {
             "stale frames must be discarded"
         );
         assert_eq!(consumer.subscriptions.lock().await.len(), 2);
-        consumer.request_shutdown();
-        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+        consumer.shutdown();
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.join())
             .await
             .expect("consumer must still shut down cleanly");
-        assert!(matches!(reason, ShutdownReason::Cancelled));
+        assert!(matches!(reason, Ok(())));
     }
 
     #[tokio::test]
@@ -909,7 +838,7 @@ mod tests {
                 if self.calls.fetch_add(1, Ordering::SeqCst) == 0 {
                     self.started.lock().await.take().unwrap().send(()).unwrap();
                     (&mut *self.release.lock().await).await.unwrap();
-                    return Err(EventMeshError::Tcp("failure after I/O reconnect".into()));
+                    return Err(Error::Tcp("failure after I/O reconnect".into()));
                 }
                 Ok(None)
             }
@@ -976,12 +905,11 @@ mod tests {
                 started: Mutex::new(Some(started_tx)),
                 release: Mutex::new(release_rx),
             },
-            None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
         consumer
-            .subscribe(&[Subscription::new("orders")])
+            .subscribe(Subscription::new("orders"))
             .await
             .unwrap();
         tokio::time::timeout(Duration::from_secs(3), async {
@@ -998,7 +926,8 @@ mod tests {
             .expect("late failure must recover on the existing replacement session")
             .unwrap();
         assert_eq!(calls.load(Ordering::SeqCst), 2);
-        consumer.shutdown().await;
+        consumer.shutdown();
+        let _ = consumer.join().await;
     }
 
     /// A reply that fails the TCP CloudEvents compatibility check must not ACK
@@ -1062,9 +991,7 @@ mod tests {
         }
     }
 
-    async fn failed_delivery_consumer(
-        reconnect: ReconnectPolicy,
-    ) -> (TcpConsumer<FailingListener>, TcpListener) {
+    async fn failed_delivery_consumer(reconnect: ReconnectPolicy) -> (TcpConsumer, TcpListener) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
 
@@ -1126,14 +1053,9 @@ mod tests {
             .with_reconnect(reconnect)
             .with_control_timeout(Duration::from_secs(3))
             .with_heartbeat_interval(Duration::from_secs(60));
-        let consumer = TcpConsumer::connect(
-            config,
-            &ConsumerOptions::new("g"),
-            FailingListener,
-            None::<std::future::Ready<()>>,
-        )
-        .await
-        .expect("connect");
+        let consumer = TcpConsumer::connect(config, &ConsumerOptions::new("g"), FailingListener)
+            .await
+            .expect("connect");
 
         let listener = tokio::time::timeout(Duration::from_secs(5), server)
             .await
@@ -1146,10 +1068,10 @@ mod tests {
     async fn listener_error_stops_without_ack_when_reconnect_disabled() {
         let (consumer, _listener) =
             failed_delivery_consumer(ReconnectPolicy::default().with_enabled(false)).await;
-        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.join())
             .await
             .expect("disabled reconnect must stop the consumer");
-        assert!(matches!(reason, ShutdownReason::ChannelClosed));
+        assert!(matches!(reason, Err(Error::ChannelClosed(_))));
         assert!(
             !consumer.conn.is_active(),
             "listener failure must stop the connection I/O task without requiring join"
@@ -1166,10 +1088,10 @@ mod tests {
         )
         .await;
         drop(listener);
-        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.join())
             .await
             .expect("exhausted reconnect must stop the consumer");
-        assert!(matches!(reason, ShutdownReason::ChannelClosed));
+        assert!(matches!(reason, Err(Error::ChannelClosed(_))));
     }
 
     #[tokio::test]
@@ -1180,11 +1102,11 @@ mod tests {
                 .with_max_backoff(Duration::from_secs(60)),
         )
         .await;
-        consumer.request_shutdown();
-        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+        consumer.shutdown();
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.join())
             .await
             .expect("shutdown must interrupt reconnect backoff");
-        assert!(matches!(reason, ShutdownReason::Cancelled));
+        assert!(matches!(reason, Ok(())));
         assert!(!consumer.conn.is_active());
     }
 
@@ -1257,7 +1179,6 @@ mod tests {
             config,
             &ConsumerOptions::new("g"),
             ReplyEncodingFailingListener,
-            None::<std::future::Ready<()>>,
         )
         .await
         .expect("connect");
@@ -1300,14 +1221,15 @@ mod tests {
             ] {
                 confirm_request(&mut framed, request, response).await;
             }
-            let request = Package::new(Header::new(Command::RequestToClient, "request-seq"))
-                .with_body(PackageBody::Text(
-                    serde_json::json!({
-                        "topic": "orders", "body": "request",
-                        "properties": {"ttl": ttl.to_string(), "correlation99id": "request-id"}
-                    })
-                    .to_string(),
-                ));
+            let mut header = Header::new(Command::RequestToClient, "request-seq");
+            header.set_property("protocoltype", "eventmeshmessage");
+            let request = Package::new(header).with_body(PackageBody::Text(
+                serde_json::json!({
+                    "topic": "orders", "body": "request",
+                    "properties": {"ttl": ttl.to_string(), "correlation99id": "request-id"}
+                })
+                .to_string(),
+            ));
             framed.send(request).await.unwrap();
 
             let reply = framed
@@ -1344,18 +1266,17 @@ mod tests {
                 .with_heartbeat_interval(Duration::from_secs(60)),
             &ConsumerOptions::new("reply-test"),
             Reply(content),
-            None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
         let delivered = tokio::time::timeout(Duration::from_secs(3), delivered_rx).await;
-        consumer.request_shutdown();
-        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.wait_for_shutdown())
+        consumer.shutdown();
+        let reason = tokio::time::timeout(Duration::from_secs(3), consumer.join())
             .await
             .unwrap();
         server.await.unwrap();
         delivered.unwrap().unwrap();
-        assert!(matches!(reason, ShutdownReason::Cancelled));
+        assert!(matches!(reason, Ok(())));
     }
 
     #[test]
@@ -1384,7 +1305,7 @@ mod tests {
         )
         .unwrap();
         let mut reply = Message::from(reply);
-        inherit_request_metadata(&mut reply, &Message::from(request));
+        inherit_request_metadata(&mut reply, &Message::from(request)).unwrap();
         let pkg = encode_reply(&reply).expect("encode reply");
         let encoded = message::parse_message(&pkg.body).expect("decode reply");
 
@@ -1418,7 +1339,7 @@ mod tests {
             .expect("build reply");
 
         let mut reply = Message::from(reply);
-        inherit_request_metadata(&mut reply, &Message::from(request));
+        inherit_request_metadata(&mut reply, &Message::from(request)).unwrap();
         assert_eq!(
             match reply {
                 Message::CloudEvent(reply) => reply.extension("cluster").unwrap().to_string(),
@@ -1428,10 +1349,7 @@ mod tests {
         );
     }
 
-    /// Loopback test: the runtime's TCP `UnSubscribeProcessor` ignores the
-    /// request body and drops **all** session topics. After subscribing to A
-    /// and B and calling `unsubscribe([A])`, the local `subscriptions` map
-    /// must be empty (not just missing A) so it matches the server.
+    /// Session-wide unsubscribe removes all confirmed subscriptions locally.
     #[tokio::test]
     async fn unsubscribe_clears_all_local_state() {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -1486,34 +1404,22 @@ mod tests {
             .with_control_timeout(Duration::from_secs(3))
             .with_heartbeat_interval(Duration::from_secs(60));
 
-        let consumer = TcpConsumer::connect(
-            config,
-            &ConsumerOptions::new("g"),
-            NoopListener,
-            None::<std::future::Ready<()>>,
-        )
-        .await
-        .expect("connect");
+        let consumer = TcpConsumer::connect(config, &ConsumerOptions::new("g"), NoopListener)
+            .await
+            .expect("connect");
 
         // Subscribe to two topics. Each call records into `self.subscriptions`.
         let item_a = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
         let item_b = Subscription::new("B").with_delivery_type(DeliveryType::Sync);
-        consumer
-            .subscribe(&[item_a, item_b])
-            .await
-            .expect("subscribe A+B");
+        consumer.subscribe(item_a).await.expect("subscribe A");
+        consumer.subscribe(item_b).await.expect("subscribe B");
         {
             let subs = consumer.subscriptions.lock().await;
             assert_eq!(subs.len(), 2, "both subscriptions should be recorded");
         }
 
-        // Unsubscribe only A. The server drops ALL topics, so the local map
-        // must be fully cleared — not left with a phantom B entry.
-        let item_a = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
-        consumer
-            .unsubscribe(vec![item_a])
-            .await
-            .expect("unsubscribe A");
+        // The public operation removes every topic in this session.
+        consumer.unsubscribe_all().await.expect("unsubscribe all");
         {
             let subs = consumer.subscriptions.lock().await;
             assert!(
@@ -1523,7 +1429,8 @@ mod tests {
             );
         }
 
-        consumer.shutdown().await;
+        consumer.shutdown();
+        let _ = consumer.join().await;
         let _ = server.await;
     }
 
@@ -1590,24 +1497,15 @@ mod tests {
             .with_control_timeout(Duration::from_secs(3))
             .with_heartbeat_interval(Duration::from_secs(60));
 
-        let consumer = TcpConsumer::connect(
-            config,
-            &ConsumerOptions::new("g"),
-            NoopListener,
-            None::<std::future::Ready<()>>,
-        )
-        .await
-        .expect("connect");
+        let consumer = TcpConsumer::connect(config, &ConsumerOptions::new("g"), NoopListener)
+            .await
+            .expect("connect");
 
         let item = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
-        consumer.subscribe(&[item]).await.expect("subscribe");
+        consumer.subscribe(item).await.expect("subscribe");
 
         // Server returns code 1 → must be Err, not Ok.
-        let item = Subscription::new("A").with_delivery_type(DeliveryType::Sync);
-        let err = consumer
-            .unsubscribe(vec![item])
-            .await
-            .expect_err("should fail");
+        let err = consumer.unsubscribe_all().await.expect_err("should fail");
         assert!(
             err.to_string().contains("server error"),
             "expected Server error, got: {err}"
@@ -1621,7 +1519,8 @@ mod tests {
             "subscriptions must not be cleared on failure"
         );
 
-        consumer.shutdown().await;
+        consumer.shutdown();
+        let _ = consumer.join().await;
         let _ = server.await;
     }
 
@@ -1695,32 +1594,27 @@ mod tests {
                     .with_initial_backoff(Duration::from_millis(20))
                     .with_max_backoff(Duration::from_millis(50)),
             );
-        let consumer = TcpConsumer::connect(
-            config,
-            &ConsumerOptions::new("g"),
-            NoopListener,
-            None::<std::future::Ready<()>>,
-        )
-        .await
-        .expect("connect");
+        let consumer = TcpConsumer::connect(config, &ConsumerOptions::new("g"), NoopListener)
+            .await
+            .expect("connect");
         consumer
-            .subscribe(&[Subscription::new("orders")])
+            .subscribe(Subscription::new("orders"))
             .await
             .expect("initial subscribe");
 
-        let reason = tokio::time::timeout(Duration::from_secs(5), consumer.wait_for_shutdown())
+        let reason = tokio::time::timeout(Duration::from_secs(5), consumer.join())
             .await
             .expect("rejected replay must stop the consumer");
         assert!(matches!(
             reason,
-            ShutdownReason::Error(message) if message.contains("re-subscribe")
+            Err(Error::Tcp(message)) if message.contains("re-subscribe")
         ));
         server.await.unwrap();
     }
 
     /// The server sends `REDIRECT_TO_CLIENT` with an `ip`/`port` body.
-    /// The receive loop must stop promptly and `wait_for_shutdown` must
-    /// return `ShutdownReason::Redirect` carrying the advertised address.
+    /// The receive loop must stop promptly and `join` must report the
+    /// advertised redirect address.
     #[tokio::test]
     async fn redirect_to_client_returns_redirect_reason() {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -1767,30 +1661,26 @@ mod tests {
             .with_control_timeout(Duration::from_secs(3))
             .with_heartbeat_interval(Duration::from_secs(60));
 
-        let consumer = TcpConsumer::connect(
-            config,
-            &ConsumerOptions::new("g"),
-            NoopListener,
-            None::<std::future::Ready<()>>,
-        )
-        .await
-        .expect("connect");
+        let consumer = TcpConsumer::connect(config, &ConsumerOptions::new("g"), NoopListener)
+            .await
+            .expect("connect");
 
         // The redirect frame should make the driver exit on its own.
-        // wait_for_shutdown must return promptly with the redirect reason.
-        let reason =
-            tokio::time::timeout(Duration::from_secs(10), consumer.wait_for_shutdown()).await;
+        // join must return promptly with the redirect reason.
+        let reason = tokio::time::timeout(Duration::from_secs(10), consumer.join()).await;
         assert!(
             reason.is_ok(),
             "REDIRECT_TO_CLIENT should stop the receive loop promptly"
         );
 
         match reason.unwrap() {
-            ShutdownReason::Redirect(ri) => {
-                assert_eq!(ri.ip, "10.0.0.9", "redirect ip must match");
-                assert_eq!(ri.port, 10000, "redirect port must match");
+            Err(Error::Tcp(message)) => {
+                assert!(
+                    message.contains("10.0.0.9:10000"),
+                    "redirect address must match"
+                );
             }
-            other => panic!("expected ShutdownReason::Redirect, got {other:?}"),
+            other => panic!("expected TCP redirect error, got {other:?}"),
         }
 
         let _ = server.await;

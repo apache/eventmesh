@@ -26,13 +26,13 @@
 //! Wire format is CloudEvents-protobuf; [`crate::EventMeshMessage`] is converted at
 //! the boundary by [`codec`].
 
-pub mod client;
-pub mod codec;
-pub mod consumer;
-pub mod heartbeat;
-pub mod producer;
+pub(crate) mod client;
+pub(crate) mod codec;
+pub(crate) mod consumer;
+mod heartbeat;
+mod producer;
 
-pub use client::ChannelClient;
+pub(crate) use client::ChannelClient;
 pub use consumer::{GrpcStreamConsumer, GrpcWebhookConsumer};
 pub use producer::GrpcProducer;
 

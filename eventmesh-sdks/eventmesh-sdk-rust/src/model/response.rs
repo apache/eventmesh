@@ -17,20 +17,15 @@
 
 //! Server response type.
 
-use serde::{Deserialize, Serialize};
-
 /// The response returned by the broker for fire-and-forget publish / batch
 /// publish / subscribe / unsubscribe / heartbeat operations.
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PublishResponse {
     /// Numeric response code (`status_code` attribute). `0` means success.
-    #[serde(default, rename = "respCode")]
     pub code: Option<i64>,
     /// Human-readable response message.
-    #[serde(default, rename = "respMsg")]
     pub message: Option<String>,
     /// Server-side processing time, milliseconds.
-    #[serde(default, rename = "respTime")]
     pub time: Option<i64>,
 }
 

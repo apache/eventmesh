@@ -41,7 +41,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 # particular, lets consumers that only use the shared message model avoid
 # compiling a protocol implementation.
 default = []
-# Transport protocols (implemented incrementally).
+# Transport protocols.
 grpc = [
     "dep:tonic",
     "dep:prost",
@@ -54,7 +54,7 @@ grpc = [
     "dep:uuid",
     "dep:http",
 ]
-# Backward-compatible HTTP aggregate, including the managed callback server.
+# Convenience HTTP aggregate, including the managed callback server.
 http = ["http-client", "http-server"]
 # HTTP producer, external webhook registration, and framework-independent codec.
 http-client = [

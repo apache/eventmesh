@@ -20,36 +20,11 @@
 /// gRPC status codes the EventMesh server returns in the `statuscode`
 /// CloudEvent attribute (mirrors `org.apache.eventmesh.common.protocol.grpc.common.StatusCode`).
 ///
-/// `SUCCESS` (0) means OK; everything else is an error.
+/// A heartbeat status of 30 requests subscription replay.
 #[cfg(feature = "grpc")]
 pub struct StatusCode;
-// Keep the Runtime status-code catalog even when only resubscribe is inspected.
 #[cfg(feature = "grpc")]
-#[allow(dead_code)]
 impl StatusCode {
-    pub const SUCCESS: i32 = 0;
-    pub const OVERLOAD: i32 = 1;
-    pub const EVENTMESH_REQUESTCODE_INVALID: i32 = 2;
-    pub const EVENTMESH_SEND_SYNC_MSG_ERR: i32 = 3;
-    pub const EVENTMESH_WAITING_RR_MSG_ERR: i32 = 4;
-    pub const EVENTMESH_PROTOCOL_HEADER_ERR: i32 = 6;
-    pub const EVENTMESH_PROTOCOL_BODY_ERR: i32 = 7;
-    pub const EVENTMESH_STOP: i32 = 8;
-    pub const EVENTMESH_REJECT_BY_PROCESSOR_ERROR: i32 = 9;
-    pub const EVENTMESH_BATCH_PUBLISH_ERR: i32 = 10;
-    pub const EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR: i32 = 11;
-    pub const EVENTMESH_PACKAGE_MSG_ERR: i32 = 12;
-    pub const EVENTMESH_GROUP_PRODUCER_STOPPED_ERR: i32 = 13;
-    pub const EVENTMESH_SEND_ASYNC_MSG_ERR: i32 = 14;
-    pub const EVENTMESH_REPLY_MSG_ERR: i32 = 15;
-    pub const EVENTMESH_RUNTIME_ERR: i32 = 16;
-    pub const EVENTMESH_SEND_BATCHLOG_MSG_ERR: i32 = 17;
-    pub const EVENTMESH_SUBSCRIBE_ERR: i32 = 17;
-    pub const EVENTMESH_UNSUBSCRIBE_ERR: i32 = 18;
-    pub const EVENTMESH_HEARTBEAT_ERR: i32 = 19;
-    pub const EVENTMESH_ACL_ERR: i32 = 20;
-    pub const EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR: i32 = 21;
-    pub const EVENTMESH_REQUEST_REPLY_MSG_ERR: i32 = 22;
     pub const CLIENT_RESUBSCRIBE: i32 = 30;
 }
 
@@ -67,16 +42,9 @@ pub enum ClientRetCode {
 /// Request codes for the HTTP `code` header used by root-path routing.
 #[cfg(feature = "http-client")]
 pub struct RequestCode;
-// Keep the Java HTTP request-code catalog, including operations not exposed here.
 #[cfg(feature = "http-client")]
-#[allow(dead_code)]
 impl RequestCode {
-    pub const MSG_SEND_SYNC: i32 = 101;
-    pub const MSG_BATCH_SEND: i32 = 102;
     pub const MSG_SEND_ASYNC: i32 = 104;
-    pub const HTTP_PUSH_CLIENT_ASYNC: i32 = 105;
-    pub const HTTP_PUSH_CLIENT_SYNC: i32 = 106;
-    pub const REPLY_MESSAGE: i32 = 301;
     pub const HEARTBEAT: i32 = 203;
     pub const SUBSCRIBE: i32 = 206;
     pub const UNSUBSCRIBE: i32 = 207;

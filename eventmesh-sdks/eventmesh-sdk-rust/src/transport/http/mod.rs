@@ -18,7 +18,7 @@
 //! HTTP transport for EventMesh.
 //!
 //! Provides an HTTP-based [`HttpProducer`] and
-//! [`HttpConsumer`] for webhook subscription, plus a built-in
+//! [`WebhookRegistration`] for webhook subscription, plus a built-in
 //! [`WebhookServer`] for receiving pushed messages from the EventMesh runtime.
 //!
 //! # Wire format
@@ -52,8 +52,8 @@ pub mod server;
 #[cfg(feature = "http-server")]
 mod webhook;
 
-pub use client::EventMeshHttpClient;
-pub use consumer::HttpConsumer;
+pub use client::HttpClient;
+pub use consumer::WebhookRegistration;
 pub use producer::HttpProducer;
 #[cfg(feature = "http-server")]
 pub use server::WebhookServer;

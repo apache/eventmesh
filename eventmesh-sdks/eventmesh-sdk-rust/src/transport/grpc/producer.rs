@@ -22,13 +22,16 @@ use std::time::Duration;
 use tracing::debug;
 
 use crate::config::{GrpcConfig, ProducerOptions};
-use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, PublishResponse};
+use crate::error::{Error, Result};
+use crate::grpc::GrpcChannel;
+use crate::message::{Message, MessageKind, PublishReceipt};
+use crate::model::PublishResponse;
+use crate::proto_gen::{PbCloudEvent, PbCloudEventBatch};
 use crate::transport::grpc::client::ChannelClient;
 use crate::transport::grpc::codec;
 use crate::transport::validation::validate_grpc_publish;
 
-/// gRPC-based producer.
+/// gRPC publishing capability over a shared channel.
 pub struct GrpcProducer {
     client: ChannelClient,
     config: GrpcConfig,
@@ -36,13 +39,10 @@ pub struct GrpcProducer {
 }
 
 impl GrpcProducer {
-    /// Create a producer over an existing lazily connected gRPC client.
-    pub(crate) fn new(
-        client: ChannelClient,
-        config: GrpcConfig,
-        options: ProducerOptions,
-    ) -> Result<Self> {
+    /// Create a publishing role over `channel`.
+    pub fn new(channel: GrpcChannel, options: ProducerOptions) -> Result<Self> {
         options.validate()?;
+        let (client, config) = channel.into_parts();
         Ok(Self {
             client,
             config,
@@ -50,130 +50,97 @@ impl GrpcProducer {
         })
     }
 
-    #[cfg(test)]
-    pub(crate) fn client(&self) -> &ChannelClient {
-        &self.client
-    }
-
-    /// Publish a batch of native EventMesh messages.
-    pub(crate) async fn publish_message_batch(
-        &self,
-        messages: Vec<crate::message::Message>,
-    ) -> Result<PublishResponse> {
-        let mut events = Vec::with_capacity(messages.len());
-        for message in messages {
-            events.push(match message {
-                crate::message::Message::EventMesh(message) => {
-                    validate_grpc_publish(&message)?;
-                    codec::from_event_mesh_message(&message, &self.config, self.options.group())?
-                }
-                #[cfg(feature = "cloud_events")]
-                crate::message::Message::CloudEvent(_) => {
-                    return Err(EventMeshError::Unsupported(
-                        "CloudEvents must use the CloudEvents batch path".into(),
-                    ));
-                }
-            });
-        }
-        let response = codec::to_response(
-            &self
-                .client
-                .batch_publish(
-                    crate::proto_gen::PbCloudEventBatch { events },
-                    self.config.request_timeout(),
-                )
-                .await?,
-        );
-        ensure_success(response, "batch publish failed")
-    }
-}
-
-#[cfg(feature = "cloud_events")]
-impl GrpcProducer {
-    /// Publish a native CloudEvent.
-    pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
-        use cloudevents::AttributesReader;
-
-        let ce = codec::from_cloudevent(&event, &self.config, self.options.group())?;
-        let resp = self
+    /// Publish one event and wait for the EventMesh acknowledgement.
+    pub async fn publish(&self, message: Message) -> Result<PublishReceipt> {
+        let event = self.encode_publish(&message)?;
+        let response = self
             .client
-            .publish(ce, self.config.request_timeout())
+            .publish(event, self.config.request_timeout())
             .await?;
-        let response = codec::to_response(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response.message.unwrap_or_else(|| "publish failed".into()),
-            });
-        }
-        debug!("published CloudEvent id={:?}", event.id());
-        Ok(response)
+        let receipt = publish_receipt(&response, "publish failed")?;
+        debug!(kind = ?message.kind(), "published event");
+        Ok(receipt)
     }
 
-    /// Publish several native CloudEvents in a single gRPC batch RPC.
-    pub async fn publish_cloud_event_batch(
-        &self,
-        events: Vec<cloudevents::Event>,
-    ) -> Result<PublishResponse> {
-        if events.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "batch publish requires at least one CloudEvent".into(),
+    /// Publish a non-empty, homogeneous batch through gRPC's batch RPC.
+    ///
+    /// EventMesh and CloudEvents cannot be mixed in one batch because the
+    /// Runtime selects one protocol adaptor for the entire batch.
+    pub async fn publish_batch(&self, messages: Vec<Message>) -> Result<PublishReceipt> {
+        let kind = messages
+            .first()
+            .ok_or_else(|| {
+                Error::InvalidArgument("batch publish requires at least one message".into())
+            })?
+            .kind();
+        if messages.iter().any(|message| message.kind() != kind) {
+            return Err(Error::Unsupported(
+                "mixed EventMesh and CloudEvents gRPC batches".into(),
             ));
         }
-        let mut wire_events = Vec::with_capacity(events.len());
-        for event in &events {
-            wire_events.push(codec::from_cloudevent(
-                event,
-                &self.config,
-                self.options.group(),
-            )?);
-        }
-        let resp = self
+        let events = messages
+            .iter()
+            .map(|message| self.encode_publish(message))
+            .collect::<Result<Vec<_>>>()?;
+        let response = self
             .client
-            .batch_publish(
-                crate::proto_gen::PbCloudEventBatch {
-                    events: wire_events,
-                },
-                self.config.request_timeout(),
-            )
+            .batch_publish(PbCloudEventBatch { events }, self.config.request_timeout())
             .await?;
-        let response = codec::to_response(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "CloudEvents batch publish failed".into()),
-            });
-        }
-        Ok(response)
+        publish_receipt(&response, "batch publish failed")
     }
 
-    /// Send a native CloudEvent and wait for a native CloudEvent reply.
+    /// Send an event and await a reply in the same message dialect.
+    pub async fn request_reply(&self, message: Message) -> Result<Message> {
+        self.request_reply_with_timeout(message, self.config.request_timeout())
+            .await
+    }
+
+    /// Send an event and await its reply with a per-operation gRPC deadline.
     ///
-    /// `timeout` is applied as a gRPC deadline (see
-    /// [`ChannelClient::request_reply`]); expiry surfaces as
-    /// [`Error::Timeout`](crate::Error::Timeout).
-    pub async fn request_reply_cloud_event(
+    /// Expiry is reported as [`Error::Timeout`](crate::Error::Timeout).
+    pub async fn request_reply_with_timeout(
         &self,
-        event: cloudevents::Event,
+        message: Message,
         timeout: Duration,
-    ) -> Result<cloudevents::Event> {
-        let event = codec::from_cloudevent(&event, &self.config, self.options.group())?;
+    ) -> Result<Message> {
+        if timeout.is_zero() {
+            return Err(Error::InvalidArgument(
+                "request/reply timeout must be greater than zero".into(),
+            ));
+        }
+        let kind = message.kind();
+        let event = self.encode_publish(&message)?;
         let response = self.client.request_reply(event, timeout).await?;
-        ensure_request_reply_success(
-            codec::to_response(&response),
-            "CloudEvents request/reply failed",
-        )?;
-        codec::to_cloudevent(response)
+        ensure_request_reply_success(codec::to_response(&response), "request/reply failed")?;
+        match kind {
+            MessageKind::EventMesh => {
+                codec::to_event_mesh_message(&response).map(Message::EventMesh)
+            }
+            #[cfg(feature = "cloud_events")]
+            MessageKind::CloudEvent => codec::to_cloudevent(response).map(Message::CloudEvent),
+        }
+    }
+
+    fn encode_publish(&self, message: &Message) -> Result<PbCloudEvent> {
+        match message {
+            Message::EventMesh(message) => {
+                validate_grpc_publish(message)?;
+                codec::from_event_mesh_message(message, &self.config, self.options.group())
+            }
+            #[cfg(feature = "cloud_events")]
+            Message::CloudEvent(event) => {
+                codec::from_cloudevent(event, &self.config, self.options.group())
+            }
+        }
     }
 }
 
-fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishResponse> {
+fn publish_receipt(event: &PbCloudEvent, fallback: &str) -> Result<PublishReceipt> {
+    let response = codec::to_response(event);
     if response.is_success() {
-        Ok(response)
+        Ok(PublishReceipt::from_response(response))
     } else {
-        Err(EventMeshError::Server {
+        Err(Error::Server {
             code: response.code.unwrap_or(-1) as i32,
             message: response.message.unwrap_or_else(|| fallback.into()),
         })
@@ -185,50 +152,17 @@ fn ensure_success(response: PublishResponse, fallback: &str) -> Result<PublishRe
 fn ensure_request_reply_success(response: PublishResponse, fallback: &str) -> Result<()> {
     match response.code {
         None | Some(0) => Ok(()),
-        Some(code) => Err(EventMeshError::Server {
+        Some(code) => Err(Error::Server {
             code: code as i32,
             message: response.message.unwrap_or_else(|| fallback.into()),
         }),
     }
 }
 
-impl GrpcProducer {
-    /// Publish a native EventMesh message and wait for acknowledgement.
-    pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        validate_grpc_publish(&message)?;
-        let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
-        let resp = self
-            .client
-            .publish(event, self.config.request_timeout())
-            .await?;
-        let response = codec::to_response(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response.message.unwrap_or_else(|| "publish failed".into()),
-            });
-        }
-        debug!("published topic={:?}", message.topic);
-        Ok(response)
-    }
-
-    /// Send a native EventMesh request and await its reply.
-    pub(crate) async fn request_reply(
-        &self,
-        message: EventMeshMessage,
-        timeout: Duration,
-    ) -> Result<EventMeshMessage> {
-        validate_grpc_publish(&message)?;
-        let event = codec::from_event_mesh_message(&message, &self.config, self.options.group())?;
-        let resp = self.client.request_reply(event, timeout).await?;
-        ensure_request_reply_success(codec::to_response(&resp), "request/reply failed")?;
-        codec::to_event_mesh_message(&resp)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::EventMeshMessage;
 
     #[test]
     fn publish_validation_rejects_missing_topic_or_empty_content() {
@@ -248,8 +182,7 @@ mod tests {
             crate::config::ClientOptions::default().with_request_timeout(Duration::from_millis(10)),
         );
         let producer = GrpcProducer::new(
-            ChannelClient::connect_lazy(&config).unwrap(),
-            config,
+            GrpcChannel::connect_lazy(config).unwrap(),
             ProducerOptions::new("validation-test"),
         )
         .unwrap();
@@ -269,20 +202,18 @@ mod tests {
                 .unwrap(),
         ] {
             assert!(matches!(
-                producer.publish(message.clone()).await,
-                Err(EventMeshError::InvalidMessage(_))
+                producer.publish(message.clone().into()).await,
+                Err(Error::InvalidMessage(_))
+            ));
+            assert!(matches!(
+                producer.publish_batch(vec![message.clone().into()]).await,
+                Err(Error::InvalidMessage(_))
             ));
             assert!(matches!(
                 producer
-                    .publish_message_batch(vec![message.clone().into()])
+                    .request_reply_with_timeout(message.into(), Duration::from_millis(10))
                     .await,
-                Err(EventMeshError::InvalidMessage(_))
-            ));
-            assert!(matches!(
-                producer
-                    .request_reply(message, Duration::from_millis(10))
-                    .await,
-                Err(EventMeshError::InvalidMessage(_))
+                Err(Error::InvalidMessage(_))
             ));
         }
         assert!(
@@ -307,6 +238,6 @@ mod tests {
             "failed",
         )
         .unwrap_err();
-        assert!(matches!(error, EventMeshError::Server { code: 17, .. }));
+        assert!(matches!(error, Error::Server { code: 17, .. }));
     }
 }

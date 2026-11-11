@@ -27,54 +27,37 @@ pub mod codec {
     };
 }
 
-use crate::config::{ConsumerOptions, HttpConfig, ProducerOptions};
-use crate::error::{EventMeshError, Result};
-use crate::message::{Message, PublishReceipt};
-use crate::subscription::{DeliveryType, Subscription};
+#[cfg(all(test, feature = "http-server"))]
+use crate::config::HttpConfig;
+use crate::config::{ConsumerOptions, ProducerOptions};
+#[cfg(feature = "http-server")]
+use crate::error::Error;
+use crate::error::Result;
+#[cfg(feature = "http-server")]
+use crate::subscription::Subscription;
+#[cfg(feature = "http-server")]
+use crate::transport::http::consumer::combine_cleanup_results;
 #[cfg(feature = "http-server")]
 use crate::transport::http::WebhookServer;
-use crate::transport::http::{
-    EventMeshHttpClient as TransportClient, HttpConsumer as TransportConsumer,
-    HttpProducer as TransportProducer,
-};
+pub use crate::transport::http::{HttpClient, HttpProducer, WebhookRegistration};
 #[cfg(feature = "http-server")]
 use crate::transport::task::BackgroundTask;
 #[cfg(feature = "http-server")]
 use crate::webhook::WebhookOptions;
 #[cfg(feature = "http-server")]
 use crate::MessageHandler;
-#[cfg(feature = "http-server")]
+#[cfg(all(test, feature = "http-server"))]
 use std::sync::Arc;
 #[cfg(feature = "http-server")]
 use tokio::sync::Mutex;
 #[cfg(all(test, feature = "http-server"))]
 use tokio::task::JoinHandle;
-#[cfg(feature = "http-server")]
 use tokio_util::sync::CancellationToken;
 
-/// A configured EventMesh HTTP client.
-///
-/// Clones and all roles created from this client share one connection pool and
-/// endpoint selector, including the weighted round-robin sequence.
-#[derive(Clone)]
-pub struct HttpClient {
-    inner: TransportClient,
-}
-
 impl HttpClient {
-    /// Validate and create an HTTP client handle.
-    pub fn new(config: HttpConfig) -> Result<Self> {
-        Ok(Self {
-            inner: TransportClient::new(config)?,
-        })
-    }
-
     /// Create a publishing role.
     pub fn producer(&self, options: ProducerOptions) -> Result<HttpProducer> {
-        options.validate()?;
-        Ok(HttpProducer {
-            inner: TransportProducer::new(self.inner.clone(), &options)?,
-        })
+        HttpProducer::new(self.clone(), options)
     }
 
     /// Start an SDK-managed HTTP consumer.
@@ -98,18 +81,12 @@ impl HttpClient {
     where
         H: MessageHandler,
     {
-        options.validate()?;
         webhook.validate()?;
         let subscriptions: Vec<_> = subscriptions.into_iter().collect();
-        validate_subscriptions(&subscriptions)?;
-
         let lifecycle = CancellationToken::new();
-        let inner = TransportConsumer::new(
-            self.inner.clone(),
-            &options,
-            Some(lifecycle.clone().cancelled_owned()),
-        )?;
-        let mut server = WebhookServer::bind(webhook.bind_addr(), Arc::new(handler)).await?;
+        let registration =
+            WebhookRegistration::new(self.clone(), options, lifecycle.child_token())?;
+        let mut server = WebhookServer::bind(webhook.bind_addr(), handler).await?;
         if let Some(url) = webhook.advertise_url() {
             server = server.with_advertise_url(url);
         }
@@ -125,15 +102,15 @@ impl HttpClient {
         // Own the tasks before the next await so cancellation during startup
         // runs the same Drop cleanup as a fully constructed consumer.
         let consumer = HttpConsumer {
-            inner,
+            registration,
             webhook_url,
             lifecycle,
             server_handle: Mutex::new(BackgroundTask::new(server_handle)),
         };
 
         if let Err(error) = consumer
-            .inner
-            .subscribe_webhook(subscriptions, consumer.webhook_url.clone())
+            .registration
+            .subscribe_all(subscriptions, consumer.webhook_url.clone())
             .await
         {
             consumer.shutdown();
@@ -144,10 +121,10 @@ impl HttpClient {
         let server_finished = consumer.server_handle.lock().await.is_finished();
         if server_finished {
             consumer.shutdown();
-            let _ = consumer.inner.unsubscribe_all().await;
+            let _ = consumer.registration.unsubscribe_all().await;
             return match consumer.join().await {
                 Err(error) => Err(error),
-                Ok(()) => Err(EventMeshError::ChannelClosed(
+                Ok(()) => Err(Error::ChannelClosed(
                     "HTTP webhook server stopped during consumer startup".into(),
                 )),
             };
@@ -158,45 +135,14 @@ impl HttpClient {
 
     /// Create a registration manager for an application-owned HTTP endpoint.
     pub fn webhook_registration(&self, options: ConsumerOptions) -> Result<WebhookRegistration> {
-        options.validate()?;
-        Ok(WebhookRegistration {
-            inner: TransportConsumer::new(
-                self.inner.clone(),
-                &options,
-                None::<std::future::Ready<()>>,
-            )?,
-        })
-    }
-}
-
-/// HTTP publishing capability.
-pub struct HttpProducer {
-    inner: TransportProducer,
-}
-
-impl HttpProducer {
-    /// Publish one event.
-    pub async fn publish(&self, message: Message) -> Result<PublishReceipt> {
-        match message {
-            Message::EventMesh(message) => self
-                .inner
-                .publish(message)
-                .await
-                .map(PublishReceipt::from_response),
-            #[cfg(feature = "cloud_events")]
-            Message::CloudEvent(event) => self
-                .inner
-                .publish_cloud_event(event)
-                .await
-                .map(PublishReceipt::from_response),
-        }
+        WebhookRegistration::new(self.clone(), options, CancellationToken::new())
     }
 }
 
 /// An SDK-managed HTTP consumer with an embedded axum callback server.
 #[cfg(feature = "http-server")]
 pub struct HttpConsumer {
-    inner: TransportConsumer,
+    registration: WebhookRegistration,
     webhook_url: String,
     lifecycle: CancellationToken,
     server_handle: Mutex<BackgroundTask<Result<()>>>,
@@ -206,20 +152,16 @@ pub struct HttpConsumer {
 impl HttpConsumer {
     /// Add a subscription to this consumer's callback URL.
     pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
-        validate_subscriptions(std::slice::from_ref(&subscription))?;
-        self.inner
-            .subscribe_webhook(vec![subscription], self.webhook_url.clone())
+        self.registration
+            .subscribe(subscription, self.webhook_url.clone())
             .await
-            .map(|_| ())
     }
 
     /// Remove a subscription from this consumer's callback URL.
     pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
-        subscription.validate()?;
-        self.inner
-            .unsubscribe(vec![subscription], self.webhook_url.clone())
+        self.registration
+            .unsubscribe(subscription, self.webhook_url.clone())
             .await
-            .map(|_| ())
     }
 
     /// Return the URL registered with EventMesh.
@@ -229,7 +171,7 @@ impl HttpConsumer {
 
     /// Signal heartbeat and callback serving to stop.
     pub fn shutdown(&self) {
-        self.inner.request_shutdown();
+        self.registration.shutdown();
         self.lifecycle.cancel();
     }
 
@@ -243,8 +185,8 @@ impl HttpConsumer {
         // A panicked server task cannot cancel the lifecycle token itself.
         // Cancel it here so heartbeat shutdown is guaranteed before returning.
         self.lifecycle.cancel();
-        self.inner.request_shutdown();
-        let heartbeat_result = self.inner.wait_for_shutdown().await;
+        self.registration.shutdown();
+        let heartbeat_result = self.registration.join().await;
         let server_result = match server.take_result() {
             Some(result) => result.map_err(server_join_error)?,
             None => Ok(()),
@@ -257,7 +199,7 @@ impl HttpConsumer {
     /// Subscription changes are rejected once closing begins. Failed remote
     /// unregisters remain tracked and can be retried by calling `close` again.
     pub async fn close(&self) -> Result<()> {
-        let unregister_result = self.inner.unsubscribe_all().await;
+        let unregister_result = self.registration.unsubscribe_all().await;
         self.shutdown();
         let join_result = self.join().await;
         combine_cleanup_results(unregister_result, join_result)
@@ -271,101 +213,9 @@ impl Drop for HttpConsumer {
     }
 }
 
-/// Registration and heartbeat manager for an application-owned webhook URL.
-pub struct WebhookRegistration {
-    inner: TransportConsumer,
-}
-
-impl WebhookRegistration {
-    /// Register a subscription to an application-owned callback URL.
-    pub async fn subscribe(
-        &self,
-        subscription: Subscription,
-        webhook_url: impl Into<String>,
-    ) -> Result<()> {
-        validate_subscriptions(std::slice::from_ref(&subscription))?;
-        let webhook_url = webhook_url.into();
-        crate::webhook::validate_webhook_url(&webhook_url)?;
-        self.inner
-            .subscribe_webhook(vec![subscription], webhook_url)
-            .await
-            .map(|_| ())
-    }
-
-    /// Remove a registration using the same URL supplied to [`subscribe`](Self::subscribe).
-    pub async fn unsubscribe(
-        &self,
-        subscription: Subscription,
-        webhook_url: impl Into<String>,
-    ) -> Result<()> {
-        subscription.validate()?;
-        let webhook_url = webhook_url.into();
-        crate::webhook::validate_webhook_url(&webhook_url)?;
-        self.inner
-            .unsubscribe(vec![subscription], webhook_url)
-            .await
-            .map(|_| ())
-    }
-
-    /// Signal the heartbeat task to stop.
-    pub fn shutdown(&self) {
-        self.inner.request_shutdown();
-    }
-
-    /// Wait for the heartbeat task to stop and report task failure.
-    ///
-    /// Cancelling this wait preserves task ownership and pending results. Call
-    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
-    pub async fn join(&self) -> Result<()> {
-        self.inner.wait_for_shutdown().await
-    }
-
-    /// Drain a submitted heartbeat, stop scheduling, unregister, and join.
-    ///
-    /// Subscription changes are rejected once closing begins. Failed remote
-    /// unregisters remain tracked and can be retried by calling `close` again.
-    pub async fn close(&self) -> Result<()> {
-        let unregister_result = self.inner.unsubscribe_all().await;
-        self.shutdown();
-        let join_result = self.join().await;
-        combine_cleanup_results(unregister_result, join_result)
-    }
-}
-
-fn combine_cleanup_results(operation: Result<()>, shutdown: Result<()>) -> Result<()> {
-    match (operation, shutdown) {
-        (Ok(()), Ok(())) => Ok(()),
-        (Err(error), Ok(())) | (Ok(()), Err(error)) => Err(error),
-        (Err(operation), Err(shutdown)) => Err(EventMeshError::Cleanup {
-            operation: Box::new(operation),
-            shutdown: Box::new(shutdown),
-        }),
-    }
-}
-
-fn validate_subscriptions(subscriptions: &[Subscription]) -> Result<()> {
-    if subscriptions.is_empty() {
-        return Err(EventMeshError::InvalidArgument(
-            "HTTP consumer requires at least one initial subscription".into(),
-        ));
-    }
-    if subscriptions
-        .iter()
-        .any(|subscription| subscription.delivery_type == DeliveryType::Sync)
-    {
-        return Err(EventMeshError::Unsupported(
-            "HTTP request/reply subscriptions".into(),
-        ));
-    }
-    for subscription in subscriptions {
-        subscription.validate()?;
-    }
-    Ok(())
-}
-
 #[cfg(feature = "http-server")]
-fn server_join_error(error: tokio::task::JoinError) -> EventMeshError {
-    EventMeshError::Protocol {
+fn server_join_error(error: tokio::task::JoinError) -> Error {
+    Error::Protocol {
         transport: "http",
         message: format!("webhook server task failed: {error}"),
     }
@@ -470,7 +320,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(EventMeshError::Config(message)) if message.contains("active Tokio runtime")
+            Err(Error::Config(message)) if message.contains("active Tokio runtime")
         ));
     }
 
@@ -478,38 +328,36 @@ mod tests {
     fn cleanup_result_preserves_one_or_both_failures() {
         assert!(combine_cleanup_results(Ok(()), Ok(())).is_ok());
 
-        let operation_only = combine_cleanup_results(
-            Err(EventMeshError::InvalidArgument("unregister".into())),
-            Ok(()),
-        );
+        let operation_only =
+            combine_cleanup_results(Err(Error::InvalidArgument("unregister".into())), Ok(()));
         assert!(matches!(
             operation_only,
-            Err(EventMeshError::InvalidArgument(message)) if message == "unregister"
+            Err(Error::InvalidArgument(message)) if message == "unregister"
         ));
 
         let shutdown_only =
-            combine_cleanup_results(Ok(()), Err(EventMeshError::ChannelClosed("join".into())));
+            combine_cleanup_results(Ok(()), Err(Error::ChannelClosed("join".into())));
         assert!(matches!(
             shutdown_only,
-            Err(EventMeshError::ChannelClosed(message)) if message == "join"
+            Err(Error::ChannelClosed(message)) if message == "join"
         ));
 
         let both = combine_cleanup_results(
-            Err(EventMeshError::InvalidArgument("unregister".into())),
-            Err(EventMeshError::ChannelClosed("join".into())),
+            Err(Error::InvalidArgument("unregister".into())),
+            Err(Error::ChannelClosed("join".into())),
         );
         match both {
-            Err(EventMeshError::Cleanup {
+            Err(Error::Cleanup {
                 operation,
                 shutdown,
             }) => {
                 assert!(matches!(
                     *operation,
-                    EventMeshError::InvalidArgument(ref message) if message == "unregister"
+                    Error::InvalidArgument(ref message) if message == "unregister"
                 ));
                 assert!(matches!(
                     *shutdown,
-                    EventMeshError::ChannelClosed(ref message) if message == "join"
+                    Error::ChannelClosed(ref message) if message == "join"
                 ));
             }
             other => panic!("expected combined cleanup error, got {other:?}"),
@@ -531,7 +379,7 @@ mod tests {
             )
             .await;
 
-        assert!(matches!(result, Err(EventMeshError::Io(_))));
+        assert!(matches!(result, Err(Error::Io(_))));
         assert!(
             codes.lock().await.is_empty(),
             "registration must not start before bind"
@@ -577,6 +425,71 @@ mod tests {
         let codes = codes.lock().await.clone();
         assert!(codes.contains(&crate::common::status_code::RequestCode::SUBSCRIBE));
         assert!(codes.contains(&crate::common::status_code::RequestCode::UNSUBSCRIBE));
+        runtime.abort();
+    }
+
+    #[tokio::test]
+    async fn managed_close_keeps_callback_running_until_unregister_finishes() {
+        let unregister_entered = Arc::new(tokio::sync::Notify::new());
+        let unregister_release = Arc::new(tokio::sync::Notify::new());
+        let entered = unregister_entered.clone();
+        let release = unregister_release.clone();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let app = Router::new().route(
+            "/",
+            post(move |headers: HeaderMap| {
+                let entered = entered.clone();
+                let release = release.clone();
+                async move {
+                    if headers["code"]
+                        == crate::common::status_code::RequestCode::UNSUBSCRIBE.to_string()
+                    {
+                        entered.notify_one();
+                        release.notified().await;
+                    }
+                    Json(serde_json::json!({"retCode": 0}))
+                }
+            }),
+        );
+        let runtime = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+        let endpoint = crate::config::Endpoint::new("127.0.0.1", address.port()).unwrap();
+        let endpoints = crate::config::EndpointSet::new([endpoint]).unwrap();
+        let client = HttpClient::new(HttpConfig::new(endpoints)).unwrap();
+        let consumer = Arc::new(
+            client
+                .consumer(
+                    ConsumerOptions::new("group"),
+                    WebhookOptions::new("127.0.0.1:0".parse().unwrap()),
+                    [Subscription::new("orders")],
+                    |_| async { Ok(None) },
+                )
+                .await
+                .unwrap(),
+        );
+        let closing = consumer.clone();
+        let close = tokio::spawn(async move { closing.close().await });
+        tokio::time::timeout(
+            std::time::Duration::from_secs(2),
+            unregister_entered.notified(),
+        )
+        .await
+        .unwrap();
+
+        let response = reqwest::Client::builder()
+            .no_proxy()
+            .build()
+            .unwrap()
+            .post(consumer.webhook_url())
+            .form(&[("content", "in-flight"), ("topic", "orders")])
+            .send()
+            .await
+            .expect("callback must remain available while unregister is pending");
+        assert!(response.status().is_success());
+        assert!(!close.is_finished());
+
+        unregister_release.notify_one();
+        close.await.unwrap().unwrap();
         runtime.abort();
     }
 
@@ -705,7 +618,7 @@ mod tests {
                 |_message| async { Ok(None) },
             )
             .await;
-        assert!(matches!(result, Err(EventMeshError::Server { .. })));
+        assert!(matches!(result, Err(Error::Server { .. })));
         assert!(tokio::net::TcpStream::connect(address).await.is_err());
         runtime.abort();
     }
@@ -783,7 +696,7 @@ mod tests {
 
         assert!(matches!(
             registration.close().await,
-            Err(EventMeshError::Server { code: 17, .. })
+            Err(Error::Server { code: 17, .. })
         ));
         let unsubscribe_count = codes
             .lock()

@@ -29,7 +29,7 @@ use tokio_util::codec::Framed;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
-use crate::error::EventMeshError;
+use crate::error::Error;
 
 use super::super::codec::TcpCodec;
 use super::super::frame::{Command, Package};
@@ -237,12 +237,12 @@ impl SocketDriver {
         package: Package,
         timeout: Duration,
         cancel: &CancellationToken,
-    ) -> std::result::Result<(), (IoExitReason, EventMeshError)> {
+    ) -> std::result::Result<(), (IoExitReason, Error)> {
         tokio::select! {
             biased;
             _ = cancel.cancelled() => Err((
                 IoExitReason::Cancelled,
-                EventMeshError::ChannelClosed("TCP socket write cancelled".into()),
+                Error::ChannelClosed("TCP socket write cancelled".into()),
             )),
             result = tokio::time::timeout(timeout, framed.send(package)) => match result {
                 Ok(Ok(())) => Ok(()),
@@ -252,7 +252,7 @@ impl SocketDriver {
                 }
                 Err(_) => {
                     warn!(?timeout, "TCP write timed out; connection lost");
-                    Err((IoExitReason::IoError, EventMeshError::Timeout(timeout)))
+                    Err((IoExitReason::IoError, Error::Timeout(timeout)))
                 }
             },
         }

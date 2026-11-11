@@ -17,8 +17,8 @@
 
 //! Codec for the EventMesh HTTP wire format.
 //!
-//! All HTTP request bodies are `application/x-www-form-urlencoded`. Message
-//! payloads are serialized as JSON strings and placed in the `content` field.
+//! All HTTP request bodies are `application/x-www-form-urlencoded`. Native
+//! payloads are placed verbatim in `content`; CloudEvents use their JSON encoding.
 //! This mirrors the Java SDK's `EventMeshMessageProducer` /
 //! `CloudEventProducer` / `EventMeshHttpConsumer` wire format.
 //!
@@ -43,13 +43,14 @@ use std::collections::HashMap;
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
 use crate::common::status_code::RequestCode;
 use crate::common::util::RandomStringUtils;
 #[cfg(test)]
 use crate::common::ProtocolKey;
 use crate::common::DEFAULT_MESSAGE_TTL;
 use crate::config::{Credentials, Identity};
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::message::Message;
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::subscription::Subscription;
@@ -196,7 +197,7 @@ impl PushMessageRequestBody {
         let header_protocol_type = headers
             .get("protocoltype")
             .map(|value| {
-                value.to_str().map_err(|error| EventMeshError::Protocol {
+                value.to_str().map_err(|error| Error::Protocol {
                     transport: "http",
                     message: format!("invalid protocoltype header: {error}"),
                 })
@@ -208,7 +209,7 @@ impl PushMessageRequestBody {
             .filter(|fields| !fields.trim().is_empty())
             .map(|fields| {
                 serde_json::from_str::<HashMap<String, String>>(fields).map_err(|error| {
-                    EventMeshError::Protocol {
+                    Error::Protocol {
                         transport: "http",
                         message: format!("failed to parse extFields JSON: {error}"),
                     }
@@ -221,7 +222,7 @@ impl PushMessageRequestBody {
             (header_protocol_type, extension_protocol_type.as_deref())
         {
             if header != extension {
-                return Err(EventMeshError::Protocol {
+                return Err(Error::Protocol {
                     transport: "http",
                     message: format!(
                         "conflicting protocoltype values: header={header:?}, \
@@ -245,17 +246,17 @@ impl PushMessageRequestBody {
             {
                 return serde_json::from_str(&self.content)
                     .map(Message::CloudEvent)
-                    .map_err(EventMeshError::Codec);
+                    .map_err(Error::Codec);
             }
 
             #[cfg(not(feature = "cloud_events"))]
-            return Err(EventMeshError::Unsupported(
+            return Err(Error::Unsupported(
                 "received a CloudEvent without the 'cloud_events' feature enabled".into(),
             ));
         }
 
         if protocol_type != EventMeshProtocolType::EventMeshMessage.as_str() {
-            return Err(EventMeshError::Protocol {
+            return Err(Error::Protocol {
                 transport: "http",
                 message: format!("unsupported protocoltype {protocol_type:?}"),
             });
@@ -287,12 +288,12 @@ impl PushMessageRequestBody {
         let topic = self
             .topic
             .clone()
-            .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?;
+            .ok_or_else(|| Error::InvalidMessage("topic is required".into()))?;
         let mut props = HashMap::new();
         if let Some(ext) = &self.extfields {
             let trimmed = ext.trim();
             if !trimmed.is_empty() {
-                props = serde_json::from_str(trimmed).map_err(|e| EventMeshError::Protocol {
+                props = serde_json::from_str(trimmed).map_err(|e| Error::Protocol {
                     transport: "http",
                     message: format!("failed to parse extFields JSON: {e}"),
                 })?;
@@ -361,22 +362,8 @@ pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(Stri
     fields.push(("producergroup".into(), producer_group.to_string()));
     fields.push(("topic".into(), msg.topic.clone()));
     fields.push(("content".into(), msg.content.clone()));
-    // Always emit a `ttl` form field, falling back to `DEFAULT_MESSAGE_TTL`
-    // when the caller did not set one. The runtime's
-    // `SendSyncMessageProcessor` rejects a blank TTL with
-    // `EVENTMESH_PROTOCOL_BODY_ERR` before any defaulting (unlike the async
-    // processor, which patches in a default after validation), so request-reply
-    // calls would fail whenever `EventMeshMessage::ttl` is unset. This mirrors
-    // the gRPC codec (and the Java gRPC SDK's
-    // `EventMeshCloudEventBuilder`, which falls back to
-    // `Constants.DEFAULT_EVENTMESH_MESSAGE_TTL`).
-    //
-    // NOTE: this intentionally diverges from the Java HTTP SDK's
-    // `EventMeshMessageProducer.buildCommonPostParam`, which does
-    // `addBody(TTL, message.getProp("ttl"))` with no fallback — emitting a
-    // blank `ttl=` when the prop is unset and hitting the same runtime
-    // rejection on the sync path. Defaulting here keeps the Rust HTTP
-    // transport consistent with its own gRPC transport.
+    // Use the same outbound TTL default as the Rust gRPC codec. The Java
+    // HTTP SDK leaves an absent TTL blank and relies on Runtime defaulting.
     let ttl = msg
         .ttl
         .map(|t| t.to_string())
@@ -419,6 +406,44 @@ pub fn encode_publish(msg: &EventMeshMessage, producer_group: &str) -> Vec<(Stri
         ));
     }
     fields
+}
+
+/// Encode a CloudEvent directly into the HTTP transport envelope.
+///
+/// The Java Runtime's CloudEvents resolver reads identity from HTTP headers,
+/// the producer group from the form, and message metadata from the JSON event.
+/// Native-message form fields would supply a second, unused set of IDs and TTL.
+#[cfg(feature = "cloud_events")]
+pub(crate) fn encode_cloud_event(
+    event: &cloudevents::Event,
+    producer_group: &str,
+) -> Result<Vec<(String, String)>> {
+    use cloudevents::AttributesReader;
+
+    if event.subject().is_none_or(|topic| topic.trim().is_empty()) {
+        return Err(Error::InvalidMessage(
+            "CloudEvent subject (topic) must not be blank".into(),
+        ));
+    }
+    let mut event = crate::transport::metadata::outbound_cloud_event(event, false);
+    for key in ["bizseqno", "uniqueid"] {
+        if event
+            .extension(key)
+            .is_none_or(|value| value.to_string().trim().is_empty())
+        {
+            event.set_extension(key, RandomStringUtils::generate_num(30));
+        }
+    }
+    if event
+        .extension("ttl")
+        .is_none_or(|value| value.to_string().trim().is_empty())
+    {
+        event.set_extension("ttl", DEFAULT_MESSAGE_TTL.to_string());
+    }
+    Ok(vec![
+        ("producergroup".into(), producer_group.to_string()),
+        ("content".into(), serde_json::to_string(&event)?),
+    ])
 }
 
 /// Encode subscribe body fields.
@@ -484,26 +509,9 @@ pub fn form_encode(fields: &[(String, String)]) -> String {
     serde_urlencoded::to_string(fields).unwrap_or_default()
 }
 
-/// Request code for the given operation.
-pub fn publish_code() -> i32 {
-    RequestCode::MSG_SEND_ASYNC
-}
-
-pub fn subscribe_code() -> i32 {
-    RequestCode::SUBSCRIBE
-}
-
-pub fn unsubscribe_code() -> i32 {
-    RequestCode::UNSUBSCRIBE
-}
-
-pub fn heartbeat_code() -> i32 {
-    RequestCode::HEARTBEAT
-}
-
 /// Decode a webhook push body (form-urlencoded) into fields.
 pub fn parse_push_body(body: &str) -> Result<PushMessageRequestBody> {
-    serde_urlencoded::from_str(body).map_err(|e| EventMeshError::Protocol {
+    serde_urlencoded::from_str(body).map_err(|e| Error::Protocol {
         transport: "http",
         message: format!("form decode error: {e}"),
     })
@@ -520,6 +528,88 @@ mod tests {
 
     fn credentials() -> Credentials {
         Credentials::new()
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloud_event_form_keeps_message_metadata_in_the_event() {
+        use cloudevents::{AttributesReader, Event, EventBuilder, EventBuilderV10};
+
+        let mut event = EventBuilderV10::new()
+            .id("event-id")
+            .source("urn:test")
+            .ty("test")
+            .subject("orders")
+            .data("application/octet-stream", vec![0, 255, 1])
+            .build()
+            .unwrap();
+        event.set_extension("bizseqno", "business-id");
+        event.set_extension("uniqueid", "unique-id");
+        event.set_extension("ttl", "9000");
+        event.set_extension("tenant", "store-a");
+        event.set_extension("username", "old-user");
+        event.set_extension("rsp0group", "old-group");
+
+        let fields: HashMap<_, _> = encode_cloud_event(&event, "destination-group")
+            .unwrap()
+            .into_iter()
+            .collect();
+        assert_eq!(fields.len(), 2);
+        assert_eq!(fields["producergroup"], "destination-group");
+        let decoded: Event = serde_json::from_str(&fields["content"]).unwrap();
+        assert_eq!(decoded.subject(), Some("orders"));
+        assert_eq!(decoded.data(), event.data());
+        assert_eq!(decoded.datacontenttype(), Some("application/octet-stream"));
+        for (key, expected) in [
+            ("bizseqno", "business-id"),
+            ("uniqueid", "unique-id"),
+            ("ttl", "9000"),
+            ("tenant", "store-a"),
+        ] {
+            assert_eq!(decoded.extension(key).unwrap().to_string(), expected);
+        }
+        assert!(decoded.extension("username").is_none());
+        assert!(decoded.extension("rsp0group").is_none());
+        assert!(event.extension("username").is_some());
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloud_event_form_defaults_required_metadata_and_rejects_blank_topics() {
+        use cloudevents::{Event, EventBuilder, EventBuilderV10};
+
+        let mut event = EventBuilderV10::new()
+            .id("event-id")
+            .source("urn:test")
+            .ty("test")
+            .subject("orders")
+            .build()
+            .unwrap();
+        event.set_extension("bizseqno", " ");
+        event.set_extension("ttl", "");
+        let fields: HashMap<_, _> = encode_cloud_event(&event, "group")
+            .unwrap()
+            .into_iter()
+            .collect();
+        let decoded: Event = serde_json::from_str(&fields["content"]).unwrap();
+        for key in ["bizseqno", "uniqueid"] {
+            let value = decoded.extension(key).unwrap().to_string();
+            assert_eq!(value.len(), 30);
+            assert!(value.chars().all(|character| character.is_ascii_digit()));
+        }
+        assert_eq!(decoded.extension("ttl").unwrap().to_string(), "4000");
+
+        let blank = EventBuilderV10::new()
+            .id("event-id")
+            .source("urn:test")
+            .ty("test")
+            .subject(" ")
+            .build()
+            .unwrap();
+        assert!(matches!(
+            encode_cloud_event(&blank, "group"),
+            Err(Error::InvalidMessage(_))
+        ));
     }
 
     #[test]

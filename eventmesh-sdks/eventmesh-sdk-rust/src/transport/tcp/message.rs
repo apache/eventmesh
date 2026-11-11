@@ -21,7 +21,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::model::{EventMeshMessage, PublishResponse};
 use crate::subscription::Subscription as TopicSubscription;
 
@@ -104,11 +104,11 @@ impl TryFrom<TcpWireMessage> for EventMeshMessage {
         let builder = EventMeshMessage::builder()
             .topic(
                 wire.topic
-                    .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?,
+                    .ok_or_else(|| Error::InvalidMessage("topic is required".into()))?,
             )
             .content(
                 wire.body
-                    .ok_or_else(|| EventMeshError::InvalidMessage("content is required".into()))?,
+                    .ok_or_else(|| Error::InvalidMessage("content is required".into()))?,
             );
         crate::transport::decode_native_message(builder.build()?, props)
     }
@@ -170,16 +170,14 @@ pub fn listen() -> Package {
 }
 
 /// SUBSCRIBE_REQUEST with a single-item `Subscription` body.
-pub fn subscribe(topic: &str, items: &[TopicSubscription]) -> Package {
-    let _ = topic; // topic is in the items; kept for API symmetry with Java
+pub fn subscribe(items: &[TopicSubscription]) -> Package {
     let sub = Subscription::new(items.to_vec());
     package(Command::SubscribeRequest).with_body(PackageBody::Subscription(sub))
 }
 
-/// UNSUBSCRIBE_REQUEST with a `Subscription` body.
-pub fn unsubscribe(items: &[TopicSubscription]) -> Package {
-    let sub = Subscription::new(items.to_vec());
-    package(Command::UnsubscribeRequest).with_body(PackageBody::Subscription(sub))
+/// UNSUBSCRIBE_REQUEST without a body, matching Java session-wide unsubscribe.
+pub fn unsubscribe() -> Package {
+    package(Command::UnsubscribeRequest)
 }
 
 // ---------------------------------------------------------------------------
@@ -199,7 +197,7 @@ pub fn response_to_client_ack(in_pkg: &Package) -> Package {
 /// Sets the `protocoltype`/`protocolversion`/`protocoldesc` header properties
 /// so the server knows how to deserialize the body.
 ///
-/// Returns a [`crate::error::EventMeshError::Codec`] if the message cannot be
+/// Returns a [`crate::error::Error::Codec`] if the message cannot be
 /// serialized — never silently sends an empty body.
 /// Producer-only validation belongs at the publishing operation: this encoder
 /// also handles replies, which preserve callback content and request metadata.
@@ -253,7 +251,7 @@ pub fn response_from_pkg(pkg: &Package) -> PublishResponse {
 }
 
 /// Parse an inbound message body ([`PackageBody::Text`]) back into an
-/// [`EventMeshMessage`]. Returns an empty message on failure.
+/// [`EventMeshMessage`]. Returns `None` on failure.
 ///
 /// Deserializes the TCP wire format (`body`/`properties` fields) and maps them
 /// back to the SDK's `content`/`props` fields.
@@ -278,13 +276,13 @@ pub fn is_cloudevents(pkg: &Package) -> bool {
     pkg.header.get_string_property(PROTOCOL_TYPE_KEY) == Some(CLOUD_EVENTS_PROTOCOL)
 }
 
-/// Whether a package is a native EventMesh message. A missing discriminator is
-/// accepted for compatibility with older runtime deliveries; an explicit
-/// unknown discriminator is rejected by the consumer.
+/// Whether a business package declares the native EventMesh dialect.
+/// Java SessionPusher and SessionSender both tag successful business frames;
+/// control frames are handled separately and do not require this property.
 pub(crate) fn is_event_mesh_message(pkg: &Package) -> bool {
     matches!(
         pkg.header.get_string_property(PROTOCOL_TYPE_KEY),
-        None | Some(EM_MESSAGE_PROTOCOL)
+        Some(EM_MESSAGE_PROTOCOL)
     )
 }
 
@@ -351,11 +349,11 @@ fn validate_cloud_event(event: &cloudevents::Event) -> Result<()> {
 
     match event.datacontenttype() {
         Some(REQUIRED_CE_DATA_CONTENT_TYPE) => Ok(()),
-        Some(other) => Err(EventMeshError::InvalidMessage(format!(
+        Some(other) => Err(Error::InvalidMessage(format!(
             "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
              got \"{other}\" — the EventMesh Java TCP codec cannot serialize other values"
         ))),
-        None => Err(EventMeshError::InvalidMessage(format!(
+        None => Err(Error::InvalidMessage(format!(
             "TCP transport requires datacontenttype = \"{REQUIRED_CE_DATA_CONTENT_TYPE}\", \
              but none is set — the EventMesh Java TCP codec requires it as a serializer selector"
         ))),
@@ -375,100 +373,6 @@ pub fn parse_cloud_event(body: &PackageBody) -> Option<cloudevents::Event> {
         PackageBody::Bytes(b) => serde_json::from_slice(b).ok(),
         _ => None,
     }
-}
-
-/// Convert a CloudEvent to an [`EventMeshMessage`] when merging request/reply
-/// metadata across message dialects.
-///
-/// - `subject` → `topic`
-/// - `data` → `content` (string values are kept as-is; JSON values are
-///   stringified; binary values are lossily converted to UTF-8)
-/// - `ttl` extension → the dedicated TTL field
-/// - Message IDs/content type → dedicated business fields
-/// - Known protocol/routing extensions → read-only delivery context
-/// - Remaining extensions → business properties
-///
-/// This mirrors the gRPC codec's `to_event_mesh_message`.
-#[cfg(feature = "cloud_events")]
-pub fn cloud_event_to_message(event: &cloudevents::Event) -> Result<EventMeshMessage> {
-    use cloudevents::{AttributesReader, Data};
-
-    let topic = event.subject().map(|s| s.to_string());
-    let content = match event.data() {
-        Some(Data::String(s)) => Some(s.clone()),
-        Some(Data::Binary(b)) => Some(String::from_utf8_lossy(b).into_owned()),
-        Some(Data::Json(j)) => Some(j.to_string()),
-        None => None,
-    };
-
-    let mut props = std::collections::HashMap::new();
-    for (k, v) in event.iter_extensions() {
-        props.insert(k.to_string(), v.to_string());
-    }
-
-    let builder =
-        EventMeshMessage::builder()
-            .topic(topic.ok_or_else(|| {
-                EventMeshError::InvalidMessage("CloudEvent subject (topic) is required".into())
-            })?)
-            .content(content.ok_or_else(|| {
-                EventMeshError::InvalidMessage("CloudEvent data is required".into())
-            })?);
-    if let Some(content_type) = event.datacontenttype() {
-        props.insert("datacontenttype".into(), content_type.into());
-    }
-    crate::transport::decode_native_message(builder.build()?, props)
-}
-
-/// Convert an [`EventMeshMessage`] back into a native [`cloudevents::Event`].
-///
-/// This is the reverse of [`cloud_event_to_message`] and is used when the
-/// consumer replies with an `EventMeshMessage` to a CloudEvents
-/// `REQUEST_TO_SERVER` — the producer's `request_reply_cloud_event` uses it to
-/// produce a uniform `Event` return type.
-#[cfg(feature = "cloud_events")]
-pub fn message_to_cloud_event(msg: &EventMeshMessage) -> Result<cloudevents::Event> {
-    use cloudevents::{EventBuilder, EventBuilderV10};
-
-    let source = msg.topic.clone();
-    let mut builder = EventBuilderV10::new()
-        .id(msg
-            .unique_id
-            .clone()
-            .unwrap_or_else(crate::common::RandomStringUtils::generate_uuid))
-        .source(source)
-        .ty("org.apache.eventmesh");
-
-    builder = builder.subject(&msg.topic);
-    builder = builder.data(
-        msg.data_content_type().unwrap_or("text/plain"),
-        msg.content.clone(),
-    );
-    for (k, v) in &msg.props {
-        if !crate::common::metadata::is_reserved_property(k) {
-            builder = builder.extension(k.as_str(), v.as_str());
-        }
-    }
-    if let Some(ttl) = msg.ttl {
-        builder = builder.extension("ttl", ttl.to_string());
-    }
-    if let Some(sequence) = msg.biz_seq_no() {
-        builder = builder.extension("seqnum", sequence);
-    }
-    if let Some(unique_id) = msg.unique_id() {
-        builder = builder.extension("uniqueid", unique_id);
-    }
-    if let Some(context) = msg.delivery_context() {
-        for (key, value) in context.reply_attributes() {
-            builder = builder.extension(key.as_str(), value.as_str());
-        }
-    }
-    builder
-        .build()
-        .map_err(|e| crate::error::EventMeshError::Protocol {
-            transport: "tcp",
-            message: format!("cloudevents build error: {e}"),
-        })
 }
 
 #[cfg(test)]
@@ -705,7 +609,7 @@ mod tests {
 
         assert!(matches!(
             build_cloud_event_package(&event, Command::ResponseToServer),
-            Err(EventMeshError::InvalidMessage(message))
+            Err(Error::InvalidMessage(message))
                 if message.contains(REQUIRED_CE_DATA_CONTENT_TYPE)
         ));
     }
@@ -724,31 +628,7 @@ mod tests {
 
         assert!(matches!(
             build_cloud_event_package(&event, Command::ResponseToServer),
-            Err(EventMeshError::InvalidMessage(_))
+            Err(Error::InvalidMessage(_))
         ));
-    }
-
-    #[cfg(feature = "cloud_events")]
-    #[test]
-    fn cloudevents_to_message_preserves_topic_and_content() {
-        use cloudevents::{EventBuilder, EventBuilderV10};
-
-        let event = EventBuilderV10::new()
-            .id("ce-conv-1")
-            .source("https://example.com")
-            .ty("com.example.test")
-            .subject("conv-topic")
-            .data("text/plain", "conv-content")
-            .extension("ttl", "5000")
-            .build()
-            .expect("valid event");
-
-        let msg = cloud_event_to_message(&event).unwrap();
-        assert_eq!(msg.topic(), "conv-topic");
-        assert_eq!(msg.content(), "conv-content");
-        assert_eq!(msg.get_prop("ttl"), None);
-        assert_eq!(msg.ttl_millis(), Some(5000));
-        let roundtrip = message_to_cloud_event(&msg).unwrap();
-        assert_eq!(roundtrip.extension("ttl").unwrap().to_string(), "5000");
     }
 }

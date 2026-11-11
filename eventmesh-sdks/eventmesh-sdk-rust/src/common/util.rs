@@ -23,7 +23,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use rand::Rng;
 #[cfg(any(
     feature = "grpc",
-    all(feature = "tcp", feature = "cloud_events"),
     all(test, any(feature = "grpc", feature = "http-client", feature = "tcp"))
 ))]
 use uuid::Uuid;
@@ -49,7 +48,6 @@ impl RandomStringUtils {
     /// A random UUID v4 (lowercase, hyphenated).
     #[cfg(any(
         feature = "grpc",
-        all(feature = "tcp", feature = "cloud_events"),
         all(test, any(feature = "grpc", feature = "http-client", feature = "tcp"))
     ))]
     pub fn generate_uuid() -> String {

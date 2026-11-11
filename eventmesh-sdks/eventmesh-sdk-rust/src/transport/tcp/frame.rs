@@ -24,229 +24,92 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::{EventMeshError, Result};
 use crate::subscription::Subscription as TopicSubscription;
 
 // ---------------------------------------------------------------------------
 // Command
 // ---------------------------------------------------------------------------
 
-/// All TCP command types (mirrors Java `Command.java`, values 0–36).
-#[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Java TCP command names, serialized as JSON strings by the Runtime.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Command {
     /// Client sends heartbeat packet to server.
-    HeartbeatRequest = 0,
+    HeartbeatRequest,
     /// Server responds to client heartbeat.
-    HeartbeatResponse = 1,
+    HeartbeatResponse,
     /// Client sends handshake request.
-    HelloRequest = 2,
+    HelloRequest,
     /// Server responds to handshake.
-    HelloResponse = 3,
+    HelloResponse,
     /// Client notifies server of active disconnect.
-    ClientGoodbyeRequest = 4,
+    ClientGoodbyeRequest,
     /// Server replies to client's disconnect notification.
-    ClientGoodbyeResponse = 5,
+    ClientGoodbyeResponse,
     /// Server notifies client of active disconnect.
-    ServerGoodbyeRequest = 6,
+    ServerGoodbyeRequest,
     /// Client replies to server's disconnect notification.
-    ServerGoodbyeResponse = 7,
+    ServerGoodbyeResponse,
     /// Subscription request.
-    SubscribeRequest = 8,
+    SubscribeRequest,
     /// Server replies to subscription.
-    SubscribeResponse = 9,
+    SubscribeResponse,
     /// Unsubscribe request.
-    UnsubscribeRequest = 10,
+    UnsubscribeRequest,
     /// Server replies to unsubscribe.
-    UnsubscribeResponse = 11,
+    UnsubscribeResponse,
     /// Request to start topic listening.
-    ListenRequest = 12,
+    ListenRequest,
     /// Server replies to listen request.
-    ListenResponse = 13,
+    ListenResponse,
     /// Client sends RR request to server.
-    RequestToServer = 14,
+    RequestToServer,
     /// Server pushes RR request to client.
-    RequestToClient = 15,
+    RequestToClient,
     /// Client ACKs RR request.
-    RequestToClientAck = 16,
+    RequestToClientAck,
     /// Client sends RR reply to server.
-    ResponseToServer = 17,
+    ResponseToServer,
     /// Server pushes RR reply to client.
-    ResponseToClient = 18,
+    ResponseToClient,
     /// Client ACKs RR reply.
-    ResponseToClientAck = 19,
+    ResponseToClientAck,
     /// Client sends asynchronous events.
-    AsyncMessageToServer = 20,
+    AsyncMessageToServer,
     /// Server ACKs asynchronous events.
-    AsyncMessageToServerAck = 21,
+    AsyncMessageToServerAck,
     /// Server pushes asynchronous events to client.
-    AsyncMessageToClient = 22,
+    AsyncMessageToClient,
     /// Client ACKs asynchronous events.
-    AsyncMessageToClientAck = 23,
+    AsyncMessageToClientAck,
     /// Client sends broadcast message.
-    BroadcastMessageToServer = 24,
+    BroadcastMessageToServer,
     /// Server ACKs broadcast message.
-    BroadcastMessageToServerAck = 25,
+    BroadcastMessageToServerAck,
     /// Server pushes broadcast message to client.
-    BroadcastMessageToClient = 26,
+    BroadcastMessageToClient,
     /// Client ACKs broadcast message.
-    BroadcastMessageToClientAck = 27,
+    BroadcastMessageToClientAck,
     /// Business log reporting.
-    SysLogToLogServer = 28,
+    #[serde(rename = "SYS_LOG_TO_LOGSERVER")]
+    SysLogToLogServer,
     /// RMB tracking log reporting.
-    TraceLogToLogServer = 29,
+    #[serde(rename = "TRACE_LOG_TO_LOGSERVER")]
+    TraceLogToLogServer,
     /// Server pushes redirection instruction.
-    RedirectToClient = 30,
+    RedirectToClient,
     /// Client sends registration request.
-    RegisterRequest = 31,
+    RegisterRequest,
     /// Server sends registration result.
-    RegisterResponse = 32,
+    RegisterResponse,
     /// Client sends de-registration request.
-    UnregisterRequest = 33,
+    UnregisterRequest,
     /// Server sends de-registration result.
-    UnregisterResponse = 34,
+    UnregisterResponse,
     /// Client sends recommendation request.
-    RecommendRequest = 35,
+    RecommendRequest,
     /// Server sends recommendation result.
-    RecommendResponse = 36,
-}
-
-impl Command {
-    /// The wire name — the exact Java `Command` enum constant name in
-    /// SCREAMING_SNAKE_CASE, which is how the Java runtime (Jackson default)
-    /// serializes the `cmd` field on the wire.
-    pub fn name(self) -> &'static str {
-        match self {
-            Self::HeartbeatRequest => "HEARTBEAT_REQUEST",
-            Self::HeartbeatResponse => "HEARTBEAT_RESPONSE",
-            Self::HelloRequest => "HELLO_REQUEST",
-            Self::HelloResponse => "HELLO_RESPONSE",
-            Self::ClientGoodbyeRequest => "CLIENT_GOODBYE_REQUEST",
-            Self::ClientGoodbyeResponse => "CLIENT_GOODBYE_RESPONSE",
-            Self::ServerGoodbyeRequest => "SERVER_GOODBYE_REQUEST",
-            Self::ServerGoodbyeResponse => "SERVER_GOODBYE_RESPONSE",
-            Self::SubscribeRequest => "SUBSCRIBE_REQUEST",
-            Self::SubscribeResponse => "SUBSCRIBE_RESPONSE",
-            Self::UnsubscribeRequest => "UNSUBSCRIBE_REQUEST",
-            Self::UnsubscribeResponse => "UNSUBSCRIBE_RESPONSE",
-            Self::ListenRequest => "LISTEN_REQUEST",
-            Self::ListenResponse => "LISTEN_RESPONSE",
-            Self::RequestToServer => "REQUEST_TO_SERVER",
-            Self::RequestToClient => "REQUEST_TO_CLIENT",
-            Self::RequestToClientAck => "REQUEST_TO_CLIENT_ACK",
-            Self::ResponseToServer => "RESPONSE_TO_SERVER",
-            Self::ResponseToClient => "RESPONSE_TO_CLIENT",
-            Self::ResponseToClientAck => "RESPONSE_TO_CLIENT_ACK",
-            Self::AsyncMessageToServer => "ASYNC_MESSAGE_TO_SERVER",
-            Self::AsyncMessageToServerAck => "ASYNC_MESSAGE_TO_SERVER_ACK",
-            Self::AsyncMessageToClient => "ASYNC_MESSAGE_TO_CLIENT",
-            Self::AsyncMessageToClientAck => "ASYNC_MESSAGE_TO_CLIENT_ACK",
-            Self::BroadcastMessageToServer => "BROADCAST_MESSAGE_TO_SERVER",
-            Self::BroadcastMessageToServerAck => "BROADCAST_MESSAGE_TO_SERVER_ACK",
-            Self::BroadcastMessageToClient => "BROADCAST_MESSAGE_TO_CLIENT",
-            Self::BroadcastMessageToClientAck => "BROADCAST_MESSAGE_TO_CLIENT_ACK",
-            Self::SysLogToLogServer => "SYS_LOG_TO_LOGSERVER",
-            Self::TraceLogToLogServer => "TRACE_LOG_TO_LOGSERVER",
-            Self::RedirectToClient => "REDIRECT_TO_CLIENT",
-            Self::RegisterRequest => "REGISTER_REQUEST",
-            Self::RegisterResponse => "REGISTER_RESPONSE",
-            Self::UnregisterRequest => "UNREGISTER_REQUEST",
-            Self::UnregisterResponse => "UNREGISTER_RESPONSE",
-            Self::RecommendRequest => "RECOMMEND_REQUEST",
-            Self::RecommendResponse => "RECOMMEND_RESPONSE",
-        }
-    }
-
-    /// Reverse lookup of [`Command::name`].
-    pub fn from_name(name: &str) -> Option<Self> {
-        Some(match name {
-            "HEARTBEAT_REQUEST" => Self::HeartbeatRequest,
-            "HEARTBEAT_RESPONSE" => Self::HeartbeatResponse,
-            "HELLO_REQUEST" => Self::HelloRequest,
-            "HELLO_RESPONSE" => Self::HelloResponse,
-            "CLIENT_GOODBYE_REQUEST" => Self::ClientGoodbyeRequest,
-            "CLIENT_GOODBYE_RESPONSE" => Self::ClientGoodbyeResponse,
-            "SERVER_GOODBYE_REQUEST" => Self::ServerGoodbyeRequest,
-            "SERVER_GOODBYE_RESPONSE" => Self::ServerGoodbyeResponse,
-            "SUBSCRIBE_REQUEST" => Self::SubscribeRequest,
-            "SUBSCRIBE_RESPONSE" => Self::SubscribeResponse,
-            "UNSUBSCRIBE_REQUEST" => Self::UnsubscribeRequest,
-            "UNSUBSCRIBE_RESPONSE" => Self::UnsubscribeResponse,
-            "LISTEN_REQUEST" => Self::ListenRequest,
-            "LISTEN_RESPONSE" => Self::ListenResponse,
-            "REQUEST_TO_SERVER" => Self::RequestToServer,
-            "REQUEST_TO_CLIENT" => Self::RequestToClient,
-            "REQUEST_TO_CLIENT_ACK" => Self::RequestToClientAck,
-            "RESPONSE_TO_SERVER" => Self::ResponseToServer,
-            "RESPONSE_TO_CLIENT" => Self::ResponseToClient,
-            "RESPONSE_TO_CLIENT_ACK" => Self::ResponseToClientAck,
-            "ASYNC_MESSAGE_TO_SERVER" => Self::AsyncMessageToServer,
-            "ASYNC_MESSAGE_TO_SERVER_ACK" => Self::AsyncMessageToServerAck,
-            "ASYNC_MESSAGE_TO_CLIENT" => Self::AsyncMessageToClient,
-            "ASYNC_MESSAGE_TO_CLIENT_ACK" => Self::AsyncMessageToClientAck,
-            "BROADCAST_MESSAGE_TO_SERVER" => Self::BroadcastMessageToServer,
-            "BROADCAST_MESSAGE_TO_SERVER_ACK" => Self::BroadcastMessageToServerAck,
-            "BROADCAST_MESSAGE_TO_CLIENT" => Self::BroadcastMessageToClient,
-            "BROADCAST_MESSAGE_TO_CLIENT_ACK" => Self::BroadcastMessageToClientAck,
-            "SYS_LOG_TO_LOGSERVER" => Self::SysLogToLogServer,
-            "TRACE_LOG_TO_LOGSERVER" => Self::TraceLogToLogServer,
-            "REDIRECT_TO_CLIENT" => Self::RedirectToClient,
-            "REGISTER_REQUEST" => Self::RegisterRequest,
-            "REGISTER_RESPONSE" => Self::RegisterResponse,
-            "UNREGISTER_REQUEST" => Self::UnregisterRequest,
-            "UNREGISTER_RESPONSE" => Self::UnregisterResponse,
-            "RECOMMEND_REQUEST" => Self::RecommendRequest,
-            "RECOMMEND_RESPONSE" => Self::RecommendResponse,
-            _ => return None,
-        })
-    }
-}
-
-impl TryFrom<u8> for Command {
-    type Error = EventMeshError;
-
-    fn try_from(value: u8) -> Result<Self> {
-        Ok(match value {
-            0 => Self::HeartbeatRequest,
-            1 => Self::HeartbeatResponse,
-            2 => Self::HelloRequest,
-            3 => Self::HelloResponse,
-            4 => Self::ClientGoodbyeRequest,
-            5 => Self::ClientGoodbyeResponse,
-            6 => Self::ServerGoodbyeRequest,
-            7 => Self::ServerGoodbyeResponse,
-            8 => Self::SubscribeRequest,
-            9 => Self::SubscribeResponse,
-            10 => Self::UnsubscribeRequest,
-            11 => Self::UnsubscribeResponse,
-            12 => Self::ListenRequest,
-            13 => Self::ListenResponse,
-            14 => Self::RequestToServer,
-            15 => Self::RequestToClient,
-            16 => Self::RequestToClientAck,
-            17 => Self::ResponseToServer,
-            18 => Self::ResponseToClient,
-            19 => Self::ResponseToClientAck,
-            20 => Self::AsyncMessageToServer,
-            21 => Self::AsyncMessageToServerAck,
-            22 => Self::AsyncMessageToClient,
-            23 => Self::AsyncMessageToClientAck,
-            24 => Self::BroadcastMessageToServer,
-            25 => Self::BroadcastMessageToServerAck,
-            26 => Self::BroadcastMessageToClient,
-            27 => Self::BroadcastMessageToClientAck,
-            28 => Self::SysLogToLogServer,
-            29 => Self::TraceLogToLogServer,
-            30 => Self::RedirectToClient,
-            31 => Self::RegisterRequest,
-            32 => Self::RegisterResponse,
-            33 => Self::UnregisterRequest,
-            34 => Self::UnregisterResponse,
-            35 => Self::RecommendRequest,
-            36 => Self::RecommendResponse,
-            other => return Err(EventMeshError::Tcp(format!("unknown command: {other}"))),
-        })
-    }
+    RecommendResponse,
 }
 
 // ---------------------------------------------------------------------------
@@ -262,7 +125,6 @@ impl TryFrom<u8> for Command {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Header {
     /// Command type (serialized as the Java enum constant name).
-    #[serde(with = "command_serde")]
     pub cmd: Command,
     /// Status code (0 = success).
     pub code: i32,
@@ -310,45 +172,6 @@ impl Header {
     /// Get a string property.
     pub fn get_string_property(&self, key: &str) -> Option<&str> {
         self.properties.get(key).and_then(|v| v.as_str())
-    }
-}
-
-/// Serde module for the `cmd` field.
-///
-/// The Java runtime serializes `Command` as its enum constant **name string**
-/// (e.g. `"HELLO_RESPONSE"`) via Jackson's default enum handling, so we must do
-/// the same when sending. On decode we additionally accept the numeric form for
-/// robustness (Jackson falls back to ordinals when given an integer token, so
-/// either form may legitimately appear on the wire).
-mod command_serde {
-    use serde::{de, Deserialize, Deserializer, Serializer};
-
-    use super::Command;
-
-    pub fn serialize<S: Serializer>(cmd: &Command, s: S) -> Result<S::Ok, S::Error> {
-        s.serialize_str(cmd.name())
-    }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Command, D::Error> {
-        let v = serde_json::Value::deserialize(d)?;
-        match v {
-            serde_json::Value::String(name) => Command::from_name(&name)
-                .ok_or_else(|| de::Error::custom(format!("unknown command name: {name}"))),
-            serde_json::Value::Number(n) => {
-                let value = n.as_i64().ok_or_else(|| {
-                    de::Error::custom(format!("command number out of range: {n}"))
-                })?;
-                // Validate the value fits in a `u8` before the narrowing cast;
-                // `value as u8` would silently wrap for values >= 256 (e.g.
-                // 256 -> 0 -> HeartbeatRequest) and misinterpret the frame.
-                u8::try_from(value)
-                    .map_err(|_| de::Error::custom(format!("command number out of range: {value}")))
-                    .and_then(|b| Command::try_from(b).map_err(de::Error::custom))
-            }
-            other => Err(de::Error::custom(format!(
-                "expected string or number for `cmd`, got {other}"
-            ))),
-        }
     }
 }
 
@@ -557,48 +380,23 @@ mod tests {
         assert_eq!(header.cmd, Command::HelloResponse);
     }
 
-    /// Ordinal/integer form is also accepted on decode (Jackson falls back to
-    /// ordinal matching for integer tokens, so this is a legitimate wire shape).
     #[test]
-    fn decodes_numeric_cmd_form() {
-        let json = r#"{"cmd":18,"code":0,"seq":"seq-1"}"#;
-        let header: Header = serde_json::from_str(json).unwrap();
-        assert_eq!(header.cmd, Command::ResponseToClient);
-    }
-
-    /// Values >= 256 must be rejected rather than silently wrapped by a
-    /// narrowing `as u8` cast (e.g. 256 -> 0 -> HeartbeatRequest).
-    #[test]
-    fn rejects_out_of_range_numeric_cmd() {
-        for bad in [256, 1_000, 65_536] {
-            let json = format!(r#"{{"cmd":{bad},"code":0,"seq":"seq-1"}}"#);
-            let err = serde_json::from_str::<Header>(&json).unwrap_err();
-            assert!(
-                err.to_string().contains("out of range"),
-                "value {bad} rejected with unexpected message: {err}"
-            );
+    fn rejects_commands_that_java_does_not_emit() {
+        for command in ["18", "-1", "256", "\"UNKNOWN\""] {
+            let json = format!(r#"{{"cmd":{command},"code":0,"seq":"seq-1"}}"#);
+            assert!(serde_json::from_str::<Header>(&json).is_err());
         }
     }
 
-    /// Negative numbers are not valid command ordinals.
     #[test]
-    fn rejects_negative_numeric_cmd() {
-        let json = r#"{"cmd":-1,"code":0,"seq":"seq-1"}"#;
-        assert!(serde_json::from_str::<Header>(json).is_err());
-    }
-
-    /// `name()` / `from_name()` must be exact inverses and cover every variant.
-    #[test]
-    fn name_round_trip_all_variants() {
-        for &cmd in &[
-            Command::HeartbeatRequest,
-            Command::HelloResponse,
-            Command::SysLogToLogServer,
-            Command::TraceLogToLogServer,
-            Command::RecommendResponse,
+    fn preserves_java_log_command_spelling() {
+        for (command, name) in [
+            (Command::SysLogToLogServer, "SYS_LOG_TO_LOGSERVER"),
+            (Command::TraceLogToLogServer, "TRACE_LOG_TO_LOGSERVER"),
         ] {
-            let name = cmd.name();
-            assert_eq!(Command::from_name(name), Some(cmd), "{name}");
+            let json = serde_json::to_string(&command).unwrap();
+            assert_eq!(json, format!("\"{name}\""));
+            assert_eq!(serde_json::from_str::<Command>(&json).unwrap(), command);
         }
     }
 
@@ -613,7 +411,7 @@ mod tests {
             let json = format!(r#"{{"cmd":"{cmd_name}","code":0}}"#);
             let header: Header = serde_json::from_str(&json)
                 .unwrap_or_else(|e| panic!("failed to decode {cmd_name} frame without seq: {e}"));
-            assert_eq!(header.cmd.name(), cmd_name);
+            assert_eq!(serde_json::to_value(header.cmd).unwrap(), cmd_name);
             assert_eq!(header.seq, None, "{cmd_name} seq should be absent");
         }
     }

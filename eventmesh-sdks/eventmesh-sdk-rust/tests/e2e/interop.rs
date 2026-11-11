@@ -70,7 +70,7 @@ async fn peer(operation: &str, topic: &str, argument: Option<&str>) -> tokio::pr
         "-jar",
         peer_jar().to_str().expect("utf-8 Java peer jar path"),
         operation,
-        "127.0.0.1",
+        crate::runtime::host(),
         topic,
     ]);
     if let Some(argument) = argument {

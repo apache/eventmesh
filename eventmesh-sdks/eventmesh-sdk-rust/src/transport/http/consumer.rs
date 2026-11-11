@@ -18,7 +18,6 @@
 //! Registration and heartbeat lifecycle for one HTTP consumer role.
 
 use std::collections::HashMap;
-use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -27,11 +26,12 @@ use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, warn};
 
+use crate::common::status_code::RequestCode;
 use crate::config::ConsumerOptions;
-use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshProtocolType, PublishResponse};
+use crate::error::{Error, Result};
+use crate::model::EventMeshProtocolType;
 use crate::subscription::{DeliveryType, Subscription};
-use crate::transport::http::client::EventMeshHttpClient;
+use crate::transport::http::client::HttpClient;
 use crate::transport::http::codec::{self, uri};
 use crate::transport::task::BackgroundTask;
 
@@ -57,47 +57,33 @@ struct Registrations {
 impl Registrations {
     fn ensure_running(&self, shutdown: &CancellationToken) -> Result<()> {
         if self.phase != Phase::Running || shutdown.is_cancelled() {
-            return Err(EventMeshError::ChannelClosed(
-                "HTTP registration is closed".into(),
-            ));
+            return Err(Error::ChannelClosed("HTTP registration is closed".into()));
         }
         Ok(())
     }
 }
 
-/// Remote registrations and local heartbeat task owned by one HTTP consumer.
-pub struct HttpConsumer {
-    client: EventMeshHttpClient,
+/// Registration and heartbeat manager for an application-owned webhook URL.
+pub struct WebhookRegistration {
+    client: HttpClient,
     options: ConsumerOptions,
     registrations: Arc<Mutex<Registrations>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<BackgroundTask<()>>,
 }
 
-impl HttpConsumer {
+impl WebhookRegistration {
     /// Create a registration role using the client's shared connection pool.
-    pub fn new(
-        client: EventMeshHttpClient,
-        options: &ConsumerOptions,
-        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
+    pub(crate) fn new(
+        client: HttpClient,
+        options: ConsumerOptions,
+        shutdown: CancellationToken,
     ) -> Result<Self> {
         options.validate()?;
         let runtime = tokio::runtime::Handle::try_current().map_err(|_| {
-            EventMeshError::Config(
-                "HTTP consumer construction requires an active Tokio runtime".into(),
-            )
+            Error::Config("HTTP consumer construction requires an active Tokio runtime".into())
         })?;
         let registrations = Arc::new(Mutex::new(Registrations::default()));
-        let shutdown = CancellationToken::new();
-        if let Some(signal) = shutdown_signal {
-            let token = shutdown.clone();
-            runtime.spawn(async move {
-                tokio::select! {
-                    _ = signal => token.cancel(),
-                    _ = token.cancelled() => {}
-                }
-            });
-        }
         let heartbeat_handle = spawn_heartbeat(
             &runtime,
             client.clone(),
@@ -107,21 +93,27 @@ impl HttpConsumer {
         );
         Ok(Self {
             client,
-            options: options.clone(),
+            options,
             registrations,
             shutdown,
             heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat_handle)),
         })
     }
 
-    /// Register webhook subscriptions and commit only confirmed registrations.
-    pub async fn subscribe_webhook(
+    /// Register a subscription to an application-owned callback URL.
+    pub async fn subscribe(
         &self,
-        items: Vec<Subscription>,
-        url: impl Into<String>,
-    ) -> Result<PublishResponse> {
+        subscription: Subscription,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
+        self.subscribe_all(vec![subscription], webhook_url.into())
+            .await
+    }
+
+    /// Register webhook subscriptions and commit only confirmed registrations.
+    pub(crate) async fn subscribe_all(&self, items: Vec<Subscription>, url: String) -> Result<()> {
         if items.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
+            return Err(Error::InvalidArgument(
                 "subscription items must not be empty".into(),
             ));
         }
@@ -129,68 +121,78 @@ impl HttpConsumer {
             .iter()
             .any(|item| item.delivery_type == DeliveryType::Sync)
         {
-            return Err(EventMeshError::InvalidArgument(
-                "HTTP transport does not support SYNC (request/reply) subscriptions; use the gRPC transport for request/reply".into(),
+            return Err(Error::Unsupported(
+                "HTTP request/reply subscriptions".into(),
             ));
         }
-        let url = url.into();
+        for item in &items {
+            item.validate()?;
+        }
+        crate::webhook::validate_webhook_url(&url)?;
         let mut registrations = self.registrations.lock().await;
         registrations.ensure_running(&self.shutdown)?;
         let body = codec::encode_subscribe(&items, &url, self.options.group());
-        let response = control_request(&self.client, codec::subscribe_code(), &body).await?;
+        control_request(&self.client, RequestCode::SUBSCRIBE, &body).await?;
         for item in items {
             registrations
                 .items
                 .insert((item.topic.clone(), url.clone()), item);
         }
-        Ok(response)
+        Ok(())
     }
 
-    /// Stop scheduling new heartbeats without unregistering remotely.
-    pub fn request_shutdown(&self) {
+    /// Signal the heartbeat task to stop without unregistering remotely.
+    pub fn shutdown(&self) {
         self.shutdown.cancel();
     }
 
-    /// Wait for the heartbeat, including an already submitted request.
-    pub async fn wait_for_shutdown(&self) -> Result<()> {
+    /// Wait for the heartbeat task to stop and report task failure.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the registration to abort its task.
+    pub async fn join(&self) -> Result<()> {
         let mut task = self.heartbeat_handle.lock().await;
         task.wait().await;
         self.shutdown.cancel();
-        task.take_result().unwrap_or(Ok(())).map_err(|error| {
-            EventMeshError::ChannelClosed(format!("HTTP heartbeat task panicked: {error}"))
-        })
+        task.take_result()
+            .unwrap_or(Ok(()))
+            .map_err(|error| Error::ChannelClosed(format!("HTTP heartbeat task panicked: {error}")))
     }
 
-    /// Unregister topics from their original callback URL.
+    /// Remove a registration using the same URL supplied to [`subscribe`](Self::subscribe).
     pub async fn unsubscribe(
         &self,
-        items: Vec<Subscription>,
-        url: impl Into<String>,
-    ) -> Result<PublishResponse> {
-        if items.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "unsubscribe items must not be empty".into(),
-            ));
-        }
-        let url = url.into();
-        let topics: Vec<_> = items.iter().map(|item| item.topic.clone()).collect();
+        subscription: Subscription,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
+        subscription.validate()?;
+        let url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&url)?;
         let mut registrations = self.registrations.lock().await;
         registrations.ensure_running(&self.shutdown)?;
-        if let Some(topic) = topics.iter().find(|topic| {
-            !registrations
-                .items
-                .contains_key(&(topic.to_string(), url.clone()))
-        }) {
-            return Err(EventMeshError::InvalidArgument(format!(
-                "topic {topic:?} is not subscribed to webhook URL {url:?}",
+        let key = (subscription.topic, url.clone());
+        if !registrations.items.contains_key(&key) {
+            return Err(Error::InvalidArgument(format!(
+                "topic {:?} is not subscribed to webhook URL {url:?}",
+                key.0,
             )));
         }
-        let body = codec::encode_unsubscribe(&topics, &url, self.options.group());
-        let response = control_request(&self.client, codec::unsubscribe_code(), &body).await?;
-        for topic in topics {
-            registrations.items.remove(&(topic, url.clone()));
-        }
-        Ok(response)
+        let body =
+            codec::encode_unsubscribe(std::slice::from_ref(&key.0), &url, self.options.group());
+        control_request(&self.client, RequestCode::UNSUBSCRIBE, &body).await?;
+        registrations.items.remove(&key);
+        Ok(())
+    }
+
+    /// Drain a submitted heartbeat, stop scheduling, unregister, and join.
+    ///
+    /// Subscription changes are rejected once closing begins. Failed remote
+    /// unregisters remain tracked and can be retried by calling `close` again.
+    pub async fn close(&self) -> Result<()> {
+        let unregister_result = self.unsubscribe_all().await;
+        self.shutdown();
+        let join_result = self.join().await;
+        combine_cleanup_results(unregister_result, join_result)
     }
 
     /// Quiesce heartbeats before the final remote unregister. This lock waits
@@ -208,7 +210,7 @@ impl HttpConsumer {
         let mut first_error = None;
         for (url, topics) in groups {
             let body = codec::encode_unsubscribe(&topics, &url, self.options.group());
-            match control_request(&self.client, codec::unsubscribe_code(), &body).await {
+            match control_request(&self.client, RequestCode::UNSUBSCRIBE, &body).await {
                 Ok(_) => {
                     for topic in topics {
                         registrations.items.remove(&(topic, url.clone()));
@@ -223,17 +225,24 @@ impl HttpConsumer {
     }
 }
 
-impl Drop for HttpConsumer {
+impl Drop for WebhookRegistration {
     fn drop(&mut self) {
         self.shutdown.cancel();
     }
 }
 
-async fn control_request(
-    client: &EventMeshHttpClient,
-    code: i32,
-    body: &[(String, String)],
-) -> Result<PublishResponse> {
+pub(crate) fn combine_cleanup_results(operation: Result<()>, shutdown: Result<()>) -> Result<()> {
+    match (operation, shutdown) {
+        (Ok(()), Ok(())) => Ok(()),
+        (Err(error), Ok(())) | (Ok(()), Err(error)) => Err(error),
+        (Err(operation), Err(shutdown)) => Err(Error::Cleanup {
+            operation: Box::new(operation),
+            shutdown: Box::new(shutdown),
+        }),
+    }
+}
+
+async fn control_request(client: &HttpClient, code: i32, body: &[(String, String)]) -> Result<()> {
     let config = client.config();
     let headers = codec::build_headers(
         code,
@@ -241,7 +250,7 @@ async fn control_request(
         config.identity(),
         config.credentials(),
     );
-    let path = if code == codec::heartbeat_code() {
+    let path = if code == RequestCode::HEARTBEAT {
         uri::HEARTBEAT
     } else {
         uri::ROOT
@@ -251,19 +260,19 @@ async fn control_request(
         .await?;
     let response = codec::parse_response(&text)?;
     if !response.is_success() {
-        return Err(EventMeshError::Server {
+        return Err(Error::Server {
             code: response.code.unwrap_or(-1) as i32,
             message: response
                 .message
                 .unwrap_or_else(|| "HTTP control operation failed".into()),
         });
     }
-    Ok(response)
+    Ok(())
 }
 
 fn spawn_heartbeat(
     runtime: &tokio::runtime::Handle,
-    client: EventMeshHttpClient,
+    client: HttpClient,
     options: ConsumerOptions,
     registrations: Arc<Mutex<Registrations>>,
     shutdown: CancellationToken,
@@ -285,7 +294,7 @@ fn spawn_heartbeat(
             let items: Vec<_> = state.items.keys().cloned().collect();
             if !items.is_empty() {
                 let body = codec::encode_heartbeat(&items, options.group());
-                match control_request(&client, codec::heartbeat_code(), &body).await {
+                match control_request(&client, RequestCode::HEARTBEAT, &body).await {
                     Ok(_) => debug!("heartbeat ok: {} items", items.len()),
                     Err(error) => warn!(%error, "HTTP heartbeat failed"),
                 }
@@ -303,23 +312,23 @@ fn spawn_heartbeat(
 mod tests {
     use super::*;
 
-    fn make_consumer() -> HttpConsumer {
+    fn make_registration() -> WebhookRegistration {
         let endpoints =
             crate::config::EndpointSet::new([
                 crate::config::Endpoint::new("127.0.0.1", 10_105).unwrap()
             ])
             .unwrap();
-        HttpConsumer::new(
-            EventMeshHttpClient::new(crate::config::HttpConfig::new(endpoints)).unwrap(),
-            &ConsumerOptions::new("test-group"),
-            None::<std::future::Ready<()>>,
+        WebhookRegistration::new(
+            HttpClient::new(crate::config::HttpConfig::new(endpoints)).unwrap(),
+            ConsumerOptions::new("test-group"),
+            CancellationToken::new(),
         )
         .unwrap()
     }
 
     #[tokio::test(start_paused = true)]
     async fn cancelled_join_preserves_http_heartbeat_panic() {
-        let consumer = make_consumer();
+        let consumer = make_registration();
         let (release, released) = tokio::sync::oneshot::channel::<()>();
         *consumer.heartbeat_handle.lock().await = BackgroundTask::new(tokio::spawn(async move {
             released.await.unwrap();
@@ -327,63 +336,72 @@ mod tests {
         }));
         for _ in 0..2 {
             assert!(
-                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                tokio::time::timeout(Duration::from_secs(1), consumer.join())
                     .await
                     .is_err()
             );
-            consumer.request_shutdown();
+            consumer.shutdown();
         }
         release.send(()).unwrap();
-        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.join())
             .await
             .unwrap();
-        assert!(matches!(result, Err(EventMeshError::ChannelClosed(message))
+        assert!(matches!(result, Err(Error::ChannelClosed(message))
             if message.contains("heartbeat regression")));
     }
 
     #[tokio::test]
-    async fn subscribe_webhook_rejects_sync_only() {
-        let consumer = make_consumer();
+    async fn registration_rejects_sync_subscription() {
+        let consumer = make_registration();
         let item = Subscription::new("sync-topic").with_delivery_type(DeliveryType::Sync);
-        let result = consumer
-            .subscribe_webhook(vec![item], "http://localhost:9999/cb")
-            .await;
+        let result = consumer.subscribe(item, "http://localhost:9999/cb").await;
         assert!(result.is_err());
         match result.unwrap_err() {
-            EventMeshError::InvalidArgument(msg) => {
-                assert!(msg.contains("SYNC"), "error should mention SYNC: {msg}");
+            Error::Unsupported(msg) => {
+                assert!(msg.contains("request/reply"));
             }
-            other => panic!("expected InvalidArgument, got {other:?}"),
+            other => panic!("expected Unsupported, got {other:?}"),
         }
     }
 
     #[tokio::test]
-    async fn subscribe_webhook_rejects_mixed_sync_and_async() {
-        let consumer = make_consumer();
+    async fn registration_rejects_mixed_sync_and_async() {
+        let consumer = make_registration();
         let items = vec![
             Subscription::new("async-topic"),
             Subscription::new("sync-topic").with_delivery_type(DeliveryType::Sync),
         ];
         let result = consumer
-            .subscribe_webhook(items, "http://localhost:9999/cb")
+            .subscribe_all(items, "http://localhost:9999/cb".into())
             .await;
         assert!(result.is_err());
-        assert!(matches!(
-            result.unwrap_err(),
-            EventMeshError::InvalidArgument(_)
-        ));
+        assert!(matches!(result.unwrap_err(), Error::Unsupported(_)));
     }
 
     #[tokio::test]
-    async fn subscribe_webhook_rejects_empty_items() {
-        let consumer = make_consumer();
+    async fn registration_rejects_empty_items() {
+        let consumer = make_registration();
         let result = consumer
-            .subscribe_webhook(vec![], "http://localhost:9999/cb")
+            .subscribe_all(vec![], "http://localhost:9999/cb".into())
             .await;
         assert!(result.is_err());
-        assert!(matches!(
-            result.unwrap_err(),
-            EventMeshError::InvalidArgument(_)
-        ));
+        assert!(matches!(result.unwrap_err(), Error::InvalidArgument(_)));
+    }
+
+    #[tokio::test]
+    async fn registration_validates_topics_and_callback_urls() {
+        let registration = make_registration();
+        for (topic, url) in [("", "http://localhost:9999/cb"), ("orders", "/callback")] {
+            assert!(matches!(
+                registration.subscribe(Subscription::new(topic), url).await,
+                Err(Error::InvalidArgument(_))
+            ));
+            assert!(matches!(
+                registration
+                    .unsubscribe(Subscription::new(topic), url)
+                    .await,
+                Err(Error::InvalidArgument(_))
+            ));
+        }
     }
 }

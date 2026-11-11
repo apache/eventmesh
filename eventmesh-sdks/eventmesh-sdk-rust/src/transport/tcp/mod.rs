@@ -27,10 +27,8 @@
 //!
 //! # CloudEvents over TCP
 //!
-//! With the `cloud_events` feature, the TCP producer can send native
-//! [`cloudevents::Event`] values via [`TcpProducer::publish_cloud_event`],
-//! [`TcpProducer::broadcast_cloud_event`], and
-//! [`TcpProducer::request_reply_cloud_event`]. Consumers preserve inbound
+//! With the `cloud_events` feature, the TCP producer accepts native
+//! [`cloudevents::Event`] values through [`crate::Message`]. Consumers preserve inbound
 //! CloudEvents as `Message::CloudEvent` values.
 //!
 //! **Important:** the event's `datacontenttype` must be set to
@@ -60,5 +58,5 @@ pub mod frame;
 pub mod message;
 pub mod producer;
 
-pub use consumer::{ShutdownReason, TcpConsumer};
+pub use consumer::TcpConsumer;
 pub use producer::TcpProducer;

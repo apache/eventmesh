@@ -23,7 +23,7 @@ use std::fmt;
 use super::delivery::DeliveryContext;
 use crate::common::metadata::is_reserved_property;
 use crate::common::util::now_millis;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 /// A native EventMesh message with dedicated business fields, business
 /// properties, and an optional read-only delivery context.
@@ -164,7 +164,7 @@ impl EventMeshMessage {
 
 fn validate_property_key(key: &str) -> Result<()> {
     if is_reserved_property(key) {
-        return Err(EventMeshError::InvalidArgument(format!(
+        return Err(Error::InvalidArgument(format!(
             "{key:?} is reserved message/transport metadata, not a business property"
         )));
     }
@@ -241,10 +241,10 @@ impl EventMeshMessageBuilder {
             unique_id: self.unique_id,
             topic: self
                 .topic
-                .ok_or_else(|| EventMeshError::InvalidMessage("topic is required".into()))?,
+                .ok_or_else(|| Error::InvalidMessage("topic is required".into()))?,
             content: self
                 .content
-                .ok_or_else(|| EventMeshError::InvalidMessage("content is required".into()))?,
+                .ok_or_else(|| Error::InvalidMessage("content is required".into()))?,
             props: self.props,
             create_time: now_millis(),
             ttl: self.ttl,
@@ -252,7 +252,7 @@ impl EventMeshMessageBuilder {
             delivery_context: None,
         };
         if message.topic.trim().is_empty() {
-            return Err(EventMeshError::InvalidMessage("topic is required".into()));
+            return Err(Error::InvalidMessage("topic is required".into()));
         }
         Ok(message)
     }

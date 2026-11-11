@@ -16,7 +16,7 @@
 // under the License.
 
 use eventmesh::{
-    config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
+    config::{ConsumerOptions, Credentials, Endpoint, EndpointSet, HttpConfig},
     message::Message,
     subscription::Subscription,
     webhook::WebhookOptions,
@@ -34,13 +34,19 @@ impl MessageHandler for PrintHandler {
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
+    // Docker resolves this callback through host.docker.internal; use a reachable host
+    // address when running EventMesh elsewhere.
     let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
-    let client = HttpClient::new(HttpConfig::new(endpoints))?;
+    let client = HttpClient::new(
+        HttpConfig::new(endpoints)
+            // Credentials for the bundled Docker Compose runtime. Replace for your deployment.
+            .with_credentials(Credentials::new().with_basic("eventmesh", "eventmesh")),
+    )?;
     let consumer = client
         .consumer(
             ConsumerOptions::new("test-consumerGroup"),
             WebhookOptions::new("0.0.0.0:8080".parse().unwrap())
-                .with_advertise_url("http://127.0.0.1:8080/eventmesh/callback"),
+                .with_advertise_url("http://host.docker.internal:8080/eventmesh/callback"),
             [Subscription::new("test-topic-rust-sdk")],
             PrintHandler,
         )

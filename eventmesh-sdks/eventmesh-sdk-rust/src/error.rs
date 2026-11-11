@@ -121,11 +121,6 @@ pub enum Error {
 /// Convenience `Result` alias used throughout the SDK.
 pub type Result<T> = std::result::Result<T, Error>;
 
-// The protocol implementation is migrated in stages.  Keep this alias crate
-// private so the old spelling remains available to internal modules without
-// becoming part of the 2.0 public API.
-pub(crate) use Error as EventMeshError;
-
 #[cfg(feature = "grpc")]
 impl From<tonic::Status> for Error {
     fn from(status: tonic::Status) -> Self {

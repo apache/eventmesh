@@ -22,7 +22,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 /// A requested subscription.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -109,13 +109,13 @@ impl fmt::Display for DeliveryMode {
 }
 
 impl FromStr for DeliveryMode {
-    type Err = EventMeshError;
+    type Err = Error;
 
     fn from_str(value: &str) -> Result<Self> {
         match value {
             "BROADCASTING" => Ok(Self::Broadcast),
             "CLUSTERING" => Ok(Self::Cluster),
-            other => Err(EventMeshError::InvalidArgument(format!(
+            other => Err(Error::InvalidArgument(format!(
                 "unknown DeliveryMode: {other}"
             ))),
         }
@@ -151,13 +151,13 @@ impl fmt::Display for DeliveryType {
 }
 
 impl FromStr for DeliveryType {
-    type Err = EventMeshError;
+    type Err = Error;
 
     fn from_str(value: &str) -> Result<Self> {
         match value {
             "ASYNC" => Ok(Self::Async),
             "SYNC" => Ok(Self::Sync),
-            other => Err(EventMeshError::InvalidArgument(format!(
+            other => Err(Error::InvalidArgument(format!(
                 "unknown DeliveryType: {other}"
             ))),
         }

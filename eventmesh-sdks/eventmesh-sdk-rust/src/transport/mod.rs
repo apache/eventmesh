@@ -82,7 +82,7 @@ mod forwarding_tests {
         let identity = Identity::default().with_system("destination-system");
         let credentials = Credentials::new().with_basic("destination-user", "destination-password");
         let mut http_attributes: HashMap<String, String> = http::codec::build_headers(
-            http::codec::publish_code(),
+            crate::common::status_code::RequestCode::MSG_SEND_ASYNC,
             EventMeshProtocolType::EventMeshMessage,
             &identity,
             &credentials,

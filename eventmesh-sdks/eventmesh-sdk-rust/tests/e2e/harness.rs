@@ -40,7 +40,7 @@ use tokio::task::JoinHandle;
 use tracing::{debug, warn};
 
 use crate::runtime::{
-    ensure_runtime, webhook_host, ADMIN_PORT, GRPC_PORT, HOST, HTTP_PORT, TCP_PORT,
+    ensure_runtime, host, webhook_host, ADMIN_PORT, GRPC_PORT, HTTP_PORT, TCP_PORT,
 };
 
 static SEQ: AtomicU64 = AtomicU64::new(0);
@@ -95,7 +95,7 @@ pub(crate) fn grpc_consumer_options() -> GrpcConsumerOptions {
 }
 
 pub(crate) async fn grpc_channel() -> GrpcChannel {
-    let endpoint = Endpoint::new(HOST, GRPC_PORT).expect("valid gRPC endpoint");
+    let endpoint = Endpoint::new(host(), GRPC_PORT).expect("valid gRPC endpoint");
     GrpcChannel::connect(
         GrpcConfig::new(endpoint)
             .with_identity(identity())
@@ -110,7 +110,7 @@ pub(crate) async fn grpc_producer() -> GrpcProducer {
 }
 
 pub(crate) fn http_client() -> HttpClient {
-    let endpoint = Endpoint::new(HOST, HTTP_PORT).expect("valid HTTP endpoint");
+    let endpoint = Endpoint::new(host(), HTTP_PORT).expect("valid HTTP endpoint");
     HttpClient::new(
         HttpConfig::new(EndpointSet::new([endpoint]).expect("non-empty endpoints"))
             .with_identity(identity())
@@ -130,7 +130,7 @@ pub(crate) fn tcp_client() -> TcpClient {
 }
 
 pub(crate) fn tcp_client_with_system(system: &str) -> TcpClient {
-    let endpoint = Endpoint::new(HOST, TCP_PORT).expect("valid TCP endpoint");
+    let endpoint = Endpoint::new(host(), TCP_PORT).expect("valid TCP endpoint");
     TcpClient::new(
         TcpConfig::new(endpoint)
             .with_identity(identity().with_system(system))
@@ -148,7 +148,7 @@ pub(crate) async fn tcp_producer() -> TcpProducer {
 
 pub(crate) async fn ensure_topic(topic: &str) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
-    let url = format!("http://{HOST}:{ADMIN_PORT}/topic");
+    let url = format!("http://{}:{ADMIN_PORT}/topic", host());
     let client = reqwest::Client::builder()
         .no_proxy()
         .timeout(Duration::from_secs(5))
@@ -194,7 +194,10 @@ pub(crate) async fn ensure_topic(topic: &str) {
 /// disconnect path used by operational client management without restarting
 /// the shared Runtime container.
 pub(crate) async fn reject_tcp_subsystem(subsystem: &str) {
-    let url = format!("http://{HOST}:{ADMIN_PORT}/clientManage/rejectClientBySubSystem");
+    let url = format!(
+        "http://{}:{ADMIN_PORT}/clientManage/rejectClientBySubSystem",
+        host()
+    );
     let response = reqwest::Client::builder()
         .no_proxy()
         .timeout(Duration::from_secs(5))
@@ -238,7 +241,7 @@ pub(crate) async fn wait_for_client_group(protocol: &str, group: &str, expected:
         "grpc" => "/client/grpc",
         other => panic!("unsupported admin client protocol {other:?}"),
     };
-    let url = format!("http://{HOST}:{ADMIN_PORT}{path}");
+    let url = format!("http://{}:{ADMIN_PORT}{path}", host());
     let client = reqwest::Client::builder()
         .no_proxy()
         .timeout(Duration::from_secs(5))
@@ -276,7 +279,10 @@ pub(crate) async fn wait_for_client_group(protocol: &str, group: &str, expected:
 /// Poll the Runtime's TCP topic listener inventory until the unique E2E topic
 /// has (or has no) active listening sessions.
 pub(crate) async fn wait_for_tcp_topic_listener(topic: &str, expected: bool) {
-    let url = format!("http://{HOST}:{ADMIN_PORT}/clientManage/showListenClientByTopic");
+    let url = format!(
+        "http://{}:{ADMIN_PORT}/clientManage/showListenClientByTopic",
+        host()
+    );
     let client = reqwest::Client::builder()
         .no_proxy()
         .timeout(Duration::from_secs(5))
@@ -310,7 +316,7 @@ pub(crate) async fn wait_for_tcp_topic_listener(topic: &str, expected: bool) {
 pub(crate) async fn warm_topic(
     topic: &str,
 ) -> (
-    GrpcStreamConsumer<CollectingListener>,
+    GrpcStreamConsumer,
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     warm_topic_as(topic, unique_topic("consumer-group")).await
@@ -320,7 +326,7 @@ pub(crate) async fn warm_topic_as(
     topic: &str,
     consumer_group: String,
 ) -> (
-    GrpcStreamConsumer<CollectingListener>,
+    GrpcStreamConsumer,
     mpsc::UnboundedReceiver<EventMeshMessage>,
 ) {
     let (listener, receiver) = CollectingListener::new();
@@ -442,10 +448,7 @@ pub(crate) async fn http_warm_topic_as(
 
 pub(crate) async fn tcp_warm_topic(
     topic: &str,
-) -> (
-    TcpConsumer<CollectingListener>,
-    mpsc::UnboundedReceiver<EventMeshMessage>,
-) {
+) -> (TcpConsumer, mpsc::UnboundedReceiver<EventMeshMessage>) {
     assert!(ensure_runtime(), "ensure_runtime() must be called first");
     let (listener, receiver) = CollectingListener::new();
     let consumer = tcp_client()

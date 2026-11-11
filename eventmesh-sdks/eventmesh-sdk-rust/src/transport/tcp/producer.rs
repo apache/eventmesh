@@ -22,14 +22,14 @@ use std::time::Duration;
 
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
-use tracing::{debug, warn};
+use tracing::warn;
 
 use crate::config::{ProducerOptions, TcpConfig};
-use crate::error::{EventMeshError, Result};
-use crate::model::{EventMeshMessage, PublishResponse};
+use crate::error::{Error, Result};
+use crate::message::{Message, PublishReceipt};
 use crate::transport::task::BackgroundTask;
 use crate::transport::tcp::connection::TcpConnection;
-use crate::transport::tcp::delivery::dispatch;
+use crate::transport::tcp::delivery::{decode_message, dispatch};
 use crate::transport::tcp::frame::{Command, UserAgent};
 use crate::transport::tcp::message;
 use crate::transport::validation::validate_tcp_publish;
@@ -37,7 +37,7 @@ use crate::MessageHandler;
 
 /// TCP-based producer.
 ///
-/// Created via [`TcpProducer::connect`], which opens a TCP connection, performs
+/// Created via [`crate::tcp::TcpClient::producer`], which opens a TCP connection, performs
 /// the HELLO handshake (role = pub), and starts the background heartbeat.
 pub struct TcpProducer {
     conn: Arc<TcpConnection>,
@@ -51,7 +51,7 @@ impl TcpProducer {
     ///
     /// The reconnect policy from the config controls automatic reconnection
     /// after I/O failures (enabled by default).
-    pub async fn connect(config: TcpConfig, options: &ProducerOptions) -> Result<Self> {
+    pub(crate) async fn connect(config: TcpConfig, options: &ProducerOptions) -> Result<Self> {
         let user_agent = UserAgent::from_role(
             config.identity(),
             config.credentials(),
@@ -81,123 +81,73 @@ impl TcpProducer {
         })
     }
 
-    /// Broadcast a message, waiting for its local socket write but no server
-    /// ACK. Uses `BROADCAST_MESSAGE_TO_SERVER`, matching Java `broadcast`.
-    pub async fn broadcast(&self, msg: EventMeshMessage) -> Result<()> {
-        validate_tcp_publish(&msg)?;
-        let pkg = message::build_message_package(&msg, Command::BroadcastMessageToServer)?;
-        self.conn.send_and_flush(pkg).await
+    /// Publish one message and wait for the server acknowledgement.
+    ///
+    /// CloudEvents require `datacontenttype = application/cloudevents+json`:
+    /// the Java TCP codec uses this value to select its event serializer.
+    pub async fn publish(&self, message: Message) -> Result<PublishReceipt> {
+        let package = encode_outbound(&message, Command::AsyncMessageToServer)?;
+        let response = self.conn.io(package, self.request_timeout).await?;
+        check_response(&response)?;
+        Ok(PublishReceipt::from_response(message::response_from_pkg(
+            &response,
+        )))
     }
 
-    /// Publish a native CloudEvent over TCP (requires the `cloud_events`
-    /// feature).
+    /// Broadcast a message, waiting for its local socket write without a server ACK.
     ///
-    /// The event is serialized as CloudEvents JSON
-    /// (`application/cloudevents+json`) with `protocoltype=cloudevents`,
-    /// matching the Java runtime's TCP CloudEvents codec path.
-    ///
-    /// # `datacontenttype` requirement
-    ///
-    /// The event's `datacontenttype` **must** be `application/cloudevents+json`.
-    /// Both the Java SDK's upload path and the Java runtime's TCP downlink path
-    /// use this value to resolve the serializer for the whole CloudEvent.
-    /// Other values (e.g. `application/json`, `text/plain`) therefore fail in
-    /// the Java SDK before sending or fail during runtime delivery. This SDK
-    /// returns [`EventMeshError::InvalidMessage`] before performing network
-    /// I/O instead.
-    ///
-    /// ```ignore
-    /// EventBuilderV10::new()
-    ///     .id("1").source("...").ty("...").subject(topic)
-    ///     .data("application/cloudevents+json", json!({"msg": "hi"}))
-    ///     .build()?;
-    /// ```
-    #[cfg(feature = "cloud_events")]
-    pub async fn publish_cloud_event(&self, event: cloudevents::Event) -> Result<PublishResponse> {
-        use cloudevents::AttributesReader;
-        let pkg = message::build_cloud_event_package(&event, Command::AsyncMessageToServer)?;
-        debug!(topic = ?event.subject(), "publishing CloudEvent via TCP");
-
-        let resp = self.conn.io(pkg, self.request_timeout).await?;
-        let response = message::response_from_pkg(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response.message.unwrap_or_else(|| "publish failed".into()),
-            });
-        }
-        Ok(response)
+    /// Queueing and writing share the TCP control timeout. A write failure or
+    /// timeout does not establish whether the server received the message.
+    /// CloudEvents have the same content-type constraint as [`Self::publish`].
+    pub async fn broadcast(&self, message: Message) -> Result<()> {
+        let package = encode_outbound(&message, Command::BroadcastMessageToServer)?;
+        self.conn.send_and_flush(package).await
     }
 
-    /// Broadcast a native CloudEvent, waiting for its local socket write but
-    /// no server ACK (requires the `cloud_events` feature).
+    /// Send a message and await its reply using the configured request timeout.
     ///
-    /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
-    /// `datacontenttype` requirement.
-    #[cfg(feature = "cloud_events")]
-    pub async fn broadcast_cloud_event(&self, event: cloudevents::Event) -> Result<()> {
-        let pkg = message::build_cloud_event_package(&event, Command::BroadcastMessageToServer)?;
-        self.conn.send_and_flush(pkg).await
+    /// The returned variant follows the reply's wire protocol, independently
+    /// of the request variant. CloudEvents have the same content-type
+    /// constraint as [`Self::publish`].
+    pub async fn request_reply(&self, message: Message) -> Result<Message> {
+        self.request_reply_with_timeout(message, self.request_timeout)
+            .await
     }
 
-    /// Synchronous request/reply with a native CloudEvent (requires the
-    /// `cloud_events` feature).
+    /// Send a message and await its reply within a per-operation timeout.
     ///
-    /// See [`publish_cloud_event`](Self::publish_cloud_event) for the
-    /// `datacontenttype` requirement.
-    ///
-    /// Sends the CloudEvent as `REQUEST_TO_SERVER` and waits for the reply.
-    /// The reply is parsed as a CloudEvent if the server tags it
-    /// `protocoltype=cloudevents`; otherwise it is parsed as a TCP-wire
-    /// `EventMeshMessage` and converted to a CloudEvent for a uniform return
-    /// type.
-    #[cfg(feature = "cloud_events")]
-    pub async fn request_reply_cloud_event(
+    /// The reply preserves its wire dialect and payload without converting
+    /// between native messages and CloudEvents. A zero timeout is rejected.
+    pub async fn request_reply_with_timeout(
         &self,
-        event: cloudevents::Event,
+        message: Message,
         timeout: Duration,
-    ) -> Result<cloudevents::Event> {
-        use cloudevents::AttributesReader;
-        let pkg = message::build_cloud_event_package(&event, Command::RequestToServer)?;
-        debug!(topic = ?event.subject(), "request-reply CloudEvent via TCP");
-
-        let resp = self.conn.io(pkg, timeout).await?;
-        let response = message::response_from_pkg(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "request-reply failed".into()),
-            });
+    ) -> Result<Message> {
+        if timeout.is_zero() {
+            return Err(Error::InvalidArgument(
+                "request/reply timeout must be greater than zero".into(),
+            ));
         }
-
-        // Try CloudEvents first; fall back to EventMeshMessage → convert.
-        if message::is_cloudevents(&resp) {
-            message::parse_cloud_event(&resp.body).ok_or_else(|| {
-                EventMeshError::Codec(serde::de::Error::custom(
-                    "failed to parse CloudEvent reply body",
-                ))
-            })
-        } else {
-            let msg = message::parse_message(&resp.body).ok_or_else(|| {
-                EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
-            })?;
-            message::message_to_cloud_event(&msg)
-        }
+        let package = encode_outbound(&message, Command::RequestToServer)?;
+        let response = self.conn.io(package, timeout).await?;
+        check_response(&response)?;
+        decode_message(&response)
+            .ok_or_else(|| Error::InvalidMessage("failed to decode TCP reply".into()))
     }
 
     /// Register the publisher push handler inside the transport lifecycle.
     pub(crate) async fn start_response_handler<H: MessageHandler>(&self, handler: H) -> Result<()> {
         let mut task = self.response_driver.lock().await;
         if task.is_some() {
-            return Err(EventMeshError::InvalidArgument(
+            return Err(Error::InvalidArgument(
                 "publisher handler is already registered".into(),
             ));
         }
-        let mut inbound = self.conn.take_inbound_rx().await.ok_or_else(|| {
-            EventMeshError::Tcp("publisher response receiver is already taken".into())
-        })?;
+        let mut inbound = self
+            .conn
+            .take_inbound_rx()
+            .await
+            .ok_or_else(|| Error::Tcp("publisher response receiver is already taken".into()))?;
         self.conn.enable_orphan_response_delivery();
         let connection = self.conn.clone();
         let shutdown = self.response_shutdown.clone();
@@ -210,7 +160,7 @@ impl TcpProducer {
                     delivery = inbound.recv() => match delivery {
                         Some(delivery) => delivery,
                         None => break Err(last_failure.unwrap_or_else(|| {
-                            EventMeshError::ChannelClosed("TCP publisher connection closed".into())
+                            Error::ChannelClosed("TCP publisher connection closed".into())
                         })),
                     },
                 };
@@ -245,7 +195,7 @@ impl TcpProducer {
     }
 
     /// Await terminal transport/handler errors without losing them on cancellation.
-    pub(crate) async fn wait_for_shutdown(&self) -> Result<()> {
+    pub async fn join(&self) -> Result<()> {
         let mut task = self.response_driver.lock().await;
         if let Some(task) = task.as_mut() {
             task.wait().await;
@@ -253,59 +203,37 @@ impl TcpProducer {
         let connection_result = self.conn.wait_for_shutdown().await;
         let handler_result = match task.as_mut().and_then(BackgroundTask::take_result) {
             Some(result) => result.map_err(|error| {
-                EventMeshError::Tcp(format!("TCP publisher response task failed: {error}"))
+                Error::Tcp(format!("TCP publisher response task failed: {error}"))
             })?,
             None => Ok(()),
         };
         handler_result.and(connection_result)
     }
+}
 
-    /// Publish a message and wait for the broker ACK.
-    /// Uses `ASYNC_MESSAGE_TO_SERVER` + `io()` (mirrors the Java SDK).
-    pub(crate) async fn publish(&self, message: EventMeshMessage) -> Result<PublishResponse> {
-        validate_tcp_publish(&message)?;
-        let pkg = super::message::build_message_package(&message, Command::AsyncMessageToServer)?;
-        debug!(topic = ?message.topic, "publishing via TCP");
-
-        let resp = self.conn.io(pkg, self.request_timeout).await?;
-        let response = message::response_from_pkg(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response.message.unwrap_or_else(|| "publish failed".into()),
-            });
+fn encode_outbound(message: &Message, command: Command) -> Result<super::frame::Package> {
+    match message {
+        Message::EventMesh(message) => {
+            validate_tcp_publish(message)?;
+            message::build_message_package(message, command)
         }
-        Ok(response)
+        #[cfg(feature = "cloud_events")]
+        Message::CloudEvent(event) => message::build_cloud_event_package(event, command),
     }
+}
 
-    /// Synchronous request/reply. Uses `REQUEST_TO_SERVER` + `io()` and waits
-    /// for the `RESPONSE_TO_CLIENT` push from the server.
-    pub(crate) async fn request_reply(
-        &self,
-        message: EventMeshMessage,
-        timeout: Duration,
-    ) -> Result<EventMeshMessage> {
-        validate_tcp_publish(&message)?;
-        let pkg = super::message::build_message_package(&message, Command::RequestToServer)?;
-        debug!(topic = ?message.topic, "request-reply via TCP");
-
-        let resp = self.conn.io(pkg, timeout).await?;
-        // Surface server-side failures (ACL/TPS/routing) before attempting to
-        // parse the body. The runtime sets header.code on the RESPONSE_TO_CLIENT
-        // reply via `new Header(cmd, OPStatus.<status>.getCode(), desc, seq)`.
-        let response = message::response_from_pkg(&resp);
-        if !response.is_success() {
-            return Err(EventMeshError::Server {
-                code: response.code.unwrap_or(-1) as i32,
-                message: response
-                    .message
-                    .unwrap_or_else(|| "request-reply failed".into()),
-            });
-        }
-        message::parse_message(&resp.body).ok_or_else(|| {
-            EventMeshError::Codec(serde::de::Error::custom("failed to parse reply body"))
-        })
+fn check_response(package: &super::frame::Package) -> Result<()> {
+    if package.header.code != 0 {
+        return Err(Error::Server {
+            code: package.header.code,
+            message: package
+                .header
+                .desc
+                .clone()
+                .unwrap_or_else(|| "TCP operation failed".into()),
+        });
     }
+    Ok(())
 }
 
 impl Drop for TcpProducer {

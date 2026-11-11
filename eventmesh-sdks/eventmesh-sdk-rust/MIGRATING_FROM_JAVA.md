@@ -44,7 +44,7 @@ Rust SDK 独立于 Gradle 构建，默认 Cargo features 为空，传输协议�
 | `grpc` | gRPC 生产者、流消费者、外部 webhook 注册；构建需要 `protoc` 3.15 或更高版本 |
 | `http-client` | HTTP 生产者、外部 webhook 注册/心跳、与框架无关的回调编解码；不引入 axum |
 | `http-server` | 包含 `http-client`，增加 SDK 托管的 axum 回调服务 |
-| `http` | 同时启用上述两个 HTTP features 的兼容聚合项 |
+| `http` | 同时启用上述两个 HTTP features 的便利聚合项 |
 | `tcp` | TCP 生产者、消费者、广播与重连 |
 | `cloud_events` | 增加 `Message::CloudEvent(cloudevents::Event)` |
 | `full` | 全部传输和 CloudEvents，适合本地验证 |
@@ -114,6 +114,7 @@ TCP 的完整 `UserAgent` 不作为公共配置暴露，不能逐项照搬其 `p
 通用 `Credentials::default()` 本身仍为空；默认用户名/密码只由 `GrpcConfig::new` 提供。
 Runtime 即使关闭鉴权也验证 gRPC 用户名和密码非空；只设置 token 不满足此验证。
 需要 token 时同时提供非空 basic 字段，例如 `Credentials::new().with_basic(user, password).with_token(token)`。
+HTTP 使用 RocketMQ 存储时同样应显式配置非空 basic 凭据：存储客户端拒绝空用户属性，即使 Runtime 关闭鉴权。HTTP 默认值仍与 Java 一样为空，示例显式提供随附 Runtime 的凭据。
 
 ### 超时需要重新核对
 
@@ -387,7 +388,7 @@ Java 的自动重连由心跳检查连接状态触发，部分订阅重放失败
 | --- | --- | --- |
 | 转发收到的 CloudEvent | gRPC 只在扩展缺失时补身份/认证，可能沿用原发送方的凭据和路由 | 新发布、广播、请求从副本中过滤已知传输/投递属性，使用目标客户端配置；需要另一身份时配置另一客户端 |
 | 将别处收到的消息作为当前请求回复 | gRPC 先合并请求属性，再用回复属性覆盖；TCP 保留已有回复扩展 | 已知内部路由以当前请求为准，显式回复业务扩展优先；不要靠外来 correlation 信息重定向回复 |
-| gRPC 回复纯文本或二进制 | `SubStreamHandler` 无条件标为 `application/json`，并未转换内容 | 保留声明的内容类型与数据 variant；`text/plain` 的 `pong` 仍为文本，二进制仍为二进制 |
+| gRPC 回复纯文本或二进制 | `SubStreamHandler` 无条件标为 `application/json`，并未转换内容 | 保留声明的内容类型与 payload，按 Runtime 规则选择 protobuf oneof；Rust `Data` variant 可能归一化 |
 | TCP handler 跨过一次重连后完成 | 回复使用回调 channel，ACK 使用客户端当前 channel，可能跨会话确认旧投递 | 投递绑定 socket generation，旧结果不会在新连接发送回复/ACK；旧 handler 失败也不关闭新的健康连接 |
 
 原生消息的 `DeliveryContext` 只读，生产者开启新操作时忽略它。不要把它复制到业务 properties；
@@ -400,7 +401,7 @@ CloudEvent 的 `id`、source、type、time、data 仍由应用拥有，已有 Ev
 新回复不会自动继承请求的全部标准 CloudEvent 属性。直接返回当前请求作为 echo reply 仍可使用。
 
 gRPC handler 应声明真实的内容类型：文本用 `text/plain`，JSON 提供合法 JSON 数据与对应类型。
-消费者不能再假设所有 gRPC 回复都标记为 JSON。
+消费者不能再假设所有 gRPC 回复都标记为 JSON。gRPC 按声明的内容类型选择 protobuf 数据字段，UTF-8 字节可以作为文本/JSON 发送；`application/protobuf` 的数据必须是完整序列化的 `google.protobuf.Any`。非法 UTF-8 文本和非法 Any 在本地返回错误。
 
 **TCP CloudEvents 仍受 Java Runtime codec 限制：** `datacontenttype` 必须为 `application/cloudevents+json`。
 Rust 会在发送前验证；通常意义上的 `application/json` 或 `text/plain` 不能替代此值。

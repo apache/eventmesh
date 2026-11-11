@@ -23,7 +23,7 @@ use std::sync::Mutex;
 
 use rand::Rng;
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 /// Configured load-balance strategy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -73,7 +73,7 @@ impl LoadBalanceSelector {
     /// Build a selector for the given nodes using the chosen strategy.
     pub fn new(nodes: Vec<ServerNode>, strategy: LoadBalance) -> Result<Self> {
         if nodes.is_empty() {
-            return Err(EventMeshError::Config(
+            return Err(Error::Config(
                 "load-balance requires at least one node".into(),
             ));
         }

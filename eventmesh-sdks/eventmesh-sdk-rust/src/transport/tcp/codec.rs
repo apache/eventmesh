@@ -35,7 +35,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
 use tracing::warn;
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 use super::frame::{Command, Header, Package, PackageBody, RedirectInfo, Subscription, UserAgent};
 
@@ -70,7 +70,7 @@ impl TcpCodec {
 }
 
 impl Encoder<Package> for TcpCodec {
-    type Error = EventMeshError;
+    type Error = Error;
 
     fn encode(&mut self, pkg: Package, buf: &mut BytesMut) -> Result<()> {
         // --- Serialize header ---
@@ -90,7 +90,7 @@ impl Encoder<Package> for TcpCodec {
         let total_len = PREFIX_LEN + header_len + body_len;
 
         if total_len > FRAME_MAX_LENGTH {
-            return Err(EventMeshError::InvalidArgument(format!(
+            return Err(Error::InvalidArgument(format!(
                 "message size {total_len} exceeds limit {FRAME_MAX_LENGTH}"
             )));
         }
@@ -115,7 +115,7 @@ impl Encoder<Package> for TcpCodec {
 
 impl Decoder for TcpCodec {
     type Item = Package;
-    type Error = EventMeshError;
+    type Error = Error;
 
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Package>> {
         // We need at least the prefix + two length fields to know the frame size.
@@ -127,7 +127,7 @@ impl Decoder for TcpCodec {
         // Peek at the lengths without consuming.
         let magic = &buf[..MAGIC_FLAG.len()];
         if magic != MAGIC_FLAG {
-            return Err(EventMeshError::Tcp(format!(
+            return Err(Error::Tcp(format!(
                 "invalid magic flag: expected {:?}, got {:?}",
                 String::from_utf8_lossy(MAGIC_FLAG),
                 String::from_utf8_lossy(magic),
@@ -136,7 +136,7 @@ impl Decoder for TcpCodec {
 
         let version = &buf[MAGIC_FLAG.len()..PREFIX_LEN];
         if version != VERSION {
-            return Err(EventMeshError::Tcp(format!(
+            return Err(Error::Tcp(format!(
                 "invalid version: expected {:?}, got {:?}",
                 String::from_utf8_lossy(VERSION),
                 String::from_utf8_lossy(version),
@@ -148,7 +148,7 @@ impl Decoder for TcpCodec {
         let header_len = (&buf[PREFIX_LEN + 4..PREFIX_LEN + 8]).get_i32() as usize;
 
         if total_len > FRAME_MAX_LENGTH {
-            return Err(EventMeshError::Tcp(format!(
+            return Err(Error::Tcp(format!(
                 "frame length {total_len} exceeds limit {FRAME_MAX_LENGTH}"
             )));
         }
@@ -157,7 +157,7 @@ impl Decoder for TcpCodec {
             .checked_sub(PREFIX_LEN)
             .and_then(|v| v.checked_sub(header_len))
             .ok_or_else(|| {
-                EventMeshError::Tcp(format!(
+                Error::Tcp(format!(
                     "invalid frame: total_len={total_len}, header_len={header_len}"
                 ))
             })?;
@@ -189,9 +189,7 @@ impl Decoder for TcpCodec {
             // more bytes", so the next call would be fed the body bytes and
             // fail with `invalid magic flag`, desyncing the stream.
             warn!("received frame with empty header");
-            return Err(EventMeshError::Tcp(
-                "received frame with empty header".into(),
-            ));
+            return Err(Error::Tcp("received frame with empty header".into()));
         };
 
         // Read body bytes.

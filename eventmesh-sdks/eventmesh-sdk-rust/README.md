@@ -17,7 +17,7 @@ The default feature set is empty. Enable the transport(s) your application uses;
 | `grpc` | `GrpcChannel`, producer, stream consumer, and webhook registration |
 | `http-client` | `HttpClient`, producer, external webhook registration, and framework-independent webhook codec helpers |
 | `http-server` | `http-client` plus the managed axum callback server |
-| `http` | Backward-compatible aggregate of `http-client` and `http-server` |
+| `http` | Convenience aggregate of `http-client` and `http-server` |
 | `tcp` | `TcpClient`, connected producer/consumer, broadcast, and reconnect |
 | `cloud_events` | `Message::CloudEvent(cloudevents::Event)` support |
 | `full` | All transports and CloudEvents support |
@@ -110,7 +110,7 @@ HTTP request/reply is not exposed because the current SDK and stock Runtime do n
 
 `Message` is a public dialect envelope, not a wire format. The selected transport owns protobuf, HTTP form, or TCP frame serialization. With `cloud_events`, CloudEvents remain CloudEvents; `Message::into_event_mesh()` does not silently flatten them into the native EventMesh model.
 
-`EventMeshMessage` is a business model rather than a stable serde JSON contract. Topic, content, message IDs, TTL, and payload content type have dedicated fields. Set TTL with `EventMeshMessageBuilder::ttl_millis` and content type with `data_content_type`; read them through the matching message accessors. Native decoders preserve numeric TTL and reject malformed or out-of-i64-range TTL. New native publishes, broadcasts, and outgoing requests apply producer content/TTL checks; handler reply encoding does not reapply them. CloudEvents retain their standard attributes and extensions on receive. New outbound operations filter known transport/delivery metadata from a copy and use destination credentials and identity. Replies restore routing from the current request, preserving the reply's business extensions, content type, and data variant.
+`EventMeshMessage` is a business model rather than a stable serde JSON contract. Topic, content, message IDs, TTL, and payload content type have dedicated fields. Set TTL with `EventMeshMessageBuilder::ttl_millis` and content type with `data_content_type`; read them through the matching message accessors. Native decoders preserve numeric TTL and reject malformed or out-of-i64-range TTL. New native publishes, broadcasts, and outgoing requests apply producer content/TTL checks; handler reply encoding does not reapply them. CloudEvents retain their standard attributes and extensions on receive. New outbound operations filter known transport/delivery metadata from a copy and use destination credentials and identity. Replies restore routing from the current request, preserving the reply's business extensions, content type, and payload. gRPC selects the protobuf data field from the declared content type, as the Java Runtime requires; the Rust `Data` variant may be normalized on receive.
 
 `properties()` and `get_prop()` expose only business extensions. Received protocol descriptors, identity, and known routing attributes live in the separate, read-only `DeliveryContext` returned by `message.delivery_context()`. It is `None` on locally built messages. Use `context.protocol_description()` for the source protocol and `context.attribute("cluster")` for received routing metadata. Producers ignore this context and rebuild transport metadata from the destination client. Consumer reply paths automatically restore the original request's routing; ACKs continue to use the received transport frame.
 
@@ -137,7 +137,7 @@ Migration: replace `get_prop("ttl")`, `get_prop("seqnum")`, `get_prop("uniqueid"
 
 All configurations require a validated `Endpoint`; HTTP uses a non-empty `EndpointSet`. Use `with_*` methods to set optional identity, credentials, timeouts, HTTP TLS, proxy, and reconnect settings. EventMesh Runtime's gRPC endpoint is plaintext and the gRPC client intentionally does not expose TLS configuration. `Debug` output redacts secrets.
 
-`GrpcConfig::new` supplies the Java SDK's `username` / `passwd` defaults because Runtime validates non-empty gRPC credentials even with authentication disabled. Explicit credentials replace them; HTTP, TCP, and generic `Credentials::default()` keep empty defaults.
+`GrpcConfig::new` supplies the Java SDK's `username` / `passwd` defaults because Runtime validates non-empty gRPC credentials even with authentication disabled. Explicit credentials replace them; HTTP, TCP, and generic `Credentials::default()` keep empty defaults. With RocketMQ storage, HTTP publishing also requires non-empty basic credentials because the storage client rejects empty user properties, even when authentication is disabled. Configure these explicitly for your deployment; the HTTP examples use the bundled Runtime credentials.
 
 Default request timeouts are 5 seconds (gRPC), 15 seconds (HTTP), and 20 seconds (TCP). `ClientOptions::with_request_timeout` changes a client's default; gRPC and TCP producers also have `request_reply_with_timeout` for one call. TCP separately has a 1-second connect timeout and a 20-second control timeout.
 

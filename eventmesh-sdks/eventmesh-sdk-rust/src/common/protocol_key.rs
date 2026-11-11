@@ -23,8 +23,11 @@
 
 /// Container for all well-known attribute key constants.
 pub struct ProtocolKey;
-// Keep the wire-key catalog shared with Java; usage varies by transport and dialect.
-#[allow(dead_code)]
+impl ProtocolKey {
+    pub const TTL: &str = "ttl";
+}
+
+#[cfg(feature = "grpc")]
 impl ProtocolKey {
     // ---- client identity (carried in every request) ----
     pub const ENV: &str = "env";
@@ -41,30 +44,25 @@ impl ProtocolKey {
     pub const PROTOCOL_VERSION: &str = "protocolversion";
     pub const PROTOCOL_DESC: &str = "protocoldesc";
     pub const PROTOCOL_DESC_GRPC_CLOUD_EVENT: &str = "grpc-cloud-event";
+    #[cfg(feature = "cloud_events")]
     pub const CLOUD_EVENTS_PROTOCOL_NAME: &str = "cloudevents";
 
     // ---- message routing ----
     pub const SEQ_NUM: &str = "seqnum";
     pub const UNIQUE_ID: &str = "uniqueid";
-    pub const TTL: &str = "ttl";
     pub const PRODUCERGROUP: &str = "producergroup";
     pub const CONSUMERGROUP: &str = "consumergroup";
-    pub const TAG: &str = "tag";
     pub const URL: &str = "url";
     pub const CLIENT_TYPE: &str = "clienttype";
     pub const SUB_MESSAGE_TYPE: &str = "submessagetype";
-    pub const PROPERTY_MESSAGE_CLUSTER: &str = "cluster";
 
     // ---- CloudEvents spec attributes (lowercased for the attributes map) ----
-    pub const ID: &str = "id";
-    pub const SOURCE: &str = "source";
-    pub const SPECVERSION: &str = "specversion";
-    pub const TYPE: &str = "type";
     pub const DATA_CONTENT_TYPE: &str = "datacontenttype";
+    #[cfg(feature = "cloud_events")]
     pub const DATA_SCHEMA: &str = "dataschema";
     pub const SUBJECT: &str = "subject";
+    #[cfg(feature = "cloud_events")]
     pub const TIME: &str = "time";
-    pub const EVENT_DATA: &str = "eventdata";
 
     // ---- server -> client response (gRPC) ----
     pub const GRPC_RESPONSE_CODE: &str = "statuscode";

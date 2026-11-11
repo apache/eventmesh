@@ -19,20 +19,13 @@
 //!
 //! Two consumer types are provided:
 //!
-//! - [`GrpcStreamConsumer<L>`] — opens a bidirectional gRPC stream and
+//! - [`GrpcStreamConsumer`] — opens a bidirectional gRPC stream and
 //!   dispatches delivered messages to a user-supplied [`MessageHandler`].
 //!   The stream, receive loop, and heartbeat all run as background tasks.
 //! - [`GrpcWebhookConsumer`] — a lightweight RPC-only client that registers
 //!   webhook URLs with the runtime (the runtime POSTs delivered messages to
 //!   the URL over HTTP).  No listener, no receive loop.
 //!
-//! Both types support [`subscribe_webhook`], [`unsubscribe_stream`] /
-//! [`unsubscribe_webhook`], and [`wait_for_shutdown`].
-//!
-//! [`subscribe_webhook`]: GrpcStreamConsumer::subscribe_webhook
-//! [`unsubscribe_stream`]: GrpcStreamConsumer::unsubscribe_stream
-//! [`unsubscribe_webhook`]: GrpcStreamConsumer::unsubscribe_webhook
-
 use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
@@ -47,7 +40,8 @@ use tracing::{debug, warn};
 use crate::common::constants::SDK_STREAM_URL;
 use crate::common::protocol_key::ProtocolKey;
 use crate::config::{ConsumerOptions, GrpcConfig, GrpcConsumerOptions};
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
+use crate::grpc::GrpcChannel;
 use crate::message::Message;
 #[cfg(test)]
 use crate::model::EventMeshMessage;
@@ -81,14 +75,14 @@ fn decode_message(event: &crate::proto_gen::PbCloudEvent) -> Result<Message> {
             return codec::to_cloudevent(event.clone()).map(Message::CloudEvent);
 
             #[cfg(not(feature = "cloud_events"))]
-            return Err(EventMeshError::Unsupported(
+            return Err(Error::Unsupported(
                 "received a CloudEvent without the 'cloud_events' feature enabled".into(),
             ));
         }
         "" => {}
         protocol if protocol == EventMeshProtocolType::EventMeshMessage.as_str() => {}
         protocol => {
-            return Err(EventMeshError::Protocol {
+            return Err(Error::Protocol {
                 transport: "grpc",
                 message: format!("unsupported protocoltype {protocol:?}"),
             });
@@ -113,28 +107,6 @@ fn encode_message(
 }
 
 // ---------------------------------------------------------------------------
-// Shutdown-signal helper
-// ---------------------------------------------------------------------------
-
-/// Spawn a watcher that cancels `token` when `signal` resolves.
-///
-/// If `signal` is `None`, nothing is spawned — the token can only be
-/// cancelled by `request_shutdown()` / drop.
-fn spawn_signal_watcher(
-    signal: Option<impl Future<Output = ()> + Send + 'static>,
-    token: CancellationToken,
-) {
-    if let Some(signal) = signal {
-        tokio::spawn(async move {
-            tokio::select! {
-                _ = signal => token.cancel(),
-                _ = token.cancelled() => {}
-            }
-        });
-    }
-}
-
-// ---------------------------------------------------------------------------
 // GrpcStreamConsumer
 // ---------------------------------------------------------------------------
 
@@ -143,8 +115,8 @@ fn spawn_signal_watcher(
 /// Opens a bidirectional gRPC stream, dispatches delivered messages to the
 /// listener, and maintains a background heartbeat.  The stream, receive loop,
 /// and heartbeat all run as background tokio tasks that are stopped when the
-/// consumer is dropped or explicitly via [`request_shutdown`](Self::request_shutdown) /
-/// [`wait_for_shutdown`](Self::wait_for_shutdown).
+/// consumer is dropped or explicitly via [`shutdown`](Self::shutdown) /
+/// [`join`](Self::join).
 ///
 /// [`GrpcConsumerOptions::with_max_concurrent_handlers`] bounds the number of
 /// messages dispatched to the listener at once. The default is one, preserving
@@ -182,53 +154,54 @@ fn spawn_signal_watcher(
 /// # Ok(())
 /// # }
 /// ```
-pub struct GrpcStreamConsumer<L: MessageHandler> {
+pub struct GrpcStreamConsumer {
     client: ChannelClient,
     config: GrpcConfig,
     options: GrpcConsumerOptions,
     subscriptions: Subscriptions,
-    _listener: std::marker::PhantomData<Arc<L>>,
     shutdown: CancellationToken,
     heartbeat_handle: Mutex<BackgroundTask<()>>,
     stream_tx: StreamTx,
     driver_handle: Mutex<BackgroundTask<Result<()>>>,
 }
 
-impl<L: MessageHandler> GrpcStreamConsumer<L> {
-    /// Open a bidirectional stream subscription and spawn the receive loop +
-    /// heartbeat as background tasks.
+impl GrpcStreamConsumer {
+    /// Open a bidirectional subscription stream over `channel`.
     ///
-    /// `items` are sent as the first message on the stream (the subscription
-    /// request).  `shutdown_signal` is an optional future whose resolution
-    /// triggers graceful shutdown of the stream and heartbeat.  When omitted,
-    /// shutdown can only be initiated by [`request_shutdown`](Self::request_shutdown) or drop.
+    /// At least one initial subscription is required. Additional subscriptions
+    /// can be added with [`subscribe`](Self::subscribe). Both current-thread and
+    /// multi-thread Tokio runtimes are supported; keep the channel's runtime
+    /// running to drive the stream and its background tasks. Establishment
+    /// waits at most 15 seconds for the server's response headers.
     ///
-    /// Both current-thread and multi-thread Tokio runtimes are supported.
-    /// The channel's owning runtime must keep running to drive the stream,
-    /// heartbeat, and handler tasks. Stream establishment waits at most
-    /// 15 seconds for the server's response headers.
-    pub async fn subscribe_stream(
-        client: ChannelClient,
-        config: GrpcConfig,
+    /// # Known limitation
+    ///
+    /// This does not await subscription acceptance. Runtime rejection control
+    /// frames, including ACL and validation errors, are currently ignored, so
+    /// both `open()` and [`join`](Self::join) can succeed for a rejected
+    /// subscription. Check Runtime logs to diagnose rejection.
+    pub async fn open<H: MessageHandler>(
+        channel: GrpcChannel,
         options: GrpcConsumerOptions,
-        listener: L,
-        items: Vec<Subscription>,
-        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
+        subscriptions: impl IntoIterator<Item = Subscription>,
+        handler: H,
     ) -> Result<Self> {
         options.validate()?;
+        let (client, config) = channel.into_parts();
+        let items: Vec<_> = subscriptions.into_iter().collect();
         if items.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
+            return Err(Error::InvalidArgument(
                 "subscription items must not be empty".into(),
             ));
+        }
+        for item in &items {
+            item.validate()?;
         }
 
         let shutdown = CancellationToken::new();
         let subscriptions = Arc::new(Mutex::new(SubscriptionState::new(shutdown.clone())));
         let stream_tx: StreamTx = Arc::new(Mutex::new(None));
-        let listener = Arc::new(listener);
-
-        // Signal watcher.
-        spawn_signal_watcher(shutdown_signal, shutdown.clone());
+        let listener = Arc::new(handler);
 
         // Build the subscription event (first stream message).
         let event = codec::build_subscription_event(
@@ -288,7 +261,6 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
             config,
             options,
             subscriptions,
-            _listener: std::marker::PhantomData,
             shutdown,
             heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat_handle)),
             stream_tx,
@@ -296,17 +268,14 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
         })
     }
 
-    /// Subscribe to additional topics over the already-open stream.
+    /// Add a subscription to the active stream.
     ///
-    /// The subscription CloudEvent is sent through the stream's request
-    /// channel. Returns an error if the stream is no longer active, is shutting
-    /// down, or remains backpressured beyond the configured timeout.
-    pub async fn subscribe(&self, items: Vec<Subscription>) -> Result<()> {
-        if items.is_empty() {
-            return Err(EventMeshError::InvalidArgument(
-                "subscription items must not be empty".into(),
-            ));
-        }
+    /// Success means the request was queued, not that the Runtime accepted it.
+    /// Subscription rejection control frames are currently ignored, as with
+    /// [`open`](Self::open). A closed or backpressured stream returns an error.
+    pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
+        let items = vec![subscription];
         let event = codec::build_subscription_event(
             &self.config,
             self.options.consumer().group(),
@@ -342,52 +311,56 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
                         Ok(())
                     }
                     heartbeat::OperationOutcome::Completed(Err(e)) => {
-                        Err(EventMeshError::ChannelClosed(format!("subscribe: {e}")))
+                        Err(Error::ChannelClosed(format!("subscribe: {e}")))
                     }
                     heartbeat::OperationOutcome::TimedOut => {
-                        Err(EventMeshError::Timeout(self.config.request_timeout()))
+                        Err(Error::Timeout(self.config.request_timeout()))
                     }
-                    heartbeat::OperationOutcome::Cancelled => Err(EventMeshError::ChannelClosed(
-                        "stream is shutting down".into(),
-                    )),
+                    heartbeat::OperationOutcome::Cancelled => {
+                        Err(Error::ChannelClosed("stream is shutting down".into()))
+                    }
                 }
             }
-            None => Err(EventMeshError::ChannelClosed("stream is not active".into())),
+            None => Err(Error::ChannelClosed("stream is not active".into())),
         }
     }
 
-    /// Unsubscribe stream-mode topics (registered via `subscribe_stream` or
-    /// `subscribe`).
+    /// Remove a stream subscription.
     ///
-    /// This is an independent unary RPC — it is **not** sent over the open
-    /// stream. The server matches stream clients by IP + PID, so no URL is
-    /// needed.
+    /// # Known limitation
     ///
-    /// Known limitation: the Java Runtime closes the shared emitter even for
-    /// partial unsubscribe. Remaining topics are not replayed on a new stream;
-    /// EOF stops the driver and heartbeat. See the public unsubscribe rustdoc.
-    pub async fn unsubscribe_stream(&self, items: Vec<Subscription>) -> Result<PublishResponse> {
+    /// The Java Runtime closes the shared stream even when other topics remain
+    /// subscribed. This stops their delivery and heartbeat; this consumer does
+    /// not recreate the stream or replay the remaining subscriptions. After
+    /// teardown, [`subscribe`](Self::subscribe) returns
+    /// [`Error::ChannelClosed`](crate::Error::ChannelClosed). Wait for this
+    /// consumer to finish, drop it, and [`open`](Self::open) a new consumer with
+    /// the desired subscriptions to resume consumption.
+    pub async fn unsubscribe(&self, subscription: Subscription) -> Result<()> {
+        subscription.validate()?;
         unsubscribe_stream_rpc(
             &self.client,
             &self.config,
             self.options.consumer(),
             &self.subscriptions,
-            items,
+            vec![subscription],
         )
         .await
+        .map(|_| ())
     }
 
     /// Signal the stream driver and heartbeat task to stop.
-    pub fn request_shutdown(&self) {
+    pub fn shutdown(&self) {
         self.shutdown.cancel();
     }
 
-    /// Block until the shutdown signal fires or the stream / heartbeat tasks
-    /// exit on their own, then await their clean exit.
+    /// Wait for stream shutdown and report task or transport failures.
     ///
-    /// If no shutdown signal was provided at construction time, this blocks
-    /// until the tasks exit naturally (e.g. the server closes the stream).
-    pub async fn wait_for_shutdown(&self) -> Result<()> {
+    /// A successful return does not confirm subscription acceptance: rejection
+    /// control frames followed by normal stream closure are currently ignored.
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
+    pub async fn join(&self) -> Result<()> {
         let mut driver = self.driver_handle.lock().await;
         driver.wait().await;
         self.shutdown.cancel();
@@ -399,18 +372,16 @@ impl<L: MessageHandler> GrpcStreamConsumer<L> {
             .take_result()
             .unwrap_or(Ok(Ok(())))
             .map_err(|error| {
-                EventMeshError::ChannelClosed(format!(
-                    "gRPC consumer driver task panicked: {error}"
-                ))
+                Error::ChannelClosed(format!("gRPC consumer driver task panicked: {error}"))
             })?;
         let heartbeat_result = heartbeat.take_result().unwrap_or(Ok(())).map_err(|error| {
-            EventMeshError::ChannelClosed(format!("gRPC consumer heartbeat task panicked: {error}"))
+            Error::ChannelClosed(format!("gRPC consumer heartbeat task panicked: {error}"))
         });
         driver_result.and(heartbeat_result)
     }
 }
 
-impl<L: MessageHandler> Drop for GrpcStreamConsumer<L> {
+impl Drop for GrpcStreamConsumer {
     fn drop(&mut self) {
         self.shutdown.cancel();
     }
@@ -424,11 +395,13 @@ impl<L: MessageHandler> Drop for GrpcStreamConsumer<L> {
 ///
 /// Registers webhook URLs with the runtime via unary gRPC RPCs.  The runtime
 /// POSTs delivered messages to the registered URL over HTTP; the SDK does
-/// not receive messages over gRPC for this consumer.  Use a
-/// [`WebhookServer`](crate::transport::http::WebhookServer) or your own HTTP
-/// endpoint to receive the pushes.
+/// not receive messages over gRPC for this consumer. Enable `http-server` for
+/// the SDK's managed webhook server, or use your own HTTP endpoint to receive
+/// the pushes.
 ///
-/// A background heartbeat task keeps subscriptions alive.
+/// A background heartbeat task keeps subscriptions alive. [`shutdown`](Self::shutdown)
+/// and [`join`](Self::join) stop only local work; explicitly call
+/// [`unsubscribe`](Self::unsubscribe) for registered topics and URLs first.
 ///
 /// # Example
 ///
@@ -464,22 +437,16 @@ pub struct GrpcWebhookConsumer {
 }
 
 impl GrpcWebhookConsumer {
-    /// Create a webhook consumer.  Spawns a background heartbeat task.
+    /// Create a webhook-registration consumer over `channel`.
     ///
-    /// `shutdown_signal` is an optional future whose resolution triggers
-    /// graceful shutdown of the heartbeat.  When omitted, shutdown can only be
-    /// initiated by [`request_shutdown`](Self::request_shutdown) or drop.
-    pub async fn new(
-        client: ChannelClient,
-        config: GrpcConfig,
-        options: ConsumerOptions,
-        shutdown_signal: Option<impl Future<Output = ()> + Send + 'static>,
-    ) -> Result<Self> {
+    /// The Runtime delivers events to the registered URL over HTTP. Enable
+    /// `http-server` for the SDK's managed webhook server, or use your own HTTP
+    /// endpoint. A background heartbeat keeps registrations alive.
+    pub async fn new(channel: GrpcChannel, options: ConsumerOptions) -> Result<Self> {
         options.validate()?;
+        let (client, config) = channel.into_parts();
         let shutdown = CancellationToken::new();
         let subscriptions = Arc::new(Mutex::new(SubscriptionState::new(shutdown.clone())));
-
-        spawn_signal_watcher(shutdown_signal, shutdown.clone());
 
         let heartbeat_handle = heartbeat::spawn(
             client.clone(),
@@ -501,17 +468,18 @@ impl GrpcWebhookConsumer {
         })
     }
 
-    #[cfg(test)]
-    pub(crate) fn client(&self) -> &ChannelClient {
-        &self.client
-    }
-
-    /// Subscribe via webhook: the server POSTs delivered events to `url`.
-    pub async fn subscribe_webhook(
+    /// Register subscriptions to an HTTP webhook URL.
+    pub async fn subscribe(
         &self,
-        items: Vec<Subscription>,
-        url: impl Into<String>,
-    ) -> Result<PublishResponse> {
+        subscriptions: impl IntoIterator<Item = Subscription>,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
+        let url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&url)?;
+        let items: Vec<_> = subscriptions.into_iter().collect();
+        for item in &items {
+            item.validate()?;
+        }
         subscribe_webhook_rpc(
             &self.client,
             &self.config,
@@ -521,18 +489,24 @@ impl GrpcWebhookConsumer {
             url,
         )
         .await
+        .map(|_| ())
     }
 
-    /// Unsubscribe webhook topics.
+    /// Remove subscriptions from the same webhook URL used by [`subscribe`](Self::subscribe).
     ///
-    /// `url` must be the same webhook URL passed to `subscribe_webhook`.
-    /// The server matches webhook clients by URL — omitting or mismatching
-    /// it leaves a ghost subscription that continues to receive pushes.
-    pub async fn unsubscribe_webhook(
+    /// Call this before [`shutdown`](Self::shutdown) for each registered URL:
+    /// stopping local heartbeat work does not unregister remote subscriptions.
+    pub async fn unsubscribe(
         &self,
-        items: Vec<Subscription>,
-        url: impl Into<String>,
-    ) -> Result<PublishResponse> {
+        subscriptions: impl IntoIterator<Item = Subscription>,
+        webhook_url: impl Into<String>,
+    ) -> Result<()> {
+        let url = webhook_url.into();
+        crate::webhook::validate_webhook_url(&url)?;
+        let items: Vec<_> = subscriptions.into_iter().collect();
+        for item in &items {
+            item.validate()?;
+        }
         unsubscribe_webhook_rpc(
             &self.client,
             &self.config,
@@ -542,20 +516,24 @@ impl GrpcWebhookConsumer {
             url,
         )
         .await
+        .map(|_| ())
     }
 
-    /// Signal the heartbeat task to stop.
-    pub fn request_shutdown(&self) {
+    /// Signal the heartbeat task to stop without unregistering remote subscriptions.
+    pub fn shutdown(&self) {
         self.shutdown.cancel();
     }
 
-    /// Block until the shutdown signal fires or the heartbeat task exits.
-    pub async fn wait_for_shutdown(&self) -> Result<()> {
+    /// Wait for the heartbeat task to stop and report task failures.
+    ///
+    /// Cancelling this wait preserves task ownership and pending results. Call
+    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
+    pub async fn join(&self) -> Result<()> {
         let mut task = self.heartbeat_handle.lock().await;
         task.wait().await;
         self.shutdown.cancel();
         task.take_result().unwrap_or(Ok(())).map_err(|error| {
-            EventMeshError::ChannelClosed(format!("gRPC webhook heartbeat task panicked: {error}"))
+            Error::ChannelClosed(format!("gRPC webhook heartbeat task panicked: {error}"))
         })
     }
 }
@@ -574,7 +552,7 @@ impl Drop for GrpcWebhookConsumer {
 async fn timed<T>(timeout: Duration, f: impl Future<Output = Result<T>>) -> Result<T> {
     tokio::time::timeout(timeout, f)
         .await
-        .map_err(|_| EventMeshError::Timeout(timeout))?
+        .map_err(|_| Error::Timeout(timeout))?
 }
 
 async fn subscribe_webhook_rpc(
@@ -587,7 +565,7 @@ async fn subscribe_webhook_rpc(
 ) -> Result<PublishResponse> {
     let url = url.into();
     if items.is_empty() {
-        return Err(EventMeshError::InvalidArgument(
+        return Err(Error::InvalidArgument(
             "subscription items must not be empty".into(),
         ));
     }
@@ -614,7 +592,7 @@ async fn subscribe_webhook_rpc(
         }
         Ok(response)
     } else {
-        Err(EventMeshError::Server {
+        Err(Error::Server {
             code: response.code.unwrap_or(-1) as i32,
             message: response
                 .message
@@ -631,7 +609,7 @@ async fn unsubscribe_stream_rpc(
     items: Vec<Subscription>,
 ) -> Result<PublishResponse> {
     if items.is_empty() {
-        return Err(EventMeshError::InvalidArgument(
+        return Err(Error::InvalidArgument(
             "unsubscribe items must not be empty".into(),
         ));
     }
@@ -660,7 +638,7 @@ async fn unsubscribe_stream_rpc(
         }
         Ok(response)
     } else {
-        Err(EventMeshError::Server {
+        Err(Error::Server {
             code: response.code.unwrap_or(-1) as i32,
             message: response
                 .message
@@ -679,7 +657,7 @@ async fn unsubscribe_webhook_rpc(
 ) -> Result<PublishResponse> {
     let url = url.into();
     if items.is_empty() {
-        return Err(EventMeshError::InvalidArgument(
+        return Err(Error::InvalidArgument(
             "unsubscribe items must not be empty".into(),
         ));
     }
@@ -709,7 +687,7 @@ async fn unsubscribe_webhook_rpc(
         }
         Ok(response)
     } else {
-        Err(EventMeshError::Server {
+        Err(Error::Server {
             code: response.code.unwrap_or(-1) as i32,
             message: response
                 .message
@@ -764,14 +742,14 @@ where
                 msg = stream.next() => match msg {
                     None => {
                         debug!("subscribe stream ended");
-                        // Cancel the token so wait_for_shutdown() unblocks
+                        // Cancel the token so join() unblocks
                         // instead of waiting forever for an external signal.
                         shutdown.cancel();
                         break;
                     }
                     Some(Err(status)) => {
                         warn!("stream receive error: {status}");
-                        terminal_error = Some(EventMeshError::from(status));
+                        terminal_error = Some(Error::from(status));
                         shutdown.cancel();
                         break;
                     }
@@ -835,7 +813,7 @@ where
                             break;
                         }
                         Some(Err(error)) => {
-                            terminal_error = Some(EventMeshError::ChannelClosed(format!(
+                            terminal_error = Some(Error::ChannelClosed(format!(
                                 "gRPC message handler task panicked: {error}"
                             )));
                             shutdown.cancel();
@@ -858,7 +836,7 @@ where
                 terminal_error = match completed {
                     Ok(Ok(())) => None,
                     Ok(Err(error)) => Some(error),
-                    Err(error) => Some(EventMeshError::ChannelClosed(format!(
+                    Err(error) => Some(Error::ChannelClosed(format!(
                         "gRPC message handler task panicked: {error}"
                     ))),
                 };
@@ -889,7 +867,7 @@ async fn handle_one<L: MessageHandler>(
             reply_tx
                 .send(reply_event)
                 .await
-                .map_err(|_| EventMeshError::ChannelClosed("gRPC reply channel closed".into()))?;
+                .map_err(|_| Error::ChannelClosed("gRPC reply channel closed".into()))?;
         }
         None => { /* async ack: nothing to send back */ }
     }
@@ -950,7 +928,7 @@ mod tests {
         let error = decode_message(&wire).unwrap_err();
         assert!(matches!(
             error,
-            EventMeshError::Protocol {
+            Error::Protocol {
                 transport: "grpc",
                 ..
             }
@@ -1018,19 +996,16 @@ mod tests {
         assert_eq!(decoded.content(), "reply");
     }
 
-    type TestHandler = fn(Message) -> std::future::Ready<Result<Option<Message>>>;
-
     fn consumer_with_tasks(
         driver: JoinHandle<Result<()>>,
         heartbeat: JoinHandle<()>,
-    ) -> GrpcStreamConsumer<TestHandler> {
+    ) -> GrpcStreamConsumer {
         let config = config();
         GrpcStreamConsumer {
             client: ChannelClient::connect_lazy(&config).unwrap(),
             config,
             options: GrpcConsumerOptions::new("consumer"),
             subscriptions: Arc::new(Mutex::new(SubscriptionState::new(CancellationToken::new()))),
-            _listener: std::marker::PhantomData,
             shutdown: CancellationToken::new(),
             heartbeat_handle: Mutex::new(BackgroundTask::new(heartbeat)),
             stream_tx: Arc::new(Mutex::new(None)),
@@ -1044,7 +1019,7 @@ mod tests {
         let consumer = consumer_with_tasks(
             tokio::spawn(async move {
                 released.await.unwrap();
-                Err(EventMeshError::Server {
+                Err(Error::Server {
                     code: 17,
                     message: "driver failure".into(),
                 })
@@ -1053,20 +1028,17 @@ mod tests {
         );
         for _ in 0..2 {
             assert!(
-                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                tokio::time::timeout(Duration::from_secs(1), consumer.join())
                     .await
                     .is_err()
             );
-            consumer.request_shutdown();
+            consumer.shutdown();
         }
         release.send(()).unwrap();
-        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.join())
             .await
             .unwrap();
-        assert!(matches!(
-            result,
-            Err(EventMeshError::Server { code: 17, .. })
-        ));
+        assert!(matches!(result, Err(Error::Server { code: 17, .. })));
     }
 
     #[tokio::test(start_paused = true)]
@@ -1082,17 +1054,17 @@ mod tests {
         );
         for _ in 0..2 {
             assert!(
-                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                tokio::time::timeout(Duration::from_secs(1), consumer.join())
                     .await
                     .is_err()
             );
             assert!(consumer.shutdown.is_cancelled());
         }
         release.send(()).unwrap();
-        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.join())
             .await
             .unwrap();
-        assert!(matches!(result, Err(EventMeshError::ChannelClosed(message))
+        assert!(matches!(result, Err(Error::ChannelClosed(message))
             if message.contains("driver regression")));
     }
 
@@ -1100,10 +1072,8 @@ mod tests {
     async fn cancelled_webhook_join_preserves_heartbeat_panic() {
         let config = config();
         let consumer = GrpcWebhookConsumer::new(
-            ChannelClient::connect_lazy(&config).unwrap(),
-            config,
+            GrpcChannel::connect_lazy(config).unwrap(),
             ConsumerOptions::new("consumer"),
-            None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
@@ -1114,17 +1084,17 @@ mod tests {
         }));
         for _ in 0..2 {
             assert!(
-                tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+                tokio::time::timeout(Duration::from_secs(1), consumer.join())
                     .await
                     .is_err()
             );
-            consumer.request_shutdown();
+            consumer.shutdown();
         }
         release.send(()).unwrap();
-        let result = tokio::time::timeout(Duration::from_secs(1), consumer.wait_for_shutdown())
+        let result = tokio::time::timeout(Duration::from_secs(1), consumer.join())
             .await
             .unwrap();
-        assert!(matches!(result, Err(EventMeshError::ChannelClosed(message))
+        assert!(matches!(result, Err(Error::ChannelClosed(message))
             if message.contains("heartbeat regression")));
     }
 
@@ -1132,10 +1102,8 @@ mod tests {
     async fn webhook_shutdown_then_join_preserves_task_panic() {
         let config = config();
         let consumer = GrpcWebhookConsumer::new(
-            ChannelClient::connect_lazy(&config).unwrap(),
-            config,
+            GrpcChannel::connect_lazy(config).unwrap(),
             ConsumerOptions::new("consumer"),
-            None::<std::future::Ready<()>>,
         )
         .await
         .unwrap();
@@ -1143,9 +1111,9 @@ mod tests {
             panic!("heartbeat panic");
         }));
 
-        consumer.request_shutdown();
-        let error = consumer.wait_for_shutdown().await.unwrap_err();
-        assert!(matches!(error, EventMeshError::ChannelClosed(_)));
+        consumer.shutdown();
+        let error = consumer.join().await.unwrap_err();
+        assert!(matches!(error, Error::ChannelClosed(_)));
     }
 
     #[cfg(feature = "cloud_events")]

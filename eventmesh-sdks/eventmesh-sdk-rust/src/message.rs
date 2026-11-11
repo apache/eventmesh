@@ -29,7 +29,7 @@
 //! keep their standard attributes and extensions.
 
 #[cfg(feature = "cloud_events")]
-use crate::error::EventMeshError;
+use crate::error::Error;
 use crate::error::Result;
 
 pub use crate::model::{DeliveryContext, EventMeshMessage, EventMeshMessageBuilder};
@@ -113,7 +113,7 @@ impl Message {
         match self {
             Self::EventMesh(message) => Ok(message),
             #[cfg(feature = "cloud_events")]
-            Self::CloudEvent(_) => Err(EventMeshError::Unsupported(
+            Self::CloudEvent(_) => Err(Error::Unsupported(
                 "converting CloudEvent to EventMeshMessage loses CloudEvents semantics".into(),
             )),
         }

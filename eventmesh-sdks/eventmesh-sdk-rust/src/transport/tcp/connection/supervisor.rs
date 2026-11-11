@@ -30,7 +30,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 
 use crate::config::ReconnectPolicy;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 use super::super::codec::TcpCodec;
 use super::super::frame::{Command, UserAgent};
@@ -60,7 +60,7 @@ impl ConnectionSupervisor {
         debug!(%peer, "connecting TCP");
         let stream = tokio::time::timeout(connect_timeout, TcpStream::connect(&peer))
             .await
-            .map_err(|_| EventMeshError::Timeout(connect_timeout))??;
+            .map_err(|_| Error::Timeout(connect_timeout))??;
         stream.set_nodelay(true).ok();
 
         let mut framed = Framed::new(stream, TcpCodec::new());
@@ -68,15 +68,15 @@ impl ConnectionSupervisor {
         let deadline = Self::deadline_after(control_timeout)?;
         tokio::time::timeout_at(deadline, framed.send(message::hello(user_agent)))
             .await
-            .map_err(|_| EventMeshError::Timeout(control_timeout))??;
+            .map_err(|_| Error::Timeout(control_timeout))??;
 
         match tokio::time::timeout_at(deadline, framed.next()).await {
-            Err(_) => Err(EventMeshError::Timeout(control_timeout)),
-            Ok(None) => Err(EventMeshError::Tcp("connection closed during HELLO".into())),
+            Err(_) => Err(Error::Timeout(control_timeout)),
+            Ok(None) => Err(Error::Tcp("connection closed during HELLO".into())),
             Ok(Some(Err(error))) => Err(error),
             Ok(Some(Ok(response))) if response.header.cmd == Command::HelloResponse => {
                 if response.header.code != 0 {
-                    return Err(EventMeshError::Server {
+                    return Err(Error::Server {
                         code: response.header.code,
                         message: response
                             .header
@@ -87,7 +87,7 @@ impl ConnectionSupervisor {
                 debug!(code = response.header.code, "HELLO ok");
                 Ok(framed)
             }
-            Ok(Some(Ok(response))) => Err(EventMeshError::Tcp(format!(
+            Ok(Some(Ok(response))) => Err(Error::Tcp(format!(
                 "unexpected response to HELLO: {:?}",
                 response.header.cmd
             ))),
@@ -161,7 +161,7 @@ impl ConnectionSupervisor {
                 return Ok(());
             }
             if !reconnect.enabled() {
-                return Err(EventMeshError::ChannelClosed(
+                return Err(Error::ChannelClosed(
                     "TCP session ended with reconnect disabled".into(),
                 ));
             }
@@ -176,9 +176,7 @@ impl ConnectionSupervisor {
                         "max reconnect attempts ({}) exceeded, giving up",
                         reconnect.max_retries()
                     );
-                    return Err(EventMeshError::Tcp(
-                        "TCP reconnect attempts exhausted".into(),
-                    ));
+                    return Err(Error::Tcp("TCP reconnect attempts exhausted".into()));
                 }
 
                 debug!(attempt, ?backoff, "reconnect backoff");
@@ -232,6 +230,6 @@ impl ConnectionSupervisor {
     fn deadline_after(timeout: Duration) -> Result<tokio::time::Instant> {
         tokio::time::Instant::now()
             .checked_add(timeout)
-            .ok_or_else(|| EventMeshError::InvalidArgument("TCP timeout is too large".into()))
+            .ok_or_else(|| Error::InvalidArgument("TCP timeout is too large".into()))
     }
 }

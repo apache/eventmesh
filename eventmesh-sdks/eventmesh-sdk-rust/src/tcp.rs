@@ -18,13 +18,10 @@
 //! Native TCP client API.
 
 use crate::config::{ConsumerOptions, ProducerOptions, TcpConfig};
-use crate::error::{EventMeshError, Result};
-use crate::message::{Message, PublishReceipt};
-use crate::subscription::Subscription;
-#[cfg(test)]
-use crate::transport::tcp::delivery::decode_message;
-use crate::transport::tcp::{TcpConsumer as TransportConsumer, TcpProducer as TransportProducer};
+use crate::error::Result;
 use crate::MessageHandler;
+
+pub use crate::transport::tcp::{TcpConsumer, TcpProducer};
 
 /// A configured EventMesh TCP client.
 #[derive(Clone)]
@@ -33,8 +30,7 @@ pub struct TcpClient {
 }
 
 impl TcpClient {
-    /// Validate and create a TCP client handle. Connections are opened by role
-    /// factories.
+    /// Validate a TCP client configuration. Role factories open connections.
     pub fn new(config: TcpConfig) -> Result<Self> {
         config.validate()?;
         Ok(Self { config })
@@ -43,209 +39,31 @@ impl TcpClient {
     /// Connect a producer role to the TCP endpoint.
     pub async fn producer(&self, options: ProducerOptions) -> Result<TcpProducer> {
         options.validate()?;
-        Ok(TcpProducer {
-            inner: TransportProducer::connect(self.config.clone(), &options).await?,
-            timeout: self.config.request_timeout(),
-        })
+        TcpProducer::connect(self.config.clone(), &options).await
     }
 
-    /// Connect a producer that can handle server `RESPONSE_TO_CLIENT` frames.
+    /// Connect a producer that handles unmatched server response pushes.
     ///
-    /// This is the Rust equivalent of Java TCP's `registerPubBusiHandler`.
-    /// Normal request/reply responses remain owned by their originating
-    /// `request_reply` futures; this handler receives unmatched server pushes.
-    pub async fn producer_with_handler<H>(
+    /// Normal request/reply responses remain owned by their originating futures.
+    /// This corresponds to Java TCP's `registerPubBusiHandler`.
+    pub async fn producer_with_handler<H: MessageHandler>(
         &self,
         options: ProducerOptions,
         handler: H,
-    ) -> Result<TcpProducer>
-    where
-        H: MessageHandler,
-    {
+    ) -> Result<TcpProducer> {
         let producer = self.producer(options).await?;
-        producer.inner.start_response_handler(handler).await?;
+        producer.start_response_handler(handler).await?;
         Ok(producer)
     }
 
     /// Connect a long-lived TCP consumer role.
-    pub async fn consumer<H>(&self, options: ConsumerOptions, handler: H) -> Result<TcpConsumer<H>>
-    where
-        H: MessageHandler,
-    {
-        options.validate()?;
-        Ok(TcpConsumer {
-            inner: TransportConsumer::connect(
-                self.config.clone(),
-                &options,
-                handler,
-                None::<std::future::Ready<()>>,
-            )
-            .await?,
-        })
-    }
-}
-
-/// TCP publishing capability.
-pub struct TcpProducer {
-    inner: TransportProducer,
-    timeout: std::time::Duration,
-}
-
-/// A long-lived TCP consumer.
-///
-/// Unwinding handler panics and returned errors close the current session
-/// without a reply or ACK. With reconnect enabled, the consumer reconnects and
-/// restores its subscriptions before processing later messages.
-/// Redelivery depends on the runtime's retry policy. This does not recover
-/// handler-owned state or catch panics compiled with `panic = "abort"`.
-pub struct TcpConsumer<H: MessageHandler> {
-    inner: TransportConsumer<H>,
-}
-
-impl<H: MessageHandler> TcpConsumer<H> {
-    /// Add a TCP subscription.
-    pub async fn subscribe(&self, subscription: Subscription) -> Result<()> {
-        subscription.validate()?;
-        self.inner.subscribe(&[subscription]).await
-    }
-
-    /// Remove every subscription on this TCP consumer session.
-    ///
-    /// The EventMesh TCP runtime ignores topics in `UNSUBSCRIBE_REQUEST` and
-    /// always clears the entire session, matching Java's no-argument
-    /// `unsubscribe()` API.
-    pub async fn unsubscribe_all(&self) -> Result<()> {
-        self.inner.unsubscribe_all().await.map(|_| ())
-    }
-
-    /// Signal consumer shutdown.
-    pub fn shutdown(&self) {
-        self.inner.request_shutdown();
-    }
-
-    /// Wait for TCP consumer shutdown.
-    ///
-    /// Cancelling this wait preserves task ownership and pending results. Call
-    /// `join()` again to finish waiting, or drop the consumer to abort its tasks.
-    pub async fn join(&self) -> Result<()> {
-        shutdown_result(self.inner.wait_for_shutdown().await)
-    }
-}
-
-fn shutdown_result(reason: crate::transport::tcp::ShutdownReason) -> Result<()> {
-    match reason {
-        crate::transport::tcp::ShutdownReason::Cancelled => Ok(()),
-        crate::transport::tcp::ShutdownReason::Redirect(info) => {
-            Err(crate::error::EventMeshError::Tcp(format!(
-                "server redirected consumer to {}:{}",
-                info.ip, info.port
-            )))
-        }
-        crate::transport::tcp::ShutdownReason::ChannelClosed => Err(
-            crate::error::EventMeshError::ChannelClosed("TCP consumer connection closed".into()),
-        ),
-        crate::transport::tcp::ShutdownReason::Error(message) => {
-            Err(crate::error::EventMeshError::Tcp(message))
-        }
-    }
-}
-
-impl TcpProducer {
-    /// Publish one event and wait for EventMesh acknowledgement.
-    ///
-    /// # TCP CloudEvents compatibility
-    ///
-    /// When `message` is [`Message::CloudEvent`], its `datacontenttype` must be
-    /// `application/cloudevents+json`. This is a non-standard compatibility
-    /// requirement of EventMesh's Java TCP codec: it uses `datacontenttype` to
-    /// select the serializer for the whole CloudEvent rather than only to
-    /// describe the event's data. The SDK validates this before any network
-    /// I/O and returns [`EventMeshError::InvalidMessage`] for other values,
-    /// including the otherwise standard `application/json` and `text/plain`.
-    pub async fn publish(&self, message: Message) -> Result<PublishReceipt> {
-        match message {
-            Message::EventMesh(message) => self
-                .inner
-                .publish(message)
-                .await
-                .map(PublishReceipt::from_response),
-            #[cfg(feature = "cloud_events")]
-            Message::CloudEvent(event) => self
-                .inner
-                .publish_cloud_event(event)
-                .await
-                .map(PublishReceipt::from_response),
-        }
-    }
-
-    /// Broadcast an event without waiting for a broker acknowledgement.
-    ///
-    /// Returns after the frame is written to the local socket, so a subsequent
-    /// [`shutdown`](Self::shutdown) does not discard it from the outbound queue.
-    /// Queueing and writing share the TCP control timeout. A timeout or write
-    /// failure does not establish whether the server received the event.
-    ///
-    /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
-    /// requirement documented on [`publish`](Self::publish).
-    pub async fn broadcast(&self, message: Message) -> Result<()> {
-        match message {
-            Message::EventMesh(message) => self.inner.broadcast(message).await,
-            #[cfg(feature = "cloud_events")]
-            Message::CloudEvent(event) => self.inner.broadcast_cloud_event(event).await,
-        }
-    }
-
-    /// Send an event and await its reply.
-    ///
-    /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
-    /// requirement documented on [`publish`](Self::publish).
-    pub async fn request_reply(&self, message: Message) -> Result<Message> {
-        self.request_reply_with_timeout(message, self.timeout).await
-    }
-
-    /// Send an event and await its reply with a per-operation timeout.
-    ///
-    /// [`Message::CloudEvent`] has the same TCP-specific `datacontenttype`
-    /// requirement documented on [`publish`](Self::publish).
-    pub async fn request_reply_with_timeout(
+    pub async fn consumer<H: MessageHandler>(
         &self,
-        message: Message,
-        timeout: std::time::Duration,
-    ) -> Result<Message> {
-        if timeout.is_zero() {
-            return Err(EventMeshError::InvalidArgument(
-                "request/reply timeout must be greater than zero".into(),
-            ));
-        }
-        match message {
-            Message::EventMesh(message) => self
-                .inner
-                .request_reply(message, timeout)
-                .await
-                .map(Message::EventMesh),
-            #[cfg(feature = "cloud_events")]
-            Message::CloudEvent(event) => self
-                .inner
-                .request_reply_cloud_event(event, timeout)
-                .await
-                .map(Message::CloudEvent),
-        }
-    }
-
-    /// Shut down the TCP connection and any publisher-side response handler.
-    /// Terminal failures remain available from [`join`](Self::join).
-    pub async fn shutdown(&self) {
-        self.inner.shutdown().await;
-    }
-
-    /// Wait for the connection and response handler, reporting terminal failures.
-    ///
-    /// Cancelling this wait preserves task ownership and pending errors.
-    /// A handler error or unwinding panic closes its session without ACK and
-    /// follows the configured reconnect policy. Dropping the producer aborts
-    /// its tasks; explicit shutdown cancels an in-flight publisher handler.
-    pub async fn join(&self) -> Result<()> {
-        self.inner.wait_for_shutdown().await
+        options: ConsumerOptions,
+        handler: H,
+    ) -> Result<TcpConsumer> {
+        options.validate()?;
+        TcpConsumer::connect(self.config.clone(), &options, handler).await
     }
 }
 
@@ -256,9 +74,9 @@ mod tests {
     use super::*;
     use crate::config::{Endpoint, ProducerOptions, TcpConfig};
     use crate::transport::tcp::codec::TcpCodec;
-    use crate::transport::tcp::frame::RedirectInfo;
+    use crate::transport::tcp::delivery::decode_message;
     use crate::transport::tcp::frame::{Command, Header, Package, PackageBody};
-    use crate::transport::tcp::ShutdownReason;
+    use crate::{Error, Message};
     use futures::{SinkExt, StreamExt};
     use tokio::net::TcpListener;
     use tokio::sync::{mpsc, oneshot};
@@ -319,36 +137,19 @@ mod tests {
         ] {
             assert!(matches!(
                 producer.publish(message.clone().into()).await,
-                Err(EventMeshError::InvalidMessage(_))
+                Err(Error::InvalidMessage(_))
             ));
             assert!(matches!(
                 producer.broadcast(message.clone().into()).await,
-                Err(EventMeshError::InvalidMessage(_))
+                Err(Error::InvalidMessage(_))
             ));
             assert!(matches!(
                 producer.request_reply(message.into()).await,
-                Err(EventMeshError::InvalidMessage(_))
+                Err(Error::InvalidMessage(_))
             ));
         }
         producer.shutdown().await;
         server.await.unwrap();
-    }
-
-    #[test]
-    fn abnormal_consumer_shutdown_is_an_error() {
-        assert!(shutdown_result(ShutdownReason::ChannelClosed).is_err());
-        assert!(shutdown_result(ShutdownReason::Error("driver failed".into())).is_err());
-        let error = shutdown_result(ShutdownReason::Redirect(RedirectInfo {
-            ip: "127.0.0.2".into(),
-            port: 10_000,
-        }))
-        .unwrap_err();
-        assert!(error.to_string().contains("127.0.0.2:10000"));
-    }
-
-    #[test]
-    fn cancelled_consumer_shutdown_is_clean() {
-        assert!(shutdown_result(ShutdownReason::Cancelled).is_ok());
     }
 
     async fn broadcast_before_shutdown(message: Message) -> Package {
@@ -451,10 +252,8 @@ mod tests {
         let result = producer.broadcast(Message::EventMesh(message)).await;
         producer.shutdown().await;
 
-        assert!(
-            matches!(result, Err(EventMeshError::InvalidArgument(message))
-            if message.contains("exceeds limit"))
-        );
+        assert!(matches!(result, Err(Error::InvalidArgument(message))
+            if message.contains("exceeds limit")));
         assert!(tokio::time::timeout(Duration::from_secs(2), server)
             .await
             .unwrap()
@@ -478,6 +277,7 @@ mod tests {
                 .unwrap();
 
             let mut header = Header::new(Command::ResponseToClient, "server-push");
+            header.set_property("protocoltype", "eventmeshmessage");
             header.code = 0;
             framed
                 .send(Package {
@@ -517,5 +317,80 @@ mod tests {
             Some("server-push")
         );
         producer.shutdown().await;
+    }
+    #[cfg(feature = "cloud_events")]
+    #[tokio::test]
+    async fn request_reply_returns_the_reply_dialect_and_preserves_binary_data() {
+        use crate::transport::tcp::message;
+        use cloudevents::{EventBuilder, EventBuilderV10};
+
+        for cloud_request in [false, true] {
+            let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let port = listener.local_addr().unwrap().port();
+            let native = crate::EventMeshMessage::new("orders", "native payload").unwrap();
+            let event = EventBuilderV10::new()
+                .id("event")
+                .source("urn:test")
+                .ty("test")
+                .subject("orders")
+                .data("application/cloudevents+json", vec![0, 255, 128])
+                .build()
+                .unwrap();
+            let request = if cloud_request {
+                Message::CloudEvent(event.clone())
+            } else {
+                native.clone().into()
+            };
+            let expected_reply = if cloud_request {
+                Message::EventMesh(native.clone())
+            } else {
+                Message::CloudEvent(event.clone())
+            };
+            let server = tokio::spawn(async move {
+                let (stream, _) = listener.accept().await.unwrap();
+                let mut framed = Framed::new(stream, TcpCodec::new());
+                let hello = framed.next().await.unwrap().unwrap();
+                framed
+                    .send(Package::new(Header::new(
+                        Command::HelloResponse,
+                        hello.header.seq.unwrap(),
+                    )))
+                    .await
+                    .unwrap();
+                let request = framed.next().await.unwrap().unwrap();
+                assert_eq!(request.header.cmd, Command::RequestToServer);
+                let mut response = if cloud_request {
+                    message::build_message_package(&native, Command::ResponseToClient).unwrap()
+                } else {
+                    message::build_cloud_event_package(&event, Command::ResponseToClient).unwrap()
+                };
+                response.header.seq = request.header.seq;
+                framed.send(response).await.unwrap();
+                let ack = framed.next().await.unwrap().unwrap();
+                assert_eq!(ack.header.cmd, Command::ResponseToClientAck);
+                while framed.next().await.is_some() {}
+            });
+            let producer =
+                TcpClient::new(TcpConfig::new(Endpoint::new("127.0.0.1", port).unwrap()))
+                    .unwrap()
+                    .producer(ProducerOptions::new("reply-dialect"))
+                    .await
+                    .unwrap();
+            let reply = producer.request_reply(request).await.unwrap();
+            match (reply, expected_reply) {
+                (Message::EventMesh(actual), Message::EventMesh(expected)) => {
+                    assert_eq!(actual.topic(), expected.topic());
+                    assert_eq!(actual.content(), expected.content());
+                }
+                (Message::CloudEvent(actual), Message::CloudEvent(expected)) => {
+                    assert_eq!(actual, expected)
+                }
+                (actual, expected) => {
+                    panic!("reply dialect mismatch: {actual:?}, expected {expected:?}")
+                }
+            }
+            producer.shutdown().await;
+            server.await.unwrap();
+        }
     }
 }

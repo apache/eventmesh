@@ -24,7 +24,7 @@ use futures::FutureExt;
 use super::connection::{InboundPackage, TcpConnection};
 use super::frame::{Command, Package};
 use super::message;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::message::Message;
 use crate::MessageHandler;
 
@@ -67,59 +67,97 @@ pub(crate) fn encode_reply(message: &Message) -> Result<Package> {
     }
 }
 
-pub(crate) fn inherit_request_metadata(reply_message: &mut Message, request: &Message) {
+pub(crate) fn inherit_request_metadata(reply: &mut Message, request: &Message) -> Result<()> {
     #[cfg(feature = "cloud_events")]
-    if let (Message::CloudEvent(reply), Message::CloudEvent(request)) =
-        (&mut *reply_message, request)
-    {
-        for (key, value) in request.iter_extensions() {
-            if crate::common::metadata::is_delivery_property(key) || reply.extension(key).is_none()
-            {
-                reply.set_extension(key, value.clone());
+    use crate::common::metadata::is_delivery_property;
+    use crate::common::metadata::is_reserved_property;
+
+    match reply {
+        Message::EventMesh(reply) => {
+            // Only metadata crosses dialects. The original payload and the
+            // reply's chosen representation never participate in conversion.
+            let mut attributes = match request {
+                Message::EventMesh(request) => native_reply_attributes(request),
+                #[cfg(feature = "cloud_events")]
+                Message::CloudEvent(request) => request
+                    .iter_extensions()
+                    .map(|(key, value)| (key.to_owned(), value.to_string()))
+                    .collect(),
+            };
+            let ttl = crate::transport::metadata::take_wire_ttl(&mut attributes)?;
+            let sequence = attributes
+                .remove("bizseqno")
+                .or(attributes.remove("seqnum"));
+            let unique_id = attributes.remove("uniqueid");
+            reply.ttl = reply.ttl.or(ttl);
+            if reply.biz_seq_no.is_none() {
+                reply.biz_seq_no = sequence;
+            }
+            if reply.unique_id.is_none() {
+                reply.unique_id = unique_id;
+            }
+            reply.delivery_context =
+                Some(Box::new(crate::DeliveryContext::take_from(&mut attributes)));
+            for (key, value) in attributes {
+                if !is_reserved_property(&key) {
+                    reply.props.entry(key).or_insert(value);
+                }
             }
         }
-        return;
+        #[cfg(feature = "cloud_events")]
+        Message::CloudEvent(reply) => {
+            // A handler may return a previously received event. Remove all
+            // foreign delivery routing, including keys absent on this request.
+            let stale: Vec<_> = reply
+                .iter_extensions()
+                .filter(|(key, _)| is_delivery_property(key))
+                .map(|(key, _)| key.to_owned())
+                .collect();
+            for key in stale {
+                reply.remove_extension(&key);
+            }
+            match request {
+                Message::EventMesh(request) => {
+                    for (key, value) in native_reply_attributes(request) {
+                        if is_delivery_property(&key) || reply.extension(&key).is_none() {
+                            reply.set_extension(&key, value);
+                        }
+                    }
+                }
+                Message::CloudEvent(request) => {
+                    for (key, value) in request.iter_extensions() {
+                        if is_delivery_property(key) || reply.extension(key).is_none() {
+                            reply.set_extension(key, value.clone());
+                        }
+                    }
+                }
+            }
+        }
     }
+    Ok(())
+}
 
-    // Normalize non-CloudEvent replies to EventMeshMessage before merging
-    // request metadata.
-    #[cfg(feature = "cloud_events")]
-    let reply = match reply_message.clone() {
-        Message::EventMesh(message) => Ok(message),
-        Message::CloudEvent(event) => message::cloud_event_to_message(&event),
-    };
-    #[cfg(feature = "cloud_events")]
-    let request = match request.clone() {
-        Message::EventMesh(message) => Ok(message),
-        Message::CloudEvent(event) => message::cloud_event_to_message(&event),
-    };
-    #[cfg(feature = "cloud_events")]
-    let (Ok(mut reply), Ok(request)) = (reply, request) else {
-        return;
-    };
-    #[cfg(not(feature = "cloud_events"))]
-    let (mut reply, request) = match (reply_message.clone(), request.clone()) {
-        (Message::EventMesh(reply), Message::EventMesh(request)) => (reply, request),
-    };
-    if reply.ttl.is_none() {
-        reply.ttl = request.ttl;
+fn native_reply_attributes(
+    request: &crate::EventMeshMessage,
+) -> std::collections::HashMap<String, String> {
+    let mut attributes = request.props.clone();
+    if let Some(ttl) = request.ttl {
+        attributes.insert("ttl".into(), ttl.to_string());
     }
-    if reply.biz_seq_no.is_none() {
-        reply.biz_seq_no = request.biz_seq_no.clone();
+    if let Some(sequence) = &request.biz_seq_no {
+        attributes.insert("seqnum".into(), sequence.clone());
     }
-    if reply.unique_id.is_none() {
-        reply.unique_id = request.unique_id.clone();
+    if let Some(unique_id) = &request.unique_id {
+        attributes.insert("uniqueid".into(), unique_id.clone());
     }
-    // A reply always belongs to this request, even if the application returned
-    // a message originally received from another delivery.
-    reply.delivery_context = request.delivery_context.clone();
-    for (key, value) in &request.props {
-        reply
-            .props
-            .entry(key.clone())
-            .or_insert_with(|| value.clone());
+    if let Some(context) = request.delivery_context() {
+        attributes.extend(
+            context
+                .reply_attributes()
+                .map(|(key, value)| (key.clone(), value.clone())),
+        );
     }
-    *reply_message = Message::EventMesh(reply);
+    attributes
 }
 
 /// Dispatch one delivery without acknowledging or replying on another socket.
@@ -134,7 +172,7 @@ pub(super) async fn dispatch<H: MessageHandler>(
         return Ok(());
     }
     let message = decode_message(&delivery.package)
-        .ok_or_else(|| EventMeshError::InvalidMessage("failed to decode TCP delivery".into()))?;
+        .ok_or_else(|| Error::InvalidMessage("failed to decode TCP delivery".into()))?;
     let request =
         (delivery.package.header.cmd == Command::RequestToClient).then(|| message.clone());
     let handled = AssertUnwindSafe(async { handler.handle(message).await })
@@ -148,9 +186,7 @@ pub(super) async fn dispatch<H: MessageHandler>(
                 .copied()
                 .or_else(|| panic.downcast_ref::<String>().map(String::as_str))
                 .unwrap_or("non-string panic payload");
-            return Err(EventMeshError::Tcp(format!(
-                "TCP handler panicked: {reason}"
-            )));
+            return Err(Error::Tcp(format!("TCP handler panicked: {reason}")));
         }
     };
     // A handler may outlive its socket. Its result belongs to that old delivery,
@@ -160,7 +196,7 @@ pub(super) async fn dispatch<H: MessageHandler>(
     }
     if let Some(mut reply) = reply {
         if let Some(request) = request.as_ref() {
-            inherit_request_metadata(&mut reply, request);
+            inherit_request_metadata(&mut reply, request)?;
         }
         let package = encode_reply(&reply)?;
         connection
@@ -170,4 +206,97 @@ pub(super) async fn dispatch<H: MessageHandler>(
     connection
         .send_in_generation(message::ack(ack, &delivery.package), delivery.generation)
         .await
+}
+
+#[cfg(all(test, feature = "cloud_events"))]
+mod tests {
+    use super::*;
+    use cloudevents::{AttributesReader, Data, EventBuilder, EventBuilderV10};
+
+    #[test]
+    fn native_request_keeps_cloud_event_reply_data_and_replaces_foreign_route() {
+        let request = message::parse_message(&super::super::frame::PackageBody::Text(
+            serde_json::json!({
+                "topic": "requests", "body": "request",
+                "properties": {"ttl": "5000", "cluster": "current", "custom": "request"}
+            })
+            .to_string(),
+        ))
+        .unwrap();
+        let event = EventBuilderV10::new()
+            .id("reply-id")
+            .source("urn:reply")
+            .ty("reply")
+            .subject("replies")
+            .data("application/cloudevents+json", vec![0, 255, 128])
+            .extension("cluster", "foreign")
+            .extension("req0group", "foreign-only")
+            .extension("custom", "reply")
+            .build()
+            .unwrap();
+        let mut reply = Message::CloudEvent(event.clone());
+
+        inherit_request_metadata(&mut reply, &Message::EventMesh(request)).unwrap();
+        let Message::CloudEvent(reply) = reply else {
+            panic!("reply dialect changed")
+        };
+        assert_eq!(reply.data(), event.data());
+        assert!(matches!(reply.data(), Some(Data::Binary(bytes)) if bytes == &[0, 255, 128]));
+        assert_eq!(reply.id(), event.id());
+        assert_eq!(reply.source(), event.source());
+        assert_eq!(reply.datacontenttype(), event.datacontenttype());
+        assert_eq!(reply.extension("cluster").unwrap().to_string(), "current");
+        assert!(reply.extension("req0group").is_none());
+        assert_eq!(reply.extension("custom").unwrap().to_string(), "reply");
+        assert_eq!(reply.extension("ttl").unwrap().to_string(), "5000");
+    }
+
+    #[test]
+    fn cloud_event_request_only_supplies_metadata_to_native_reply() {
+        let request = EventBuilderV10::new()
+            .id("request-id")
+            .source("urn:request")
+            .ty("request")
+            // No subject or payload is needed to inherit routing metadata.
+            .extension("cluster", "current")
+            .extension("ttl", 5000)
+            .extension("seqnum", "sequence")
+            .extension("custom", "request")
+            .build()
+            .unwrap();
+        let native = crate::EventMeshMessage::builder()
+            .topic("replies")
+            .content("reply payload")
+            .data_content_type("text/plain")
+            .prop("custom", "reply")
+            .build()
+            .unwrap();
+        let mut reply = Message::EventMesh(native);
+
+        inherit_request_metadata(&mut reply, &Message::CloudEvent(request)).unwrap();
+        let Message::EventMesh(reply) = reply else {
+            panic!("reply dialect changed")
+        };
+        assert_eq!(reply.content(), "reply payload");
+        assert_eq!(reply.data_content_type(), Some("text/plain"));
+        assert_eq!(reply.ttl_millis(), Some(5000));
+        assert_eq!(reply.biz_seq_no(), Some("sequence"));
+        assert_eq!(reply.get_prop("custom"), Some("reply"));
+        assert_eq!(
+            reply.delivery_context().unwrap().attribute("cluster"),
+            Some("current")
+        );
+    }
+
+    #[test]
+    fn business_deliveries_require_an_explicit_supported_dialect() {
+        let native = crate::EventMeshMessage::new("orders", "payload").unwrap();
+        let mut package =
+            message::build_message_package(&native, Command::AsyncMessageToClient).unwrap();
+        assert!(decode_message(&package).is_some());
+        package.header.properties.remove("protocoltype");
+        assert!(decode_message(&package).is_none());
+        package.header.set_property("protocoltype", "unknown");
+        assert!(decode_message(&package).is_none());
+    }
 }

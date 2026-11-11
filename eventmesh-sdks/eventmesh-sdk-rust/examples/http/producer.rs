@@ -16,7 +16,7 @@
 // under the License.
 
 use eventmesh::{
-    config::{Endpoint, EndpointSet, HttpConfig, ProducerOptions},
+    config::{Credentials, Endpoint, EndpointSet, HttpConfig, ProducerOptions},
     message::{EventMeshMessage, Message},
     HttpClient,
 };
@@ -24,7 +24,11 @@ use eventmesh::{
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
     let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
-    let client = HttpClient::new(HttpConfig::new(endpoints))?;
+    let client = HttpClient::new(
+        HttpConfig::new(endpoints)
+            // Credentials for the bundled Docker Compose runtime. Replace for your deployment.
+            .with_credentials(Credentials::new().with_basic("eventmesh", "eventmesh")),
+    )?;
     let producer = client.producer(ProducerOptions::new("test-producerGroup"))?;
     let receipt = producer
         .publish(Message::from(EventMeshMessage::new(

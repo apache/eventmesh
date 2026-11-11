@@ -23,7 +23,7 @@ use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 use tokio_util::sync::CancellationToken;
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::proto_gen::PbCloudEvent;
 use crate::subscription::Subscription;
 
@@ -54,9 +54,7 @@ impl SubscriptionState {
 
     pub(super) fn ensure_open(&self) -> Result<()> {
         if self.shutdown.is_cancelled() {
-            return Err(EventMeshError::ChannelClosed(
-                "gRPC consumer is shut down".into(),
-            ));
+            return Err(Error::ChannelClosed("gRPC consumer is shut down".into()));
         }
         Ok(())
     }

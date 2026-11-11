@@ -17,7 +17,6 @@
 
 //! Low-level gRPC client backed by a connected tonic [`Channel`].
 
-use std::sync::Arc;
 use std::time::Duration;
 
 use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
@@ -25,7 +24,7 @@ use tonic::transport::{Channel, Endpoint};
 use tonic::{Request, Streaming};
 
 use crate::config::GrpcConfig;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::proto_gen::{
     ConsumerServiceClient, HeartbeatServiceClient, PbCloudEvent, PbCloudEventBatch,
     PublisherServiceClient,
@@ -38,24 +37,22 @@ const TONIC_TIMEOUT_EXPIRED_MESSAGE: &str = "Timeout expired";
 ///
 /// Cheaply cloneable (wraps a multiplexed tonic channel).
 #[derive(Clone)]
-pub struct ChannelClient {
-    channel: Arc<Channel>,
+pub(crate) struct ChannelClient {
+    channel: Channel,
 }
 
 impl ChannelClient {
     /// Connect a channel on the current Tokio runtime.
-    pub async fn connect(config: &GrpcConfig) -> Result<Self> {
+    pub(crate) async fn connect(config: &GrpcConfig) -> Result<Self> {
         config.validate()?;
         let channel = Self::endpoint(config)?.connect().await?;
-        Ok(Self {
-            channel: Arc::new(channel),
-        })
+        Ok(Self { channel })
     }
 
     fn endpoint(config: &GrpcConfig) -> Result<Endpoint> {
         let uri = format!("http://{}", config.endpoint().authority());
         let endpoint = Endpoint::from_shared(uri.clone())
-            .map_err(|e| EventMeshError::Config(format!("bad endpoint {uri:?}: {e}")))?
+            .map_err(|e| Error::Config(format!("bad endpoint {uri:?}: {e}")))?
             .connect_timeout(Duration::from_secs(10))
             // No channel-wide request timeout: it would wrongly cap the
             // long-lived subscribe_stream RPC. Publish, batch, and
@@ -68,19 +65,14 @@ impl ChannelClient {
     }
 
     fn channel(&self) -> Channel {
-        self.channel.as_ref().clone()
-    }
-
-    #[cfg(test)]
-    pub(crate) fn shares_channel_with(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.channel, &other.channel)
+        self.channel.clone()
     }
 
     #[cfg(test)]
     pub(crate) fn connect_lazy(config: &GrpcConfig) -> Result<Self> {
         config.validate()?;
         Ok(Self {
-            channel: Arc::new(Self::endpoint(config)?.connect_lazy()),
+            channel: Self::endpoint(config)?.connect_lazy(),
         })
     }
 
@@ -88,7 +80,11 @@ impl ChannelClient {
     /// gRPC deadline (`grpc-timeout`); tonic enforces it locally in its
     /// channel `GrpcTimeout` layer and servers may enforce it too, so an
     /// expired deadline surfaces as [`Error::Timeout`].
-    pub async fn publish(&self, event: PbCloudEvent, timeout: Duration) -> Result<PbCloudEvent> {
+    pub(crate) async fn publish(
+        &self,
+        event: PbCloudEvent,
+        timeout: Duration,
+    ) -> Result<PbCloudEvent> {
         let mut request = Request::new(event);
         request.set_timeout(timeout);
         let mut client = PublisherServiceClient::new(self.channel());
@@ -97,7 +93,7 @@ impl ChannelClient {
 
     /// Publish a batch of events with the same per-request gRPC deadline as
     /// [`ChannelClient::publish`].
-    pub async fn batch_publish(
+    pub(crate) async fn batch_publish(
         &self,
         events: PbCloudEventBatch,
         timeout: Duration,
@@ -111,7 +107,7 @@ impl ChannelClient {
     /// Send a request and await the reply. `timeout` is applied as a gRPC
     /// deadline so the server can observe it; expiry surfaces as
     /// [`Error::Timeout`].
-    pub async fn request_reply(
+    pub(crate) async fn request_reply(
         &self,
         event: PbCloudEvent,
         timeout: Duration,
@@ -136,10 +132,8 @@ impl ChannelClient {
     {
         match call.await {
             Ok(response) => Ok(response.into_inner()),
-            Err(status) if Self::is_deadline_expiration(&status) => {
-                Err(EventMeshError::Timeout(timeout))
-            }
-            Err(status) => Err(EventMeshError::from(status)),
+            Err(status) if Self::is_deadline_expiration(&status) => Err(Error::Timeout(timeout)),
+            Err(status) => Err(Error::from(status)),
         }
     }
 
@@ -151,7 +145,7 @@ impl ChannelClient {
 
     /// Subscribe via webhook (server POSTs events to the URL). Returns the
     /// broker's ack CloudEvent.
-    pub async fn subscribe_webhook(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
+    pub(crate) async fn subscribe_webhook(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
         Ok(ConsumerServiceClient::new(self.channel())
             .subscribe(event)
             .await?
@@ -165,7 +159,7 @@ impl ChannelClient {
     /// establishment timeout does not limit the lifetime of an open stream.
     /// Both current-thread and multi-thread Tokio runtimes can drive the
     /// connection while this future is awaited.
-    pub async fn subscribe_stream(
+    pub(crate) async fn subscribe_stream(
         &self,
         first: PbCloudEvent,
     ) -> Result<(
@@ -175,7 +169,7 @@ impl ChannelClient {
         let (tx, rx) = tokio::sync::mpsc::channel::<PbCloudEvent>(32);
         tx.send(first)
             .await
-            .map_err(|e| EventMeshError::ChannelClosed(format!("stream open send: {e}")))?;
+            .map_err(|e| Error::ChannelClosed(format!("stream open send: {e}")))?;
         let mut stream_client = ConsumerServiceClient::new(self.channel());
 
         // Bound the wait for response headers without setting a deadline on
@@ -186,7 +180,7 @@ impl ChannelClient {
             stream_client.subscribe_stream(Request::new(ReceiverStream::new(rx))),
         )
         .await
-        .map_err(|_| EventMeshError::Protocol {
+        .map_err(|_| Error::Protocol {
             transport: "grpc",
             message: format!(
                 "subscribe_stream did not receive server headers within \
@@ -196,14 +190,14 @@ impl ChannelClient {
         Ok((tx, response.into_inner()))
     }
 
-    pub async fn unsubscribe(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
+    pub(crate) async fn unsubscribe(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
         Ok(ConsumerServiceClient::new(self.channel())
             .unsubscribe(event)
             .await?
             .into_inner())
     }
 
-    pub async fn heartbeat(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
+    pub(crate) async fn heartbeat(&self, event: PbCloudEvent) -> Result<PbCloudEvent> {
         Ok(HeartbeatServiceClient::new(self.channel())
             .heartbeat(Request::new(event))
             .await?

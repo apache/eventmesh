@@ -30,7 +30,7 @@ use prost_types::Any as PbAny;
 use crate::common::constants::{DataContentType, DEFAULT_MESSAGE_TTL, SDK_STREAM_URL};
 use crate::common::{ProtocolKey, RandomStringUtils};
 use crate::config::GrpcConfig;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::model::{EventMeshMessage, EventMeshProtocolType, PublishResponse};
 use crate::proto_gen::{
     attr_as_str, attr_int, attr_str, PbAttr, PbCloudEvent, PbCloudEventAttributeValue, PbData,
@@ -43,7 +43,7 @@ const CLOUD_EVENT_TYPE: &str = "org.apache.eventmesh";
 const DEFAULT_SOURCE: &str = "/";
 
 /// Does this content-type imply text data on the wire?
-pub fn is_text_content(content_type: &str) -> bool {
+pub(crate) fn is_text_content(content_type: &str) -> bool {
     content_type.starts_with("text/")
         || content_type == DataContentType::JSON
         || content_type == DataContentType::XML
@@ -52,13 +52,13 @@ pub fn is_text_content(content_type: &str) -> bool {
 }
 
 /// Does this content-type imply protobuf data on the wire?
-pub fn is_proto_content(content_type: &str) -> bool {
+pub(crate) fn is_proto_content(content_type: &str) -> bool {
     content_type == DataContentType::PROTOBUF
 }
 
 /// Build the common identity attributes (`env/idc/ip/pid/sys/language/...`)
 /// that every request must carry.
-pub fn common_attributes(
+pub(crate) fn common_attributes(
     config: &GrpcConfig,
     protocol_type: EventMeshProtocolType,
 ) -> HashMap<String, PbCloudEventAttributeValue> {
@@ -91,7 +91,7 @@ pub fn common_attributes(
 
 /// Build the subscription CloudEvent (carries the `Subscription` JSON
 /// list in `text_data`, plus the optional webhook `url`).
-pub fn build_subscription_event(
+pub(crate) fn build_subscription_event(
     config: &GrpcConfig,
     consumer_group: &str,
     protocol_type: EventMeshProtocolType,
@@ -99,7 +99,7 @@ pub fn build_subscription_event(
     items: &[Subscription],
 ) -> Result<PbCloudEvent> {
     if items.is_empty() {
-        return Err(EventMeshError::InvalidArgument(
+        return Err(Error::InvalidArgument(
             "subscription items must not be empty".into(),
         ));
     }
@@ -121,7 +121,7 @@ pub fn build_subscription_event(
 
 /// Convert an [`EventMeshMessage`] into a wire CloudEvent for native operations
 /// and replies. Producer-only validation belongs at the publishing operation.
-pub fn from_event_mesh_message(
+pub(crate) fn from_event_mesh_message(
     message: &EventMeshMessage,
     config: &GrpcConfig,
     producer_group: &str,
@@ -184,7 +184,7 @@ pub fn from_event_mesh_message(
             // and `any.toByteArray()` on the consumer side. We mirror both
             // directions so Rust↔Java `application/protobuf` messages are
             // wire-compatible.
-            let any = PbAny::decode(content.as_bytes()).map_err(|e| EventMeshError::Protocol {
+            let any = PbAny::decode(content.as_bytes()).map_err(|e| Error::Protocol {
                 transport: "grpc",
                 message: format!(
                     "failed to decode application/protobuf content as google.protobuf.Any: {e}"
@@ -199,7 +199,7 @@ pub fn from_event_mesh_message(
 }
 
 /// Decode a delivered CloudEvent back into an [`EventMeshMessage`].
-pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> Result<EventMeshMessage> {
+pub(crate) fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> Result<EventMeshMessage> {
     let mut props = HashMap::with_capacity(cloud_event.attributes.len());
     for (key, value) in &cloud_event.attributes {
         props.insert(key.clone(), attr_as_str(value));
@@ -210,7 +210,7 @@ pub fn to_event_mesh_message(cloud_event: &PbCloudEvent) -> Result<EventMeshMess
 }
 
 /// Extract the broker [`PublishResponse`] (status_code / message / time).
-pub fn to_response(cloud_event: &PbCloudEvent) -> PublishResponse {
+pub(crate) fn to_response(cloud_event: &PbCloudEvent) -> PublishResponse {
     let code = cloud_event
         .attributes
         .get(ProtocolKey::GRPC_RESPONSE_CODE)
@@ -232,7 +232,7 @@ pub fn to_response(cloud_event: &PbCloudEvent) -> PublishResponse {
     PublishResponse::new(code, message, time)
 }
 
-pub fn get_seq_num(cloud_event: &PbCloudEvent) -> String {
+pub(crate) fn get_seq_num(cloud_event: &PbCloudEvent) -> String {
     cloud_event
         .attributes
         .get(ProtocolKey::SEQ_NUM)
@@ -241,7 +241,7 @@ pub fn get_seq_num(cloud_event: &PbCloudEvent) -> String {
 }
 
 #[cfg(feature = "cloud_events")]
-pub fn get_unique_id(cloud_event: &PbCloudEvent) -> String {
+pub(crate) fn get_unique_id(cloud_event: &PbCloudEvent) -> String {
     cloud_event
         .attributes
         .get(ProtocolKey::UNIQUE_ID)
@@ -249,7 +249,7 @@ pub fn get_unique_id(cloud_event: &PbCloudEvent) -> String {
         .unwrap_or_default()
 }
 
-pub fn get_subject(cloud_event: &PbCloudEvent) -> String {
+pub(crate) fn get_subject(cloud_event: &PbCloudEvent) -> String {
     // Only read the `subject` attribute — do NOT fall back to `source`.
     // Internally-built events set `source` to the default "/", so a fallback
     // would yield a topic of "/" instead of an empty topic. This mirrors
@@ -261,7 +261,7 @@ pub fn get_subject(cloud_event: &PbCloudEvent) -> String {
         .unwrap_or_default()
 }
 
-pub fn get_text_data(cloud_event: &PbCloudEvent) -> String {
+pub(crate) fn get_text_data(cloud_event: &PbCloudEvent) -> String {
     match &cloud_event.data {
         Some(PbData::TextData(s)) => s.clone(),
         Some(PbData::BinaryData(b)) => String::from_utf8_lossy(b).into_owned(),
@@ -303,7 +303,7 @@ fn base_event(
 /// requires a non-empty `textData` — clearing the data here would make the
 /// reply fail validation and never reach `producer.reply()`, breaking
 /// request/reply.
-pub fn mark_as_reply(cloud_event: &mut PbCloudEvent) {
+pub(crate) fn mark_as_reply(cloud_event: &mut PbCloudEvent) {
     cloud_event.attributes.insert(
         ProtocolKey::SUB_MESSAGE_TYPE.into(),
         attr_str(ProtocolKey::SUBSCRIPTION_REPLY),
@@ -313,7 +313,7 @@ pub fn mark_as_reply(cloud_event: &mut PbCloudEvent) {
 /// (Optional) CloudEvents interop: convert a native [`cloudevents::Event`]
 /// to the wire CloudEvent.
 #[cfg(feature = "cloud_events")]
-pub fn from_cloudevent(
+pub(crate) fn from_cloudevent(
     event: &cloudevents::Event,
     config: &GrpcConfig,
     producer_group: &str,
@@ -396,7 +396,7 @@ pub fn from_cloudevent(
             },
             cloudevents::event::ExtensionValue::Integer(i) => {
                 let value = i32::try_from(*i).map_err(|_| {
-                    EventMeshError::InvalidMessage(format!(
+                    Error::InvalidMessage(format!(
                         "CloudEvent integer extension {k:?} value {i} is outside protobuf \
                          int32 range"
                     ))
@@ -409,12 +409,15 @@ pub fn from_cloudevent(
         attrs.insert(k.to_string(), attr);
     }
 
-    let data = match event.data() {
-        Some(cloudevents::Data::String(s)) => Some(PbData::TextData(s.clone())),
-        Some(cloudevents::Data::Binary(b)) => Some(PbData::BinaryData(b.clone())),
-        Some(cloudevents::Data::Json(j)) => Some(PbData::TextData(j.to_string())),
-        None => None,
-    };
+    // The Runtime chooses which protobuf oneof field to validate from the
+    // declared content type, independently of the Rust CloudEvents data enum.
+    // In particular, UTF-8 bytes may contain text/JSON, and application/protobuf
+    // carries a complete serialized Any rather than its value bytes alone.
+    let content_type = attr_as_str(&attrs[ProtocolKey::DATA_CONTENT_TYPE]);
+    let data = event
+        .data()
+        .map(|data| encode_cloud_event_data(data, &content_type))
+        .transpose()?;
 
     Ok(PbCloudEvent {
         id: event.id().to_string(),
@@ -426,10 +429,36 @@ pub fn from_cloudevent(
     })
 }
 
+#[cfg(feature = "cloud_events")]
+fn encode_cloud_event_data(data: &cloudevents::Data, content_type: &str) -> Result<PbData> {
+    let bytes = match data {
+        cloudevents::Data::String(text) => text.as_bytes().to_vec(),
+        cloudevents::Data::Binary(bytes) => bytes.clone(),
+        cloudevents::Data::Json(value) => serde_json::to_vec(value)?,
+    };
+    if is_text_content(content_type) {
+        String::from_utf8(bytes).map(PbData::TextData).map_err(|_| {
+            Error::InvalidMessage(format!(
+                "CloudEvent data for {content_type:?} must contain valid UTF-8"
+            ))
+        })
+    } else if is_proto_content(content_type) {
+        PbAny::decode(bytes.as_slice())
+            .map(PbData::ProtoData)
+            .map_err(|error| {
+                Error::InvalidMessage(format!(
+                    "CloudEvent application/protobuf data must be a serialized google.protobuf.Any: {error}"
+                ))
+            })
+    } else {
+        Ok(PbData::BinaryData(bytes))
+    }
+}
+
 /// (Optional) CloudEvents interop: convert the wire CloudEvent back into a
 /// native [`cloudevents::Event`].
 #[cfg(feature = "cloud_events")]
-pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
+pub(crate) fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
     use cloudevents::{Data, EventBuilder, EventBuilderV10};
 
     let topic = get_subject(&cloud_event);
@@ -509,6 +538,7 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
             k.as_str(),
             ProtocolKey::GRPC_RESPONSE_CODE
                 | ProtocolKey::GRPC_RESPONSE_MESSAGE
+                | ProtocolKey::SUBJECT
                 | ProtocolKey::TIME
                 | ProtocolKey::DATA_SCHEMA
                 | ProtocolKey::DATA_CONTENT_TYPE
@@ -523,7 +553,7 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
             | Some(PbAttr::CeUriRef(value)) => builder.extension(k.as_str(), value),
             Some(PbAttr::CeBytes(value)) => {
                 let value = String::from_utf8(value).map_err(|_| {
-                    EventMeshError::InvalidMessage(format!(
+                    Error::InvalidMessage(format!(
                         "CloudEvent byte extension {k:?} cannot be represented by the native \
                          CloudEvents extension model"
                     ))
@@ -536,7 +566,7 @@ pub fn to_cloudevent(cloud_event: PbCloudEvent) -> Result<cloudevents::Event> {
             None => builder,
         };
     }
-    builder.build().map_err(|e| EventMeshError::Protocol {
+    builder.build().map_err(|e| Error::Protocol {
         transport: "grpc",
         message: format!("cloudevents build error: {e}"),
     })
@@ -827,6 +857,128 @@ mod tests {
 
     #[cfg(feature = "cloud_events")]
     #[test]
+    fn cloud_event_payload_uses_the_runtime_content_type_field() {
+        use cloudevents::{Data, EventBuilder, EventBuilderV10};
+
+        let json = br#"{"value":1}"#;
+        for (content_type, data, expected) in [
+            (
+                "application/json",
+                Data::Binary(json.to_vec()),
+                PbData::TextData(String::from_utf8(json.to_vec()).unwrap()),
+            ),
+            (
+                "text/plain",
+                Data::Binary(b"hello".to_vec()),
+                PbData::TextData("hello".into()),
+            ),
+            (
+                "application/octet-stream",
+                Data::String("hello".into()),
+                PbData::BinaryData(b"hello".to_vec()),
+            ),
+            (
+                // Java ProtoSupport treats this parameterized type as binary.
+                "application/json; charset=utf-8",
+                Data::Json(serde_json::json!({"value": 1})),
+                PbData::BinaryData(json.to_vec()),
+            ),
+        ] {
+            let event = EventBuilderV10::new()
+                .id("payload")
+                .source("urn:test")
+                .ty("test")
+                .subject("orders")
+                .data(content_type, data)
+                .build()
+                .unwrap();
+            let wire = from_cloudevent(&event, &cfg(), PRODUCER_GROUP).unwrap();
+            assert_eq!(wire.data, Some(expected), "{content_type}");
+            assert_eq!(
+                attr_as_str(&wire.attributes[ProtocolKey::DATA_CONTENT_TYPE]),
+                content_type
+            );
+        }
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloud_event_protobuf_payload_preserves_any_envelope_when_forwarded() {
+        use cloudevents::{Data, EventBuilder, EventBuilderV10};
+
+        let any = PbAny {
+            type_url: "type.googleapis.com/example.Payload".into(),
+            value: vec![0xff, 0x00, 0x80, 0x01],
+        };
+        let event = EventBuilderV10::new()
+            .id("protobuf")
+            .source("urn:test")
+            .ty("test")
+            .subject("orders")
+            .data(DataContentType::PROTOBUF, Data::Binary(any.encode_to_vec()))
+            .build()
+            .unwrap();
+        let wire = from_cloudevent(&event, &cfg(), PRODUCER_GROUP).unwrap();
+        assert_eq!(wire.data, Some(PbData::ProtoData(any.clone())));
+        let received = to_cloudevent(wire).unwrap();
+        let forwarded = from_cloudevent(&received, &cfg(), PRODUCER_GROUP).unwrap();
+        assert_eq!(forwarded.data, Some(PbData::ProtoData(any)));
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn cloud_event_payload_rejects_invalid_text_or_protobuf_locally() {
+        use cloudevents::{Data, EventBuilder, EventBuilderV10};
+
+        for (content_type, expected_error) in [
+            ("text/plain", "UTF-8"),
+            (DataContentType::PROTOBUF, "google.protobuf.Any"),
+        ] {
+            let event = EventBuilderV10::new()
+                .id("invalid-payload")
+                .source("urn:test")
+                .ty("test")
+                .subject("orders")
+                .data(content_type, Data::Binary(vec![0xff]))
+                .build()
+                .unwrap();
+            let error = from_cloudevent(&event, &cfg(), PRODUCER_GROUP).unwrap_err();
+            assert!(
+                matches!(error, Error::InvalidMessage(message) if message.contains(expected_error))
+            );
+        }
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
+    fn received_cloud_event_has_one_subject_when_rerouted_as_json() {
+        use cloudevents::{AttributesReader, AttributesWriter, EventBuilder, EventBuilderV10};
+
+        let original = EventBuilderV10::new()
+            .id("forwarded-event")
+            .source("urn:test")
+            .ty("test")
+            .subject("original-topic")
+            .data("application/json", serde_json::json!({"value": 1}))
+            .build()
+            .unwrap();
+        let wire = from_cloudevent(&original, &cfg(), PRODUCER_GROUP).unwrap();
+        let mut received = to_cloudevent(wire).unwrap();
+        assert_eq!(received.extension("subject"), None);
+        received.set_subject(Some("forwarded-topic"));
+
+        // HTTP and TCP use CloudEvents JSON. A stale subject extension used to
+        // serialize after the standard attribute and overwrite the new route.
+        let json = serde_json::to_string(&received).unwrap();
+        assert_eq!(json.matches("\"subject\":").count(), 1);
+        let forwarded: cloudevents::Event = serde_json::from_str(&json).unwrap();
+        assert_eq!(forwarded.subject(), Some("forwarded-topic"));
+        assert_eq!(forwarded.id(), original.id());
+        assert_eq!(forwarded.data(), original.data());
+    }
+
+    #[cfg(feature = "cloud_events")]
+    #[test]
     fn rejects_cloudevent_integer_extensions_outside_int32_range() {
         use cloudevents::{EventBuilder, EventBuilderV10};
 
@@ -840,7 +992,7 @@ mod tests {
 
         assert!(matches!(
             from_cloudevent(&event, &cfg(), PRODUCER_GROUP),
-            Err(EventMeshError::InvalidMessage(message))
+            Err(Error::InvalidMessage(message))
                 if message.contains("too-large") && message.contains("int32")
         ));
     }

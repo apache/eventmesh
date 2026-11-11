@@ -25,7 +25,7 @@ use reqwest::Client;
 
 use crate::common::loadbalance::{LoadBalanceSelector, ServerNode};
 use crate::config::HttpConfig;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 /// Default connection pool size (mirrors the Java SDK).
 const DEFAULT_POOL_SIZE: usize = 30;
@@ -38,15 +38,15 @@ const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 10;
 /// Cheaply cloneable: reqwest shares its pool internally, and clones share
 /// endpoint selection state and immutable configuration as well.
 #[derive(Clone)]
-pub struct EventMeshHttpClient {
+pub struct HttpClient {
     inner: Client,
     config: Arc<HttpConfig>,
     selector: Arc<LoadBalanceSelector>,
 }
 
-impl EventMeshHttpClient {
+impl HttpClient {
     /// Build one pooled client and selector shared by all roles.
-    pub(crate) fn new(config: HttpConfig) -> Result<Self> {
+    pub fn new(config: HttpConfig) -> Result<Self> {
         config.validate()?;
         let selector = LoadBalanceSelector::new(
             config
@@ -79,7 +79,7 @@ impl EventMeshHttpClient {
 
         let inner = builder
             .build()
-            .map_err(|e| EventMeshError::Config(format!("reqwest client build error: {e}")))?;
+            .map_err(|e| Error::Config(format!("reqwest client build error: {e}")))?;
 
         Ok(Self {
             inner,
@@ -89,12 +89,12 @@ impl EventMeshHttpClient {
     }
 
     /// Pick the next server node via the configured load-balance strategy.
-    pub fn select_node(&self) -> &ServerNode {
+    fn select_node(&self) -> &ServerNode {
         self.selector.select()
     }
 
     /// Build the base URL for the next request: `http(s)://host:port`.
-    pub fn base_url(&self) -> String {
+    fn base_url(&self) -> String {
         let node = self.select_node();
         let scheme = if self.config.tls_enabled() {
             "https"
@@ -105,13 +105,13 @@ impl EventMeshHttpClient {
     }
 
     /// Build a full URL for the given path.
-    pub fn url_for(&self, path: &str) -> String {
+    fn url_for(&self, path: &str) -> String {
         format!("{}{}", self.base_url(), path)
     }
 
     /// Send a POST with form-urlencoded body and extra headers. Returns the
     /// response body text.
-    pub async fn post_form(
+    pub(crate) async fn post_form(
         &self,
         path: &str,
         body: &[(String, String)],
@@ -128,9 +128,9 @@ impl EventMeshHttpClient {
 
         let resp = req.send().await.map_err(|e| {
             if e.is_timeout() {
-                EventMeshError::Timeout(timeout)
+                Error::Timeout(timeout)
             } else {
-                EventMeshError::Http {
+                Error::Http {
                     status: 0,
                     message: format!("request failed: {e}"),
                 }
@@ -140,9 +140,9 @@ impl EventMeshHttpClient {
         let status = resp.status().as_u16();
         let text = resp.text().await.map_err(|e| {
             if e.is_timeout() {
-                EventMeshError::Timeout(timeout)
+                Error::Timeout(timeout)
             } else {
-                EventMeshError::Http {
+                Error::Http {
                     status,
                     message: format!("failed to read response body: {e}"),
                 }
@@ -150,7 +150,7 @@ impl EventMeshHttpClient {
         })?;
 
         if !(200..300).contains(&status) {
-            return Err(EventMeshError::Http {
+            return Err(Error::Http {
                 status,
                 message: text,
             });
@@ -222,7 +222,7 @@ mod tests {
         .unwrap();
         let config = HttpConfig::new(endpoints)
             .with_load_balance(crate::config::LoadBalance::WeightedRoundRobin);
-        let client = EventMeshHttpClient::new(config).unwrap();
+        let client = HttpClient::new(config).unwrap();
 
         for _ in 0..4 {
             assert_eq!(
@@ -247,12 +247,12 @@ mod tests {
             std::future::pending::<()>().await;
         });
         let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", port).unwrap()]).unwrap();
-        let client = EventMeshHttpClient::new(HttpConfig::new(endpoints)).unwrap();
+        let client = HttpClient::new(HttpConfig::new(endpoints)).unwrap();
         let timeout = Duration::from_millis(25);
 
         let error = client.post_form("/", &[], &[], timeout).await.unwrap_err();
 
-        assert!(matches!(error, EventMeshError::Timeout(value) if value == timeout));
+        assert!(matches!(error, Error::Timeout(value) if value == timeout));
         server.abort();
     }
 }

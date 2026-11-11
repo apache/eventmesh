@@ -35,6 +35,14 @@ use tokio::{
 };
 use tokio_util::codec::Framed;
 
+fn native_header(command: Command, sequence: impl Into<String>) -> Header {
+    let mut header = Header::new(command, sequence);
+    header
+        .properties
+        .insert("protocoltype".into(), "eventmeshmessage".into());
+    header
+}
+
 fn config() -> GrpcConfig {
     GrpcConfig::new(Endpoint::new("127.0.0.1", 10205).unwrap())
 }
@@ -133,7 +141,7 @@ fn tcp_cloud_event_reply_overrides_only_current_delivery_route() {
         .build()
         .unwrap();
     let mut reply = Message::CloudEvent(reply);
-    inherit_request_metadata(&mut reply, &Message::CloudEvent(current));
+    inherit_request_metadata(&mut reply, &Message::CloudEvent(current)).unwrap();
     let Message::CloudEvent(event) = reply else {
         unreachable!()
     };
@@ -301,7 +309,7 @@ async fn late_delivery_keeps_its_session(command: Command) {
         }
         socket
             .send(Package {
-                header: Header::new(command, "old-session-delivery"),
+                header: native_header(command, "old-session-delivery"),
                 body: PackageBody::Text(r#"{"topic":"orders","body":"payload"}"#.into()),
             })
             .await
@@ -518,12 +526,12 @@ async fn http_lifecycle_request(
 ) -> &'static str {
     use std::sync::atomic::Ordering;
     let code = headers["code"].to_str().unwrap().parse::<i32>().unwrap();
-    if code == crate::transport::http::codec::subscribe_code() {
+    if code == crate::common::status_code::RequestCode::SUBSCRIBE {
         state.registered.store(true, Ordering::SeqCst);
-    } else if code == crate::transport::http::codec::unsubscribe_code() {
+    } else if code == crate::common::status_code::RequestCode::UNSUBSCRIBE {
         state.registered.store(false, Ordering::SeqCst);
         state.unsubscribed.notify_one();
-    } else if code == crate::transport::http::codec::heartbeat_code() {
+    } else if code == crate::common::status_code::RequestCode::HEARTBEAT {
         state.heartbeat_entered.notify_one();
         state.heartbeat_release.acquire().await.unwrap().forget();
         // Match Runtime HeartBeatProcessor: a heartbeat adds missing clients.
@@ -623,7 +631,7 @@ async fn publisher_handler_panic_closes_its_failed_session() {
             .unwrap();
         socket
             .send(Package {
-                header: Header::new(Command::ResponseToClient, "response-push"),
+                header: native_header(Command::ResponseToClient, "response-push"),
                 body: PackageBody::Text(r#"{"topic":"orders","body":"payload"}"#.into()),
             })
             .await
@@ -679,7 +687,7 @@ async fn publisher_handler_recovers_and_join_can_be_cancelled() {
                 .unwrap();
             socket
                 .send(Package {
-                    header: Header::new(Command::ResponseToClient, format!("push-{attempt}")),
+                    header: native_header(Command::ResponseToClient, format!("push-{attempt}")),
                     body: PackageBody::Text(r#"{"topic":"orders","body":"payload"}"#.into()),
                 })
                 .await
@@ -724,7 +732,10 @@ async fn publisher_handler_recovers_and_join_can_be_cancelled() {
         .unwrap()
         .unwrap();
     producer.shutdown().await;
-    producer.join().await.unwrap();
+    tokio::time::timeout(Duration::from_secs(3), producer.join())
+        .await
+        .expect("shutdown must stop both publisher tasks")
+        .unwrap();
     server.await.unwrap();
 }
 

@@ -31,7 +31,7 @@ use crate::harness::{
     CollectingListener,
 };
 use crate::require_runtime;
-use crate::runtime::{ADMIN_PORT, HOST};
+use crate::runtime::{host, ADMIN_PORT};
 
 #[derive(Clone, Copy)]
 enum HandlerFailure {
@@ -45,7 +45,10 @@ async fn wait_for_session_count(topic: &str, expected: usize) {
         .timeout(Duration::from_secs(5))
         .build()
         .expect("admin HTTP client");
-    let url = format!("http://{HOST}:{ADMIN_PORT}/clientManage/showListenClientByTopic");
+    let url = format!(
+        "http://{}:{ADMIN_PORT}/clientManage/showListenClientByTopic",
+        host()
+    );
     let deadline = Instant::now() + Duration::from_secs(15);
     loop {
         let body = client

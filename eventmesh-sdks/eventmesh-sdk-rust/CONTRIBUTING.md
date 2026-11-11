@@ -35,7 +35,7 @@ cargo check --no-default-features --features tcp --all-targets
 
 Repeat transport checks with `cloud_events` when changing dialect handling. Run
 these with Rust 1.86.0 to verify the MSRV. `http-client` must not enable axum in
-its normal dependency tree. Existing `http` callers retain the managed server.
+its normal dependency tree. The `http` aggregate includes the managed server.
 
 Use `cargo test --features full --test codec_test` for the codec test binary. Examples are feature-gated in `Cargo.toml`; compile the one you changed with its documented `cargo run --example ... --features ...` command, or compile all supported paths with `cargo check --examples --features full`.
 
@@ -47,7 +47,7 @@ The e2e suite is opt-in so a normal `cargo test` never requires Docker:
 cargo test --features e2e
 ```
 
-The harness starts the `rocketmq` docker-compose profile unless `EVENTMESH_E2E_EXTERNAL=1` points it at an already running runtime. An absent runtime is a failure by default. `EVENTMESH_E2E_ALLOW_SKIP=1` is only for an intentional local skip and must not be used for release verification.
+The harness starts the `rocketmq` docker-compose profile unless `EVENTMESH_E2E_EXTERNAL=1` points it at an already running runtime. Set `EVENTMESH_E2E_HOST` to use a host other than `127.0.0.1` (standard protocol ports), and `EVENTMESH_E2E_WEBHOOK_HOST` to an address that Runtime can reach for callbacks. An absent runtime is a failure by default. `EVENTMESH_E2E_ALLOW_SKIP=1` is only for an intentional local skip and must not be used for release verification.
 
 The bundled compose file pins the Runtime to `apache/eventmesh:v1.12.0`. Run the bidirectional Rust/Java gRPC, HTTP, and TCP checks with:
 
@@ -57,7 +57,7 @@ cargo test --features interop_e2e --test e2e interop
 
 Those tests build `interop/java-peer` with Maven on first use. The standalone peer depends on `org.apache.eventmesh:eventmesh-sdk-java:1.12.0-release`; it does not compile or load the Java SDK source tree from this repository.
 
-The gRPC CloudEvent request/reply regressions check text and binary payloads, conflicting reply routing, and default credentials against the real Runtime.
+The gRPC CloudEvent regressions check the Runtime content-type/oneof matrix, protobuf Any, cross-protocol subject forwarding, request/reply routing, and default credentials against the real Runtime. The forwarding regression receives via gRPC, republishes via HTTP, and verifies an HTTP webhook delivery. Runtime 1.12.0 cannot directly deliver an HTTP CloudEvent publish to a gRPC subscriber: its push path casts an HTTP command to a gRPC wrapper. This SDK-side test does not claim that Runtime route works.
 
 The TCP reconnect test runs in the normal e2e suite. It uses a unique client subsystem and the Runtime admin API to disconnect only its own TCP sessions, so it does not restart or disrupt the shared Runtime container.
 
@@ -65,6 +65,12 @@ TCP handler failure tests verify real redelivery to another active session after
 
 ```bash
 EVENTMESH_E2E_EXTERNAL=1 cargo test --features e2e --test e2e tcp_explicit_ttl -- --ignored
+```
+
+HTTP partial-unsubscribe is also ignored for the pinned release image: that Runtime removes the whole consumer group when its last callback for one topic is removed. Run the regression against a Runtime containing this branch's per-topic unsubscribe fix:
+
+```bash
+EVENTMESH_E2E_EXTERNAL=1 cargo test --features e2e --test e2e http_unsubscribe_preserves_other_topics -- --ignored
 ```
 
 Each test uses a unique topic and consumer group. gRPC and HTTP cases may run in parallel; TCP cases are serialized because Runtime route refresh and RocketMQ rebalance state are shared. The harness creates and warms topics through the admin API before publishing.

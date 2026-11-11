@@ -19,7 +19,7 @@
 
 use axum::{body::Bytes, http::HeaderMap, response::IntoResponse, routing::post, Json, Router};
 use eventmesh::{
-    config::{ConsumerOptions, Endpoint, EndpointSet, HttpConfig},
+    config::{ConsumerOptions, Credentials, Endpoint, EndpointSet, HttpConfig},
     http::codec::{parse_push_body, WebhookReply},
     subscription::Subscription,
     HttpClient,
@@ -44,15 +44,18 @@ async fn webhook(headers: HeaderMap, body: Bytes) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() -> eventmesh::Result<()> {
+    // Docker resolves this callback through host.docker.internal; use a reachable host
+    // address when running EventMesh elsewhere.
     let address: std::net::SocketAddr = "0.0.0.0:8081".parse().expect("valid bind address");
-    let webhook_url = "http://127.0.0.1:8081/eventmesh/callback";
+    let webhook_url = "http://host.docker.internal:8081/eventmesh/callback";
     let listener = tokio::net::TcpListener::bind(address).await?;
     let app = Router::new().route("/eventmesh/callback", post(webhook));
 
-    let client = HttpClient::new(HttpConfig::new(EndpointSet::new([Endpoint::new(
-        "127.0.0.1",
-        10_105,
-    )?])?))?;
+    let endpoints = EndpointSet::new([Endpoint::new("127.0.0.1", 10_105)?])?;
+    // Credentials for the bundled Docker Compose runtime. Replace for your deployment.
+    let config = HttpConfig::new(endpoints)
+        .with_credentials(Credentials::new().with_basic("eventmesh", "eventmesh"));
+    let client = HttpClient::new(config)?;
     let consumer = client.webhook_registration(ConsumerOptions::new("test-consumerGroup"))?;
     consumer
         .subscribe(Subscription::new("test-topic-rust-sdk"), webhook_url)

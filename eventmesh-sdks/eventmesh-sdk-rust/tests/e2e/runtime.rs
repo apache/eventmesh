@@ -43,7 +43,10 @@ pub(crate) const TCP_PORT: u16 = 10_000;
 /// Admin (HTTP) port, used for topic creation + readiness probes.
 pub(crate) const ADMIN_PORT: u16 = 10_106;
 /// Host the runtime is reachable on from the test host.
-pub(crate) const HOST: &str = "127.0.0.1";
+pub(crate) fn host() -> &'static str {
+    static HOST: OnceLock<String> = OnceLock::new();
+    HOST.get_or_init(|| std::env::var("EVENTMESH_E2E_HOST").unwrap_or_else(|_| "127.0.0.1".into()))
+}
 
 /// Set to true iff the harness itself launched `docker compose`, so the dtor
 /// only tears down what it started.
@@ -161,6 +164,7 @@ pub(crate) fn webhook_host() -> String {
 }
 
 fn initialize() -> Mode {
+    let host = host();
     // 1) Explicit "use my own server" override.
     if std::env::var_os("EVENTMESH_E2E_EXTERNAL").is_some() {
         if probe_admin(Duration::from_secs(10)) {
@@ -168,7 +172,7 @@ fn initialize() -> Mode {
             return Mode::External;
         }
         warn!(
-            "EVENTMESH_E2E_EXTERNAL set but no server on {HOST}:{ADMIN_PORT}; \
+            "EVENTMESH_E2E_EXTERNAL set but no server on {host}:{ADMIN_PORT}; \
              marking unavailable"
         );
         return Mode::Unavailable;
@@ -183,7 +187,7 @@ fn initialize() -> Mode {
     // 3) Try to launch via docker compose.
     if !docker_available() {
         eprintln!(
-            "[e2e] unavailable: no EventMesh server on {HOST}:{ADMIN_PORT} and \
+            "[e2e] unavailable: no EventMesh server on {host}:{ADMIN_PORT} and \
              `docker` is not on PATH. Start one with \
              `docker compose --profile rocketmq up -d`, or set \
              EVENTMESH_E2E_EXTERNAL=1."
@@ -290,7 +294,7 @@ fn wait_for_admin(timeout: Duration) -> bool {
 /// Try a single TCP connect to the admin port within `per_attempt` (capped).
 fn probe_admin(per_attempt: Duration) -> bool {
     use std::net::TcpStream;
-    let addr = format!("{HOST}:{ADMIN_PORT}");
+    let addr = format!("{}:{ADMIN_PORT}", host());
     TcpStream::connect_timeout(
         &addr.parse().expect("valid admin addr"),
         per_attempt.min(Duration::from_secs(2)),

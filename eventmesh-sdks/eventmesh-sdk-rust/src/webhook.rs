@@ -85,55 +85,7 @@ pub(crate) fn validate_webhook_url(url: &str) -> crate::Result<()> {
 
 /// Built-in axum webhook server.
 #[cfg(feature = "http-server")]
-pub struct WebhookServer<H: crate::MessageHandler> {
-    inner: crate::transport::http::WebhookServer,
-    _handler: std::marker::PhantomData<H>,
-}
-
-#[cfg(feature = "http-server")]
-impl<H: crate::MessageHandler> WebhookServer<H> {
-    /// Bind before returning, guaranteeing that [`url`](Self::url) is ready to
-    /// register with EventMesh.
-    pub async fn bind(addr: std::net::SocketAddr, handler: H) -> crate::Result<Self> {
-        let inner =
-            crate::transport::http::WebhookServer::bind(addr, std::sync::Arc::new(handler)).await?;
-        Ok(Self {
-            inner,
-            _handler: std::marker::PhantomData,
-        })
-    }
-
-    /// Return the URL that should be registered with EventMesh.
-    pub fn url(&self) -> String {
-        self.inner.url()
-    }
-
-    /// Override the externally visible webhook URL.
-    pub fn with_advertise_url(mut self, url: impl Into<String>) -> Self {
-        self.inner = self.inner.with_advertise_url(url);
-        self
-    }
-
-    /// Configure a graceful shutdown signal.
-    pub fn with_graceful_shutdown(
-        mut self,
-        signal: impl std::future::Future<Output = ()> + Send + 'static,
-    ) -> Self {
-        self.inner = self.inner.with_graceful_shutdown(signal);
-        self
-    }
-}
-
-#[cfg(feature = "http-server")]
-impl<H: crate::MessageHandler> std::future::IntoFuture for WebhookServer<H> {
-    type Output = crate::Result<()>;
-    type IntoFuture =
-        std::pin::Pin<Box<dyn std::future::Future<Output = crate::Result<()>> + Send>>;
-
-    fn into_future(self) -> Self::IntoFuture {
-        Box::pin(async move { self.inner.await })
-    }
-}
+pub use crate::transport::http::WebhookServer;
 
 #[cfg(all(test, feature = "http-server"))]
 mod tests {

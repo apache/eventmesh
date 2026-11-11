@@ -30,7 +30,7 @@ use std::sync::Arc;
 use axum::{routing::post, Router};
 use tracing::info;
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::transport::http::webhook::{WebhookHandler, WebhookState};
 use crate::MessageHandler;
 
@@ -50,8 +50,7 @@ pub const DEFAULT_WEBHOOK_PATH: &str = "/eventmesh/callback";
 pub struct WebhookServer {
     router: Router,
     addr: SocketAddr,
-    listener: Option<tokio::net::TcpListener>,
-    path: String,
+    listener: tokio::net::TcpListener,
     advertise_url: Option<String>,
     shutdown: Option<Pin<Box<dyn Future<Output = ()> + Send + 'static>>>,
 }
@@ -59,45 +58,22 @@ pub struct WebhookServer {
 impl WebhookServer {
     /// Bind `addr` before returning, so callers can safely register the webhook
     /// URL without a connection-refused window.
-    pub async fn bind<L>(addr: SocketAddr, listener: Arc<L>) -> Result<Self>
+    pub async fn bind<H>(addr: SocketAddr, handler: H) -> Result<Self>
     where
-        L: MessageHandler,
+        H: MessageHandler,
     {
-        Self::bind_with_path(addr, listener, DEFAULT_WEBHOOK_PATH).await
-    }
-
-    /// Like [`WebhookServer::bind`] but with a custom webhook path.
-    pub async fn bind_with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Result<Self>
-    where
-        L: MessageHandler,
-    {
-        let socket = tokio::net::TcpListener::bind(addr)
-            .await
-            .map_err(EventMeshError::Io)?;
-        let bound_addr = socket.local_addr().map_err(EventMeshError::Io)?;
-        let mut server = Self::with_path(addr, listener, path);
-        server.addr = bound_addr;
-        server.listener = Some(socket);
-        Ok(server)
-    }
-
-    /// Assemble the router before attaching the bound callback socket.
-    fn with_path<L>(addr: SocketAddr, listener: Arc<L>, path: &str) -> Self
-    where
-        L: MessageHandler,
-    {
-        let state = WebhookState::new(listener);
+        let listener = tokio::net::TcpListener::bind(addr).await?;
+        let addr = listener.local_addr()?;
         let router = Router::new()
-            .route(path, post(WebhookHandler::handle))
-            .with_state(state);
-        Self {
+            .route(DEFAULT_WEBHOOK_PATH, post(WebhookHandler::handle))
+            .with_state(WebhookState::new(Arc::new(handler)));
+        Ok(Self {
             router,
             addr,
-            listener: None,
-            path: path.to_string(),
+            listener,
             advertise_url: None,
             shutdown: None,
-        }
+        })
     }
 
     /// The full webhook URL that should be registered with the EventMesh runtime.
@@ -109,7 +85,7 @@ impl WebhookServer {
     pub fn url(&self) -> String {
         self.advertise_url
             .clone()
-            .unwrap_or_else(|| format!("http://{}{}", self.addr, self.path))
+            .unwrap_or_else(|| format!("http://{}{DEFAULT_WEBHOOK_PATH}", self.addr))
     }
 
     /// Override the webhook URL returned by [`url`](Self::url).
@@ -142,20 +118,12 @@ impl IntoFuture for WebhookServer {
             router,
             addr,
             listener,
-            path,
             advertise_url: _,
             shutdown,
         } = self;
 
         Box::pin(async move {
-            let listener = match listener {
-                Some(listener) => listener,
-                None => tokio::net::TcpListener::bind(addr)
-                    .await
-                    .map_err(EventMeshError::Io)?,
-            };
-            let bound_addr = listener.local_addr().map_err(EventMeshError::Io)?;
-            info!("webhook server listening on http://{bound_addr}{path}");
+            info!("webhook server listening on http://{addr}{DEFAULT_WEBHOOK_PATH}");
 
             let serve = axum::serve(listener, router);
             let result = if let Some(signal) = shutdown {
@@ -163,7 +131,7 @@ impl IntoFuture for WebhookServer {
             } else {
                 serve.await
             };
-            result.map_err(|e| EventMeshError::Protocol {
+            result.map_err(|e| Error::Protocol {
                 transport: "http",
                 message: format!("webhook server error: {e}"),
             })?;

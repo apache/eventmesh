@@ -20,9 +20,9 @@ Each example is a small executable with one responsibility. They use the default
 | TCP | `tcp_broadcast` | Send a fire-and-forget broadcast | `cargo run --example tcp_broadcast --features tcp` |
 | TCP | `tcp_request_reply` | Run a synchronous subscriber and complete request/reply | `cargo run --example tcp_request_reply --features tcp` |
 
-Run a consumer first, then run its corresponding producer. The HTTP examples listen on ports 8080 (built-in server) and 8081 (custom endpoint); change the advertised callback URL when EventMesh cannot reach `127.0.0.1`.
+Run a consumer first, then run its corresponding producer. The HTTP examples listen on ports 8080 (built-in server) and 8081 (custom endpoint); they advertise `host.docker.internal` for the bundled Docker Runtime. Set the advertised URL to an address reachable from your own Runtime.
 
-The examples intentionally use minimal configuration. For timeouts, identity, credentials, HTTP TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.
+The HTTP examples explicitly use the bundled Runtime credentials (`eventmesh` / `eventmesh`); replace them for your deployment. RocketMQ rejects empty username/password message properties even with authentication disabled. The examples intentionally use minimal configuration. For timeouts, identity, credentials, HTTP TLS, endpoint weights, and TCP reconnect tuning, consult the public rustdoc with `cargo doc --features full --no-deps --open`.
 
 The two HTTP consumer examples handle Ctrl-C and call `close().await`, which drains an in-flight heartbeat, stops further scheduling, unregisters remote subscriptions, and joins local background work. Use the same shutdown pattern in long-running applications.
 
@@ -32,4 +32,4 @@ The gRPC webhook consumer has no automatic remote cleanup. Its example retains t
 
 Native handlers can inspect source protocol/routing information through `message.as_event_mesh().and_then(|message| message.delivery_context())`. Business extensions remain in `properties()`. Return a newly built message for request/reply; the SDK supplies the original request context automatically. Configure TTL/content type with dedicated builder methods, and handle the `Result` from `set_prop`/`with_property` when changing business properties.
 
-The existing `http` feature remains an alias enabling both `http-client` and `http-server`. Producer-only programs and application-owned webhook registrations/codecs can use `http-client` without axum. The custom example enables `http-server` because the example itself uses axum. See [Migrating from Java](../MIGRATING_FROM_JAVA.md) for credential defaults, reply content types, and lifecycle differences.
+The `http` feature is a convenience aggregate enabling both `http-client` and `http-server`. Producer-only programs and application-owned webhook registrations/codecs can use `http-client` without axum. The custom example enables `http-server` because the example itself uses axum. See [Migrating from Java](../MIGRATING_FROM_JAVA.md) for credential defaults, reply content types, and lifecycle differences.

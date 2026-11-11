@@ -19,7 +19,7 @@
 
 use std::time::Duration;
 
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 
 /// Default timeout for short gRPC operations.
 pub const DEFAULT_GRPC_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
@@ -47,17 +47,15 @@ impl Endpoint {
     pub fn new(host: impl Into<String>, port: u16) -> Result<Self> {
         let host = host.into();
         if host.trim().is_empty() {
-            return Err(EventMeshError::Config(
-                "endpoint host must not be empty".into(),
-            ));
+            return Err(Error::Config("endpoint host must not be empty".into()));
         }
         if host.chars().any(char::is_whitespace) {
-            return Err(EventMeshError::Config(
+            return Err(Error::Config(
                 "endpoint host must not contain whitespace".into(),
             ));
         }
         if host.contains("://") || host.chars().any(|c| matches!(c, '/' | '?' | '#')) {
-            return Err(EventMeshError::Config(
+            return Err(Error::Config(
                 "endpoint host must not contain a scheme, path, query, or fragment".into(),
             ));
         }
@@ -67,15 +65,13 @@ impl Endpoint {
                 .and_then(|host| host.strip_suffix(']'))
                 .unwrap_or(&host);
             if literal.parse::<std::net::Ipv6Addr>().is_err() {
-                return Err(EventMeshError::Config(
+                return Err(Error::Config(
                     "endpoint host containing ':' must be a valid IPv6 literal".into(),
                 ));
             }
         }
         if port == 0 {
-            return Err(EventMeshError::Config(
-                "endpoint port must not be zero".into(),
-            ));
+            return Err(Error::Config("endpoint port must not be zero".into()));
         }
         Ok(Self {
             host,
@@ -97,12 +93,12 @@ impl Endpoint {
     /// Return a copy with a non-zero HTTP load-balancing weight.
     pub fn with_weight(mut self, weight: u32) -> Result<Self> {
         if weight == 0 {
-            return Err(EventMeshError::Config(
+            return Err(Error::Config(
                 "endpoint weight must be greater than zero".into(),
             ));
         }
         if weight > i32::MAX as u32 {
-            return Err(EventMeshError::Config(format!(
+            return Err(Error::Config(format!(
                 "endpoint weight must not exceed {}",
                 i32::MAX
             )));
@@ -141,18 +137,16 @@ impl EndpointSet {
     pub fn new(endpoints: impl IntoIterator<Item = Endpoint>) -> Result<Self> {
         let endpoints: Vec<_> = endpoints.into_iter().collect();
         if endpoints.is_empty() {
-            return Err(EventMeshError::Config(
-                "at least one endpoint is required".into(),
-            ));
+            return Err(Error::Config("at least one endpoint is required".into()));
         }
         let total_weight = endpoints
             .iter()
             .try_fold(0u64, |total, endpoint| {
                 total.checked_add(u64::from(endpoint.weight))
             })
-            .ok_or_else(|| EventMeshError::Config("endpoint weight sum overflowed".into()))?;
+            .ok_or_else(|| Error::Config("endpoint weight sum overflowed".into()))?;
         if total_weight > i32::MAX as u64 {
-            return Err(EventMeshError::Config(format!(
+            return Err(Error::Config(format!(
                 "endpoint weights must sum to at most {}",
                 i32::MAX
             )));
@@ -434,7 +428,7 @@ impl GrpcConsumerOptions {
     pub(crate) fn validate(&self) -> Result<()> {
         self.consumer.validate()?;
         if self.max_concurrent_handlers == 0 {
-            return Err(EventMeshError::Config(
+            return Err(Error::Config(
                 "gRPC max concurrent handlers must be greater than zero".into(),
             ));
         }
@@ -729,7 +723,7 @@ impl ReconnectPolicy {
         validate_non_zero_duration("TCP reconnect initial backoff", self.initial_backoff)?;
         validate_non_zero_duration("TCP reconnect maximum backoff", self.max_backoff)?;
         if self.initial_backoff > self.max_backoff {
-            return Err(EventMeshError::Config(
+            return Err(Error::Config(
                 "TCP reconnect initial backoff must not exceed maximum backoff".into(),
             ));
         }
@@ -869,9 +863,7 @@ impl TcpConfig {
 #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 fn validate_non_zero_duration(name: &str, value: Duration) -> Result<()> {
     if value.is_zero() {
-        return Err(EventMeshError::Config(format!(
-            "{name} must be greater than zero"
-        )));
+        return Err(Error::Config(format!("{name} must be greater than zero")));
     }
     Ok(())
 }
@@ -879,9 +871,7 @@ fn validate_non_zero_duration(name: &str, value: Duration) -> Result<()> {
 #[cfg(any(feature = "grpc", feature = "http-client", feature = "tcp"))]
 fn validate_group(role: &str, group: &str) -> Result<()> {
     if group.trim().is_empty() {
-        return Err(EventMeshError::Config(format!(
-            "{role} group must not be empty"
-        )));
+        return Err(Error::Config(format!("{role} group must not be empty")));
     }
     Ok(())
 }

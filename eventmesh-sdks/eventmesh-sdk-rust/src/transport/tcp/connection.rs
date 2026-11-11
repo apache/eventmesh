@@ -39,7 +39,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::info;
 
 use crate::config::ReconnectPolicy;
-use crate::error::{EventMeshError, Result};
+use crate::error::{Error, Result};
 use crate::transport::task::BackgroundTask;
 
 use super::frame::Package;
@@ -185,7 +185,7 @@ impl TcpConnection {
     fn deadline_after(timeout: Duration) -> Result<tokio::time::Instant> {
         tokio::time::Instant::now()
             .checked_add(timeout)
-            .ok_or_else(|| EventMeshError::InvalidArgument("TCP timeout is too large".into()))
+            .ok_or_else(|| Error::InvalidArgument("TCP timeout is too large".into()))
     }
 
     /// Request-response: register a pending context keyed by `seq`, send the
@@ -236,7 +236,7 @@ impl TcpConnection {
                 return Err(Self::inactive_error());
             }
             if tokio::time::Instant::now() >= deadline {
-                return Err(EventMeshError::Timeout(timeout));
+                return Err(Error::Timeout(timeout));
             }
             permit.send(OutboundCommand::Request {
                 package: pkg,
@@ -254,10 +254,10 @@ impl TcpConnection {
         let result = tokio::select! {
             biased;
             _ = self.cancel.cancelled() => Err(Self::inactive_error()),
-            _ = tokio::time::sleep_until(deadline) => Err(EventMeshError::Timeout(timeout)),
+            _ = tokio::time::sleep_until(deadline) => Err(Error::Timeout(timeout)),
             response = rx => match response {
                 Ok(response) => Ok(response),
-                Err(_) => Err(EventMeshError::ChannelClosed(
+                Err(_) => Err(Error::ChannelClosed(
                     "connection task exited while waiting for response".into(),
                 )),
             },
@@ -277,9 +277,9 @@ impl TcpConnection {
         tokio::select! {
             biased;
             _ = self.cancel.cancelled() => Err(Self::inactive_error()),
-            _ = tokio::time::sleep_until(deadline) => Err(EventMeshError::Timeout(timeout)),
+            _ = tokio::time::sleep_until(deadline) => Err(Error::Timeout(timeout)),
             permit = self.outbound_tx.reserve() => permit.map_err(|_| {
-                EventMeshError::ChannelClosed("connection send loop exited".into())
+                Error::ChannelClosed("connection send loop exited".into())
             }),
         }
     }
@@ -334,8 +334,8 @@ impl TcpConnection {
         tokio::select! {
             biased;
             _ = self.cancel.cancelled() => Err(Self::inactive_error()),
-            _ = tokio::time::sleep_until(deadline) => Err(EventMeshError::Timeout(timeout)),
-            result = completion_rx => result.map_err(|_| EventMeshError::ChannelClosed(
+            _ = tokio::time::sleep_until(deadline) => Err(Error::Timeout(timeout)),
+            result = completion_rx => result.map_err(|_| Error::ChannelClosed(
                 "connection task exited before completing the socket write".into(),
             ))?,
         }
@@ -358,7 +358,7 @@ impl TcpConnection {
             return Err(Self::inactive_error());
         }
         if tokio::time::Instant::now() >= deadline {
-            return Err(EventMeshError::Timeout(timeout));
+            return Err(Error::Timeout(timeout));
         }
         permit.send(command);
         Ok(())
@@ -373,8 +373,8 @@ impl TcpConnection {
         }
     }
 
-    fn inactive_error() -> EventMeshError {
-        EventMeshError::ChannelClosed("connection is not active (reconnecting or shut down)".into())
+    fn inactive_error() -> Error {
+        Error::ChannelClosed("connection is not active (reconnecting or shut down)".into())
     }
 
     /// Take ownership of the inbound receiver. Called once by the consumer to
@@ -453,7 +453,7 @@ impl TcpConnection {
         task.wait().await;
         task.take_result()
             .unwrap_or(Ok(Ok(())))
-            .map_err(|error| EventMeshError::Tcp(format!("TCP connection task failed: {error}")))?
+            .map_err(|error| Error::Tcp(format!("TCP connection task failed: {error}")))?
     }
 }
 
@@ -569,7 +569,7 @@ mod tests {
 
         assert!(matches!(
             sender.await.unwrap(),
-            Err(EventMeshError::ChannelClosed(_))
+            Err(Error::ChannelClosed(_))
         ));
         assert!(matches!(
             outbound_rx.try_recv(),
@@ -596,7 +596,7 @@ mod tests {
 
         assert!(matches!(
             sender.await.unwrap(),
-            Err(EventMeshError::ChannelClosed(_))
+            Err(Error::ChannelClosed(_))
         ));
         assert!(matches!(
             outbound_rx.try_recv(),
@@ -621,7 +621,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(EventMeshError::Timeout(value)) if value == timeout
+            Err(Error::Timeout(value)) if value == timeout
         ));
     }
 
@@ -653,7 +653,7 @@ mod tests {
             .expect("request task must not panic");
         assert!(matches!(
             result,
-            Err(EventMeshError::Timeout(value)) if value == request_timeout
+            Err(Error::Timeout(value)) if value == request_timeout
         ));
     }
 
@@ -674,7 +674,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(EventMeshError::Timeout(value)) if value == timeout
+            Err(Error::Timeout(value)) if value == timeout
         ));
     }
 
@@ -701,7 +701,7 @@ mod tests {
             .await
             .expect("completion must use the original deadline")
             .unwrap();
-        assert!(matches!(result, Err(EventMeshError::Timeout(value)) if value == timeout));
+        assert!(matches!(result, Err(Error::Timeout(value)) if value == timeout));
     }
 
     #[tokio::test]
@@ -724,7 +724,7 @@ mod tests {
             .await
             .expect("shutdown must interrupt the completion wait")
             .unwrap();
-        assert!(matches!(result, Err(EventMeshError::ChannelClosed(_))));
+        assert!(matches!(result, Err(Error::ChannelClosed(_))));
     }
 
     #[tokio::test]
@@ -748,7 +748,7 @@ mod tests {
             .expect("cancellation must wake the blocked sender")
             .expect("sender task must not panic");
 
-        assert!(matches!(result, Err(EventMeshError::ChannelClosed(_))));
+        assert!(matches!(result, Err(Error::ChannelClosed(_))));
     }
 
     #[tokio::test]
@@ -795,7 +795,7 @@ mod tests {
         .await;
         assert!(matches!(
             result,
-            Err(EventMeshError::Timeout(timeout)) if timeout == Duration::from_millis(20)
+            Err(Error::Timeout(timeout)) if timeout == Duration::from_millis(20)
         ));
         server.abort();
     }
@@ -922,6 +922,7 @@ mod tests {
             );
             let mut resp_hdr = Header::new(Command::ResponseToClient, seq.clone());
             resp_hdr.code = 0;
+            resp_hdr.set_property("protocoltype", "eventmeshmessage");
             framed
                 .send(Package {
                     header: resp_hdr,
@@ -967,9 +968,10 @@ mod tests {
             .build()
             .unwrap();
         let reply = producer
-            .request_reply(msg, Duration::from_secs(3))
+            .request_reply_with_timeout(msg.into(), Duration::from_secs(3))
             .await
             .expect("request_reply");
+        let reply = reply.into_event_mesh().expect("native reply");
         assert_eq!(reply.topic(), "reply");
         assert_eq!(reply.content(), "pong");
 
