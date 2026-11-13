@@ -71,6 +71,10 @@ public class LegacyHttpBridge {
      */
     public void subscribe(byte[] legacyBody) {
         LegacyHttpCodec.LegacySubscribeRequest req = codec.parseSubscribe(legacyBody);
+        if (req.getTopics() == null || req.getTopics().isEmpty()) {
+            // #5205: never acknowledge a subscription that subscribes to nothing.
+            throw new IllegalArgumentException("legacy subscribe request contains no topics");
+        }
         String secret = req.getSecret() != null ? req.getSecret() : defaultWebhookSecret;
         WebHookChannel channel = new WebHookChannel(req.getUrl(), secret, httpCaller, serializer);
         ingress.registerChannel(req.getClientId(), channel);

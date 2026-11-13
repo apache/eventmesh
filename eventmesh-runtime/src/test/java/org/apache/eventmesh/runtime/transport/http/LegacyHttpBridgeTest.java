@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.transport.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.eventmesh.api.SendCallback;
@@ -33,6 +34,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -129,6 +131,28 @@ class LegacyHttpBridgeTest {
         assertEquals(1, runtime.ingress().getSubscriptionManager().activeSubscriptions("orders").size());
         assertEquals(1, bridge.unsubscribe(new byte[0]));
         assertEquals(0, runtime.ingress().getSubscriptionManager().activeSubscriptions("orders").size());
+    }
+
+    @Test
+    void legacySubscribeWithoutTopicsIsRejected() {
+        boot();
+        LegacyHttpCodec codec = new LegacyHttpCodec() {
+
+            @Override
+            public LegacyPublishRequest parsePublish(byte[] body) {
+                return null;
+            }
+
+            @Override
+            public LegacySubscribeRequest parseSubscribe(byte[] body) {
+                return new LegacySubscribeRequest("c1", WEBHOOK_URL, "k", Collections.emptyList(),
+                    DistributionMode.BROADCAST);
+            }
+        };
+        LegacyHttpBridge bridge = new LegacyHttpBridge(runtime.ingress(), codec, httpCaller,
+            event1 -> new byte[0], "default-secret");
+
+        assertThrows(IllegalArgumentException.class, () -> bridge.subscribe(new byte[0]));
     }
 
     private void boot() {

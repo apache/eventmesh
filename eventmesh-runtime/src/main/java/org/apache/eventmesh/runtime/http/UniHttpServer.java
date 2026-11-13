@@ -1340,6 +1340,8 @@ public class UniHttpServer {
         try {
             legacyBridge.subscribe(readAll(exchange));
             writeJson(exchange, 200, ack("ok"));
+        } catch (IllegalArgumentException e) {
+            writeJson(exchange, 400, error("legacy subscribe failed: " + e.getMessage()));
         } catch (Exception e) {
             writeJson(exchange, 500, error("legacy subscribe failed: " + e.getMessage()));
         }
