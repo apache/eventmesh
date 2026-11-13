@@ -19,10 +19,13 @@ package org.apache.eventmesh.runtime.transport.http;
 
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -38,7 +41,8 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>This is a faithful, self-contained codec (no legacy runtime dependency): it maps the legacy
  * {@code EventMeshMessage} fields ({@code topic/bizSeqNo/uniqueId/content}) onto a CloudEvent, and
- * the legacy subscribe fields ({@code url/consumerGroup/topics}) onto a webhook-push subscription.
+ * the legacy subscribe fields ({@code url/consumerGroup/topics}, or the 1.x {@code topic} list)
+ * onto a webhook-push subscription.
  * A production deployment can instead delegate to the existing {@code HttpRequestProtocolResolver}
  * + {@code HttpProtocolAdaptor} for full fidelity with the old envelope; both produce a CloudEvent
  * that the new core consumes unchanged.</p>
@@ -84,17 +88,61 @@ public class EventMeshMessageHttpCodec implements LegacyHttpCodec {
                 consumerGroup = text(root, "groupName");
             }
             String secret = text(root, "secret");
-            List<String> topics = new ArrayList<>();
-            JsonNode topicsNode = root.get("topics");
-            if (topicsNode != null && topicsNode.isArray()) {
-                for (JsonNode t : topicsNode) {
-                    topics.add(t.asText());
-                }
-            }
+            List<String> topics = parseTopics(root);
             // Legacy HTTP subscribe is broadcast-to-url by default (each subscriber gets every message).
             return new LegacySubscribeRequest(consumerGroup, url, secret, topics, DistributionMode.BROADCAST);
         } catch (Exception e) {
             throw new IllegalArgumentException("invalid legacy subscribe body: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Extract the subscribed topic names from a legacy subscribe body (#5205).
+     *
+     * <p>Legacy clients have sent the topic list in several shapes, all of which are accepted:</p>
+     * <ul>
+     *   <li>{@code "topics": ["a", "b"]} — plain topic names;</li>
+     *   <li>{@code "topic": [{"topic": "a", "mode": "CLUSTERING", "type": "ASYNC"}]} — the 1.x
+     *       {@code SubscribeRequestBody} list of {@code SubscriptionItem}s;</li>
+     *   <li>either of the above JSON-encoded as a string, e.g. {@code "topic": "[{\"topic\":\"a\"}]"},
+     *       which is how the 1.x {@code SubscribeRequestBody#toMap()} serializes it;</li>
+     *   <li>a single topic, as a name or a {@code SubscriptionItem} object.</li>
+     * </ul>
+     * Blank and duplicate topic names are dropped.
+     */
+    private List<String> parseTopics(JsonNode root) throws IOException {
+        JsonNode node = root.get("topics");
+        if (node == null || node.isNull()) {
+            node = root.get("topic");
+        }
+        Set<String> topics = new LinkedHashSet<>();
+        collectTopics(node, topics, true);
+        return new ArrayList<>(topics);
+    }
+
+    private void collectTopics(JsonNode node, Set<String> topics, boolean allowEncoded) throws IOException {
+        if (node == null || node.isNull()) {
+            return;
+        }
+        if (node.isArray()) {
+            for (JsonNode item : node) {
+                collectTopics(item, topics, false);
+            }
+        } else if (node.isObject()) {
+            addTopic(text(node, "topic"), topics);
+        } else if (node.isTextual()) {
+            String value = node.asText().trim();
+            if (allowEncoded && (value.startsWith("[") || value.startsWith("{"))) {
+                collectTopics(mapper.readTree(value), topics, false);
+            } else {
+                addTopic(value, topics);
+            }
+        }
+    }
+
+    private static void addTopic(String topic, Set<String> topics) {
+        if (topic != null && !topic.trim().isEmpty()) {
+            topics.add(topic.trim());
         }
     }
 
