@@ -233,13 +233,23 @@ public class PushService {
     /**
      * Resolve a delivery's ACK callback — the subscriber has processed the event. Returns false if
      * the delivery is unknown (already acked, or never buffered here).
+     *
+     * <p>#5432: the callback is only dropped once the ACK actually succeeded. Removing it up
+     * front lost the delivery when the callback threw — the ownership guard rejecting the ACK
+     * with {@code StaleOwnerException} — so the client's retry was answered with "unknown
+     * deliveryId" (404) and the delivery could never be acknowledged at all. On failure the
+     * callback is put back, so the delivery stays ackable.</p>
      */
     public boolean ack(String deliveryId) {
-        AckCallback cb = callbacksByDeliveryId.remove(deliveryId);
+        AckCallback cb = callbacksByDeliveryId.get(deliveryId);
         if (cb == null) {
             return false;
         }
+        // If this throws (e.g. the ownership guard rejecting the ACK), the callback is still
+        // registered, so the client's retry can resolve the delivery instead of getting a 404.
         cb.ack();
+        // Only a successful ACK consumes the callback.
+        callbacksByDeliveryId.remove(deliveryId, cb);
         return true;
     }
 

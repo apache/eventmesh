@@ -134,4 +134,66 @@ class StaleOwnerFencingTest {
         assertEquals(5L, offsets.readOffset("orders", "client", 0),
             "unguarded ack persists the offset");
     }
+
+    /**
+     * Issue #5432: a delivery that carries no partition must not be fenced.
+     *
+     * <p>{@code UniIngressService#deliverLocal} delivers with partition {@code -1} — the
+     * "no partition scope" marker used for a locally routed event. The ownership view only
+     * ever holds real (non-negative) partition indexes, so {@code owned.contains(-1)} is
+     * always false and the guard rejected <em>every</em> ACK of such a delivery with
+     * {@link StaleOwnerException}. The exception escaped the HTTP handler, so the client saw
+     * a closed connection instead of a response and the subscriber offset never advanced.
+     *
+     * <p>Fencing is a per-partition concept: a delivery that is not bound to a partition
+     * cannot have been fenced off, so the guard must not reject it.
+     */
+    @Test
+    void deliveryWithoutPartitionScopeIsNotFenced() {
+        RecordingOffsetStore offsets = new RecordingOffsetStore();
+        ReliableDispatcher dispatcher = new ReliableDispatcher(10_000L, 3, System::currentTimeMillis,
+            offsets, null, new org.apache.eventmesh.runtime.metrics.UniMetrics(),
+            0.0d, new org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore());
+
+        // The guard is installed (cluster mode) and knows only real partitions.
+        dispatcher.withOwnershipGuard((topic, partition) -> "orders".equals(topic) && partition == 1);
+
+        String id = dispatcher.deliver("orders", -1, 7L, frame("unscoped"), "client",
+            (deliveryId, event, cb) -> { }, null);
+
+        assertTrue(dispatcher.ack(id),
+            "a delivery without partition scope must not be fenced by the ownership guard");
+        assertEquals(1, offsets.writeCount.get(),
+            "the ack of an unscoped delivery must persist the offset");
+        assertEquals(7L, offsets.readOffset("orders", "client", -1),
+            "the offset is stored under the unscoped partition key");
+    }
+
+    /**
+     * The fencing itself must stay intact for real partitions: a delivery on a partition
+     * that left the owned set is still rejected (no offset write, no broker ACK).
+     */
+    @Test
+    void realPartitionIsStillFencedWhileUnscopedOneIsNot() {
+        RecordingOffsetStore offsets = new RecordingOffsetStore();
+        ReliableDispatcher dispatcher = new ReliableDispatcher(10_000L, 3, System::currentTimeMillis,
+            offsets, null, new org.apache.eventmesh.runtime.metrics.UniMetrics(),
+            0.0d, new org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore());
+
+        dispatcher.withOwnershipGuard((topic, partition) -> "orders".equals(topic) && partition == 1);
+
+        final AtomicInteger brokerAcks = new AtomicInteger();
+        String unscoped = dispatcher.deliver("orders", -1, 1L, frame("unscoped"), "client",
+            (deliveryId, event, cb) -> { }, brokerAcks::incrementAndGet);
+        String fenced = dispatcher.deliver("orders", 0, 2L, frame("fenced"), "client",
+            (deliveryId, event, cb) -> { }, brokerAcks::incrementAndGet);
+
+        assertTrue(dispatcher.ack(unscoped), "the unscoped delivery acks normally");
+        assertThrows(StaleOwnerException.class, () -> dispatcher.ack(fenced),
+            "a delivery on a partition that left the owned set is still fenced");
+        assertEquals(1, offsets.writeCount.get(),
+            "only the unscoped ack may write an offset");
+        assertEquals(1, brokerAcks.get(),
+            "the fenced ack must NOT ACK the broker, the unscoped one must");
+    }
 }

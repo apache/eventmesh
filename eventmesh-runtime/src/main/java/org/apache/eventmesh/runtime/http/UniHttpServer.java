@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.protocol.ByteTransport;
 import org.apache.eventmesh.common.wire.EventMeshFrame;
 import org.apache.eventmesh.protocol.api.FrameAdaptors;
 import org.apache.eventmesh.runtime.admin.UniAdminService;
+import org.apache.eventmesh.runtime.delivery.StaleOwnerException;
 import org.apache.eventmesh.runtime.ingress.UniIngressService;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
 import org.apache.eventmesh.runtime.ratelimit.RateLimitedException;
@@ -554,10 +555,22 @@ public class UniHttpServer {
             writeJson(exchange, 400, error("missing deliveryId"));
             return;
         }
-        if (ingress.ack(deliveryId)) {
-            writeJson(exchange, 200, ack("acked"));
-        } else {
-            writeJson(exchange, 404, error("unknown deliveryId"));
+        try {
+            if (ingress.ack(deliveryId)) {
+                writeJson(exchange, 200, ack("acked"));
+            } else {
+                writeJson(exchange, 404, error("unknown deliveryId"));
+            }
+        } catch (StaleOwnerException e) {
+            // #5432: the reliability layer rejected the ACK because this instance was fenced off
+            // the delivery's partition. Letting the exception escape the handler left the client
+            // with a closed connection and no response at all, and the retry was then answered
+            // with "unknown deliveryId" — the subscriber could neither learn what happened nor
+            // recover. Report it explicitly: the delivery is dropped here and the broker
+            // redelivers to the new owner (POP invisibleTime), so a retry is safe.
+            log.warn("ack rejected: delivery={} fenced on {}#{}", deliveryId, e.topic(), e.partition());
+            writeJson(exchange, 409, error("delivery fenced: partition ownership moved on " + e.topic()
+                + "#" + e.partition() + "; the broker redelivers to the new owner, retry the delivery"));
         }
     }
 
