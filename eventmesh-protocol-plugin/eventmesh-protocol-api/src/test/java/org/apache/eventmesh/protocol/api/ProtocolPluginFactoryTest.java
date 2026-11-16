@@ -21,12 +21,9 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
 import java.lang.reflect.Field;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.Maps;
 
 public class ProtocolPluginFactoryTest {
 
@@ -34,26 +31,27 @@ public class ProtocolPluginFactoryTest {
 
     private static final String PROTOCOL_ADAPTER_MAP = "PROTOCOL_ADAPTOR_MAP";
 
-    // @Test
+    @Test
+    @SuppressWarnings("unchecked")
     public void testGetProtocolAdaptor() throws IllegalAccessException, NoSuchFieldException {
-        Map<String, ProtocolAdaptor<ProtocolTransportObject>> mockProtocolAdaptorMap =
-            new ConcurrentHashMap<>(16);
-        ProtocolAdaptor<ProtocolTransportObject> expectedAdaptor = new MockProtocolAdaptorImpl();
-        mockProtocolAdaptorMap.put(PROTOCOL_TYPE_NAME, expectedAdaptor);
-
         Field field = ProtocolPluginFactory.class.getDeclaredField(PROTOCOL_ADAPTER_MAP);
         field.setAccessible(true);
-        final Object originMap = field.get(null);
-        field.set(null, mockProtocolAdaptorMap);
+        Map<String, ProtocolAdaptor<ProtocolTransportObject>> protocolAdaptorMap =
+            (Map<String, ProtocolAdaptor<ProtocolTransportObject>>) field.get(null);
 
-        ProtocolAdaptor<ProtocolTransportObject> actualAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
-        Assertions.assertEquals(expectedAdaptor, actualAdaptor);
+        ProtocolAdaptor<ProtocolTransportObject> expectedAdaptor = new MockProtocolAdaptorImpl();
+        protocolAdaptorMap.put(PROTOCOL_TYPE_NAME, expectedAdaptor);
+        try {
+            ProtocolAdaptor<ProtocolTransportObject> actualAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
+            Assertions.assertEquals(expectedAdaptor, actualAdaptor);
 
-        field.set(null, Maps.newHashMap());
-        ProtocolAdaptor<ProtocolTransportObject> adaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
-        Assertions.assertEquals(adaptor.getClass(), MockProtocolAdaptorImpl.class);
-
-        field.set(null, originMap);
+            // Without a cached adaptor, getProtocolAdaptor has to load it through SPI
+            protocolAdaptorMap.remove(PROTOCOL_TYPE_NAME);
+            ProtocolAdaptor<ProtocolTransportObject> adaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_TYPE_NAME);
+            Assertions.assertInstanceOf(MockProtocolAdaptorImpl.class, adaptor);
+        } finally {
+            protocolAdaptorMap.remove(PROTOCOL_TYPE_NAME);
+        }
     }
 
     @Test
