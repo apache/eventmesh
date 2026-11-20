@@ -105,12 +105,14 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             public void onError(Throwable t) {
                 log.error("Receive error from client: {}", t.getMessage());
                 emitter.onCompleted();
+                eventMeshGrpcServer.getConsumerManager().deregisterClientsByEmitter(emitter);
             }
 
             @Override
             public void onCompleted() {
                 log.info("Client finish sending messages");
                 emitter.onCompleted();
+                eventMeshGrpcServer.getConsumerManager().deregisterClientsByEmitter(emitter);
             }
         };
     }
@@ -123,6 +125,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             } catch (Exception e) {
                 log.error("Error code {}, error message {}", StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), e);
                 ServiceUtils.sendStreamResponseCompleted(request, StatusCode.EVENTMESH_SUBSCRIBE_ERR, e.getMessage(), emitter);
+                eventMeshGrpcServer.getConsumerManager().deregisterClientsByEmitter(emitter);
             }
         });
     }

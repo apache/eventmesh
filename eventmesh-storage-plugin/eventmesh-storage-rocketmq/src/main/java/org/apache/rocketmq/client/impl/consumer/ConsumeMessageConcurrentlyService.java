@@ -36,6 +36,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.CMResult;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 
@@ -248,6 +249,10 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     }
 
     private void cleanExpireMsg() {
+        // Broadcasting has no broker retry topic. Expiring a pending local retry would discard it.
+        if (this.defaultMQPushConsumer.getMessageModel() == MessageModel.BROADCASTING) {
+            return;
+        }
         this.defaultMQPushConsumerImpl.getRebalanceImpl().getProcessQueueTable().forEach((k, pq) -> {
             pq.cleanExpiredMsg(this.defaultMQPushConsumer);
         });
@@ -260,6 +265,10 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         int ackIndex = context.getAckIndex();
 
         if (consumeRequest.getMsgs().isEmpty()) {
+            return;
+        }
+        if (context.isRetryIndividually()) {
+            submitConsumeRequestLaterIndividually(consumeRequest.getMsgs(), consumeRequest.getProcessQueue(), consumeRequest.getMessageQueue());
             return;
         }
 
@@ -376,6 +385,19 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 consumeRequest.getProcessQueue().removeMessage(consumeRequest.getMsgs());
             }
         }, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    private void submitConsumeRequestLaterIndividually(
+        final List<MessageExt> msgs,
+        final ProcessQueue processQueue,
+        final MessageQueue messageQueue) {
+        this.scheduledExecutorService.schedule(() -> {
+            for (MessageExt msg : msgs) {
+                List<MessageExt> singleMessage = new ArrayList<>(1);
+                singleMessage.add(msg);
+                submitConsumeRequest(singleMessage, processQueue, messageQueue, true);
+            }
+        }, 5000, TimeUnit.MILLISECONDS);
     }
 
     class ConsumeRequest implements Runnable {
