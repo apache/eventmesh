@@ -130,20 +130,43 @@ A2A 协议不仅支持传统的 FIPA-ACL 风格语义，更全面拥抱现代大
 
 ### 1. 作为 Client 发起 MCP 调用
 
-您只需要发送标准的 JSON-RPC 格式消息到 EventMesh：
+将 JSON-RPC 载荷包装为带 `protocol=A2A` 扩展的 CloudEvent，然后通过 EventMesh SDK 发布：
 
 ```java
-// 1. 构造 MCP Request JSON
-String mcpRequest = "{"
-    "jsonrpc": "2.0",
-    "method": "tools/call",
-    "params": { "name": "weather", "_agentId": "weather-agent" },
-    "id": "req-001"
-    "}";
+// 1. 构造 MCP Request JSON（JSON-RPC 2.0）
+Map<String, Object> params = new HashMap<>();
+params.put("name", "weather");
+params.put("_agentId", "weather-agent"); // 路由提示
 
-// 2. 通过 EventMesh SDK 发送
-eventMeshProducer.publish(new A2AProtocolTransportObject(mcpRequest));
+Map<String, Object> request = new HashMap<>();
+request.put("jsonrpc", "2.0");
+request.put("method", "tools/call");
+request.put("params", params);
+request.put("id", "req-001");
+
+// 2. 包装为 CloudEvent：类型前缀 org.apache.eventmesh.a2a. 加上
+//    protocol=A2A 扩展会触发 A2A 适配器
+CloudEvent event = CloudEventBuilder.v1()
+    .withId("req-001")
+    .withSource(URI.create("mcp-client"))
+    .withType("org.apache.eventmesh.a2a.tools.call.req")
+    .withSubject("org.apache.eventmesh.a2a.tools.call.req") // 目标 topic，取服务端订阅的主题
+    .withDataContentType("application/cloudevents+json")     // 必须显式设置，否则 HTTP SDK 解析格式时 NPE
+    .withData(JsonUtils.toJSONString(request).getBytes(StandardCharsets.UTF_8))
+    .withExtension("protocol", "A2A")
+    .withExtension("mcptype", "request")                    // 服务端按此扩展分发，缺失会被忽略
+    .withExtension("a2amethod", "tools/call")              // 适配器从 JSON-RPC 解析出的方法名，直发 CloudEvent 时需自己填
+    .withExtension("targetagent", "weather-agent")          // 对应 params._agentId 的 P2P 路由
+    .build();
+
+// 3. 通过 EventMesh SDK 发送
+eventMeshProducer.publish(event);
 ```
+
+> 注意：`A2AProtocolTransportObject` 是适配器内部类型（`EnhancedA2AProtocolAdaptor`
+> 的私有内部类），不属于公开 SDK API，无法直接 `new`。客户端请按上面的方式发布
+> CloudEvent。可运行的完整示例见
+> `eventmesh-examples/src/main/java/org/apache/eventmesh/a2a/demo/mcp/McpCaller.java`。
 
 ### 2. 作为 Server 处理请求
 
@@ -158,18 +181,35 @@ public void handle(CloudEvent event) {
     // 解包 Request
     String reqJson = new String(event.getData().toBytes());
     // ... 执行业务逻辑 ...
-    
-    // 3. 构造 Response
-    String mcpResponse = "{"
-        "jsonrpc": "2.0",
-        "result": { "text": "Sunny" },
-        "id": """ + event.getId() + """
-        "}";
-        
-    // 4. 发送回 EventMesh
-    eventMeshProducer.publish(new A2AProtocolTransportObject(mcpResponse));
+
+    // 3. 构造 Response（JSON-RPC 2.0，回传相同的 id）
+    Map<String, Object> response = new HashMap<>();
+    response.put("jsonrpc", "2.0");
+    response.put("result", Map.of("text", "Sunny"));
+    response.put("id", event.getId());
+
+    // 4. 以响应类型发布回 EventMesh
+    CloudEvent respEvent = CloudEventBuilder.v1()
+        .withId(UUID.randomUUID().toString())
+        .withSource(URI.create("mcp-server"))
+        .withType("org.apache.eventmesh.a2a.common.response")
+        .withSubject("org.apache.eventmesh.a2a.common.response") // 调用方订阅的响应 topic
+        .withDataContentType("application/cloudevents+json")
+        .withData(JsonUtils.toJSONString(response).getBytes(StandardCharsets.UTF_8))
+        .withExtension("protocol", "A2A")
+        .withExtension("mcptype", "response")                    // 与请求对称，调用方按此识别响应
+        .withExtension("collaborationid", event.getId())         // 回填请求 id，调用方据此配对
+        .build();
+
+    eventMeshProducer.publish(respEvent);
 }
 ```
+
+请求与响应两侧的 `mcptype`、`a2amethod`、`targetagent`、`collaborationid` 都是在
+JSON-RPC 与 CloudEvent 之间转换时由适配器补上的（见
+`EnhancedA2AProtocolAdaptor`）。直接构造 CloudEvent 的客户端和示例代码不经过那次转换，
+这些扩展必须自己设置，否则对端的 `handleCallback` 取不到 `mcptype`，消息会被当作
+未知类型丢弃。
 
 ## 扩展开发
 
