@@ -38,17 +38,24 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
         if (CollectionUtils.isEmpty(msgs)) {
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
+        if (msgs.size() != 1) {
+            // The patched consume service will resubmit each message separately without acknowledging the batch.
+            log.error("EventMesh RocketMQ consumer received {} messages in a batch; expected exactly one", msgs.size());
+            ((EventMeshConsumeConcurrentlyContext) context).setRetryIndividually(true);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
 
         MessageExt msg = msgs.get(0);
         try {
             EventMeshConsumeConcurrentlyContext eventMeshConsumeConcurrentlyContext = (EventMeshConsumeConcurrentlyContext) context;
-            EventMeshConsumeConcurrentlyStatus eventMeshConsumeStatus = handleMessage(msg, eventMeshConsumeConcurrentlyContext);
             try {
+                EventMeshConsumeConcurrentlyStatus eventMeshConsumeStatus = handleMessage(msg, eventMeshConsumeConcurrentlyContext);
                 switch (eventMeshConsumeStatus) {
                     case CONSUME_SUCCESS:
+                        eventMeshConsumeConcurrentlyContext.setManualAck(false);
                         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                     case RECONSUME_LATER:
-                        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                        return retry(eventMeshConsumeConcurrentlyContext);
                     case CONSUME_FINISH:
                         eventMeshConsumeConcurrentlyContext.setManualAck(true);
                         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -56,14 +63,28 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
                         return status;
                 }
             } catch (Throwable e) {
-                log.info("handleMessage fail", e);
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                log.error("handleMessage fail", e);
+                return retry(eventMeshConsumeConcurrentlyContext);
             }
         } catch (Throwable e) {
-            log.info("handleMessage fail", e);
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            log.error("handleMessage fail", e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
         // return status;
+    }
+
+    private ConsumeConcurrentlyStatus retry(EventMeshConsumeConcurrentlyContext context) {
+        if (retryLocally()) {
+            // Broadcasting has no broker retry; keep the original message until local redelivery succeeds.
+            context.setRetryIndividually(true);
+        } else {
+            context.setManualAck(false);
+        }
+        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+    }
+
+    protected boolean retryLocally() {
+        return false;
     }
 
     public abstract EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context);

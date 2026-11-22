@@ -325,7 +325,7 @@ public class EventMeshConsumer {
             if (topicConfig != null) {
                 final HandleMsgContext handleMsgContext =
                     new HandleMsgContext(consumerGroup, event, subscriptionMode, topicConfig.getGrpcType(),
-                        eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer,
+                        eventMeshAsyncConsumeContext, eventMeshGrpcServer,
                         this,
                         topicConfig);
 
@@ -335,6 +335,11 @@ public class EventMeshConsumer {
                 } else {
                     // can not handle the message due to the capacity limit is reached
                     // wait for some time and send this message back to mq and consume again
+                    if ((subscriptionMode == SubscriptionMode.CLUSTERING && eventMeshAsyncConsumeContext.supportsAsyncNack())
+                        || (subscriptionMode == SubscriptionMode.BROADCASTING && eventMeshAsyncConsumeContext.supportsLocalRetry())) {
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.ReconsumeLater);
+                        return;
+                    }
                     try {
                         ThreadUtils.sleep(5, TimeUnit.SECONDS);
                         sendMessageBack(consumerGroup, event, uniqueId, bizSeqNo);
@@ -344,6 +349,11 @@ public class EventMeshConsumer {
                 }
             } else {
                 log.debug("no active consumer for topic={}|msg={}", topic, event);
+                if ((subscriptionMode == SubscriptionMode.CLUSTERING && eventMeshAsyncConsumeContext.supportsAsyncNack())
+                    || (subscriptionMode == SubscriptionMode.BROADCASTING && eventMeshAsyncConsumeContext.supportsLocalRetry())) {
+                    eventMeshAsyncConsumeContext.commit(EventMeshAction.ReconsumeLater);
+                    return;
+                }
             }
 
             eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);

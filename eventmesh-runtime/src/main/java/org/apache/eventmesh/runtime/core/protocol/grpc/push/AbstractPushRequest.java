@@ -70,6 +70,7 @@ public abstract class AbstractPushRequest extends RetryContext {
 
         this.eventMeshConsumer = handleMsgContext.getEventMeshConsumer();
         this.eventMeshGrpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
+        this.commonConfiguration = eventMeshGrpcConfiguration;
         this.grpcRetryer = handleMsgContext.getEventMeshGrpcServer().getGrpcRetryer();
         io.cloudevents.CloudEvent event = handleMsgContext.getEvent();
         this.eventMeshCloudEvent = getEventMeshCloudEvent(event);
@@ -103,10 +104,22 @@ public abstract class AbstractPushRequest extends RetryContext {
     protected void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            grpcRetryer.newTimeout(this, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS, TimeUnit.MILLISECONDS);
+            try {
+                grpcRetryer.newTimeout(this, EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS, TimeUnit.MILLISECONDS);
+            } catch (RuntimeException e) {
+                onRetryScheduleFailure(e);
+            }
         } else {
-            complete();
+            onRetriesExhausted();
         }
+    }
+
+    protected void onRetryScheduleFailure(RuntimeException e) {
+        throw e;
+    }
+
+    protected void onRetriesExhausted() {
+        complete();
     }
 
     protected boolean isComplete() {
@@ -127,8 +140,13 @@ public abstract class AbstractPushRequest extends RetryContext {
     }
 
     protected void complete() {
+        if (complete.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+            finish();
+        }
+    }
+
+    protected void completeWithoutOffsetUpdate() {
         complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
-        finish();
     }
 
     protected void timeout() {
@@ -159,5 +177,10 @@ public abstract class AbstractPushRequest extends RetryContext {
     @Override
     public void doRun() throws Exception {
         tryPushRequest();
+    }
+
+    @Override
+    protected boolean useRetryPlugin() {
+        return false;
     }
 }

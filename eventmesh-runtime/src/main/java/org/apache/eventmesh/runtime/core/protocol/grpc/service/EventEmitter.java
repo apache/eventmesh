@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.grpc.stub.StreamObserver;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,20 +27,40 @@ import lombok.extern.slf4j.Slf4j;
 public class EventEmitter<T> {
 
     private final StreamObserver<T> emitter;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     public EventEmitter(StreamObserver<T> emitter) {
         this.emitter = emitter;
     }
 
     public synchronized void onNext(T event) {
+        if (closed.get()) {
+            return;
+        }
         try {
             emitter.onNext(event);
         } catch (Exception e) {
+            closed.set(true);
             log.warn("StreamObserver Error onNext. {}", e.getMessage());
         }
     }
 
+    /**
+     * Send only while the stream is open, propagating failures to callers that need to retry.
+     * Uses the same lock as the other observer operations.
+     */
+    public synchronized boolean tryOnNext(T event) {
+        if (closed.get()) {
+            return false;
+        }
+        emitter.onNext(event);
+        return true;
+    }
+
     public synchronized void onCompleted() {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         try {
             emitter.onCompleted();
         } catch (Exception e) {
@@ -47,6 +69,9 @@ public class EventEmitter<T> {
     }
 
     public synchronized void onError(Throwable t) {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         try {
             emitter.onError(t);
         } catch (Exception e) {
@@ -56,5 +81,9 @@ public class EventEmitter<T> {
 
     public StreamObserver<T> getEmitter() {
         return emitter;
+    }
+
+    public boolean isClosed() {
+        return closed.get();
     }
 }
