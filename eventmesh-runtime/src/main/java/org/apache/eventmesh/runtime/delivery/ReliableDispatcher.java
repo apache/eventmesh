@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.LongSupplier;
 
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,13 @@ public class ReliableDispatcher {
     // boots with an empty live map, so recover() re-dispatches store records through a
     // buffered poll channel (#5379); the subscriber offset advances only on a real ACK.
     private DeliveryStateStore stateStore;
+    /**
+     * #5433: resolver for the channel that receives recovered deliveries. Production wires this
+     * to the subscriber's long-polling buffer so a restart does not strand persisted in-flight
+     * records in an unreachable state. Null keeps the historical metric-only channel for tests
+     * and embedders that do not have a push buffer.
+     */
+    private Function<String, PushChannel> recoveryChannelResolver;
     /** Sub-PR C: durable DLQ ledger. When non-null, every confirmed DLQ transition is
      *  recorded via {@link DeadLetterStore#recordDeadLetter} before the delivery is
      *  retired. Null = legacy behaviour (Sub-PR A/B), the sink is the only durable
@@ -165,8 +173,18 @@ public class ReliableDispatcher {
                 liveDeliveries.remove(rec.deliveryId);
                 return;
             }
+            Function<String, PushChannel> resolver = recoveryChannelResolver;
+            PushChannel recoveredChannel = resolver == null
+                ? channelFor(rec.clientId) : resolver.apply(rec.clientId);
+            if (recoveredChannel == null) {
+                // No channel for this subscriber (e.g. it no longer exists): keep the record
+                // in flight for a later recovery pass instead of silently stranding it.
+                log.warn("recovery: no channel for client {} (delivery {}); retained",
+                    rec.clientId, rec.deliveryId);
+                return;
+            }
             Delivery delivery = new Delivery(rec.deliveryId, rec.topic, rec.partition, rec.offset,
-                event, rec.clientId, channelFor(rec.clientId), rec.attempt,
+                event, rec.clientId, recoveredChannel, rec.attempt,
                 now + ackTimeoutMs, null);
             liveDeliveries.put(rec.deliveryId, delivery);
             doDeliver(delivery);
@@ -329,6 +347,12 @@ public class ReliableDispatcher {
      * is built inside UniIngressService before EventMeshApplication can construct the durable
      * stores). In-flight records already written to the default store are replayed into the
      * replacement so none are stranded. Must be called before any delivery traffic.
+     *
+     * <p><b>#5433</b>: the durable store is injected <em>after</em> the constructor-time
+     * {@link #recover()} pass, so records persisted by a previous process are only visible here.
+     * Re-running recovery on injection is therefore part of the swap contract: without it the
+     * records sit in the store with no live delivery / ACK callback, {@code pendingCount} never
+     * drains, and client ACKs of broker-replayed copies return "unknown delivery".</p>
      */
     public ReliableDispatcher withStateStore(DeliveryStateStore replacement) {
         java.util.Objects.requireNonNull(replacement, "replacement");
@@ -337,6 +361,16 @@ public class ReliableDispatcher {
                 + " deliveries; wire it before serving traffic");
         }
         this.stateStore = replacement;
+        recover();
+        return this;
+    }
+
+    /**
+     * #5433: install the channel resolver used by {@link #recover()}. Must be set before the
+     * durable state store is injected. Returns {@code this} for boot-wiring chains.
+     */
+    public ReliableDispatcher withRecoveryChannel(Function<String, PushChannel> resolver) {
+        this.recoveryChannelResolver = java.util.Objects.requireNonNull(resolver, "resolver");
         return this;
     }
 
