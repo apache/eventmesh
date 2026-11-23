@@ -91,7 +91,12 @@ public class ConfigService {
         configInfo.setReloadMethodName(config == null ? null : config.reloadMethodName());
 
         try {
-            return this.getConfig(configInfo);
+            T configObject = this.getConfig(configInfo);
+            if (configInfo.isMonitor()) {
+                configInfo.setObject(configObject);
+                configMonitorService.monitor(configInfo);
+            }
+            return configObject;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
