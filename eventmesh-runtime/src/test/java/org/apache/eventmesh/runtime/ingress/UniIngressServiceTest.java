@@ -31,6 +31,7 @@ import org.apache.eventmesh.runtime.offset.InMemoryOffsetStore;
 import org.apache.eventmesh.runtime.offset.OffsetStore;
 import org.apache.eventmesh.runtime.push.BufferedEvent;
 import org.apache.eventmesh.runtime.push.PushService;
+import org.apache.eventmesh.runtime.state.InMemoryDeliveryStateStore;
 import org.apache.eventmesh.runtime.subscription.DistributionMode;
 import org.apache.eventmesh.runtime.subscription.SubscriptionManager;
 
@@ -69,6 +70,40 @@ class UniIngressServiceTest {
 
         assertTrue(svc.ack(delivered.get(0).getDeliveryId()));
         assertTrue(offsets.readOffset("orders", "client-1", -1) >= 1, "offset advances only on ACK");
+    }
+
+    @Test
+    void persistedPendingDeliveriesRecoverAfterRestartAndDrainOnAck() throws Exception {
+        InMemoryStorage storage = new InMemoryStorage();
+        OffsetStore offsets = new InMemoryOffsetStore();
+        InMemoryDeliveryStateStore durableState = new InMemoryDeliveryStateStore();
+
+        // Previous process: two events pulled for the subscriber but never ACKed. The durable
+        // state store is injected by the bootstrap before any traffic, just like production.
+        UniIngressService before = new UniIngressService(storage, offsets);
+        before.dispatcher().withStateStore(durableState);
+        before.subscribe("orders", "client-1", DistributionMode.LOAD_BALANCE, null);
+        before.publish("orders", event("o-1")).get();
+        before.publish("orders", event("o-2")).get();
+        before.pullAndDispatch("orders", 100, 0);
+        assertEquals(2, before.dispatcher().pendingCount());
+
+        // Restart: a fresh ingress starts on an empty in-memory store; the bootstrap then injects
+        // the durable store (#5378). That injection must trigger recovery of the two records.
+        UniIngressService after = new UniIngressService(storage, offsets);
+        after.dispatcher().withStateStore(durableState);
+
+        List<BufferedEvent> replayed = after.poll("client-1", 100, 0);
+        assertEquals(2, replayed.size(),
+            "persisted in-flight deliveries must be pollable after restart with their original ids");
+        for (BufferedEvent buffered : replayed) {
+            assertTrue(after.ack(buffered.getDeliveryId()),
+                "the recovered delivery id must be ACKable through the ingress");
+        }
+        assertEquals(0, after.dispatcher().pendingCount(),
+            "the durable pending ledger must drain once the recovered deliveries are ACKed");
+        assertEquals(2L, offsets.readOffset("orders", "client-1", -1),
+            "the logical offset advances only on the recovered ACKs");
     }
 
     @Test

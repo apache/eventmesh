@@ -120,6 +120,11 @@ public class UniIngressService {
         this.metrics = new UniMetrics();
         this.dispatcher = new ReliableDispatcher(ackTimeoutMs, maxAttempts, clock, offsetStore, deadLetterSink(),
             metrics, ReliableDispatcher.DEFAULT_JITTER_RATIO);
+        // #5433: recovered in-flight deliveries must land in the subscriber's poll buffer with
+        // their original delivery ids, otherwise the client can never ACK them and the durable
+        // pending ledger never drains. Set this before the first recover() pass and before
+        // EventMeshApplication injects the RocksDB state store (which triggers another pass).
+        this.dispatcher.withRecoveryChannel(this::channelFor);
         // Sub-PR B: re-ACK any in-flight deliveries from a previous JVM so they do not become
         // orphans after a crash. Safe on first start (store is empty) and idempotent.
         this.dispatcher.recover();
