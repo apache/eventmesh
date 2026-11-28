@@ -18,6 +18,7 @@
 package org.apache.eventmesh.agent.llm;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -111,11 +112,8 @@ class OpenAiLlmClientTest {
         server.createContext("/v1/chat/completions", this::handle500);
 
         List<String> chunks = new ArrayList<>();
-        try {
-            client.stream("hello", null, chunks::add);
-        } catch (Exception e) {
-            assertThat(e).hasMessageContaining("LLM HTTP 500");
-        }
+        assertThatThrownBy(() -> client.stream("hello", null, chunks::add))
+            .hasMessageContaining("LLM HTTP 500");
         assertThat(chunks).isEmpty();
     }
 
@@ -143,6 +141,7 @@ class OpenAiLlmClientTest {
     }
 
     private void handle500(HttpExchange exchange) throws IOException {
+        exchange.getRequestBody().readAllBytes();
         byte[] bytes = "{\"error\":\"upstream\"}".getBytes(StandardCharsets.UTF_8);
         exchange.sendResponseHeaders(500, bytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
